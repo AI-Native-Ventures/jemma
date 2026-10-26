@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grade 6 Maths Test Pack</title>
+<style>
+  :root {
+    --ink: #1F1D36;
+    --muted: #5E5C70;
+    --line: #9A98AA;
+    --soft: #F3F2F7;
+    --accent: #FF6A4D;
+  }
+  @page { size: A4; margin: 11mm 13mm; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #E9E8EF;
+    color: var(--ink);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 13.5px;
+    line-height: 1.4;
+  }
+  .sheet {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 16px auto;
+    padding: 14mm;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  }
+  @media print {
+    body { background: #fff; }
+    .sheet { margin: 0; box-shadow: none; width: auto; min-height: auto; padding: 0; page-break-after: always; }
+    .sheet:last-child { page-break-after: auto; }
+    .screen-only { display: none; }
+  }
+  @media (max-width: 820px) {
+    .sheet { width: auto; min-height: 0; margin: 12px 16px; padding: 20px; }
+  }
+  .screen-only {
+    max-width: 210mm;
+    margin: 16px auto 0;
+    padding: 12px 16px;
+    background: #fff;
+    border-left: 4px solid var(--accent);
+    font-size: 14px;
+  }
+  header.school { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--ink); padding-bottom: 8px; margin-bottom: 12px; }
+  header.school h1 { margin: 0; font-size: 19px; }
+  header.school p { margin: 2px 0 0; color: var(--muted); }
+  .meta { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; margin-bottom: 14px; }
+  .field { border-bottom: 1.5px solid var(--line); padding-top: 18px; font-size: 12px; color: var(--muted); }
+  .instructions { background: var(--soft); padding: 8px 12px; border-radius: 6px; margin-bottom: 14px; font-size: 12.5px; }
+  h2 { font-size: 14px; margin: 12px 0 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .q { display: grid; grid-template-columns: 28px 1fr 34px; gap: 8px; padding: 5px 0; align-items: start; border-bottom: 1px dashed #D6D5DE; break-inside: avoid; }
+  .q .n { font-weight: 700; }
+  .q .marks { text-align: right; color: var(--muted); font-size: 12px; }
+  .answer { margin-top: 6px; display: flex; align-items: flex-end; gap: 8px; color: var(--muted); font-size: 12px; }
+  .answer .box { flex: 0 0 150px; height: 30px; border: 1.5px solid var(--line); border-radius: 4px; }
+  .work { margin-top: 6px; height: 64px; border: 1px solid #D6D5DE; border-radius: 4px; position: relative; }
+  .work.tall { height: 62px; }
+  .work::before { content: "Working"; position: absolute; top: 4px; left: 6px; font-size: 10.5px; color: #A9A8B6; }
+  .choices { display: flex; gap: 22px; margin-top: 6px; flex-wrap: wrap; }
+  .frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; font-size: 13px; line-height: 1.1; margin: 0 2px; }
+  .frac span:first-child { border-bottom: 1.2px solid var(--ink); padding: 0 2px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; border-bottom: 1px dashed #D6D5DE; }
+  .pair .q { border-bottom: none; }
+  .inline-box { display: inline-block; width: 150px; height: 30px; border: 1.5px solid var(--line); border-radius: 4px; vertical-align: middle; margin-left: 10px; }
+  .total { margin-top: 10px; text-align: right; font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid #DDDCE5; vertical-align: top; }
+  th { background: var(--soft); font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  ol, ul { padding-left: 20px; margin: 6px 0; }
+  li { margin: 4px 0; }
+  .names { columns: 2; }
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 10px; background: #FFE9E3; color: #B23A1E; font-size: 11.5px; font-weight: 600; }
+  h3 { margin: 18px 0 6px; font-size: 15px; }
+</style>
+</head>
+<body>
+
+<div class="screen-only">
+  <strong>3 pages.</strong> Page 1 is the test (print 10 copies). Page 2 is the memo (print 1). Page 3 is the instructions for helpers (print 1 each). Use your browser's Print, A4. Everything here is made up. No real learners.
+</div>
+
+<!-- PAGE 1: TEST -->
+<section class="sheet">
+  <header class="school">
+    <div>
+      <h1>Hillview Primary School</h1>
+      <p>Grade 6 Mathematics · Class Test 1: Fractions and decimals</p>
+    </div>
+    <div style="text-align:right"><strong>Total: ______ / 10</strong><p>Time: 30 minutes</p></div>
+  </header>
+
+  <div class="meta">
+    <div class="field">Name</div>
+    <div class="field">Class</div>
+    <div class="field">Date</div>
+  </div>
+
+  <div class="instructions">Answer all questions. Write your answer in the box. Show your working where there is space.</div>
+
+  <h2>Section A: Fractions</h2>
+
+  <div class="q"><div class="n">1.</div><div>
+    <span class="frac"><span>1</span><span>2</span></span> + <span class="frac"><span>1</span><span>4</span></span> = <span class="inline-box"></span>
+  </div><div class="marks">(1)</div></div>
+
+  <div class="q"><div class="n">2.</div><div>
+    <span class="frac"><span>2</span><span>3</span></span> + <span class="frac"><span>1</span><span>6</span></span> = <span class="inline-box"></span>
+  </div><div class="marks">(1)</div></div>
+
+  <div class="q"><div class="n">3.</div><div>
+    <span class="frac"><span>3</span><span>4</span></span> − <span class="frac"><span>1</span><span>2</span></span> = <span class="inline-box"></span>
+  </div><div class="marks">(1)</div></div>
+
+  <div class="pair">
+  <div class="q"><div class="n">4.</div><div>
+    1<span class="frac"><span>1</span><span>2</span></span> + 2<span class="frac"><span>1</span><span>4</span></span> =
+    <div class="work"></div>
+    <div class="answer">Answer <div class="box"></div></div>
+  </div><div class="marks">(1)</div></div>
+
+  <div class="q"><div class="n">5.</div><div>
+    Work out <span class="frac"><span>2</span><span>5</span></span> of 20.
+    <div class="work"></div>
+    <div class="answer">Answer <div class="box"></div></div>
+  </div><div class="marks">(1)</div></div>
+
+  </div>
+
+  <div class="q"><div class="n">6.</div><div>
+    Which fraction is bigger? Circle it.
+    <div class="choices"><span><span class="frac"><span>2</span><span>3</span></span></span><span><span class="frac"><span>3</span><span>5</span></span></span></div>
+  </div><div class="marks">(1)</div></div>
+
+  <h2>Section B: Decimals</h2>
+
+  <div class="q"><div class="n">7.</div><div>
+    Write <span class="frac"><span>3</span><span>5</span></span> as a decimal. <span class="inline-box"></span>
+  </div><div class="marks">(1)</div></div>
+
+  <div class="q"><div class="n">8.</div><div>
+    0,5 + 0,25 = <span class="inline-box"></span>
+  </div><div class="marks">(1)</div></div>
+
+  <div class="q"><div class="n">9.</div><div>
+    Which fraction is equal to 0,25? Circle the letter.
+    <div class="choices">
+      <span>A. <span class="frac"><span>2</span><span>5</span></span></span>
+      <span>B. <span class="frac"><span>1</span><span>4</span></span></span>
+      <span>C. <span class="frac"><span>25</span><span>10</span></span></span>
+      <span>D. <span class="frac"><span>1</span><span>25</span></span></span>
+    </div>
+  </div><div class="marks">(1)</div></div>
+
+  <div class="q"><div class="n">10.</div><div>
+    Thabo has R20. He spends <span class="frac"><span>3</span><span>4</span></span> of it on lunch. How much money does he have left? Show your working.
+    <div class="work tall"></div>
+    <div class="answer">Answer <div class="box"></div></div>
+  </div><div class="marks">(1)</div></div>
+
+  <div class="total">Total: ______ / 10</div>
+</section>
+
+<!-- PAGE 2: MEMO -->
+<section class="sheet">
+  <header class="school">
+    <div>
+      <h1>Memo: Class Test 1</h1>
+      <p>Grade 6 Mathematics · Fractions and decimals · 1 mark per question</p>
+    </div>
+    <div style="text-align:right"><strong>Teacher copy</strong></div>
+  </header>
+
+  <table>
+    <thead><tr><th>Q</th><th>Correct answer</th><th>Topic</th><th>Mistakes to plant (pick from these)</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>3/4</td><td>Adding fractions, unlike denominators</td><td>2/6 (adds tops and bottoms) · 2/4</td></tr>
+      <tr><td>2</td><td>5/6</td><td>Adding fractions, unlike denominators</td><td>3/9 (adds tops and bottoms) · 3/6</td></tr>
+      <tr><td>3</td><td>1/4</td><td>Subtracting fractions</td><td>2/2 or 1 (subtracts tops and bottoms) · 2/4</td></tr>
+      <tr><td>4</td><td>3 3/4</td><td>Adding mixed numbers</td><td>3 2/6 (adds tops and bottoms) · 3 2/4</td></tr>
+      <tr><td>5</td><td>8</td><td>Fraction of a quantity</td><td>4 (divides by 5, forgets to multiply by 2) · 10</td></tr>
+      <tr><td>6</td><td>2/3</td><td>Comparing fractions</td><td>circles 3/5 ("bigger numbers mean bigger fraction")</td></tr>
+      <tr><td>7</td><td>0,6</td><td>Fractions to decimals</td><td>3,5 (writes the digits) · 0,35</td></tr>
+      <tr><td>8</td><td>0,75</td><td>Adding decimals</td><td>0,30 (lines up the last digits) · 0,7</td></tr>
+      <tr><td>9</td><td>B (1/4)</td><td>Decimals and fractions</td><td>C (reads 25 as the top) · D</td></tr>
+      <tr><td>10</td><td>R5</td><td>Fraction word problem</td><td>R15 (gives what he spent) · R4 (works out 1/5)</td></tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top:14px;color:var(--muted)">South African papers use a decimal comma (0,5). Learners often write a point (0.5). Both are fine on the papers.</p>
+</section>
+
+<!-- PAGE 3: HELPER INSTRUCTIONS -->
+<section class="sheet">
+  <header class="school">
+    <div>
+      <h1>Helper instructions</h1>
+      <p>Making fake handwritten test papers so we can test which AI reads handwriting best</p>
+    </div>
+  </header>
+
+  <p><span class="tag">Made-up only</span> &nbsp;Never use a real child's name or a real child's paper.</p>
+
+  <h3>Fill in the papers (about 10 in total)</h3>
+  <ol>
+    <li>Take 3 or 4 printed tests each. No printer? Write the question numbers 1 to 10 down a plain page and answer beside them.</li>
+    <li>Write a made-up name at the top of each paper. Use a different name for every paper (list below).</li>
+    <li>Answer like a Grade 6 learner would. Get most questions right, and make 2 to 4 mistakes per paper using the "Mistakes to plant" column on the memo.</li>
+    <li>Make the papers different: one almost all right, one with lots of mistakes, some neat, some messy, some in pencil, some with crossings-out. Show working on questions 4, 5 and 10.</li>
+    <li>Mark one paper with a hard-to-read name, and write one answer very messily.</li>
+  </ol>
+
+  <h3>Photograph them</h3>
+  <ol>
+    <li>One photo per paper with a phone. Mix it up: most flat in good light, a few at a slight angle, one in dim light, one with a shadow across it.</li>
+    <li>Also photograph the memo page once.</li>
+    <li>Send all photos to Basheer by Tuesday morning, 27 Oct.</li>
+  </ol>
+
+  <h3>Made-up names to use</h3>
+  <ul class="names">
+    <li>Amina</li><li>Thabo</li><li>Lerato</li><li>Sipho</li><li>Naledi</li>
+    <li>Pieter</li><li>Ayesha</li><li>Kagiso</li><li>Zanele</li><li>Musa</li>
+    <li>Lindiwe</li><li>Tumelo</li>
+  </ul>
+</section>
+
+</body>
+</html>
