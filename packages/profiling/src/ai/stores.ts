@@ -6,8 +6,8 @@ export interface ReplayStore {
 }
 
 export class ReplayMissError extends Error {
-  constructor(readonly key: string) {
-    super(`Replay miss: ${key}`)
+  constructor(readonly key: string, hint?: string) {
+    super(`Replay miss: ${key}${hint ? ` (${hint})` : ''}`)
     this.name = 'ReplayMissError'
   }
 }

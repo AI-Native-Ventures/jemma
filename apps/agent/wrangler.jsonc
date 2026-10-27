@@ -13,7 +13,8 @@
     "consumers": [
       {
         "queue": "jemma-events",
-        "max_batch_size": 1,
+        "max_batch_size": 3,
+        "max_batch_timeout": 1,
         "max_retries": 3,
         "dead_letter_queue": "jemma-events-dlq"
       }

@@ -10,7 +10,7 @@ export async function loadProfile(ctx: ToolContext, childId: string): Promise<Le
     ok(db.from('schools').select('name').eq('id', child.school_id).single()),
     ok(db.from('enrolments').select('class_id').eq('child_id', childId)),
     ok(db.from('question_results').select('id, paper_id, topic_name, mark, misconception, created_at').eq('child_id', childId)),
-    ok(db.from('gaps').select('id, topic_id, topic_name, stage, evidence').eq('child_id', childId).order('created_at')),
+    ok(db.from('gaps').select('id, topic_id, topic_name, stage, evidence').eq('child_id', childId).order('created_at').order('topic_name')),
     ok(db.from('sessions').select('id, lesson_id, right, minutes, finished_at').eq('child_id', childId).eq('status', 'done').order('finished_at', { ascending: false }).limit(5)),
     ok(db.from('observations').select('id, kind, text, author_id, created_at').eq('child_id', childId).order('created_at', { ascending: false }).limit(20)),
     ok(db.from('attendance').select('day, status').eq('child_id', childId).order('day')),
@@ -39,7 +39,7 @@ export async function loadProfile(ctx: ToolContext, childId: string): Promise<Le
     perPaper.set(r.paper_id, cur)
     byTopic.set(r.topic_name, perPaper)
   }
-  const marksByTopic = [...byTopic].map(([topicName, perPaper]) => {
+  const marksByTopic = [...byTopic].sort((x, y) => x[0].localeCompare(y[0])).map(([topicName, perPaper]) => {
     const ordered = [...perPaper].sort((x, y) => String(paperDate.get(x[0])).localeCompare(String(paperDate.get(y[0]))))
     const pct = (v: { got: number; of: number }) => Math.round((v.got / v.of) * 100)
     const latest = pct(ordered[ordered.length - 1]![1])

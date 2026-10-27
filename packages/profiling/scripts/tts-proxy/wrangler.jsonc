@@ -1,0 +1,7 @@
+{
+  "name": "jemma-tts-proxy",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "ai": { "binding": "AI" },
+  "vars": { "TTS_MODEL": "@cf/deepgram/aura-2-en" }
+}

@@ -6,11 +6,13 @@ export interface Env {
   EVENTS_SECRET?: string
   LLM_PROVIDER?: string
   LLM_MODEL?: string
+  LLM_MODEL_FALLBACKS?: string
   VISION_PROVIDER?: string
   VISION_MODEL?: string
+  VISION_MODEL_FALLBACKS?: string
   TTS_PROVIDER?: string
   TTS_MODEL?: string
-  AI_MODE?: 'live' | 'record' | 'replay'
+  AI_MODE?: 'live' | 'record' | 'replay' | 'cache'
   OPENROUTER_API_KEY?: string
   DEEPSEEK_API_KEY?: string
   ANTHROPIC_API_KEY?: string
