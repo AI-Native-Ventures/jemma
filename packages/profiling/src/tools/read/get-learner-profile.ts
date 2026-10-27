@@ -48,7 +48,7 @@ export async function loadProfile(ctx: ToolContext, childId: string): Promise<Le
   })
 
   const resultById = new Map(results.map((r) => [r.id, r]))
-  const lessonIds = sessions.map((s) => s.lesson_id)
+  const lessonIds = sessions.map((s) => s.lesson_id).filter((id): id is string => id !== null)
   const lessons = lessonIds.length ? await ok(db.from('lessons').select('id, topic_name, format').in('id', lessonIds)) : []
   const authorIds = [...new Set(observations.map((o) => o.author_id))]
   const authors = authorIds.length ? await ok(db.from('profiles').select('user_id, display_name').in('user_id', authorIds)) : []

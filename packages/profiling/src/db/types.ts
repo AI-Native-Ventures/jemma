@@ -1306,12 +1306,17 @@ export type Database = {
           created_at: string
           finished_at: string | null
           id: string
-          lesson_id: string
+          lesson_id: string | null
           minutes: number | null
           planned_for: string
           right: number | null
           status: Database["public"]["Enums"]["session_status"]
           warmup: NonNullable<Json>
+          format: Database["public"]["Enums"]["lesson_format"] | null
+          planned_minutes: number | null
+          question_count: number | null
+          topic_id: string | null
+          topic_name: string | null
         }
         ComputedFields: never
         Insert: {
@@ -1319,24 +1324,34 @@ export type Database = {
           created_at?: string
           finished_at?: string | null
           id?: string
-          lesson_id: string
+          lesson_id?: string | null
           minutes?: number | null
           planned_for: string
           right?: number | null
           status?: Database["public"]["Enums"]["session_status"]
           warmup?: NonNullable<Json>
+          format?: Database["public"]["Enums"]["lesson_format"] | null
+          planned_minutes?: number | null
+          question_count?: number | null
+          topic_id?: string | null
+          topic_name?: string | null
         }
         Update: {
           child_id?: string
           created_at?: string
           finished_at?: string | null
           id?: string
-          lesson_id?: string
+          lesson_id?: string | null
           minutes?: number | null
           planned_for?: string
           right?: number | null
           status?: Database["public"]["Enums"]["session_status"]
           warmup?: NonNullable<Json>
+          format?: Database["public"]["Enums"]["lesson_format"] | null
+          planned_minutes?: number | null
+          question_count?: number | null
+          topic_id?: string | null
+          topic_name?: string | null
         }
         Relationships: [
           {
