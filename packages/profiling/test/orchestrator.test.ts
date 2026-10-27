@@ -13,7 +13,7 @@ const db: JemmaDb = createServiceClient({
   SUPABASE_URL: env.SUPABASE_URL!,
   SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY!,
 })
-const tag = `or${Date.now()}`
+const tag = `or${Date.now()}${Math.floor(Math.random() * 1000)}`
 let s: Sandbox
 let desk: Sandbox
 let parentId: string
@@ -57,7 +57,7 @@ function fakeJobs(calls: string[] = []): CloudJobs {
 
 beforeAll(async () => {
   s = await createSandbox(db, tag)
-  desk = await createSandbox(db, `${tag}d`, 'desktop')
+  desk = await createSandbox(db, `${tag}d${Math.floor(Math.random() * 1e3)}`, 'desktop')
   const p = await db.auth.admin.createUser({ email: `${tag}-parent@example.test`, password: `${tag}-Passw0rd!`, email_confirm: true })
   if (p.error) throw p.error
   parentId = p.data.user.id
