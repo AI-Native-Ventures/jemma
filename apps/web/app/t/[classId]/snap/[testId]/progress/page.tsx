@@ -1,6 +1,7 @@
 import { WhatJemmaDid } from '@/components/blocks'
-import { getKeyView, getPile, getTestLog } from '@/lib/data/p31'
+import { getKeyView, getPile, getTestLog, hhmm } from '@/lib/data/p31'
 import { Poller } from '../../Poller'
+import { Flow } from '../../_parts'
 
 const CSS = '@keyframes jemmaPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.85)}}@keyframes jemmaSpin{to{transform:rotate(360deg)}}'
 const check = (aria: string) => (
@@ -18,6 +19,7 @@ export default async function ReadingPage({ params }: { params: Promise<{ classI
   const outOf = key.test.outOf
 
   return (
+    <Flow href={`/t/${classId}`} label="Close" close title={key.test.title.split(':')[0]!} subtitle={`${pile.length} papers snapped${pile[0] ? ` at ${hhmm(pile[0].createdAt)}` : ''}`}>
     <div className="flex flex-col gap-5 px-5 pt-[18px] pb-6 leading-[normal]">
       <style>{CSS}</style>
       <Poller active={busy > 0} />
@@ -81,5 +83,6 @@ export default async function ReadingPage({ params }: { params: Promise<{ classI
       <div className="flex-1" />
       <a href={`/t/${classId}`} className="flex h-[52px] items-center justify-center rounded-14 border-[1.5px] border-ink bg-card text-[17px] font-semibold text-ink no-underline">Back to class</a>
     </div>
+    </Flow>
   )
 }

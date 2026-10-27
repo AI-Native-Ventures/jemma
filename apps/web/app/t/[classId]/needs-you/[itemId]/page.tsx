@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { getNeedsItem, getPaperView, getPile, getRoster, hhmm, type ReviewResult } from '@/lib/data/p31'
-import { PageTitle } from '../../snap/_parts'
+import { createSupabaseServer } from '@/lib/supabase/server'
+import { Flow, PageTitle } from '../../snap/_parts'
 import { ConfirmButton, FixCard } from './FixCard'
 import { NamePicker } from './NamePicker'
 
@@ -28,6 +29,7 @@ export default async function NeedsYouItemPage({
 
   const view = await getPaperView(classId, item.paperId)
   const pile = await getPile(view.test.id)
+  const short = view.test.title.split(':')[0]!
   const position = pile.find((p) => p.id === view.paper.id)?.position ?? 1
 
   if (item.kind === 'unreadable_name') {
@@ -35,6 +37,7 @@ export default async function NeedsYouItemPage({
     const left = roster.filter((r) => !r.hasPaper)
     const unnamed = pile.filter((p) => !p.childName && p.status !== 'queued' && p.status !== 'reading')
     return (
+      <Flow href={`/t/${classId}`} label="Close" close title={`Paper ${position}`} subtitle={`${short} · Needs you`} subtitleFirst>
       <NamePicker
         classId={classId}
         itemId={itemId}
@@ -45,9 +48,14 @@ export default async function NeedsYouItemPage({
         leftNames={left.map((l) => l.firstName)}
         unnamedPositions={unnamed.map((u) => u.position)}
       />
+      </Flow>
     )
   }
 
+  const supabase = await createSupabaseServer()
+  const { data: open } = await supabase.from('needs_you_items').select('id').eq('status', 'open').order('created_at').order('id')
+  const ids = (open ?? []).map((o) => o.id)
+  const slot = Math.max(ids.indexOf(itemId), 0) + 1
   const byN = new Map(view.results.map((r) => [r.n, r]))
   const wanted = q ? byN.get(Number(q)) : undefined
   const focus: ReviewResult | undefined = wanted ?? view.results.find((r) => r.unsure) ?? view.results.find((r) => r.changed) ?? view.results[0]
@@ -59,6 +67,7 @@ export default async function NeedsYouItemPage({
   const total = view.results.reduce((s, r) => s + r.mark, 0)
 
   return (
+    <Flow href={`/t/${classId}`} label="Back to class" title={`${view.child ? `${name}'s` : 'The'} paper`} subtitle={`${short} · Needs you, ${slot} of ${Math.max(ids.length, 1)}`}>
     <div className="flex flex-col gap-4 px-5 pt-3 pb-5 leading-[normal]">
       <PageTitle size={25} leading={1.2} tracking="-0.01em">
         {focus && focus.unsure
@@ -147,5 +156,6 @@ export default async function NeedsYouItemPage({
         <p className="m-0 text-center text-[13px] text-body">Jemma learns from your fix for the next pile.</p>
       </div>
     </div>
+    </Flow>
   )
 }

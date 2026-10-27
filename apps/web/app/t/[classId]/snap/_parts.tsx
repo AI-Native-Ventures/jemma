@@ -43,3 +43,53 @@ export const RETAKE_PATH = 'M20 12a8 8 0 1 1-2.34-5.66'
 
 /** Same threshold as `READ_MIN` in lib/data/p31 (client code must not import that server module). */
 export const SURE = 0.8
+
+const HIDE = '@media (max-width:1023px){body:has([data-flow]) header.lg\\:hidden,body:has([data-flow]) nav.lg\\:hidden{display:none}}'
+
+/**
+ * Flow screens (snap key to review) have their own header with Back or Close and no tab bar on the phone,
+ * so the layout's class header and tab bar are hidden while one is on screen.
+ */
+export function Flow({
+  href,
+  label,
+  close = false,
+  title,
+  subtitle,
+  subtitleFirst = false,
+  right,
+  children,
+}: {
+  href: string
+  label: string
+  close?: boolean
+  title: string
+  subtitle: string
+  subtitleFirst?: boolean
+  right?: string
+  children: ReactNode
+}) {
+  const titleCls = subtitleFirst ? 'text-[17px] font-bold' : 'text-[18px] font-bold'
+  const sub = <span className="text-[13px] text-body">{subtitle}</span>
+  const main = <span className={titleCls}>{title}</span>
+  return (
+    <div data-flow className="leading-[normal]">
+      <style>{HIDE}</style>
+      <header className={`flex items-center gap-1 pt-2.5 pb-1.5 pl-2 ${right || !subtitleFirst ? 'pr-4' : 'pr-3'}`}>
+        <a href={href} aria-label={label} className="flex size-11 flex-none items-center justify-center rounded-12 text-ink">
+          {close ? (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>
+          )}
+        </a>
+        <span className="flex min-w-0 flex-1 flex-col leading-[1.2]">
+          {subtitleFirst ? sub : main}
+          {subtitleFirst ? main : sub}
+        </span>
+        {right ? <span className="text-[13px] font-semibold text-body">{right}</span> : null}
+      </header>
+      {children}
+    </div>
+  )
+}

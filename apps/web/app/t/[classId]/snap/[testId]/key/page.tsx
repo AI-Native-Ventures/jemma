@@ -1,6 +1,6 @@
 import { READ_MIN, getKeyView, hhmm } from '@/lib/data/p31'
 import { Poller } from '../../Poller'
-import { Diamond } from '../../_parts'
+import { Diamond, Flow } from '../../_parts'
 import { KeyList } from './KeyList'
 
 /** Board `teacher-snap-key`: check the answers Jemma read from the memo, then approve. */
@@ -10,7 +10,7 @@ export default async function SnapKeyPage({ params }: { params: Promise<{ classI
   const unsure = key.items.filter((i) => i.confidence < READ_MIN || i.note).length
 
   return (
-    <>
+    <Flow href={`/t/${classId}/snap`} label="Back" title="Answer key" subtitle={key.test.title} right="Step 2 of 3">
       <div aria-hidden="true" className="grid grid-cols-3 gap-1.5 px-5 pt-1">
         <span className="h-1 rounded-pill bg-ink" />
         <span className="h-1 rounded-pill bg-coral" />
@@ -39,6 +39,6 @@ export default async function SnapKeyPage({ params }: { params: Promise<{ classI
           />
         )}
       </div>
-    </>
+    </Flow>
   )
 }

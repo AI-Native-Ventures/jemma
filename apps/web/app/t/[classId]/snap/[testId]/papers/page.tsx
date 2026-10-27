@@ -1,6 +1,6 @@
 import { getClassTests, getPile } from '@/lib/data/p31'
 import { notFound } from 'next/navigation'
-import { PageTitle } from '../../_parts'
+import { Flow, PageTitle } from '../../_parts'
 import { Poller } from '../../Poller'
 import { Queue, RetakeButton, Thumb } from './Queue'
 
@@ -15,7 +15,9 @@ export default async function SnapQueuePage({ params }: { params: Promise<{ clas
   const last = pile.at(-1)
   const busy = pile.some((p) => p.status === 'queued' || p.status === 'reading')
 
+  const short = tests.find((t) => t.id === testId)!.title.split(':')[0]
   return (
+    <Flow href={`/t/${classId}/snap/${testId}/key`} label="Back to the answer key" title="Snap the papers" subtitle={`${short} · key approved`} subtitleFirst>
     <div className="flex flex-col gap-4 px-5 pt-3 pb-6 leading-[normal]">
       <Poller active={busy} />
       <div className="flex flex-col gap-2">
@@ -51,5 +53,6 @@ export default async function SnapQueuePage({ params }: { params: Promise<{ clas
         ) : null}
       </Queue>
     </div>
+    </Flow>
   )
 }
