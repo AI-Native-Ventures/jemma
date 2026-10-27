@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { CameraIcon, ChevronRightIcon, GemIcon } from '@/components/ui/icons'
 import { getTestsList, type TestSummary } from '@/lib/data/p20'
+import { LaptopTests } from './LaptopTests'
 
 /** Dot tops (px) for 1 to 3 learners on the same mark; more are spread over the track. */
 function dotTops(count: number): number[] {
@@ -84,13 +85,24 @@ function TestCard({ href, test }: { href: string; test: TestSummary }) {
   )
 }
 
-export default async function TeacherTestsPage({ params }: { params: Promise<{ classId: string }> }) {
+export default async function TeacherTestsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ classId: string }>
+  searchParams: Promise<{ t?: string; q?: string }>
+}) {
   const { classId } = await params
-  const { headline, groups } = await getTestsList(classId)
+  const { t, q } = await searchParams
+  const { cls, headline, groups } = await getTestsList(classId)
+  const all = groups.flatMap((g) => g.tests)
+  const selected = all.find((x) => x.id === t) ?? all.find((x) => x.marked > 0) ?? all[0] ?? null
   const base = `/t/${classId}`
 
   return (
-    <div className="flex flex-col gap-[18px] px-5 pt-3.5 pb-5 leading-[normal] lg:max-w-[720px]">
+    <>
+    <LaptopTests classId={classId} className={cls.name} groups={groups} test={selected} n={q ? Number(q) : null} />
+    <div className="flex flex-col gap-[18px] px-5 pt-3.5 pb-5 leading-[normal] lg:hidden">
       <div className="flex flex-col gap-2">
         <p className="m-0 text-[14px] font-semibold text-body">Tests</p>
         {headline ? (
@@ -120,5 +132,6 @@ export default async function TeacherTestsPage({ params }: { params: Promise<{ c
         Snap the next test
       </Link>
     </div>
+    </>
   )
 }
