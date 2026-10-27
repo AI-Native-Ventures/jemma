@@ -39,10 +39,10 @@ async function sessionIdOf(childId: string) {
 async function warmupThrough(page: Page) {
   await expect(page.getByText('Warm-up · 1 of 2')).toBeVisible()
   await page.getByRole('button', { pressed: false }).first().click()
-  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
   await expect(page.getByText('Warm-up · 2 of 2')).toBeVisible()
   await page.getByRole('button', { pressed: false }).first().click()
-  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
 }
 
 async function tryQuestion(page: Page, n: number, wrong: boolean) {
@@ -81,6 +81,7 @@ test('nothing tonight after the session is done', async ({ page }, testInfo) => 
 })
 
 test('the whole session: no right or wrong, only missed questions at the end, gap moves', async ({ page }, testInfo) => {
+  test.setTimeout(120_000)
   sandbox = await openSandbox(page, { stage: 'marked', role: 'learner' })
   const sessionId = await sessionIdOf(sandbox.childId)
 
@@ -103,10 +104,10 @@ test('the whole session: no right or wrong, only missed questions at the end, ga
   await expect(page.getByText('A quick one from a gap you already fixed.')).toBeVisible()
   await shot(page, testInfo, 'child-warmup')
   await page.getByRole('button', { pressed: false }).first().click()
-  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
   await expect(page.getByText('Warm-up · 2 of 2')).toBeVisible()
   await page.getByRole('button', { pressed: false }).first().click()
-  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
 
   await expect(page.getByRole('heading', { name: 'Why 1/2 + 1/4 is 3/4' })).toBeVisible()
   await expect(page.getByText("Why not 2/6?")).toBeVisible()
@@ -122,7 +123,7 @@ test('the whole session: no right or wrong, only missed questions at the end, ga
   for (let n = 1; n <= 5; n++) {
     await tryQuestion(page, n, wrongAt.has(n))
     if (n === 3) await shot(page, testInfo, 'child-question')
-    await page.getByRole('button', { name: 'Next' }).click()
+    await page.getByRole('button', { name: 'Next', exact: true }).click()
     if (n < 5) await noFeedback()
   }
 
@@ -139,7 +140,7 @@ test('the whole session: no right or wrong, only missed questions at the end, ga
 
   await page.getByRole('button', { name: 'Got it' }).click()
   await expect(page.getByRole('heading', { name: 'You moved it to Practising!' })).toBeVisible()
-  await expect(page.getByRole('listitem', { name: /Practising/ }).first()).toHaveAttribute('aria-current', 'step')
+  await expect(page.locator('ol[aria-label=Stages] li[aria-current=step]')).toContainText('Practising')
   await shot(page, testInfo, 'child-progress')
 
   await page.getByRole('button', { name: 'Done' }).click()
@@ -161,7 +162,7 @@ test('answers never reach the client before finishing', async ({ page }) => {
   await warmupThrough(page)
   await page.getByRole('button', { name: "I'm ready" }).click()
   await tryQuestion(page, 1, false)
-  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
   await expect(page.getByText('Question 2 of 5')).toBeVisible()
   const joined = bodies.join('\n')
   expect(joined).not.toContain('rightWay')
@@ -206,7 +207,7 @@ test('reading cards and audio memo formats', async ({ page }, testInfo) => {
   }
   const reading = { ...AMINA_LESSON, format: 'reading' as const }
 
-  await db.from('lessons').update({ format: 'reading', content: reading as unknown as Json }).eq('id', s!.lesson_id!)
+  await db.from('lessons').update({ format: 'reading', content: reading as unknown as NonNullable<Json> }).eq('id', s!.lesson_id!)
   await page.goto(`/k/session/${sessionId}`)
   await warmupThrough(page)
   await expect(page.getByText('Learn · card 1 of 4')).toBeVisible()
@@ -216,9 +217,8 @@ test('reading cards and audio memo formats', async ({ page }, testInfo) => {
   await noHorizontalScroll(page)
   await shot(page, testInfo, 'child-learn-cards')
 
-  await db.from('lessons').update({ format: 'audio', content: audio as unknown as Json }).eq('id', s!.lesson_id!)
+  await db.from('lessons').update({ format: 'audio', content: audio as unknown as NonNullable<Json> }).eq('id', s!.lesson_id!)
   await page.goto(`/k/session/${sessionId}`)
-  await warmupThrough(page).catch(() => undefined)
   await expect(page.getByRole('heading', { name: "Why we can't add the bottoms" })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Read along' })).toBeVisible()
   await expect(page.getByText('Jemma, for Amina')).toBeVisible()

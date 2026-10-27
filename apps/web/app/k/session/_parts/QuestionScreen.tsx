@@ -54,7 +54,7 @@ export function QuestionScreen({ q, busy, onAnswer }: QuestionScreenProps) {
         <h1 data-prompt={q.prompt} className="m-0 flex flex-wrap items-center gap-3 text-[28px] leading-[1.2] font-semibold">
           {withFractions(q.prompt, (n, d, k) => (
             <Frac key={k} top={n} bottom={d} size={34} rule={3} gap={4} side={5} />
-          )).map((part, i) => (typeof part === 'string' ? part.trim() ? <span key={i}>{part.trim()}</span> : null : part))}
+          )).map((part, i) => (typeof part === 'string' ? part.trim() ? <span key={`t${i}`}>{part.trim()}</span> : null : part))}
         </h1>
         <div className="grid grid-cols-2 gap-3">
           {(q.choices ?? []).map((choice, i) => {
