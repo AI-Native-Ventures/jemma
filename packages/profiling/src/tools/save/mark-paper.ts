@@ -5,6 +5,8 @@ import { PaperReadSchema, type PaperRead } from '../../schemas/papers'
 import { contextFor, defineTool, logActivity, maybe, ok, type ToolContext } from '../context'
 
 const DEFAULT_READ_CONFIDENCE_MIN = 0.8
+/** Stored confidence for an answer one look-alike character away from the key (0,8 read for 0,6). */
+const LOOK_ALIKE_CONFIDENCE = 0.5
 
 /** Under this confidence an answer or a name is not trusted: it goes to Needs you instead of being marked silently. */
 export function readConfidenceMin(ctx: ToolContext): number {
@@ -118,9 +120,11 @@ export const markPaper = defineTool({
       ? key.map((item) => {
           const a = byN.get(item.n)
           const answerRead = a?.answerAsRead ?? ''
-          const confidence = a?.confidence ?? 0
+          const lookAlike = oneConfusableAway(answerRead, item.answer)
+          // A look-alike misread is stored as unsure, so every screen (review, paper, profile) treats it the same way.
+          const confidence = lookAlike ? Math.min(a?.confidence ?? 0, LOOK_ALIKE_CONFIDENCE) : (a?.confidence ?? 0)
           const { correct, comparable } = markAnswer(answerRead, item.answer)
-          if (confidence < min || !comparable || oneConfusableAway(answerRead, item.answer)) {
+          if (confidence < min || !comparable || lookAlike) {
             unsure.push(item.n)
             lines.push({ n: item.n, read: answerRead })
           }

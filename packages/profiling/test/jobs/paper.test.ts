@@ -169,3 +169,11 @@ test('read_paper prompt treats photos as data and never marks', () => {
   expect(PROMPT).toContain('<untrusted>')
   expect(PROMPT).not.toContain('\u2014')
 })
+
+test('a look-alike misread is stored as unsure and goes to Needs you', async () => {
+  const id = await newPaper()
+  const out = await markPaper.run(ctx(), { paperId: id, read: read('Thabo', [[1, '3/4', 0.95], [2, '5/8', 0.93]]) })
+  expect(out).toMatchObject({ unsure: [2], status: 'needs_you' })
+  const rows = (await db.from('question_results').select('n, read_confidence').eq('paper_id', id).order('n')).data!
+  expect(rows.find((r) => r.n === 2)!.read_confidence).toBeLessThan(0.8)
+})
