@@ -2,6 +2,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
 import { getProfile, type MarkRow } from '@/lib/data/p23'
+import { getProfileExtras } from '@/lib/data/p36'
+import { Only } from './_only'
+import { ProfileLaptop } from './_profile-laptop'
 import { Chevron, css, Diamond, Icon } from './beyond/_parts'
 
 type Chip = NonNullable<Awaited<ReturnType<typeof getProfile>>>['notices'][number]['chips'][number]
@@ -46,12 +49,15 @@ const CARD = 'display:flex;flex-direction:column;background:#FFFFFF;border:1px s
 export default async function ParentProfilePage({ params }: { params: Promise<{ childId: string }> }) {
   const { childId } = await params
   await requireRole('parent')
-  const data = await getProfile(childId)
+  const [data, extras] = await Promise.all([getProfile(childId), getProfileExtras(childId)])
   if (!data) notFound()
   const { child } = data
   const base = `/p/${childId}`
 
   return (
+    <>
+    <div className="lg:hidden">
+    <Only at="phone">
     <div style={css('display:flex;flex-direction:column;gap:20px;padding:14px 20px 20px;min-height:0;line-height:normal')}>
       <div style={css('display:flex;flex-direction:column;gap:8px')}>
         <div style={css('display:flex;gap:10px;align-items:flex-start')}>
@@ -214,6 +220,12 @@ export default async function ParentProfilePage({ params }: { params: Promise<{ 
         </ol>
       </section>
     </div>
+    </Only>
+    </div>
+    <Only at="laptop">
+    <ProfileLaptop data={data} extras={extras} base={base} />
+    </Only>
+    </>
   )
 }
 
