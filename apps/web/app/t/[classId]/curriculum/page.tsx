@@ -11,7 +11,7 @@ const GEM = (
 )
 const card = { display: 'flex', flexDirection: 'column', background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 20, padding: 16 } as const
 const h1 = { margin: 0, fontSize: 26, lineHeight: 1.2, fontWeight: 600, letterSpacing: '-0.01em', textWrap: 'pretty' } as const
-const wrap = { display: 'flex', flexDirection: 'column', gap: 20, padding: '14px 20px 16px', maxWidth: 720 } as const
+const wrap = { lineHeight: 'normal', display: 'flex', flexDirection: 'column', gap: 20, padding: '14px 20px 16px', maxWidth: 720 } as const
 
 export default async function CurriculumPage({ params }: { params: Promise<{ classId: string }> }) {
   const { classId } = await params
@@ -194,6 +194,7 @@ async function Approved({ classId, state }: { classId: string; state: Awaited<Re
           </span>
         </p>
         <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+          {GEM}
           <h1 style={{ ...h1, letterSpacing: '-0.015em' }}>{v.headline}</h1>
         </div>
       </div>
