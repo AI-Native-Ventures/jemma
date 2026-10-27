@@ -10,6 +10,7 @@ import { getPaper } from './read/get-paper'
 import { saveAnswerKey } from './save/save-answer-key'
 import { saveTopicMapDraft } from './save/save-topic-map-draft'
 import { addActivity, addObservation, recordAttendance, subjectGuidance } from './save'
+import { markPaper } from './save/mark-paper'
 
 export { defineTool } from './context'
 export type { ToolDef } from './context'
@@ -31,4 +32,5 @@ export const registry: ToolDef<any, any>[] = [
   addObservation,
   recordAttendance,
   addActivity,
+  markPaper,
 ]

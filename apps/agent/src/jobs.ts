@@ -1,6 +1,7 @@
 import { runJobGuidance, type JobName } from '@jemma/profiling/tools'
 import type { ToolContext } from '@jemma/profiling/tools'
 import { runJobDraftMap, runJobReadKey } from '@jemma/profiling/jobs'
+import { runJobReadPaper } from '@jemma/profiling/tools'
 
 /** A cloud job: calls the read tools, asks the model, saves through the save tool. */
 export type CloudJob = (ctx: ToolContext, eventId: string, ids: Record<string, string>) => Promise<void>
@@ -11,4 +12,5 @@ export const cloudJobs: CloudJobs = {
   draft_map: runJobDraftMap,
   read_key: runJobReadKey,
   guidance: runJobGuidance,
+  read_paper: runJobReadPaper,
 }
