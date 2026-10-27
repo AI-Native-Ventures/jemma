@@ -161,12 +161,20 @@ export const RETEACH_EXPLANATION =
 
 export const SIPHO_NEEDS = { title: "Check 1 answer on Sipho's paper", detail: 'Class Test 1 · question 7 · I read 0,8' }
 
-// ---- The rest of Amina's week (parent-learn "This week"); tonight (day 0) is the written lesson --
+// ---- Amina's week (parent-learn "This week"); only tonight (inDays 0) has a written lesson ----
+// Board counts: tonight "5 questions", Thursday "5 questions"; Wednesday and Saturday show none.
 
-export const WEEK_PLAN: { inDays: number; topic: string; format: 'reading' | 'diagram' | 'audio'; title: string; minutes: number }[] = [
-  { inDays: 2, topic: 'Adding decimals', format: 'reading', title: 'Adding decimals', minutes: 10 },
-  { inDays: 3, topic: 'Adding fractions with different denominators', format: 'diagram', title: 'Adding fractions, quick check', minutes: 6 },
-  { inDays: 5, topic: 'Adding decimals', format: 'audio', title: 'Adding decimals', minutes: 10 },
+export const WEEK_PLAN: {
+  inDays: number
+  topic: string
+  format: 'reading' | 'diagram' | 'audio'
+  minutes: number
+  questions: number | null
+}[] = [
+  { inDays: 0, topic: 'Adding fractions with different denominators', format: 'diagram', minutes: 12, questions: 5 },
+  { inDays: 2, topic: 'Adding decimals', format: 'reading', minutes: 10, questions: null },
+  { inDays: 3, topic: 'Adding fractions with different denominators', format: 'diagram', minutes: 6, questions: 5 },
+  { inDays: 5, topic: 'Adding decimals', format: 'audio', minutes: 10, questions: null },
 ]
 
 // ---- Questions ----------------------------------------------------------------------------
