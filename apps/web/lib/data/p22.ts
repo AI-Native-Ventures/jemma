@@ -203,11 +203,7 @@ export async function getPendingLink(userId: string): Promise<PendingLink | null
   }
 }
 
-/** Two letters for the avatar: first letters of the first two words ("Thandi M" gives "TM"). */
-export function initialsOf(name: string): string {
-  const words = name.trim().split(/\s+/).filter(Boolean)
-  return (words.length > 1 ? words[0]![0]! + words[1]![0]! : (words[0] ?? '?').slice(0, 2)).toUpperCase()
-}
+export { initialsOf } from '../initials'
 
 export function greeting(now = new Date()): string {
   const hour = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hour12: false, timeZone: 'Africa/Johannesburg' }).format(now))

@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { Sidebar, TabBar } from '@/components/blocks'
 import { requireRole } from '@/lib/auth'
+import { initialsOf } from '@/lib/initials'
 import { HANDOVER_COOKIE, handoverAllows } from '@/lib/handover'
 import { activeTab } from '@/lib/space'
 import { createSupabaseServer } from '@/lib/supabase/server'
@@ -51,7 +52,7 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
           name={name}
           subtitle={subtitle}
           switchHref="/k"
-          user={{ name: profile.display_name, initials: profile.display_name.slice(0, 2).toUpperCase() }}
+          user={{ name: profile.display_name, initials: initialsOf(profile.display_name) }}
           settingsHref="/k/me"
         />
       )}

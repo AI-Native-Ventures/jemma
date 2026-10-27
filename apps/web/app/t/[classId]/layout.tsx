@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { Sidebar, SpaceHeader, TabBar } from '@/components/blocks'
 import { requireRole } from '@/lib/auth'
+import { initialsOf } from '@/lib/initials'
 import { activeTab } from '@/lib/space'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
@@ -32,7 +33,7 @@ export default async function TeacherClassLayout({
   const active = await activeTab('teacher', base)
   const subtitle = `Grade ${cls.grade} · ${cls.schools?.name ?? ''}`
   const settingsHref = `${base}/settings`
-  const initials = profile.display_name.slice(0, 2).toUpperCase()
+  const initials = initialsOf(profile.display_name)
 
   return (
     <div className="flex min-h-dvh flex-col bg-ground lg:flex-row">
