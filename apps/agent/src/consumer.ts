@@ -1,11 +1,9 @@
 import { SupabaseReplayStore } from '@jemma/profiling/ai'
 import { createServiceClient } from '@jemma/profiling/db'
-import { EventSchema } from '@jemma/profiling/schemas'
-import { jobPlan, type ToolContext } from '@jemma/profiling/tools'
+import { checkDesktopTimeouts, runEvent } from '@jemma/profiling/orchestrator'
+import type { ToolContext } from '@jemma/profiling/tools'
 import type { Env } from './env'
 import { cloudJobs, type CloudJobs } from './jobs'
-
-const MAX_STEPS = 60
 
 export function toolContext(env: Env, schoolId: string, eventId: string | null, schoolIds?: string[]): ToolContext {
   const db = createServiceClient(env)
@@ -35,51 +33,39 @@ export function toolContext(env: Env, schoolId: string, eventId: string | null, 
   }
 }
 
-async function finish(ctx: ToolContext, eventId: string, status: 'done' | 'failed', error: string | null) {
-  await ctx.db.from('events').update({ status, error, finished_at: new Date().toISOString() }).eq('id', eventId)
-}
+/** Queue deliveries allowed after the first (wrangler `max_retries`). */
+export const MAX_QUEUE_RETRIES = 3
 
 /**
- * Runs one event in the cloud. Events for a desktop school stay queued with runner 'desktop'.
- * Walks the job plan, re-planning after each job, and fails the event when a job is not built.
- * Retries, cancellation, notifications and the desktop timeout are Task 13.
+ * Runs one event in the cloud. Events for a desktop school stay queued with runner 'desktop' (the cron check
+ * asks the owner if the runner stays away). The run itself is `runEvent`: job plan, retries, cancellation, postconditions.
+ * `final` is true on the last queue delivery, when a still-failing event must be marked failed.
  */
-export async function processEvent(env: Env, eventId: string, jobs: CloudJobs = cloudJobs): Promise<void> {
+export async function processEvent(env: Env, eventId: string, jobs: CloudJobs = cloudJobs, final = true): Promise<void> {
   const db = createServiceClient(env)
-  const row = await db.from('events').select('id, school_id, type, payload, status').eq('id', eventId).maybeSingle()
+  const row = await db.from('events').select('id, school_id, status').eq('id', eventId).maybeSingle()
   if (row.error) throw new Error(row.error.message)
   if (!row.data || row.data.status !== 'queued') return
-  const event = row.data
-  const school = await db.from('schools').select('ai_runner').eq('id', event.school_id).single()
+  const school = await db.from('schools').select('ai_runner').eq('id', row.data.school_id).single()
   if (school.error) throw new Error(school.error.message)
   if (school.data.ai_runner === 'desktop') {
     await db.from('events').update({ runner: 'desktop' }).eq('id', eventId).eq('status', 'queued')
     return
   }
+  const ctx = toolContext(env, row.data.school_id, eventId)
+  await runEvent(eventId, { db, env: ctx.env, jobs, final })
+}
 
-  const ctx = toolContext(env, event.school_id, eventId)
-  const claim = await db
+/** Cron: asks the owner when a desktop event has waited 10 minutes with no Jemma Desktop heartbeat. */
+export async function checkDesktop(env: Env): Promise<number> {
+  return checkDesktopTimeouts(createServiceClient(env))
+}
+
+/** Marks an event failed after its last queue delivery blew up outside the job plan. */
+export async function failEvent(env: Env, eventId: string, error: string): Promise<void> {
+  await createServiceClient(env)
     .from('events')
-    .update({ status: 'running', attempts: 1 })
+    .update({ status: 'failed', error, finished_at: new Date().toISOString() })
     .eq('id', eventId)
-    .eq('status', 'queued')
-    .select('id')
-  if (claim.error) throw new Error(claim.error.message)
-  if (claim.data.length === 0) return // someone else has it
-
-  try {
-    const parsed = EventSchema.parse({ ...(event.payload as object), type: event.type })
-    const done = new Set<string>()
-    for (let i = 0; i < MAX_STEPS; i++) {
-      const step = (await jobPlan(parsed, db)).find((s) => !done.has(`${s.job}:${JSON.stringify(s.ids)}`))
-      if (!step) break
-      const run = jobs[step.job]
-      if (!run) return await finish(ctx, eventId, 'failed', `job not available: ${step.job}`)
-      await run(ctx, eventId, step.ids)
-      done.add(`${step.job}:${JSON.stringify(step.ids)}`)
-    }
-    await finish(ctx, eventId, 'done', null)
-  } catch (err) {
-    await finish(ctx, eventId, 'failed', err instanceof Error ? err.message : String(err))
-  }
+    .in('status', ['queued', 'running'])
 }
