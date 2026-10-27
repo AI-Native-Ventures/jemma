@@ -1,5 +1,5 @@
-import { generateText, Output, type LanguageModel } from 'ai'
-import { getModel } from '../../ai'
+import type { LanguageModel } from 'ai'
+import { generateJson, getModel } from '../../ai'
 import { LessonSchema, type Lesson } from '../../schemas/lesson'
 import { contextFor, ok, type ToolContext } from '../../tools/context'
 import { getChildContext } from '../../tools/read/get-child-context'
@@ -44,12 +44,8 @@ export async function runJobWriteLesson(
   let feedback = ''
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
     try {
-      const { output } = await generateText({
-        model,
-        system: opts.prompt ?? FALLBACK_PROMPT,
-        prompt: base_prompt + feedback,
-        output: Output.object({ schema: LessonSchema }),
-      })
+      // Prompt-side JSON: free models fail provider-side structured output on a schema this big.
+      const output = await generateJson({ model, schema: LessonSchema, system: opts.prompt ?? FALLBACK_PROMPT, prompt: base_prompt + feedback })
       best = output
       const bad = badQuestions(output)
       if (!bad.warmup.length && !bad.questions.length) break

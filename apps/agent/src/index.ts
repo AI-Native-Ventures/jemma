@@ -34,17 +34,20 @@ export default {
     return new Response('Not found', { status: 404 })
   },
   async queue(batch: MessageBatch<{ eventId: string }>, env: Env): Promise<void> {
-    for (const message of batch.messages) {
-      try {
-        await processEvent(env, message.body.eventId, undefined, message.attempts > MAX_QUEUE_RETRIES)
-        message.ack()
-      } catch (err) {
-        if (message.attempts > MAX_QUEUE_RETRIES) {
-          await failEvent(env, message.body.eventId, err instanceof Error ? err.message : String(err)).catch(() => {})
+    // Papers are read three at a time (max_batch_size in wrangler.jsonc), well under the free tier's 20 requests a minute.
+    await Promise.all(
+      batch.messages.map(async (message) => {
+        try {
+          await processEvent(env, message.body.eventId, undefined, message.attempts > MAX_QUEUE_RETRIES)
           message.ack()
-        } else message.retry()
-      }
-    }
+        } catch (err) {
+          if (message.attempts > MAX_QUEUE_RETRIES) {
+            await failEvent(env, message.body.eventId, err instanceof Error ? err.message : String(err)).catch(() => {})
+            message.ack()
+          } else message.retry()
+        }
+      }),
+    )
   },
   async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     ctx.waitUntil(checkDesktop(env))

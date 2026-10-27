@@ -21,7 +21,8 @@ async function classOf(ctx: ToolContext, childId: string, scope: { testId?: stri
 async function topicsOfClass(ctx: ToolContext, classId: string): Promise<Topic[]> {
   const maps = await ok(ctx.db.from('curriculum_maps').select('id').eq('class_id', classId))
   if (maps.length === 0) return []
-  return ok(ctx.db.from('topics').select('id, name, family, misconceptions').in('map_id', maps.map((m) => m.id)))
+  // Ordered like the map, so the prompt is the same for every sandbox with the same map.
+  return ok(ctx.db.from('topics').select('id, name, family, misconceptions').in('map_id', maps.map((m) => m.id)).order('term').order('position').order('name'))
 }
 
 export type DiagnoseInputs = {

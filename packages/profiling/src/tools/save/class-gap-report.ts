@@ -29,14 +29,16 @@ export async function computeClassGaps(
     ok(db.from('papers').select('id').eq('test_id', testId).eq('status', 'marked')),
   ])
   const kids = enrolled.length ? await ok(db.from('children').select('id, first_name').in('id', enrolled.map((e) => e.child_id))) : []
-  const roster = enrolled.map((e) => ({ id: e.child_id, name: kids.find((k) => k.id === e.child_id)?.first_name ?? '' }))
-  const topics = maps.length ? await ok(db.from('topics').select('id, name').in('map_id', maps.map((m) => m.id))) : []
+  // By first name: enrolments made in one batch share a timestamp, and the prompt must not depend on row order.
+  const roster = enrolled.map((e) => ({ id: e.child_id, name: kids.find((k) => k.id === e.child_id)?.first_name ?? '' })).sort((a, b) => a.name.localeCompare(b.name))
+  const topics = maps.length ? await ok(db.from('topics').select('id, name').in('map_id', maps.map((m) => m.id)).order('term').order('position').order('name')) : []
   const rows = papers.length
     ? await ok(
         db
           .from('question_results')
           .select('child_id, n, prompt, answer_read, correct, topic_name, gap_topic_id, misconception')
-          .in('paper_id', papers.map((p) => p.id)),
+          .in('paper_id', papers.map((p) => p.id))
+          .order('n'),
       )
     : []
   const results: DiagnosedResult[] = rows.map((r) => ({
