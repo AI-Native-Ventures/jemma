@@ -24,6 +24,7 @@
 - Brand tokens (measured from the boards): ink `#1F1D36`, body `#5D5A73`, muted `#6A6782` and `#8C89A3`, coral `#FF6A4D`, coral text `#B8381F`, coral tints `#FFE3DA` `#FFD3C7` `#FFF4F1`, ground `#F7F7FA`, card `#FFFFFF`, line `#E7E6EF`, soft fills `#EFEEF4` `#F4F3F8` `#E9E7F3` `#EEEDF5`, navy `#2F3A56`, border grey `#CFCDDC`. Font Outfit 500/600/700. Kalam only for handwriting inside paper mockups. Radii 12, 14, 18, 20 px; pills 999 px. Body 15 px, secondary 13 to 14 px.
 - Phone (390 wide): bottom tab bar with Snap in the centre for teacher and parent. Width 1024 and up: left sidebar with the same tabs in the same order, list and detail side by side. Light theme only.
 - Touch targets at least 44 px. Text contrast at least 4.5:1.
+- **Design fidelity (Basheer, 27 Oct: "the designs better match"):** every v1 screen matches its board: layout, order of sections, spacing, sizes, radii, colours, type, icons and copy. The only allowed differences are data values that come from the database (names, numbers, dates) and the items in "Decisions taken from the designs". Never simplify, restyle, merge or reorder a board. A screen is done only when it passes the Design match gate.
 - Build only v1 boards. Boards titled "After the challenge ..." and the Grade 8 to 12 question types (`q-*` except `q-amina-*`, `teen-learn-diagram`, `q-results-graph`) are out.
 - Ask Basheer before deploying anywhere other than a Cloudflare preview, making anything public, adding a licence file, using real data, or adding a paid vendor or an email provider.
 - Workers: Claude Sonnet 5.5, medium effort. Each task on its own branch from `develop` in its own git worktree, committing as it goes. Workers never merge. The coordinator reviews and merges into `develop`. Nobody touches `main`. There is no GitHub remote yet; "PR" means a branch handed to the coordinator.
@@ -67,10 +68,18 @@ Packet rules:
 2. Teacher snaps papers with the phone's own camera, one photo per page (board `teacher-snap-queue`, "option B"). The live in-browser camera (`teacher-snap-papers`, "option A") is out of v1.
 3. Child signs in with a login code plus a 4-digit PIN that the parent sets (boards `child-sign-in`, `parent-child-login`), not email.
 4. Diagrams: v1 renders `fraction_bar`, `number_line`, `area_model`, `place_value`, `bar_chart`, `shape_2d`, `grid_area`. The rest of `laptop-diagram-kit` is after the challenge.
-5. Copy fixes while porting (the boards are wrong here):
-   - `parent-beyond`: replace "Activities only help pick lesson times. None of this changes her marks." with "Jemma uses activities in Amina's guidance card. None of this changes her marks." Remove "If Amina misses a day, Jemma checks what the class covered and adds it to her lessons." (not built).
-   - `child-handback`: "pass the phone back to your mum" becomes "pass the phone back to {parent first name}".
-   - Hide in v1: "Or start from a map another teacher approved" (`teacher-curriculum-upload`), "Message Ms Banda" (`parent-beyond`), "Not sure? Message her first" (`teacher-link-request`), "Add another teacher's code" (`parent-child-settings`), the "EN" language button (`child-learn-audio`).
+5. Copy stays exactly as on the boards, with one change and three ways to keep the boards true:
+   - The one change: `parent-beyond` says "Activities only help pick lesson times." while `parent-activity` says Jemma uses activities in the guidance card. They contradict, and the spec puts activities in the guidance card, so `parent-beyond` reads "Activities help pick lesson times and shape the guidance card. None of this changes her marks."
+   - `parent-beyond` "If Amina misses a day, Jemma checks what the class covered and adds it to her lessons." stays and is made true (Task 11, Tier 2): an `away` day adds that week's map topics to the child's plan queue.
+   - `child-handback` "pass the phone back to your mum": rendered from the parent's relation (`children.parent_relation`: mum, dad, or the parent's first name), so the demo shows "your mum" exactly as drawn.
+   - Links to after-challenge features stay visible as drawn ("Or start from a map another teacher approved", "Message Ms Banda", "Not sure? Message her first", "Add another teacher's code", the "EN" button) and open a small sheet: "Coming after the challenge".
+
+## Design match gate
+
+- **Reference images:** `design/reference/<board>.png`, one per v1 board, rendered from `design/v1-screens/<board>.dc.html` at the board's size from `canvas.json` (390 wide for phone boards, 1440 for laptop boards). The coordinator produces them before Wave 3.
+- **Actual images:** each screen packet's e2e spec saves `design/actual/<board>.png` for every board it owns, at the same viewport, on the seed stage that matches the board's state (`start`, `marked` or `session_done`).
+- **Check:** after its tests pass, the worker opens each reference and actual image side by side and fixes every difference that is not a data value. Then a fresh reviewer agent does the same comparison and lists any differences in layout, spacing, size, colour, type, icon or copy. The packet is not done until the reviewer finds none. `pnpm design:diff <board>` prints a pixel difference percentage as a hint; it is not the gate.
+- **Coordinator:** spot-checks at least 2 boards per packet before merging.
 
 ## File structure
 
@@ -123,7 +132,7 @@ All ids `uuid default gen_random_uuid()`, all tables `created_at timestamptz def
 | schools | name, country, sandbox_id null |
 | profiles | user_id pk (auth.users), role ROLE(teacher, parent, learner), display_name, school_id null |
 | classes | school_id, teacher_id, name, grade int, year int, subject, join_code unique |
-| children | school_id, first_name, last_name null, grade int, user_id null, parent_first_name null |
+| children | school_id, first_name, last_name null, grade int, user_id null, parent_first_name null, parent_relation text null |
 | child_logins | code pk, child_id, user_id, pin_set_by |
 | child_login_attempts | code, at |
 | enrolments | class_id, child_id (pk both) |
@@ -304,6 +313,7 @@ Seed values (from the boards; dates relative to sandbox creation day D):
 - Attendance, last 10 school days: Amina away on the 5th day (9 of 10), Lerato 10, Naledi 9, Sipho 10, Thabo 8.
 - Ms Banda's notes on Amina: D-5 Participation "Works well in a group and explains her thinking clearly."; D-12 Effort "Finished the decimals extension task without help."
 - Amina's activities: Netball (sport, Tue and Thu), School choir (music, Fri).
+- Amina's parent: Thandi M, `parent_relation` `mum`.
 - Amina Term 3 marks by topic name: Adding fractions with different denominators 50%, Adding decimals 50%, Comparing fractions 60%, Fractions and decimals 75%, Fraction of a quantity 100%.
 - Amina format trials, family `fractions`: diagram 4,4,5,4,4; reading 3,3,3; audio 3.
 - Amina fixed gaps: Equivalent fractions, Ordering whole numbers, Rounding off.
@@ -521,7 +531,7 @@ test('diagnoser output outside the label list becomes Other', ...)
 - Produces `DiagramSpec` (zod discriminated union on `kind`): `fraction_bar { rows: { parts: number; shaded: number; label?: string }[] }`, `number_line { min: number; max: number; step: number; marks: { value: number; label: string }[] }`, `area_model { rows: number; cols: number; shaded: number }`, `place_value { columns: string[]; digits: string[] }`, `bar_chart { bars: { label: string; value: number }[]; yMax: number }`, `shape_2d { shape: 'square' | 'rectangle' | 'triangle' | 'circle'; labels: string[] }`, `grid_area { cols: number; rows: number; cells: [number, number][] }`.
 - Produces `Question = { prompt: string; render: 'text' | 'fraction_sum'; terms?: string[]; answer: string; answerKind: 'fraction' | 'mixed' | 'decimal' | 'whole' | 'money' | 'choice'; choices?: string[]; difficulty: 1 | 2 | 3; why: string; rightWay: string }`.
 - Produces `Lesson = { format: Format; title: string; minutes: number; cards?: { heading: string; body: string; diagram?: DiagramSpec }[]; diagram?: { title: string; caption: string; steps: { caption: string; diagram: DiagramSpec }[]; contrast?: { caption: string; diagram: DiagramSpec } }; audio?: { script: string }; warmup: Question[]; questions: Question[] }` with exactly 2 warm-up questions (or 0 when no fixed gaps) and 15 questions (5 per difficulty).
-- `plan_next_session`: picks the open gap with the lowest stage, basics before what needs them; picks the format by rotation: the format with the fewest trials on that family, ties broken diagram, reading, audio; writes a `planned` session for the next day the child has no activity (falls back to today); logs "Built tonight's 12-minute lesson on adding fractions, with fraction bars" after the lesson exists.
+- `plan_next_session`: picks the open gap with the lowest stage, basics before what needs them; picks the format by rotation: the format with the fewest trials on that family, ties broken diagram, reading, audio; writes a `planned` session for the next day the child has no activity (falls back to today); when the child was `away` on a school day since the last plan, that week's map topics (by term order) join the plan queue after the open gaps (Tier 2, makes the `parent-beyond` promise true); logs "Built tonight's 12-minute lesson on adding fractions, with fraction bars" after the lesson exists.
 - `generate_lesson`: tutor model writes `Lesson`; the tool validates every question's `answer` with `parseAnswer` (invalid answers regenerate once, then drop that question if a level keeps at least 4); audio format generates speech once into `lesson-audio/<lessonId>.mp3`. A lesson that exists is returned as is (never regenerated).
 
 - [ ] **Step 1: Write the failing tests**
