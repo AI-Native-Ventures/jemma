@@ -13,6 +13,8 @@ import { addActivity, addObservation, recordAttendance, subjectGuidance } from '
 import { markPaper } from './save/mark-paper'
 import { classGapReport } from './save/class-gap-report'
 import { updateLearnerProfile } from './save/update-learner-profile'
+import { planNextSession } from './save/plan-next-session'
+import { saveLesson } from './save/save-lesson'
 
 export { defineTool } from './context'
 export type { ToolDef } from './context'
@@ -37,4 +39,10 @@ export const registry: ToolDef<any, any>[] = [
   markPaper,
   updateLearnerProfile,
   classGapReport,
+  planNextSession,
+  saveLesson,
 ]
+
+export { registerSpeech } from '../speech'
+export type { SpeechSynth } from '../speech'
+export { runJobWriteLesson } from '../jobs/cloud/write-lesson'

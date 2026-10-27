@@ -7,6 +7,9 @@ import type { JobName } from '@jemma/profiling/tools'
 import type { ToolContext } from '@jemma/profiling/tools'
 import { runJobDraftMap, runJobReadKey } from '@jemma/profiling/jobs'
 import { runJobReadPaper } from '@jemma/profiling/tools'
+import { registerSpeech, runJobWriteLesson } from '@jemma/profiling/tools'
+import writeLessonPrompt from '../../../packages/profiling/src/jobs/write_lesson.md'
+import { defaultSpeech } from './speech'
 
 /** A cloud job: calls the read tools, asks the model, saves through the save tool. */
 export type CloudJob = (ctx: ToolContext, eventId: string, ids: Record<string, string>) => Promise<void>
@@ -21,3 +24,7 @@ export const cloudJobs: CloudJobs = {
   diagnose: makeDiagnoseJob(diagnosePrompt),
   class_report: makeClassReportJob(classReportPrompt),
 }
+export const cloudJobs: CloudJobs = {}
+
+registerSpeech(defaultSpeech)
+cloudJobs.write_lesson = (ctx, eventId, ids) => runJobWriteLesson(ctx, eventId, ids, { prompt: writeLessonPrompt })
