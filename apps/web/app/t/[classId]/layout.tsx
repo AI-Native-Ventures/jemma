@@ -14,8 +14,13 @@ export default async function TeacherClassLayout({
   params: Promise<{ classId: string }>
 }) {
   const { classId } = await params
-  const { profile } = await requireRole('teacher')
+  const { userId, profile } = await requireRole('teacher')
   const supabase = await createSupabaseServer()
+  const { count: unread } = await supabase
+    .from('notifications')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .is('read_at', null)
   const { data: cls } = await supabase
     .from('classes')
     .select('name, grade, schools(name, sandbox_id)')
@@ -49,6 +54,8 @@ export default async function TeacherClassLayout({
           switchHref="/t"
           settingsHref={settingsHref}
           demo={Boolean(cls.schools?.sandbox_id)}
+          notificationsHref={`${base}/notifications`}
+          unread={unread ?? 0}
         />
         <main className="flex-1">{children}</main>
         <TabBar role="teacher" active={active} label={cls.name} base={base} />
