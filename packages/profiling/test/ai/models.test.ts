@@ -1,0 +1,76 @@
+import { expect, test, vi } from 'vitest'
+import { getModel, getSpeechModel, MemoryStore, type AiEnv } from '../../src/ai'
+
+const env = (over: Partial<AiEnv> = {}): AiEnv => ({
+  AI_MODE: 'live',
+  replayStore: new MemoryStore(),
+  ...over,
+})
+
+test('unknown provider throws', () =>
+  expect(() => getModel('text', env({ LLM_PROVIDER: 'nope' }))).toThrow('Unknown LLM_PROVIDER: nope'))
+
+test('deepseek without its own key routes through OpenRouter', () => {
+  const m = getModel(
+    'text',
+    env({ LLM_PROVIDER: 'deepseek', LLM_MODEL: 'chat-model', OPENROUTER_API_KEY: 'k' }),
+  )
+  expect(m.provider).toContain('openrouter')
+  expect(m.modelId).toBe('deepseek/chat-model')
+})
+
+test('vision uses its own provider', () => {
+  const m = getModel(
+    'vision',
+    env({
+      LLM_PROVIDER: 'deepseek',
+      LLM_MODEL: 'x',
+      OPENROUTER_API_KEY: 'k',
+      VISION_PROVIDER: 'google',
+      VISION_MODEL: 'v1',
+      GOOGLE_GENERATIVE_AI_API_KEY: 'k',
+    }),
+  )
+  expect(m.provider).toContain('google')
+})
+
+test('unknown speech provider throws', () =>
+  expect(() => getSpeechModel(env({ TTS_PROVIDER: 'nope' }))).toThrow('Unknown TTS_PROVIDER: nope'))
+
+test('openrouter passes the model id through unchanged', () => {
+  const m = getModel(
+    'text',
+    env({ LLM_PROVIDER: 'openrouter', LLM_MODEL: 'google/gemma-4-31b-it:free', OPENROUTER_API_KEY: 'k' }),
+  )
+  expect(m.modelId).toBe('google/gemma-4-31b-it:free')
+})
+
+test('opencode provider uses the Zen base URL and passes the model id through', async () => {
+  const fetchMock = vi.fn(async () => new Response('{}', { status: 500 }))
+  vi.stubGlobal('fetch', fetchMock)
+  try {
+    const m = getModel(
+      'text',
+      env({ LLM_PROVIDER: 'opencode', LLM_MODEL: 'some-model-free', OPENCODE_API_KEY: 'k' }),
+    )
+    expect(m.modelId).toBe('some-model-free')
+    try {
+      await m.doGenerate({ prompt: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }] })
+    } catch {
+      // the stubbed 500 is expected, only the request matters
+    }
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
+    expect(url).toBe('https://opencode.ai/zen/v1/chat/completions')
+    expect(JSON.parse(init.body as string).model).toBe('some-model-free')
+  } finally {
+    vi.unstubAllGlobals()
+  }
+})
+
+test('text and vision can use different providers', () => {
+  const m = getModel(
+    'vision',
+    env({ LLM_PROVIDER: 'opencode', VISION_PROVIDER: 'openrouter', VISION_MODEL: 'v:free', OPENROUTER_API_KEY: 'k' }),
+  )
+  expect(m.provider).toContain('openrouter')
+})
