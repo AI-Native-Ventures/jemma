@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { earlierSameSlip, getReadAnswers, getSnapPaper, getUpcomingLessons, shortDate, shortPlanned } from '@/lib/data/p32'
-import { GemLine, joinNumbers, lower } from '../../_parts'
+import { FlowShell, GemLine, joinNumbers, lower } from '../../_parts'
+import { KIND_LABEL } from '@/lib/data/p32'
 
 /** parent-snap-saved: what was saved and what Jemma does with it. */
 export default async function SnapSavedPage({ params }: { params: Promise<{ childId: string; paperId: string }> }) {
@@ -21,6 +22,7 @@ export default async function SnapSavedPage({ params }: { params: Promise<{ chil
   const nums = wrong.map((a) => a.n)
 
   return (
+    <FlowShell href={`/p/${childId}`} icon="close" label={`${paper.childFirstName} · ${KIND_LABEL[paper.kind]}`} title="Saved">
     <main className="flex flex-col gap-[18px] px-5 pb-7 pt-4 leading-[normal] lg:mx-auto lg:max-w-[560px]">
       <div className="flex flex-col gap-3">
         <span aria-hidden="true" className="flex size-14 items-center justify-center rounded-18 bg-ink">
@@ -36,12 +38,12 @@ export default async function SnapSavedPage({ params }: { params: Promise<{ chil
       <section aria-labelledby="hw" className="flex flex-col gap-2.5 rounded-20 border border-line bg-card p-4">
         <h2 id="hw" className="m-0 text-[17px] font-semibold">Homework: {topic}</h2>
         <p className="m-0 text-[15px] text-body">
-          Written {shortDate(paper.created_at)} · Marked {answers.filter((a) => a.correct).length} of {answers.length}
+          Written {shortDate(paper.created_at)} · The teacher marked it {answers.filter((a) => a.correct).length} of {answers.length}
         </p>
         <ul className="m-0 flex list-none flex-col gap-[9px] p-0">
           {slip?.misconception ? (
             <GemLine>
-              Question{nums.length === 1 ? '' : 's'} {joinNumbers(nums)}: {lower(slip.misconception)}, like {slip.prompt} = {slip.answer_read}.
+              Question{nums.length === 1 ? '' : 's'} {joinNumbers(nums)}: she {lower(slip.misconception)}, like {slip.prompt} = {slip.answer_read}.
             </GemLine>
           ) : null}
           {earlier ? (
@@ -81,5 +83,6 @@ export default async function SnapSavedPage({ params }: { params: Promise<{ chil
         </a>
       </div>
     </main>
+    </FlowShell>
   )
 }

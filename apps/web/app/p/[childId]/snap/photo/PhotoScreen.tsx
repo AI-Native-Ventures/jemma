@@ -175,7 +175,7 @@ export function PhotoScreen({ childId, kind, kindLabel, childName }: { childId: 
             onClick={() => void done()}
             style={{
               justifySelf: 'end', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, padding: '0 18px', borderRadius: 12,
-              background: '#FFFFFF', color: '#1F1D36', fontSize: 15, fontWeight: 600, border: 'none', opacity: files.length === 0 || busy ? 0.5 : 1,
+              background: '#FFFFFF', color: '#1F1D36', fontSize: 15, fontWeight: 600, border: 'none', opacity: busy ? 0.5 : 1,
             }}
           >
             Done

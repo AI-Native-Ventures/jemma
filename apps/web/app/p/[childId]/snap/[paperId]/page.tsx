@@ -2,7 +2,8 @@ import { notFound, redirect } from 'next/navigation'
 import {
   earlierSameSlip, firstPageUrl, getReadAnswers, getSnapPaper, getUpcomingLessons, shortDate, UNSURE_BELOW,
 } from '@/lib/data/p32'
-import { joinNumbers, lower } from '../_parts'
+import { FlowShell, joinNumbers, lower } from '../_parts'
+import { KIND_LABEL } from '@/lib/data/p32'
 import { CheckScreen } from './CheckScreen'
 import { ErrorScreen } from './ErrorScreen'
 import { ReadingScreen } from './ReadingScreen'
@@ -14,13 +15,18 @@ export default async function SnapPaperPage({ params }: { params: Promise<{ chil
   if (!paper) notFound()
   const photoUrl = await firstPageUrl(paperId)
   const retake = `/p/${childId}/snap/photo?kind=${paper.kind}`
+  const shell = (title: string, step: number, node: React.ReactNode) => (
+    <FlowShell href={retake} label={`${paper.childFirstName} · ${KIND_LABEL[paper.kind]} · step ${step} of 3`} title={title}>
+      {node}
+    </FlowShell>
+  )
 
   if (paper.status === 'marked') redirect(`/p/${childId}/snap/${paperId}/saved`)
-  if (paper.status === 'failed') return <ErrorScreen problem={paper.error} photoUrl={photoUrl} retakeHref={retake} />
+  if (paper.status === 'failed') return shell('Check the photo', 2, <ErrorScreen problem={paper.error} photoUrl={photoUrl} retakeHref={retake} />)
 
   const answers = await getReadAnswers(paperId)
   if (paper.status !== 'needs_you') {
-    return <ReadingScreen name={paper.childFirstName} nameRead={paper.name_read} answers={answers.length} reading={paper.status === 'reading'} photoUrl={photoUrl} />
+    return shell('Reading', 2, <ReadingScreen name={paper.childFirstName} nameRead={paper.name_read} answers={answers.length} reading={paper.status === 'reading'} photoUrl={photoUrl} />)
   }
 
   const wrong = answers.filter((a) => !a.correct)
@@ -35,7 +41,9 @@ export default async function SnapPaperPage({ params }: { params: Promise<{ chil
         }: ${lower(slip.misconception)}.${lessons[0] ? ` ${lessons[0].weekday}'s lesson covers it.` : ''}`
     : null
 
-  return (
+  return shell(
+    'Check what Jemma read',
+    3,
     <CheckScreen
       childId={childId}
       paperId={paperId}
@@ -45,6 +53,6 @@ export default async function SnapPaperPage({ params }: { params: Promise<{ chil
       photoUrl={photoUrl}
       next={next}
       retakeHref={retake}
-    />
+    />,
   )
 }

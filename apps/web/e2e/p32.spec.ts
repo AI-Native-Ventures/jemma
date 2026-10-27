@@ -27,6 +27,7 @@ const actual = (board: string) => {
 
 /** Saves the design-match image with the dev-only Next.js indicator hidden. Phone boards are 390 wide, full page. */
 async function shoot(page: Page, board: string) {
+  if ((page.viewportSize()?.width ?? 0) > 500) return // phone boards only
   await page.addStyleTag({ content: 'nextjs-portal{display:none !important}' })
   await page.screenshot({ path: actual(board), fullPage: true })
 }

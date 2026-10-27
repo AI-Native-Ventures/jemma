@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { GemIcon } from '@/components/ui'
 
@@ -29,5 +30,35 @@ export function GemLine({ children, size = 11, mt = 5, gap = 10, className = '' 
       <GemIcon size={size} className="flex-none" style={{ marginTop: mt }} />
       {children}
     </li>
+  )
+}
+
+/**
+ * Full-screen frame of the reading, check, error and saved boards: their own back or close header, no tab bar.
+ * Covers the space header and tab bar the same way the camera does.
+ */
+export function FlowShell({
+  href, icon = 'back', label, title, children,
+}: { href: string; icon?: 'back' | 'close'; label: string; title: string; children: ReactNode }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-ground text-ink"
+      style={{ fontFamily: 'var(--font-outfit), system-ui, sans-serif' }}
+    >
+      <div className="mx-auto flex min-h-full max-w-[560px] flex-col leading-[normal]">
+        <header className="flex items-center gap-1 pb-1.5 pl-2 pr-3 pt-2.5">
+          <Link href={href} aria-label={icon === 'back' ? 'Back to the camera' : 'Close'} className="flex size-11 flex-none items-center justify-center rounded-12 text-ink">
+            <svg width={icon === 'back' ? 24 : 22} height={icon === 'back' ? 24 : 22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d={icon === 'back' ? 'm15 6-6 6 6 6' : 'M6 6l12 12M18 6 6 18'} />
+            </svg>
+          </Link>
+          <span className="flex min-w-0 flex-1 flex-col leading-[1.2]">
+            <span className="text-[13px] text-body">{label}</span>
+            <span className="text-[17px] font-bold">{title}</span>
+          </span>
+        </header>
+        {children}
+      </div>
+    </div>
   )
 }
