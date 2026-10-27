@@ -38,7 +38,7 @@ export function ActivityForm({ childId, name }: { childId: string; name: string 
     })
 
   return (
-    <div style={css('display:flex;flex-direction:column;gap:20px;padding:12px 20px 24px;min-height:0;line-height:normal')}>
+    <div style={css('display:flex;flex-direction:column;gap:20px;padding:12px 20px 24px;min-height:calc(100dvh - 60px);line-height:normal')}>
       <h1 style={{ ...css('margin:0;font-size:27px;line-height:1.18;font-weight:700;letter-spacing:-0.015em'), textWrap: 'pretty' }}>{`What does ${name} do outside class?`}</h1>
 
       <form
@@ -83,7 +83,7 @@ export function ActivityForm({ childId, name }: { childId: string; name: string 
             onChange={(e) => setTitle(e.target.value)}
             onFocus={() => setFocus(true)}
             onBlur={() => setFocus(false)}
-            style={css(`height:52px;padding:0 16px;border-radius:14px;border:${focus ? '2px solid #1F1D36' : '1px solid #8C89A3'};background:#FFFFFF;color:#1F1D36;font-size:17px`)}
+            style={css(`height:52px;padding:0 16px;border-radius:14px;border:${focus ? '2px solid #1F1D36' : '1px solid #8C89A3'};background:#FFFFFF;color:#1F1D36;font-size:17px;outline:none`)}
           />
         </div>
 

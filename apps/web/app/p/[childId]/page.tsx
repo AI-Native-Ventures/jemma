@@ -188,7 +188,7 @@ export default async function ParentProfilePage({ params }: { params: Promise<{ 
               </Row>
             ) : null}
             {data.beyond.activities ? (
-              <Row icon="sport">
+              <Row icon="globe">
                 <span>{data.beyond.activities}</span>
               </Row>
             ) : null}
@@ -217,7 +217,7 @@ export default async function ParentProfilePage({ params }: { params: Promise<{ 
   )
 }
 
-function Row({ icon, children }: { icon: 'note' | 'calendar' | 'sport'; children: React.ReactNode }) {
+function Row({ icon, children }: { icon: 'note' | 'calendar' | 'globe'; children: React.ReactNode }) {
   return (
     <span style={css('display:flex;gap:8px')}>
       <span aria-hidden="true" style={css('width:24px;height:24px;flex:none;border-radius:12px;background:#EEEDF5;display:flex;align-items:center;justify-content:center;color:#1F1D36')}>

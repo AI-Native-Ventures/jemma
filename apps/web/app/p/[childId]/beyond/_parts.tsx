@@ -15,7 +15,7 @@ export function css(text: string): CSSProperties {
 
 const STROKE = { fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', strokeLinejoin: 'round' } as const
 
-type IconName = 'back' | 'chevron' | 'paper' | 'camera' | 'bulb' | 'calendar' | 'note' | 'sport' | 'music' | 'book' | 'test' | 'plus' | 'chat' | 'eye' | 'down' | 'share' | 'star' | 'club'
+type IconName = 'back' | 'chevron' | 'paper' | 'camera' | 'bulb' | 'calendar' | 'note' | 'sport' | 'music' | 'book' | 'test' | 'plus' | 'chat' | 'eye' | 'down' | 'share' | 'star' | 'club' | 'globe'
 
 const PATHS: Record<IconName, ReactNode> = {
   back: <path d="m15 6-6 6 6 6" />,
@@ -97,6 +97,12 @@ const PATHS: Record<IconName, ReactNode> = {
     </>
   ),
   star: <path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.6l1-5.8L3.5 9.7l5.9-.9z" />,
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M3.5 12h17M12 3.5c2.6 2.4 2.6 14.6 0 17M12 3.5c-2.6 2.4-2.6 14.6 0 17" />
+    </>
+  ),
   club: (
     <>
       <circle cx="12" cy="8.5" r="3.5" />
@@ -131,12 +137,12 @@ export function Chevron() {
 
 /**
  * Back header of the pushed screens (report, beyond, add activity). The space layout draws its own phone
- * header and tab bar around every child page; the boards for these screens have neither, so on the phone they are hidden here.
+ * header and tab bar around every child page; the boards draw their own back header instead (and no tab bar on add activity), so on the phone the layout's header is hidden here.
  */
-export function SubHeader({ back, eyebrow, title, backLabel }: { back: string; eyebrow: string; title: string; backLabel: string }) {
+export function SubHeader({ back, eyebrow, title, backLabel, hideTabs }: { back: string; eyebrow: string; title: string; backLabel: string; hideTabs?: boolean }) {
   return (
     <>
-      <style>{`@media (max-width: 1023px){body header:not([data-sub]),body nav.sticky{display:none !important}}`}</style>
+      <style>{`@media (max-width: 1023px){body header:not([data-sub])${hideTabs ? ',body nav.sticky' : ''}{display:none !important}}`}</style>
       <header data-sub="" style={css('display:flex;align-items:center;gap:4px;padding:10px 12px 6px 8px')}>
         <Link href={back} aria-label={backLabel} style={css('width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36')}>
           <Icon name="back" size={24} width={2} />

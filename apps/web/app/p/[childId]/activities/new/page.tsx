@@ -12,7 +12,7 @@ export default async function ParentActivityPage({ params }: { params: Promise<{
   if (!child) notFound()
   return (
     <>
-      <SubHeader back={`/p/${childId}`} backLabel="Back to profile" eyebrow={child.first_name} title="Add an activity" />
+      <SubHeader back={`/p/${childId}`} backLabel="Back to profile" eyebrow={child.first_name} title="Add an activity" hideTabs />
       <ActivityForm childId={childId} name={child.first_name} />
     </>
   )

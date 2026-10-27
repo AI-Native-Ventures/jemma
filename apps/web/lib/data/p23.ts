@@ -116,7 +116,7 @@ function marksByTopic(rows: ResultRow[]): MarkRow[] {
       change: prev.length ? pct(cur) - pct(prev) : null,
     })
   }
-  return out.sort((a, b) => a.percent - b.percent)
+  return out.sort((a, b) => a.percent - b.percent).slice(0, 5)
 }
 
 const NOTICE_SUFFIX: [RegExp, string][] = [
