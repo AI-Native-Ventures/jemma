@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Kalam, Outfit } from 'next/font/google'
 import './globals.css'
 
-const outfit = Outfit({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--font-outfit' })
+const outfit = Outfit({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-outfit' })
 const kalam = Kalam({ subsets: ['latin'], weight: ['400'], variable: '--font-kalam' })
 
 export const metadata: Metadata = {
