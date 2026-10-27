@@ -194,9 +194,13 @@ export async function getTestsList(classId: string): Promise<TestsList> {
   const summaries = await loadSummaries(supabase, tests ?? [])
 
   const latest = summaries.find((s) => s.marked > 0)
-  const lowest = latest?.lowestTopics[0]
+  // The class gap Jemma found for this test is what pulled it down; fall back to the lowest topic.
+  const { data: plan } = latest
+    ? await supabase.from('reteach_plans').select('topic_name').eq('test_id', latest.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
+    : { data: null }
+  const pulled = plan ? shortTopic(plan.topic_name) : latest?.lowestTopics[0]?.name
   const headline = latest
-    ? `${latest.shortTitle} averaged ${latest.average}%.${lowest ? ` ${lowest.name} pulled it down.` : ''}`
+    ? `${latest.shortTitle} averaged ${latest.average}%.${pulled ? ` ${pulled} pulled it down.` : ''}`
     : null
 
   const groups: TestsList['groups'] = []
