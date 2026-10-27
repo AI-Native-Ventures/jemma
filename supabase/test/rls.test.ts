@@ -105,6 +105,21 @@ describe('row level security', () => {
     expect(pending).toEqual([])
   })
 
+  test('parent sees tests and topics of a linked child\'s class, pending parent does not', async () => {
+    const [t] = await ok(service.from('tests').insert({ class_id: ids.cA, title: 'RLS test', written_on: '2026-10-27', out_of: 10, topic_ids: [] }).select('id'))
+    const [m] = await ok(service.from('curriculum_maps').insert({ class_id: ids.cA, status: 'approved' }).select('id'))
+    await ok(service.from('topics').insert({ map_id: m.id, term: 1, position: 1, name: 'RLS topic', family: 'fractions' }).select('id'))
+    try {
+      expect(await ok(users.parent1.client.from('tests').select('id').eq('id', t.id))).toHaveLength(1)
+      expect(await ok(users.parent1.client.from('topics').select('id').eq('map_id', m.id))).toHaveLength(1)
+      expect(await ok(users.parent2.client.from('tests').select('id').eq('id', t.id))).toEqual([])
+      expect(await ok(users.parent2.client.from('topics').select('id').eq('map_id', m.id))).toEqual([])
+    } finally {
+      await service.from('tests').delete().eq('id', t.id)
+      await service.from('curriculum_maps').delete().eq('id', m.id)
+    }
+  })
+
   test('parent with pending link sees nothing', async () => {
     const rows = await ok(users.parent2.client.from('question_results').select('id').eq('child_id', ids.a1))
     expect(rows).toEqual([])

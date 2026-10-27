@@ -1,6 +1,5 @@
 import { whatHelps } from '@jemma/profiling/logic'
 import type { Format } from '@jemma/profiling/logic'
-import { createSupabaseAdmin } from '../supabase/admin'
 import { createSupabaseServer } from '../supabase/server'
 
 type Db = Awaited<ReturnType<typeof createSupabaseServer>>
@@ -103,8 +102,7 @@ async function whyTonight(db: Db, childId: string, topicId: string | null, topic
   const first = rows[0]
   if (!first?.papers?.test_id) return null
   const testId = first.papers.test_id
-  // Parents cannot read `tests` under RLS; the test id above came from rows they can read, so the title is looked up with the service role.
-  const { data: test } = await createSupabaseAdmin().from('tests').select('title').eq('id', testId).maybeSingle()
+  const { data: test } = await db.from('tests').select('title').eq('id', testId).maybeSingle()
   if (!test) return null
   const ns = rows
     .filter((r) => r.papers?.test_id === testId)
@@ -131,7 +129,7 @@ export async function loadLearn(childId: string): Promise<LearnData> {
   if (first) {
     const [lesson, topic, why] = await Promise.all([
       first.lessonId ? db.from('lessons').select('content').eq('id', first.lessonId).single() : Promise.resolve({ data: null }),
-      first.topicId ? createSupabaseAdmin().from('topics').select('family').eq('id', first.topicId).maybeSingle() : Promise.resolve({ data: null }),
+      first.topicId ? db.from('topics').select('family').eq('id', first.topicId).maybeSingle() : Promise.resolve({ data: null }),
       whyTonight(db, childId, first.topicId, first.topicName, `/p/${childId}`),
     ])
     if (topic.data?.family) family = topic.data.family

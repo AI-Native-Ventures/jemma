@@ -1,4 +1,3 @@
-import { createSupabaseAdmin } from '../supabase/admin'
 import { createSupabaseServer } from '../supabase/server'
 
 /** Parent profile, report, beyond the tests and add activity. Everything is read through RLS. */
@@ -59,14 +58,11 @@ const RESULT_SELECT =
 
 type TestInfo = { title: string; out_of: number }
 
-/**
- * Parents cannot read `tests` through RLS, so titles come from the service client, and only for tests
- * of papers the RLS-scoped query above already returned for this child.
- */
+/** Test titles for the papers the RLS-scoped query above returned (tests are readable via the child's class). */
 async function testInfo(testIds: (string | null | undefined)[]): Promise<Map<string, TestInfo>> {
   const ids = [...new Set(testIds.filter((id): id is string => Boolean(id)))]
   if (ids.length === 0) return new Map()
-  const { data } = await createSupabaseAdmin().from('tests').select('id, title, out_of').in('id', ids)
+  const { data } = await (await createSupabaseServer()).from('tests').select('id, title, out_of').in('id', ids)
   return new Map((data ?? []).map((t) => [t.id, { title: t.title.split(':')[0]!.trim(), out_of: t.out_of }]))
 }
 
