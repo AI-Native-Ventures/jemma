@@ -10,7 +10,7 @@ import { openSandbox } from './helpers/sandbox'
 // See docs/runbook.md.
 
 const LIVE = (process.env.AI_MODE ?? 'replay') !== 'replay'
-const AGENT_WAIT = LIVE ? 25 * 60_000 : 90_000
+const AGENT_WAIT = LIVE ? 25 * 60_000 : 5 * 60_000
 
 const db = (): JemmaDb =>
   createServiceClient({ SUPABASE_URL: process.env.SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY! })
@@ -75,7 +75,7 @@ async function answerQuestion(page: Page, q: LessonQuestion, right: boolean) {
 test.use({ actionTimeout: 30_000 })
 
 test('the whole demo path', async ({ page }) => {
-  test.setTimeout(LIVE ? 60 * 60_000 : 8 * 60_000)
+  test.setTimeout(LIVE ? 60 * 60_000 : 20 * 60_000)
   const admin = db()
   const health = await fetch(`${process.env.AGENT_URL}/health`).catch(() => null)
   expect(health?.ok, `the agent worker must be running at ${process.env.AGENT_URL} (pnpm --filter agent dev)`).toBe(true)

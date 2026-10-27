@@ -45,6 +45,21 @@ PLAYWRIGHT_PORT=3237 pnpm --filter web exec playwright test demo-path --project=
 
 Stop every dev server and wrangler you start (`pkill -f "wrangler dev"`).
 
+The agent reads `apps/agent/.dev.vars` (not your shell env). Set `AI_MODE`, `LLM_MODEL`, `VISION_MODEL` and the `*_FALLBACKS` there for the run, and restart `pnpm --filter agent dev`. `wrangler dev` has to reach Cloudflare once for the `AI` binding: if it exits with `Failed to start the remote proxy session ... Connect Timeout`, start it again.
+
+### The demo-path test
+
+`apps/web/e2e/demo-path.spec.ts` walks the five steps of board `Main` on a `start` sandbox, phone project only:
+
+1. record once: agent `AI_MODE=cache`, test with `AI_MODE=cache` (about 15 to 25 minutes, free models)
+2. check: agent `AI_MODE=replay`, test with `AI_MODE=replay` (about 8 minutes, no model call)
+
+```bash
+AI_MODE=replay PLAYWRIGHT_PORT=3237 pnpm --filter web exec playwright test demo-path --project=phone --workers=1
+```
+
+A `Replay miss` in an event's error names the job that asked (its model id and the start and end of its prompt): a prompt or a model id changed since the recording, so record again.
+
 ## Record the answers once (live smoke)
 
 `live-smoke.ts` drives the real cloud jobs on a fresh `start` sandbox in demo-path order and prints seconds and a check for each step.
