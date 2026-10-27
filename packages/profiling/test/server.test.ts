@@ -83,14 +83,10 @@ test('job plans follow the plan table', async () => {
   expect(await step({ type: 'key.snapped', testId: a.testId })).toEqual(['read_key'])
   expect(await step({ type: 'observation.added', childId: a.aminaId })).toEqual(['guidance'])
   expect(await step({ type: 'activity.added', childId: a.aminaId })).toEqual(['guidance'])
-  // paper already marked and every paper of the test marked: only the tail runs
+  // the teacher checked one paper: only that learner is diagnosed and planned, and the class report is redone
   const tail = await jobPlan({ type: 'paper.checked', paperId: a.paperId }, db)
-  expect(tail.map((s) => s.job)).toEqual([
-    'diagnose', 'diagnose', 'class_report',
-    'plan_next_session', 'write_lesson', 'guidance',
-    'plan_next_session', 'write_lesson', 'guidance',
-  ])
-  expect(tail[2]!.ids).toEqual({ classId: a.classId, testId: a.testId })
+  expect(tail.map((s) => s.job)).toEqual(['diagnose', 'class_report', 'plan_next_session', 'write_lesson', 'guidance'])
+  expect(tail[1]!.ids).toEqual({ classId: a.classId, testId: a.testId })
   // a fresh paper that is not yet read plans read_paper first, then the tail when every other paper is marked
   const mk = async () =>
     (await db.from('papers').insert({ test_id: a.testId, owner: 'teacher', kind: 'test', status: 'queued' }).select('id').single()).data!.id
@@ -101,8 +97,12 @@ test('job plans follow the plan table', async () => {
   // another paper still unread: only read_paper
   const other = await mk()
   expect((await jobPlan({ type: 'paper.snapped', paperId: fresh }, db)).map((x) => x.job)).toEqual(['read_paper'])
-  // a paper waiting on the teacher drops the tail
+  // a paper waiting on the teacher counts as resolved, but another unread paper still holds the tail back
   await db.from('papers').update({ status: 'needs_you' }).eq('id', fresh)
   expect(await jobPlan({ type: 'paper.checked', paperId: fresh }, db)).toEqual([])
+  // once nothing is being read, the tail runs for the marked papers even with one in Needs you
+  await db.from('papers').update({ status: 'needs_you' }).eq('id', other)
+  const withChecks = await jobPlan({ type: 'paper.snapped', paperId: a.paperId }, db)
+  expect(withChecks.map((x) => x.job)).toContain('class_report')
   await db.from('papers').delete().in('id', [fresh, other])
 })

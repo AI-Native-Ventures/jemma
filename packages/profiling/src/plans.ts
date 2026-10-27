@@ -23,18 +23,25 @@ function perChildTail(childIds: string[]): JobStep[] {
 }
 
 /**
- * After a test's papers are marked: per child `diagnose`, then `class_report`, then the per child tail.
- * Returns [] while any other paper of the test is unmarked, or when this paper is waiting on the teacher.
+ * A test's tail once every paper is resolved (marked, or waiting on the teacher in Needs you), as the class home
+ * board shows class gaps next to an open check: per child `diagnose` for marked papers, then `class_report`, then the
+ * per child tail. With `onlyChild` (after the teacher checks one paper) only that learner is diagnosed and planned,
+ * and the class report is redone. Returns [] while any paper is still being read, or for a failed paper.
  */
-async function testTail(db: JemmaDb, paperId: string): Promise<JobStep[]> {
-  const paper = await ok(db.from('papers').select('id, test_id, status').eq('id', paperId).single())
-  if (!paper.test_id || paper.status === 'needs_you' || paper.status === 'failed') return []
+async function testTail(db: JemmaDb, paperId: string, onlyChild = false): Promise<JobStep[]> {
+  const paper = await ok(db.from('papers').select('id, test_id, status, child_id').eq('id', paperId).single())
+  if (!paper.test_id || paper.status === 'failed') return []
   const [test, papers] = await Promise.all([
     ok(db.from('tests').select('class_id').eq('id', paper.test_id).single()),
     ok(db.from('papers').select('id, child_id, status').eq('test_id', paper.test_id)),
   ])
-  if (papers.some((p) => p.id !== paperId && p.status !== 'marked')) return []
-  const childIds = [...new Set(papers.map((p) => p.child_id).filter((c): c is string => !!c))]
+  // This paper may be read earlier in the same plan (paper.snapped): count it as marked.
+  const readingNow = (p: { id: string; status: string }) => p.id === paperId && (p.status === 'queued' || p.status === 'reading')
+  const status = (p: { id: string; status: string }) => (readingNow(p) ? 'marked' : p.status)
+  if (papers.some((p) => status(p) !== 'marked' && status(p) !== 'needs_you' && status(p) !== 'failed')) return []
+  const marked = papers.filter((p) => status(p) === 'marked' && p.child_id && (!onlyChild || p.id === paperId))
+  const childIds = [...new Set(marked.map((p) => p.child_id as string))]
+  if (childIds.length === 0) return []
   const testId = paper.test_id
   return [
     ...childIds.map((childId) => ({ job: 'diagnose' as const, ids: { testId, childId } })),
@@ -59,7 +66,7 @@ export async function jobPlan(event: JemmaEvent, db: JemmaDb): Promise<JobStep[]
       return [...read, ...(await testTail(db, event.paperId))]
     }
     case 'paper.checked':
-      return testTail(db, event.paperId)
+      return testTail(db, event.paperId, true)
     case 'session.finished': {
       const session = await ok(db.from('sessions').select('child_id').eq('id', event.sessionId).single())
       const childId = session.child_id
@@ -86,7 +93,7 @@ const UNREAD = ['queued', 'reading']
 
 /**
  * What an event must have produced once its job plan is done. Empty means met.
- * A test's tail (reteach plan, a planned session per learner with an open gap) is only due once every paper of the test is marked.
+ * A test's tail (reteach plan, a planned session per learner with an open gap) is due once no paper of the test is still being read; papers waiting in Needs you count as resolved.
  */
 export async function postconditions(event: JemmaEvent, db: JemmaDb): Promise<string[]> {
   const missing: string[] = []
@@ -94,9 +101,11 @@ export async function postconditions(event: JemmaEvent, db: JemmaDb): Promise<st
     const paper = await ok(db.from('papers').select('id, test_id, status').eq('id', paperId).single())
     if (paper.status === 'failed') return missing.push(`paper ${paperId} failed to read`)
     if (UNREAD.includes(paper.status)) return missing.push(`paper ${paperId} is not read yet`)
-    if (paper.status !== 'marked' || !paper.test_id) return
-    const papers = await ok(db.from('papers').select('child_id, status').eq('test_id', paper.test_id))
-    if (papers.some((p) => p.status !== 'marked')) return
+    if ((paper.status !== 'marked' && paper.status !== 'needs_you') || !paper.test_id) return
+    const all = await ok(db.from('papers').select('child_id, status').eq('test_id', paper.test_id))
+    if (all.some((p) => UNREAD.includes(p.status))) return
+    const papers = all.filter((p) => p.status === 'marked')
+    if (papers.length === 0) return
     const reteach = await ok(db.from('reteach_plans').select('id').eq('test_id', paper.test_id).limit(1))
     if (reteach.length === 0) missing.push(`no reteach plan for test ${paper.test_id}`)
     const childIds = [...new Set(papers.map((p) => p.child_id).filter((c): c is string => !!c))]
