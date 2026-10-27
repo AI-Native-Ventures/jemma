@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { getModel, getSpeechModel, MemoryStore, type AiEnv } from '../../src/ai'
 
 const env = (over: Partial<AiEnv> = {}): AiEnv => ({
@@ -43,4 +43,32 @@ test('openrouter passes the model id through unchanged', () => {
     env({ LLM_PROVIDER: 'openrouter', LLM_MODEL: 'google/gemma-4-31b-it:free', OPENROUTER_API_KEY: 'k' }),
   )
   expect(m.modelId).toBe('google/gemma-4-31b-it:free')
+})
+
+test('opencode provider uses the Zen base URL and passes the model id through', async () => {
+  const fetchMock = vi.fn(async () => new Response('{}', { status: 500 }))
+  vi.stubGlobal('fetch', fetchMock)
+  try {
+    const m = getModel(
+      'text',
+      env({ LLM_PROVIDER: 'opencode', LLM_MODEL: 'some-model-free', OPENCODE_API_KEY: 'k' }),
+    )
+    expect(m.modelId).toBe('some-model-free')
+    await m
+      .doGenerate({ prompt: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }] })
+      .catch(() => undefined)
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
+    expect(url).toBe('https://opencode.ai/zen/v1/chat/completions')
+    expect(JSON.parse(init.body as string).model).toBe('some-model-free')
+  } finally {
+    vi.unstubAllGlobals()
+  }
+})
+
+test('text and vision can use different providers', () => {
+  const m = getModel(
+    'vision',
+    env({ LLM_PROVIDER: 'opencode', VISION_PROVIDER: 'openrouter', VISION_MODEL: 'v:free', OPENROUTER_API_KEY: 'k' }),
+  )
+  expect(m.provider).toContain('openrouter')
 })
