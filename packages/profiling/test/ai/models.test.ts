@@ -54,9 +54,11 @@ test('opencode provider uses the Zen base URL and passes the model id through', 
       env({ LLM_PROVIDER: 'opencode', LLM_MODEL: 'some-model-free', OPENCODE_API_KEY: 'k' }),
     )
     expect(m.modelId).toBe('some-model-free')
-    await m
-      .doGenerate({ prompt: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }] })
-      .catch(() => undefined)
+    try {
+      await m.doGenerate({ prompt: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }] })
+    } catch {
+      // the stubbed 500 is expected, only the request matters
+    }
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
     expect(url).toBe('https://opencode.ai/zen/v1/chat/completions')
     expect(JSON.parse(init.body as string).model).toBe('some-model-free')
