@@ -80,3 +80,24 @@ export function markAnswer(read: string, key: string): { correct: boolean; compa
   }
   return { correct: a.value.n === b.value.n && a.value.d === b.value.d, comparable: true }
 }
+
+/** Pairs of handwritten characters that are easy to misread for each other. */
+const CONFUSABLE: Record<string, string[]> = {
+  '0': ['6', '8'], '6': ['0', '8', '5', 'b'], '8': ['0', '6', '3', 'B'], '3': ['8'], '1': ['7'], '7': ['1'],
+  '5': ['6', 'S'], 'S': ['5'], '4': ['9'], '9': ['4'], 'b': ['6'], 'B': ['8'],
+}
+
+/**
+ * True when a wrong answer would be right if one easily misread character were read the other way
+ * ("0,8" for a key of "0,6"). Such answers go to Needs you instead of being marked wrong with confidence.
+ */
+export function oneConfusableAway(read: string, key: string): boolean {
+  if (markAnswer(read, key).correct) return false
+  for (let i = 0; i < read.length; i++) {
+    for (const alt of CONFUSABLE[read[i]!] ?? []) {
+      const candidate = read.slice(0, i) + alt + read.slice(i + 1)
+      if (markAnswer(candidate, key).correct) return true
+    }
+  }
+  return false
+}

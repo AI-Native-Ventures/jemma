@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { markAnswer, matchName } from '../../logic'
+import { markAnswer, oneConfusableAway, matchName } from '../../logic'
 import { AnswerKeyItemSchema } from '../../schemas/curriculum'
 import { PaperReadSchema, type PaperRead } from '../../schemas/papers'
 import { contextFor, defineTool, logActivity, maybe, ok, type ToolContext } from '../context'
@@ -120,7 +120,7 @@ export const markPaper = defineTool({
           const answerRead = a?.answerAsRead ?? ''
           const confidence = a?.confidence ?? 0
           const { correct, comparable } = markAnswer(answerRead, item.answer)
-          if (confidence < min || !comparable) {
+          if (confidence < min || !comparable || oneConfusableAway(answerRead, item.answer)) {
             unsure.push(item.n)
             lines.push({ n: item.n, read: answerRead })
           }
