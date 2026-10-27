@@ -8,6 +8,8 @@
 
 **Tech Stack:** versions checked on npm 27 Oct 2026; pin these exact versions in Task 1: next 16.4.3, react 19.3.1, @opennextjs/cloudflare 1.20.13, wrangler 4.153.0, tailwindcss 4.3.3, ai 7.0.154, @ai-sdk/mcp 2.0.85, @ai-sdk/openai 4.0.103, @ai-sdk/anthropic 4.0.89, @ai-sdk/google 4.0.106, @ai-sdk/deepseek 3.0.74, @openrouter/ai-sdk-provider 3.1.0, @modelcontextprotocol/sdk 1.32.2, agents 0.30.1, @supabase/supabase-js 2.118.0, @supabase/ssr 0.12.7, zod 4.6.7, vitest 5.0.5, @playwright/test 1.64.1. AI SDK 7 names may differ from older docs you remember: read the installed package's docs before writing a call. This plan names concepts: `generateText` with tools and a step limit, structured object output, `wrapLanguageModel` middleware, speech generation, `createMCPClient`, the mock models in `ai/test`.
 
+**AI:** OpenRouter free models for the cloud runner; users' own Claude Code or Codex subscriptions for the desktop runner (see AI runners). Desktop: Electron (pin the current version in Task 24).
+
 **Spec:** `docs/superpowers/specs/2026-10-26-jemma-v1-design.md` (approved 26 Oct). **Screens:** `design/v1-screens/*.dc.html` with `design/v1-screens/canvas.json` (each board's `title` names role and screen). Live canvas: https://claude.ai/artifact/NWLDuYt2x2ygnAadGUp9cG. The boards are inline-styled HTML; port their layout, sizes and copy into React + Tailwind. Board data (names, marks, times) is the demo state: render it from the database, never hardcode it.
 
 ## Global Constraints
@@ -51,6 +53,7 @@ Execution is wide parallel: the coordinator (Opus, this session) runs one Supers
 | 2b | right after P07 and P08 | P17 Task 5 demo lib and screens (`lib/demo.ts`, `app/demo/**`, e2e helper `openSandbox(page, { stage, role })` that every screen test uses). P11 Task 14 shared screens and install | P07, P08 |
 | 3 | Fri 30 | Agent: P12 Task 8, P13 Task 9, P14 Task 10, P15 Task 11, P16 Task 12. Screens on seed data: P18 to P21 Task 17 (class home, next morning and gap; learners, note, child profile, register; tests, question, notifications; classes, onboarding, new class, settings, account, link requests, year end). P22 to P24 Task 18 (start, children, add, consent, pending; profile, report, beyond, activity; topic, paper, flag, tests, notifications). P25, P26 Task 19 (learn, handover, session result; settings, child login, account, data). P27, P28 Task 20 (today, session flow, handback; sign-in, gaps, me, nothing tonight, Grade 6 question styles) | P07, P08, P09, P17 (agent packets: P03, P04, P05, P09) |
 | 4 | Sat 31 | P29 Task 13 orchestrator. P30 Task 15 curriculum screens (needs P12). P31 Task 16 snap and review screens (needs P13). P32 Task 19 parent snap screens (needs P13). P33 to P36 Task 21 laptop (teacher class, learners, report; teacher review, snap, tests; teacher curriculum; parent profile, learn, tests) | the Wave 3 packets whose pages they touch |
+| 3 to 4 | Fri 30 to Sat 31 | P39 Task 23 desktop runner core (needs P09 and the save tools as they land). P40 Task 24 Jemma Desktop app (needs P39 and the desktop boards from Claude Design) | P09 |
 | 5 | Sun 1 | P37 Task 22 demo-path E2E. One fix packet per failure it finds. P38 preview deploy after E2E is green | everything Tier 1 |
 
 Packet rules:
@@ -74,6 +77,43 @@ Packet rules:
    - `parent-beyond` "If Amina misses a day, Jemma checks what the class covered and adds it to her lessons." stays and is made true (Task 11, Tier 2): an `away` day adds that week's map topics to the child's plan queue.
    - `child-handback` "pass the phone back to your mum": rendered from the parent's relation (`children.parent_relation`: mum, dad, or the parent's first name), so the demo shows "your mum" exactly as drawn.
    - Links to after-challenge features stay visible as drawn ("Or start from a map another teacher approved", "Message Ms Banda", "Not sure? Message her first", "Add another teacher's code", the "EN" button) and open a small sheet: "Coming after the challenge".
+
+## AI runners (Basheer, 27 Oct): cloud and desktop
+
+Teachers and parents often already pay for Claude or ChatGPT. Jemma Desktop lets their own Claude Code or Codex agent do Jemma's AI work on that subscription, so they pay no API credits. Not local models.
+
+- **Jobs.** Jemma's AI work is 7 jobs: `draft_map`, `read_key`, `read_paper`, `diagnose`, `class_report`, `write_lesson`, `guidance`. Planning the next session is plain code, not a job. Each job is a prompt file `packages/profiling/src/jobs/<job>.md` plus MCP tools: read tools that hand the inputs over (paper photos come back as MCP image content) and one save tool that validates with zod, runs the code logic and writes. **Tools never call a model.**
+- **Cloud runner** (`apps/agent` on Cloudflare): for each job it calls the read tools in code, asks the model with the job prompt for the save tool's zod object (AI SDK structured output), then calls the save tool. Models are free models only (Basheer, 27 Oct): OpenRouter `:free` ids (`LLM_PROVIDER=openrouter`) or OpenCode Zen free ids such as `deepseek-v4.1-flash-free` (`LLM_PROVIDER=opencode`, OpenAI-compatible, key `OPENCODE_API_KEY`). Text and vision pick their provider separately; the vision test picks both. Free models change and have rate limits (OpenRouter: about 1,000 requests a day on a funded key, 20 a minute), so tests and repeat runs use replay, and prompts on free tiers may be logged, which is acceptable only for synthetic data. OpenCode Go is a paid personal subscription, not used for the cloud runner. Judges' live link and families without Desktop use this runner.
+- **Desktop runner** (`apps/desktop`, Electron, Mac first): the teacher or parent signs in, picks Claude Code or Codex, and the app runs each queued job for their schools with `claude -p` or `codex exec` on their own subscription, given the job prompt and Jemma's MCP server (`/mcp` over HTTP with a per-user token). The agent reads inputs through the read tools and finishes with the save tool and `complete_job`.
+- **Routing.** `schools.ai_runner` is `cloud` or `desktop`. A desktop runner sends a heartbeat every 30 seconds. A job for a desktop school waits for the runner; after 10 minutes without a heartbeat the owner gets a Needs you item "Jemma Desktop is off" with "Open Jemma Desktop" and "Run in the cloud this time".
+- **Speech** (my call): Cloudflare Workers AI text-to-speech (free daily allowance) in the agent worker, stored once per lesson; if unavailable, browser speech with the same player.
+- **Privacy and terms:** consumer AI plans may train on prompts unless the user opts out; Desktop settings say so, and v1 uses synthetic data only. Each provider's terms for driving Claude Code and Codex from an app go on the lawyer list before launch.
+
+MCP tool table (fixed names; Task 7 builds the server and the read tools, Tasks 8 to 12 the save tools and job prompts):
+
+| Tool | Kind | Input | Output |
+| --- | --- | --- | --- |
+| `get_learner_profile` | read | `{ childId }` | `LearnerProfile` |
+| `get_job` | read | `{ eventId }` | `{ job, eventType, ids, promptName }` |
+| `get_curriculum_doc` | read | `{ mapId }` | page images and extracted text, class grade |
+| `get_memo` | read | `{ testId }` | memo page images, the class's approved topic names |
+| `get_paper` | read | `{ paperId }` | page images, roster first names, answer key items |
+| `get_class_results` | read | `{ testId }` | marked results per learner with prompts and answers read |
+| `get_child_context` | read | `{ childId, sessionId? }` | profile, open gaps, format trials, planned session |
+| `save_topic_map_draft` | save | `{ mapId, draft: TopicMapDraft }` | `{ topics, unsure }` |
+| `save_answer_key` | save | `{ testId, items: AnswerKeyItem[] }` | `{ questions, unsure: number[] }` |
+| `mark_paper` | save | `{ paperId, read: PaperRead }` | `{ childId, total, unsure: number[], status }` (code marks with `markAnswer`, never the model) |
+| `update_learner_profile` | save | `{ childId, testId, diagnoses: Diagnosis }` or `{ childId, sessionId }` | `{ gapsOpened, gapsMoved }` |
+| `class_gap_report` | save | `{ classId, testId, why: string, reteach: Reteach }` | `{ gaps: ClassGap[], reteachId }` (gaps computed in code) |
+| `plan_next_session` | save | `{ childId }` | `SessionPlan` (code only) |
+| `save_lesson` | save | `{ sessionId, lesson: Lesson }` | `{ lessonId, format }` |
+| `subject_guidance` | save | `{ childId, guidance: Guidance }` | `{ updated: true }` |
+| `add_observation` | save | `{ childId, kind, text }` | `{ observationId }` |
+| `record_attendance` | save | `{ classId, day, entries }` | `{ saved }` |
+| `add_activity` | save | `{ childId, kind, name, place?, days, since }` | `{ activityId }` |
+| `complete_job` | save | `{ eventId, status: 'done' \| 'failed', note? }` | `{ ok: true }` |
+
+**How Tasks 8 to 12 read now:** each "tool" those tasks describe is a job. Build its read tool and save tool from the table above (the save tool holds every rule the task lists: confidence routing, name matching, Needs you items, activity log lines, regeneration checks), its prompt file, and a cloud job function `runJob<Name>(ctx, eventId)` that calls the model with that prompt and saves through the save tool. Test names stay; model mocks apply to the cloud job functions; save-tool rules are tested by calling the save tool directly.
 
 ## Design match gate
 
@@ -130,7 +170,7 @@ All ids `uuid default gen_random_uuid()`, all tables `created_at timestamptz def
 
 | Table | Columns |
 | --- | --- |
-| schools | name, country, sandbox_id null |
+| schools | name, country, sandbox_id null, ai_runner RUNNER(cloud, desktop) default cloud |
 | profiles | user_id pk (auth.users), role ROLE(teacher, parent, learner), display_name, school_id null |
 | classes | school_id, teacher_id, name, grade int, year int, subject, join_code unique |
 | children | school_id, first_name, last_name null, grade int, user_id null, parent_first_name null, parent_relation text null |
@@ -159,10 +199,11 @@ All ids `uuid default gen_random_uuid()`, all tables `created_at timestamptz def
 | needs_you_items | owner_id, school_id, child_id null, kind NEED(check_answer, unreadable_name, approve_map, approve_key, approve_link, confirm_scan), ref_id, status OPEN(open, done), title, detail |
 | activity_log | school_id, class_id null, child_id null, at timestamptz, text, tool text, event_id null |
 | notifications | user_id, title, body, href, read_at null |
-| events | school_id, type, payload jsonb, status EVENT(queued, running, done, failed, cancelled), attempts int, error null, finished_at null |
+| events | school_id, type, payload jsonb, status EVENT(queued, running, done, failed, cancelled), runner RUNNER, claimed_by uuid null, attempts int, error null, finished_at null |
+| runner_presence | user_id, runner_id pk, agents jsonb (`{ claude: { installed, signedIn }, codex: ... }`), chosen text, last_seen |
 | ai_replays | key text pk, model text, response jsonb (service role only) |
 | demo_sandboxes | school_id, logins jsonb (service role only), stage text |
-| mcp_tokens | token_hash pk, school_id, label |
+| mcp_tokens | token_hash pk, user_id null, school_id null, label (a token is either one user's, covering their schools, or one school's) |
 
 Storage buckets (private, signed URLs): `papers`, `curriculum`, `lesson-audio`, `sample-papers`.
 
@@ -240,7 +281,7 @@ test('service-only tables are closed', ...)              // teacher A selects ai
 
 **Interfaces:**
 - Produces `type ModelKind = 'text' | 'vision'`; `getModel(kind: ModelKind, env: AiEnv): LanguageModel` (already wrapped with replay); `getSpeechModel(env: AiEnv): SpeechModel`; `type AiEnv` = the env vars `LLM_PROVIDER, LLM_MODEL, VISION_PROVIDER, VISION_MODEL, TTS_PROVIDER, TTS_MODEL, AI_MODE, OPENROUTER_API_KEY, DEEPSEEK_API_KEY, ANTHROPIC_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY, OPENAI_API_KEY` plus `replayStore: ReplayStore`.
-- Supported providers: `deepseek`, `openrouter`, `anthropic`, `google`, `openai`. Speech providers: `openai`, `google`.
+- Supported providers: `deepseek`, `openrouter`, `opencode` (OpenCode Zen), `anthropic`, `google`, `openai`. Speech providers: `openai`, `google`.
 - Produces `interface ReplayStore { get(key: string): Promise<unknown | null>; put(key: string, model: string, value: unknown): Promise<void> }`, `class MemoryStore implements ReplayStore`, `class SupabaseReplayStore implements ReplayStore` (table `ai_replays`), `class ReplayMissError extends Error`.
 - Produces `replayKey(modelId: string, params: unknown): Promise<string>`: sha256 hex of stable-stringified `{ modelId, params }` where every binary image or file part is replaced by `sha256:<hex of its bytes>`.
 - `withReplay(model, store, mode)` is `wrapLanguageModel` middleware: `live` passes through; `record` calls the model and stores the result; `replay` returns the stored result or throws `ReplayMissError(key)`.
@@ -395,25 +436,11 @@ test('classGaps on Class Test 1', ...) // [Adding fractions with different denom
 - Produces `createJemmaMcpServer(ctx: ToolContext): McpServer` that registers every tool in `registry`, and `connectInMemory(ctx): Promise<{ client: MCPClient; close(): Promise<void> }>` (linked in-memory transport pair from `@modelcontextprotocol/sdk`, client from `@ai-sdk/mcp`).
 - `/mcp` over streamable HTTP (`createMcpHandler` from `agents/mcp`): `Authorization: Bearer <token>`; `sha256(token)` must be in `mcp_tokens`, which sets `schoolId`; otherwise 401.
 - Produces `JemmaEvent` union: `curriculum.uploaded { mapId }`, `key.snapped { testId }`, `paper.snapped { paperId }`, `paper.checked { paperId }` (after a Needs you fix), `session.finished { sessionId }`, `observation.added { childId }`, `activity.added { childId }`, `homework.snapped { paperId }`.
-- Produces `type ToolCall = { tool: string; input: unknown }` and `fixedPlan(event, db): Promise<ToolCall[]>`. Plans: `curriculum.uploaded` -> `draft_topic_map`; `key.snapped` -> `read_answer_key`; `paper.snapped` -> `read_and_mark_paper`, and when every paper of the test is `marked`: per child `update_learner_profile`, then `class_gap_report`, then per child `plan_next_session`, `generate_lesson`, `subject_guidance`; `paper.checked` -> the same tail; `session.finished` -> `update_learner_profile`, `plan_next_session`, `generate_lesson`; `observation.added` and `activity.added` -> `subject_guidance`; `homework.snapped` -> `read_and_mark_paper`, then after the parent confirms, `update_learner_profile`.
-- Agent `POST /events` (header `x-jemma-secret: EVENTS_SECRET`) takes `{ eventId }` and sends it to the queue. The consumer (this task) runs the fixed plan tool by tool through the in-memory MCP client; a tool not registered yet fails the event with `error = 'tool not available: <name>'`. Task 13 adds the agentic mode, retries and cancellation.
+- Produces `jobPlan(event, db): Promise<{ job: JobName; ids: Record<string, string> }[]>`. Plans: `curriculum.uploaded` -> `draft_map`; `key.snapped` -> `read_key`; `paper.snapped` -> `read_paper`, and when every paper of the test is marked: per child `diagnose`, then `class_report`, then per child `plan_next_session` (code), `write_lesson`, `guidance`; `paper.checked` -> the same tail; `session.finished` -> `update_learner_profile` with the session (code), `plan_next_session`, `write_lesson`; `observation.added` and `activity.added` -> `guidance`; `homework.snapped` -> `read_paper`, then after the parent confirms, `diagnose`.
+- Routing: an event for a `desktop` school is left `queued` with `runner = 'desktop'` for Jemma Desktop to claim (Task 23); everything else runs in the cloud consumer.
+- Agent `POST /events` (header `x-jemma-secret: EVENTS_SECRET`) takes `{ eventId }` and sends it to the queue. The consumer (this task) runs the job plan through the cloud job functions; a job not built yet fails the event with `error = 'job not available: <name>'`. Task 13 adds retries, cancellation, notifications and the desktop timeout.
 - Web `sendEvent(type, payload): Promise<string>` inserts the `events` row with the service client and posts to `AGENT_URL/events`. `retryEvent(eventId)` re-queues a failed event.
-- Tool table (later tasks implement the rest; names are fixed here):
-
-| Tool | Input | Output |
-| --- | --- | --- |
-| `get_learner_profile` | `{ childId }` | `LearnerProfile { child, marksByTopic: { topicName, percent, change }[], gaps, recentSessions, observations, attendance: { present, total, away: string[] }, activities, guidance }` |
-| `draft_topic_map` | `{ mapId }` | `{ topics: number; unsure: number }` |
-| `read_answer_key` | `{ testId }` | `{ questions: number; unsure: number[] }` |
-| `read_and_mark_paper` | `{ paperId }` | `{ childId: string \| null; total: number \| null; unsure: number[]; status }` |
-| `update_learner_profile` | `{ childId, testId?, sessionId? }` | `{ gapsOpened: string[]; gapsMoved: { topicName, from, to }[] }` |
-| `class_gap_report` | `{ classId, testId }` | `{ gaps: ClassGap[]; reteachId: string }` |
-| `plan_next_session` | `{ childId }` | `SessionPlan { sessionId, topicName, format, minutes, plannedFor }` |
-| `generate_lesson` | `{ sessionId }` | `{ lessonId, format }` |
-| `add_observation` | `{ childId, kind, text }` | `{ observationId }` |
-| `record_attendance` | `{ classId, day, entries: { childId, status }[] }` | `{ saved: number }` |
-| `add_activity` | `{ childId, kind, name, place?, days, since }` | `{ activityId }` |
-| `subject_guidance` | `{ childId }` | `Guidance` |
+- Build the read tools from the AI runners tool table (`get_learner_profile`, `get_job`, `get_curriculum_doc`, `get_memo`, `get_paper`, `get_class_results`, `get_child_context`) and `complete_job`. Images go back as MCP image content. `/mcp` tokens are per user (`mcp_tokens.user_id`), scoped to that user's schools.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -423,7 +450,9 @@ test('profile from the marked stage', ...)                       // Amina: atten
 test('ids from another school are refused', ...)                 // childId of sandbox B with ctx of sandbox A -> OutOfScopeError
 test('/mcp without a valid token is 401', ...)
 test('POST /events rejects a wrong secret', ...)
-test('an event runs its fixed plan through the MCP client', ...)   // observation.added with a stub subject_guidance tool -> event done, tool called once
+test('an event runs its job plan', ...)                          // observation.added with a stub guidance job -> event done, job called once
+test('read tools return images as MCP image content', ...)       // get_paper on a seeded paper -> image parts
+test('desktop school events wait for the runner', ...)            // ai_runner desktop -> event stays queued with runner desktop
 ```
 
 - [ ] **Step 2: Run** `pnpm --filter profiling vitest run test/server.test.ts` and `pnpm --filter agent vitest run`. Expected: FAIL.
@@ -576,7 +605,7 @@ test('teacher-only kinds are refused for another school', ...)
 - [ ] **Step 4: Run.** Expected: PASS.
 - [ ] **Step 5: Commit** `feat(mcp): notes, attendance, activities and subject guidance`.
 
-### Task 13: Agentic orchestrator, retries, cancellation and notifications
+### Task 13: Cloud runner, retries, cancellation, desktop timeout and notifications
 
 **Files:**
 - Create: `packages/profiling/src/orchestrator.ts`, `packages/profiling/src/notify.ts`
@@ -586,15 +615,17 @@ test('teacher-only kinds are refused for another school', ...)
 **Interfaces:**
 - Consumes: `JemmaEvent`, `fixedPlan`, `/events`, the consumer and `sendEvent` (Task 7); every tool (Tasks 7 to 12).
 - Produces `postconditions(event, db): Promise<string[]>` (empty means met), e.g. `paper.snapped` for the last paper: every paper `marked` or `needs_you`, a `reteach_plans` row, a `planned` session per marked child.
-- Produces `runEvent(eventId: string, deps: { db; env; mode?: 'agentic' | 'fixed' }): Promise<{ status: 'done' | 'failed' | 'cancelled'; via: 'agentic' | 'fixed' }>`. Agentic: `generateText` with the in-memory MCP tools, a system prompt naming the event, its goal and the fixed plan as guidance, step limit 12. Then check `postconditions`; if unmet or the model call failed, run `fixedPlan` (tools are idempotent and skip done work). `AGENT_MODE` env picks the default (`agentic`).
+- Produces `runEvent(eventId: string, deps: { db; env }): Promise<{ status: 'done' | 'failed' | 'cancelled' }>`: runs `jobPlan` step by step through the cloud job functions, checks `postconditions`, writes progress. The real agent loop lives in the desktop runner (Claude Code or Codex driving the MCP tools); the cloud runner stays a fixed job sequence because free models are weaker at multi-step tool use.
+- Desktop timeout: a `runner = 'desktop'` event with no runner heartbeat for 10 minutes creates the "Jemma Desktop is off" Needs you item; its "Run in the cloud this time" action sets `runner = 'cloud'` and queues it.
 - Retries: a tool call that throws a rate limit or timeout retries 3 times with backoff 1 s, 4 s, 10 s. Before each tool call the run re-reads `events.status`; `cancelled` or a missing school stops it before any write. After the last queue retry the event is `failed` with `error`, and the screen that started it shows `ErrorRetry` calling `retryEvent`.
 - Produces `notify(db, userIds: string[], n: { title: string; body: string; href: string })`. Called when a Needs you item is created (owner) and when a session is planned (linked parents: "Tonight's lesson is ready").
 
 - [ ] **Step 1: Write the failing tests**
 
 ```ts
-test('agentic run with a well-behaved mock model meets postconditions', ...)  // via 'agentic'
-test('garbage model output falls back to the fixed plan', ...)               // via 'fixed', same end state
+test('a paper event runs the whole job plan with mock models', ...)        // postconditions met
+test('a job whose model output fails zod is retried once, then the event fails', ...)
+test('desktop event without heartbeat for 10 minutes asks the owner', ...)
 test('retries a 429 then completes', ...)                                    // tool throws 429 twice -> done, attempts 3
 test('exhausted retries mark the event failed with a retry action', ...)
 test('stops when the sandbox was reset', ...)                                // event cancelled mid-run -> no new rows in question_results
@@ -604,7 +635,7 @@ test('planning a session notifies the linked parent', ...)
 - [ ] **Step 2: Run** `pnpm --filter profiling vitest run test/orchestrator.test.ts`. Expected: FAIL.
 - [ ] **Step 3: Implement.**
 - [ ] **Step 4: Run.** Expected: PASS. Then a live run on a `start` sandbox: upload curriculum, approve, snap the key and 5 papers, and check `class_gap_report` gives 3 gaps (`AI_MODE=record`).
-- [ ] **Step 5: Commit** `feat(agent): agentic orchestrator with fixed-plan fallback, retries, notifications`.
+- [ ] **Step 5: Commit** `feat(agent): cloud runner with retries, desktop timeout, notifications`.
 
 ### Task 14: Shared screens and install
 
@@ -771,3 +802,34 @@ test('lesson load failure shows retry', ...)       // force beginSession error -
 - [ ] **Step 3: Fix** whatever the run exposes, then run it again in `AI_MODE=live` once with real keys, timing each agent step (target: 5 papers read in under 2 minutes).
 - [ ] **Step 4: Deploy preview** (approved: Cloudflare preview links with synthetic data): `pnpm --filter agent exec wrangler deploy --env preview`, `pnpm --filter web exec opennextjs-cloudflare deploy --env preview`, pointing at `jemma-demo`. Open the preview on a phone and a laptop and run the demo path by hand. Anything beyond the preview (a public URL for judges, a GitHub repo, a licence) waits for Basheer.
 - [ ] **Step 5: Commit** `test: demo path end to end; docs: runbook`.
+
+### Task 23: Desktop runner core
+
+**Files:**
+- Create: `packages/runner/` (`src/agents.ts`, `src/claim.ts`, `src/run.ts`, `src/loop.ts`, `src/index.ts`), `supabase/migrations/0004_runner.sql` (`claim_event(runner_id uuid)` with `for update skip locked`, heartbeat upsert)
+- Test: `packages/runner/test/*.test.ts` with fake `claude` and `codex` executables on `PATH`
+
+**Interfaces:**
+- Produces `detectAgents(): Promise<{ claude: AgentStatus; codex: AgentStatus }>` where `AgentStatus = { installed: boolean; version: string | null; signedIn: boolean | 'unknown' }`. Never sends a prompt to check sign-in.
+- Produces `runJob(job: { eventId: string; prompt: string }, agent: 'claude' | 'codex', mcp: { url: string; token: string }, opts: { timeoutMs: number }): Promise<{ status: 'done' | 'failed'; note: string }>`. Claude: `claude -p <prompt> --mcp-config <temp json> --allowedTools "mcp__jemma__*" --output-format json`, no other tools. Codex: `codex exec --json` with the Jemma MCP server passed as config overrides and no shell or file write access. Done only if the agent called `complete_job` with `done`; otherwise `failed` with the agent's last message as the note. Kills the process tree on timeout (default 10 minutes).
+- Produces `startRunner({ supabase, runnerId, agent, mcp }): { stop(): void }`: heartbeat every 30 s, claims one queued desktop event at a time with `claim_event`, runs its job plan, one job after another.
+
+- [ ] **Step 1: Write the failing tests:** `detects installed agents and versions`; `runJob passes only the Jemma MCP tools to Claude`; `a job is done only when complete_job says done`; `timeout kills the agent and fails the job`; `two runners never claim the same event`; `heartbeat keeps runner_presence fresh`.
+- [ ] **Step 2: Run** `pnpm --filter @jemma/runner exec vitest run`. Expected: FAIL.
+- [ ] **Step 3: Implement.** Read `claude --help` and `codex exec --help` on this Mac for the exact flags before writing them.
+- [ ] **Step 4: Run.** Expected: PASS. Then one real run on Basheer's Mac with his Claude Code login on a `start` sandbox event (`curriculum.uploaded` with the sample curriculum), recording time taken.
+- [ ] **Step 5: Commit** `feat(runner): run Jemma jobs on the user's Claude Code or Codex`.
+
+### Task 24: Jemma Desktop app
+
+**Files:**
+- Create: `apps/desktop/` (Electron main process hosting the runner from Task 23, a window that loads `JEMMA_WEB_URL`, the settings and status screens from the desktop boards, tray menu), `apps/web/app/api/desktop/pair/route.ts` (signed-in user gets a one-time pairing code that the desktop swaps for a per-user MCP token), web setting "Where Jemma's AI runs" in teacher class settings and parent account
+- Test: `apps/desktop/e2e/desktop.spec.ts` (Playwright for Electron)
+
+Screens: the desktop boards Basheer designs in Claude Design (brief in `docs/product/claude-design-brief-desktop.md`), held to the Design match gate like every other screen.
+
+- [ ] **Step 1: Write the failing tests:** app starts and shows the web app; pairing with a code stores a token in the macOS keychain (never on disk in plain text); settings list Claude Code and Codex with their detected status; choosing one sets `schools.ai_runner = 'desktop'` for the user's schools after they confirm; the tray shows the running job ("Reading 3 of 5 papers").
+- [ ] **Step 2: Run** `pnpm --filter desktop exec playwright test`. Expected: FAIL.
+- [ ] **Step 3: Implement.**
+- [ ] **Step 4: Run.** Expected: PASS. Build an unsigned Mac app with `pnpm --filter desktop dist` for the demo video. Signing and notarising wait for Basheer.
+- [ ] **Step 5: Commit** `feat(desktop): Jemma Desktop with subscription runner`.
