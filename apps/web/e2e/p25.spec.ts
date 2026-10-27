@@ -74,7 +74,7 @@ test.describe('parent-learn (stage marked)', () => {
     await expect(helps.getByText('Measured per topic, never a label. Jemma keeps trying all three, so this can change.')).toBeVisible()
 
     await noHorizontalScroll(page)
-    await shot(page, testInfo, 'parent-learn')
+    await shot(page, testInfo, 'parent-learn', 1328)
   })
 })
 
@@ -141,6 +141,6 @@ test.describe('parent-session (stage session_done)', () => {
     await expect(page.getByText(/^\w{3} \d{1,2} \w{3} · quick check$/)).toBeVisible()
     await expect(page.getByRole('link', { name: 'Done' })).toHaveAttribute('href', `/p/${box.childId}`)
     await noHorizontalScroll(page)
-    await shot(page, testInfo, 'parent-session', 1260)
+    await shot(page, testInfo, 'parent-session', 1100)
   })
 })
