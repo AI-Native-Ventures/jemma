@@ -1,4 +1,9 @@
 import { runJobGuidance, type JobName } from '@jemma/profiling/tools'
+import diagnosePrompt from '../../../packages/profiling/src/jobs/diagnose.md'
+import classReportPrompt from '../../../packages/profiling/src/jobs/class_report.md'
+import { makeClassReportJob } from '../../../packages/profiling/src/jobs/cloud/class-report'
+import { makeDiagnoseJob } from '../../../packages/profiling/src/jobs/cloud/diagnose'
+import type { JobName } from '@jemma/profiling/tools'
 import type { ToolContext } from '@jemma/profiling/tools'
 import { runJobDraftMap, runJobReadKey } from '@jemma/profiling/jobs'
 import { runJobReadPaper } from '@jemma/profiling/tools'
@@ -13,4 +18,6 @@ export const cloudJobs: CloudJobs = {
   read_key: runJobReadKey,
   guidance: runJobGuidance,
   read_paper: runJobReadPaper,
+  diagnose: makeDiagnoseJob(diagnosePrompt),
+  class_report: makeClassReportJob(classReportPrompt),
 }

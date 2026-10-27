@@ -11,6 +11,8 @@ import { saveAnswerKey } from './save/save-answer-key'
 import { saveTopicMapDraft } from './save/save-topic-map-draft'
 import { addActivity, addObservation, recordAttendance, subjectGuidance } from './save'
 import { markPaper } from './save/mark-paper'
+import { classGapReport } from './save/class-gap-report'
+import { updateLearnerProfile } from './save/update-learner-profile'
 
 export { defineTool } from './context'
 export type { ToolDef } from './context'
@@ -33,4 +35,6 @@ export const registry: ToolDef<any, any>[] = [
   recordAttendance,
   addActivity,
   markPaper,
+  updateLearnerProfile,
+  classGapReport,
 ]
