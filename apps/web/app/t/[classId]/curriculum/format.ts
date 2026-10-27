@@ -131,6 +131,32 @@ export function addTopicIn(src: TopicMapDraft, term: number, name: string, famil
   return d
 }
 
+export type TopicEdit = { name: string; term: number; /** 0-based place in the term */ position: number; prerequisites: string[] }
+
+/** Saves the laptop panel: rename, prerequisites, then the term and place. */
+export function saveTopicIn(r: ReadDraft, from: string, edit: TopicEdit): ReadDraft {
+  const name = edit.name.trim() || from
+  const resolutions = { ...r.resolutions }
+  if (name !== from && from in resolutions) {
+    resolutions[name] = resolutions[from]!
+    delete resolutions[from]
+  }
+  let draft = name === from ? r.draft : renameTopicIn(r.draft, from, name)
+  draft = clone(draft)
+  for (const t of draft.terms) for (const x of t.topics) if (x.name === name) x.prerequisites = edit.prerequisites.filter((p) => p !== name)
+  return { draft: moveTopicIn(draft, name, edit.term, edit.position), resolutions }
+}
+
+/** Drops a topic and every "needs" link that pointed at it. */
+export function removeTopicIn(src: TopicMapDraft, name: string): TopicMapDraft {
+  const d = clone(src)
+  for (const t of d.terms) {
+    t.topics = t.topics.filter((x) => x.name !== name)
+    for (const x of t.topics) x.prerequisites = x.prerequisites.filter((p) => p !== name)
+  }
+  return d
+}
+
 /** Applies a choice on a check ("Move to Term 4") or on a left-out topic ("Add to Term 3"). */
 export function resolveIn(r: ReadDraft, name: string, option: string): ReadDraft {
   let draft = r.draft
