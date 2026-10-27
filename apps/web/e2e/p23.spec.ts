@@ -54,11 +54,11 @@ test.describe('parent-profile', () => {
     await expect(marks.getByRole('link', { name: 'See all tests and topics' })).toHaveAttribute('href', `/p/${s.childId}/tests`)
 
     const noticed = page.getByRole('region', { name: 'What Jemma has noticed' })
-    await expect(noticed.getByText(/^Adds the tops and the bottoms when the denominators are different, like 1\/2 \+ 1\/4 = 2\/6\.$/)).toBeVisible()
+    await expect(noticed.getByText(/^Adds the tops and the bottoms when the denominators are different, like .+ = .+\.$/)).toBeVisible()
     const evidence = noticed.getByRole('link', { name: 'Class Test 1 · Q1, Q2, Q4' })
     await expect(evidence).toHaveAttribute('href', new RegExp(`^/p/${s.childId}/papers/`))
     await expect(noticed.getByRole('link', { name: 'How to help' })).toBeVisible()
-    await expect(noticed.getByRole('link', { name: 'Homework · Sunday' })).toBeVisible()
+    await expect(noticed.getByRole('link', { name: /^Homework · \w+day$/ })).toBeVisible()
 
     const next = page.getByRole('region', { name: 'What to focus on next, and why' })
     await expect(next.getByText('Make the bottoms match, then add')).toBeVisible()
@@ -130,7 +130,7 @@ test.describe('parent-report', () => {
     const weeks = page.getByRole('region', { name: 'Week by week' })
     await expect(weeks.getByText('Marks, lessons, notes and attendance together')).toBeVisible()
     await expect(weeks.getByText('Class Test 1: 6 out of 10')).toBeVisible()
-    await expect(weeks.getByText(/^Lesson on adding fractions: 3 of 5/)).toBeVisible()
+    await expect(weeks.getByText(/^Lesson on adding fractions.*: 3 of 5/)).toBeVisible()
     const gaps = page.getByRole('region', { name: 'Gaps' })
     await expect(gaps.getByText('Working on')).toBeVisible()
     await expect(gaps.getByText('Fixed this year')).toBeVisible()

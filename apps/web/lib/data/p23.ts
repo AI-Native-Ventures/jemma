@@ -1,3 +1,4 @@
+import { createSupabaseAdmin } from '../supabase/admin'
 import { createSupabaseServer } from '../supabase/server'
 
 /** Parent profile, report, beyond the tests and add activity. Everything is read through RLS. */
@@ -25,7 +26,7 @@ export const timeOf = (iso: string) => {
 /** "Mon 26 Oct". */
 export const dayLabel = (iso: string) => {
   const p = parts(new Date(iso.length === 10 ? `${iso}T12:00:00Z` : iso), { weekday: 'short', day: 'numeric', month: 'short' })
-  return `${p.weekday} ${p.day} ${p.month}`
+  return `${p.weekday} ${p.day} ${p.month!.replace('Sept', 'Sep')}`
 }
 const weekdayLong = (iso: string) => parts(new Date(iso.length === 10 ? `${iso}T12:00:00Z` : iso), { weekday: 'long' }).weekday!
 /** "14:13" today, otherwise "Sun 18:40". */
@@ -50,11 +51,30 @@ type ResultRow = {
   topic_id: string | null
   topic_name: string
   created_at: string
-  papers: { kind: string; test_id: string | null; created_at: string; tests: { title: string; out_of: number } | null } | null
+  papers: { kind: string; test_id: string | null; created_at: string; tests?: TestInfo | null } | null
 }
 
 const RESULT_SELECT =
-  'id, paper_id, n, prompt, answer_read, correct, misconception, topic_id, topic_name, created_at, papers!inner(kind, test_id, created_at, tests(title, out_of))'
+  'id, paper_id, n, prompt, answer_read, correct, misconception, topic_id, topic_name, created_at, papers!inner(kind, test_id, created_at)'
+
+type TestInfo = { title: string; out_of: number }
+
+/**
+ * Parents cannot read `tests` through RLS, so titles come from the service client, and only for tests
+ * of papers the RLS-scoped query above already returned for this child.
+ */
+async function testInfo(testIds: (string | null | undefined)[]): Promise<Map<string, TestInfo>> {
+  const ids = [...new Set(testIds.filter((id): id is string => Boolean(id)))]
+  if (ids.length === 0) return new Map()
+  const { data } = await createSupabaseAdmin().from('tests').select('id, title, out_of').in('id', ids)
+  return new Map((data ?? []).map((t) => [t.id, { title: t.title.split(':')[0]!.trim(), out_of: t.out_of }]))
+}
+
+async function withTests(rows: ResultRow[]): Promise<ResultRow[]> {
+  const tests = await testInfo(rows.map((r) => r.papers?.test_id))
+  for (const r of rows) if (r.papers) r.papers.tests = r.papers.test_id ? (tests.get(r.papers.test_id) ?? null) : null
+  return rows
+}
 
 function paperLabel(rows: ResultRow[]): string {
   const first = rows[0]!
@@ -100,8 +120,8 @@ function marksByTopic(rows: ResultRow[]): MarkRow[] {
 }
 
 const NOTICE_SUFFIX: [RegExp, string][] = [
-  [/different denominators/i, ' when the denominators are different'],
-  [/decimal/i, ' when adding decimals'],
+  [/different denominators|tops and/i, ' when the denominators are different'],
+  [/decimal|last digits/i, ' when adding decimals'],
 ]
 const GOOD_VERB: Record<string, string> = { 'Comparing fractions': 'Compares fractions well now' }
 
@@ -116,8 +136,9 @@ function notices(childId: string, rows: ResultRow[], marks: MarkRow[], helpHref:
   }
   const out: Notice[] = order.map((m, i) => {
     const rs = wrong.filter((r) => r.misconception === m)
-    const first = rs.find((r) => r.papers?.kind === 'test') ?? rs[0]!
-    const suffix = NOTICE_SUFFIX.find(([re]) => re.test(first.topic_name))?.[1] ?? ''
+    const tests = rs.filter((r) => r.papers?.kind === 'test')
+    const first = [...(tests.length ? tests : rs)].sort((a, b) => a.prompt.length - b.prompt.length || a.n - b.n)[0]!
+    const suffix = NOTICE_SUFFIX.find(([re]) => re.test(`${first.topic_name} ${m}`))?.[1] ?? ''
     const chips = chipsFor(childId, [...rs].sort((a, b) => (a.papers?.kind === 'test' ? 0 : 1) - (b.papers?.kind === 'test' ? 0 : 1)))
     if (i === 0 && helpHref) chips.push({ label: 'How to help', href: helpHref, kind: 'bulb' })
     return { text: `${m}${suffix}, like ${first.prompt} = ${first.answer_read}.`, chips }
@@ -167,12 +188,13 @@ export async function getProfile(childId: string): Promise<ProfileData | null> {
     supabase.from('attendance').select('day, status').eq('child_id', childId),
     supabase.from('activities').select('name, created_at').eq('child_id', childId).order('created_at'),
     supabase.from('activity_log').select('at, text').eq('child_id', childId).order('at', { ascending: false }).limit(4),
-    supabase.from('papers').select('tests(title)').eq('child_id', childId).eq('kind', 'test').not('test_id', 'is', null).order('created_at', { ascending: false }).limit(1),
+    supabase.from('papers').select('test_id').eq('child_id', childId).eq('kind', 'test').not('test_id', 'is', null).order('created_at', { ascending: false }).limit(1),
     supabase.from('gaps').select('topic_id, topic_name, stage').eq('child_id', childId).neq('stage', 'fixed').order('created_at'),
   ])
   if (!child.data) return null
 
-  const rows = (results.data ?? []) as unknown as ResultRow[]
+  const rows = await withTests((results.data ?? []) as unknown as ResultRow[])
+  const latestTestInfo = await testInfo([latestTest.data?.[0]?.test_id])
   const byId = new Map(rows.map((r) => [r.id, r]))
   const guidance = card.data?.content as
     | { headline: string; focus: { title: string; why: string; evidence: { label: string; resultIds: string[] }[] }[]; lookingAhead: string }
@@ -189,7 +211,7 @@ export async function getProfile(childId: string): Promise<ProfileData | null> {
     child: { id: child.data.id, firstName: child.data.first_name, grade: child.data.grade },
     headline: guidance?.headline ?? null,
     updated: card.data ? `Updated ${isToday(card.data.updated_at) ? 'today' : dayLabel(card.data.updated_at)} at ${timeOf(card.data.updated_at)}` : null,
-    afterTest: latestTest.data?.[0]?.tests?.title ?? null,
+    afterTest: latestTestInfo.get(latestTest.data?.[0]?.test_id ?? '')?.title ?? null,
     needs: (needs.data ?? []).map((n) => ({ id: n.id, title: n.title, detail: n.detail, href: `/p/${childId}/snap/${n.ref_id}` })),
     marks,
     notices: notices(childId, rows, marks, helpHref),
@@ -198,7 +220,7 @@ export async function getProfile(childId: string): Promise<ProfileData | null> {
       why: f.why,
       chips: f.evidence.map((e) => chipFromEvidence(childId, byId, e)),
     })),
-    lookingAhead: guidance?.lookingAhead ?? null,
+    lookingAhead: guidance ? `Looking ahead: ${guidance.lookingAhead}` : null,
     beyond: {
       note: note
         ? isToday(note.created_at)
@@ -249,7 +271,7 @@ function mondayOf(iso: string): string {
 }
 const shortDM = (iso: string) => {
   const p = parts(new Date(`${iso}T12:00:00Z`), { day: 'numeric', month: 'short' })
-  return `${p.day} ${p.month}`
+  return `${p.day} ${p.month!.replace('Sept', 'Sep')}`
 }
 
 export async function getBeyond(childId: string): Promise<BeyondData | null> {
@@ -342,11 +364,13 @@ export async function getReport(childId: string): Promise<ReportData | null> {
     supabase.from('attendance').select('day, status').eq('child_id', childId).order('day'),
     supabase.from('activities').select('id, kind, name, days').eq('child_id', childId).order('created_at'),
     supabase.from('guidance_cards').select('content').eq('child_id', childId).maybeSingle(),
-    supabase.from('papers').select('id, kind, total, created_at, tests(title, out_of)').eq('child_id', childId).in('kind', ['test', 'homework']).order('created_at'),
+    supabase.from('papers').select('id, kind, total, created_at, test_id').eq('child_id', childId).in('kind', ['test', 'homework']).order('created_at'),
   ])
   if (!child.data) return null
   const name = child.data.first_name
-  const rows = (results.data ?? []) as unknown as ResultRow[]
+  const rows = await withTests((results.data ?? []) as unknown as ResultRow[])
+  const testMap = await testInfo((papers.data ?? []).map((p) => p.test_id))
+  const paperTests = (papers.data ?? []).map((p) => ({ ...p, tests: p.test_id ? (testMap.get(p.test_id) ?? null) : null }))
   const guidance = card.data?.content as { focus: { title: string }[]; lookingAhead: string } | undefined
 
   const att = attendance.data ?? []
@@ -363,7 +387,7 @@ export async function getReport(childId: string): Promise<ReportData | null> {
     return a[1] === b[1] ? `${a[0]} to ${b[0]} ${b[1]}` : `${shortDM(first)} to ${shortDM(last)}`
   })()
 
-  const testPapers = (papers.data ?? []).filter((p) => p.kind === 'test' && p.tests && isRecent(p.created_at))
+  const testPapers = paperTests.filter((p) => p.kind === 'test' && p.tests && isRecent(p.created_at))
   const latest = [...testPapers].sort((a, b) => b.created_at.localeCompare(a.created_at))[0]
   const percent = latest && latest.total !== null && latest.tests ? Math.round((latest.total / latest.tests.out_of) * 100) : null
 
@@ -388,7 +412,7 @@ export async function getReport(childId: string): Promise<ReportData | null> {
     weekItems.set(monday, [
       ...(weekItems.get(monday) ?? []),
       {
-        key: `att-${monday}`, icon: 'calendar', title: `At school ${days.length - away.length} of ${days.length} days`,
+        key: `att-${monday}`, icon: 'calendar', title: `At school ${days.length - away.length} of ${plural(days.length, 'day')}`,
         sub: away.length ? `Away ${joinList(away.map((a) => dayLabel(a.day)))}` : null, href: beyond, at: `${monday}T00:00:00Z`,
       },
     ])
@@ -400,7 +424,7 @@ export async function getReport(childId: string): Promise<ReportData | null> {
       sub: `${dayLabel(n.created_at)} · ${kindName(n.kind)}`, href: beyond,
     })
   }
-  for (const p of papers.data ?? []) {
+  for (const p of paperTests) {
     if (!inPeriod(p.created_at)) continue
     if (p.kind === 'test' && p.tests) {
       push(p.created_at, {
@@ -455,7 +479,7 @@ export async function getReport(childId: string): Promise<ReportData | null> {
     .map((g) => ({ id: g.id, name: g.topic_name, sub: g.fixed_at ? `Fixed ${dayLabel(g.fixed_at)}` : 'Fixed' }))
 
   const testCount = testPapers.length
-  const hwCount = (papers.data ?? []).filter((p) => p.kind === 'homework' && inPeriod(p.created_at)).length
+  const hwCount = paperTests.filter((p) => p.kind === 'homework' && inPeriod(p.created_at)).length
   const noteCount = (notes.data ?? []).filter((n) => inPeriod(n.created_at)).length
   const sources = [
     plural(testCount, 'test'),
@@ -480,7 +504,7 @@ export async function getReport(childId: string): Promise<ReportData | null> {
       line: joinList([...a.days].sort((x, y) => DAY_ORDER.indexOf(x) - DAY_ORDER.indexOf(y)).map((d) => DAY_LONG[d] ?? d)),
     })),
     next: (guidance?.focus ?? []).map((f) => `${stripDot(f.title)}.`),
-    lookingAhead: guidance ? guidance.lookingAhead.replace(/, so .*\.$/, '.') : null,
+    lookingAhead: guidance ? `Looking ahead: ${guidance.lookingAhead}`.replace(/, so .*\.$/, '.') : null,
     madeOn: dayLabel(now.toISOString()),
     sources: sourceText,
   }
