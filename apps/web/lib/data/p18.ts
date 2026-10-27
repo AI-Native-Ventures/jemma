@@ -374,7 +374,7 @@ export async function getClassHome(classId: string): Promise<ClassHome | null> {
     const moved =
       gap?.stage === 'practising' && gap.first_practised_at && Math.abs(new Date(gap.first_practised_at).getTime() - finished) < 10 * 60 * 1000
     const tries = d.items.filter((i) => i.session_id === s.id).length
-    const short = shortTopic(s.topic_name)
+    const short = shortTopic(s.topic_name ?? '')
     return {
       childId: s.child_id,
       name: d.names.get(s.child_id) ?? '',
@@ -412,7 +412,7 @@ export async function getClassHome(classId: string): Promise<ClassHome | null> {
     latestTest = {
       id: d.test.id,
       title: d.test.title,
-      writtenOn: writtenLabel(d.test.written_on, d.now),
+      writtenOn: writtenLabel(d.test.written_on ?? '', d.now),
       papers: d.papers.length,
       toCheck: open.filter((n) => n.kind === 'check_answer').length,
       average: pct.length ? Math.round(pct.reduce((a, b) => a + b, 0) / pct.length) : null,
