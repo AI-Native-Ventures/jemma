@@ -33,7 +33,7 @@ export default async function TeacherLinkRequestPage({ params }: { params: Promi
           </div>
           <ul className="m-0 flex list-none flex-col gap-[9px] border-t border-soft p-0 pt-3">
             <li className={item}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5D5A73" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5D5A73" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" />
                 <path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" />
               </svg>

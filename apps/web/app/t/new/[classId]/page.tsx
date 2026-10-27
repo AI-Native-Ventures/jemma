@@ -40,7 +40,7 @@ export default async function EmptyClassPage({ params }: { params: Promise<{ cla
     <Column>
       <main className="flex flex-1 flex-col gap-5 px-5 pt-3.5 pb-5">
         <Title size={28} gemTop={11}>
-          {short} is set up. {numberWord(left)} more {left === 1 ? 'step' : 'steps'} and I can start marking for you.
+          {short} is set up. {numberWord(left).charAt(0).toUpperCase() + numberWord(left).slice(1)} more {left === 1 ? 'step' : 'steps'} and I can start marking for you.
         </Title>
 
         <section aria-labelledby="needs" className="flex items-center gap-3 rounded-18 border border-line bg-card px-4 py-3.5">
