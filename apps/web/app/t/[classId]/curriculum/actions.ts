@@ -181,7 +181,7 @@ export async function approveMap(mapId: string): Promise<void> {
   if (drop.length) ok(await admin.from('topics').delete().in('id', drop))
   await Promise.all(
     wanted.map(async (w) => {
-      const fields = { term: w.term, position: w.position, family: w.family, misconceptions: w.misconceptions }
+      const fields = { term: w.term, position: w.position, family: w.family, misconceptions: w.misconceptions, short_name: w.shortName ?? null }
       const id = byName.get(w.name)
       if (id) ok(await admin.from('topics').update(fields).eq('id', id))
       else ok(await admin.from('topics').insert({ map_id: mapId, name: w.name, ...fields }))

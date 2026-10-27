@@ -8,7 +8,7 @@ import { classTest1Key } from './class-test-1'
 
 // ---- Curriculum map: 24 topics in 4 terms --------------------------------------------------
 
-export type TopicDef = { name: string; family: string; needs: string[]; misconceptions: string[] }
+export type TopicDef = { name: string; short?: string; family: string; needs: string[]; misconceptions: string[] }
 
 const TOPS = 'Adds the tops and the bottoms'
 const KEEPS_ONE = 'Adds the tops and keeps one bottom'
@@ -19,7 +19,7 @@ export const TERMS: { term: 1 | 2 | 3 | 4; topics: TopicDef[] }[] = [
   {
     term: 1,
     topics: [
-      { name: 'Whole numbers to 1 000 000', family: 'whole_numbers', needs: [], misconceptions: [] },
+      { name: 'Whole numbers to 1 000 000', short: 'Whole numbers', family: 'whole_numbers', needs: [], misconceptions: [] },
       { name: 'Ordering whole numbers', family: 'whole_numbers', needs: ['Whole numbers to 1 000 000'], misconceptions: [] },
       { name: 'Multiplying whole numbers', family: 'whole_numbers', needs: ['Whole numbers to 1 000 000'], misconceptions: [] },
       { name: 'Equivalent fractions', family: 'fractions', needs: [], misconceptions: [] },
@@ -30,7 +30,7 @@ export const TERMS: { term: 1 | 2 | 3 | 4; topics: TopicDef[] }[] = [
   {
     term: 2,
     topics: [
-      { name: 'Adding fractions with the same denominator', family: 'fractions', needs: ['Equivalent fractions'], misconceptions: [] },
+      { name: 'Adding fractions with the same denominator', short: 'Same denominators', family: 'fractions', needs: ['Equivalent fractions'], misconceptions: [] },
       { name: 'Decimal fractions', family: 'decimals', needs: ['Equivalent fractions'], misconceptions: [] },
       { name: '2D shapes', family: 'shapes', needs: [], misconceptions: [] },
       { name: 'Length', family: 'measurement', needs: [], misconceptions: [] },
@@ -43,12 +43,14 @@ export const TERMS: { term: 1 | 2 | 3 | 4; topics: TopicDef[] }[] = [
     topics: [
       {
         name: 'Adding fractions with different denominators',
+        short: 'Adding fractions',
         family: 'fractions',
         needs: ['Equivalent fractions', 'Adding fractions with the same denominator'],
         misconceptions: [TOPS, KEEPS_ONE],
       },
       {
         name: 'Subtracting fractions with different denominators',
+        short: 'Subtracting fractions',
         family: 'fractions',
         needs: ['Adding fractions with different denominators'],
         misconceptions: [TOPS],
@@ -84,6 +86,7 @@ export function topicMapDraft(): TopicMapDraft {
       term: t.term,
       topics: t.topics.map((p) => ({
         name: p.name,
+        shortName: p.short ?? p.name,
         family: p.family,
         prerequisites: p.needs,
         misconceptions: p.misconceptions,

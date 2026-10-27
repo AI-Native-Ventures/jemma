@@ -4,6 +4,7 @@ import { LessonSchema, QuestionSchema, type Lesson, type DiagramSpec } from '@je
 import { notFound } from 'next/navigation'
 import { stripQuestion, type QuestionForChild } from '@/app/k/session/[sessionId]/logic'
 import { createSupabaseServer } from '@/lib/supabase/server'
+import { loadShortLabels } from '@/lib/topics'
 
 export type GapGem = 'full' | 'half' | 'empty'
 
@@ -56,6 +57,7 @@ async function myChild() {
 
 export async function getLearnerToday(): Promise<LearnerToday> {
   const { supabase, child } = await myChild()
+  const short = await loadShortLabels(supabase)
   const today = new Date().toISOString().slice(0, 10)
   const [{ data: sessions }, { data: gaps }] = await Promise.all([
     supabase
@@ -83,7 +85,7 @@ export async function getLearnerToday(): Promise<LearnerToday> {
   }
   const upcoming = (sessions ?? []).find((s) => s.planned_for > today)
   const next: NextCard | null = upcoming
-    ? { day: dayName(upcoming.planned_for), topic: upcoming.topic_name ?? '', minutes: upcoming.planned_minutes, format: upcoming.format }
+    ? { day: dayName(upcoming.planned_for), topic: short(upcoming.topic_name ?? ''), minutes: upcoming.planned_minutes, format: upcoming.format }
     : null
 
   const all = gaps ?? []

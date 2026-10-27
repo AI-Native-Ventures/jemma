@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
-import { FORMAT_LABEL, loadHandover, shortTopic } from '@/lib/data/p25'
+import { FORMAT_LABEL, loadHandover } from '@/lib/data/p25'
 import { Overlay } from '../_overlay'
 import { startSession } from './actions'
 
@@ -53,7 +53,7 @@ export default async function ParentHandoverPage({ params }: { params: Promise<{
           <span className="flex flex-col gap-0.5 leading-[1.3]">
             <span className="text-[13px] font-bold text-coral-text">Tonight</span>
             <span className="text-[16px] font-semibold">
-              {shortTopic(tonight.topicName)} with {tonight.withPhrase}
+              {tonight.shortName} with {tonight.withPhrase}
             </span>
             <span className="text-[14px] text-body">
               {FORMAT_LABEL[tonight.format]} · {tonight.minutes} minutes{tonight.questions ? ` · ${tonight.questions} questions` : ''}

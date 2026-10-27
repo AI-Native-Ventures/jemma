@@ -1,6 +1,7 @@
 import { ReteachSchema, type Reteach } from '@jemma/profiling/schemas'
 import type { NeedsYouItem } from '@/components/blocks'
 import { createSupabaseServer } from '@/lib/supabase/server'
+import { loadShortLabels } from '@/lib/topics'
 
 export type GapStage = 'new' | 'practising' | 'fixed'
 
@@ -105,8 +106,6 @@ export const slug = (name: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
-
-export const shortTopic = (name: string) => name.split(' with ')[0]!
 
 const lowerFirst = (s: string) => (s ? s[0]!.toLowerCase() + s.slice(1) : s)
 
@@ -224,6 +223,7 @@ async function load(classId: string) {
 
   return {
     now,
+    short: await loadShortLabels(supabase),
     cls,
     test,
     plans: plans ?? [],
@@ -318,7 +318,7 @@ function buildGaps(d: Loaded): ClassGapView[] {
       view: {
         key: slug(topicName),
         topicName,
-        shortName: shortTopic(topicName),
+        shortName: d.short(topicName),
         count: learners.length,
         total,
         learners,
@@ -383,7 +383,7 @@ export async function getClassHome(classId: string): Promise<ClassHome | null> {
     const moved =
       gap?.stage === 'practising' && gap.first_practised_at && Math.abs(new Date(gap.first_practised_at).getTime() - finished) < 10 * 60 * 1000
     const tries = d.items.filter((i) => i.session_id === s.id).length
-    const short = shortTopic(s.topic_name ?? '')
+    const short = d.short(s.topic_name ?? '')
     return {
       childId: s.child_id,
       name: d.names.get(s.child_id) ?? '',

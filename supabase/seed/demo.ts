@@ -269,7 +269,7 @@ async function buildMarked(c: MarkedCtx): Promise<void> {
       .insert(
         TERMS.flatMap((t) =>
           t.topics.map((p, i) => ({
-            map_id: map.id, term: t.term, position: i + 1, name: p.name, family: p.family, misconceptions: p.misconceptions,
+            map_id: map.id, term: t.term, position: i + 1, name: p.name, short_name: p.short ?? p.name, family: p.family, misconceptions: p.misconceptions,
           })),
         ),
       )

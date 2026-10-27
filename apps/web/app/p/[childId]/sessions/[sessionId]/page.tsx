@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { TabBar } from '@/components/blocks'
 import { GemIcon } from '@/components/ui/icons'
-import { dayLabel, FORMAT_LABEL, loadSessionResult, mmss, sessionStamp, shortTopic, type SessionItemView } from '@/lib/data/p25'
+import { dayLabel, FORMAT_LABEL, loadSessionResult, mmss, sessionStamp, type SessionItemView } from '@/lib/data/p25'
 import { Overlay } from '../../learn/_overlay'
 
 const card = 'rounded-20 border border-line bg-card'
@@ -108,7 +108,7 @@ export default async function ParentSessionPage({ params }: { params: Promise<{ 
 
         <section aria-labelledby="stage" className={`${card} flex flex-col gap-3.5 p-[18px]`}>
           <h2 id="stage" className="m-0 text-[16px] font-semibold">
-            {shortTopic(r.topicName)} moved a stage
+            {r.shortName} moved a stage
           </h2>
           <div className="flex items-center justify-between gap-1.5">
             <StageNode state={state(0)} label={nodes[0]} />

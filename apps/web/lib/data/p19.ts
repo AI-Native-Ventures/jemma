@@ -2,6 +2,7 @@ import type { Guidance } from '@jemma/profiling/schemas'
 import { GuidanceSchema } from '@jemma/profiling/schemas'
 import { slug } from './p18'
 import { createSupabaseServer } from '../supabase/server'
+import { loadShortLabels } from '../topics'
 
 export type AttStatus = 'here' | 'late' | 'away'
 export type ObsKind = 'participation' | 'confidence' | 'effort' | 'behaviour'
@@ -26,9 +27,7 @@ function whenLabel(stamp: string): string {
 }
 
 /** `Adding fractions` for `Adding fractions with different denominators`, as the boards show it. */
-export const shortTopic = (name: string) => name.split(' with ')[0]!
-
-const shortOrNull = (n: string | undefined) => (n ? shortTopic(n) : null)
+const shortOrNull = (short: (name: string) => string, n: string | undefined) => (n ? short(n) : null)
 
 const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
 
@@ -69,6 +68,7 @@ async function classChildren(classId: string) {
 
 export async function getLearnersView(classId: string): Promise<LearnersView> {
   const supabase = await createSupabaseServer()
+  const short = await loadShortLabels(supabase)
   const [kids, clsRes, testsRes] = await Promise.all([
     classChildren(classId),
     supabase.from('classes').select('name, join_code').eq('id', classId).single(),
@@ -90,7 +90,7 @@ export async function getLearnersView(classId: string): Promise<LearnersView> {
     return {
       id: k.id,
       name: k.first_name,
-      topGap: shortOrNull(gaps.find((g) => g.child_id === k.id)?.topic_name),
+      topGap: shortOrNull(short, gaps.find((g) => g.child_id === k.id)?.topic_name),
       average: averageOf(papers, outOf, k.id),
       present,
       recorded,
@@ -188,6 +188,7 @@ export async function getLearnerView(classId: string, childId: string): Promise<
   const child = await loadChild(classId, childId)
   if (!child) return null
   const supabase = await createSupabaseServer()
+  const short = await loadShortLabels(supabase)
   const [clsRes, testsRes, attRes, gapRes, paperRes, obsRes, resultsRes] = await Promise.all([
     supabase.from('classes').select('name').eq('id', classId).single(),
     supabase.from('tests').select('id, out_of').eq('class_id', classId),
@@ -203,7 +204,7 @@ export async function getLearnerView(classId: string, childId: string): Promise<
   const present = att.filter((a) => a.status !== 'away').length
 
   const topGapFull = gaps[0]?.topic_name ?? null
-  const topGap = shortOrNull(topGapFull ?? undefined)
+  const topGap = shortOrNull(short, topGapFull ?? undefined)
   const wrong = (resultsRes.data ?? []).filter((r) => !r.correct && r.misconception)
   const mis = topGap ? (wrong.find((r) => r.topic_name === topGapFull)?.misconception ?? wrong[0]?.misconception) : null
   const byTopic = new Map<string, { right: number; all: number }>()
@@ -263,6 +264,7 @@ export async function getChildProfileView(classId: string, childId: string): Pro
   const learner = await getLearnerView(classId, childId)
   if (!learner) return null
   const supabase = await createSupabaseServer()
+  const short = await loadShortLabels(supabase)
   const today = todayIso()
   const [needsRes, resultsRes, papersRes, testsRes, guidanceRes, gapsRes, sessionRes] = await Promise.all([
     supabase.from('needs_you_items').select('id, title, detail').eq('child_id', childId).eq('status', 'open'),
@@ -295,12 +297,12 @@ export async function getChildProfileView(classId: string, childId: string): Pro
   }
   const now = tally(current)
   const before = tally(previous)
-  const gapByTopic = new Map((gapsRes.data ?? []).map((g) => [shortTopic(g.topic_name), slug(g.topic_name)]))
+  const gapByTopic = new Map((gapsRes.data ?? []).map((g) => [short(g.topic_name), slug(g.topic_name)]))
   const marks: TopicMark[] = [...now.entries()]
     .map(([key, v]) => {
       const pct = Math.round((v.right / v.all) * 100)
       const old = before.get(key)
-      return { name: shortTopic(v.name), pct, change: old ? pct - Math.round((old.right / old.all) * 100) : null, gapKey: gapByTopic.get(shortTopic(v.name)) ?? null }
+      return { name: short(v.name), pct, change: old ? pct - Math.round((old.right / old.all) * 100) : null, gapKey: gapByTopic.get(short(v.name)) ?? null }
     })
     .sort((a, b) => a.pct - b.pct)
 
@@ -309,7 +311,7 @@ export async function getChildProfileView(classId: string, childId: string): Pro
   const note = learner.notes[0] ?? null
   const session = sessionRes.data?.[0]
   const topGapFull = gapsRes.data?.[0]?.topic_name ?? null
-  const topGap = shortOrNull(topGapFull ?? undefined)
+  const topGap = shortOrNull(short, topGapFull ?? undefined)
   const wrongs = results.filter((r) => !r.correct && r.misconception)
   return {
     className: learner.className,
