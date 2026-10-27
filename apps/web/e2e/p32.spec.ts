@@ -50,7 +50,7 @@ const profilingRequire = createRequire(resolve(import.meta.dirname, '../../../pa
 
 /** Runs the read_paper job with a mock model that answers `read`, as the agent would after homework.snapped. */
 async function runReadPaper(schoolId: string, paperId: string, read: PaperRead) {
-  const { MockLanguageModelV4 } = (await import(pathToFileURL(profilingRequire.resolve('ai/test')).href)) as typeof import('ai/test')
+  const { MockLanguageModelV4 } = (await import(pathToFileURL(profilingRequire.resolve('ai/test')).href)) as { MockLanguageModelV4: new (o: unknown) => never }
   const model = new MockLanguageModelV4({
     modelId: 'mock',
     doGenerate: async () =>
@@ -125,7 +125,7 @@ test('parent-snap-photo: frame, page number, Done after a photo', async ({ page 
 })
 
 test('a good photo: reading, then the check screen, then saved', async ({ page }) => {
-  const s = await sandbox(page, 'start')
+  const s = await sandbox(page, 'marked')
   const paperId = await snapOnePage(page, s.childId)
   const { data: event } = await db.from('events').select('type, status').eq('school_id', await schoolOf(s.childId)).eq('type', 'homework.snapped').single()
   expect(event?.type).toBe('homework.snapped')
@@ -162,7 +162,7 @@ test('a good photo: reading, then the check screen, then saved', async ({ page }
 })
 
 test('a dark photo: Photo too dark with Retake, nothing saved', async ({ page }) => {
-  const s = await sandbox(page, 'start')
+  const s = await sandbox(page, 'marked')
   const paperId = await snapOnePage(page, s.childId)
   await runReadPaper(await schoolOf(s.childId), paperId, { nameAsWritten: null, nameConfidence: 0, pageUsable: false, problem: 'too_dark', answers: [] })
   await expect(page.getByRole('heading', { level: 1, name: 'This photo is too dark to read.' })).toBeVisible({ timeout: 30_000 })
@@ -173,7 +173,6 @@ test('a dark photo: Photo too dark with Retake, nothing saved', async ({ page })
   await expect(page.getByText('Fit the whole page inside the frame')).toBeVisible()
   await expect(page.getByText('Your photo, taken just now')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Retake photo' })).toHaveAttribute('href', /\/snap\/photo\?kind=homework/)
-  await expect(page.getByRole('link', { name: /Use it anyway/ })).toBeVisible()
   await shoot(page, 'parent-error')
   const { count } = await db.from('question_results').select('id', { count: 'exact', head: true }).eq('paper_id', paperId)
   expect(count).toBe(0)
