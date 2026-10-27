@@ -192,7 +192,7 @@ async function load(classId: string) {
   const none = ['00000000-0000-0000-0000-000000000000']
   const ids = childIds.length ? childIds : none
   const [kids, gapRows, papers, needs, sessions, plannedSessions, log] = await Promise.all([
-    supabase.from('children').select('id, first_name').in('id', ids),
+    supabase.from('children').select('id, first_name, created_at').in('id', ids),
     supabase.from('gaps').select('child_id, topic_name, stage, evidence, first_practised_at').in('child_id', ids).order('created_at'),
     test
       ? supabase.from('papers').select('id, child_id, status, total').eq('test_id', test.id)
@@ -205,7 +205,7 @@ async function load(classId: string) {
       .eq('status', 'done')
       .gte('finished_at', since),
     supabase.from('sessions').select('child_id, topic_name, planned_for').in('child_id', ids).eq('status', 'planned').gt('planned_for', dayKey(now)).order('planned_for'),
-    supabase.from('activity_log').select('at, text').eq('class_id', classId).order('at', { ascending: false }).limit(5),
+    supabase.from('activity_log').select('at, text').eq('class_id', classId).order('at', { ascending: false }).limit(4),
   ])
 
   const paperIds = (papers.data ?? []).map((p) => p.id)
@@ -228,6 +228,7 @@ async function load(classId: string) {
     test,
     plans: plans ?? [],
     childIds,
+    created: new Map((kids.data ?? []).map((k) => [k.id, k.created_at])),
     names: new Map((kids.data ?? []).map((k) => [k.id, k.first_name])),
     gapRows: gapRows.data ?? [],
     papers: papers.data ?? [],
@@ -246,7 +247,11 @@ function buildGaps(d: Loaded): ClassGapView[] {
   const total = d.childIds.length
   const byId = new Map(d.results.map((r) => [r.id, r]))
   const topics = [...new Set(d.gapRows.filter((g) => g.stage !== 'fixed').map((g) => g.topic_name))]
-  const order = new Map(d.childIds.map((id, i) => [id, i]))
+  // Class-list order: when the class was joined (enrolments have no order of their own), then first name.
+  const sorted = [...d.childIds].sort(
+    (a, b) => (d.created.get(a) ?? '').localeCompare(d.created.get(b) ?? '') || (d.names.get(a) ?? '').localeCompare(d.names.get(b) ?? ''),
+  )
+  const order = new Map(sorted.map((id, i) => [id, i]))
 
   const views = topics.map((topicName, position) => {
     const rows = d.gapRows.filter((g) => g.topic_name === topicName)
@@ -258,7 +263,11 @@ function buildGaps(d: Loaded): ClassGapView[] {
         .filter((r): r is NonNullable<typeof r> => Boolean(r))
         .sort((a, b) => a.n - b.n)
     }
-    const stuckIds = [...new Set(stuckRows.map((g) => g.child_id))].sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0))
+    const wrongCount = (childId: string) => evOf(childId).length
+    // Most wrong answers on this gap first, ties in class-list order.
+    const stuckIds = [...new Set(stuckRows.map((g) => g.child_id))].sort(
+      (a, b) => wrongCount(b) - wrongCount(a) || (order.get(a) ?? 0) - (order.get(b) ?? 0),
+    )
     const allEv = stuckIds.flatMap(evOf)
     const gapNs = [...new Set(allEv.map((r) => r.n))].sort((a, b) => a - b)
     const correctAt = (childId: string, n: number) => d.results.find((r) => r.child_id === childId && r.n === n)?.correct === true
@@ -433,7 +442,7 @@ export async function getClassHome(classId: string): Promise<ClassHome | null> {
     latestTest,
     lastNightSessions,
     waiting,
-    activity: d.log.slice(0, mode === 'next' ? 4 : 5).map((l) => ({ at: logTime(l.at, d.now), text: l.text })),
+    activity: (mode === 'next' ? d.log.slice(0, 4) : d.log.slice(0, 4).reverse()).map((l) => ({ at: logTime(l.at, d.now), text: l.text })),
     topGapKey: top?.key ?? null,
   }
 }

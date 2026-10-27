@@ -64,10 +64,12 @@ test.describe('teacher class home (stage marked)', () => {
     await expect(page.getByText('Hardest', { exact: true })).toBeVisible()
 
     await expect(page.getByRole('heading', { name: 'What Jemma did', exact: true })).toBeVisible()
-    await expect(page.getByText('Read 5 papers. 1 unsure, sent to you.')).toBeVisible()
-    await expect(page.getByText('Found 3 class gaps and the mistake behind each one')).toBeVisible()
-    await expect(page.getByText('Wrote a 10 minute reteach for adding fractions')).toBeVisible()
-    await expect(page.getByText("Planned tonight's lesson for all 5 learners")).toBeVisible()
+    const log = page.locator('section[aria-labelledby="did"] li')
+    await expect(log).toHaveCount(4)
+    await expect(log.nth(0)).toContainText("Tagged Class Test 1's 10 questions to 7 topics on your map")
+    await expect(log.nth(1)).toContainText('Found 3 class gaps and the mistake behind each one')
+    await expect(log.nth(2)).toContainText('Wrote a 10 minute reteach for adding fractions')
+    await expect(log.nth(3)).toContainText("Planned tonight's lesson for all 5 learners")
     await expect(page.getByText("Last night's lessons")).toHaveCount(0)
 
     await noHorizontalScroll(page)
@@ -87,6 +89,11 @@ test.describe('teacher class home (stage marked)', () => {
     ).toBeVisible()
 
     await expect(page.getByRole('heading', { name: "Who's stuck" })).toBeVisible()
+    const stuck = page.locator('section[aria-labelledby="stuck"] li a')
+    await expect(stuck).toHaveCount(4)
+    // Most wrong answers first: Naledi (2 wrong) is last. Ties keep class-list order.
+    await expect(stuck.nth(3)).toContainText('Naledi')
+    await expect(stuck.nth(0)).toContainText(/Amina|Thabo|Sipho/)
     await expect(page.getByText('Wrote 2/6, 3/9 and 3 2/6')).toHaveCount(2)
     await expect(page.getByText('Wrote 2/6, 3/9 and 3 2/4')).toBeVisible()
     await expect(page.getByText('Wrote 2/6 and 3 2/6, got question 2 right')).toBeVisible()
