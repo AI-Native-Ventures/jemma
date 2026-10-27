@@ -1,3 +1,7 @@
+import diagnosePrompt from '../../../packages/profiling/src/jobs/diagnose.md'
+import classReportPrompt from '../../../packages/profiling/src/jobs/class_report.md'
+import { makeClassReportJob } from '../../../packages/profiling/src/jobs/cloud/class-report'
+import { makeDiagnoseJob } from '../../../packages/profiling/src/jobs/cloud/diagnose'
 import type { JobName } from '@jemma/profiling/tools'
 import type { ToolContext } from '@jemma/profiling/tools'
 
@@ -6,4 +10,7 @@ export type CloudJob = (ctx: ToolContext, eventId: string, ids: Record<string, s
 export type CloudJobs = Partial<Record<JobName, CloudJob>>
 
 /** Empty until the job tasks (8 to 12) register `runJob<Name>` functions here. */
-export const cloudJobs: CloudJobs = {}
+export const cloudJobs: CloudJobs = {
+  diagnose: makeDiagnoseJob(diagnosePrompt),
+  class_report: makeClassReportJob(classReportPrompt),
+}
