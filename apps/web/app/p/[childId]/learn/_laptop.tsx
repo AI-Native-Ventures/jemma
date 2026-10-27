@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { PAPER_ICON, LaptopShell } from '../_laptop'
 import { css } from '../beyond/_parts'
-import { dayNumber, decimalComma, FORMAT_LABEL, shortTopic, weekdayShort, type LearnData } from '@/lib/data/p25'
+import { dayNumber, decimalComma, FORMAT_LABEL, weekdayShort, type LearnData } from '@/lib/data/p25'
 
 const CHIP = 'display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;background:#F4F3F8;font-size:14px;font-weight:600'
 const CARD = 'display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px;padding:18px'
@@ -9,7 +9,7 @@ const CARD = 'display:flex;flex-direction:column;background:#FFFFFF;border:1px s
 /** Board laptop-parent-learn at 1440: tonight's lesson card beside this week and what helps. */
 export function LearnLaptop({ childId, data, tonight }: { childId: string; data: LearnData; tonight: NonNullable<LearnData['tonight']> }) {
   const { childFirstName: name, week, helps } = data
-  const topic = shortTopic(tonight.topicName)
+  const topic = tonight.shortName
   const steps = ['Warm-up', 'Learn', tonight.questions ? `${tonight.questions} questions` : 'Questions', 'Results']
 
   return (
@@ -73,7 +73,7 @@ export function LearnLaptop({ childId, data, tonight }: { childId: string; data:
             <ol style={css('list-style:none;margin:0;padding:0;display:flex;flex-direction:column')}>
               {week.map((s, i) => {
                 const now = s.id === tonight.id
-                const title = s.quickCheck ? `${shortTopic(s.topicName)}, quick check` : shortTopic(s.topicName)
+                const title = s.quickCheck ? `${s.shortName}, quick check` : s.shortName
                 const sub = s.quickCheck ? `${s.questions} questions · ${s.minutes} min` : `${FORMAT_LABEL[s.format]} · ${s.minutes} min`
                 return (
                   <li

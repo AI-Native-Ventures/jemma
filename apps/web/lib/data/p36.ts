@@ -1,6 +1,6 @@
 import { dayLabel, getBeyond, joinList, type ActivityRow } from './p23'
 import { getPaperDetail, getTestsList, sharedTopicWord, type PaperDetail } from './p24'
-import { loadLearn, shortTopic } from './p25'
+import { loadLearn } from './p25'
 
 /** Laptop-only data for the parent profile, learn and tests boards. Composes the phone loaders, adds no new queries of its own. */
 
@@ -18,7 +18,7 @@ const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
 export async function getProfileExtras(childId: string): Promise<ProfileExtras> {
   const [beyond, learn] = await Promise.all([getBeyond(childId), loadLearn(childId)])
   const tonight = learn.tonight
-    ? `Tonight: ${learn.tonight.minutes} min on ${lowerFirst(shortTopic(learn.tonight.topicName))}`
+    ? `Tonight: ${learn.tonight.minutes} min on ${lowerFirst(learn.tonight.shortName)}`
     : null
   const days = (beyond?.weeks ?? []).flatMap((w) => w.days.map((d) => d.status))
   return {
