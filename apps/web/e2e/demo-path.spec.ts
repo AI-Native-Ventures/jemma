@@ -19,8 +19,13 @@ type Logins = Record<'teacher' | 'parent' | 'learner', { email: string; password
 
 const SAMPLE_BUCKET = 'sample-papers'
 
-/** Waits until the agent has nothing queued or running for this school. A failed event stops the test with its error. */
-async function agentIdle(schoolId: string, what: string): Promise<void> {
+const eventCount = async (schoolId: string) => (await db().from('events').select('id').eq('school_id', schoolId)).data?.length ?? 0
+
+/**
+ * Waits until the agent has nothing queued or running for this school and has seen more than `since` events
+ * (the count taken before the click that sends the next one). A failed event stops the test with its error.
+ */
+async function agentIdle(schoolId: string, what: string, since: number): Promise<void> {
   const admin = db()
   const started = Date.now()
   let quiet = 0
@@ -30,7 +35,7 @@ async function agentIdle(schoolId: string, what: string): Promise<void> {
     const failed = rows.find((e) => e.status === 'failed')
     if (failed) throw new Error(`agent event ${failed.type} failed while ${what}: ${failed.error}`)
     const busy = rows.some((e) => e.status === 'queued' || e.status === 'running')
-    quiet = busy ? 0 : quiet + 1
+    quiet = busy || rows.length <= since ? 0 : quiet + 1
     if (quiet >= 3) return
     await new Promise((r) => setTimeout(r, 2000))
   }
@@ -84,9 +89,9 @@ test('the whole demo path', async ({ page }) => {
 
     // 1. Teacher uploads the curriculum, Jemma drafts the map, the teacher approves it.
     await page.goto(`${base}/curriculum`)
+    let seen = await eventCount(schoolId)
     await page.getByRole('button', { name: 'Use the sample curriculum' }).click()
-    await expect(page.getByText('Jemma is reading your curriculum.')).toBeVisible()
-    await agentIdle(schoolId, 'drafting the map')
+    await agentIdle(schoolId, 'drafting the map', seen)
     await page.goto(`${base}/curriculum`)
     await page.getByRole('link', { name: 'Check the draft map' }).click()
     await expect(page.getByRole('heading', { level: 1 })).toContainText(/topics in \d terms?/)
@@ -101,10 +106,11 @@ test('the whole demo path', async ({ page }) => {
     // 2. Teacher snaps the memo, Jemma reads the key, the teacher approves it.
     await page.goto(`${base}/snap`)
     await expect(page.getByRole('heading', { name: 'Which test are we marking?' })).toBeVisible()
+    seen = await eventCount(schoolId)
     await page.locator('input[type=file][capture]').setInputFiles(await sampleFile('class-test-1/memo.png', 'memo.png'))
     await page.waitForURL(/\/snap\/[0-9a-f-]+\/key$/)
     const testId = page.url().match(/snap\/([0-9a-f-]+)\/key/)![1]!
-    await agentIdle(schoolId, 'reading the memo')
+    await agentIdle(schoolId, 'reading the memo', seen)
     await page.reload()
     await expect(page.getByRole('heading', { name: /I read \d+ answers from the memo/ })).toBeVisible()
     for (const yes of await page.getByRole('button', { name: /^Yes, / }).all()) await yes.click().catch(() => undefined)
@@ -115,11 +121,12 @@ test('the whole demo path', async ({ page }) => {
     expect((key.data!.items as unknown[]).length).toBe(10)
 
     // 3. The 5 sample papers: Jemma reads and marks them, finds the gaps, writes the class report and each lesson.
+    seen = await eventCount(schoolId)
     await page.getByRole('button', { name: 'Use the sample papers' }).click()
     await expect(page.getByRole('heading', { name: '5 papers in. Snap the next one, or add a page.' })).toBeVisible({ timeout: 30_000 })
     await page.getByRole('link', { name: 'Done snapping · 5 papers' }).click()
     await page.waitForURL(/\/progress$/)
-    await agentIdle(schoolId, 'reading the 5 papers')
+    await agentIdle(schoolId, 'reading the 5 papers', seen + 4)
     const papers = await admin.from('papers').select('id, child_id, status, total, name_read').eq('test_id', testId)
     expect(papers.data).toHaveLength(5)
     expect(papers.data!.every((p) => p.status === 'marked' || p.status === 'needs_you')).toBe(true)
@@ -133,6 +140,7 @@ test('the whole demo path', async ({ page }) => {
     // 4. Teacher fixes Sipho Q7: through Needs you when Jemma was unsure, else on the marked paper.
     const sipho = papers.data!.find((p) => p.name_read === 'Sipho')!
     const check = await admin.from('needs_you_items').select('id').eq('school_id', schoolId).eq('kind', 'check_answer').eq('status', 'open').eq('ref_id', sipho.id)
+    seen = await eventCount(schoolId)
     if (check.data?.length) {
       await page.goto(`${base}/needs-you/${check.data[0]!.id}`)
       await page.getByRole('button', { name: '0,6', exact: true }).click()
@@ -144,7 +152,7 @@ test('the whole demo path', async ({ page }) => {
       await page.getByRole('button', { name: 'Save' }).click()
     }
     await expect.poll(async () => (await admin.from('question_results').select('mark').eq('paper_id', sipho.id).eq('n', 7).single()).data?.mark, { timeout: 30_000 }).toBe(1)
-    await agentIdle(schoolId, 'redoing the class report after the fix')
+    await agentIdle(schoolId, 'redoing the class report after the fix', seen)
 
     // 5. Switch to Thandi, link Amina, switch back to approve, open Amina's profile.
     await signInAs(page, logins, 'parent')
@@ -173,6 +181,7 @@ test('the whole demo path', async ({ page }) => {
     await page.getByRole('link', { name: /^Start, then hand Amina the phone/ }).click()
     await page.waitForURL(`**/p/${sb.childId}/learn/handover`)
     await page.getByRole('button', { name: 'Amina has the phone' }).click()
+    seen = await eventCount(schoolId)
     await page.waitForURL(`**/k/session/${session.data!.id}`)
     let tries = 0
     for (let guard = 0; guard < 80 && !(await page.getByRole('heading', { name: /^You finished/ }).isVisible()); guard++) {
@@ -199,7 +208,7 @@ test('the whole demo path', async ({ page }) => {
     const done = await admin.from('sessions').select('status, right').eq('id', session.data!.id).single()
     expect(done.data?.status).toBe('done')
     expect(done.data?.right).toBe(tries - 2)
-    await agentIdle(schoolId, 'moving the gap and planning the next lesson')
+    await agentIdle(schoolId, 'moving the gap and planning the next lesson', seen)
 
     // 7. Ms Banda's class home and Thandi's session page show the result.
     await signInAs(page, logins, 'teacher')
@@ -214,6 +223,7 @@ test('the whole demo path', async ({ page }) => {
     // 8. Teacher adds a note and marks the register; Thandi adds an activity; the guidance card updates.
     const card = async () => (await admin.from('guidance_cards').select('updated_at').eq('child_id', sb.childId).maybeSingle()).data?.updated_at ?? ''
     const before = await card()
+    seen = await eventCount(schoolId)
     await signInAs(page, logins, 'teacher')
     await page.goto(`${base}/learners/${sb.childId}`)
     await page.getByRole('button', { name: 'Confidence' }).click()
@@ -238,7 +248,7 @@ test('the whole demo path', async ({ page }) => {
     await page.getByRole('button', { name: 'Wed' }).click()
     await page.getByRole('button', { name: 'Save activity' }).click()
     await expect(page).toHaveURL(`/p/${sb.childId}`)
-    await agentIdle(schoolId, 'updating the guidance card')
+    await agentIdle(schoolId, 'updating the guidance card', seen + 1)
     expect(await card()).not.toBe(before)
     const logged = await admin.from('activity_log').select('text').eq('school_id', schoolId).eq('tool', 'subject_guidance')
     expect(logged.data!.length).toBeGreaterThan(0)

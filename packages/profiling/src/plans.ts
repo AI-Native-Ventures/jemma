@@ -112,8 +112,10 @@ export async function postconditions(event: JemmaEvent, db: JemmaDb): Promise<st
   }
   switch (event.type) {
     case 'curriculum.uploaded': {
-      const topics = await ok(db.from('topics').select('id').eq('map_id', event.mapId).limit(1))
-      if (topics.length === 0) missing.push(`no topics drafted for map ${event.mapId}`)
+      // A drafted map lives in curriculum_maps.draft; `topics` rows only appear once the teacher approves it.
+      const map = await ok(db.from('curriculum_maps').select('draft').eq('id', event.mapId).single())
+      const terms = (map.draft as { terms?: { topics?: unknown[] }[] } | null)?.terms ?? []
+      if (!terms.some((t) => (t.topics?.length ?? 0) > 0)) missing.push(`no topics drafted for map ${event.mapId}`)
       break
     }
     case 'key.snapped': {

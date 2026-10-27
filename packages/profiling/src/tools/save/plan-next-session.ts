@@ -129,6 +129,20 @@ export const planNextSession = defineTool({
     const session = await ok(
       db.from('sessions').insert({ child_id: childId, lesson_id: lesson.id, status: 'planned', planned_for: plannedFor, warmup: [] as NonNullable<Json>, topic_id: pick.topicId, topic_name: pick.topicName, format }).select('id').single(),
     )
+    // Two runs planning the same child at once (the papers of a test are read three at a time) both get here:
+    // the oldest planned session stays and the other run removes its own and returns the oldest.
+    const ahead = await ok(
+      db.from('sessions').select('id, lesson_id, planned_for, topic_id, topic_name, format').eq('child_id', childId).eq('status', 'planned').gte('planned_for', today).order('created_at').order('id'),
+    )
+    const keeper = ahead[0]
+    if (keeper && keeper.id !== session.id) {
+      await db.from('sessions').delete().eq('id', session.id)
+      await db.from('lessons').delete().eq('id', lesson.id)
+      return {
+        planned: true, reused: true, sessionId: keeper.id, lessonId: keeper.lesson_id ?? '',
+        topicName: keeper.topic_name ?? pick.topicName, topicId: keeper.topic_id, format: keeper.format ?? format, plannedFor: keeper.planned_for, queue,
+      }
+    }
     return {
       planned: true, reused: false, sessionId: session.id, lessonId: lesson.id,
       topicName: pick.topicName, topicId: pick.topicId, format, plannedFor, queue,

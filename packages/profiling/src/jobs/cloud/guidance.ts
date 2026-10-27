@@ -1,11 +1,10 @@
-/// <reference path="./raw.d.ts" />
 import { generateText, Output, type LanguageModel } from 'ai'
 import { getModel } from '../../ai'
 import { LearnerProfileSchema } from '../../schemas/profile'
 import { assertInSchool, contextFor, type ToolContext } from '../../tools/context'
 import { getLearnerProfile } from '../../tools/read/get-learner-profile'
 import { GuidanceDraftSchema, subjectGuidance } from '../../tools/save/subject-guidance'
-import promptText from '../guidance.md?raw'
+import promptText from '../guidance.md'
 
 /** The guidance job in the cloud: read the profile, ask the model for a guidance card, save it. */
 export async function runGuidance(
