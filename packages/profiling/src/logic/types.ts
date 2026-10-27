@@ -1,4 +1,4 @@
-export type Format = 'reading' | 'diagram' | 'audio'
+export type { Format } from '../schemas/lesson'
 export type Stage = 'new' | 'practising' | 'fixed'
 
 export type DiagnosedResult = {
