@@ -2,11 +2,11 @@
 // Server only: needs the service role client.
 import type { Json, JemmaDb } from '../../packages/profiling/src/db'
 import { LessonSchema, ReteachSchema, GuidanceSchema, TopicMapDraftSchema, AnswerKeyItemSchema } from '../../packages/profiling/src/schemas'
-import { classTest1Results, classTest1Roster, classTest1Scores, classTest1Wrong, siphoQ7BeforeFix } from './fixtures/class-test-1'
+import { classTest1Results, classTest1Roster, classTest1Scores, classTest1ScoresBeforeFix, classTest1Wrong, siphoQ7BeforeFix } from './fixtures/class-test-1'
 import { AMINA_ACTIVITIES, AWAY_DAY_INDEX, CAST, CHILD_PIN, CLASS, NOTES, SCHOOL, lastSchoolDays } from './fixtures/cast'
 import { FIXED_GAPS, FORMAT_FAMILY, FORMAT_TRIALS, TERM3_ROWS } from './fixtures/history'
 import {
-  AMINA_LESSON, AMINA_LOG, CLASS_LOG, CURRICULUM_DOCS, HOMEWORK_NEEDS, HOMEWORK_ROWS, LESSON_TOPIC, RETEACH, RETEACH_TOPIC,
+  AMINA_LESSON, AMINA_LOG, CLASS_LOG, CURRICULUM_DOCS, HOMEWORK_NEEDS, SIPHO_NEEDS, WEEK_PLAN, HOMEWORK_ROWS, LESSON_TOPIC, RETEACH, RETEACH_EXPLANATION, RETEACH_MISSING_BASIC, RETEACH_TOPIC, RETEACH_WHY,
   SESSION_DONE, SESSION_LOG, SESSION_TRY, SESSION_WARMUP, TEST_TITLE, TERMS, answerKeyItems, guidanceCard, topicMapDraft,
 } from './fixtures/marked-state'
 import { SAMPLE_FILES, answerCrop, ensureSampleFiles } from './fixtures/sample-papers'
@@ -318,8 +318,10 @@ async function buildMarked(c: MarkedCtx): Promise<void> {
       .from('papers')
       .insert(
         classTest1Roster.map((r) => ({
-          test_id: test.id, child_id: childId[r.id]!, owner: 'teacher' as const, kind: 'test' as const, status: 'marked' as const,
-          name_read: r.name, total: classTest1Scores[r.id]!,
+          test_id: test.id, child_id: childId[r.id]!, owner: 'teacher' as const, kind: 'test' as const,
+          status: r.id === 'sipho' && !c.withSession ? ('needs_you' as const) : ('marked' as const),
+          name_read: r.name,
+          total: (c.withSession ? classTest1Scores : classTest1ScoresBeforeFix)[r.id]!,
         })),
       )
       .select('id, child_id'),
@@ -332,16 +334,19 @@ async function buildMarked(c: MarkedCtx): Promise<void> {
     const name = classTest1Roster.find((x) => x.id === r.childId)!.id
     const wrong = classTest1Wrong[name]?.[r.n]
     const key = keyOf.get(r.n)!
-    const siphoFixed = name === 'sipho' && r.n === siphoQ7BeforeFix.n
+    const siphoQ7 = name === 'sipho' && r.n === siphoQ7BeforeFix.n
+    // Before the fix Sipho's Q7 is still as read (0,8 at 0.42, wrong); the session_done stage has it fixed.
+    const siphoFixed = siphoQ7 && c.withSession
+    const siphoOpen = siphoQ7 && !c.withSession
     return {
       paper_id: paperOf.get(childId[name]!)!,
       child_id: childId[name]!,
       n: r.n,
       prompt: r.prompt,
-      answer_read: r.answerRead,
-      read_confidence: siphoFixed ? 1 : wrong ? 0.93 : 0.96,
-      correct: r.correct,
-      mark: r.correct ? 1 : 0,
+      answer_read: siphoOpen ? siphoQ7BeforeFix.answerRead : r.answerRead,
+      read_confidence: siphoOpen ? siphoQ7BeforeFix.confidence : siphoFixed ? 1 : wrong ? 0.93 : 0.96,
+      correct: siphoOpen ? false : r.correct,
+      mark: !siphoOpen && r.correct ? 1 : 0,
       crop: json(answerCrop(r.n)),
       topic_id: tid(key.topicName),
       topic_name: key.topicName,
@@ -426,8 +431,44 @@ async function buildMarked(c: MarkedCtx): Promise<void> {
       .single(),
     'session',
   )
+  // The rest of Amina's week (parent-learn). A session needs a lesson row, so these get a stub the
+  // lesson writer replaces when the day comes; only tonight's lesson is written out.
+  const weekLessons = await ok(
+    admin
+      .from('lessons')
+      .insert(
+        WEEK_PLAN.map((w) => ({
+          child_id: aminaId, topic_id: tid(w.topic), topic_name: w.topic, format: w.format,
+          content: json({ format: w.format, title: w.title, minutes: w.minutes, planned: true }),
+        })),
+      )
+      .select('id'),
+    'week lessons',
+  )
+  await ok(
+    admin.from('sessions').insert(
+      WEEK_PLAN.map((w, i) => ({
+        child_id: aminaId, lesson_id: weekLessons[i]!.id, status: 'planned' as const,
+        planned_for: new Date(c.now.getTime() + w.inDays * DAY).toISOString().slice(0, 10), warmup: json([]),
+      })),
+    ),
+    'week sessions',
+  )
   await Promise.all([
-    ok(admin.from('reteach_plans').insert({ class_id: classId, topic_id: tid(RETEACH_TOPIC), topic_name: RETEACH_TOPIC, content: json(reteach) }), 'reteach'),
+    ok(
+      admin.from('reteach_plans').insert({
+        class_id: classId, test_id: test.id, topic_id: tid(RETEACH_TOPIC), topic_name: RETEACH_TOPIC, content: json(reteach),
+        why: RETEACH_WHY, missing_basic: RETEACH_MISSING_BASIC, explanation: RETEACH_EXPLANATION,
+      }),
+      'reteach',
+    ),
+    ok(
+      admin.from('needs_you_items').insert({
+        owner_id: teacherId, school_id: schoolId, child_id: childId.sipho!, kind: 'check_answer', ref_id: paperOf.get(childId.sipho!)!,
+        status: c.withSession ? 'done' : 'open', ...SIPHO_NEEDS,
+      }),
+      'sipho needs you',
+    ),
     ok(admin.from('guidance_cards').insert({ child_id: aminaId, content: json(guidance) }), 'guidance'),
     ok(
       admin.from('parent_links').insert({
