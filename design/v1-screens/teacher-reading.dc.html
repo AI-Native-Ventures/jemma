@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>State · Jemma working</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+@keyframes jemmaSpin{to{transform:rotate(360deg)}}
+@keyframes jemmaPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.82);opacity:0.65}}
+</style>
+</helmet>
+<div style="width:390px;height:1004px;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;display:flex;flex-direction:column;overflow:hidden">
+  <header style="display:flex;align-items:center;gap:4px;padding:10px 16px 6px 8px">
+    <a href="teacher-class-home.dc.html" aria-label="Close" style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </a>
+    <span style="display:flex;flex-direction:column;line-height:1.2;flex:1;min-width:0">
+      <span style="font-size:18px;font-weight:700">Class Test 1</span>
+      <span style="font-size:13px;color:#5D5A73">5 papers snapped at 14:10</span>
+    </span>
+  </header>
+
+  <main style="flex:1;display:flex;flex-direction:column;gap:20px;padding:18px 20px 24px;min-height:0">
+    <section aria-live="polite" style="display:flex;flex-direction:column;gap:14px;padding:22px 20px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:22px">
+      <span aria-hidden="true" style="width:44px;height:44px;border-radius:14px;background:#FFF1ED;display:flex;align-items:center;justify-content:center">
+        <svg width="20" height="20" viewBox="0 0 16 16" style="animation:jemmaPulse 1.6s ease-in-out infinite"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+      </span>
+      <h1 style="margin:0;font-size:30px;line-height:1.12;font-weight:600;letter-spacing:-0.015em">Reading 3 of 5 papers</h1>
+      <div aria-hidden="true" style="height:10px;border-radius:999px;background:#EEEDF5;overflow:hidden;display:flex">
+        <span style="width:60%;background:#1F1D36;border-radius:999px"></span>
+      </div>
+      <p style="margin:0;font-size:16px;line-height:1.45;color:#5D5A73;text-wrap:pretty">About a minute left. You can leave this screen. Anything I'm unsure about goes to Needs you.</p>
+    </section>
+
+    <section aria-labelledby="papers" style="display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px;padding:8px 16px">
+      <h2 id="papers" style="margin:8px 0 4px;font-size:16px;font-weight:600">Papers</h2>
+      <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column">
+        <li style="display:flex;align-items:center;gap:12px;min-height:56px;border-top:1px solid #EFEEF4">
+          <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:999px;background:#FFD3C7;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">A</span>
+          <span style="flex:1;font-size:16px;font-weight:500">Amina</span>
+          <span style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums">6/10</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Marked"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+        </li>
+        <li style="display:flex;align-items:center;gap:12px;min-height:56px;border-top:1px solid #EFEEF4">
+          <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:999px;background:#E9E7F3;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">T</span>
+          <span style="flex:1;font-size:16px;font-weight:500">Thabo</span>
+          <span style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums">5/10</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Marked"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+        </li>
+        <li style="display:flex;align-items:center;gap:12px;min-height:56px;border-top:1px solid #EFEEF4">
+          <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:999px;background:#E9E7F3;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">L</span>
+          <span style="flex:1;font-size:16px;font-weight:500">Lerato</span>
+          <span style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums">9/10</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Marked"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+        </li>
+        <li style="display:flex;align-items:center;gap:12px;min-height:56px;border-top:1px solid #EFEEF4">
+          <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:999px;border:1.5px dashed #8C89A3;font-size:13px;font-weight:600;color:#5D5A73;display:flex;align-items:center;justify-content:center">4</span>
+          <span style="flex:1;display:flex;flex-direction:column;line-height:1.25"><span style="font-size:16px;font-weight:500">Paper 4</span><span style="font-size:13px;color:#5D5A73">Reading the name and 10 answers</span></span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" role="img" aria-label="Reading" style="animation:jemmaSpin 0.9s linear infinite"><circle cx="12" cy="12" r="9" stroke="#E3E1EE" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="#1F1D36" stroke-width="3" stroke-linecap="round"/></svg>
+        </li>
+        <li style="display:flex;align-items:center;gap:12px;min-height:56px;border-top:1px solid #EFEEF4">
+          <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:999px;border:1.5px dashed #8C89A3;font-size:13px;font-weight:600;color:#5D5A73;display:flex;align-items:center;justify-content:center">5</span>
+          <span style="flex:1;font-size:16px;font-weight:500;color:#5D5A73">Paper 5</span>
+          <span style="font-size:14px;color:#5D5A73">Waiting</span>
+        </li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="did" style="display:flex;flex-direction:column;gap:10px;padding:16px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px">
+      <h2 id="did" style="margin:0;font-size:16px;font-weight:600">What Jemma did</h2>
+      <ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+        <li style="display:flex;gap:12px;font-size:14px;line-height:1.4"><span style="width:40px;flex:none;color:#5D5A73;font-variant-numeric:tabular-nums">14:11</span><span>Matched Amina's and Thabo's names to your class list</span></li>
+        <li style="display:flex;gap:12px;font-size:14px;line-height:1.4"><span style="width:40px;flex:none;color:#5D5A73;font-variant-numeric:tabular-nums">14:12</span><span>Marked 30 answers against your key</span></li>
+        <li style="display:flex;gap:12px;font-size:14px;line-height:1.4"><span style="width:40px;flex:none;color:#5D5A73;font-variant-numeric:tabular-nums">14:12</span><span>Saw the same fraction mistake on 2 papers so far</span></li>
+      </ol>
+    </section>
+
+    <div style="flex:1"></div>
+    <a href="teacher-class-home.dc.html" style="display:flex;align-items:center;justify-content:center;height:52px;border-radius:14px;border:1.5px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:17px;font-weight:600;text-decoration:none">Back to class</a>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1004}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

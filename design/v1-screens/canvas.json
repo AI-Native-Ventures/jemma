@@ -1,0 +1,1384 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-26T17:40:00Z"
+ },
+ "title": "Jemma v1 screens",
+ "launch": {
+  "view": "canvas"
+ },
+ "pages": [],
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 1268,
+   "title": "Judges · Try the demo",
+   "is_interactive": true
+  },
+  "shared-sign-in.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Sign in",
+   "is_interactive": true
+  },
+  "shared-sign-up.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Shared · Create an account",
+   "is_interactive": true
+  },
+  "shared-code.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Sign in · Enter the code",
+   "is_interactive": true
+  },
+  "shared-role.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Pick a role",
+   "is_interactive": true
+  },
+  "legal-privacy.dc.html": {
+   "x": 2350,
+   "y": 0,
+   "w": 390,
+   "h": 1272,
+   "title": "Shared · Privacy in plain words",
+   "is_interactive": true
+  },
+  "help.dc.html": {
+   "x": 2820,
+   "y": 0,
+   "w": 390,
+   "h": 924,
+   "title": "Shared · Help",
+   "is_interactive": true
+  },
+  "install-prompt.dc.html": {
+   "x": 3290,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Shared · Add Jemma to your home screen",
+   "is_interactive": true
+  },
+  "demo-switch.dc.html": {
+   "x": 3760,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Judges · Switch role",
+   "is_interactive": true
+  },
+  "demo-reset.dc.html": {
+   "x": 4230,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Judges · Reset demo",
+   "is_interactive": true
+  },
+  "teacher-onboarding.dc.html": {
+   "x": 0,
+   "y": 1752,
+   "w": 390,
+   "h": 936,
+   "title": "Teacher · About you (step 1 of 2)",
+   "is_interactive": true
+  },
+  "teacher-classes.dc.html": {
+   "x": 470,
+   "y": 1752,
+   "w": 390,
+   "h": 844,
+   "title": "Teacher · Your classes",
+   "is_interactive": true
+  },
+  "teacher-class-setup.dc.html": {
+   "x": 940,
+   "y": 1752,
+   "w": 390,
+   "h": 1372,
+   "title": "Teacher · New class and learners",
+   "is_interactive": true
+  },
+  "teacher-curriculum-upload.dc.html": {
+   "x": 1410,
+   "y": 1752,
+   "w": 390,
+   "h": 1068,
+   "title": "Teacher · Curriculum upload",
+   "is_interactive": true
+  },
+  "teacher-curriculum-map.dc.html": {
+   "x": 1880,
+   "y": 1752,
+   "w": 390,
+   "h": 1492,
+   "title": "Teacher · Draft topic map",
+   "is_interactive": true
+  },
+  "teacher-curriculum-approved.dc.html": {
+   "x": 2350,
+   "y": 1752,
+   "w": 390,
+   "h": 1500,
+   "title": "Teacher · Approved map",
+   "is_interactive": true
+  },
+  "teacher-snap-test.dc.html": {
+   "x": 2820,
+   "y": 1752,
+   "w": 390,
+   "h": 1104,
+   "title": "Teacher · Snap: create a test",
+   "is_interactive": true
+  },
+  "teacher-key-draft.dc.html": {
+   "x": 3290,
+   "y": 1752,
+   "w": 390,
+   "h": 1300,
+   "title": "Teacher · Snap: Jemma drafts the key",
+   "is_interactive": true
+  },
+  "teacher-snap-key.dc.html": {
+   "x": 3760,
+   "y": 1752,
+   "w": 390,
+   "h": 1296,
+   "title": "Teacher · Snap: approve answer key",
+   "is_interactive": true
+  },
+  "teacher-snap-papers.dc.html": {
+   "x": 4230,
+   "y": 1752,
+   "w": 390,
+   "h": 844,
+   "title": "Teacher · Snap papers, option A: live camera",
+   "is_interactive": true
+  },
+  "teacher-snap-queue.dc.html": {
+   "x": 4700,
+   "y": 1752,
+   "w": 390,
+   "h": 904,
+   "title": "Teacher · Snap papers, option B: phone camera",
+   "is_interactive": true
+  },
+  "teacher-reading.dc.html": {
+   "x": 5170,
+   "y": 1752,
+   "w": 390,
+   "h": 1004,
+   "title": "State · Jemma working",
+   "is_interactive": true
+  },
+  "teacher-review.dc.html": {
+   "x": 5640,
+   "y": 1752,
+   "w": 390,
+   "h": 1376,
+   "title": "Teacher · Needs you review",
+   "is_interactive": true
+  },
+  "teacher-review-name.dc.html": {
+   "x": 6110,
+   "y": 1752,
+   "w": 390,
+   "h": 844,
+   "title": "Teacher · Needs you: unreadable name",
+   "is_interactive": true
+  },
+  "teacher-paper.dc.html": {
+   "x": 6580,
+   "y": 1752,
+   "w": 390,
+   "h": 844,
+   "title": "Teacher · Whole paper",
+   "is_interactive": true
+  },
+  "teacher-class-home.dc.html": {
+   "x": 0,
+   "y": 3732,
+   "w": 390,
+   "h": 1532,
+   "title": "Teacher · Class home",
+   "is_interactive": true
+  },
+  "teacher-gap.dc.html": {
+   "x": 470,
+   "y": 3732,
+   "w": 390,
+   "h": 1560,
+   "title": "Teacher · Gap detail",
+   "is_interactive": true
+  },
+  "teacher-learners.dc.html": {
+   "x": 940,
+   "y": 3732,
+   "w": 390,
+   "h": 900,
+   "title": "Teacher · Learners",
+   "is_interactive": true
+  },
+  "teacher-child-profile.dc.html": {
+   "x": 1410,
+   "y": 3732,
+   "w": 390,
+   "h": 1836,
+   "title": "Teacher · Amina's profile",
+   "is_interactive": true
+  },
+  "teacher-fix-mark.dc.html": {
+   "x": 1880,
+   "y": 3732,
+   "w": 390,
+   "h": 844,
+   "title": "Teacher · Fix a mark",
+   "is_interactive": true
+  },
+  "teacher-register.dc.html": {
+   "x": 2350,
+   "y": 3732,
+   "w": 390,
+   "h": 848,
+   "title": "Teacher · Today's register",
+   "is_interactive": true
+  },
+  "teacher-learner.dc.html": {
+   "x": 2820,
+   "y": 3732,
+   "w": 390,
+   "h": 1220,
+   "title": "Teacher · Amina, add a note",
+   "is_interactive": true
+  },
+  "teacher-tests.dc.html": {
+   "x": 3290,
+   "y": 3732,
+   "w": 390,
+   "h": 844,
+   "title": "Teacher · Tests",
+   "is_interactive": true
+  },
+  "teacher-test.dc.html": {
+   "x": 3760,
+   "y": 3732,
+   "w": 390,
+   "h": 1100,
+   "title": "Teacher · Test, per question",
+   "is_interactive": true
+  },
+  "teacher-question.dc.html": {
+   "x": 4230,
+   "y": 3732,
+   "w": 390,
+   "h": 1008,
+   "title": "Teacher · Who missed question 1",
+   "is_interactive": true
+  },
+  "teacher-notifications.dc.html": {
+   "x": 4700,
+   "y": 3732,
+   "w": 390,
+   "h": 968,
+   "title": "Teacher · Notifications",
+   "is_interactive": true
+  },
+  "teacher-class-next.dc.html": {
+   "x": 5170,
+   "y": 3732,
+   "w": 390,
+   "h": 1472,
+   "title": "Teacher · Class home, next morning",
+   "is_interactive": true
+  },
+  "teacher-account.dc.html": {
+   "x": 0,
+   "y": 6048,
+   "w": 390,
+   "h": 844,
+   "title": "Teacher · Your account",
+   "is_interactive": true
+  },
+  "teacher-class-settings.dc.html": {
+   "x": 470,
+   "y": 6048,
+   "w": 390,
+   "h": 1220,
+   "title": "Teacher · Class settings",
+   "is_interactive": true
+  },
+  "teacher-link-request.dc.html": {
+   "x": 940,
+   "y": 6048,
+   "w": 390,
+   "h": 844,
+   "title": "Teacher · Needs you: approve a parent",
+   "is_interactive": true
+  },
+  "teacher-year-end.dc.html": {
+   "x": 1410,
+   "y": 6048,
+   "w": 390,
+   "h": 844,
+   "title": "Teacher · End of the year",
+   "is_interactive": true
+  },
+  "parent-start.dc.html": {
+   "x": 0,
+   "y": 7748,
+   "w": 390,
+   "h": 844,
+   "title": "Parent · First visit, no child yet",
+   "is_interactive": true
+  },
+  "parent-children.dc.html": {
+   "x": 470,
+   "y": 7748,
+   "w": 390,
+   "h": 844,
+   "title": "Parent · Your children",
+   "is_interactive": true
+  },
+  "parent-add-child.dc.html": {
+   "x": 940,
+   "y": 7748,
+   "w": 390,
+   "h": 844,
+   "title": "Parent · Add a child",
+   "is_interactive": true
+  },
+  "parent-consent.dc.html": {
+   "x": 1410,
+   "y": 7748,
+   "w": 390,
+   "h": 928,
+   "title": "Parent · Before you link",
+   "is_interactive": true
+  },
+  "parent-link-pending.dc.html": {
+   "x": 1880,
+   "y": 7748,
+   "w": 390,
+   "h": 844,
+   "title": "Parent · Waiting for the teacher",
+   "is_interactive": true
+  },
+  "parent-profile.dc.html": {
+   "x": 2350,
+   "y": 7748,
+   "w": 390,
+   "h": 2500,
+   "title": "Parent · Profile",
+   "is_interactive": true
+  },
+  "parent-report.dc.html": {
+   "x": 2820,
+   "y": 7748,
+   "w": 390,
+   "h": 2056,
+   "title": "Parent · Report",
+   "is_interactive": true
+  },
+  "parent-beyond.dc.html": {
+   "x": 3290,
+   "y": 7748,
+   "w": 390,
+   "h": 1472,
+   "title": "Parent · Beyond the tests",
+   "is_interactive": true
+  },
+  "parent-topic.dc.html": {
+   "x": 3760,
+   "y": 7748,
+   "w": 390,
+   "h": 1368,
+   "title": "Parent · Topic detail",
+   "is_interactive": true
+  },
+  "parent-paper.dc.html": {
+   "x": 4230,
+   "y": 7748,
+   "w": 390,
+   "h": 1660,
+   "title": "Parent · Marked paper",
+   "is_interactive": true
+  },
+  "parent-flag-mark.dc.html": {
+   "x": 4700,
+   "y": 7748,
+   "w": 390,
+   "h": 844,
+   "title": "Parent · This mark looks wrong",
+   "is_interactive": true
+  },
+  "parent-tests.dc.html": {
+   "x": 5170,
+   "y": 7748,
+   "w": 390,
+   "h": 952,
+   "title": "Parent · Tests",
+   "is_interactive": true
+  },
+  "parent-notifications.dc.html": {
+   "x": 5640,
+   "y": 7748,
+   "w": 390,
+   "h": 1016,
+   "title": "Parent · Notifications",
+   "is_interactive": true
+  },
+  "parent-learn.dc.html": {
+   "x": 0,
+   "y": 10728,
+   "w": 390,
+   "h": 1328,
+   "title": "Parent · Learn",
+   "is_interactive": true
+  },
+  "parent-handover.dc.html": {
+   "x": 470,
+   "y": 10728,
+   "w": 390,
+   "h": 844,
+   "title": "Parent · Hand the phone to Amina",
+   "is_interactive": true
+  },
+  "parent-session.dc.html": {
+   "x": 940,
+   "y": 10728,
+   "w": 390,
+   "h": 1116,
+   "title": "Parent · Session result",
+   "is_interactive": true
+  },
+  "parent-snap-type.dc.html": {
+   "x": 1410,
+   "y": 10728,
+   "w": 390,
+   "h": 844,
+   "title": "Parent · Snap: what is it",
+   "is_interactive": true
+  },
+  "parent-snap-photo.dc.html": {
+   "x": 1880,
+   "y": 10728,
+   "w": 390,
+   "h": 844,
+   "title": "Parent · Snap: photograph",
+   "is_interactive": true
+  },
+  "parent-snap-reading.dc.html": {
+   "x": 2350,
+   "y": 10728,
+   "w": 390,
+   "h": 868,
+   "title": "Parent · Snap: Jemma reading",
+   "is_interactive": true
+  },
+  "parent-snap-check.dc.html": {
+   "x": 2820,
+   "y": 10728,
+   "w": 390,
+   "h": 992,
+   "title": "Parent · Snap: check and confirm",
+   "is_interactive": true
+  },
+  "parent-snap-saved.dc.html": {
+   "x": 3290,
+   "y": 10728,
+   "w": 390,
+   "h": 844,
+   "title": "Parent · Snap: saved",
+   "is_interactive": true
+  },
+  "parent-activity.dc.html": {
+   "x": 3760,
+   "y": 10728,
+   "w": 390,
+   "h": 904,
+   "title": "Parent · Add an activity",
+   "is_interactive": true
+  },
+  "parent-account.dc.html": {
+   "x": 0,
+   "y": 12536,
+   "w": 390,
+   "h": 844,
+   "title": "Parent · Your account",
+   "is_interactive": true
+  },
+  "parent-child-settings.dc.html": {
+   "x": 470,
+   "y": 12536,
+   "w": 390,
+   "h": 1212,
+   "title": "Parent · Amina's settings",
+   "is_interactive": true
+  },
+  "parent-child-login.dc.html": {
+   "x": 940,
+   "y": 12536,
+   "w": 390,
+   "h": 844,
+   "title": "Parent · Amina's sign-in",
+   "is_interactive": true
+  },
+  "parent-data.dc.html": {
+   "x": 1410,
+   "y": 12536,
+   "w": 390,
+   "h": 1028,
+   "title": "Parent · Privacy and your data",
+   "is_interactive": true
+  },
+  "child-sign-in.dc.html": {
+   "x": 0,
+   "y": 14228,
+   "w": 390,
+   "h": 844,
+   "title": "Amina · Sign in",
+   "is_interactive": true
+  },
+  "child-today.dc.html": {
+   "x": 470,
+   "y": 14228,
+   "w": 390,
+   "h": 844,
+   "title": "Amina · Today",
+   "is_interactive": true
+  },
+  "child-loading.dc.html": {
+   "x": 940,
+   "y": 14228,
+   "w": 390,
+   "h": 844,
+   "title": "Amina · Getting the lesson ready",
+   "is_interactive": true
+  },
+  "child-warmup.dc.html": {
+   "x": 1410,
+   "y": 14228,
+   "w": 390,
+   "h": 844,
+   "title": "Amina · Warm-up",
+   "is_interactive": true
+  },
+  "child-learn-cards.dc.html": {
+   "x": 1880,
+   "y": 14228,
+   "w": 390,
+   "h": 844,
+   "title": "Amina · Learn: reading cards",
+   "is_interactive": true
+  },
+  "child-learn-diagram.dc.html": {
+   "x": 2350,
+   "y": 14228,
+   "w": 390,
+   "h": 844,
+   "title": "Amina · Learn: diagram",
+   "is_interactive": true
+  },
+  "child-learn-audio.dc.html": {
+   "x": 2820,
+   "y": 14228,
+   "w": 390,
+   "h": 880,
+   "title": "Amina · Learn: audio memo",
+   "is_interactive": true
+  },
+  "child-question.dc.html": {
+   "x": 3290,
+   "y": 14228,
+   "w": 390,
+   "h": 844,
+   "title": "Amina · Question 3 of 5",
+   "is_interactive": true
+  },
+  "child-results.dc.html": {
+   "x": 3760,
+   "y": 14228,
+   "w": 390,
+   "h": 1136,
+   "title": "Amina · Results",
+   "is_interactive": true
+  },
+  "child-progress.dc.html": {
+   "x": 4230,
+   "y": 14228,
+   "w": 390,
+   "h": 892,
+   "title": "Amina · Progress",
+   "is_interactive": true
+  },
+  "child-handback.dc.html": {
+   "x": 4700,
+   "y": 14228,
+   "w": 390,
+   "h": 844,
+   "title": "Amina · Hand the phone back",
+   "is_interactive": true
+  },
+  "child-gaps.dc.html": {
+   "x": 5170,
+   "y": 14228,
+   "w": 390,
+   "h": 860,
+   "title": "Amina · My gaps",
+   "is_interactive": true
+  },
+  "child-nothing-tonight.dc.html": {
+   "x": 5640,
+   "y": 14228,
+   "w": 390,
+   "h": 844,
+   "title": "Amina · Nothing tonight",
+   "is_interactive": true
+  },
+  "child-account.dc.html": {
+   "x": 6110,
+   "y": 14228,
+   "w": 390,
+   "h": 844,
+   "title": "Amina · Me",
+   "is_interactive": true
+  },
+  "state-error.dc.html": {
+   "x": 0,
+   "y": 15844,
+   "w": 390,
+   "h": 892,
+   "title": "State · Error with retry",
+   "is_interactive": true
+  },
+  "state-empty-class.dc.html": {
+   "x": 470,
+   "y": 15844,
+   "w": 390,
+   "h": 864,
+   "title": "State · Empty new class",
+   "is_interactive": true
+  },
+  "child-error.dc.html": {
+   "x": 940,
+   "y": 15844,
+   "w": 390,
+   "h": 844,
+   "title": "State · Amina's lesson didn't load",
+   "is_interactive": true
+  },
+  "parent-error.dc.html": {
+   "x": 1410,
+   "y": 15844,
+   "w": 390,
+   "h": 876,
+   "title": "State · Photo too dark",
+   "is_interactive": true
+  },
+  "q-amina-area.dc.html": {
+   "x": 0,
+   "y": 17216,
+   "w": 390,
+   "h": 844,
+   "title": "Amina · Question type: area on a grid",
+   "is_interactive": true
+  },
+  "q-amina-bar-graph.dc.html": {
+   "x": 470,
+   "y": 17216,
+   "w": 390,
+   "h": 844,
+   "title": "Amina · Question type: read a bar graph",
+   "is_interactive": true
+  },
+  "teen-learn-diagram.dc.html": {
+   "x": 940,
+   "y": 17216,
+   "w": 390,
+   "h": 968,
+   "title": "Neo · Learn: tangent diagram",
+   "is_interactive": true
+  },
+  "q-functions-turning-point.dc.html": {
+   "x": 1410,
+   "y": 17216,
+   "w": 390,
+   "h": 844,
+   "title": "Question type · Functions: turning point",
+   "is_interactive": true
+  },
+  "q-functions-pick-graph.dc.html": {
+   "x": 1880,
+   "y": 17216,
+   "w": 390,
+   "h": 844,
+   "title": "Question type · Functions: pick the graph",
+   "is_interactive": true
+  },
+  "q-functions-plot.dc.html": {
+   "x": 2350,
+   "y": 17216,
+   "w": 390,
+   "h": 928,
+   "title": "Question type · Functions: plot on a grid",
+   "is_interactive": true
+  },
+  "q-trig-graph.dc.html": {
+   "x": 2820,
+   "y": 17216,
+   "w": 390,
+   "h": 844,
+   "title": "Question type · Trigonometry: read a graph",
+   "is_interactive": true
+  },
+  "q-trig-triangle.dc.html": {
+   "x": 3290,
+   "y": 17216,
+   "w": 390,
+   "h": 856,
+   "title": "Question type · Trigonometry: triangle",
+   "is_interactive": true
+  },
+  "q-calculus-tangent.dc.html": {
+   "x": 3760,
+   "y": 17216,
+   "w": 390,
+   "h": 980,
+   "title": "Question type · Calculus: tangent equation",
+   "is_interactive": true
+  },
+  "q-calculus-order.dc.html": {
+   "x": 4230,
+   "y": 17216,
+   "w": 390,
+   "h": 988,
+   "title": "Question type · Calculus: put steps in order",
+   "is_interactive": true
+  },
+  "q-finance-timeline.dc.html": {
+   "x": 4700,
+   "y": 17216,
+   "w": 390,
+   "h": 844,
+   "title": "Question type · Financial maths: timeline",
+   "is_interactive": true
+  },
+  "q-finance-growth.dc.html": {
+   "x": 5170,
+   "y": 17216,
+   "w": 390,
+   "h": 844,
+   "title": "Question type · Financial maths: read a growth chart",
+   "is_interactive": true
+  },
+  "q-euclid-reason.dc.html": {
+   "x": 5640,
+   "y": 17216,
+   "w": 390,
+   "h": 1012,
+   "title": "Question type · Geometry: statement and reason",
+   "is_interactive": true
+  },
+  "q-analytic-gradient.dc.html": {
+   "x": 6110,
+   "y": 17216,
+   "w": 390,
+   "h": 844,
+   "title": "Question type · Analytical geometry: gradient",
+   "is_interactive": true
+  },
+  "q-stats-boxplot.dc.html": {
+   "x": 6580,
+   "y": 17216,
+   "w": 390,
+   "h": 844,
+   "title": "Question type · Statistics: box and whisker",
+   "is_interactive": true
+  },
+  "q-prob-tree.dc.html": {
+   "x": 7050,
+   "y": 17216,
+   "w": 390,
+   "h": 844,
+   "title": "Question type · Probability: fill in a tree",
+   "is_interactive": true
+  },
+  "q-patterns-nth.dc.html": {
+   "x": 7520,
+   "y": 17216,
+   "w": 390,
+   "h": 844,
+   "title": "Question type · Number patterns: general term",
+   "is_interactive": true
+  },
+  "q-working-photo.dc.html": {
+   "x": 7990,
+   "y": 17216,
+   "w": 390,
+   "h": 844,
+   "title": "Question type · Snap your working",
+   "is_interactive": true
+  },
+  "q-results-graph.dc.html": {
+   "x": 8460,
+   "y": 17216,
+   "w": 390,
+   "h": 1232,
+   "title": "Neo · Results with graphs",
+   "is_interactive": true
+  },
+  "laptop-diagram-kit.dc.html": {
+   "x": 0,
+   "y": 18928,
+   "w": 1440,
+   "h": 2700,
+   "title": "Diagram kit · every visual Jemma draws",
+   "is_interactive": true
+  },
+  "laptop-teacher-class.dc.html": {
+   "x": 0,
+   "y": 22108,
+   "w": 1440,
+   "h": 1120,
+   "title": "Laptop · Teacher class home",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "laptop-teacher-learners.dc.html": {
+   "x": 1520,
+   "y": 22108,
+   "w": 1440,
+   "h": 1160,
+   "title": "Laptop · Teacher learners",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "laptop-teacher-snap.dc.html": {
+   "x": 3040,
+   "y": 22108,
+   "w": 1440,
+   "h": 900,
+   "title": "Laptop · Snap: upload or use your phone",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "laptop-teacher-review.dc.html": {
+   "x": 4560,
+   "y": 22108,
+   "w": 1440,
+   "h": 970,
+   "title": "Laptop · Needs you review",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "laptop-teacher-tests.dc.html": {
+   "x": 6080,
+   "y": 22108,
+   "w": 1440,
+   "h": 900,
+   "title": "Laptop · Teacher tests",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "laptop-teacher-curriculum.dc.html": {
+   "x": 7600,
+   "y": 22108,
+   "w": 1440,
+   "h": 970,
+   "title": "Laptop · Curriculum",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "laptop-teacher-report.dc.html": {
+   "x": 9120,
+   "y": 22108,
+   "w": 1440,
+   "h": 1020,
+   "title": "Laptop · Class report",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "laptop-parent-profile.dc.html": {
+   "x": 0,
+   "y": 23748,
+   "w": 1440,
+   "h": 1410,
+   "title": "Laptop · Parent profile",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "laptop-parent-learn.dc.html": {
+   "x": 1520,
+   "y": 23748,
+   "w": 1440,
+   "h": 910,
+   "title": "Laptop · Parent learn",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "laptop-parent-tests.dc.html": {
+   "x": 3040,
+   "y": 23748,
+   "w": 1440,
+   "h": 930,
+   "title": "Laptop · Parent tests",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "laptop-teen-ask.dc.html": {
+   "x": 4560,
+   "y": 23748,
+   "w": 1440,
+   "h": 900,
+   "title": "After the challenge · Laptop: Neo asks Jemma",
+   "is_interactive": true,
+   "expand": "fill"
+  },
+  "teacher-library.dc.html": {
+   "x": 0,
+   "y": 25638,
+   "w": 390,
+   "h": 948,
+   "title": "After the challenge · Shared map library",
+   "is_interactive": true
+  },
+  "teacher-messages.dc.html": {
+   "x": 470,
+   "y": 25638,
+   "w": 390,
+   "h": 844,
+   "title": "After the challenge · Messages from parents",
+   "is_interactive": true
+  },
+  "teacher-thread.dc.html": {
+   "x": 940,
+   "y": 25638,
+   "w": 390,
+   "h": 844,
+   "title": "After the challenge · Message thread, teacher",
+   "is_interactive": true
+  },
+  "teacher-billing.dc.html": {
+   "x": 1410,
+   "y": 25638,
+   "w": 390,
+   "h": 900,
+   "title": "After the challenge · School plan",
+   "is_interactive": true
+  },
+  "teacher-offline.dc.html": {
+   "x": 1880,
+   "y": 25638,
+   "w": 390,
+   "h": 892,
+   "title": "After the challenge · Snap with no signal",
+   "is_interactive": true
+  },
+  "teacher-review-sketch.dc.html": {
+   "x": 2350,
+   "y": 25638,
+   "w": 390,
+   "h": 1048,
+   "title": "After the challenge · Teacher checks a sketch",
+   "is_interactive": true
+  },
+  "parent-family.dc.html": {
+   "x": 0,
+   "y": 27166,
+   "w": 390,
+   "h": 844,
+   "title": "After the challenge · Parent with three children",
+   "is_interactive": true
+  },
+  "parent-empty-profile.dc.html": {
+   "x": 470,
+   "y": 27166,
+   "w": 390,
+   "h": 920,
+   "title": "After the challenge · New child, nothing yet",
+   "is_interactive": true
+  },
+  "parent-library.dc.html": {
+   "x": 940,
+   "y": 27166,
+   "w": 390,
+   "h": 844,
+   "title": "After the challenge · Pick a map for a child",
+   "is_interactive": true
+  },
+  "parent-level-result.dc.html": {
+   "x": 1410,
+   "y": 27166,
+   "w": 390,
+   "h": 1052,
+   "title": "After the challenge · Level check result",
+   "is_interactive": true
+  },
+  "parent-chat.dc.html": {
+   "x": 1880,
+   "y": 27166,
+   "w": 390,
+   "h": 844,
+   "title": "After the challenge · Message the teacher",
+   "is_interactive": true
+  },
+  "parent-teen-invite.dc.html": {
+   "x": 2350,
+   "y": 27166,
+   "w": 390,
+   "h": 880,
+   "title": "After the challenge · Invite a teen",
+   "is_interactive": true
+  },
+  "parent-teachers.dc.html": {
+   "x": 2820,
+   "y": 27166,
+   "w": 390,
+   "h": 1116,
+   "title": "After the challenge · A teen's several teachers",
+   "is_interactive": true
+  },
+  "child-who.dc.html": {
+   "x": 0,
+   "y": 28762,
+   "w": 390,
+   "h": 844,
+   "title": "After the challenge · Who's learning?",
+   "is_interactive": true
+  },
+  "child-pin.dc.html": {
+   "x": 470,
+   "y": 28762,
+   "w": 390,
+   "h": 844,
+   "title": "After the challenge · Amina's PIN",
+   "is_interactive": true
+  },
+  "child-ask.dc.html": {
+   "x": 940,
+   "y": 28762,
+   "w": 390,
+   "h": 848,
+   "title": "After the challenge · Ask Jemma",
+   "is_interactive": true
+  },
+  "child-wins.dc.html": {
+   "x": 1410,
+   "y": 28762,
+   "w": 390,
+   "h": 932,
+   "title": "After the challenge · Wins",
+   "is_interactive": true
+  },
+  "child-audio-language.dc.html": {
+   "x": 1880,
+   "y": 28762,
+   "w": 390,
+   "h": 844,
+   "title": "After the challenge · Listen in your language",
+   "is_interactive": true
+  },
+  "child-g13-today.dc.html": {
+   "x": 2350,
+   "y": 28762,
+   "w": 390,
+   "h": 844,
+   "title": "After the challenge · Lesedi, Grade 1 to 3 mode",
+   "is_interactive": true
+  },
+  "child-g13-question.dc.html": {
+   "x": 2820,
+   "y": 28762,
+   "w": 390,
+   "h": 844,
+   "title": "After the challenge · Lesedi's level check",
+   "is_interactive": true
+  },
+  "teen-join.dc.html": {
+   "x": 3290,
+   "y": 28762,
+   "w": 390,
+   "h": 844,
+   "title": "After the challenge · Neo joins on his phone",
+   "is_interactive": true
+  },
+  "teen-today.dc.html": {
+   "x": 3760,
+   "y": 28762,
+   "w": 390,
+   "h": 1220,
+   "title": "After the challenge · Neo's Today",
+   "is_interactive": true
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "shared-sign-in.dc.html",
+  "shared-sign-up.dc.html",
+  "shared-code.dc.html",
+  "shared-role.dc.html",
+  "legal-privacy.dc.html",
+  "help.dc.html",
+  "install-prompt.dc.html",
+  "demo-switch.dc.html",
+  "demo-reset.dc.html",
+  "teacher-onboarding.dc.html",
+  "teacher-classes.dc.html",
+  "teacher-class-setup.dc.html",
+  "teacher-curriculum-upload.dc.html",
+  "teacher-curriculum-map.dc.html",
+  "teacher-curriculum-approved.dc.html",
+  "teacher-snap-test.dc.html",
+  "teacher-key-draft.dc.html",
+  "teacher-snap-key.dc.html",
+  "teacher-snap-papers.dc.html",
+  "teacher-snap-queue.dc.html",
+  "teacher-reading.dc.html",
+  "teacher-review.dc.html",
+  "teacher-review-name.dc.html",
+  "teacher-paper.dc.html",
+  "teacher-class-home.dc.html",
+  "teacher-gap.dc.html",
+  "teacher-learners.dc.html",
+  "teacher-child-profile.dc.html",
+  "teacher-fix-mark.dc.html",
+  "teacher-register.dc.html",
+  "teacher-learner.dc.html",
+  "teacher-tests.dc.html",
+  "teacher-test.dc.html",
+  "teacher-question.dc.html",
+  "teacher-notifications.dc.html",
+  "teacher-class-next.dc.html",
+  "teacher-account.dc.html",
+  "teacher-class-settings.dc.html",
+  "teacher-link-request.dc.html",
+  "teacher-year-end.dc.html",
+  "parent-start.dc.html",
+  "parent-children.dc.html",
+  "parent-add-child.dc.html",
+  "parent-consent.dc.html",
+  "parent-link-pending.dc.html",
+  "parent-profile.dc.html",
+  "parent-report.dc.html",
+  "parent-beyond.dc.html",
+  "parent-topic.dc.html",
+  "parent-paper.dc.html",
+  "parent-flag-mark.dc.html",
+  "parent-tests.dc.html",
+  "parent-notifications.dc.html",
+  "parent-learn.dc.html",
+  "parent-handover.dc.html",
+  "parent-session.dc.html",
+  "parent-snap-type.dc.html",
+  "parent-snap-photo.dc.html",
+  "parent-snap-reading.dc.html",
+  "parent-snap-check.dc.html",
+  "parent-snap-saved.dc.html",
+  "parent-activity.dc.html",
+  "parent-account.dc.html",
+  "parent-child-settings.dc.html",
+  "parent-child-login.dc.html",
+  "parent-data.dc.html",
+  "child-sign-in.dc.html",
+  "child-today.dc.html",
+  "child-loading.dc.html",
+  "child-warmup.dc.html",
+  "child-learn-cards.dc.html",
+  "child-learn-diagram.dc.html",
+  "child-learn-audio.dc.html",
+  "child-question.dc.html",
+  "child-results.dc.html",
+  "child-progress.dc.html",
+  "child-handback.dc.html",
+  "child-gaps.dc.html",
+  "child-nothing-tonight.dc.html",
+  "child-account.dc.html",
+  "state-error.dc.html",
+  "state-empty-class.dc.html",
+  "child-error.dc.html",
+  "parent-error.dc.html",
+  "q-amina-area.dc.html",
+  "q-amina-bar-graph.dc.html",
+  "teen-learn-diagram.dc.html",
+  "q-functions-turning-point.dc.html",
+  "q-functions-pick-graph.dc.html",
+  "q-functions-plot.dc.html",
+  "q-trig-graph.dc.html",
+  "q-trig-triangle.dc.html",
+  "q-calculus-tangent.dc.html",
+  "q-calculus-order.dc.html",
+  "q-finance-timeline.dc.html",
+  "q-finance-growth.dc.html",
+  "q-euclid-reason.dc.html",
+  "q-analytic-gradient.dc.html",
+  "q-stats-boxplot.dc.html",
+  "q-prob-tree.dc.html",
+  "q-patterns-nth.dc.html",
+  "q-working-photo.dc.html",
+  "q-results-graph.dc.html",
+  "laptop-diagram-kit.dc.html",
+  "laptop-teacher-class.dc.html",
+  "laptop-teacher-learners.dc.html",
+  "laptop-teacher-snap.dc.html",
+  "laptop-teacher-review.dc.html",
+  "laptop-teacher-tests.dc.html",
+  "laptop-teacher-curriculum.dc.html",
+  "laptop-teacher-report.dc.html",
+  "laptop-parent-profile.dc.html",
+  "laptop-parent-learn.dc.html",
+  "laptop-parent-tests.dc.html",
+  "laptop-teen-ask.dc.html",
+  "teacher-library.dc.html",
+  "teacher-messages.dc.html",
+  "teacher-thread.dc.html",
+  "teacher-billing.dc.html",
+  "teacher-offline.dc.html",
+  "teacher-review-sketch.dc.html",
+  "parent-family.dc.html",
+  "parent-empty-profile.dc.html",
+  "parent-library.dc.html",
+  "parent-level-result.dc.html",
+  "parent-chat.dc.html",
+  "parent-teen-invite.dc.html",
+  "parent-teachers.dc.html",
+  "child-who.dc.html",
+  "child-pin.dc.html",
+  "child-ask.dc.html",
+  "child-wins.dc.html",
+  "child-audio-language.dc.html",
+  "child-g13-today.dc.html",
+  "child-g13-question.dc.html",
+  "teen-join.dc.html",
+  "teen-today.dc.html"
+ ],
+ "notes": {
+  "rowStart": {
+   "x": 0,
+   "y": -320,
+   "text": "Start · judges, sign in, sign up, help",
+   "kind": "title1",
+   "maxW": 4620
+  },
+  "rowTeacherSnap": {
+   "x": 0,
+   "y": 1432,
+   "text": "Teacher · set up and snap",
+   "kind": "title1",
+   "maxW": 6970
+  },
+  "rowTeacherClass": {
+   "x": 0,
+   "y": 3412,
+   "text": "Teacher · what the class doesn't get",
+   "kind": "title1",
+   "maxW": 5560
+  },
+  "rowTeacherSettings": {
+   "x": 0,
+   "y": 5728,
+   "text": "Teacher · account, class settings, new parents",
+   "kind": "title1",
+   "maxW": 1800
+  },
+  "rowParent": {
+   "x": 0,
+   "y": 7428,
+   "text": "Parent · linking and Amina's profile",
+   "kind": "title1",
+   "maxW": 6030
+  },
+  "rowParentLearn": {
+   "x": 0,
+   "y": 10408,
+   "text": "Parent · lessons and snap",
+   "kind": "title1",
+   "maxW": 4150
+  },
+  "rowParentSettings": {
+   "x": 0,
+   "y": 12216,
+   "text": "Parent · account and settings",
+   "kind": "title1",
+   "maxW": 1800
+  },
+  "rowChild": {
+   "x": 0,
+   "y": 13908,
+   "text": "Learner · Amina, Grade 6",
+   "kind": "title1",
+   "maxW": 6500
+  },
+  "rowStates": {
+   "x": 0,
+   "y": 15524,
+   "text": "States",
+   "kind": "title1",
+   "maxW": 1800
+  },
+  "rowQuestions": {
+   "x": 0,
+   "y": 16896,
+   "text": "Question types and visuals · Grade 6 in v1, Grades 8 to 12 after the challenge",
+   "kind": "title1",
+   "maxW": 8850
+  },
+  "rowKit": {
+   "x": 0,
+   "y": 18608,
+   "text": "Diagram kit",
+   "kind": "title1",
+   "maxW": 1800
+  },
+  "rowLaptop": {
+   "x": 0,
+   "y": 21788,
+   "text": "Laptop · teacher, 1440 wide",
+   "kind": "title1",
+   "maxW": 10560
+  },
+  "rowLaptopParent": {
+   "x": 0,
+   "y": 23428,
+   "text": "Laptop · parent and teen",
+   "kind": "title1",
+   "maxW": 6000
+  },
+  "rowLaterTeacher": {
+   "x": 0,
+   "y": 25318,
+   "text": "After the challenge · teachers",
+   "kind": "title1",
+   "maxW": 2740
+  },
+  "rowLaterFamily": {
+   "x": 0,
+   "y": 26846,
+   "text": "After the challenge · families",
+   "kind": "title1",
+   "maxW": 3210
+  },
+  "rowLaterChildren": {
+   "x": 0,
+   "y": 28442,
+   "text": "After the challenge · children and teens",
+   "kind": "title1",
+   "maxW": 4150
+  }
+ },
+ "designSystems": []
+}

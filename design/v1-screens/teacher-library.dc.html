@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>After the challenge · Shared map library</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+input{font:inherit}
+</style>
+</helmet>
+<div style="width:390px;height:948px;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;display:flex;flex-direction:column;overflow:hidden;position:relative">
+  <header style="display:flex;align-items:center;gap:4px;padding:10px 12px 6px 8px">
+    <a href="teacher-curriculum-upload.dc.html" aria-label="Back to curriculum" style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
+    </a>
+    <span style="display:flex;flex-direction:column;line-height:1.2;flex:1;min-width:0;color:#1F1D36">
+      <span style="font-size:13px;color:#5D5A73">6B Mathematics · Curriculum</span>
+      <span style="font-size:17px;font-weight:700">Maps other teachers use</span>
+    </span>
+  </header>
+
+  <main style="flex:1;display:flex;flex-direction:column;gap:16px;padding:12px 20px 20px;min-height:0">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:10px"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+        <h1 style="margin:0;font-size:26px;line-height:1.18;font-weight:600;letter-spacing:-0.015em;text-wrap:pretty">Start from a map another teacher approved, then make it yours.</h1>
+      </div>
+    </div>
+
+    <fieldset style="border:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px">
+      <legend style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Filters</legend>
+      <button type="button" aria-pressed="true" style="display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:999px;border:none;background:#1F1D36;color:#FFFFFF;font-weight:600;font-size:14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Grade 6</button>
+      <button type="button" aria-pressed="true" style="display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:999px;border:none;background:#1F1D36;color:#FFFFFF;font-weight:600;font-size:14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Mathematics</button>
+      <button type="button" aria-pressed="true" style="display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:999px;border:none;background:#1F1D36;color:#FFFFFF;font-weight:600;font-size:14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>CAPS</button>
+    </fieldset>
+
+    <article aria-labelledby="m1" style="display:flex;flex-direction:column;gap:12px;padding:16px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span aria-hidden="true" style="width:40px;height:40px;flex:none;border-radius:12px;background:#FFE3DA;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 3.5 8 12 12.5 20.5 8z"/><path d="M3.5 12 12 16.5 20.5 12"/><path d="M3.5 16 12 20.5 20.5 16"/></svg></span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <h2 id="m1" style="margin:0;font-size:17px;line-height:1.3;font-weight:600">CAPS Grade 6 Mathematics</h2>
+          <p style="margin:0;font-size:14px;color:#5D5A73">Mr Khumalo, Lakeside Primary</p>
+        </div>
+      </div>
+      <p style="margin:0;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:#5D5A73">
+        <span style="display:inline-flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 3.5 8 12 12.5 20.5 8z"/><path d="M3.5 12 12 16.5 20.5 12"/><path d="M3.5 16 12 20.5 20.5 16"/></svg>24 topics</span>
+        <span style="display:inline-flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.8 14.2c2.4-.3 4.3 1.2 4.7 4.3"/></svg>used by 14 teachers</span>
+      </p>
+      <div style="display:flex;gap:8px">
+        <button type="button" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:12px;background:#FFFFFF;color:#1F1D36;border:1.5px solid #1F1D36;font-size:15px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>Preview</button>
+        <a href="teacher-curriculum-map.dc.html" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:12px;background:#1F1D36;color:#FFFFFF;border:none;font-size:15px;font-weight:600;text-decoration:none">Use a copy</a>
+      </div>
+    </article>
+    <article aria-labelledby="m2" style="display:flex;flex-direction:column;gap:12px;padding:16px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span aria-hidden="true" style="width:40px;height:40px;flex:none;border-radius:12px;background:#FFE3DA;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 3.5 8 12 12.5 20.5 8z"/><path d="M3.5 12 12 16.5 20.5 12"/><path d="M3.5 16 12 20.5 20.5 16"/></svg></span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <h2 id="m2" style="margin:0;font-size:17px;line-height:1.3;font-weight:600">Grade 6 Maths with extra basics</h2>
+          <p style="margin:0;font-size:14px;color:#5D5A73">Ms Govender, Sunnyside Primary</p>
+        </div>
+      </div>
+      <p style="margin:0;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:#5D5A73">
+        <span style="display:inline-flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 3.5 8 12 12.5 20.5 8z"/><path d="M3.5 12 12 16.5 20.5 12"/><path d="M3.5 16 12 20.5 20.5 16"/></svg>28 topics</span>
+        <span style="display:inline-flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.8 14.2c2.4-.3 4.3 1.2 4.7 4.3"/></svg>used by 6 teachers</span>
+      </p>
+      <div style="display:flex;gap:8px">
+        <button type="button" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:12px;background:#FFFFFF;color:#1F1D36;border:1.5px solid #1F1D36;font-size:15px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>Preview</button>
+        <a href="teacher-curriculum-map.dc.html" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:12px;background:#1F1D36;color:#FFFFFF;border:none;font-size:15px;font-weight:600;text-decoration:none">Use a copy</a>
+      </div>
+    </article>
+    <article aria-labelledby="m3" style="display:flex;flex-direction:column;gap:12px;padding:16px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span aria-hidden="true" style="width:40px;height:40px;flex:none;border-radius:12px;background:#FFE3DA;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 3.5 8 12 12.5 20.5 8z"/><path d="M3.5 12 12 16.5 20.5 12"/><path d="M3.5 16 12 20.5 20.5 16"/></svg></span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <h2 id="m3" style="margin:0;font-size:17px;line-height:1.3;font-weight:600">Grade 6 Maths, term by term</h2>
+          <p style="margin:0;font-size:14px;color:#5D5A73">Mrs Mokoena, Kloofview Primary</p>
+        </div>
+      </div>
+      <p style="margin:0;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:#5D5A73">
+        <span style="display:inline-flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 3.5 8 12 12.5 20.5 8z"/><path d="M3.5 12 12 16.5 20.5 12"/><path d="M3.5 16 12 20.5 20.5 16"/></svg>22 topics</span>
+        <span style="display:inline-flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.8 14.2c2.4-.3 4.3 1.2 4.7 4.3"/></svg>used by 3 teachers</span>
+      </p>
+      <div style="display:flex;gap:8px">
+        <button type="button" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:12px;background:#FFFFFF;color:#1F1D36;border:1.5px solid #1F1D36;font-size:15px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>Preview</button>
+        <a href="teacher-curriculum-map.dc.html" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:12px;background:#1F1D36;color:#FFFFFF;border:none;font-size:15px;font-weight:600;text-decoration:none">Use a copy</a>
+      </div>
+    </article>
+
+    <p style="margin:0;display:flex;gap:10px;font-size:14px;line-height:1.45;color:#5D5A73">
+      <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:4px"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+      <span>Only topic maps are shared, never uploaded documents. Your copy is yours to edit.</span>
+    </p>
+    <div style="flex:1"></div>
+  </main>
+
+  <nav aria-label="Class" style="display:grid;grid-template-columns:repeat(5, minmax(0, 1fr));background:#FFFFFF;border-top:1px solid #E7E6EF;padding:6px 4px 22px">
+    <a href="teacher-class-home.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:3px;min-height:52px;padding-top:4px;text-decoration:none;color:#6A6782;font-size:12px;font-weight:500">
+      <span style="width:56px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg></span>
+      Class
+    </a>
+    <a href="teacher-learners.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:3px;min-height:52px;padding-top:4px;text-decoration:none;color:#6A6782;font-size:12px;font-weight:500">
+      <span style="width:56px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.8 14.2c2.4-.3 4.3 1.2 4.7 4.3"/></svg></span>
+      Learners
+    </a>
+    <a href="teacher-snap-test.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:3px;min-height:52px;text-decoration:none;color:#1F1D36;font-size:12px;font-weight:600">
+      <span style="width:50px;height:50px;margin-top:-16px;border-radius:999px;background:#FF6A4D;border:3px solid #FFFFFF;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg></span>
+      Snap
+    </a>
+    <a href="teacher-tests.dc.html" style="display:flex;flex-direction:column;align-items:center;gap:3px;min-height:52px;padding-top:4px;text-decoration:none;color:#6A6782;font-size:12px;font-weight:500">
+      <span style="width:56px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4.5" width="14" height="16" rx="2"/><path d="M9 4.5V3.8a.8.8 0 0 1 .8-.8h4.4a.8.8 0 0 1 .8.8v.7"/><path d="M8.5 10h7M8.5 13.5h7M8.5 17h4"/></svg></span>
+      Tests
+    </a>
+    <a href="teacher-curriculum-approved.dc.html" aria-current="page" style="display:flex;flex-direction:column;align-items:center;gap:3px;min-height:52px;padding-top:4px;text-decoration:none;color:#1F1D36;font-size:12px;font-weight:600">
+      <span style="width:56px;height:30px;border-radius:999px;background:#EEEDF5;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 3.5 8 12 12.5 20.5 8z"/><path d="M3.5 12 12 16.5 20.5 12"/><path d="M3.5 16 12 20.5 20.5 16"/></svg></span>
+      Curriculum
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":948}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

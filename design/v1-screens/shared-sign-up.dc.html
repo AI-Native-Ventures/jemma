@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Shared · Create an account</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+input{font:inherit}
+.cb{position:absolute;top:0;left:0;width:44px;height:44px;margin:0;opacity:0;cursor:pointer}
+.cbx{width:24px;height:24px;border-radius:7px;border:2px solid #8C89A3;background:#FFFFFF;display:flex;align-items:center;justify-content:center}
+.cbx svg{opacity:0}
+.cb:checked + .cbx{background:#1F1D36;border-color:#1F1D36}
+.cb:checked + .cbx svg{opacity:1}
+.cb:focus-visible + .cbx{outline:3px solid #FF6A4D;outline-offset:2px}
+</style>
+</helmet>
+<div style="width:390px;height:844px;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;display:flex;flex-direction:column;overflow:hidden;position:relative">
+  <header style="display:flex;align-items:center;gap:6px;padding:10px 12px 6px 8px">
+    <a href="shared-sign-in.dc.html" aria-label="Back to sign in" style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
+    </a>
+    <img src="/_blob/20e5ad4ffe4da31ddc0de8f3dd49cfb9" alt="jemma" style="width:82px;height:32px;display:block">
+  </header>
+
+  <main style="flex:1;display:flex;flex-direction:column;gap:22px;padding:18px 20px 28px;min-height:0">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:11px"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+        <h1 style="margin:0;font-size:28px;line-height:1.18;font-weight:600;letter-spacing:-0.015em;text-wrap:pretty">Make your Jemma account. It's free for families.</h1>
+      </div>
+      <p style="margin:0 0 0 24px;font-size:15px;line-height:1.45;color:#5D5A73;text-wrap:pretty">For teachers, parents, and learners in Grade 8 and up. Younger children get their sign-in from a grown-up.</p>
+    </div>
+
+    <form style="display:flex;flex-direction:column;gap:16px;padding:18px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:22px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label for="name" style="font-size:15px;font-weight:500">Your name</label>
+        <input id="name" type="text" placeholder="First and last name" autocomplete="name" style="height:52px;padding:0 14px;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:17px">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label for="email" style="font-size:15px;font-weight:500">Email</label>
+        <input id="email" type="email" placeholder="you@example.com" autocomplete="email" aria-describedby="email-hint" style="height:52px;padding:0 14px;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:17px">
+        <span id="email-hint" style="font-size:13px;color:#5D5A73">We email you a 6 digit code. No password to remember.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0">
+      <label for="agree" style="display:flex;align-items:center;gap:10px;min-height:48px;cursor:pointer">
+        <span style="position:relative;width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center">
+          <input id="agree" class="cb" type="checkbox">
+          <span class="cbx" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+        </span>
+        <span style="font-size:15px;line-height:1.45">I agree to Jemma's terms and privacy policy</span>
+      </label>
+        <a href="legal-privacy.dc.html" style="align-self:flex-start;display:flex;align-items:center;min-height:44px;margin-left:54px;font-size:15px;font-weight:600;color:#1F1D36;text-underline-offset:3px">Read it in plain words</a>
+      </div>
+      <a href="shared-code.dc.html" style="display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:14px;background:#1F1D36;color:#FFFFFF;font-size:17px;font-weight:600;text-decoration:none">Send me a code</a>
+    </form>
+
+    <p style="margin:0;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 8px;font-size:15px;color:#5D5A73">Already have an account?
+      <a href="shared-sign-in.dc.html" style="display:inline-flex;align-items:center;min-height:44px;font-weight:600;color:#1F1D36;text-underline-offset:3px">Sign in</a></p>
+    <div style="flex:1"></div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

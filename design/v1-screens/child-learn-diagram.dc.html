@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Amina · Learn: diagram</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width:390px;height:844px;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;display:flex;flex-direction:column;overflow:hidden">
+  <header style="display:flex;align-items:center;gap:8px;padding:10px 18px 6px 8px">
+    <a href="child-today.dc.html" aria-label="Stop for now" style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </a>
+    <ol aria-label="Session steps" style="flex:1;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:6px">
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#5D5A73"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#1F1D36"></span>Warm-up</li>
+      <li aria-current="step" style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:#1F1D36"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#FF6A4D"></span>Learn</li>
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#6A6782"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#E3E1EE"></span>Try</li>
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#6A6782"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#E3E1EE"></span>Results</li>
+    </ol>
+  </header>
+
+  <main style="flex:1;display:flex;flex-direction:column;gap:16px;padding:18px 20px 26px;min-height:0">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <p style="margin:0;font-size:15px;font-weight:600;color:#5D5A73">Learn</p>
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:#EEEDF5;font-size:13px;font-weight:600"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="5" rx="1"/><rect x="3.5" y="14" width="17" height="5" rx="1"/><path d="M12 5v5M8 14v5M12 14v5M16 14v5"/></svg>Diagram</span>
+    </div>
+    <h1 style="margin:0;font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-0.015em">Why 1/2 + 1/4 is 3/4</h1>
+
+    <figure style="margin:0;display:flex;flex-direction:column;gap:14px;padding:18px 16px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:24px">
+      <figcaption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Fraction bars: one half equals two quarters, plus one quarter makes three quarters.</figcaption>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="display:flex;gap:8px;font-size:15px;font-weight:600"><span style="width:22px;height:22px;flex:none;border-radius:999px;background:#1F1D36;color:#FFFFFF;font-size:12px;display:flex;align-items:center;justify-content:center">1</span>A half and a quarter</span>
+        <span style="display:flex;align-items:center;gap:10px">
+          <span aria-hidden="true" style="width:34px;display:inline-flex;flex-direction:column;align-items:center;line-height:1;font-size:17px;font-weight:700"><span style="padding:0 3px 2px">1</span><span style="border-top:2px solid #1F1D36;padding:2px 3px 0">2</span></span>
+          <span aria-hidden="true" style="flex:1;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));height:34px;border:2px solid #1F1D36;border-radius:7px;overflow:hidden"><span style="background:#FF6A4D;border-right:2px solid #1F1D36"></span><span></span></span>
+        </span>
+        <span style="display:flex;align-items:center;gap:10px">
+          <span aria-hidden="true" style="width:34px;display:inline-flex;flex-direction:column;align-items:center;line-height:1;font-size:17px;font-weight:700"><span style="padding:0 3px 2px">1</span><span style="border-top:2px solid #1F1D36;padding:2px 3px 0">4</span></span>
+          <span aria-hidden="true" style="flex:1;display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));height:34px;border:2px solid #1F1D36;border-radius:7px;overflow:hidden"><span style="background:#1F1D36;border-right:2px solid #1F1D36"></span><span style="border-right:2px solid #1F1D36"></span><span style="border-right:2px solid #1F1D36"></span><span></span></span>
+        </span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;padding-top:14px;border-top:1px dashed #CFCDDC">
+        <span style="display:flex;gap:8px;font-size:15px;font-weight:600"><span style="width:22px;height:22px;flex:none;border-radius:999px;background:#1F1D36;color:#FFFFFF;font-size:12px;display:flex;align-items:center;justify-content:center">2</span>Cut the half into quarters. Same amount.</span>
+        <span style="display:flex;align-items:center;gap:10px">
+          <span aria-hidden="true" style="width:34px;display:inline-flex;flex-direction:column;align-items:center;line-height:1;font-size:17px;font-weight:700"><span style="padding:0 3px 2px">2</span><span style="border-top:2px solid #1F1D36;padding:2px 3px 0">4</span></span>
+          <span aria-hidden="true" style="flex:1;display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));height:34px;border:2px solid #1F1D36;border-radius:7px;overflow:hidden"><span style="background:#FF6A4D;border-right:1.5px dashed #1F1D36"></span><span style="background:#FF6A4D;border-right:2px solid #1F1D36"></span><span style="border-right:2px solid #1F1D36"></span><span></span></span>
+        </span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;padding-top:14px;border-top:1px dashed #CFCDDC">
+        <span style="display:flex;gap:8px;font-size:15px;font-weight:600"><span style="width:22px;height:22px;flex:none;border-radius:999px;background:#1F1D36;color:#FFFFFF;font-size:12px;display:flex;align-items:center;justify-content:center">3</span>Now add the quarters: 2 + 1 = 3</span>
+        <span style="display:flex;align-items:center;gap:10px">
+          <span aria-hidden="true" style="width:34px;display:inline-flex;flex-direction:column;align-items:center;line-height:1;font-size:17px;font-weight:700"><span style="padding:0 3px 2px">3</span><span style="border-top:2px solid #1F1D36;padding:2px 3px 0">4</span></span>
+          <span aria-hidden="true" style="flex:1;display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));height:34px;border:2px solid #1F1D36;border-radius:7px;overflow:hidden"><span style="background:#FF6A4D;border-right:2px solid #1F1D36"></span><span style="background:#FF6A4D;border-right:2px solid #1F1D36"></span><span style="background:#1F1D36;border-right:2px solid #1F1D36"></span><span></span></span>
+        </span>
+      </div>
+    </figure>
+
+    <aside aria-label="Why not 2/6" style="display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:20px;background:#FFF4F1;border:1px solid #FFC9BB">
+      <span style="font-size:16px;font-weight:700">Why not 2/6?</span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span aria-hidden="true" style="width:34px;display:inline-flex;flex-direction:column;align-items:center;line-height:1;font-size:17px;font-weight:700"><span style="padding:0 3px 2px">2</span><span style="border-top:2px solid #1F1D36;padding:2px 3px 0">6</span></span>
+        <span aria-hidden="true" style="flex:1;display:grid;grid-template-columns:repeat(6, minmax(0, 1fr));height:28px;border:2px solid #1F1D36;border-radius:7px;overflow:hidden;background:#FFFFFF"><span style="background:#8C89A3;border-right:2px solid #1F1D36"></span><span style="background:#8C89A3;border-right:2px solid #1F1D36"></span><span style="border-right:2px solid #1F1D36"></span><span style="border-right:2px solid #1F1D36"></span><span style="border-right:2px solid #1F1D36"></span><span></span></span>
+      </span>
+      <span style="font-size:15px;line-height:1.45">2/6 is less than the half you started with. Adding can't make it smaller.</span>
+    </aside>
+
+    <div style="flex:1"></div>
+    <div style="display:grid;grid-template-columns:minmax(0, 1fr) minmax(0, 1.4fr);gap:10px">
+      <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;height:60px;border-radius:18px;border:2px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:17px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.34-5.66"/><path d="M4 4v4.5h4.5"/></svg>Again</button>
+      <a href="child-question.dc.html" style="display:flex;align-items:center;justify-content:center;height:60px;border-radius:18px;background:#1F1D36;color:#FFFFFF;font-size:19px;font-weight:700;text-decoration:none">I'm ready</a>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

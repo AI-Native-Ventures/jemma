@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Shared · Sign-in code</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+input{font:inherit}
+</style>
+</helmet>
+<div style="width:390px;height:844px;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;display:flex;flex-direction:column;overflow:hidden;position:relative">
+  <header style="display:flex;align-items:center;gap:6px;padding:10px 12px 6px 8px">
+    <a href="shared-sign-in.dc.html" aria-label="Back to sign in" style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
+    </a>
+    <img src="/_blob/20e5ad4ffe4da31ddc0de8f3dd49cfb9" alt="jemma" style="width:82px;height:32px;display:block">
+  </header>
+
+  <main style="flex:1;display:flex;flex-direction:column;gap:22px;padding:22px 20px 28px;min-height:0">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:11px"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+        <h1 style="margin:0;font-size:28px;line-height:1.18;font-weight:600;letter-spacing:-0.015em;text-wrap:pretty">Check your email for a 6 digit code.</h1>
+      </div>
+      <p style="margin:0 0 0 24px;font-size:15px;line-height:1.45;color:#5D5A73;text-wrap:pretty">We sent it to ms.banda@hillview.example. It works for 10 minutes.</p>
+    </div>
+
+    <form style="display:flex;flex-direction:column;gap:16px">
+      <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+        <legend style="padding:0;margin-bottom:10px;font-size:15px;font-weight:500">Sign-in code</legend>
+        <span style="display:grid;grid-template-columns:repeat(6, minmax(0, 1fr));gap:8px">
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="Digit 1 of 6" autocomplete="one-time-code" value="4" style="width:100%;height:62px;padding:0;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:28px;font-weight:600;text-align:center">
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="Digit 2 of 6" value="8" style="width:100%;height:62px;padding:0;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:28px;font-weight:600;text-align:center">
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="Digit 3 of 6" value="2" style="width:100%;height:62px;padding:0;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:28px;font-weight:600;text-align:center">
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="Digit 4 of 6" value="9" style="width:100%;height:62px;padding:0;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:28px;font-weight:600;text-align:center">
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="Digit 5 of 6" value="1" style="width:100%;height:62px;padding:0;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:28px;font-weight:600;text-align:center">
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="Digit 6 of 6" style="width:100%;height:62px;padding:0;border-radius:14px;border:2px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:28px;font-weight:600;text-align:center">
+        </span>
+        <span style="font-size:14px;color:#5D5A73">Paste it or type it. One more digit to go.</span>
+      </fieldset>
+      <a href="shared-role.dc.html" style="display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:14px;background:#1F1D36;color:#FFFFFF;font-size:17px;font-weight:600;text-decoration:none">Sign in</a>
+    </form>
+
+    <section aria-labelledby="noget" style="display:flex;flex-direction:column;gap:6px;padding:16px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:18px">
+      <h2 id="noget" style="margin:0;font-size:16px;font-weight:600">Didn't get it?</h2>
+      <p style="margin:0;font-size:15px;line-height:1.45;color:#5D5A73">Check your spam folder. A new code can take a minute.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+        <button type="button" style="display:flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:15px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4.5h-4.5"/></svg>Send a new code</button>
+        <a href="shared-sign-in.dc.html" style="display:flex;align-items:center;min-height:44px;padding:0 10px;font-size:15px;font-weight:600;color:#1F1D36;text-underline-offset:3px">Use a different email</a>
+      </div>
+    </section>
+    <div style="flex:1"></div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

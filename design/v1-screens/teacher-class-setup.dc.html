@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Teacher · New class</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+input{font:inherit}
+</style>
+</helmet>
+<div style="width:390px;height:1372px;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;display:flex;flex-direction:column;overflow:hidden;position:relative">
+  <header style="display:flex;align-items:center;gap:4px;padding:10px 12px 6px 8px">
+    <a href="teacher-classes.dc.html" aria-label="Back to your classes" style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
+    </a>
+    <span style="display:flex;flex-direction:column;line-height:1.2;flex:1;min-width:0;color:#1F1D36">
+      <span style="font-size:13px;color:#5D5A73">Your classes</span>
+      <span style="font-size:17px;font-weight:700">New class</span>
+    </span>
+  </header>
+
+  <main style="flex:1;display:flex;flex-direction:column;gap:18px;padding:12px 20px 28px;min-height:0">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:10px"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+        <h1 style="margin:0;font-size:26px;line-height:1.18;font-weight:600;letter-spacing:-0.015em;text-wrap:pretty">Set up a class. Only the name is needed now.</h1>
+      </div>
+      <p style="margin:0 0 0 24px;font-size:15px;line-height:1.45;color:#5D5A73;text-wrap:pretty">Add learners now or later. Jemma starts marking once you snap a test.</p>
+    </div>
+
+    <section aria-labelledby="cls" style="display:flex;flex-direction:column;gap:14px;padding:16px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px">
+      <h2 id="cls" style="margin:0;font-size:17px;font-weight:600">Class</h2>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label for="cname" style="font-size:15px;font-weight:500">Class name</label>
+        <input id="cname" type="text" value="6A Mathematics" aria-describedby="cname-hint" style="height:52px;padding:0 14px;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:17px">
+        <span id="cname-hint" style="font-size:13px;color:#5D5A73">What you and parents see</span>
+      </div>
+      <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px">
+        <legend style="padding:0;margin-bottom:6px;font-size:15px;font-weight:500">Grade</legend>
+        <span style="display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:6px"><button type="button" aria-pressed="false" style="height:44px;border-radius:12px;border:1px solid #CFCDDC;background:#FFFFFF;color:#1F1D36;font-weight:500;font-size:15px">Grade 4</button><button type="button" aria-pressed="false" style="height:44px;border-radius:12px;border:1px solid #CFCDDC;background:#FFFFFF;color:#1F1D36;font-weight:500;font-size:15px">Grade 5</button><button type="button" aria-pressed="true" style="height:44px;border-radius:12px;border:none;background:#1F1D36;color:#FFFFFF;font-weight:600;font-size:15px">Grade 6</button><button type="button" aria-pressed="false" style="height:44px;border-radius:12px;border:1px solid #CFCDDC;background:#FFFFFF;color:#1F1D36;font-weight:500;font-size:15px">Grade 7</button></span>
+      </fieldset>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label for="subj" style="font-size:15px;font-weight:500">Subject</label>
+        <span style="position:relative;display:block">
+          <select id="subj" style="width:100%;height:52px;padding:0 44px 0 14px;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font:inherit;font-size:17px;appearance:none;-webkit-appearance:none"><option>Mathematics</option></select>
+          <span style="position:absolute;right:14px;top:16px;color:#1F1D36;pointer-events:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span>
+        </span>
+        <span style="font-size:13px;color:#5D5A73">More subjects are coming</span>
+      </div>
+    </section>
+
+    <section aria-labelledby="lrn" style="display:flex;flex-direction:column;gap:8px;padding:16px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <h2 id="lrn" style="margin:0;font-size:17px;font-weight:600">Learners</h2>
+        <p style="margin:0;font-size:14px;color:#5D5A73">5 added</p>
+        </div>
+      </div>
+      <ul style="list-style:none;margin:0;padding:0">
+        <li style="display:flex;align-items:center;gap:12px;min-height:52px;border-top:1px solid #EFEEF4">
+          <span aria-hidden="true" style="position:relative;width:32px;height:32px;flex:none;border-radius:999px;background:#E9E7F3;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">A</span>
+          <span style="flex:1;font-size:16px">Ayesha</span>
+          <button type="button" aria-label="Remove Ayesha" style="width:44px;height:44px;border:none;background:transparent;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#5D5A73;padding:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+        </li>
+        <li style="display:flex;align-items:center;gap:12px;min-height:52px;border-top:1px solid #EFEEF4">
+          <span aria-hidden="true" style="position:relative;width:32px;height:32px;flex:none;border-radius:999px;background:#E9E7F3;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">K</span>
+          <span style="flex:1;font-size:16px">Kagiso</span>
+          <button type="button" aria-label="Remove Kagiso" style="width:44px;height:44px;border:none;background:transparent;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#5D5A73;padding:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+        </li>
+        <li style="display:flex;align-items:center;gap:12px;min-height:52px;border-top:1px solid #EFEEF4">
+          <span aria-hidden="true" style="position:relative;width:32px;height:32px;flex:none;border-radius:999px;background:#E9E7F3;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">Z</span>
+          <span style="flex:1;font-size:16px">Zanele</span>
+          <button type="button" aria-label="Remove Zanele" style="width:44px;height:44px;border:none;background:transparent;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#5D5A73;padding:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+        </li>
+        <li style="display:flex;align-items:center;gap:12px;min-height:52px;border-top:1px solid #EFEEF4">
+          <span aria-hidden="true" style="position:relative;width:32px;height:32px;flex:none;border-radius:999px;background:#E9E7F3;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">M</span>
+          <span style="flex:1;font-size:16px">Musa</span>
+          <button type="button" aria-label="Remove Musa" style="width:44px;height:44px;border:none;background:transparent;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#5D5A73;padding:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+        </li>
+        <li style="display:flex;align-items:center;gap:12px;min-height:52px;border-top:1px solid #EFEEF4">
+          <span aria-hidden="true" style="position:relative;width:32px;height:32px;flex:none;border-radius:999px;background:#E9E7F3;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">L</span>
+          <span style="flex:1;font-size:16px">Lindiwe</span>
+          <button type="button" aria-label="Remove Lindiwe" style="width:44px;height:44px;border:none;background:transparent;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#5D5A73;padding:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+        </li>
+      </ul>
+      <div style="display:flex;gap:8px">
+        <label for="addname" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Add a learner</label>
+        <input id="addname" type="text" placeholder="Type a name" style="flex:1;min-width:0;height:48px;padding:0 14px;border-radius:12px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:16px">
+        <button type="button" style="height:48px;padding:0 16px;border-radius:12px;border:1.5px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:15px;font-weight:600">Add</button>
+      </div>
+      <button type="button" style="display:flex;align-items:center;gap:12px;min-height:60px;padding:8px 14px;border-radius:14px;border:1px solid #E7E6EF;background:#F4F3F8;color:#1F1D36;text-align:left">
+        <span aria-hidden="true" style="width:36px;height:36px;flex:none;border-radius:12px;background:#FFE3DA;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg></span>
+        <span style="flex:1;display:flex;flex-direction:column;line-height:1.3"><span style="font-size:15px;font-weight:600">Snap the register instead</span><span style="font-size:13px;color:#5D5A73">Jemma reads the names from your class list</span></span>
+      </button>
+    </section>
+
+    <section aria-labelledby="code" style="display:flex;flex-direction:column;gap:10px;padding:16px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <h2 id="code" style="margin:0;font-size:17px;font-weight:600">Class code for parents</h2>
+        <p style="margin:0;font-size:14px;color:#5D5A73">Parents type it to link their child. You can share it later too.</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="flex:1;display:flex;align-items:center;height:52px;padding:0 14px;border-radius:12px;background:#F4F3F8;font-size:22px;font-weight:700;letter-spacing:0.14em">R4T8WN</span>
+        <button type="button" style="display:flex;align-items:center;gap:6px;height:52px;padding:0 16px;border-radius:12px;border:1.5px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:15px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8"/><path d="M5 12.5v6a1.5 1.5 0 0 0 1.5 1.5h11a1.5 1.5 0 0 0 1.5-1.5v-6"/></svg>Share</button>
+      </div>
+    </section>
+
+    <a href="state-empty-class.dc.html" style="display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:14px;background:#1F1D36;color:#FFFFFF;font-size:17px;font-weight:600;text-decoration:none">Create class</a>
+    <div style="flex:1"></div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1372}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

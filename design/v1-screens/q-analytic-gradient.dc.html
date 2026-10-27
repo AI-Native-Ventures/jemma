@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Neo · Question type: gradient on a coordinate plane</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+input{font:inherit}
+</style>
+</helmet>
+<div style="width:390px;height:844px;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;display:flex;flex-direction:column;overflow:hidden;position:relative">
+  <header style="display:flex;align-items:center;gap:8px;padding:10px 18px 6px 8px">
+    <a href="teen-today.dc.html" aria-label="Stop for now" style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </a>
+    <ol aria-label="Session steps" style="flex:1;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:6px">
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#5D5A73"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#1F1D36"></span>Warm-up</li>
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#5D5A73"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#1F1D36"></span>Learn</li>
+      <li aria-current="step" style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:#1F1D36"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#FF6A4D"></span>Try</li>
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#6A6782"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#E3E1EE"></span>Results</li>
+    </ol>
+  </header>
+
+  <main style="flex:1;display:flex;flex-direction:column;gap:18px;padding:18px 20px 26px;min-height:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <p style="margin:0;font-size:16px;font-weight:600">Question 1 of 5</p>
+        <p style="margin:0;font-size:13px;color:#5D5A73">Analytical geometry · gradient</p>
+      </div>
+      <span aria-hidden="true" style="display:flex;gap:6px"><span style="width:11px;height:11px;border-radius:999px;border:3px solid #FF6A4D"></span><span style="width:11px;height:11px;border-radius:999px;border:1.5px solid #8C89A3"></span><span style="width:11px;height:11px;border-radius:999px;border:1.5px solid #8C89A3"></span><span style="width:11px;height:11px;border-radius:999px;border:1.5px solid #8C89A3"></span><span style="width:11px;height:11px;border-radius:999px;border:1.5px solid #8C89A3"></span></span>
+    </div>
+    <section aria-label="Question" style="display:flex;flex-direction:column;gap:16px;padding:18px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:24px">
+      <h1 style="margin:0;font-size:19px;line-height:1.38;font-weight:600;text-wrap:pretty">A(−2 ; 3) and B(4 ; −1). Find the gradient of AB.</h1>
+      <svg width="314" height="258" viewBox="0 0 314 258" role="img" aria-label="Coordinate plane from minus 4 to 6 across and minus 3 to 5 up. Point A at minus 2, 3 and point B at 4, minus 1 are joined by a line. A dashed right angle runs down from A and across to B, marked rise and run." style="display:block;max-width:100%"><line x1="18" y1="12" x2="18" y2="232.8" stroke="#E9E7F3" stroke-width="1"/><line x1="45.6" y1="12" x2="45.6" y2="232.8" stroke="#E9E7F3" stroke-width="1"/><line x1="73.2" y1="12" x2="73.2" y2="232.8" stroke="#E9E7F3" stroke-width="1"/><line x1="100.8" y1="12" x2="100.8" y2="232.8" stroke="#E9E7F3" stroke-width="1"/><line x1="128.4" y1="12" x2="128.4" y2="232.8" stroke="#E9E7F3" stroke-width="1"/><line x1="156" y1="12" x2="156" y2="232.8" stroke="#E9E7F3" stroke-width="1"/><line x1="183.6" y1="12" x2="183.6" y2="232.8" stroke="#E9E7F3" stroke-width="1"/><line x1="211.2" y1="12" x2="211.2" y2="232.8" stroke="#E9E7F3" stroke-width="1"/><line x1="238.8" y1="12" x2="238.8" y2="232.8" stroke="#E9E7F3" stroke-width="1"/><line x1="266.4" y1="12" x2="266.4" y2="232.8" stroke="#E9E7F3" stroke-width="1"/><line x1="294" y1="12" x2="294" y2="232.8" stroke="#E9E7F3" stroke-width="1"/><line x1="18" y1="232.8" x2="294" y2="232.8" stroke="#E9E7F3" stroke-width="1"/><line x1="18" y1="205.2" x2="294" y2="205.2" stroke="#E9E7F3" stroke-width="1"/><line x1="18" y1="177.6" x2="294" y2="177.6" stroke="#E9E7F3" stroke-width="1"/><line x1="18" y1="150" x2="294" y2="150" stroke="#E9E7F3" stroke-width="1"/><line x1="18" y1="122.4" x2="294" y2="122.4" stroke="#E9E7F3" stroke-width="1"/><line x1="18" y1="94.8" x2="294" y2="94.8" stroke="#E9E7F3" stroke-width="1"/><line x1="18" y1="67.2" x2="294" y2="67.2" stroke="#E9E7F3" stroke-width="1"/><line x1="18" y1="39.6" x2="294" y2="39.6" stroke="#E9E7F3" stroke-width="1"/><line x1="18" y1="12" x2="294" y2="12" stroke="#E9E7F3" stroke-width="1"/><line x1="18" y1="150" x2="294" y2="150" stroke="#1F1D36" stroke-width="1.5"/><line x1="128.4" y1="12" x2="128.4" y2="232.8" stroke="#1F1D36" stroke-width="1.5"/><text x="18" y="166" font-size="11" font-weight="500" text-anchor="middle" fill="#5D5A73" stroke="#FFFFFF" stroke-width="3" paint-order="stroke">−4</text><text x="73.2" y="166" font-size="11" font-weight="500" text-anchor="middle" fill="#5D5A73" stroke="#FFFFFF" stroke-width="3" paint-order="stroke">−2</text><text x="183.6" y="166" font-size="11" font-weight="500" text-anchor="middle" fill="#5D5A73" stroke="#FFFFFF" stroke-width="3" paint-order="stroke">2</text><text x="238.8" y="166" font-size="11" font-weight="500" text-anchor="middle" fill="#5D5A73" stroke="#FFFFFF" stroke-width="3" paint-order="stroke">4</text><text x="294" y="166" font-size="11" font-weight="500" text-anchor="middle" fill="#5D5A73" stroke="#FFFFFF" stroke-width="3" paint-order="stroke">6</text><text x="122.4" y="209.2" font-size="11" font-weight="500" text-anchor="end" fill="#5D5A73" stroke="#FFFFFF" stroke-width="3" paint-order="stroke">−2</text><text x="122.4" y="98.8" font-size="11" font-weight="500" text-anchor="end" fill="#5D5A73" stroke="#FFFFFF" stroke-width="3" paint-order="stroke">2</text><text x="122.4" y="43.6" font-size="11" font-weight="500" text-anchor="end" fill="#5D5A73" stroke="#FFFFFF" stroke-width="3" paint-order="stroke">4</text><text x="290" y="144" font-size="13" font-weight="600" text-anchor="end" fill="#1F1D36">x</text><text x="136.4" y="24" font-size="13" font-weight="600" text-anchor="start" fill="#1F1D36">y</text><line x1="46.7" y1="49.5" x2="258.7" y2="190.8" stroke="#1F1D36" stroke-width="2.2" stroke-linecap="round"/><path d="M73.2 67.2 L73.2 177.6 L238.8 177.6" fill="none" stroke="#FF6A4D" stroke-width="2.2" stroke-dasharray="6 5"/><path d="M85.2 177.6 L85.2 165.6 L73.2 165.6" fill="none" stroke="#FF6A4D" stroke-width="1.6"/><text x="65.2" y="126.4" font-size="12" font-weight="600" text-anchor="end" fill="#B8381F">rise</text><text x="156" y="194.6" font-size="12" font-weight="600" text-anchor="middle" fill="#B8381F">run</text><circle cx="73.2" cy="67.2" r="5.5" fill="#1F1D36" stroke="#FFFFFF" stroke-width="2"/><circle cx="238.8" cy="177.6" r="5.5" fill="#1F1D36" stroke="#FFFFFF" stroke-width="2"/><rect x="65.2" y="36.2" width="72" height="20" rx="6" fill="#FFFFFF"/><text x="69.2" y="51.2" font-size="13" font-weight="600" text-anchor="start" fill="#1F1D36">A(−2 ; 3)</text><rect x="200.8" y="186.6" width="74" height="20" rx="6" fill="#FFFFFF"/><text x="272.8" y="201.6" font-size="13" font-weight="600" text-anchor="end" fill="#1F1D36">B(4 ; −1)</text></svg>
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px">
+        <span style="font-size:22px;font-weight:700">m =</span>
+        <button type="button" aria-pressed="true" aria-label="Negative" style="width:44px;height:44px;flex:none;border-radius:12px;border:none;background:#1F1D36;color:#FFFFFF;font-size:24px;font-weight:700;padding:0">−</button>
+        <span style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <label for="num" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Top of the fraction</label>
+          <input id="num" type="text" inputmode="numeric" value="2" style="width:80px;height:52px;border-radius:14px;border:2px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:22px;font-weight:700;text-align:center">
+          <span aria-hidden="true" style="width:92px;height:3px;border-radius:999px;background:#1F1D36"></span>
+          <label for="den" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Bottom of the fraction</label>
+          <input id="den" type="text" inputmode="numeric" value="" style="width:80px;height:52px;border-radius:14px;border:3px solid #FF6A4D;background:#FFFFFF;color:#1F1D36;font-size:22px;font-weight:700;text-align:center">
+        </span>
+      </div>
+    </section>
+    <p style="margin:0;display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.45;color:#5D5A73">
+      <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:5px"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+      Take your time. You'll see how you did at the end.
+    </p>
+    <a href="q-stats-boxplot.dc.html" style="display:flex;align-items:center;justify-content:center;height:56px;border-radius:16px;background:#1F1D36;color:#FFFFFF;font-size:18px;font-weight:700;text-decoration:none">Next</a>
+    <div style="flex:1"></div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

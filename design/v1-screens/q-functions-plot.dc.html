@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Question type · Functions: plot on a grid</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+input{font:inherit}
+</style>
+</helmet>
+<div style="width:390px;height:928px;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;display:flex;flex-direction:column;overflow:hidden;position:relative">
+  <header style="display:flex;align-items:center;gap:8px;padding:10px 18px 6px 8px">
+    <a href="teen-today.dc.html" aria-label="Stop for now" style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </a>
+    <ol aria-label="Session steps" style="flex:1;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:6px">
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#5D5A73"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#1F1D36"></span>Warm-up</li>
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#5D5A73"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#1F1D36"></span>Learn</li>
+      <li aria-current="step" style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:#1F1D36"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#FF6A4D"></span>Try</li>
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#6A6782"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#E3E1EE"></span>Results</li>
+    </ol>
+  </header>
+
+  <main style="flex:1;display:flex;flex-direction:column;gap:18px;padding:14px 20px 22px;min-height:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <p style="margin:0;display:flex;flex-direction:column;line-height:1.25"><span style="font-size:13px;font-weight:600;color:#5D5A73">Functions</span><span style="font-size:17px;font-weight:600">Question 3 of 5</span></p>
+      <span aria-hidden="true" style="display:flex;gap:6px"><span style="width:10px;height:10px;border-radius:999px;background:#1F1D36"></span><span style="width:10px;height:10px;border-radius:999px;background:#1F1D36"></span><span style="width:10px;height:10px;border-radius:999px;border:3px solid #FF6A4D"></span><span style="width:10px;height:10px;border-radius:999px;border:1.5px solid #8C89A3"></span><span style="width:10px;height:10px;border-radius:999px;border:1.5px solid #8C89A3"></span></span>
+    </div>
+    <section aria-labelledby="q3" style="display:flex;flex-direction:column;gap:14px;padding:16px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:22px">
+      <p id="q3" style="margin:0;font-size:17px;line-height:1.45;font-weight:500;text-wrap:pretty">Plot the y-intercept and the asymptote of <span style="white-space:nowrap">h(x) = 2<sup><i>x</i></sup> − 4</span>.</p>
+      <fieldset style="border:none;margin:0;padding:0;min-width:0"><legend style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Drawing tools</legend><div style="display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));gap:6px"><button type="button" aria-pressed="true" style="display:flex;align-items:center;justify-content:center;gap:6px;height:44px;border-radius:12px;border:none;background:#1F1D36;color:#FFFFFF;font-weight:600;font-size:15px"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="4.5" fill="currentColor"/></svg>Point</button><button type="button" aria-pressed="false" style="display:flex;align-items:center;justify-content:center;gap:6px;height:44px;border-radius:12px;border:1px solid #CFCDDC;background:#FFFFFF;color:#1F1D36;font-weight:500;font-size:15px"><svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><path d="M2 14 16 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 3"/></svg>Line</button><button type="button" style="display:flex;align-items:center;justify-content:center;gap:6px;height:44px;border-radius:12px;border:1px solid #CFCDDC;background:#FFFFFF;color:#1F1D36;font-weight:500;font-size:15px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>Undo</button></div></fieldset>
+      <svg width="316" height="320" viewBox="0 0 316 320" role="img" aria-label="Empty grid from x −4 to 4 and y −5 to 4. You placed a point at (0 ; −3) and drew a dashed line at y = −4." style="display:block;max-width:100%;"><defs><clipPath id="plot6"><rect x="10" y="10" width="296" height="300"/></clipPath></defs><line x1="29.3" y1="10" x2="29.3" y2="310" stroke="#E9E7F3" stroke-width="1"/><line x1="61.5" y1="10" x2="61.5" y2="310" stroke="#E9E7F3" stroke-width="1"/><line x1="93.7" y1="10" x2="93.7" y2="310" stroke="#E9E7F3" stroke-width="1"/><line x1="125.8" y1="10" x2="125.8" y2="310" stroke="#E9E7F3" stroke-width="1"/><line x1="158.0" y1="10" x2="158.0" y2="310" stroke="#E9E7F3" stroke-width="1"/><line x1="190.2" y1="10" x2="190.2" y2="310" stroke="#E9E7F3" stroke-width="1"/><line x1="222.3" y1="10" x2="222.3" y2="310" stroke="#E9E7F3" stroke-width="1"/><line x1="254.5" y1="10" x2="254.5" y2="310" stroke="#E9E7F3" stroke-width="1"/><line x1="286.7" y1="10" x2="286.7" y2="310" stroke="#E9E7F3" stroke-width="1"/><line x1="10" y1="292.4" x2="306" y2="292.4" stroke="#E9E7F3" stroke-width="1"/><line x1="10" y1="262.9" x2="306" y2="262.9" stroke="#E9E7F3" stroke-width="1"/><line x1="10" y1="233.5" x2="306" y2="233.5" stroke="#E9E7F3" stroke-width="1"/><line x1="10" y1="204.1" x2="306" y2="204.1" stroke="#E9E7F3" stroke-width="1"/><line x1="10" y1="174.7" x2="306" y2="174.7" stroke="#E9E7F3" stroke-width="1"/><line x1="10" y1="145.3" x2="306" y2="145.3" stroke="#E9E7F3" stroke-width="1"/><line x1="10" y1="115.9" x2="306" y2="115.9" stroke="#E9E7F3" stroke-width="1"/><line x1="10" y1="86.5" x2="306" y2="86.5" stroke="#E9E7F3" stroke-width="1"/><line x1="10" y1="57.1" x2="306" y2="57.1" stroke="#E9E7F3" stroke-width="1"/><line x1="10" y1="27.6" x2="306" y2="27.6" stroke="#E9E7F3" stroke-width="1"/><line x1="10" y1="145.3" x2="304" y2="145.3" stroke="#1F1D36" stroke-width="1.5"/><polygon points="306,145.3 298,141.3 298,149.3" fill="#1F1D36"/><line x1="158.0" y1="310" x2="158.0" y2="12" stroke="#1F1D36" stroke-width="1.5"/><polygon points="158.0,10 154.0,18 162.0,18" fill="#1F1D36"/><line x1="29.3" y1="142.3" x2="29.3" y2="148.3" stroke="#1F1D36" stroke-width="1.2"/><line x1="93.7" y1="142.3" x2="93.7" y2="148.3" stroke="#1F1D36" stroke-width="1.2"/><line x1="222.3" y1="142.3" x2="222.3" y2="148.3" stroke="#1F1D36" stroke-width="1.2"/><line x1="286.7" y1="142.3" x2="286.7" y2="148.3" stroke="#1F1D36" stroke-width="1.2"/><line x1="155.0" y1="262.9" x2="161.0" y2="262.9" stroke="#1F1D36" stroke-width="1.2"/><line x1="155.0" y1="204.1" x2="161.0" y2="204.1" stroke="#1F1D36" stroke-width="1.2"/><line x1="155.0" y1="86.5" x2="161.0" y2="86.5" stroke="#1F1D36" stroke-width="1.2"/><line x1="155.0" y1="27.6" x2="161.0" y2="27.6" stroke="#1F1D36" stroke-width="1.2"/><line x1="10.0" y1="262.9" x2="306.0" y2="262.9" stroke="#FF6A4D" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="8 6" clip-path="url(#plot6)"/><text x="302.0" y="137.3" text-anchor="end" font-family="Outfit, system-ui, sans-serif" font-size="13" font-weight="500" fill="#1F1D36" font-style="italic" paint-order="stroke" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round">x</text><text x="167.0" y="20.0" text-anchor="start" font-family="Outfit, system-ui, sans-serif" font-size="13" font-weight="500" fill="#1F1D36" font-style="italic" paint-order="stroke" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round">y</text><text x="29.3" y="160.3" text-anchor="middle" font-family="Outfit, system-ui, sans-serif" font-size="11" font-weight="500" fill="#5D5A73" paint-order="stroke" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round">−4</text><text x="93.7" y="160.3" text-anchor="middle" font-family="Outfit, system-ui, sans-serif" font-size="11" font-weight="500" fill="#5D5A73" paint-order="stroke" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round">−2</text><text x="222.3" y="160.3" text-anchor="middle" font-family="Outfit, system-ui, sans-serif" font-size="11" font-weight="500" fill="#5D5A73" paint-order="stroke" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round">2</text><text x="286.7" y="160.3" text-anchor="middle" font-family="Outfit, system-ui, sans-serif" font-size="11" font-weight="500" fill="#5D5A73" paint-order="stroke" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round">4</text><text x="151.0" y="266.9" text-anchor="end" font-family="Outfit, system-ui, sans-serif" font-size="11" font-weight="500" fill="#5D5A73" paint-order="stroke" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round">−4</text><text x="151.0" y="208.1" text-anchor="end" font-family="Outfit, system-ui, sans-serif" font-size="11" font-weight="500" fill="#5D5A73" paint-order="stroke" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round">−2</text><text x="151.0" y="90.5" text-anchor="end" font-family="Outfit, system-ui, sans-serif" font-size="11" font-weight="500" fill="#5D5A73" paint-order="stroke" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round">2</text><text x="151.0" y="31.6" text-anchor="end" font-family="Outfit, system-ui, sans-serif" font-size="11" font-weight="500" fill="#5D5A73" paint-order="stroke" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round">4</text><circle cx="61.5" cy="262.9" r="7" fill="#FFFFFF"/><circle cx="61.5" cy="262.9" r="5" fill="#FF6A4D"/><circle cx="254.5" cy="262.9" r="7" fill="#FFFFFF"/><circle cx="254.5" cy="262.9" r="5" fill="#FF6A4D"/><circle cx="158.0" cy="233.5" r="9" fill="#FFFFFF"/><circle cx="158.0" cy="233.5" r="7" fill="#FF6A4D"/><text x="170.0" y="225.5" text-anchor="start" font-family="Outfit, system-ui, sans-serif" font-size="13" font-weight="700" fill="#B8381F" paint-order="stroke" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round">(0 ; −3)</text><text x="299.6" y="253.9" text-anchor="end" font-family="Outfit, system-ui, sans-serif" font-size="13" font-weight="700" fill="#B8381F" paint-order="stroke" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round">y = −4</text></svg>
+      <p style="margin:0;font-size:15px;line-height:1.45">You placed a point at <strong style="font-weight:700;white-space:nowrap">(0 ; −3)</strong> and a line at <strong style="font-weight:700;white-space:nowrap">y = −4</strong>.</p>
+      <p style="margin:0;font-size:14px;color:#5D5A73">Tap the grid to place a point.</p>
+      <button type="button" style="align-self:flex-start;min-height:44px;padding:0;border:none;background:transparent;font-size:15px;font-weight:600;color:#1F1D36;text-decoration:underline;text-underline-offset:3px">Or type the coordinates instead</button>
+    </section>
+    <p style="margin:0;display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.45;color:#5D5A73">
+      <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:5px"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+      Take your time. You'll see how you did at the end.
+    </p>
+    <div style="flex:1"></div>
+    <a href="q-trig-graph.dc.html" style="display:flex;align-items:center;justify-content:center;height:56px;border-radius:16px;background:#1F1D36;color:#FFFFFF;font-size:18px;font-weight:700;text-decoration:none">Next</a>
+  </main>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":928}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>State · Error with retry</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width:390px;height:892px;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;display:flex;flex-direction:column;overflow:hidden">
+  <header style="display:flex;align-items:center;gap:4px;padding:10px 16px 6px 8px">
+    <a href="teacher-class-home.dc.html" aria-label="Close" style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </a>
+    <span style="display:flex;flex-direction:column;line-height:1.2;flex:1;min-width:0">
+      <span style="font-size:18px;font-weight:700">Class Test 1</span>
+      <span style="font-size:13px;color:#5D5A73">5 papers snapped at 14:10</span>
+    </span>
+  </header>
+
+  <main style="flex:1;display:flex;flex-direction:column;gap:18px;padding:18px 20px 24px;min-height:0">
+    <section role="alert" style="display:flex;flex-direction:column;gap:14px;padding:22px 20px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:22px">
+      <span aria-hidden="true" style="width:48px;height:48px;border-radius:14px;background:#FFEDE8;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B8381F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 21.5 20h-19z"/><path d="M12 10v4.5M12 17.5h.01"/></svg></span>
+      <h1 style="margin:0;font-size:27px;line-height:1.15;font-weight:600;letter-spacing:-0.015em;text-wrap:pretty">I couldn't finish reading paper 4</h1>
+      <p style="margin:0;font-size:16px;line-height:1.5;color:#5D5A73;text-wrap:pretty">The connection dropped halfway. The photo is saved and the other 4 papers are marked.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+        <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:14px;border:none;background:#1F1D36;color:#FFFFFF;font-size:17px;font-weight:600">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4.5h-4.5"/></svg>
+          Try again
+        </button>
+        <a href="teacher-snap-papers.dc.html" style="display:flex;align-items:center;justify-content:center;height:52px;border-radius:14px;border:1.5px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:17px;font-weight:600;text-decoration:none">Retake the photo</a>
+      </div>
+    </section>
+
+    <section aria-labelledby="papers" style="display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px;padding:8px 12px 8px 16px">
+      <h2 id="papers" style="margin:8px 0 4px;font-size:16px;font-weight:600">Papers</h2>
+      <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column">
+        <li style="display:flex;align-items:center;gap:12px;min-height:50px;border-top:1px solid #EFEEF4"><span style="flex:1;font-size:16px">Amina</span><span style="font-size:15px;font-weight:600">6/10</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Marked"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></li>
+        <li style="display:flex;align-items:center;gap:12px;min-height:50px;border-top:1px solid #EFEEF4"><span style="flex:1;font-size:16px">Thabo</span><span style="font-size:15px;font-weight:600">5/10</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Marked"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></li>
+        <li style="display:flex;align-items:center;gap:12px;min-height:50px;border-top:1px solid #EFEEF4"><span style="flex:1;font-size:16px">Lerato</span><span style="font-size:15px;font-weight:600">9/10</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Marked"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></li>
+        <li style="display:flex;align-items:center;gap:12px;min-height:56px;margin:2px -4px 2px -8px;padding:0 4px 0 8px;border-radius:12px;background:#FFF4F1"><span style="flex:1;display:flex;flex-direction:column;line-height:1.25"><span style="font-size:16px;font-weight:600">Paper 4</span><span style="font-size:13px;color:#B8381F;font-weight:600">Didn't go through</span></span><button type="button" aria-label="Try paper 4 again" style="width:44px;height:44px;border-radius:12px;border:none;background:#FFFFFF;display:flex;align-items:center;justify-content:center;padding:0;color:#1F1D36"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4.5h-4.5"/></svg></button></li>
+        <li style="display:flex;align-items:center;gap:12px;min-height:50px;border-top:1px solid #EFEEF4"><span style="flex:1;font-size:16px">Naledi</span><span style="font-size:15px;font-weight:600">5/10</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Marked"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></li>
+      </ul>
+    </section>
+
+    <p style="margin:0;display:flex;gap:10px;font-size:14px;line-height:1.45;color:#5D5A73">
+      <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:4px"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+      Nothing is lost. If it fails again, paper 4 waits for you in Needs you.
+    </p>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":892}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

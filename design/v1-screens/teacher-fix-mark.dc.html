@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Teacher · Fix a mark</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Kalam:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+input{font:inherit}
+</style>
+</helmet>
+<div style="width:390px;height:844px;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;display:flex;flex-direction:column;overflow:hidden;position:relative">
+  <header style="display:flex;align-items:center;gap:4px;padding:10px 12px 6px 8px">
+    <a href="teacher-child-profile.dc.html" aria-label="Back to Amina's profile" style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
+    </a>
+    <span style="display:flex;flex-direction:column;line-height:1.2;flex:1;min-width:0;color:#1F1D36">
+      <span style="font-size:13px;color:#5D5A73">Amina · Class Test 1</span>
+      <span style="font-size:17px;font-weight:700">Her paper</span>
+    </span>
+  </header>
+  <div aria-hidden="true" style="flex:1;min-height:0;display:flex;flex-direction:column;gap:14px;padding:12px 20px 0;overflow:hidden">
+      <div style="padding:12px;border-radius:20px;background:#E9E7F3">
+        <div style="background:#FBFAF5;border-radius:6px;box-shadow:0 4px 14px rgba(31,29,54,0.12);padding:16px 14px 10px;color:#2A2A2A;font-family:Arial, Helvetica, sans-serif">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+            <span style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:13px;font-weight:700">Hillview Primary School</span>
+              <span style="font-size:11px;color:#444444">Grade 6 Mathematics · Class Test 1</span>
+            </span>
+            <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px 4px 8px;border-radius:999px;background:#1F1D36;color:#FFFFFF;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;font-size:14px;font-weight:700"><svg width="10" height="10" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:0px"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>6/10</span>
+          </div>
+          <span style="display:flex;align-items:flex-end;gap:8px;margin:10px 0 6px;font-size:11px">Name <span style="flex:1;border-bottom:1px solid #777777;padding-left:6px"><span style="font-family:Kalam, 'Comic Sans MS', cursive;color:#2F3A56;font-size:20px;line-height:1">Amina</span></span></span>
+          <ol style="list-style:none;margin:0;padding:0">
+          <li style="font-size:11px;font-weight:700;padding:6px 0 4px">Section A: Fractions</li>
+          <li style="display:flex;align-items:center;gap:8px;min-height:40px;border-top:1px solid #ECEAE2">
+            <span style="flex:1;min-width:0;font-size:13px;line-height:1.3">1. &#160;1/2 + 1/4 =</span>
+            <span style="width:58px;height:32px;flex:none;border:2px solid #FF6A4D;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:Kalam, 'Comic Sans MS', cursive;color:#2F3A56;font-size:18px;line-height:1">2/6</span>
+            <span style="width:68px;flex:none;display:flex"><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px 3px 6px;border-radius:999px;background:#FFE3DA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;font-size:13px;font-weight:700;color:#1F1D36;white-space:nowrap"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Missed. Right answer </span>3/4</span></span>
+          </li>
+          <li style="display:flex;align-items:center;gap:8px;min-height:40px;border-top:1px solid #ECEAE2">
+            <span style="flex:1;min-width:0;font-size:13px;line-height:1.3">2. &#160;2/3 + 1/6 =</span>
+            <span style="width:58px;height:32px;flex:none;border:2px solid #FF6A4D;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:Kalam, 'Comic Sans MS', cursive;color:#2F3A56;font-size:18px;line-height:1">3/9</span>
+            <span style="width:68px;flex:none;display:flex"><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px 3px 6px;border-radius:999px;background:#FFE3DA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;font-size:13px;font-weight:700;color:#1F1D36;white-space:nowrap"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Missed. Right answer </span>5/6</span></span>
+          </li>
+          <li style="display:flex;align-items:center;gap:8px;min-height:40px;border-top:1px solid #ECEAE2">
+            <span style="flex:1;min-width:0;font-size:13px;line-height:1.3">3. &#160;3/4 − 1/2 =</span>
+            <span style="width:58px;height:32px;flex:none;border:1px solid #8F8F8F;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:Kalam, 'Comic Sans MS', cursive;color:#2F3A56;font-size:18px;line-height:1">1/4</span>
+            <span style="width:68px;flex:none;display:flex;align-items:center;gap:4px;padding-left:4px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Right</span></span>
+          </li>
+          <li style="display:flex;align-items:center;gap:8px;min-height:40px;border-top:1px solid #ECEAE2">
+            <span style="flex:1;min-width:0;font-size:13px;line-height:1.3">4. &#160;1 1/2 + 2 1/4 =</span>
+            <span style="width:58px;height:32px;flex:none;border:2px solid #FF6A4D;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:Kalam, 'Comic Sans MS', cursive;color:#2F3A56;font-size:18px;line-height:1">3 2/6</span>
+            <span style="width:68px;flex:none;display:flex"><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px 3px 6px;border-radius:999px;background:#FFE3DA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;font-size:13px;font-weight:700;color:#1F1D36;white-space:nowrap"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Missed. Right answer </span>3 3/4</span></span>
+          </li>
+          <li style="display:flex;align-items:center;gap:8px;min-height:40px;border-top:1px solid #ECEAE2">
+            <span style="flex:1;min-width:0;font-size:13px;line-height:1.3">5. &#160;Work out 2/5 of 20.</span>
+            <span style="width:58px;height:32px;flex:none;border:1px solid #8F8F8F;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:Kalam, 'Comic Sans MS', cursive;color:#2F3A56;font-size:18px;line-height:1">8</span>
+            <span style="width:68px;flex:none;display:flex;align-items:center;gap:4px;padding-left:4px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Right</span></span>
+          </li>
+          <li style="display:flex;align-items:center;gap:8px;min-height:40px;border-top:1px solid #ECEAE2">
+            <span style="flex:1;min-width:0;font-size:13px;line-height:1.3">6. &#160;Which is bigger: 2/3 or 3/5?</span>
+            <span style="width:58px;height:32px;flex:none;display:flex;align-items:center;justify-content:center"><span style="font-family:Kalam, 'Comic Sans MS', cursive;color:#2F3A56;font-size:17px;line-height:1;border:1.5px solid #2F3A56;border-radius:50%;padding:3px 7px">2/3</span></span>
+            <span style="width:68px;flex:none;display:flex;align-items:center;gap:4px;padding-left:4px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Right</span></span>
+          </li>
+          <li style="font-size:11px;font-weight:700;padding:10px 0 4px;border-top:1px solid #ECEAE2">Section B: Decimals</li>
+          <li style="display:flex;align-items:center;gap:8px;min-height:40px;border-top:1px solid #ECEAE2">
+            <span style="flex:1;min-width:0;font-size:13px;line-height:1.3">7. &#160;Write 3/5 as a decimal.</span>
+            <span style="width:58px;height:32px;flex:none;border:1px solid #8F8F8F;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:Kalam, 'Comic Sans MS', cursive;color:#2F3A56;font-size:18px;line-height:1">0,6</span>
+            <span style="width:68px;flex:none;display:flex;align-items:center;gap:4px;padding-left:4px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Right</span></span>
+          </li>
+          <li style="display:flex;align-items:center;gap:8px;min-height:40px;border-top:1px solid #ECEAE2">
+            <span style="flex:1;min-width:0;font-size:13px;line-height:1.3">8. &#160;0,5 + 0,25 =</span>
+            <span style="width:58px;height:32px;flex:none;border:2px solid #FF6A4D;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:Kalam, 'Comic Sans MS', cursive;color:#2F3A56;font-size:18px;line-height:1">0,30</span>
+            <span style="width:68px;flex:none;display:flex"><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px 3px 6px;border-radius:999px;background:#FFE3DA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;font-size:13px;font-weight:700;color:#1F1D36;white-space:nowrap"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Missed. Right answer </span>0,75</span></span>
+          </li>
+          <li style="display:flex;align-items:center;gap:8px;min-height:40px;border-top:1px solid #ECEAE2">
+            <span style="flex:1;min-width:0;font-size:13px;line-height:1.3">9. &#160;Which fraction equals 0,25? A 2/5, B 1/4, C 25/10, D 1/25</span>
+            <span style="width:58px;height:32px;flex:none;display:flex;align-items:center;justify-content:center"><span style="font-family:Kalam, 'Comic Sans MS', cursive;color:#2F3A56;font-size:17px;line-height:1;border:1.5px solid #2F3A56;border-radius:50%;padding:3px 7px">B</span></span>
+            <span style="width:68px;flex:none;display:flex;align-items:center;gap:4px;padding-left:4px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Right</span></span>
+          </li>
+          <li style="display:flex;align-items:center;gap:8px;min-height:40px;border-top:1px solid #ECEAE2">
+            <span style="flex:1;min-width:0;font-size:13px;line-height:1.3">10. &#160;Thabo has R20 and spends 3/4. How much is left?</span>
+            <span style="width:58px;height:32px;flex:none;border:1px solid #8F8F8F;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:Kalam, 'Comic Sans MS', cursive;color:#2F3A56;font-size:18px;line-height:1">R5</span>
+            <span style="width:68px;flex:none;display:flex;align-items:center;gap:4px;padding-left:4px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Right</span></span>
+          </li>
+          </ol>
+        </div>
+      </div>
+  </div>
+  <span aria-hidden="true" style="position:absolute;inset:0;background:rgba(31,29,54,0.5)"></span>
+  <section role="dialog" aria-modal="true" aria-labelledby="fixq" style="position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:14px;padding:10px 20px 28px;background:#FFFFFF;border-radius:28px 28px 0 0;box-shadow:0 -10px 30px rgba(31,29,54,0.18)">
+    <span aria-hidden="true" style="align-self:center;width:44px;height:5px;border-radius:999px;background:#CFCDDC"></span>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <h2 id="fixq" style="margin:0;font-size:21px;font-weight:600">Question 8 · 0,5 + 0,25</h2>
+      <a href="teacher-child-profile.dc.html" aria-label="Close" style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></a>
+    </div>
+      <div aria-hidden="true" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;background:#FBFAF5;border:1px solid #E3E1D8;font-family:Arial, Helvetica, sans-serif;color:#2A2A2A">
+        <span style="font-size:15px">8. &#160;0,5 + 0,25 =</span>
+        <span style="width:84px;height:44px;border:2px solid #FF6A4D;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:Kalam, 'Comic Sans MS', cursive;color:#2F3A56;font-size:26px;line-height:1">0,30</span>
+      </div>
+    <p style="margin:0;font-size:15px;line-height:1.45;color:#5D5A73">Jemma read <strong style="color:#1F1D36;font-weight:600">0,30</strong> · marked wrong · 96% sure</p>
+      <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+        <legend style="padding:0;margin-bottom:8px;font-size:15px;font-weight:600">What does it say?</legend>
+        <span style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:8px"><button type="button" aria-pressed="true" style="height:48px;border-radius:12px;border:none;background:#1F1D36;color:#FFFFFF;font-weight:600;font-size:16px">0,30</button><button type="button" aria-pressed="false" style="height:48px;border-radius:12px;border:1px solid #CFCDDC;background:#FFFFFF;color:#1F1D36;font-weight:500;font-size:16px">Type it</button></span>
+      </fieldset>
+      <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+        <legend style="padding:0;margin-bottom:8px;font-size:15px;font-weight:600">Mark</legend>
+        <span style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:8px"><button type="button" aria-pressed="false" style="height:48px;border-radius:12px;border:1px solid #CFCDDC;background:#FFFFFF;color:#1F1D36;font-weight:500;font-size:16px">Right</button><button type="button" aria-pressed="true" style="height:48px;border-radius:12px;border:none;background:#1F1D36;color:#FFFFFF;font-weight:600;font-size:16px">Wrong</button></span>
+      </fieldset>
+    <button type="button" disabled style="height:52px;border-radius:14px;border:none;background:#E9E7F3;color:#5D5A73;font-size:17px;font-weight:600;cursor:not-allowed">Save</button>
+    <p style="margin:0;font-size:14px;line-height:1.45;color:#5D5A73">Change something to save. Thandi sees any change, with your name on it. Jemma learns from your fixes.</p>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

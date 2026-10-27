@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sign in</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+input{font:inherit}
+</style>
+</helmet>
+<div style="width:390px;height:844px;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;display:flex;flex-direction:column;padding:72px 24px 36px;overflow:hidden">
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <img src="/_blob/20e5ad4ffe4da31ddc0de8f3dd49cfb9" alt="jemma" style="width:164px;height:64px;display:block;margin-left:-6px">
+    <p style="margin:0;font-size:22px;line-height:1.3;font-weight:500;color:#1F1D36;text-wrap:pretty">Each child's own tutor. Snap a test, Jemma finds the gaps and teaches them.</p>
+  </div>
+
+  <form style="display:flex;flex-direction:column;gap:14px;margin-top:48px">
+    <h1 style="margin:0;font-size:20px;font-weight:600">Sign in</h1>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label for="email" style="font-size:15px;font-weight:500">Email</label>
+      <input id="email" type="email" placeholder="you@example.com" autocomplete="email" style="height:52px;padding:0 16px;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:17px">
+    </div>
+    <a href="shared-code.dc.html" style="display:flex;align-items:center;justify-content:center;height:52px;border-radius:14px;background:#1F1D36;color:#FFFFFF;font-size:17px;font-weight:600;text-decoration:none">Send me a sign-in code</a>
+    <p style="margin:0;font-size:14px;line-height:1.45;color:#5D5A73">We email you a 6 digit code. No password to remember.</p>
+  </form>
+
+  <div style="display:flex;align-items:center;gap:12px;margin:28px 0 20px" aria-hidden="true">
+    <span style="flex:1;height:1px;background:#E7E6EF"></span>
+    <span style="font-size:13px;color:#5D5A73">New to Jemma?</span>
+    <span style="flex:1;height:1px;background:#E7E6EF"></span>
+  </div>
+  <a href="shared-sign-up.dc.html" style="display:flex;align-items:center;justify-content:center;height:52px;border-radius:14px;border:1.5px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:17px;font-weight:600;text-decoration:none">Create an account</a>
+
+  <div style="flex:1"></div>
+  <a href="Main.dc.html" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;font-size:15px;font-weight:600;color:#1F1D36;text-decoration:none">
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+    Judging the challenge? Try the demo
+  </a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Neo · Question type: box and whisker plot</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+input{font:inherit}
+</style>
+</helmet>
+<div style="width:390px;height:844px;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;display:flex;flex-direction:column;overflow:hidden;position:relative">
+  <header style="display:flex;align-items:center;gap:8px;padding:10px 18px 6px 8px">
+    <a href="teen-today.dc.html" aria-label="Stop for now" style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </a>
+    <ol aria-label="Session steps" style="flex:1;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:6px">
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#5D5A73"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#1F1D36"></span>Warm-up</li>
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#5D5A73"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#1F1D36"></span>Learn</li>
+      <li aria-current="step" style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:#1F1D36"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#FF6A4D"></span>Try</li>
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#6A6782"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#E3E1EE"></span>Results</li>
+    </ol>
+  </header>
+
+  <main style="flex:1;display:flex;flex-direction:column;gap:18px;padding:18px 20px 26px;min-height:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <p style="margin:0;font-size:16px;font-weight:600">Question 3 of 5</p>
+        <p style="margin:0;font-size:13px;color:#5D5A73">Statistics · five-number summary</p>
+      </div>
+      <span aria-hidden="true" style="display:flex;gap:6px"><span style="width:11px;height:11px;border-radius:999px;background:#1F1D36"></span><span style="width:11px;height:11px;border-radius:999px;background:#1F1D36"></span><span style="width:11px;height:11px;border-radius:999px;border:3px solid #FF6A4D"></span><span style="width:11px;height:11px;border-radius:999px;border:1.5px solid #8C89A3"></span><span style="width:11px;height:11px;border-radius:999px;border:1.5px solid #8C89A3"></span></span>
+    </div>
+    <section aria-label="Question" style="display:flex;flex-direction:column;gap:16px;padding:18px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:24px">
+      <h1 style="margin:0;font-size:19px;line-height:1.38;font-weight:600;text-wrap:pretty">The box and whisker plot shows 12A's marks in a test. What is the interquartile range?</h1>
+      <p style="margin:0;font-size:14px;font-weight:600;color:#5D5A73">12A test marks (%)</p>
+      <svg width="314" height="150" viewBox="0 0 314 150" role="img" aria-label="Box and whisker plot on a scale from 0 to 100. Minimum 32, lower quartile 48, median 61, upper quartile 74, maximum 93." style="display:block;max-width:100%"><line x1="18" y1="122" x2="18" y2="129" stroke="#1F1D36" stroke-width="1.3"/><text x="18" y="144" font-size="11" font-weight="500" text-anchor="middle" fill="#5D5A73">0</text><line x1="45.8" y1="122" x2="45.8" y2="126" stroke="#1F1D36" stroke-width="1.3"/><line x1="73.6" y1="122" x2="73.6" y2="129" stroke="#1F1D36" stroke-width="1.3"/><text x="73.6" y="144" font-size="11" font-weight="500" text-anchor="middle" fill="#5D5A73">20</text><line x1="101.4" y1="122" x2="101.4" y2="126" stroke="#1F1D36" stroke-width="1.3"/><line x1="129.2" y1="122" x2="129.2" y2="129" stroke="#1F1D36" stroke-width="1.3"/><text x="129.2" y="144" font-size="11" font-weight="500" text-anchor="middle" fill="#5D5A73">40</text><line x1="157" y1="122" x2="157" y2="126" stroke="#1F1D36" stroke-width="1.3"/><line x1="184.8" y1="122" x2="184.8" y2="129" stroke="#1F1D36" stroke-width="1.3"/><text x="184.8" y="144" font-size="11" font-weight="500" text-anchor="middle" fill="#5D5A73">60</text><line x1="212.6" y1="122" x2="212.6" y2="126" stroke="#1F1D36" stroke-width="1.3"/><line x1="240.4" y1="122" x2="240.4" y2="129" stroke="#1F1D36" stroke-width="1.3"/><text x="240.4" y="144" font-size="11" font-weight="500" text-anchor="middle" fill="#5D5A73">80</text><line x1="268.2" y1="122" x2="268.2" y2="126" stroke="#1F1D36" stroke-width="1.3"/><line x1="296" y1="122" x2="296" y2="129" stroke="#1F1D36" stroke-width="1.3"/><text x="296" y="144" font-size="11" font-weight="500" text-anchor="middle" fill="#5D5A73">100</text><line x1="18" y1="122" x2="296" y2="122" stroke="#1F1D36" stroke-width="1.5"/><line x1="107" y1="71" x2="151.4" y2="71" stroke="#1F1D36" stroke-width="2"/><line x1="223.7" y1="71" x2="276.5" y2="71" stroke="#1F1D36" stroke-width="2"/><line x1="107" y1="59" x2="107" y2="83" stroke="#1F1D36" stroke-width="2"/><line x1="276.5" y1="59" x2="276.5" y2="83" stroke="#1F1D36" stroke-width="2"/><rect x="151.4" y="46" width="72.3" height="50" fill="#FFE3DA" stroke="#1F1D36" stroke-width="2"/><line x1="187.6" y1="46" x2="187.6" y2="96" stroke="#1F1D36" stroke-width="2.6"/><text x="107" y="34" font-size="13" font-weight="600" text-anchor="middle" fill="#1F1D36">32</text><text x="151.4" y="34" font-size="13" font-weight="600" text-anchor="middle" fill="#1F1D36">48</text><text x="187.6" y="34" font-size="13" font-weight="600" text-anchor="middle" fill="#1F1D36">61</text><text x="223.7" y="34" font-size="13" font-weight="600" text-anchor="middle" fill="#1F1D36">74</text><text x="276.5" y="34" font-size="13" font-weight="600" text-anchor="middle" fill="#1F1D36">93</text></svg>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label for="iqr" style="font-size:15px;font-weight:600">Interquartile range</label>
+        <input id="iqr" type="text" inputmode="numeric" value="" style="width:120px;height:52px;border-radius:14px;border:3px solid #FF6A4D;background:#FFFFFF;color:#1F1D36;font-size:22px;font-weight:700;text-align:center">
+      </div>
+    </section>
+    <p style="margin:0;display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.45;color:#5D5A73">
+      <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:5px"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+      Take your time. You'll see how you did at the end.
+    </p>
+    <a href="q-prob-tree.dc.html" style="display:flex;align-items:center;justify-content:center;height:56px;border-radius:16px;background:#1F1D36;color:#FFFFFF;font-size:18px;font-weight:700;text-decoration:none">Next</a>
+    <div style="flex:1"></div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Neo · Question type: fill in a tree diagram</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+input{font:inherit}
+</style>
+</helmet>
+<div style="width:390px;height:844px;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;display:flex;flex-direction:column;overflow:hidden;position:relative">
+  <header style="display:flex;align-items:center;gap:8px;padding:10px 18px 6px 8px">
+    <a href="teen-today.dc.html" aria-label="Stop for now" style="width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </a>
+    <ol aria-label="Session steps" style="flex:1;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:6px">
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#5D5A73"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#1F1D36"></span>Warm-up</li>
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#5D5A73"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#1F1D36"></span>Learn</li>
+      <li aria-current="step" style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;color:#1F1D36"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#FF6A4D"></span>Try</li>
+      <li style="display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:500;color:#6A6782"><span aria-hidden="true" style="height:6px;border-radius:999px;background:#E3E1EE"></span>Results</li>
+    </ol>
+  </header>
+
+  <main style="flex:1;display:flex;flex-direction:column;gap:18px;padding:18px 20px 26px;min-height:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <p style="margin:0;font-size:16px;font-weight:600">Question 4 of 5</p>
+        <p style="margin:0;font-size:13px;color:#5D5A73">Probability · tree diagrams</p>
+      </div>
+      <span aria-hidden="true" style="display:flex;gap:6px"><span style="width:11px;height:11px;border-radius:999px;background:#1F1D36"></span><span style="width:11px;height:11px;border-radius:999px;background:#1F1D36"></span><span style="width:11px;height:11px;border-radius:999px;background:#1F1D36"></span><span style="width:11px;height:11px;border-radius:999px;border:3px solid #FF6A4D"></span><span style="width:11px;height:11px;border-radius:999px;border:1.5px solid #8C89A3"></span></span>
+    </div>
+    <section aria-label="Question" style="display:flex;flex-direction:column;gap:16px;padding:18px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:24px">
+      <h1 style="margin:0;font-size:19px;line-height:1.38;font-weight:600;text-wrap:pretty">A and B are independent. P(A) = 0,4 and P(B) = 0,7. Fill in the tree, then find P(A and B).</h1>
+      <div style="position:relative;width:314px;height:318px;max-width:100%"><svg width="314" height="318" viewBox="0 0 314 318" role="img" aria-label="Tree diagram. First branches: A with probability 0,4 and not A, blank. After A: B with 0,7 and not B, blank. After not A: B with 0,7 and not B, blank. Outcomes: A and B, A and not B, not A and B, not A and not B." style="position:absolute;left:0;top:0;display:block"><line x1="10" y1="165" x2="92" y2="82" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round"/><line x1="10" y1="165" x2="92" y2="248" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round"/><line x1="92" y1="82" x2="212" y2="36" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round"/><line x1="92" y1="82" x2="212" y2="128" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round"/><line x1="92" y1="248" x2="212" y2="202" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round"/><line x1="92" y1="248" x2="212" y2="294" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="165" r="4" fill="#1F1D36"/><rect x="78" y="70" width="28" height="24" rx="8" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.5"/><text x="92" y="87" font-size="14" font-weight="600" text-anchor="middle" fill="#1F1D36">A</text><rect x="69" y="236" width="46" height="24" rx="8" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.5"/><text x="92" y="253" font-size="14" font-weight="600" text-anchor="middle" fill="#1F1D36">not A</text><rect x="199" y="24" width="26" height="24" rx="8" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.5"/><text x="212" y="41" font-size="14" font-weight="600" text-anchor="middle" fill="#1F1D36">B</text><rect x="199" y="190" width="26" height="24" rx="8" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.5"/><text x="212" y="207" font-size="14" font-weight="600" text-anchor="middle" fill="#1F1D36">B</text><rect x="189" y="116" width="46" height="24" rx="8" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.5"/><text x="212" y="133" font-size="14" font-weight="600" text-anchor="middle" fill="#1F1D36">not B</text><rect x="189" y="282" width="46" height="24" rx="8" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.5"/><text x="212" y="299" font-size="14" font-weight="600" text-anchor="middle" fill="#1F1D36">not B</text><text x="42" y="114" font-size="15" font-weight="700" text-anchor="middle" fill="#1F1D36">0,4</text><text x="146" y="51" font-size="15" font-weight="700" text-anchor="middle" fill="#1F1D36">0,7</text><text x="146" y="217" font-size="15" font-weight="700" text-anchor="middle" fill="#1F1D36">0,7</text><text x="240" y="40" font-size="12" font-weight="500" text-anchor="start" fill="#5D5A73">A, B</text><text x="240" y="132" font-size="12" font-weight="500" text-anchor="start" fill="#5D5A73">A, not B</text><text x="240" y="206" font-size="12" font-weight="500" text-anchor="start" fill="#5D5A73">not A, B</text><text x="240" y="298" font-size="12" font-weight="500" text-anchor="start" fill="#5D5A73">not A, not B</text></svg><label for="pna" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Probability of not A</label><input id="pna" type="text" inputmode="decimal" style="position:absolute;left:24px;top:185px;width:54px;height:44px;border-radius:12px;border:2px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:17px;font-weight:700;text-align:center;padding:0"><label for="pnb1" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Probability of not B after A</label><input id="pnb1" type="text" inputmode="decimal" style="position:absolute;left:125px;top:83px;width:54px;height:44px;border-radius:12px;border:2px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:17px;font-weight:700;text-align:center;padding:0"><label for="pnb2" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Probability of not B after not A</label><input id="pnb2" type="text" inputmode="decimal" style="position:absolute;left:125px;top:249px;width:54px;height:44px;border-radius:12px;border:2px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:17px;font-weight:700;text-align:center;padding:0"></div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <label for="pab" style="font-size:19px;font-weight:700">P(A and B) =</label>
+        <input id="pab" type="text" inputmode="decimal" value="" style="width:110px;height:52px;border-radius:14px;border:3px solid #FF6A4D;background:#FFFFFF;color:#1F1D36;font-size:22px;font-weight:700;text-align:center">
+      </div>
+    </section>
+    <p style="margin:0;display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.45;color:#5D5A73">
+      <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:5px"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+      Take your time. You'll see how you did at the end.
+    </p>
+    <a href="q-patterns-nth.dc.html" style="display:flex;align-items:center;justify-content:center;height:56px;border-radius:16px;background:#1F1D36;color:#FFFFFF;font-size:18px;font-weight:700;text-decoration:none">Next</a>
+    <div style="flex:1"></div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

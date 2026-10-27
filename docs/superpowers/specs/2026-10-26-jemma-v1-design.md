@@ -1,6 +1,7 @@
 # Jemma v1 design (Agentic Africa Challenge)
 
-Date: 26 Oct 2026. Status: draft, waiting for Basheer's approval.
+Date: 26 Oct 2026. Status: approved by Basheer 26 Oct; updated 27 Oct to match the Claude Design screens.
+Build plan: docs/superpowers/plans/2026-10-27-jemma-v1-build.md.
 Human-readable version (features, screens, flows): Claude Doc "Jemma Feature Set",
 https://claude.ai/artifact/TSXRfqZmR9pFZn8iVGCrmA (tabs: Step 1 Features, Step 2 Screens and flows, Step 3 v1).
 
@@ -125,7 +126,9 @@ Full list with status lives in the Claude Doc, tab Step 1. The ones that shape v
 | Phone + laptop for every role; everything works on both | Basheer |
 | Teacher approves one answer key per test before papers are marked | Claude's call |
 | Parent confirms every scan they make; teacher reviews only papers Jemma is unsure about | Claude's call |
-| Linking: teacher shares a class code, parent enters it | Claude's call |
+| Linking: teacher shares a class code, parent enters it, teacher says yes before the parent sees anything | Claude's call (teacher yes added 27 Oct from the designs: a code alone would expose a child's marks) |
+| Teacher snaps papers with the phone's own camera, one photo per page (live in-browser camera after the challenge) | Claude's call, 27 Oct |
+| Child signs in with a login code and a 4-digit PIN the parent sets | Claude's call, 27 Oct, from the designs |
 | During a quiz Jemma silently eases the next question after a miss | Claude's call |
 
 ## 8. The agent
@@ -246,8 +249,8 @@ Per the Claude Doc, tab Step 2, cut to the demo path:
 - **Child (own login in v1):** Today with one Start button; session screens (warm-up, learn in each of
   3 formats, try, results, progress); My gaps.
 
-Existing visual direction for the parent screens: https://claude.ai/artifact/SD4RHpsoAPFXTJQXPFuuET
-(not final; Basheer will design the demo screens in Claude Design on Tue 27 Oct).
+Designs (27 Oct, Claude Design): https://claude.ai/artifact/NWLDuYt2x2ygnAadGUp9cG, copied to design/v1-screens/.
+98 boards are v1, 40 are marked "After the challenge". The build plan ranks v1 boards into Tier 1 (judges' demo path) and Tier 2.
 
 ## 12. Demo accounts and data
 
@@ -266,7 +269,7 @@ Existing visual direction for the parent screens: https://claude.ai/artifact/SD4
 
 ## 12b. Screen designs [Claude's call]
 
-Basheer designs the demo screens in Claude Design on Tue 27 Oct and shares the link. The build matches
+Basheer designed the screens in Claude Design on Tue 27 Oct (link in section 11). The build matches
 the look and layout of every screen covered there and follows the same patterns for screens it does not
 cover. The existing parent canvas counts as direction. Backend work starts Wed 28 Oct; UI starts as
 soon as the designs land.
@@ -280,8 +283,6 @@ test setup, how the demo reset works, and the order of build.
 
 - Confirm the challenge requirements above against the official brief (Basheer's acceptance email).
 - Open-source licence for the public repo (Basheer's call).
-- Whether v1's learner profile includes non-academic inputs (teacher observations, attendance), which
-  the challenge brief emphasises.
 - Vision provider, picked by Basheer after the Tue 27 Oct spike. Test papers: Basheer and 2 to 3
   helpers handwrite about 10 synthetic Grade 6 papers from a printable pack and photograph them by Tue
   morning; ground truth is a table made from the photos and checked by Basheer.
