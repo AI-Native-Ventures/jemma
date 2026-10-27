@@ -1,0 +1,44 @@
+#!/usr/bin/env node
+// Fake `claude` for runner tests. FAKE_MODE: done | failed | silent | hang | tool_error. FAKE_LOG: file that records argv, stdin and MCP config.
+import { appendFileSync, readFileSync } from 'node:fs'
+import { spawn } from 'node:child_process'
+
+const args = process.argv.slice(2)
+const log = (o) => process.env.FAKE_LOG && appendFileSync(process.env.FAKE_LOG, JSON.stringify(o) + '\n')
+const out = (o) => process.stdout.write(JSON.stringify(o) + '\n')
+
+if (args[0] === '--version') {
+  console.log('9.9.9 (Claude Code)')
+  process.exit(0)
+}
+if (args[0] === 'auth' && args[1] === 'status') {
+  console.log(JSON.stringify({ loggedIn: process.env.FAKE_SIGNED_IN !== 'no' }))
+  process.exit(0)
+}
+
+let stdin = ''
+for await (const chunk of process.stdin) stdin += chunk
+const i = args.indexOf('--mcp-config')
+let mcp = null
+if (i >= 0) {
+  try { mcp = JSON.parse(readFileSync(args[i + 1], 'utf8')) } catch { mcp = args[i + 1] }
+}
+log({ bin: 'claude', args, stdin, mcp, cwd: process.cwd(), token: process.env.JEMMA_MCP_TOKEN ?? null })
+
+const mode = process.env.FAKE_MODE ?? 'done'
+if (mode === 'hang') {
+  const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' })
+  log({ childPid: child.pid })
+  setInterval(() => {}, 1000)
+} else {
+  out({ type: 'system', subtype: 'init' })
+  if (mode === 'done' || mode === 'failed' || mode === 'tool_error') {
+    out({
+      type: 'assistant',
+      message: { content: [{ type: 'tool_use', id: 'tu1', name: 'mcp__jemma__complete_job', input: { eventId: 'e', status: mode === 'failed' ? 'failed' : 'done', note: 'because' } }] },
+    })
+    out({ type: 'user', message: { content: [{ type: 'tool_result', tool_use_id: 'tu1', is_error: mode === 'tool_error', content: 'ok' }] } })
+  }
+  out({ type: 'assistant', message: { content: [{ type: 'text', text: mode === 'silent' ? 'I looked and stopped.' : 'All finished.' }] } })
+  out({ type: 'result', subtype: 'success', is_error: false, result: mode === 'silent' ? 'I looked and stopped.' : 'All finished.' })
+}

@@ -1445,6 +1445,34 @@ export type Database = {
     }
     Functions: {
       can_see_child: { Args: { child: string }; Returns: boolean }
+      claim_event: {
+        Args: { runner: string }
+        Returns: {
+          attempts: number
+          claimed_by: string | null
+          created_at: string
+          error: string | null
+          finished_at: string | null
+          id: string
+          payload: NonNullable<Json>
+          runner: Database["public"]["Enums"]["runner"]
+          school_id: string
+          status: Database["public"]["Enums"]["event_status"]
+          type: string
+        }[]
+      }
+      finish_event: {
+        Args: {
+          error_in: string
+          event: string
+          status_in: Database["public"]["Enums"]["event_status"]
+        }
+        Returns: undefined
+      }
+      heartbeat: {
+        Args: { agents_in: Json; chosen_in: string; runner: string }
+        Returns: undefined
+      }
       is_child_user: { Args: { child: string }; Returns: boolean }
       my_role: {
         Args: Record<PropertyKey, never>
