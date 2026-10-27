@@ -2,7 +2,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { EmptyState, Headline, NeedsYouList, WhatJemmaDid } from '@/components/blocks'
 import { ChevronRightIcon } from '@/components/ui/icons'
-import { getClassHome, type ClassGapView, type ClassHome, type GapStage } from '@/lib/data/p18'
+import { getClassHome, getGapDetail, type ClassGapView, type ClassHome, type GapStage } from '@/lib/data/p18'
+import { LaptopHome } from './LaptopHome'
+import { Only } from './Only'
 
 const dot = 'size-[9px] rounded-pill'
 
@@ -241,11 +243,34 @@ function NextCards({ home, base }: { home: ClassHome; base: string }) {
   )
 }
 
-export default async function TeacherClassHome({ params }: { params: Promise<{ classId: string }> }) {
+export default async function TeacherClassHome({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ classId: string }>
+  searchParams: Promise<{ gap?: string }>
+}) {
   const { classId } = await params
+  const { gap } = await searchParams
   const home = await getClassHome(classId)
   if (!home) notFound()
   const base = `/t/${classId}`
+  const next = home.mode === 'next'
+  const phone = <PhoneHome home={home} base={base} />
+  if (next) return <div className="lg:mx-auto lg:max-w-[640px]">{phone}</div>
+  const key = home.gaps.some((g) => g.key === gap) ? gap! : home.topGapKey
+  const detail = key ? await getGapDetail(classId, key) : null
+  return (
+    <>
+      <Only on="phone">{phone}</Only>
+      <Only on="laptop">
+        <LaptopHome home={home} detail={detail} base={base} />
+      </Only>
+    </>
+  )
+}
+
+function PhoneHome({ home, base }: { home: ClassHome; base: string }) {
   const next = home.mode === 'next'
   return (
     <div className="flex flex-col gap-5 px-5 pt-3.5 pb-5 leading-[normal]">

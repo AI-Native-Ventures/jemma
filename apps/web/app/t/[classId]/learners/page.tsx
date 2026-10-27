@@ -1,11 +1,38 @@
 import Link from 'next/link'
-import { getLearnersView } from '@/lib/data/p19'
+import { getChildProfileView, getLearnerView, getLearnersView } from '@/lib/data/p19'
+import { getLearnerDetailExtras } from '@/lib/data/p33'
+import { Only } from '../Only'
 import { Avatar, Chevron, Diamond, Page, card, font } from './_parts'
+import { LaptopLearners } from './LaptopLearners'
 import { ShareCode } from './ShareCode'
 
-export default async function LearnersPage({ params }: { params: Promise<{ classId: string }> }) {
+export default async function LearnersPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ classId: string }>
+  searchParams: Promise<{ child?: string }>
+}) {
   const { classId } = await params
+  const { child } = await searchParams
   const v = await getLearnersView(classId)
+  const selected = v.learners.find((l) => l.id === child)?.id ?? v.learners[0]?.id ?? ''
+  const [view, profile, extras] = selected
+    ? await Promise.all([getLearnerView(classId, selected), getChildProfileView(classId, selected), getLearnerDetailExtras(selected)])
+    : [null, null, null]
+  return (
+    <>
+      <Only on="phone">
+        <Phone classId={classId} v={v} />
+      </Only>
+      <Only on="laptop">
+        <LaptopLearners v={v} classId={classId} selected={selected} detail={view && profile && extras ? { view, profile, extras } : null} />
+      </Only>
+    </>
+  )
+}
+
+function Phone({ classId, v }: { classId: string; v: Awaited<ReturnType<typeof getLearnersView>> }) {
   return (
     <Page>
       <div style={{ fontFamily: font, display: 'flex', flexDirection: 'column', gap: 18, padding: '14px 20px 20px' }}>
