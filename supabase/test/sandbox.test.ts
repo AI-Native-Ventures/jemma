@@ -2,7 +2,7 @@ import { afterAll, describe, expect, test } from 'vitest'
 import { createClient } from '@supabase/supabase-js'
 import { createSandbox, deleteSandbox, resetSandbox } from '../seed/demo'
 import { SAMPLE_FILES } from '../seed/fixtures/sample-papers'
-import { classTest1Scores } from '../seed/fixtures/class-test-1'
+import { classTest1Scores, classTest1ScoresBeforeFix } from '../seed/fixtures/class-test-1'
 import { classGaps } from '../../packages/profiling/src/logic'
 import {
   AnswerKeyItemSchema,
@@ -177,10 +177,20 @@ describe('sandboxes', () => {
     // 5 marked papers, Amina 6 of 10.
     const papers = await ok(admin.from('papers').select('id, child_id, status, total, name_read').eq('test_id', test!.id))
     expect(papers).toHaveLength(5)
-    expect(papers.every((p) => p.status === 'marked')).toBe(true)
-    for (const [name, score] of Object.entries(classTest1Scores)) {
+    // Pre-fix state: Sipho's paper waits on his unsure Q7 (6/10 until it is fixed).
+    expect(papers.filter((p) => p.status === 'needs_you').map((p) => p.child_id)).toEqual([idOf.sipho])
+    expect(papers.filter((p) => p.status === 'marked')).toHaveLength(4)
+    for (const [name, score] of Object.entries(classTest1ScoresBeforeFix)) {
       expect(papers.find((p) => p.child_id === idOf[name]!)!.total).toBe(score)
     }
+    const siphoPaper = papers.find((p) => p.child_id === idOf.sipho)!
+    const [q7] = await ok(admin.from('question_results').select('answer_read, read_confidence, correct, mark, previous_answer, changed_by').eq('paper_id', siphoPaper.id).eq('n', 7))
+    expect(q7).toMatchObject({ answer_read: '0,8', correct: false, mark: 0, previous_answer: null, changed_by: null })
+    expect(q7!.read_confidence).toBeCloseTo(0.42, 2)
+    const needs = await ok(admin.from('needs_you_items').select('kind, status, title, detail, ref_id, child_id').eq('school_id', s.schoolId).eq('kind', 'check_answer'))
+    expect(needs).toEqual([
+      { kind: 'check_answer', status: 'open', title: "Check 1 answer on Sipho's paper", detail: 'Class Test 1 · question 7 · I read 0,8', ref_id: siphoPaper.id, child_id: idOf.sipho },
+    ])
     const aminaPaper = papers.find((p) => p.child_id === aminaId)!
     const aminaRows = await ok(admin.from('question_results').select('n, mark, correct, answer_read').eq('paper_id', aminaPaper.id).order('n'))
     expect(aminaRows.reduce((sum, r) => sum + r.mark, 0)).toBe(6)
@@ -200,12 +210,12 @@ describe('sandboxes', () => {
     const fixedGaps = await ok(admin.from('gaps').select('topic_id, topic_name').eq('child_id', aminaId).eq('stage', 'fixed'))
     expect(fixedGaps.find((g) => g.topic_name === 'Equivalent fractions')!.topic_id).not.toBeNull()
 
-    // Class gaps computed from the stored rows: 3 gaps, 4 / 3 / 2 learners.
+    // Class gaps computed from the stored rows of marked papers (Sipho's open paper is not read yet): 3 gaps, 4 / 3 / 2 learners.
     const results = await ok(
       admin
         .from('question_results')
         .select('child_id, n, prompt, answer_read, correct, topic_name, misconception, gap_topic_id, paper_id')
-        .in('paper_id', papers.map((p) => p.id)),
+        .in('paper_id', papers.filter((p) => p.status === 'marked').map((p) => p.id)),
     )
     const topics = await ok(admin.from('topics').select('id, name').eq('map_id', map!.id))
     const topicName = new Map(topics.map((t) => [t.id, t.name]))
@@ -234,19 +244,35 @@ describe('sandboxes', () => {
     expect(stored3.every((g) => g.stage === 'new')).toBe(true)
 
     // Reteach, lesson, planned session, guidance, link.
-    const [reteach] = await ok(admin.from('reteach_plans').select('topic_name, content, done_at').eq('class_id', s.classId))
+    const [reteach] = await ok(admin.from('reteach_plans').select('topic_name, content, done_at, test_id, why, missing_basic, explanation').eq('class_id', s.classId))
     expect(reteach!.topic_name).toBe('Adding fractions with different denominators')
+    expect(reteach!.test_id).toBe(test!.id)
+    expect(reteach!.why).toBe('4 of 5 add the tops and the bottoms. It points back to equivalent fractions, a Term 1 basic.')
+    expect(reteach!.missing_basic).toBe('Equivalent fractions · Term 1')
+    expect(reteach!.explanation).toBe("The bottom number says the size of the pieces. Halves and quarters are different sizes, so they can't be added until the bottoms match.")
     expect(ReteachSchema.parse(reteach!.content).steps).toHaveLength(4)
     const lessons = await ok(admin.from('lessons').select('id, format, topic_name, content').eq('child_id', aminaId))
-    expect(lessons).toHaveLength(1)
-    expect(lessons[0]!.format).toBe('diagram')
-    const lesson = LessonSchema.parse(lessons[0]!.content)
+    const tonight = lessons.find((l) => LessonSchema.safeParse(l.content).success)!
+    expect(tonight.format).toBe('diagram')
+    const lesson = LessonSchema.parse(tonight.content)
     expect(lesson.minutes).toBe(12)
     expect(lesson.diagram!.steps).toHaveLength(3)
-    const sessions = await ok(admin.from('sessions').select('status, lesson_id, planned_for').eq('child_id', aminaId))
-    expect(sessions).toHaveLength(1)
-    expect(sessions[0]!.status).toBe('planned')
-    expect(sessions[0]!.lesson_id).toBe(lessons[0]!.id)
+    // The week on parent-learn: tonight (written lesson), then Wed, Thu, Sat as stubs.
+    expect(lessons).toHaveLength(4)
+    const sessions = await ok(admin.from('sessions').select('status, lesson_id, planned_for').eq('child_id', aminaId).order('planned_for'))
+    expect(sessions.every((x) => x.status === 'planned')).toBe(true)
+    const today = new Date()
+    const plusDays = (n: number) => new Date(today.getTime() + n * 86_400_000).toISOString().slice(0, 10)
+    expect(sessions.map((x) => x.planned_for)).toEqual([0, 2, 3, 5].map(plusDays))
+    expect(sessions[0]!.lesson_id).toBe(lessons.find((l) => l.format === 'diagram' && LessonSchema.safeParse(l.content).success)!.id)
+    const week = sessions.map((x) => lessons.find((l) => l.id === x.lesson_id)!)
+    expect(week.map((l) => [l.format, l.topic_name])).toEqual([
+      ['diagram', 'Adding fractions with different denominators'],
+      ['reading', 'Adding decimals'],
+      ['diagram', 'Adding fractions with different denominators'],
+      ['audio', 'Adding decimals'],
+    ])
+    expect(week.map((l) => (l.content as { minutes: number }).minutes)).toEqual([12, 10, 6, 10])
     const [card] = await ok(admin.from('guidance_cards').select('content').eq('child_id', aminaId))
     const guidance = GuidanceSchema.parse(card!.content)
     expect(guidance.focus).toHaveLength(2)
@@ -269,7 +295,16 @@ describe('sandboxes', () => {
   test('stage session_done has Amina at 3 of 5 and the gap at Practising', async () => {
     const s = await make('session_done')
     const [amina] = await ok(admin.from('children').select('id').eq('school_id', s.schoolId).eq('first_name', 'Amina'))
-    const [session] = await ok(admin.from('sessions').select('id, status, right, minutes, finished_at').eq('child_id', amina!.id))
+    // Post-fix state: Sipho's Q7 is 0,6 (fixed by Ms Banda), his paper is marked 7/10, the item is done.
+    const [sipho] = await ok(admin.from('children').select('id').eq('school_id', s.schoolId).eq('first_name', 'Sipho'))
+    const [siphoPaper] = await ok(admin.from('papers').select('id, status, total').eq('child_id', sipho!.id).not('test_id', 'is', null))
+    expect(siphoPaper).toMatchObject({ status: 'marked', total: classTest1Scores.sipho })
+    const [fixedQ7] = await ok(admin.from('question_results').select('answer_read, correct, mark, previous_answer, changed_by').eq('paper_id', siphoPaper!.id).eq('n', 7))
+    const [teacherRow] = await ok(admin.from('classes').select('teacher_id').eq('id', s.classId))
+    expect(fixedQ7).toEqual({ answer_read: '0,6', correct: true, mark: 1, previous_answer: '0,8', changed_by: teacherRow!.teacher_id })
+    const doneNeeds = await ok(admin.from('needs_you_items').select('status').eq('school_id', s.schoolId).eq('kind', 'check_answer'))
+    expect(doneNeeds).toEqual([{ status: 'done' }])
+    const [session] = await ok(admin.from('sessions').select('id, status, right, minutes, finished_at').eq('child_id', amina!.id).eq('status', 'done'))
     expect(session!.status).toBe('done')
     expect(session!.right).toBe(3)
     expect(session!.minutes).toBe(12)

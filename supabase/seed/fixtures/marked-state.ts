@@ -152,6 +152,23 @@ export const RETEACH: Reteach = {
   exitQuestion: '1/3 + 1/6',
 }
 
+export const RETEACH_WHY = '4 of 5 add the tops and the bottoms. It points back to equivalent fractions, a Term 1 basic.'
+export const RETEACH_MISSING_BASIC = 'Equivalent fractions · Term 1'
+export const RETEACH_EXPLANATION =
+  "The bottom number says the size of the pieces. Halves and quarters are different sizes, so they can't be added until the bottoms match."
+
+// ---- Sipho's unsure Q7 (teacher-class-home, teacher-review) ----------------------------------
+
+export const SIPHO_NEEDS = { title: "Check 1 answer on Sipho's paper", detail: 'Class Test 1 · question 7 · I read 0,8' }
+
+// ---- The rest of Amina's week (parent-learn "This week"); tonight (day 0) is the written lesson --
+
+export const WEEK_PLAN: { inDays: number; topic: string; format: 'reading' | 'diagram' | 'audio'; title: string; minutes: number }[] = [
+  { inDays: 2, topic: 'Adding decimals', format: 'reading', title: 'Adding decimals', minutes: 10 },
+  { inDays: 3, topic: 'Adding fractions with different denominators', format: 'diagram', title: 'Adding fractions, quick check', minutes: 6 },
+  { inDays: 5, topic: 'Adding decimals', format: 'audio', title: 'Adding decimals', minutes: 10 },
+]
+
 // ---- Questions ----------------------------------------------------------------------------
 
 const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a)
