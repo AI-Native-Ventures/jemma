@@ -7,7 +7,7 @@ import type { ReactNode } from 'react'
 export default function SettingsLayout({ children }: { children: ReactNode }) {
   return (
     <div className="max-lg:fixed max-lg:inset-0 max-lg:z-40 max-lg:overflow-y-auto max-lg:bg-ground">
-      <div className="mx-auto flex min-h-dvh max-w-[440px] flex-col text-ink lg:min-h-0">{children}</div>
+      <div className="mx-auto flex min-h-dvh max-w-[440px] flex-col leading-[normal] text-ink lg:min-h-0">{children}</div>
     </div>
   )
 }

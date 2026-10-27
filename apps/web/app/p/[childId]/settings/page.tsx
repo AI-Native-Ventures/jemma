@@ -17,7 +17,7 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
   return (
     <>
       <BoardHeader href={`/p/${childId}/profile`} label={`Back to ${name}'s profile`} small={name} title="Settings" />
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16, padding: '12px 20px 28px', minHeight: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16, padding: '12px 20px 28px', minHeight: 0 }}>
         <BoardHeadline size={25}>{name}&apos;s settings. Most families never need to change these.</BoardHeadline>
 
         <Section id="about" title={`About ${name}`} gap={2}>
@@ -79,11 +79,11 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
           <ToggleRow title={`${name} finished a lesson`} initial divider />
         </Section>
 
-        <Link href="/p/data" style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', minHeight: 44, fontSize: 15, fontWeight: 600, color: '#B8381F', textUnderlineOffset: 3 }}>
+        <Link href="/p/data" style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', minHeight: 44, fontSize: 15, fontWeight: 600, color: '#B8381F', textDecoration: 'underline', textUnderlineOffset: 3 }}>
           Remove {name} from Jemma
         </Link>
         <div style={{ flex: 1 }} />
-      </main>
+      </div>
     </>
   )
 }

@@ -162,19 +162,3 @@ export function Segmented({ legend, options, initial }: { legend: string; option
     </fieldset>
   )
 }
-
-export const outlineButton: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 8,
-  height: 48,
-  borderRadius: 14,
-  border: '1.5px solid #1F1D36',
-  background: '#FFFFFF',
-  color: '#1F1D36',
-  fontSize: 16,
-  fontWeight: 600,
-}
-
-export const dangerButton: CSSProperties = { ...outlineButton, gap: 0, border: '1.5px solid #B8381F', color: '#B8381F' }

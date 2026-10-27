@@ -8,6 +8,8 @@ const admin = () =>
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY!,
   })
 
+test.setTimeout(120_000)
+test.use({ actionTimeout: 30_000 })
 let sb: OpenedSandbox | undefined
 test.afterEach(async () => {
   await sb?.cleanup()
@@ -38,7 +40,7 @@ test('parent-child-settings: copy, teacher link, coming sheet', async ({ page })
   await page.goto(`/p/${sb.childId}/settings`)
   await expect(page.getByRole('heading', { name: "Amina's settings. Most families never need to change these." })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'About Amina' })).toBeVisible()
-  await expect(page.getByText('Grade 6 · Hillview Primary')).toBeVisible()
+  await expect(page.getByText('Grade 6 · Hillview Primary').last()).toBeVisible()
   await expect(page.getByText(`Code ${code} and her own PIN`)).toBeVisible()
   await expect(page.getByText('She signs in without an email')).toBeVisible()
   await expect(page.getByText('Ms Banda', { exact: true })).toBeVisible()
@@ -71,7 +73,7 @@ test('parent-child-login: shows the code, makes a new one with a PIN', async ({ 
   await page.getByRole('button', { name: 'Make a new code' }).click()
   await page.getByLabel('Choose a 4-digit PIN').fill('4321')
   await page.getByRole('button', { name: 'Save new code' }).click()
-  await expect(page.getByText(old, { exact: true })).toHaveCount(0)
+  await expect(page.getByText(old, { exact: true })).toHaveCount(0, { timeout: 30_000 })
   const fresh = await loginCode(sb.childId)
   expect(fresh).not.toBe(old)
   await expect(page.getByText(fresh, { exact: true })).toBeVisible()

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getPrivacy } from '@/lib/data/p26'
-import { BoardHeader, BoardHeadline, Chevron, ComingButton, Gem, Section, dangerButton, outlineButton } from '../account/_ui'
+import { BoardHeader, BoardHeadline, Chevron, ComingButton, Gem, Section} from '../account/_ui'
+import { dangerButton, outlineButton } from '../account/_styles'
 import { ImproveToggle } from './Improve'
 
 export const metadata = { title: 'Privacy and your data · Jemma' }

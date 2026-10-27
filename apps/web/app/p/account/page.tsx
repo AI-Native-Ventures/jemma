@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getAccount } from '@/lib/data/p26'
-import { BoardHeader, Chevron, ComingButton, ToggleRow, outlineButton } from './_ui'
+import { BoardHeader, Chevron, ComingButton, ToggleRow} from './_ui'
+import { outlineButton } from './_styles'
 import { signOut } from './actions'
 
 export const metadata = { title: 'Your account · Jemma' }
