@@ -423,33 +423,27 @@ async function buildMarked(c: MarkedCtx): Promise<void> {
       .single(),
     'lesson',
   )
+  const tonight = WEEK_PLAN[0]!
+  const tonightPlan = {
+    topic_id: tid(tonight.topic), topic_name: tonight.topic, format: tonight.format, planned_minutes: tonight.minutes, question_count: tonight.questions,
+  }
   const session = await ok(
     admin
       .from('sessions')
-      .insert({ child_id: aminaId, lesson_id: lessonRow.id, status: 'planned', planned_for: today, warmup: json(lesson.warmup) })
+      .insert({ child_id: aminaId, lesson_id: lessonRow.id, status: 'planned', planned_for: today, warmup: json(lesson.warmup), ...tonightPlan })
       .select('id')
       .single(),
     'session',
   )
-  // The rest of Amina's week (parent-learn). A session needs a lesson row, so these get a stub the
-  // lesson writer replaces when the day comes; only tonight's lesson is written out.
-  const weekLessons = await ok(
-    admin
-      .from('lessons')
-      .insert(
-        WEEK_PLAN.map((w) => ({
-          child_id: aminaId, topic_id: tid(w.topic), topic_name: w.topic, format: w.format,
-          content: json({ format: w.format, title: w.title, minutes: w.minutes, planned: true }),
-        })),
-      )
-      .select('id'),
-    'week lessons',
-  )
+  // The rest of Amina's week (parent-learn): planned sessions with no lesson yet.
+  const dayOf = (n: number) => new Date(c.now.getTime() + n * DAY).toISOString().slice(0, 10)
+  const planFields = (w: (typeof WEEK_PLAN)[number]) => ({
+    topic_id: tid(w.topic), topic_name: w.topic, format: w.format, planned_minutes: w.minutes, question_count: w.questions,
+  })
   await ok(
     admin.from('sessions').insert(
-      WEEK_PLAN.map((w, i) => ({
-        child_id: aminaId, lesson_id: weekLessons[i]!.id, status: 'planned' as const,
-        planned_for: new Date(c.now.getTime() + w.inDays * DAY).toISOString().slice(0, 10), warmup: json([]),
+      WEEK_PLAN.filter((w) => w.inDays > 0).map((w) => ({
+        child_id: aminaId, lesson_id: null, status: 'planned' as const, planned_for: dayOf(w.inDays), warmup: json([]), ...planFields(w),
       })),
     ),
     'week sessions',

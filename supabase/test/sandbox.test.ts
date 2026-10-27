@@ -258,22 +258,22 @@ describe('sandboxes', () => {
     const lesson = LessonSchema.parse(tonight.content)
     expect(lesson.minutes).toBe(12)
     expect(lesson.diagram!.steps).toHaveLength(3)
-    // The week on parent-learn: tonight (written lesson), then Wed, Thu, Sat as stubs.
-    expect(lessons).toHaveLength(4)
-    const sessions = await ok(admin.from('sessions').select('status, lesson_id, planned_for').eq('child_id', aminaId).order('planned_for'))
+    // The week on parent-learn: tonight has the written lesson, the other 3 sessions have no lesson row.
+    expect(lessons).toHaveLength(1)
+    const sessions = await ok(
+      admin.from('sessions').select('status, lesson_id, planned_for, topic_name, topic_id, format, planned_minutes, question_count').eq('child_id', aminaId).order('planned_for'),
+    )
     expect(sessions.every((x) => x.status === 'planned')).toBe(true)
-    const today = new Date()
-    const plusDays = (n: number) => new Date(today.getTime() + n * 86_400_000).toISOString().slice(0, 10)
+    const plusDays = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10)
     expect(sessions.map((x) => x.planned_for)).toEqual([0, 2, 3, 5].map(plusDays))
-    expect(sessions[0]!.lesson_id).toBe(lessons.find((l) => l.format === 'diagram' && LessonSchema.safeParse(l.content).success)!.id)
-    const week = sessions.map((x) => lessons.find((l) => l.id === x.lesson_id)!)
-    expect(week.map((l) => [l.format, l.topic_name])).toEqual([
-      ['diagram', 'Adding fractions with different denominators'],
-      ['reading', 'Adding decimals'],
-      ['diagram', 'Adding fractions with different denominators'],
-      ['audio', 'Adding decimals'],
+    expect(sessions.map((x) => x.lesson_id)).toEqual([tonight.id, null, null, null])
+    expect(sessions.every((x) => x.topic_id !== null)).toBe(true)
+    expect(sessions.map((x) => [x.topic_name, x.format, x.planned_minutes, x.question_count])).toEqual([
+      ['Adding fractions with different denominators', 'diagram', 12, 5],
+      ['Adding decimals', 'reading', 10, null],
+      ['Adding fractions with different denominators', 'diagram', 6, 5],
+      ['Adding decimals', 'audio', 10, null],
     ])
-    expect(week.map((l) => (l.content as { minutes: number }).minutes)).toEqual([12, 10, 6, 10])
     const [card] = await ok(admin.from('guidance_cards').select('content').eq('child_id', aminaId))
     const guidance = GuidanceSchema.parse(card!.content)
     expect(guidance.focus).toHaveLength(2)
