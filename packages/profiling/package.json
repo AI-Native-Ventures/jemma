@@ -8,10 +8,30 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "4.0.89",
+    "@ai-sdk/deepseek": "3.0.74",
+    "@ai-sdk/google": "4.0.106",
+    "@ai-sdk/mcp": "2.0.85",
+    "@ai-sdk/openai": "4.0.103",
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "@openrouter/ai-sdk-provider": "3.1.0",
+    "@supabase/supabase-js": "2.118.0",
+    "ai": "7.0.154",
     "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/node": "24.10.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "5.0.5"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./logic": "./src/logic/index.ts",
+    "./schemas": "./src/schemas/index.ts",
+    "./ai": "./src/ai/index.ts",
+    "./db": "./src/db/index.ts",
+    "./tools": "./src/tools/index.ts",
+    "./records": "./src/records.ts",
+    "./orchestrator": "./src/orchestrator.ts"
   }
 }
