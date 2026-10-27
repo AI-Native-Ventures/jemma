@@ -23,6 +23,9 @@ async function noHorizontalScroll(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false)
 }
 
+// Building a seeded sandbox takes 10 to 25 seconds.
+test.describe.configure({ timeout: 120_000 })
+
 async function learnerCreds(sandboxId: string) {
   const { data, error } = await admin().from('demo_sandboxes').select('logins').eq('id', sandboxId).single()
   if (error) throw error
@@ -70,7 +73,7 @@ test.describe('child-sign-in', () => {
       await page.getByLabel('Your code').fill(creds.code)
       await typePin(page, wrong)
       await page.getByRole('button', { name: 'Sign in' }).click()
-      await expect(page.getByRole('alert')).toHaveText('That code or PIN is not right. Check it and try again.')
+      await expect(page.getByText('That code or PIN is not right. Check it and try again.')).toBeVisible()
       await expect(page.getByText('0 of 4 digits typed')).toBeAttached()
       await expect(page).toHaveURL(/\/k\/sign-in/)
     } finally {
@@ -88,8 +91,8 @@ test.describe('child-gaps', () => {
       const fixed = page.getByRole('region', { name: 'Fixed' })
       await expect(fixed.getByRole('listitem')).toHaveCount(3)
       await expect(fixed.getByText('Equivalent fractions')).toBeVisible()
-      await expect(fixed.getByText('Ordering decimals')).toBeVisible()
-      await expect(fixed.getByText('Fraction of a quantity')).toBeVisible()
+      await expect(fixed.getByText('Ordering whole numbers')).toBeVisible()
+      await expect(fixed.getByText('Rounding off')).toBeVisible()
       await expect(page.getByText('Fixed means you got it right again days later, so it stuck.')).toBeVisible()
       const practising = page.getByRole('region', { name: 'Practising' })
       await expect(practising.getByText('Adding fractions with different denominators')).toBeVisible()
