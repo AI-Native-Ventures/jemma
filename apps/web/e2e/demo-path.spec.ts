@@ -184,15 +184,20 @@ test('the whole demo path', async ({ page }) => {
     seen = await eventCount(schoolId)
     await page.waitForURL(`**/k/session/${session.data!.id}`)
     let tries = 0
-    for (let guard = 0; guard < 80 && !(await page.getByRole('heading', { name: /^You finished/ }).isVisible()); guard++) {
+    let answered: string | null = null
+    for (let guard = 0; guard < 400 && !(await page.getByRole('heading', { name: /^You finished/ }).isVisible()); guard++) {
       const prompt = await page.locator('h1[data-prompt]').first().getAttribute('data-prompt', { timeout: 500 }).catch(() => null)
-      if (prompt) {
+      if (prompt && prompt === answered) {
+        await page.waitForTimeout(300) // the next question is still loading
+      } else if (prompt) {
         const isTry = await page.getByText(/^Question \d+ of \d+$/).isVisible()
         if (isTry) tries++
         await answerQuestion(page, byPrompt.get(prompt)!, !(isTry && (tries === 2 || tries === 5)))
-        const body = (await page.locator('body').innerText()).toLowerCase()
-        if (isTry && tries < 5) for (const word of ['wrong', 'correct', 'score', 'well done']) expect(body).not.toContain(word)
+        answered = prompt
+        // The child never sees right or wrong, a running score or a total during a quiz.
+        if (isTry && tries < 5) await expect(page.getByText(/^(Right|Wrong|Correct|Well done|Score)\b/i)).toHaveCount(0)
       } else if (await page.getByRole('button', { name: "I'm ready" }).isVisible()) {
+        answered = null
         await page.getByRole('button', { name: "I'm ready" }).click()
       } else if (await page.getByRole('button', { name: 'Next card' }).isVisible()) {
         await page.getByRole('button', { name: 'Next card' }).click()

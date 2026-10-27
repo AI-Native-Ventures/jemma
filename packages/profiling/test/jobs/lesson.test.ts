@@ -195,8 +195,8 @@ test('lesson has 2 warm-up and 15 questions in 3 levels', async () => {
 
 test('planning the same child twice at once leaves one planned session', async () => {
   await addGap(TOPIC, topicId, 'new')
-  const [a, b, c] = await Promise.all([1, 2, 3].map(() => plain(planNextSession, ctx(), { childId: s.aminaId })))
-  expect(new Set([a.sessionId, b.sessionId, c.sessionId]).size).toBe(1)
+  const plans = await Promise.all([1, 2, 3].map(() => plain(planNextSession, ctx(), { childId: s.aminaId })))
+  expect(new Set(plans.map((p) => p.sessionId)).size).toBe(1)
   const rows = await db.from('sessions').select('id').eq('child_id', s.aminaId).eq('status', 'planned')
   expect(rows.data).toHaveLength(1)
 })

@@ -59,6 +59,16 @@ const tokenize = <T>(value: T, ids: string[]): T =>
 const detokenize = <T>(value: T, ids: string[]): T =>
   JSON.parse(JSON.stringify(value).replace(/<id:(\d+)>/g, (m, n: string) => ids[Number(n)] ?? m)) as T
 
+/** The start of the call's text, so a miss says which job asked. */
+function hintOf(model: string, params: unknown): string {
+  const prompt = (params as { prompt?: { role: string; content: unknown }[] } | undefined)?.prompt ?? []
+  const text = prompt
+    .map((m) => (typeof m.content === 'string' ? m.content : Array.isArray(m.content) ? m.content.map((p) => (p as { text?: string }).text ?? '').join(' ') : ''))
+    .join(' ')
+    .replace(/\s+/g, ' ')
+  return `${model}: ${text.slice(0, 80)} ... ${text.slice(-60)}`
+}
+
 export function withReplay(store: ReplayStore, mode: AiMode): LanguageModelMiddleware {
   if (mode === 'live') return { specificationVersion: 'v4' }
   return {
@@ -68,7 +78,7 @@ export function withReplay(store: ReplayStore, mode: AiMode): LanguageModelMiddl
       if (mode === 'replay' || mode === 'cache') {
         const hit = await store.get(key)
         if (hit !== null) return detokenize(hit, ids) as Awaited<ReturnType<typeof doGenerate>>
-        if (mode === 'replay') throw new ReplayMissError(key)
+        if (mode === 'replay') throw new ReplayMissError(key, hintOf(model.modelId, params))
       }
       const result = await doGenerate()
       await store.put(key, model.modelId, tokenize(result, ids))
@@ -77,7 +87,7 @@ export function withReplay(store: ReplayStore, mode: AiMode): LanguageModelMiddl
     wrapStream: async ({ doStream, params, model }) => {
       const { key, ids } = await prepare(`${model.modelId}:stream`, params)
       const stored = mode === 'replay' || mode === 'cache' ? await store.get(key) : null
-      if (stored === null && mode === 'replay') throw new ReplayMissError(key)
+      if (stored === null && mode === 'replay') throw new ReplayMissError(key, hintOf(model.modelId, params))
       if (stored !== null) {
         const hit = detokenize(stored, ids) as { chunks: StreamPart[]; rest: object }
         return {

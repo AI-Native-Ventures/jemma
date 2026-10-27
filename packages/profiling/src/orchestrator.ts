@@ -2,7 +2,7 @@ import type { AiEnv } from './ai'
 import type { JemmaDb } from './db'
 import { notify, notifyLessonReady } from './notify'
 import { jobPlan, postconditions, type JobName, type JobStep } from './plans'
-import { EventSchema } from './schemas/events'
+import { EventSchema, type JemmaEvent } from './schemas/events'
 import { maybe, ok, type ToolContext } from './tools/context'
 import { planNextSession } from './tools/save/plan-next-session'
 import { updateLearnerProfile } from './tools/save/update-learner-profile'
@@ -36,7 +36,11 @@ class Stopped extends Error {}
 
 /** Waits before retries 1, 2 and 3 of a job that hit a rate limit or a timeout. */
 export const BACKOFF_MS = [1000, 4000, 10_000]
+/** Steps that make up a test's tail (after its papers are read). One run at a time does them. */
+const TAIL_JOBS = new Set<JobName>(['diagnose', 'class_report', 'plan_next_session', 'write_lesson', 'guidance'])
 const MAX_STEPS = 60
+/** Polls (2 s apart) a run waits for sibling events of its school before it plans again. */
+const MAX_SIBLING_WAITS = 300
 export const DESKTOP_TIMEOUT_MS = 10 * 60 * 1000
 
 const text = (err: unknown) => (err instanceof Error ? err.message : String(err))
@@ -106,6 +110,7 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
   const payload = (row.payload ?? {}) as Record<string, unknown>
   let attempts = 0
   const told = new Set<string>()
+  let tailLock: string | null = null
 
   const guard = async () => {
     const [ev, school] = await Promise.all([
@@ -127,6 +132,36 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
       told.add(item.id)
       await notify(db, [item.owner_id], { title: item.title, body: item.detail || 'Jemma needs you.', href: (await ownerOf(db, row.school_id))?.href ?? '/' })
     }
+  }
+
+  /**
+   * The papers of a test are read at the same time, and the last two can both find the test ready for its tail.
+   * One run takes a lock (an atomic insert, the table's key is its primary key) and does the tail; the other leaves it to that run.
+   */
+  const takeTail = async (parsed: JemmaEvent): Promise<boolean> => {
+    if (tailLock) return true
+    if (parsed.type !== 'paper.snapped' && parsed.type !== 'paper.checked') return true
+    const paper = await maybe(db.from('papers').select('test_id').eq('id', parsed.paperId).maybeSingle())
+    if (!paper?.test_id) return true
+    const key = `lock:tail:${paper.test_id}`
+    for (let tries = 0; tries < 2; tries++) {
+      const ins = await db.from('ai_replays').insert({ key, model: 'lock', response: { eventId } as never })
+      if (!ins.error) {
+        tailLock = key
+        return true
+      }
+      // A lock left by a run that is no longer running is taken over.
+      const held = await maybe(db.from('ai_replays').select('response').eq('key', key).maybeSingle())
+      const owner = (held?.response as { eventId?: string } | null)?.eventId
+      const ownerRow = owner ? await maybe(db.from('events').select('status').eq('id', owner).maybeSingle()) : null
+      if (ownerRow?.status === 'running' && owner !== eventId) return false
+      await db.from('ai_replays').delete().eq('key', key)
+    }
+    return false
+  }
+  const releaseTail = async () => {
+    if (tailLock) await db.from('ai_replays').delete().eq('key', tailLock)
+    tailLock = null
   }
 
   const runStep = async (step: JobStep) => {
@@ -151,19 +186,36 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
   try {
     const parsed = EventSchema.parse({ ...payload, type: row.type })
     const done = new Set<string>()
-    for (let i = 0; i < MAX_STEPS; i++) {
-      await guard()
-      const plan = await jobPlan(parsed, db)
-      const step = plan.find((s) => !done.has(`${s.job}:${JSON.stringify(s.ids)}`))
-      if (!step) break
-      await db.from('events').update({ attempts, payload: { ...payload, progress: { job: step.job, step: i + 1, done: [...done].length } } as never }).eq('id', eventId)
-      await runStep(step)
-      await guard() // cancelled during the job: stop before recording anything more
-      done.add(`${step.job}:${JSON.stringify(step.ids)}`)
-      if (step.job === 'write_lesson' && step.ids.childId && (await lessonSaved(db, step.ids.childId))) await notifyLessonReady(db, step.ids.childId)
-      await announce()
+    const walk = async () => {
+      for (let i = 0; i < MAX_STEPS; i++) {
+        await guard()
+        const plan = await jobPlan(parsed, db)
+        const step = plan.find((s) => !done.has(`${s.job}:${JSON.stringify(s.ids)}`))
+        if (!step) break
+        await db.from('events').update({ attempts, payload: { ...payload, progress: { job: step.job, step: i + 1, done: [...done].length } } as never }).eq('id', eventId)
+        if (TAIL_JOBS.has(step.job) && !(await takeTail(parsed))) break // another run does this test's tail
+        await runStep(step)
+        await guard() // cancelled during the job: stop before recording anything more
+        done.add(`${step.job}:${JSON.stringify(step.ids)}`)
+        if (step.job === 'write_lesson' && step.ids.childId && (await lessonSaved(db, step.ids.childId))) await notifyLessonReady(db, step.ids.childId)
+        await announce()
+      }
     }
-    const unmet = await postconditions(parsed, db)
+    await walk()
+    let unmet = await postconditions(parsed, db)
+    // The papers of a test are read at the same time. This event can finish before a sibling marks its paper, so the
+    // sibling's run owns the tail: wait for it while it runs, and plan again if nothing is left running and something is unmet.
+    for (let waited = 0; unmet.length && waited < MAX_SIBLING_WAITS; waited++) {
+      const others = await ok(db.from('events').select('id').eq('school_id', row.school_id).eq('status', 'running').neq('id', eventId))
+      if (others.length === 0) break
+      await sleep(2000)
+      await guard()
+      unmet = await postconditions(parsed, db)
+    }
+    if (unmet.length) {
+      await walk()
+      unmet = await postconditions(parsed, db)
+    }
     if (unmet.length) return await fail(`Jemma did not finish: ${unmet.join('; ')}`)
     await db
       .from('events')
@@ -178,6 +230,8 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
       throw new RetryLater(text(err))
     }
     return await fail(text(err))
+  } finally {
+    await releaseTail()
   }
 }
 

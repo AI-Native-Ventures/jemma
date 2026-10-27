@@ -11,7 +11,7 @@ You get the child's learner profile, open gaps, format trials and the planned se
 - `format` must be exactly the planned session's format.
 - `title`: short, plain, names the topic.
 - `minutes`: about 12.
-- `warmup`: exactly 2 questions on topics the child has already fixed, or an empty list when the child has no fixed gaps.
+- `warmup`: exactly 2 questions on topics the child has already fixed, or an empty list when the child has no fixed gaps. Every warm-up question is multiple choice, because the child taps an answer: give `choices` (3 or 4 short options), set `answerKind` to `choice` and `answer` to the letter (A to D) of the right choice.
 - `questions`: exactly 15, five each at difficulty 1, 2 and 3, easiest first.
 - Every question has `prompt`, `render` (`text`, or `fraction_sum` with `terms`), `answer`, `answerKind`, `difficulty`, `why` and `rightWay`.
 - `answer` must be one value that a computer can mark: `3/4`, `1 1/2`, `0,75`, `12`, `R5` or a choice letter. `answerKind` must match it (`fraction`, `mixed`, `decimal`, `whole`, `money`, `choice`). Money is in rand, decimals use a comma.
