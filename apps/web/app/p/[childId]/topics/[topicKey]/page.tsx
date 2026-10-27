@@ -28,7 +28,7 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
   const doneCount = topic.sessions.filter((s) => s.done).length
 
   return (
-    <div data-p24-detail style={{ display: 'flex', flexDirection: 'column', margin: '0 auto', maxWidth: 560, width: '100%' }}>
+    <div data-p24-detail style={{ display: 'flex', flexDirection: 'column', margin: '0 auto', maxWidth: 560, width: '100%', lineHeight: 'normal' }}>
       <HideSpaceChrome />
       <BackHeader href={`/p/${childId}`} label="Back to profile" line={`${name} · ${topic.child.subject}`} title="Topic" padding="10px 16px 6px 8px" />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '8px 20px 20px' }}>

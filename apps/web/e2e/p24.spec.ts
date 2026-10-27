@@ -16,6 +16,10 @@ async function shot(page: Page, testInfo: TestInfo, board: string) {
   if (testInfo.project.name !== 'phone') return
   await page.evaluate(() => document.fonts.ready)
   await page.addStyleTag({ content: 'nextjs-portal{display:none}' })
+  // Grow the viewport to the page so sticky bars sit at the bottom, as on the board.
+  // The flag sheet is a fixed 844 high overlay, so it keeps the phone viewport.
+  const height = board === 'parent-flag-mark' ? 844 : await page.evaluate(() => document.documentElement.scrollHeight)
+  await page.setViewportSize({ width: 390, height: Math.max(844, height) })
   await page.screenshot({ path: actual(board), fullPage: true })
 }
 

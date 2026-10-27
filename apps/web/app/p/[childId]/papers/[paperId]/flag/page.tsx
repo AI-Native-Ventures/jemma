@@ -24,7 +24,7 @@ export default async function ParentFlagMarkPage({
   const btn = { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: 14, fontSize: 17, fontWeight: 600, textDecoration: 'none' } as const
 
   return (
-    <div data-p24-detail style={{ position: 'fixed', inset: 0, zIndex: 50, background: '#F7F7FA', overflow: 'hidden' }}>
+    <div data-p24-detail style={{ position: 'fixed', inset: 0, zIndex: 50, background: '#F7F7FA', overflow: 'hidden', lineHeight: 'normal' }}>
       <div style={{ position: 'relative', height: '100%', maxWidth: 560, margin: '0 auto', display: 'flex', flexDirection: 'column' }}>
         <BackHeader href={back} label="Back to the paper" line={`${paper.child.firstName} · ${paper.child.subject}`} title={paper.shortTitle} />
         <div aria-hidden="true" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 14, padding: '12px 20px 0', overflow: 'hidden' }}>

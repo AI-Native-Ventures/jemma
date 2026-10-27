@@ -68,7 +68,7 @@ export default async function ParentNotificationsPage({ params }: { params: Prom
   const markAll = markAllRead.bind(null, childId)
 
   return (
-    <div data-p24-detail style={{ display: 'flex', flexDirection: 'column', margin: '0 auto', maxWidth: 560 }}>
+    <div data-p24-detail style={{ display: 'flex', flexDirection: 'column', margin: '0 auto', maxWidth: 560, lineHeight: 'normal' }}>
       <HideSpaceChrome />
       <BackHeader
         href={`/p/${childId}`}

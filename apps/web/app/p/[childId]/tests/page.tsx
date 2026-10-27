@@ -15,7 +15,7 @@ export default async function ParentTestsPage({ params }: { params: Promise<{ ch
   const name = data.child.firstName
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '14px 20px 20px', margin: '0 auto', maxWidth: 560 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '14px 20px 20px', margin: '0 auto', maxWidth: 560, lineHeight: 'normal' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#5D5A73' }}>Tests</p>
         <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>

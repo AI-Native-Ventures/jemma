@@ -23,7 +23,7 @@ export default async function ParentPaperPage({
   const flagHref = (resultId?: string) => `/p/${childId}/papers/${paperId}/flag${resultId ? `?q=${resultId}` : ''}`
 
   return (
-    <div data-p24-detail data-p24-own-tabs style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
+    <div data-p24-detail data-p24-own-tabs style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', lineHeight: 'normal' }}>
       <HideSpaceChrome ownTabs />
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, margin: '0 auto', maxWidth: 560, width: '100%' }}>
         <BackHeader href={`/p/${childId}/tests`} label="Back to tests" line={`${name} · ${paper.child.subject}`} title={paper.shortTitle} />
