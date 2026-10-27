@@ -13,10 +13,13 @@ import {
   moveTopicIn,
   plural,
   readDraft,
+  removeTopicIn,
   renameTopicIn,
+  saveTopicIn,
   resolveIn,
   toRaw,
   topicCount,
+  type TopicEdit,
 } from './format'
 
 const SAMPLE_PDF = 'curriculum/grade-6-teaching-plan.pdf'
@@ -145,6 +148,15 @@ export async function renameTopic(mapId: string, from: string, to: string): Prom
 
 export async function addTopic(mapId: string, term: number, name: string): Promise<void> {
   await editDraft(mapId, (r) => (name.trim() ? { ...r, draft: addTopicIn(r.draft, term, name.trim()) } : r))
+}
+
+/** Laptop topic panel: name, term, place and what it needs, in one save. */
+export async function saveTopic(mapId: string, from: string, edit: TopicEdit): Promise<void> {
+  await editDraft(mapId, (r) => saveTopicIn(r, from, edit))
+}
+
+export async function removeTopic(mapId: string, name: string): Promise<void> {
+  await editDraft(mapId, (r) => ({ ...r, draft: removeTopicIn(r.draft, name) }))
 }
 
 /** Saves the draft as the class's topics, tags past results to them and closes the Needs you item. */

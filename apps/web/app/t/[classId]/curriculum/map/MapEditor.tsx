@@ -1,19 +1,24 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useSyncExternalStore, useTransition } from 'react'
 import { Button, Sheet } from '@/components/ui'
 import { addTopic, approveMap, moveTopic, renameTopic, resolveCheck } from '../actions'
 import { TERM_RANGE, plural } from '../format'
+import { MapLaptop } from './MapLaptop'
 
 export type MapView = {
   mapId: string
+  classId: string
+  grade: number
+  subject: string
+  docs: string[]
   headline: string
   draft: boolean
   initialTerm: number
   terms: {
     term: 1 | 2 | 3 | 4
     badge: number
-    topics: { name: string; needs: string | null; check: { reason: string; options: string[] } | null }[]
+    topics: { name: string; needs: string | null; prereqs: string[]; misconceptions: string[]; check: { reason: string; options: string[] } | null }[]
   }[]
   leftOut: { name: string; term: number; reason: string }[]
 }
@@ -28,7 +33,20 @@ const light = { height: 44, borderRadius: 12, border: '1.5px solid #1F1D36', bac
 const checkPill = <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 9px', borderRadius: 999, background: '#FF6A4D', color: '#1F1D36', flex: 'none' }}>Check</span>
 const input = { height: 48, borderRadius: 12, border: '1.5px solid #CFCDDC', background: '#FFFFFF', padding: '0 14px', fontSize: 16, color: '#1F1D36', fontFamily: 'inherit' } as const
 
+const LAPTOP = '(min-width: 1024px)'
+const subscribe = (cb: () => void) => {
+  const q = window.matchMedia(LAPTOP)
+  q.addEventListener('change', cb)
+  return () => q.removeEventListener('change', cb)
+}
+
+/** Phone: one term at a time. Width 1024 and up: all four terms beside the topic panel (board laptop-teacher-curriculum). */
 export function MapEditor({ view }: { view: MapView }) {
+  const laptop = useSyncExternalStore(subscribe, () => window.matchMedia(LAPTOP).matches, () => false)
+  return laptop ? <MapLaptop view={view} /> : <MapPhone view={view} />
+}
+
+function MapPhone({ view }: { view: MapView }) {
   const [term, setTerm] = useState(view.initialTerm)
   const [pending, start] = useTransition()
   const [dragging, setDragging] = useState<string | null>(null)

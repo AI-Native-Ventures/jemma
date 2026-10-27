@@ -1,13 +1,17 @@
 import { redirect } from 'next/navigation'
 import { getCurriculum } from '@/lib/data/p30'
+import { createSupabaseServer } from '@/lib/supabase/server'
 import { currentTerm, mapHeadline, needsLabel, unresolved } from '../format'
 import { MapEditor, type MapView } from './MapEditor'
 
 export default async function CurriculumMapPage({ params }: { params: Promise<{ classId: string }> }) {
   const { classId } = await params
-  const { map, read } = await getCurriculum(classId)
+  const { map, read, docs } = await getCurriculum(classId)
   if (!map || !read) redirect(`/t/${classId}/curriculum`)
 
+  const supabase = await createSupabaseServer()
+  const { data: cls } = await supabase.from('classes').select('name').eq('id', classId).maybeSingle()
+  const subject = cls?.name.replace(/^\S+\s+/, '') || 'Mathematics'
   const open = unresolved(read, currentTerm())
   const openChecks = new Set(open.filter((o) => o.kind === 'check').map((o) => o.name))
   const terms: MapView['terms'] = ([1, 2, 3, 4] as const).map((term) => {
@@ -18,6 +22,8 @@ export default async function CurriculumMapPage({ params }: { params: Promise<{ 
       topics: list.map((x) => ({
         name: x.name,
         needs: needsLabel(read.draft, term, x.prerequisites),
+        prereqs: x.prerequisites,
+        misconceptions: x.misconceptions,
         check: openChecks.has(x.name) && x.check ? x.check : null,
       })),
     }
@@ -31,6 +37,10 @@ export default async function CurriculumMapPage({ params }: { params: Promise<{ 
     <MapEditor
       view={{
         mapId: map.id,
+        classId,
+        grade: read.draft.grade,
+        subject,
+        docs: docs.map((d) => d.title),
         headline: mapHeadline(read, currentTerm()),
         draft: map.status === 'draft',
         terms,
