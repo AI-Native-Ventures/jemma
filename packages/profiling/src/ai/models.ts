@@ -22,6 +22,7 @@ export type AiEnv = {
   ANTHROPIC_API_KEY?: string
   GOOGLE_GENERATIVE_AI_API_KEY?: string
   OPENAI_API_KEY?: string
+  OLLAMA_BASE_URL?: string
   replayStore: ReplayStore
 }
 
@@ -38,6 +39,11 @@ function rawModel(label: string, provider: string, modelId: string, env: AiEnv) 
       return createGoogleGenerativeAI({ apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY })(modelId)
     case 'openai':
       return createOpenAI({ apiKey: env.OPENAI_API_KEY })(modelId)
+    case 'ollama':
+      return createOpenAI({
+        baseURL: env.OLLAMA_BASE_URL ?? 'http://localhost:11434/v1',
+        apiKey: 'ollama',
+      }).chat(modelId)
     default:
       throw new Error(`Unknown ${label}: ${provider}`)
   }

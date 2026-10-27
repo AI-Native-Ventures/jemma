@@ -36,3 +36,17 @@ test('vision uses its own provider', () => {
 
 test('unknown speech provider throws', () =>
   expect(() => getSpeechModel(env({ TTS_PROVIDER: 'nope' }))).toThrow('Unknown TTS_PROVIDER: nope'))
+
+test('ollama provider uses the local base URL', () => {
+  const m = getModel('text', env({ LLM_PROVIDER: 'ollama', LLM_MODEL: 'gemma4:26b' }))
+  expect(m.provider).toContain('openai')
+  expect(m.modelId).toBe('gemma4:26b')
+})
+
+test('openrouter passes the model id through unchanged', () => {
+  const m = getModel(
+    'text',
+    env({ LLM_PROVIDER: 'openrouter', LLM_MODEL: 'google/gemma-4-31b-it:free', OPENROUTER_API_KEY: 'k' }),
+  )
+  expect(m.modelId).toBe('google/gemma-4-31b-it:free')
+})
