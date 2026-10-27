@@ -1141,9 +1141,13 @@ export type Database = {
           content: NonNullable<Json>
           created_at: string
           done_at: string | null
+          explanation: string | null
           id: string
+          missing_basic: string | null
           topic_id: string | null
+          test_id: string | null
           topic_name: string
+          why: string | null
         }
         ComputedFields: never
         Insert: {
@@ -1154,6 +1158,10 @@ export type Database = {
           id?: string
           topic_id?: string | null
           topic_name: string
+          explanation?: string | null
+          missing_basic?: string | null
+          test_id?: string | null
+          why?: string | null
         }
         Update: {
           class_id?: string
@@ -1163,6 +1171,10 @@ export type Database = {
           id?: string
           topic_id?: string | null
           topic_name?: string
+          explanation?: string | null
+          missing_basic?: string | null
+          test_id?: string | null
+          why?: string | null
         }
         Relationships: [
           {
