@@ -40,7 +40,7 @@ export function Diamond({ size = 14, top = 10 }: { size?: number; top?: number }
 
 export function EyeIcon({ size = 16, stroke = 1.8 }: { size?: number; stroke?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={stroke} {...svg} style={{ flex: 'none' }}>
+    <svg width={size} height={size} viewBox="0 0 24 24" {...svg} strokeWidth={stroke} style={{ flex: 'none' }}>
       <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" />
       <circle cx="12" cy="12" r={size === 18 ? 3 : 2.8} />
     </svg>
@@ -49,7 +49,7 @@ export function EyeIcon({ size = 16, stroke = 1.8 }: { size?: number; stroke?: n
 
 export function Chevron() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" stroke="#1F1D36" strokeWidth="2" {...svg} style={{ flex: 'none' }}>
+    <svg width="20" height="20" viewBox="0 0 24 24" strokeWidth="2" {...svg} stroke="#1F1D36" style={{ flex: 'none' }}>
       <path d="m9 6 6 6-6 6" />
     </svg>
   )

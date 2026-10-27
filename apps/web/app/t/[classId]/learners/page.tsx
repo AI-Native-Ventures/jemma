@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getLearnersView } from '@/lib/data/p19'
-import { Avatar, Page, card, font } from './_parts'
+import { Avatar, Chevron, Diamond, Page, card, font } from './_parts'
 import { ShareCode } from './ShareCode'
 
 export default async function LearnersPage({ params }: { params: Promise<{ classId: string }> }) {
@@ -12,6 +12,7 @@ export default async function LearnersPage({ params }: { params: Promise<{ class
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#5D5A73' }}>Learners</p>
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <Diamond />
             <h1 style={{ margin: 0, fontSize: 26, lineHeight: 1.2, fontWeight: 600, letterSpacing: '-0.01em', textWrap: 'pretty' }}>{v.headline}</h1>
           </div>
         </div>
@@ -52,6 +53,7 @@ export default async function LearnersPage({ params }: { params: Promise<{ class
                     <span style={{ fontSize: 17, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{l.average === null ? '-' : `${l.average}%`}</span>
                     <span style={{ fontSize: 13, color: '#5D5A73', fontVariantNumeric: 'tabular-nums' }}>{l.present} of {l.recorded} days</span>
                   </span>
+                  <Chevron />
                 </Link>
               </li>
             ))}

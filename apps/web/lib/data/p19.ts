@@ -1,5 +1,6 @@
 import type { Guidance } from '@jemma/profiling/schemas'
 import { GuidanceSchema } from '@jemma/profiling/schemas'
+import { slug } from './p18'
 import { createSupabaseServer } from '../supabase/server'
 
 export type AttStatus = 'here' | 'late' | 'away'
@@ -23,6 +24,11 @@ export const termOf = (d: Date = new Date()) => Math.floor(d.getUTCMonth() / 3) 
 function whenLabel(stamp: string): string {
   return stamp.slice(0, 10) === todayIso() ? 'Today' : dayLabel(stamp)
 }
+
+/** `Adding fractions` for `Adding fractions with different denominators`, as the boards show it. */
+export const shortTopic = (name: string) => name.split(' with ')[0]!
+
+const shortOrNull = (n: string | undefined) => (n ? shortTopic(n) : null)
 
 const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
 
@@ -84,7 +90,7 @@ export async function getLearnersView(classId: string): Promise<LearnersView> {
     return {
       id: k.id,
       name: k.first_name,
-      topGap: gaps.find((g) => g.child_id === k.id)?.topic_name ?? null,
+      topGap: shortOrNull(gaps.find((g) => g.child_id === k.id)?.topic_name),
       average: averageOf(papers, outOf, k.id),
       present,
       recorded,
@@ -196,9 +202,10 @@ export async function getLearnerView(classId: string, childId: string): Promise<
   const gaps = gapRes.data ?? []
   const present = att.filter((a) => a.status !== 'away').length
 
-  const topGap = gaps[0]?.topic_name ?? null
+  const topGapFull = gaps[0]?.topic_name ?? null
+  const topGap = shortOrNull(topGapFull ?? undefined)
   const wrong = (resultsRes.data ?? []).filter((r) => !r.correct && r.misconception)
-  const mis = topGap ? (wrong.find((r) => r.topic_name === topGap)?.misconception ?? wrong[0]?.misconception) : null
+  const mis = topGap ? (wrong.find((r) => r.topic_name === topGapFull)?.misconception ?? wrong[0]?.misconception) : null
   const byTopic = new Map<string, { right: number; all: number }>()
   for (const r of resultsRes.data ?? []) {
     const t = byTopic.get(r.topic_name) ?? { right: 0, all: 0 }
@@ -288,12 +295,12 @@ export async function getChildProfileView(classId: string, childId: string): Pro
   }
   const now = tally(current)
   const before = tally(previous)
-  const gapByTopic = new Map((gapsRes.data ?? []).map((g) => [g.topic_name, g.topic_id]))
+  const gapByTopic = new Map((gapsRes.data ?? []).map((g) => [shortTopic(g.topic_name), slug(g.topic_name)]))
   const marks: TopicMark[] = [...now.entries()]
     .map(([key, v]) => {
       const pct = Math.round((v.right / v.all) * 100)
       const old = before.get(key)
-      return { name: v.name, pct, change: old ? pct - Math.round((old.right / old.all) * 100) : null, gapKey: gapByTopic.get(v.name) ?? null }
+      return { name: shortTopic(v.name), pct, change: old ? pct - Math.round((old.right / old.all) * 100) : null, gapKey: gapByTopic.get(shortTopic(v.name)) ?? null }
     })
     .sort((a, b) => a.pct - b.pct)
 
@@ -301,7 +308,8 @@ export async function getChildProfileView(classId: string, childId: string): Pro
   const g: Guidance | null = guidance?.success ? guidance.data : null
   const note = learner.notes[0] ?? null
   const session = sessionRes.data?.[0]
-  const topGap = gapsRes.data?.[0]?.topic_name ?? null
+  const topGapFull = gapsRes.data?.[0]?.topic_name ?? null
+  const topGap = shortOrNull(topGapFull ?? undefined)
   const wrongs = results.filter((r) => !r.correct && r.misconception)
   return {
     className: learner.className,
@@ -310,10 +318,10 @@ export async function getChildProfileView(classId: string, childId: string): Pro
     linkedTo: learner.linkedTo,
     average: learner.average,
     topGap,
-    misconception: (topGap ? wrongs.find((r) => r.topic_name === topGap)?.misconception : null) ?? wrongs[0]?.misconception ?? null,
+    misconception: (topGap ? wrongs.find((r) => r.topic_name === topGapFull)?.misconception : null) ?? wrongs[0]?.misconception ?? null,
     needsYou: needsRes.data ?? [],
     marks,
-    paper: latestPaper && latestTest ? { testId: latestTest.id, title: latestTest.title, writtenOn: latestTest.written_on, right: latestPaper.total ?? 0, outOf: latestTest.out_of } : null,
+    paper: latestPaper && latestTest ? { testId: latestTest.id, title: latestTest.title, writtenOn: latestTest.written_on ?? latestTest.created_at.slice(0, 10), right: latestPaper.total ?? 0, outOf: latestTest.out_of } : null,
     noticed: (g?.focus ?? []).map((f) => ({ text: f.why, chips: f.evidence.map((e) => e.label) })),
     latestNote: note,
     attendanceLine: `${learner.present} of ${learner.recorded} days this term${learner.awayLabel ? ` · away ${learner.awayLabel}` : ''}`,

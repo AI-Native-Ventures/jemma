@@ -40,7 +40,7 @@ test('learners: headline, register card, rows, class code', async ({ page }, tes
   await expect(page.getByText('Top gap')).toBeVisible()
   await expect(page.getByText('Average · days here')).toBeVisible()
   for (const name of ['Amina', 'Lerato', 'Naledi', 'Sipho', 'Thabo']) {
-    await expect(page.getByRole('link', { name: new RegExp(`^${name[0]}\\s*${name}`) })).toBeVisible()
+    await expect(page.getByRole('link', { name: new RegExp(`^${name}`) })).toBeVisible()
   }
   await expect(page.getByText('Parents link with this code')).toBeVisible()
   await expect(page.getByText(sb.joinCode)).toBeVisible()
@@ -64,7 +64,7 @@ test('learner: summary, note saved shows under Earlier notes and queues observat
   await page.getByRole('button', { name: 'Confidence' }).click()
   await expect(page.getByRole('button', { name: 'Confidence' })).toHaveAttribute('aria-pressed', 'true')
   const text = 'Asked why we can\'t just add the bottoms. Keen to try the fraction strips tomorrow.'
-  await page.getByLabel('Note').fill(text)
+  await page.getByRole('textbox', { name: 'Note' }).fill(text)
   await noHorizontalScroll(page)
   await shot(page, testInfo, 'teacher-learner')
   await page.getByRole('button', { name: 'Save note' }).click()
@@ -97,7 +97,7 @@ test('register: mark everyone here, save stores 5 rows', async ({ page }, testIn
   await page.getByRole('button', { name: 'Save register' }).click()
   await page.waitForURL(new RegExp(`/t/${sb.classId}/learners$`))
   const { data } = await admin().from('attendance').select('child_id, status').eq('day', today)
-  const rows = (data ?? []).filter((r) => true)
+  const rows = data ?? []
   const kids = await admin().from('enrolments').select('child_id').eq('class_id', sb.classId)
   const ids = new Set((kids.data ?? []).map((k) => k.child_id))
   const mine = rows.filter((r) => ids.has(r.child_id))
