@@ -205,7 +205,7 @@ async function load(classId: string) {
       .eq('status', 'done')
       .gte('finished_at', since),
     supabase.from('sessions').select('child_id, topic_name, planned_for').in('child_id', ids).eq('status', 'planned').gt('planned_for', dayKey(now)).order('planned_for'),
-    supabase.from('activity_log').select('at, text').eq('class_id', classId).order('at', { ascending: false }).limit(4),
+    supabase.from('activity_log').select('at, text').eq('class_id', classId).order('at', { ascending: false }).limit(5),
   ])
 
   const paperIds = (papers.data ?? []).map((p) => p.id)
@@ -433,7 +433,7 @@ export async function getClassHome(classId: string): Promise<ClassHome | null> {
     latestTest,
     lastNightSessions,
     waiting,
-    activity: d.log.map((l) => ({ at: logTime(l.at, d.now), text: l.text })),
+    activity: d.log.slice(0, mode === 'next' ? 4 : 5).map((l) => ({ at: logTime(l.at, d.now), text: l.text })),
     topGapKey: top?.key ?? null,
   }
 }
