@@ -14,8 +14,13 @@ export default async function ParentChildLayout({
   params: Promise<{ childId: string }>
 }) {
   const { childId } = await params
-  const { profile } = await requireRole('parent')
+  const { userId, profile } = await requireRole('parent')
   const supabase = await createSupabaseServer()
+  const { count: unread } = await supabase
+    .from('notifications')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .is('read_at', null)
   const { data: child } = await supabase
     .from('children')
     .select('first_name, grade, schools(name, sandbox_id)')
@@ -50,6 +55,8 @@ export default async function ParentChildLayout({
           settingsHref={settingsHref}
           avatar={child.first_name.slice(0, 1).toUpperCase()}
           demo={Boolean(child.schools?.sandbox_id)}
+          notificationsHref={`${base}/notifications`}
+          unread={unread ?? 0}
         />
         <main className="flex-1">{children}</main>
         <TabBar role="parent" active={active} label={child.first_name} base={base} />

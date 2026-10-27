@@ -1,7 +1,7 @@
 import { createMcpHandler } from 'agents/mcp'
 import { createJemmaMcpServer } from '@jemma/profiling/tools'
 import { authenticate } from './auth'
-import { processEvent, toolContext } from './consumer'
+import { checkDesktop, failEvent, MAX_QUEUE_RETRIES, processEvent, toolContext } from './consumer'
 import type { Env } from './env'
 
 export type { Env } from './env'
@@ -36,11 +36,17 @@ export default {
   async queue(batch: MessageBatch<{ eventId: string }>, env: Env): Promise<void> {
     for (const message of batch.messages) {
       try {
-        await processEvent(env, message.body.eventId)
+        await processEvent(env, message.body.eventId, undefined, message.attempts > MAX_QUEUE_RETRIES)
         message.ack()
-      } catch {
-        message.retry()
+      } catch (err) {
+        if (message.attempts > MAX_QUEUE_RETRIES) {
+          await failEvent(env, message.body.eventId, err instanceof Error ? err.message : String(err)).catch(() => {})
+          message.ack()
+        } else message.retry()
       }
     }
+  },
+  async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(checkDesktop(env))
   },
 } satisfies ExportedHandler<Env, { eventId: string }>
