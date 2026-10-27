@@ -210,12 +210,13 @@ describe('sandboxes', () => {
     const fixedGaps = await ok(admin.from('gaps').select('topic_id, topic_name').eq('child_id', aminaId).eq('stage', 'fixed'))
     expect(fixedGaps.find((g) => g.topic_name === 'Equivalent fractions')!.topic_id).not.toBeNull()
 
-    // Class gaps computed from the stored rows of marked papers (Sipho's open paper is not read yet): 3 gaps, 4 / 3 / 2 learners.
+    // Class gaps computed from the stored rows without the unsure answer: 3 gaps, 4 / 3 / 2 learners.
     const results = await ok(
       admin
         .from('question_results')
         .select('child_id, n, prompt, answer_read, correct, topic_name, misconception, gap_topic_id, paper_id')
-        .in('paper_id', papers.filter((p) => p.status === 'marked').map((p) => p.id)),
+        .in('paper_id', papers.map((p) => p.id))
+        .gte('read_confidence', 0.5),
     )
     const topics = await ok(admin.from('topics').select('id, name').eq('map_id', map!.id))
     const topicName = new Map(topics.map((t) => [t.id, t.name]))
