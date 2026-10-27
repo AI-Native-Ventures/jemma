@@ -98,10 +98,11 @@ async function answerKey(testId: string | null): Promise<Map<number, string>> {
 
 type TestMeta = { title: string; outOf: number; topicIds: string[] }
 
-/** Test title and size. Tests are teacher-only under RLS; a paper the parent can see names its test. */
+/** Test title and size, read through RLS (parents see their child's class tests). */
 async function testMeta(testId: string | null): Promise<TestMeta | null> {
   if (!testId) return null
-  const { data } = await createSupabaseAdmin().from('tests').select('title, out_of, topic_ids').eq('id', testId).maybeSingle()
+  const supabase = await createSupabaseServer()
+  const { data } = await supabase.from('tests').select('title, out_of, topic_ids').eq('id', testId).maybeSingle()
   return data ? { title: data.title, outOf: data.out_of, topicIds: data.topic_ids } : null
 }
 
