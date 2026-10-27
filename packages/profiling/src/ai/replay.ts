@@ -54,7 +54,7 @@ export function withReplay(store: ReplayStore, mode: AiMode): LanguageModelMiddl
     wrapStream: async ({ doStream, params, model }) => {
       const key = await replayKey(`${model.modelId}:stream`, params)
       if (mode === 'replay') {
-        const hit = (await store.get(key)) as { chunks: unknown[]; rest: object } | null
+        const hit = (await store.get(key)) as { chunks: StreamPart[]; rest: object } | null
         if (hit === null) throw new ReplayMissError(key)
         return {
           ...hit.rest,
