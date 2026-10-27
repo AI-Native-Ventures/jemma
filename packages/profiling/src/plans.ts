@@ -81,3 +81,65 @@ export async function jobPlan(event: JemmaEvent, db: JemmaDb): Promise<JobStep[]
     }
   }
 }
+
+const UNREAD = ['queued', 'reading']
+
+/**
+ * What an event must have produced once its job plan is done. Empty means met.
+ * A test's tail (reteach plan, a planned session per learner with an open gap) is only due once every paper of the test is marked.
+ */
+export async function postconditions(event: JemmaEvent, db: JemmaDb): Promise<string[]> {
+  const missing: string[] = []
+  const tail = async (paperId: string) => {
+    const paper = await ok(db.from('papers').select('id, test_id, status').eq('id', paperId).single())
+    if (paper.status === 'failed') return missing.push(`paper ${paperId} failed to read`)
+    if (UNREAD.includes(paper.status)) return missing.push(`paper ${paperId} is not read yet`)
+    if (paper.status !== 'marked' || !paper.test_id) return
+    const papers = await ok(db.from('papers').select('child_id, status').eq('test_id', paper.test_id))
+    if (papers.some((p) => p.status !== 'marked')) return
+    const reteach = await ok(db.from('reteach_plans').select('id').eq('test_id', paper.test_id).limit(1))
+    if (reteach.length === 0) missing.push(`no reteach plan for test ${paper.test_id}`)
+    const childIds = [...new Set(papers.map((p) => p.child_id).filter((c): c is string => !!c))]
+    if (childIds.length === 0) return
+    const [gaps, sessions] = await Promise.all([
+      ok(db.from('gaps').select('child_id, stage').in('child_id', childIds)),
+      ok(db.from('sessions').select('child_id').eq('status', 'planned').in('child_id', childIds)),
+    ])
+    const planned = new Set(sessions.map((s) => s.child_id))
+    for (const childId of new Set(gaps.filter((g) => g.stage !== 'fixed').map((g) => g.child_id))) {
+      if (!planned.has(childId)) missing.push(`no planned session for child ${childId}`)
+    }
+  }
+  switch (event.type) {
+    case 'curriculum.uploaded': {
+      const topics = await ok(db.from('topics').select('id').eq('map_id', event.mapId).limit(1))
+      if (topics.length === 0) missing.push(`no topics drafted for map ${event.mapId}`)
+      break
+    }
+    case 'key.snapped': {
+      const keys = await ok(db.from('answer_keys').select('items').eq('test_id', event.testId))
+      if (!keys.some((k) => Array.isArray(k.items) && k.items.length > 0)) missing.push(`no answer key read for test ${event.testId}`)
+      break
+    }
+    case 'paper.snapped':
+    case 'paper.checked':
+      await tail(event.paperId)
+      break
+    case 'homework.snapped': {
+      const paper = await ok(db.from('papers').select('status').eq('id', event.paperId).single())
+      if (UNREAD.includes(paper.status)) missing.push(`homework ${event.paperId} is not read yet`)
+      break
+    }
+    case 'session.finished': {
+      const session = await ok(db.from('sessions').select('child_id').eq('id', event.sessionId).single())
+      const next = await ok(db.from('sessions').select('id').eq('child_id', session.child_id).eq('status', 'planned').limit(1))
+      const gaps = await ok(db.from('gaps').select('stage').eq('child_id', session.child_id))
+      if (next.length === 0 && gaps.some((g) => g.stage !== 'fixed')) missing.push(`no planned session for child ${session.child_id}`)
+      break
+    }
+    case 'observation.added':
+    case 'activity.added':
+      break
+  }
+  return missing
+}
