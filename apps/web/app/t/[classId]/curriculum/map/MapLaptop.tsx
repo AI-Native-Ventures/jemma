@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useTransition } from 'react'
-import { addTopic, approveMap, removeTopic, resolveCheck, saveTopic } from '../actions'
+import { approveMap, removeTopic, resolveCheck, saveTopic } from '../actions'
 import { TERM_SHORT } from '../format'
 import type { MapView } from './MapEditor'
 
@@ -36,7 +36,6 @@ export function MapLaptop({ view }: { view: MapView }) {
   const [pending, start] = useTransition()
   const all: Topic[] = view.terms.flatMap((t) => t.topics.map((x, index) => ({ ...x, term: t.term, index })))
   const [sel, setSel] = useState<string>(() => view.terms.find((t) => t.term === view.initialTerm)?.topics[0]?.name ?? all[0]?.name ?? '')
-  const [adding, setAdding] = useState<number | null>(null)
   const run = (fn: () => Promise<unknown>) => start(async () => void (await fn()))
 
   const topic = all.find((t) => t.name === sel) ?? null
@@ -45,12 +44,11 @@ export function MapLaptop({ view }: { view: MapView }) {
   const subtitle = `${docs ? `Drafted from ${docs}. ` : ''}Nothing reaches a learner until you approve.`
 
   const pick = (name: string) => {
-    setAdding(null)
     setSel(name)
   }
 
   const tile = (t: Topic) => {
-    const selected = t.name === sel && adding === null
+    const selected = t.name === sel
     const needed = Boolean(topic) && topic!.prereqs.includes(t.name)
     const builds = Boolean(topic) && t.prereqs.includes(topic!.name)
     let style: React.CSSProperties = { ...tileBase, gap: 2, padding: '9px 11px', border: '1px solid #E7E6EF', background: '#FFFFFF' }
@@ -130,19 +128,13 @@ export function MapLaptop({ view }: { view: MapView }) {
                       <span style={nameStyle}>{l.name}</span>
                     </button>
                   ))}
-                  <button type="button" aria-label={`Add a topic to Term ${t.term}`} onClick={() => setAdding(t.term)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 44, borderRadius: 12, border: '1.5px dashed #8C89A3', background: 'transparent', color: '#1F1D36', fontSize: 13, fontWeight: 600 }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-                    Add topic
-                  </button>
                 </div>
               ))}
             </div>
           </section>
 
           <section aria-labelledby="edit" style={{ flex: '0 1 340px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 16, padding: 20, background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 22 }}>
-            {adding !== null ? (
-              <AddPanel key={adding} term={adding} pending={pending} onCancel={() => setAdding(null)} onAdd={(name) => { setAdding(null); setSel(name); run(() => addTopic(view.mapId, adding, name)) }} />
-            ) : topic ? (
+            {topic ? (
               <EditPanel
                 key={`${topic.name}|${topic.term}|${topic.index}|${topic.prereqs.join('|')}`}
                 topic={topic}
@@ -172,26 +164,6 @@ export function MapLaptop({ view }: { view: MapView }) {
         </div>
       </div>
     </div>
-  )
-}
-
-function AddPanel({ term, pending, onCancel, onAdd }: { term: number; pending: boolean; onCancel: () => void; onAdd: (name: string) => void }) {
-  const [name, setName] = useState('')
-  return (
-    <>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: '#5D5A73' }}>New topic</span>
-        <h2 id="edit" style={{ margin: 0, fontSize: 20, lineHeight: 1.25, fontWeight: 700 }}>{`Add a topic to Term ${term}`}</h2>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <label htmlFor="tname" style={label}>Name</label>
-        <input id="tname" type="text" value={name} onChange={(e) => setName(e.target.value)} style={{ ...field, padding: '0 12px' }} />
-      </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button type="button" disabled={pending || !name.trim()} onClick={() => onAdd(name.trim())} style={{ ...dark, flex: 1, height: 46 }}>Add topic</button>
-        <button type="button" onClick={onCancel} style={{ ...light, height: 46, padding: '0 14px' }}>Cancel</button>
-      </div>
-    </>
   )
 }
 
