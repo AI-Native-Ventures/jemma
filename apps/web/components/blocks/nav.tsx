@@ -45,7 +45,6 @@ export const TABS: Record<Role, TabDef[]> = {
   learner: [
     { id: 'today', label: 'Today', path: '', icon: (s) => <SunIcon size={s} /> },
     { id: 'gaps', label: 'My gaps', path: '/gaps', icon: (s) => <GapsIcon size={s} /> },
-    { id: 'me', label: 'Me', path: '/me', icon: (s) => <PersonIcon size={s} /> },
   ],
 }
 
