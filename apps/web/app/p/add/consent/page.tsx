@@ -85,7 +85,7 @@ export default async function ConsentPage({ searchParams }: { searchParams: Prom
           </svg>
           <span>South Africa&apos;s POPIA law treats under-18s as children, so we need your OK. Change this any time in {name}&apos;s settings.</span>
         </p>
-        <a href="/privacy" style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', minHeight: 44, fontSize: 15, fontWeight: 600, color: ink, textUnderlineOffset: 3 }}>
+        <a href="/privacy" style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', minHeight: 44, fontSize: 15, fontWeight: 600, color: ink, textDecoration: 'underline', textUnderlineOffset: 3 }}>
           Privacy in plain words
         </a>
         <button type="submit" form="consent" style={{ ...primaryButton, gap: 8 }}>Agree and ask {cls.teacherName}</button>

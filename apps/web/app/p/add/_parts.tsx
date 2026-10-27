@@ -19,6 +19,7 @@ export function Page({ children }: { children: ReactNode }) {
           flexDirection: 'column',
           fontFamily: "var(--font-outfit), Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif",
           color: ink,
+          lineHeight: 'normal',
         }}
       >
         {children}

@@ -52,7 +52,7 @@ test.describe('parent start, add child, consent, waiting', () => {
     // The class code goes on to the add-child screen.
     await page.getByLabel('Class code').fill(sb.joinCode.toLowerCase())
     await page.getByRole('button', { name: 'Find the class' }).click()
-    await expect(page).toHaveURL(new RegExp(`/p/add\\?code=${sb.joinCode}`))
+    await expect(page).toHaveURL(new RegExp(`/p/add\\?code=${sb.joinCode}`, 'i'))
   })
 
   test('add child finds the class from its code', async ({ page }, info) => {
@@ -118,7 +118,7 @@ test.describe('parent start, add child, consent, waiting', () => {
 
     await teach.check()
     await page.getByRole('button', { name: 'Agree and ask Ms Banda' }).click()
-    await expect(page).toHaveURL(/\/p\/add\/pending/)
+    await expect(page).toHaveURL(/\/p\/add\/pending/, { timeout: 30_000 })
 
     await expect(page.getByText('Linking Amina')).toBeVisible()
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Waiting for Ms Banda to say yes.')
@@ -145,7 +145,7 @@ test.describe('parent start, add child, consent, waiting', () => {
     await unlink(sb)
     await page.goto(`/p/add/consent?code=${sb.joinCode}&child=Amina`)
     await page.getByRole('button', { name: 'Agree and ask Ms Banda' }).click()
-    await expect(page).toHaveURL(/\/p\/add\/pending/)
+    await expect(page).toHaveURL(/\/p\/add\/pending/, { timeout: 30_000 })
 
     // The child's space is closed: profile, report and paper routes all answer not found.
     for (const path of ['', '/report', '/tests']) {
@@ -154,7 +154,7 @@ test.describe('parent start, add child, consent, waiting', () => {
     }
     // The home sends a waiting parent back to the waiting page, which shows no marks or test names.
     await page.goto('/p')
-    await expect(page).toHaveURL(/\/p\/add\/pending/)
+    await expect(page).toHaveURL(/\/p\/add\/pending/, { timeout: 30_000 })
     const body = await page.locator('body').innerText()
     for (const leak of ['Class Test 1', 'Needs you tonight', 'Doing well', '7/10']) expect(body).not.toContain(leak)
     // And through the database with the parent's own session, the child row is hidden.

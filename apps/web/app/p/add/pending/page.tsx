@@ -68,7 +68,7 @@ export default async function LinkPendingPage() {
                 Switch to {teacherName} to approve
               </button>
             </form>
-            <a href={`/p/${pending.childId}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, fontSize: 15, fontWeight: 600, color: ink, textUnderlineOffset: 3 }}>
+            <a href={`/p/${pending.childId}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, fontSize: 15, fontWeight: 600, color: ink, textDecoration: 'underline', textUnderlineOffset: 3 }}>
               Approved already? Open {childName}&apos;s profile
             </a>
           </section>
