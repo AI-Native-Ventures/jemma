@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { GemIcon } from '@/components/ui/icons'
+import { Only } from '../_only'
+import { LearnLaptop } from './_laptop'
 import {
   dayNumber,
   decimalComma,
@@ -39,7 +41,8 @@ function WeekRow({ s, tonight }: { s: PlannedSession; tonight: boolean }) {
 
 export default async function ParentLearnPage({ params }: { params: Promise<{ childId: string }> }) {
   const { childId } = await params
-  const { childFirstName: name, tonight, week, helps } = await loadLearn(childId)
+  const learn = await loadLearn(childId)
+  const { childFirstName: name, tonight, week, helps } = learn
   if (!name) notFound()
 
   if (!tonight) {
@@ -55,7 +58,9 @@ export default async function ParentLearnPage({ params }: { params: Promise<{ ch
   const stepLabel = tonight.questions ? `${tonight.questions} questions` : 'Questions'
 
   return (
-    <div className="flex flex-col gap-5 px-5 pt-3.5 pb-5 leading-[normal] lg:max-w-3xl lg:px-10 lg:pt-8">
+    <>
+    <Only at="phone">
+    <div className="flex flex-col gap-5 px-5 pt-3.5 pb-5 leading-[normal] lg:hidden">
       <div className="flex flex-col gap-2">
         <p className="m-0 text-[14px] font-semibold text-body">Learn</p>
         <div className="flex items-start gap-2.5">
@@ -161,5 +166,10 @@ export default async function ParentLearnPage({ params }: { params: Promise<{ ch
         <p className="m-0 text-[13px] leading-[1.45] text-body">Measured per topic, never a label. Jemma keeps trying all three, so this can change.</p>
       </section>
     </div>
+    </Only>
+    <Only at="laptop">
+    <LearnLaptop childId={childId} data={learn} tonight={tonight} />
+    </Only>
+    </>
   )
 }

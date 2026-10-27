@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation'
 import { TabBar } from '@/components/blocks'
 import { requireRole } from '@/lib/auth'
 import { getPaperDetail, sharedTopicWord } from '@/lib/data/p24'
+import { getTestsLaptop } from '@/lib/data/p36'
+import { Only } from '../../_only'
+import { TestsLaptop } from '../../tests/_laptop'
 import { BackHeader, ChevronRight, Diamond, HideSpaceChrome, PaperSheet } from '../_parts'
 
 export default async function ParentPaperPage({
@@ -14,15 +17,19 @@ export default async function ParentPaperPage({
 }) {
   const { childId, paperId } = await params
   const { q } = await searchParams
-  await requireRole('parent')
+  const { userId } = await requireRole('parent')
   const paper = await getPaperDetail(childId, paperId)
   if (!paper) notFound()
+  const laptop = await getTestsLaptop(childId, userId, paperId, paper)
   const name = paper.child.firstName
   const word = sharedTopicWord(paper.missed)
   const highlightN = q ? Number(q) : undefined
   const flagHref = (resultId?: string) => `/p/${childId}/papers/${paperId}/flag${resultId ? `?q=${resultId}` : ''}`
 
   return (
+    <>
+    <div className="lg:hidden">
+    <Only at="phone">
     <div data-p24-detail data-p24-own-tabs style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', lineHeight: 'normal' }}>
       <HideSpaceChrome ownTabs />
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, margin: '0 auto', maxWidth: 560, width: '100%' }}>
@@ -97,5 +104,11 @@ export default async function ParentPaperPage({
         <TabBar role="parent" active="tests" label={name} base={`/p/${childId}`} />
       </div>
     </div>
+    </Only>
+    </div>
+    <Only at="laptop">
+      {laptop ? <TestsLaptop childId={childId} data={laptop} highlightN={highlightN} /> : null}
+    </Only>
+    </>
   )
 }

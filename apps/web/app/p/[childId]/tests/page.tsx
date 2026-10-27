@@ -2,6 +2,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
 import { getTestsList } from '@/lib/data/p24'
+import { getTestsLaptop } from '@/lib/data/p36'
+import { Only } from '../_only'
+import { TestsLaptop } from './_laptop'
 import { ChevronRight, Diamond } from '../papers/_parts'
 
 const row = { display: 'flex', alignItems: 'center', gap: 14, padding: '14px 12px 14px 14px', background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 18, textDecoration: 'none', color: '#1F1D36' } as const
@@ -10,11 +13,14 @@ const cameraPath = 'M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0
 export default async function ParentTestsPage({ params }: { params: Promise<{ childId: string }> }) {
   const { childId } = await params
   const { userId } = await requireRole('parent')
-  const data = await getTestsList(childId, userId)
-  if (!data) notFound()
+  const [data, laptop] = await Promise.all([getTestsList(childId, userId), getTestsLaptop(childId, userId)])
+  if (!data || !laptop) notFound()
   const name = data.child.firstName
 
   return (
+    <>
+    <div className="lg:hidden">
+    <Only at="phone">
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '14px 20px 20px', margin: '0 auto', maxWidth: 560, lineHeight: 'normal' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#5D5A73' }}>Tests</p>
@@ -80,5 +86,11 @@ export default async function ParentTestsPage({ params }: { params: Promise<{ ch
         </Link>
       </section>
     </div>
+    </Only>
+    </div>
+    <Only at="laptop">
+    <TestsLaptop childId={childId} data={laptop} />
+    </Only>
+    </>
   )
 }
