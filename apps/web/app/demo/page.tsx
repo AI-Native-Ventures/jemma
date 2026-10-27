@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { getDemoState } from '@/lib/demo'
 import { tryDemoAction } from './actions'
+import { PersonButton } from './PersonButton'
 import { Chevron, ResetIcon } from './parts'
 import { StartedAt } from './StartedAt'
 
@@ -52,18 +53,14 @@ export default async function DemoPage() {
           {PEOPLE.map((p) => (
             <form key={p.role} action={tryDemoAction} className="contents">
               <input type="hidden" name="role" value={p.role} />
-              <button
-                type="submit"
-                className="flex min-h-[72px] w-full cursor-pointer items-center gap-3.5 rounded-18 border border-line bg-card py-3.5 pr-3.5 pl-4 text-left font-[inherit] text-ink no-underline"
-              >
+              <PersonButton className="flex min-h-[72px] w-full cursor-pointer items-center gap-3.5 rounded-18 border border-line bg-card py-3.5 pr-3.5 pl-4 text-left font-[inherit] text-ink no-underline" chevron={<Chevron />}>
                 <span aria-hidden="true" className={`flex size-11 flex-none items-center justify-center rounded-pill text-[15px] font-bold ${p.avatar}`}>{p.initials}</span>
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="text-[17px] font-semibold">{p.name}</span>
                   <span className="text-[14px] text-body">{p.detail}</span>
                 </span>
                 {p.start ? <span className="flex-none rounded-pill bg-coral px-2.5 py-[5px] text-[12px] font-semibold text-ink">Start here</span> : null}
-                <Chevron />
-              </button>
+              </PersonButton>
             </form>
           ))}
         </section>
