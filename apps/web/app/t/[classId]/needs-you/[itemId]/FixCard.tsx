@@ -45,10 +45,10 @@ export function FixCard({
     })
 
   const chip = (on: boolean, big: boolean) =>
-    `flex h-[52px] cursor-pointer items-center justify-center gap-1.5 rounded-14 font-semibold ${big ? 'text-[19px]' : 'text-[16px]'} ${on ? 'border-2 border-ink bg-ink text-white' : 'border border-muted-2 bg-card text-ink'}`
+    `flex h-[52px] cursor-pointer items-center justify-center gap-1.5 rounded-14 font-semibold lg:h-12 lg:rounded-12 ${big ? 'text-[19px] lg:text-[18px]' : 'text-[16px] lg:text-[15px]'} ${on ? 'border-2 border-ink bg-ink text-white' : 'border border-muted-2 bg-card text-ink'}`
 
   return (
-    <section aria-labelledby="fix" className="flex flex-col gap-3 rounded-20 border border-line bg-card p-4">
+    <section aria-labelledby="fix" className="flex flex-col gap-3 rounded-20 border border-line bg-card p-4 lg:border-2 lg:border-ink">
       <h2 id="fix" className="m-0 text-[16px] font-semibold">Question {n} says</h2>
       <div className="grid grid-cols-3 gap-2">
         {options.map((o) => (
@@ -67,12 +67,19 @@ export function FixCard({
       ) : null}
       {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
       {selected && verdict ? (
-        <p className="m-0 flex items-center gap-2 text-[15px]">
+        <>
+        <p className="m-0 flex items-center gap-2 text-[15px] lg:hidden">
           <span className="flex size-6 flex-none items-center justify-center rounded-pill bg-soft-4 text-ink">{tick(14, 3)}</span>
           {verdict.correct
             ? `${selected} matches the key. Question ${n} gets ${verdict.mark} mark${verdict.mark === 1 ? '' : 's'}.`
             : `${selected} does not match the key. Question ${n} gets 0 marks.`}
         </p>
+        <p className="m-0 hidden text-[14px] text-body lg:block">
+          {verdict.correct
+            ? `${selected} matches the key, so question ${n} gets ${verdict.mark} mark${verdict.mark === 1 ? '' : 's'}.`
+            : `${selected} does not match the key, so question ${n} gets 0 marks.`}
+        </p>
+        </>
       ) : null}
     </section>
   )
@@ -95,7 +102,7 @@ export function ConfirmButton({ classId, paperId, name, disabled }: { classId: s
             router.push(`/t/${classId}`)
           })
         }
-        className="flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink text-[17px] font-semibold text-white disabled:opacity-50"
+        className="flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink text-[17px] font-semibold text-white disabled:opacity-50 lg:text-[16px]"
       >
         {tick(20, 2.2)}
         Confirm {name}&apos;s paper

@@ -7,6 +7,7 @@ import { AnswerKeyItemSchema, type AnswerKeyItem, type EventPayload, type EventT
 import { sendEvent } from '@/lib/agent'
 import { requireRole } from '@/lib/auth'
 import { READ_MIN } from '@/lib/data/p31'
+import { UPLOAD_PREFIX } from '@/lib/data/p34'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
@@ -179,11 +180,17 @@ export async function approveKey(classId: string, testId: string): Promise<Actio
   }
 }
 
-async function newPaper(admin: JemmaDb, testId: string, schoolId: string, file: File | { from: string }): Promise<string> {
+/** File name safe for a storage path, keeping its extension. */
+function safeName(file: File): string {
+  const clean = file.name.replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '')
+  return clean || `scan.${extOf(file)}`
+}
+
+async function newPaper(admin: JemmaDb, testId: string, schoolId: string, file: File | { from: string }, via: 'camera' | 'upload' = 'camera'): Promise<string> {
   const { data, error } = await admin.from('papers').insert({ test_id: testId, owner: 'teacher', kind: 'test', status: 'queued' }).select('id').single()
   if (error) throw new Error(error.message)
   const ext = file instanceof File ? extOf(file) : (file.from.split('.').pop() ?? 'png')
-  const path = `${schoolId}/${data.id}/1.${ext}`
+  const path = `${schoolId}/${data.id}/${via === 'upload' && file instanceof File ? `${UPLOAD_PREFIX}${safeName(file)}` : `1.${ext}`}`
   if (file instanceof File) await upload(admin, path, file)
   else {
     const copied = await admin.storage.from(SAMPLE_BUCKET).copy(file.from, path, { destinationBucket: 'papers' })
@@ -204,6 +211,23 @@ export async function addPaper(classId: string, testId: string, form: FormData):
     return { ok: true, paperId }
   } catch (e) {
     return fail(e instanceof Error ? e.message : 'Could not save the paper.')
+  }
+}
+
+/** Laptop upload: every image or PDF chosen becomes one paper. Jemma reads each as it lands. */
+export async function uploadScans(classId: string, testId: string, form: FormData): Promise<ActionResult<{ count: number }>> {
+  try {
+    const { admin, schoolId } = await ownTest(classId, testId)
+    const files = form.getAll('files').filter((f): f is File => f instanceof File && f.size > 0)
+    if (files.length === 0) return fail('Choose a PDF, JPG or PNG first.')
+    if (files.some((f) => !(f.type === 'application/pdf' || f.type.startsWith('image/') || /\.(pdf|jpe?g|png|webp|heic)$/i.test(f.name)))) return fail('Only PDF, JPG or PNG files work here.')
+    const ids: string[] = []
+    for (const file of files) ids.push(await newPaper(admin, testId, schoolId, file, 'upload'))
+    for (const paperId of ids) await notifyAgent('paper.snapped', { paperId })
+    revalidatePath(`/t/${classId}/snap/${testId}/papers`)
+    return { ok: true, count: ids.length }
+  } catch (e) {
+    return fail(e instanceof Error ? e.message : 'Could not save the files.')
   }
 }
 

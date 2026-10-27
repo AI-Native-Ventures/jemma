@@ -58,6 +58,7 @@ export function Flow({
   subtitle,
   subtitleFirst = false,
   right,
+  hideAtLaptop = false,
   children,
 }: {
   href: string
@@ -67,6 +68,8 @@ export function Flow({
   subtitle: string
   subtitleFirst?: boolean
   right?: string
+  /** The laptop board draws its own breadcrumb instead of this header. */
+  hideAtLaptop?: boolean
   children: ReactNode
 }) {
   const titleCls = subtitleFirst ? 'text-[17px] font-bold' : 'text-[18px] font-bold'
@@ -75,7 +78,7 @@ export function Flow({
   return (
     <div data-flow className="leading-[normal]">
       <style>{HIDE}</style>
-      <header className={`flex items-center gap-1 pt-2.5 pb-1.5 pl-2 ${right || !subtitleFirst ? 'pr-4' : 'pr-3'}`}>
+      <header className={`flex items-center gap-1 pt-2.5 pb-1.5 pl-2 ${right || !subtitleFirst ? 'pr-4' : 'pr-3'} ${hideAtLaptop ? 'lg:hidden' : ''}`}>
         <a href={href} aria-label={label} className="flex size-11 flex-none items-center justify-center rounded-12 text-ink">
           {close ? (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>

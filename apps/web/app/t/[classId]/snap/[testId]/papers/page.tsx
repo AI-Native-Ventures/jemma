@@ -1,7 +1,10 @@
-import { getClassTests, getPile } from '@/lib/data/p31'
+import { headers } from 'next/headers'
+import { getClassTests, getPile, getRoster } from '@/lib/data/p31'
+import { getSnapView } from '@/lib/data/p34'
 import { notFound } from 'next/navigation'
 import { Flow, PageTitle } from '../../_parts'
 import { Poller } from '../../Poller'
+import { LaptopSnap } from './LaptopSnap'
 import { Queue, RetakeButton, Thumb } from './Queue'
 
 const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`
@@ -16,7 +19,13 @@ export default async function SnapQueuePage({ params }: { params: Promise<{ clas
   const busy = pile.some((p) => p.status === 'queued' || p.status === 'reading')
 
   const short = tests.find((t) => t.id === testId)!.title.split(':')[0]
+  const [view, roster, h] = await Promise.all([getSnapView(testId), getRoster(classId, testId), headers()])
+  const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost'
+  const proto = h.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https')
   return (
+    <>
+    {view ? <LaptopSnap classId={classId} testId={testId} view={view} learners={roster.length} phoneUrl={`${proto}://${host}/t/${classId}/snap/${testId}/papers`} /> : null}
+    <div className="lg:hidden">
     <Flow href={`/t/${classId}/snap/${testId}/key`} label="Back to the answer key" title="Snap the papers" subtitle={`${short} · key approved`} subtitleFirst>
     <div className="flex flex-col gap-4 px-5 pt-3 pb-6 leading-[normal]">
       <Poller active={busy} />
@@ -54,5 +63,7 @@ export default async function SnapQueuePage({ params }: { params: Promise<{ clas
       </Queue>
     </div>
     </Flow>
+    </div>
+    </>
   )
 }
