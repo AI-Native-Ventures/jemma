@@ -7,6 +7,8 @@ import { getJob } from './read/get-job'
 import { getLearnerProfile } from './read/get-learner-profile'
 import { getMemo } from './read/get-memo'
 import { getPaper } from './read/get-paper'
+import { saveAnswerKey } from './save/save-answer-key'
+import { saveTopicMapDraft } from './save/save-topic-map-draft'
 
 export { defineTool } from './context'
 export type { ToolDef } from './context'
@@ -22,4 +24,6 @@ export const registry: ToolDef<any, any>[] = [
   getClassResults,
   getChildContext,
   completeJob,
+  saveTopicMapDraft,
+  saveAnswerKey,
 ]
