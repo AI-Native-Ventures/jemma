@@ -200,7 +200,7 @@ export async function checkDesktopTimeouts(db: JemmaDb, now: Date = new Date(), 
     const beat = await ok(db.from('runner_presence').select('runner_id').eq('user_id', owner.userId).gte('last_seen', cutoff).limit(1))
     if (beat.length) continue
     const open = await ok(
-      db.from('needs_you_items').select('id').eq('owner_id', owner.userId).eq('school_id', schoolId).eq('status', 'open').eq('title', DESKTOP_OFF_TITLE).limit(1),
+      db.from('needs_you_items').select('id').eq('owner_id', owner.userId).eq('school_id', schoolId).eq('status', 'open').eq('kind', 'desktop_off').limit(1),
     )
     if (open.length) continue
     const n = events.length
@@ -210,7 +210,7 @@ export async function checkDesktopTimeouts(db: JemmaDb, now: Date = new Date(), 
         .insert({
           owner_id: owner.userId,
           school_id: schoolId,
-          kind: 'confirm_scan',
+          kind: 'desktop_off',
           ref_id: events[0]!.id,
           status: 'open',
           title: DESKTOP_OFF_TITLE,
@@ -238,7 +238,7 @@ export async function runInCloud(
   const moved = await ok(
     db.from('events').update({ runner: 'cloud', claimed_by: null }).eq('school_id', schoolId).eq('runner', 'desktop').eq('status', 'queued').select('id'),
   )
-  await ok(db.from('needs_you_items').update({ status: 'done' }).eq('school_id', schoolId).eq('title', DESKTOP_OFF_TITLE).eq('status', 'open').select('id'))
+  await ok(db.from('needs_you_items').update({ status: 'done' }).eq('school_id', schoolId).eq('kind', 'desktop_off').eq('status', 'open').select('id'))
   for (const e of moved) await enqueue(e.id)
   return { queued: moved.length }
 }
