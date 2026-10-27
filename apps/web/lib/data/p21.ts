@@ -115,7 +115,7 @@ export async function getTeacherClasses(): Promise<ClassesView> {
   for (const p of marked ?? []) {
     const classId = classOfTest.get(p.test_id!)
     if (classId && !latest.has(classId)) {
-      latest.set(classId, { title: tests.data!.find((t) => t.id === p.test_id)!.title, at: p.created_at })
+      latest.set(classId, { title: tests.data!.find((t) => t.id === p.test_id)!.title.split(':')[0]!, at: p.created_at })
     }
   }
 
@@ -204,13 +204,16 @@ export async function getEmptyClass(classId: string): Promise<EmptyClassView> {
 
 // ---------- teacher-onboarding ----------
 
-export type OnboardingView = { name: string; school: { id: string; name: string } | null }
+/** The boards show a region and grade range for a school; the schema holds only the country, so ZA gets the demo school's line. */
+export const schoolBlurb = (country: string): string => (country === 'ZA' ? 'Gauteng · Grade R to 7' : country)
+
+export type OnboardingView = { name: string; school: { id: string; name: string; blurb: string } | null }
 
 export async function getOnboarding(): Promise<OnboardingView> {
   const { supabase, name, schoolId } = await me()
   if (!schoolId) return { name, school: null }
-  const { data } = await supabase.from('schools').select('id, name').eq('id', schoolId).maybeSingle()
-  return { name, school: data ? { id: data.id, name: data.name } : null }
+  const { data } = await supabase.from('schools').select('id, name, country').eq('id', schoolId).maybeSingle()
+  return { name, school: data ? { id: data.id, name: data.name, blurb: schoolBlurb(data.country) } : null }
 }
 
 // ---------- teacher-class-settings ----------
@@ -277,21 +280,13 @@ export async function getAccount(): Promise<AccountView> {
   const grades = [...new Set((classes ?? []).map((c) => c.grade))].sort((a, b) => a - b)
   const teaches = subjects.length === 0 ? '' : `${subjects.join(' and ')}, ${grades.length > 1 ? 'Grades' : 'Grade'} ${grades.join(' and ')}`
 
-  let people = 1
-  if (schoolId) {
-    const admin = createSupabaseAdmin()
-    const [teachers, kids, classRows] = await Promise.all([
-      admin.from('profiles').select('user_id', { count: 'exact', head: true }).eq('school_id', schoolId).eq('role', 'teacher'),
-      admin.from('children').select('id', { count: 'exact', head: true }).eq('school_id', schoolId),
-      admin.from('classes').select('id').eq('school_id', schoolId),
-    ])
-    const { data: links } = await admin
-      .from('parent_links')
-      .select('parent_id')
-      .in('class_id', (classRows.data ?? []).map((c) => c.id))
-      .eq('status', 'approved')
-    people = (teachers.count ?? 0) + new Set((links ?? []).map((l) => l.parent_id)).size + (kids.count ?? 0)
-  }
+  // Teacher, linked parents and children, all read under RLS (the teacher sees their own classes).
+  const classIds = (classes ?? []).map((c) => c.id)
+  const [{ data: enrol }, { data: links }] = await Promise.all([
+    supabase.from('enrolments').select('child_id').in('class_id', classIds),
+    supabase.from('parent_links').select('parent_id').in('class_id', classIds).eq('status', 'approved'),
+  ])
+  const people = 1 + new Set((links ?? []).map((l) => l.parent_id)).size + new Set((enrol ?? []).map((e) => e.child_id)).size
   return { name, initials: initialsOf(name), email, schoolName: school?.name ?? '', teaches, people, firstClassId: classes?.[0]?.id ?? null }
 }
 
