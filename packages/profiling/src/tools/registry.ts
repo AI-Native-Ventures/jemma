@@ -7,6 +7,8 @@ import { getJob } from './read/get-job'
 import { getLearnerProfile } from './read/get-learner-profile'
 import { getMemo } from './read/get-memo'
 import { getPaper } from './read/get-paper'
+import { planNextSession } from './save/plan-next-session'
+import { saveLesson } from './save/save-lesson'
 
 export { defineTool } from './context'
 export type { ToolDef } from './context'
@@ -22,4 +24,10 @@ export const registry: ToolDef<any, any>[] = [
   getClassResults,
   getChildContext,
   completeJob,
+  planNextSession,
+  saveLesson,
 ]
+
+export { registerSpeech } from '../speech'
+export type { SpeechSynth } from '../speech'
+export { runJobWriteLesson } from '../jobs/cloud/write-lesson'
