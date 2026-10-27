@@ -75,7 +75,8 @@ function stageCounts(g: ClassGapView) {
 }
 
 function NextGap({ gap, index, base }: { gap: ClassGapView; index: number; base: string }) {
-  const sub = [`${gap.count} of ${gap.total} learners`, stageCounts(gap), gap.nextLesson ? `${gap.nextLesson.name}'s lesson is ${gap.nextLesson.weekday}` : '']
+  const lesson = index > 0 && gap.nextLesson ? `${gap.nextLesson.name}'s lesson is ${gap.nextLesson.weekday}` : ''
+  const sub = [`${gap.count} of ${gap.total} learners`, stageCounts(gap), lesson]
     .filter(Boolean)
     .join(' · ')
   if (index > 0) {

@@ -25,7 +25,7 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
   return (
     <div className="leading-[normal]">
       {/* This board has its own back header; the class header above it steps aside. */}
-      <style>{'header:has(+ main > [data-own-header]){display:none}'}</style>
+      <style>{'header:has(+ main [data-own-header]){display:none}'}</style>
       <div data-own-header className="flex items-center gap-1 pt-2.5 pr-4 pb-1.5 pl-2">
         <Link href={base} aria-label="Back to class" className="flex size-11 flex-none items-center justify-center rounded-12 text-ink">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -91,7 +91,7 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
                 The mistake
               </h2>
               <p className="m-0 text-[15px] leading-[1.45] text-body">
-                Seen {gap.mistake.seen} times on {detail.testTitle}
+                Seen {gap.mistake.seen} times on {detail.testTitle?.split(':')[0]}
               </p>
             </div>
             <ul className="m-0 flex list-none flex-col gap-2 p-0">

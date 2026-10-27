@@ -176,7 +176,7 @@ async function load(classId: string) {
   const now = new Date()
   const [{ data: cls }, { data: enrol }, { data: tests }, { data: plans }] = await Promise.all([
     supabase.from('classes').select('id, name').eq('id', classId).maybeSingle(),
-    supabase.from('enrolments').select('child_id').eq('class_id', classId).order('created_at'),
+    supabase.from('enrolments').select('child_id').eq('class_id', classId),
     supabase.from('tests').select('id, title, written_on, out_of').eq('class_id', classId).order('created_at', { ascending: false }).limit(1),
     supabase
       .from('reteach_plans')
