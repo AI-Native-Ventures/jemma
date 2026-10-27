@@ -1,0 +1,29 @@
+{
+  "name": "web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "build:cf": "opennextjs-cloudflare build",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@jemma/profiling": "workspace:*",
+    "@next/env": "16.4.3",
+    "@opennextjs/cloudflare": "1.20.13",
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "24.10.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3",
+    "wrangler": "4.153.0"
+  }
+}
