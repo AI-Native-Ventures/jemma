@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 // Placeholder sample files. The real photos of the 5 papers and the memo arrive later: upload them to
 // the same paths in the `sample-papers` bucket (or change the paths here). Placeholders are only
 // written when the path is empty, so real files are never overwritten.
@@ -218,12 +221,21 @@ export function renderTeachingPlanPdf(): Uint8Array {
 
 let ensured: Promise<void> | null = null
 
-/** Writes the placeholder files that are missing. Safe to call on every sandbox: runs once per process. */
+/**
+ * Synthetic Class Test 1 sheets rendered from fixtures/papers/*.html (printed questions, answers in a handwriting
+ * font, mistakes as in class-test-1.ts; Sipho's Q7 is drawn ambiguous on purpose). Falls back to the plain placeholder.
+ */
+function paperImage(who: string): Uint8Array {
+  const file = join(dirname(fileURLToPath(import.meta.url)), '../../../fixtures/papers', `${who}.png`)
+  return existsSync(file) ? new Uint8Array(readFileSync(file)) : renderTestSheet(who === 'memo' ? 99 : 11)
+}
+
+/** Writes the sample files that are missing. Safe to call on every sandbox: runs once per process. */
 export function ensureSampleFiles(admin: JemmaDb): Promise<void> {
   ensured ??= (async () => {
     const files: [string, Uint8Array, string][] = [
-      ...Object.values(SAMPLE_FILES.papers).map((p, i): [string, Uint8Array, string] => [p, renderTestSheet(11 + i), 'image/png']),
-      [SAMPLE_FILES.memo, renderTestSheet(99), 'image/png'],
+      ...Object.entries(SAMPLE_FILES.papers).map(([who, p]): [string, Uint8Array, string] => [p, paperImage(who), 'image/png']),
+      [SAMPLE_FILES.memo, paperImage('memo'), 'image/png'],
       [SAMPLE_FILES.curriculum, renderTeachingPlanPdf(), 'application/pdf'],
     ]
     await Promise.all(
