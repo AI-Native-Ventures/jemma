@@ -31,6 +31,7 @@
     "./ai": "./src/ai/index.ts",
     "./db": "./src/db/index.ts",
     "./tools": "./src/tools/index.ts",
+    "./jobs": "./src/jobs/cloud/index.ts",
     "./records": "./src/records.ts",
     "./orchestrator": "./src/orchestrator.ts"
   }
