@@ -36,7 +36,7 @@ export async function getClassTopics(classId: string): Promise<ClassTopic[]> {
   return (data ?? []).map((t) => ({ id: t.id, name: t.name, term: t.term }))
 }
 
-export type TestRow = { id: string; title: string; writtenOn: string; outOf: number; keyStatus: 'draft' | 'approved' | null }
+export type TestRow = { id: string; title: string; writtenOn: string | null; outOf: number; keyStatus: 'draft' | 'approved' | null }
 
 /** Tests of a class, newest first, with where their key stands. */
 export async function getClassTests(classId: string): Promise<TestRow[]> {
