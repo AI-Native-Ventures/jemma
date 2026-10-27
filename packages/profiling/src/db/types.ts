@@ -1516,6 +1516,7 @@ export type Database = {
         | "approve_key"
         | "approve_link"
         | "confirm_scan"
+        | "desktop_off"
       need_status: "open" | "done"
       obs_kind: "participation" | "confidence" | "effort" | "behaviour"
       paper_kind: "test" | "homework" | "textbook" | "report"
@@ -1667,6 +1668,7 @@ export const Constants = {
         "approve_key",
         "approve_link",
         "confirm_scan",
+        "desktop_off",
       ],
       need_status: ["open", "done"],
       obs_kind: ["participation", "confidence", "effort", "behaviour"],

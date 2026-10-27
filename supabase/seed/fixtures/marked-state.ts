@@ -367,3 +367,24 @@ export const AMINA_LOG = [
 ]
 
 export const SESSION_LOG = 'Amina finished her lesson: 3 of 5. Moved her to Practising'
+
+// ---- Notifications (teacher-notifications, parent-notifications) ---------------------------
+// Copy is from the boards; times are minutes before the sandbox was made. Only the newest item at
+// each stage is unread, as drawn. The note from Ms Banda is left out: the seed has no such note.
+
+export type NoteDef = { minutesAgo: number; title: string; body: string; stage: 'marked' | 'session_done' }
+
+export const TEACHER_NOTES: (NoteDef & { href: string })[] = [
+  { minutesAgo: 62, stage: 'marked', title: 'Your topic map is approved', body: 'Drafted at 13:55. You approved it at 14:01', href: 'curriculum' },
+  { minutesAgo: 30, stage: 'marked', title: "You approved Thandi M as Amina's parent", body: 'She can now see Amina\'s marks, gaps and your notes', href: 'learners/{amina}/profile' },
+  { minutesAgo: 6, stage: 'marked', title: 'Class Test 1 is marked', body: '5 papers. 1 answer needed you', href: 'tests/{test}' },
+  { minutesAgo: 3, stage: 'session_done', title: "Sipho's paper is done", body: 'You fixed question 7 to 0,6. Class average is now 64%', href: 'papers/{sipho}' },
+  { minutesAgo: 0, stage: 'session_done', title: 'Amina finished her lesson: 3 of 5', body: 'Adding fractions moved from New to Practising', href: 'learners/{amina}/profile' },
+]
+
+export const PARENT_NOTES: (NoteDef & { href: string })[] = [
+  { minutesAgo: 24 * 60 + 5, stage: 'marked', title: "Check Amina's homework", body: 'I read 5 answers. One is faint. Can you check it?', href: 'snap/{homework}' },
+  { minutesAgo: 6, stage: 'marked', title: 'Class Test 1 is marked: 6 out of 10', body: 'See her paper and the 4 questions she missed', href: 'papers/{aminaPaper}' },
+  { minutesAgo: 2, stage: 'marked', title: "Tonight's lesson is ready", body: '12 minutes on adding fractions, with fraction bars', href: 'learn' },
+  { minutesAgo: 0, stage: 'session_done', title: 'Amina finished her lesson: 3 of 5', body: 'Adding fractions is now Practising. Next check is Thursday', href: 'sessions/{session}' },
+]

@@ -6,7 +6,7 @@ import { classTest1Results, classTest1Roster, classTest1Scores, classTest1Scores
 import { AMINA_ACTIVITIES, AWAY_DAY_INDEX, CAST, CHILD_PIN, CLASS, NOTES, SCHOOL, lastSchoolDays } from './fixtures/cast'
 import { FIXED_GAPS, FORMAT_FAMILY, FORMAT_TRIALS, TERM3_ROWS } from './fixtures/history'
 import {
-  AMINA_LESSON, AMINA_LOG, CLASS_LOG, CURRICULUM_DOCS, HOMEWORK_NEEDS, SIPHO_NEEDS, WEEK_PLAN, HOMEWORK_ROWS, LESSON_TOPIC, RETEACH, RETEACH_EXPLANATION, RETEACH_MISSING_BASIC, RETEACH_TOPIC, RETEACH_WHY,
+  AMINA_LESSON, AMINA_LOG, CLASS_LOG, CURRICULUM_DOCS, HOMEWORK_NEEDS, SIPHO_NEEDS, WEEK_PLAN, PARENT_NOTES, TEACHER_NOTES, HOMEWORK_ROWS, LESSON_TOPIC, RETEACH, RETEACH_EXPLANATION, RETEACH_MISSING_BASIC, RETEACH_TOPIC, RETEACH_WHY,
   SESSION_DONE, SESSION_LOG, SESSION_TRY, SESSION_WARMUP, TEST_TITLE, TERMS, answerKeyItems, guidanceCard, topicMapDraft,
 } from './fixtures/marked-state'
 import { SAMPLE_FILES, answerCrop, ensureSampleFiles } from './fixtures/sample-papers'
@@ -487,6 +487,27 @@ async function buildMarked(c: MarkedCtx): Promise<void> {
     // Attach map topics to the Term 3 history, the fixed gaps and anything else tagged by name.
     ok(admin.rpc('retag_results', { map: map.id }), 'retag_results'),
   ])
+
+  // Bell items for this stage; only the newest is unread.
+  const fill = (path: string, ids: Record<string, string>) => path.replace(/\{(\w+)\}/g, (_, k: string) => ids[k]!)
+  const ids = { amina: aminaId, test: test.id, sipho: paperOf.get(childId.sipho!)!, aminaPaper: paperOf.get(aminaId)!, homework: hwPaper.id, session: session.id }
+  const inStage = <T extends { stage: string }>(notes: T[]) => notes.filter((n) => n.stage === 'marked' || c.withSession)
+  const newest = (notes: { minutesAgo: number }[]) => Math.min(...notes.map((n) => n.minutesAgo))
+  const teacherNotes = inStage(TEACHER_NOTES)
+  const parentNotes = inStage(PARENT_NOTES)
+  await ok(
+    admin.from('notifications').insert([
+      ...teacherNotes.map((n) => ({
+        user_id: teacherId, title: n.title, body: n.body, href: `/t/${classId}/${fill(n.href, ids)}`, created_at: c.at(n.minutesAgo),
+        read_at: n.minutesAgo === newest(teacherNotes) ? null : c.at(n.minutesAgo),
+      })),
+      ...parentNotes.map((n) => ({
+        user_id: parentId, title: n.title, body: n.body, href: `/p/${aminaId}/${fill(n.href, ids)}`, created_at: c.at(n.minutesAgo),
+        read_at: n.minutesAgo === newest(parentNotes) ? null : c.at(n.minutesAgo),
+      })),
+    ]),
+    'notifications',
+  )
 
   if (c.withSession) {
     const finishedAt = c.now.toISOString()
