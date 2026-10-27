@@ -1,4 +1,4 @@
-import type { JobName } from '@jemma/profiling/tools'
+import { runJobGuidance, type JobName } from '@jemma/profiling/tools'
 import type { ToolContext } from '@jemma/profiling/tools'
 import { runJobDraftMap, runJobReadKey } from '@jemma/profiling/jobs'
 
@@ -10,4 +10,5 @@ export type CloudJobs = Partial<Record<JobName, CloudJob>>
 export const cloudJobs: CloudJobs = {
   draft_map: runJobDraftMap,
   read_key: runJobReadKey,
+  guidance: runJobGuidance,
 }
