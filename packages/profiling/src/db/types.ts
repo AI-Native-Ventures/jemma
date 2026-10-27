@@ -1419,6 +1419,7 @@ export type Database = {
           name: string
           position: number
           prerequisite_ids: string[]
+          short_name: string | null
           term: number
         }
         ComputedFields: never
@@ -1431,6 +1432,7 @@ export type Database = {
           name: string
           position: number
           prerequisite_ids?: string[]
+          short_name?: string | null
           term: number
         }
         Update: {
@@ -1442,6 +1444,7 @@ export type Database = {
           name?: string
           position?: number
           prerequisite_ids?: string[]
+          short_name?: string | null
           term?: number
         }
         Relationships: [

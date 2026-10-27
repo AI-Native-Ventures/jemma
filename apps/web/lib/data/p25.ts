@@ -1,6 +1,7 @@
 import { whatHelps } from '@jemma/profiling/logic'
 import type { Format } from '@jemma/profiling/logic'
 import { createSupabaseServer } from '../supabase/server'
+import { loadShortLabels } from '../topics'
 
 type Db = Awaited<ReturnType<typeof createSupabaseServer>>
 
@@ -19,8 +20,6 @@ export const dayNumber = (iso: string) => dayOf(iso).getUTCDate()
 export const dayLabel = (iso: string) => `${weekdayShort(iso)} ${dayNumber(iso)} ${MONTHS[dayOf(iso).getUTCMonth()]}`
 
 /** The topic as the boards write it in lists: "Adding fractions with different denominators" is "Adding fractions". */
-export const shortTopic = (name: string) => name.replace(/ with different denominators$/, '')
-
 /** "Decimal comma": 4.2 is "4,2". */
 export const decimalComma = (n: number) => n.toFixed(1).replace('.', ',')
 
@@ -29,6 +28,7 @@ export type PlannedSession = {
   plannedFor: string
   topicId: string | null
   topicName: string
+  shortName: string
   format: Format
   minutes: number
   questions: number | null
@@ -65,6 +65,7 @@ async function plannedSessions(db: Db, childId: string): Promise<(PlannedSession
     .in('status', ['planned', 'in_progress'])
     .order('planned_for', { ascending: true })
   if (error) throw new Error(`p25: ${error.message}`)
+  const short = await loadShortLabels(db)
   return data.map((s) => {
     const minutes = s.planned_minutes ?? 0
     const topicName = s.topic_name ?? ''
@@ -74,6 +75,7 @@ async function plannedSessions(db: Db, childId: string): Promise<(PlannedSession
       plannedFor: s.planned_for,
       topicId: s.topic_id,
       topicName,
+      shortName: short(topicName),
       format: (s.format ?? 'reading') as Format,
       minutes,
       questions: s.question_count,
@@ -202,6 +204,7 @@ export type SessionResult = {
   minutes: number
   format: Format
   topicName: string
+  shortName: string
   stage: 'new' | 'practising' | 'fixed'
   warmup: { right: number; total: number }
   items: SessionItemView[]
@@ -274,6 +277,7 @@ export async function loadSessionResult(childId: string, sessionId: string): Pro
     minutes: s.minutes ?? 0,
     format: (s.format ?? 'reading') as Format,
     topicName: s.topic_name ?? '',
+    shortName: (await loadShortLabels(db))(s.topic_name ?? ''),
     stage: gap?.stage ?? 'new',
     warmup: { right: warm.filter((r) => r.correct).length, total: warm.length },
     items,

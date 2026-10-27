@@ -8,7 +8,6 @@ import {
   decimalComma,
   FORMAT_LABEL,
   loadLearn,
-  shortTopic,
   weekdayShort,
   type PlannedSession,
 } from '@/lib/data/p25'
@@ -22,7 +21,7 @@ function Chip({ children }: { children: React.ReactNode }) {
 }
 
 function WeekRow({ s, tonight }: { s: PlannedSession; tonight: boolean }) {
-  const title = s.quickCheck ? `${shortTopic(s.topicName)}, quick check` : shortTopic(s.topicName)
+  const title = s.quickCheck ? `${s.shortName}, quick check` : s.shortName
   const sub = s.quickCheck ? `${s.questions} questions · ${s.minutes} min` : `${FORMAT_LABEL[s.format]} · ${s.minutes} min`
   return (
     <li className="flex min-h-[54px] items-center gap-3 border-t border-soft">
@@ -54,7 +53,7 @@ export default async function ParentLearnPage({ params }: { params: Promise<{ ch
     )
   }
 
-  const topic = shortTopic(tonight.topicName)
+  const topic = tonight.shortName
   const stepLabel = tonight.questions ? `${tonight.questions} questions` : 'Questions'
 
   return (

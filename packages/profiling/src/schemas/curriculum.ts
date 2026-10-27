@@ -8,6 +8,7 @@ export const TopicMapDraftSchema = z.object({
       topics: z.array(
         z.object({
           name: z.string(),
+          shortName: z.string().optional(),
           family: z.string(),
           prerequisites: z.array(z.string()),
           misconceptions: z.array(z.string()),

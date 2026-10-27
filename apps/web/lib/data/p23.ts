@@ -1,4 +1,5 @@
 import { createSupabaseServer } from '../supabase/server'
+import { loadShortLabels } from '../topics'
 
 /** Parent profile, report, beyond the tests and add activity. Everything is read through RLS. */
 
@@ -92,9 +93,9 @@ function chipsFor(childId: string, rows: ResultRow[]): Chip[] {
 
 const isCurrent = (r: ResultRow) => Date.now() - new Date(r.papers?.created_at ?? r.created_at).getTime() < CURRENT_DAYS * DAY
 
-export type MarkRow = { key: string; topicName: string; percent: number; change: number | null }
+export type MarkRow = { key: string; topicName: string; shortName: string; percent: number; change: number | null }
 
-function marksByTopic(rows: ResultRow[]): MarkRow[] {
+function marksByTopic(rows: ResultRow[], short: (name: string) => string): MarkRow[] {
   const tests = rows.filter((r) => r.papers?.kind === 'test')
   const groups = new Map<string, ResultRow[]>()
   for (const r of tests) groups.set(r.topic_id ?? r.topic_name, [...(groups.get(r.topic_id ?? r.topic_name) ?? []), r])
@@ -108,6 +109,7 @@ function marksByTopic(rows: ResultRow[]): MarkRow[] {
     out.push({
       key: topicKey(latest.topic_id, latest.topic_name),
       topicName: latest.topic_name,
+      shortName: short(latest.topic_name),
       percent: pct(cur),
       change: prev.length ? pct(cur) - pct(prev) : null,
     })
@@ -175,6 +177,7 @@ function chipFromEvidence(childId: string, byId: Map<string, ResultRow>, e: { la
 
 export async function getProfile(childId: string): Promise<ProfileData | null> {
   const supabase = await createSupabaseServer()
+  const short = await loadShortLabels(supabase)
   const [child, card, results, needs, notes, attendance, activities, log, latestTest, gaps] = await Promise.all([
     supabase.from('children').select('id, first_name, grade').eq('id', childId).maybeSingle(),
     supabase.from('guidance_cards').select('content, updated_at').eq('child_id', childId).maybeSingle(),
@@ -195,7 +198,7 @@ export async function getProfile(childId: string): Promise<ProfileData | null> {
   const guidance = card.data?.content as
     | { headline: string; focus: { title: string; why: string; evidence: { label: string; resultIds: string[] }[] }[]; lookingAhead: string }
     | undefined
-  const marks = marksByTopic(rows)
+  const marks = marksByTopic(rows, short)
   const firstGap = gaps.data?.[0]
   const helpHref = firstGap ? `/p/${childId}/topics/${topicKey(firstGap.topic_id, firstGap.topic_name)}` : null
 
@@ -350,6 +353,7 @@ export type ReportData = {
 
 export async function getReport(childId: string): Promise<ReportData | null> {
   const supabase = await createSupabaseServer()
+  const short = await loadShortLabels(supabase)
   const [child, results, gaps, sessions, planned, notes, attendance, acts, card, papers] = await Promise.all([
     supabase.from('children').select('first_name, grade').eq('id', childId).maybeSingle(),
     supabase.from('question_results').select(RESULT_SELECT).eq('child_id', childId),
@@ -460,7 +464,7 @@ export async function getReport(childId: string): Promise<ReportData | null> {
       const nextDay = next ? weekdayLong(next.planned_for) : null
       return {
         id: g.id,
-        name: g.topic_name,
+        name: short(g.topic_name),
         stage: g.stage as 'new' | 'practising',
         sub:
           g.stage === 'practising'
@@ -472,7 +476,7 @@ export async function getReport(childId: string): Promise<ReportData | null> {
   const fixed = allGaps
     .filter((g) => g.stage === 'fixed')
     .sort((a, b) => (b.fixed_at ?? '').localeCompare(a.fixed_at ?? ''))
-    .map((g) => ({ id: g.id, name: g.topic_name, sub: g.fixed_at ? `Fixed ${dayLabel(g.fixed_at)}` : 'Fixed' }))
+    .map((g) => ({ id: g.id, name: short(g.topic_name), sub: g.fixed_at ? `Fixed ${dayLabel(g.fixed_at)}` : 'Fixed' }))
 
   const testCount = testPapers.length
   const hwCount = paperTests.filter((p) => p.kind === 'homework' && inPeriod(p.created_at)).length

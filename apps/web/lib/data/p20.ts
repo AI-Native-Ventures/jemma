@@ -1,14 +1,10 @@
 import { notFound } from 'next/navigation'
 import { createSupabaseServer } from '@/lib/supabase/server'
+import { loadShortLabels } from '@/lib/topics'
 
 type Supabase = Awaited<ReturnType<typeof createSupabaseServer>>
 
 export type ClassRef = { id: string; name: string }
-
-/** "Adding fractions with different denominators" is shown as "Adding fractions", as on the boards. */
-export function shortTopic(name: string): string {
-  return name.replace(/ with different denominators$/, '')
-}
 
 /** "Class Test 1: Fractions and decimals" is shown as "Class Test 1" in headers and sentences. */
 export function shortTitle(title: string): string {
@@ -85,6 +81,7 @@ function summarise(
   test: { id: string; title: string; written_on: string | null; out_of: number },
   papers: PaperRow[],
   results: ResultRow[],
+  short: (name: string) => string,
 ): TestSummary {
   const marked = papers.filter((p) => p.status === 'marked')
   const markedIds = new Set(marked.map((p) => p.id))
@@ -100,10 +97,10 @@ function summarise(
   const byTopic = new Map<string, { right: number; all: number }>()
   const byN = new Map<number, ResultRow[]>()
   for (const r of rows) {
-    const t = byTopic.get(shortTopic(r.topic_name)) ?? { right: 0, all: 0 }
+    const t = byTopic.get(short(r.topic_name)) ?? { right: 0, all: 0 }
     t.all += 1
     if (r.correct) t.right += 1
-    byTopic.set(shortTopic(r.topic_name), t)
+    byTopic.set(short(r.topic_name), t)
     byN.set(r.n, [...(byN.get(r.n) ?? []), r])
   }
 
@@ -114,7 +111,7 @@ function summarise(
       return {
         n,
         prompt: prettyPrompt(list[0]!.prompt),
-        topic: shortTopic(list[0]!.topic_name),
+        topic: short(list[0]!.topic_name),
         right,
         of: list.length,
         dots: [...Array.from({ length: right }, () => true), ...Array.from({ length: list.length - right }, () => false)],
@@ -156,6 +153,7 @@ async function classRef(supabase: Supabase, classId: string): Promise<ClassRef> 
 
 async function loadSummaries(supabase: Supabase, tests: { id: string; title: string; written_on: string | null; out_of: number }[]) {
   if (tests.length === 0) return []
+  const short = await loadShortLabels(supabase)
   const { data: papers } = await supabase
     .from('papers')
     .select('id, test_id, child_id, status, total')
@@ -171,7 +169,7 @@ async function loadSummaries(supabase: Supabase, tests: { id: string; title: str
   return tests.map((t) => {
     const mine = paperRows.filter((p) => p.test_id === t.id)
     const ids = new Set(mine.map((p) => p.id))
-    return summarise(t, mine, resultRows.filter((r) => ids.has(r.paper_id)))
+    return summarise(t, mine, resultRows.filter((r) => ids.has(r.paper_id)), short)
   })
 }
 
@@ -185,6 +183,7 @@ export type TestsList = {
 export async function getTestsList(classId: string): Promise<TestsList> {
   const supabase = await createSupabaseServer()
   const cls = await classRef(supabase, classId)
+  const short = await loadShortLabels(supabase)
   const { data: tests } = await supabase
     .from('tests')
     .select('id, title, written_on, out_of')
@@ -198,7 +197,7 @@ export async function getTestsList(classId: string): Promise<TestsList> {
   const { data: plan } = latest
     ? await supabase.from('reteach_plans').select('topic_name').eq('test_id', latest.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
     : { data: null }
-  const pulled = plan ? shortTopic(plan.topic_name) : latest?.lowestTopics[0]?.name
+  const pulled = plan ? short(plan.topic_name) : latest?.lowestTopics[0]?.name
   const headline = latest
     ? `${latest.shortTitle} averaged ${latest.average}%.${pulled ? ` ${pulled} pulled it down.` : ''}`
     : null
@@ -299,6 +298,7 @@ function mode<T>(list: T[]): { value: T; count: number } | null {
 /** `teacher-question`. */
 export async function getQuestionDetail(classId: string, testId: string, n: number): Promise<QuestionDetail> {
   const supabase = await createSupabaseServer()
+  const short = await loadShortLabels(supabase)
   const cls = await classRef(supabase, classId)
   const { data: test } = await supabase
     .from('tests')
@@ -361,7 +361,7 @@ export async function getQuestionDetail(classId: string, testId: string, n: numb
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
-    if (plan?.topic_id) gap = { topicId: plan.topic_id, topicName: shortTopic(plan.topic_name) }
+    if (plan?.topic_id) gap = { topicId: plan.topic_id, topicName: short(plan.topic_name) }
   }
 
   return {
@@ -369,7 +369,7 @@ export async function getQuestionDetail(classId: string, testId: string, n: numb
     test: { id: test.id, title: test.title, shortTitle: shortTitle(test.title) },
     n,
     prompt: prettyPrompt(rows[0]?.prompt ?? item!.prompt),
-    topic: shortTopic(rows[0]?.topic_name ?? ''),
+    topic: short(rows[0]?.topic_name ?? ''),
     rightAnswer: item?.answer ?? '',
     marks: item?.marks ?? 1,
     total: rows.length,

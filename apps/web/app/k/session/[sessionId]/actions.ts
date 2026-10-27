@@ -6,6 +6,7 @@ import type { JemmaDb, Json } from '@jemma/profiling/db'
 import { sendEvent } from '@/lib/agent'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
+import { loadShortLabels } from '@/lib/topics'
 import {
   adaptedOf,
   DEFAULT_TRY_COUNT,
@@ -194,7 +195,7 @@ export async function finishSession(sessionId: string): Promise<FinishedSession>
           firstPractisedAt: gap.first_practised_at ? new Date(gap.first_practised_at) : null,
           now,
         }),
-        topicName: gap.topic_name,
+        topicName: (await loadShortLabels(run.admin))(gap.topic_name),
       }
     : null
 

@@ -117,7 +117,7 @@ export default async function ParentProfilePage({ params }: { params: Promise<{ 
             >
               <span style={css('flex:1;min-width:0;display:flex;flex-direction:column;gap:6px')}>
                 <span style={css('display:flex;align-items:center;justify-content:space-between;gap:10px')}>
-                  <span style={css('font-size:15px;font-weight:600')}>{m.topicName}</span>
+                  <span style={css('font-size:15px;font-weight:600')}>{m.shortName}</span>
                   <span style={css('display:flex;align-items:center;gap:8px')}>
                     <span style={css('font-size:16px;font-weight:700;font-variant-numeric:tabular-nums')}>{m.percent}%</span>
                     <Change row={m} />

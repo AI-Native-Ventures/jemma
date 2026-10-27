@@ -272,3 +272,18 @@ describe('profile', () => {
     expect(LearnerProfileSchema.safeParse({ ...p, attendance: { present: 9 } }).success).toBe(false)
   })
 })
+
+describe('TopicMapDraft shortName', () => {
+  const draft = (extra: object) => ({
+    grade: 6,
+    terms: [{ term: 1, topics: [{ name: 'Adding fractions with different denominators', family: 'fractions', prerequisites: [], misconceptions: [], ...extra }] }],
+    leftOut: [],
+  })
+  test('accepts an optional shortName', () => {
+    const r = TopicMapDraftSchema.parse(draft({ shortName: 'Adding fractions' }))
+    expect(r.terms[0]!.topics[0]!.shortName).toBe('Adding fractions')
+  })
+  test('still accepts a topic without one', () => {
+    expect(TopicMapDraftSchema.safeParse(draft({})).success).toBe(true)
+  })
+})
