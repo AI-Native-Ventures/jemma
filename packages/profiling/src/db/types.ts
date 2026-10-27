@@ -495,11 +495,13 @@ export type Database = {
       events: {
         Row: {
           attempts: number
+          claimed_by: string | null
           created_at: string
           error: string | null
           finished_at: string | null
           id: string
           payload: NonNullable<Json>
+          runner: Database["public"]["Enums"]["runner"]
           school_id: string
           status: Database["public"]["Enums"]["event_status"]
           type: string
@@ -507,22 +509,26 @@ export type Database = {
         ComputedFields: never
         Insert: {
           attempts?: number
+          claimed_by?: string | null
           created_at?: string
           error?: string | null
           finished_at?: string | null
           id?: string
           payload?: NonNullable<Json>
+          runner?: Database["public"]["Enums"]["runner"]
           school_id: string
           status?: Database["public"]["Enums"]["event_status"]
           type: string
         }
         Update: {
           attempts?: number
+          claimed_by?: string | null
           created_at?: string
           error?: string | null
           finished_at?: string | null
           id?: string
           payload?: NonNullable<Json>
+          runner?: Database["public"]["Enums"]["runner"]
           school_id?: string
           status?: Database["public"]["Enums"]["event_status"]
           type?: string
@@ -718,21 +724,24 @@ export type Database = {
         Row: {
           created_at: string
           label: string
-          school_id: string
+          school_id: string | null
           token_hash: string
+          user_id: string | null
         }
         ComputedFields: never
         Insert: {
           created_at?: string
           label: string
-          school_id: string
+          school_id?: string | null
           token_hash: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           label?: string
-          school_id?: string
+          school_id?: string | null
           token_hash?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1172,8 +1181,37 @@ export type Database = {
           },
         ]
       }
+      runner_presence: {
+        Row: {
+          agents: NonNullable<Json>
+          chosen: string | null
+          created_at: string
+          last_seen: string
+          runner_id: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          agents?: NonNullable<Json>
+          chosen?: string | null
+          created_at?: string
+          last_seen?: string
+          runner_id: string
+          user_id: string
+        }
+        Update: {
+          agents?: NonNullable<Json>
+          chosen?: string | null
+          created_at?: string
+          last_seen?: string
+          runner_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       schools: {
         Row: {
+          ai_runner: Database["public"]["Enums"]["runner"]
           country: string
           created_at: string
           id: string
@@ -1182,6 +1220,7 @@ export type Database = {
         }
         ComputedFields: never
         Insert: {
+          ai_runner?: Database["public"]["Enums"]["runner"]
           country: string
           created_at?: string
           id?: string
@@ -1189,6 +1228,7 @@ export type Database = {
           sandbox_id?: string | null
         }
         Update: {
+          ai_runner?: Database["public"]["Enums"]["runner"]
           country?: string
           created_at?: string
           id?: string
@@ -1426,6 +1466,7 @@ export type Database = {
       paper_kind: "test" | "homework" | "textbook" | "report"
       paper_owner: "teacher" | "parent"
       paper_status: "queued" | "reading" | "needs_you" | "marked" | "failed"
+      runner: "cloud" | "desktop"
       session_status: "planned" | "in_progress" | "done"
       user_role: "teacher" | "parent" | "learner"
     }
@@ -1577,6 +1618,7 @@ export const Constants = {
       paper_kind: ["test", "homework", "textbook", "report"],
       paper_owner: ["teacher", "parent"],
       paper_status: ["queued", "reading", "needs_you", "marked", "failed"],
+      runner: ["cloud", "desktop"],
       session_status: ["planned", "in_progress", "done"],
       user_role: ["teacher", "parent", "learner"],
     },

@@ -139,4 +139,23 @@ describe('row level security', () => {
     const denied = await users.teacherA.client.rpc('retag_results', { map: map.id })
     expect(denied.error).not.toBeNull()
   })
+
+  test('a user sees only their own runner_presence', async () => {
+    const mine = crypto.randomUUID()
+    const theirs = crypto.randomUUID()
+    await ok(
+      service.from('runner_presence').insert([
+        { runner_id: mine, user_id: users.teacherA.id, agents: { claude: true }, chosen: 'claude' },
+        { runner_id: theirs, user_id: users.teacherB.id, agents: {}, chosen: null },
+      ]),
+    )
+    const rows = await ok(users.teacherA.client.from('runner_presence').select('runner_id'))
+    expect(rows.map((r) => r.runner_id)).toEqual([mine])
+    const own = await users.teacherA.client.from('runner_presence').update({ chosen: 'codex' }).eq('runner_id', mine).select('runner_id')
+    expect(own.data).toHaveLength(1)
+    const other = await users.teacherA.client.from('runner_presence').update({ chosen: 'x' }).eq('runner_id', theirs).select('runner_id')
+    expect(other.data ?? []).toEqual([])
+    const bad = await users.teacherA.client.from('runner_presence').insert({ runner_id: crypto.randomUUID(), user_id: users.teacherB.id })
+    expect(bad.error).not.toBeNull()
+  })
 })
