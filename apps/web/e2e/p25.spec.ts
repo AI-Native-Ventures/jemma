@@ -98,6 +98,9 @@ test.describe('parent-handover (stage marked)', () => {
     const opened = page.waitForRequest((r) => new URL(r.url()).pathname === `/k/session/${sessionId}`)
     await page.getByRole('button', { name: 'Amina has the phone' }).click()
     await opened
+    // The parent's device stays on the child's session (proxy and learner layout honour the hand-over cookie).
+    await page.waitForURL(`**/k/session/${sessionId}`)
+    await expect(page.getByText('Warm-up').first()).toBeVisible()
 
     const cookie = (await context.cookies()).find((c) => c.name === 'jemma_handover')
     expect(cookie?.httpOnly).toBe(true)

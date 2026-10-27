@@ -1,3 +1,5 @@
+import { cookies } from 'next/headers'
+import { HANDOVER_COOKIE, verifyHandover } from '../handover'
 import { LessonSchema, QuestionSchema, type Lesson, type DiagramSpec } from '@jemma/profiling/schemas'
 import { notFound } from 'next/navigation'
 import { stripQuestion, type QuestionForChild } from '@/app/k/session/[sessionId]/logic'
@@ -34,10 +36,19 @@ async function myChild() {
   const supabase = await createSupabaseServer()
   const { data: auth } = await supabase.auth.getUser()
   if (!auth.user) notFound()
-  const { data: child } = await supabase
+  const { data: own } = await supabase
     .from('children')
     .select('id, first_name, parent_first_name, parent_relation')
     .eq('user_id', auth.user.id)
+    .maybeSingle()
+  if (own) return { supabase, child: own }
+  // A parent's device after hand-over: the cookie names the child, and RLS lets this parent read them.
+  const handover = await verifyHandover((await cookies()).get(HANDOVER_COOKIE)?.value)
+  if (!handover) notFound()
+  const { data: child } = await supabase
+    .from('children')
+    .select('id, first_name, parent_first_name, parent_relation')
+    .eq('id', handover.childId)
     .maybeSingle()
   if (!child) notFound()
   return { supabase, child }

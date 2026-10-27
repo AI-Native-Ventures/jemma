@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import type { Database } from '@jemma/profiling/db'
+import { HANDOVER_COOKIE, handoverAllows } from '@/lib/handover'
 import { supabaseEnv } from '@/lib/supabase/env'
 
 const HOMES = { teacher: '/t', parent: '/p', learner: '/k' } as const
@@ -45,6 +46,10 @@ export async function proxy(request: NextRequest) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('user_id', data.user.id).maybeSingle()
   if (!profile) return redirectTo('/role')
   const home = HOMES[profile.role]
+  // A parent who handed the phone over may open that one session and the hand-back screen.
+  if (profile.role === 'parent' && spaceOf(pathname) === '/k' && (await handoverAllows(request.cookies.get(HANDOVER_COOKIE)?.value, pathname))) {
+    return response
+  }
   if (spaceOf(pathname) !== home) return redirectTo(home)
   return response
 }
