@@ -30,8 +30,10 @@ export async function runJobWriteLesson(
   if ('images' in info) throw new Error('unexpected image result')
   const session = info.session
   if (!session || session.status !== 'planned') return
-  const existing = await ok(ctx.db.from('lessons').select('content').eq('id', session.lessonId).single())
-  if (hasQuestions(existing.content)) return
+  if (session.lessonId) {
+    const existing = await ok(ctx.db.from('lessons').select('content').eq('id', session.lessonId).single())
+    if (hasQuestions(existing.content)) return
+  }
 
   const model = opts.model ?? getModel('text', ctx.env)
   const data = JSON.stringify({ profile: info.profile, openGaps: info.gaps, formatTrials: info.formatTrials, plannedSession: session })

@@ -1,6 +1,4 @@
-# Parallel worker packets each add lines to these registries; union-merge them.
-apps/agent/src/jobs.ts merge=union
+# Parallel worker packets each add export lines to these index files; union-merge them.
 packages/profiling/src/jobs/cloud/index.ts merge=union
-packages/profiling/src/tools/registry.ts merge=union
 packages/profiling/src/tools/save/index.ts merge=union
 packages/profiling/src/tools/index.ts merge=union

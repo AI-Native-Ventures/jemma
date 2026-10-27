@@ -151,11 +151,13 @@ async function finishSession(ctx: ToolContext, childId: string, sessionId: strin
   const { db } = ctx
   const here = await contextFor(ctx, 'sessions', sessionId)
   await assertInSchool(ctx, 'children', [childId])
-  const session = await ok(db.from('sessions').select('child_id, lesson_id, right').eq('id', sessionId).single())
+  const session = await ok(db.from('sessions').select('child_id, lesson_id, right, topic_id, topic_name, format').eq('id', sessionId).single())
   if (session.child_id !== childId) throw new Error('session belongs to another learner')
   const [child, lesson, items] = await Promise.all([
     ok(db.from('children').select('first_name').eq('id', childId).single()),
-    ok(db.from('lessons').select('topic_id, topic_name, format').eq('id', session.lesson_id).single()),
+    session.lesson_id
+      ? ok(db.from('lessons').select('topic_id, topic_name, format').eq('id', session.lesson_id).single())
+      : Promise.resolve({ topic_id: session.topic_id, topic_name: session.topic_name ?? '', format: session.format ?? 'reading' }),
     ok(db.from('session_items').select('phase').eq('session_id', sessionId)),
   ])
   const right = session.right ?? 0

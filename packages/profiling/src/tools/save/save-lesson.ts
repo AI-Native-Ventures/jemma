@@ -54,8 +54,19 @@ export const saveLesson = defineTool({
     await assertInSchool(base, 'sessions', [sessionId])
     const ctx = await contextFor(base, 'sessions', sessionId)
     const db = ctx.db
-    const session = await ok(db.from('sessions').select('child_id, lesson_id').eq('id', sessionId).single())
-    const row = await ok(db.from('lessons').select('id, format, topic_name, content, audio_path').eq('id', session.lesson_id).single())
+    const session = await ok(db.from('sessions').select('child_id, lesson_id, topic_id, topic_name, format').eq('id', sessionId).single())
+    let lessonId = session.lesson_id
+    if (!lessonId) {
+      // A planned session without a lesson row yet: create it from the session's topic and format.
+      if (!session.topic_name || !session.format) throw new Error(`session ${sessionId} has no topic or format`)
+      const created = await ok(
+        db.from('lessons').insert({ child_id: session.child_id, topic_id: session.topic_id, topic_name: session.topic_name, format: session.format, content: {} as NonNullable<Json> }).select('id').single(),
+      )
+      lessonId = created.id
+      const link = await db.from('sessions').update({ lesson_id: lessonId }).eq('id', sessionId)
+      if (link.error) throw new Error(link.error.message)
+    }
+    const row = await ok(db.from('lessons').select('id, format, topic_name, content, audio_path').eq('id', lessonId).single())
     if (hasQuestions(row.content)) return { lessonId: row.id, format: row.format }
 
     if (lesson.format !== row.format) throw new Error(`this session is planned as ${row.format}, not ${lesson.format}`)

@@ -56,13 +56,18 @@ export const planNextSession = defineTool({
 
     // A planned session that is still ahead of us is returned as is.
     const planned = await ok(
-      db.from('sessions').select('id, lesson_id, planned_for').eq('child_id', childId).eq('status', 'planned').gte('planned_for', today).order('planned_for').limit(1),
+      db.from('sessions').select('id, lesson_id, planned_for, topic_id, topic_name, format').eq('child_id', childId).eq('status', 'planned').gte('planned_for', today).order('planned_for').limit(1),
     )
     if (planned[0]) {
-      const lesson = await ok(db.from('lessons').select('topic_id, topic_name, format').eq('id', planned[0].lesson_id).single())
-      return {
-        planned: true, reused: true, sessionId: planned[0].id, lessonId: planned[0].lesson_id,
-        topicName: lesson.topic_name, topicId: lesson.topic_id, format: lesson.format, plannedFor: planned[0].planned_for, queue: [],
+      const p0 = planned[0]
+      const lesson = p0.lesson_id ? await ok(db.from('lessons').select('id, topic_id, topic_name, format').eq('id', p0.lesson_id).single()) : null
+      const topicName = p0.topic_name ?? lesson?.topic_name
+      const format = p0.format ?? lesson?.format
+      if (topicName && format) {
+        return {
+          planned: true, reused: true, sessionId: p0.id, lessonId: p0.lesson_id ?? '',
+          topicName, topicId: p0.topic_id ?? lesson?.topic_id ?? null, format, plannedFor: p0.planned_for, queue: [],
+        }
       }
     }
 
@@ -122,7 +127,7 @@ export const planNextSession = defineTool({
       db.from('lessons').insert({ child_id: childId, topic_id: pick.topicId, topic_name: pick.topicName, format, content: {} as NonNullable<Json> }).select('id').single(),
     )
     const session = await ok(
-      db.from('sessions').insert({ child_id: childId, lesson_id: lesson.id, status: 'planned', planned_for: plannedFor, warmup: [] as NonNullable<Json> }).select('id').single(),
+      db.from('sessions').insert({ child_id: childId, lesson_id: lesson.id, status: 'planned', planned_for: plannedFor, warmup: [] as NonNullable<Json>, topic_id: pick.topicId, topic_name: pick.topicName, format }).select('id').single(),
     )
     return {
       planned: true, reused: false, sessionId: session.id, lessonId: lesson.id,
