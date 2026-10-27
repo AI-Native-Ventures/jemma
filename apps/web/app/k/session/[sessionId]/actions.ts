@@ -3,7 +3,6 @@
 import { markAnswer, type Stage } from '@jemma/profiling/logic'
 import { LessonSchema, QuestionSchema, type Lesson, type Question } from '@jemma/profiling/schemas'
 import type { JemmaDb, Json } from '@jemma/profiling/db'
-import { z } from 'zod'
 import { sendEvent } from '@/lib/agent'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
@@ -73,7 +72,7 @@ async function loadRun(sessionId: string): Promise<Run> {
       items.push({ phase: row.phase, position: row.position, question: q.data, answer: row.answer, correct: row.correct, difficulty: row.difficulty, seconds: row.seconds })
     }
   }
-  const sessionWarmup = z.array(QuestionSchema).safeParse(session.warmup)
+  const sessionWarmup = QuestionSchema.array().safeParse(session.warmup)
   const warmup = sessionWarmup.success && sessionWarmup.data.length > 0 ? sessionWarmup.data : lesson.data.warmup
   const { lesson_id: _lessonId, warmup: _warmup, ...rest } = session
   return {
