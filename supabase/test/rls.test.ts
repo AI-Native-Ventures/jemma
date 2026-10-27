@@ -98,6 +98,13 @@ describe('row level security', () => {
     expect(rows).toHaveLength(1)
   })
 
+  test('parent sees the school of a linked child, not other schools', async () => {
+    const linked = await ok(users.parent1.client.from('schools').select('id'))
+    expect(linked.length).toBe(1)
+    const pending = await ok(users.parent2.client.from('schools').select('id'))
+    expect(pending).toEqual([])
+  })
+
   test('parent with pending link sees nothing', async () => {
     const rows = await ok(users.parent2.client.from('question_results').select('id').eq('child_id', ids.a1))
     expect(rows).toEqual([])
