@@ -1,0 +1,21 @@
+export interface Env {
+  EVENTS_QUEUE: Queue<{ eventId: string }>
+  SUPABASE_URL: string
+  SUPABASE_SERVICE_ROLE_KEY: string
+  /** Shared secret the web app sends as `x-jemma-secret` to POST /events. */
+  EVENTS_SECRET?: string
+  LLM_PROVIDER?: string
+  LLM_MODEL?: string
+  VISION_PROVIDER?: string
+  VISION_MODEL?: string
+  TTS_PROVIDER?: string
+  TTS_MODEL?: string
+  AI_MODE?: 'live' | 'record' | 'replay'
+  OPENROUTER_API_KEY?: string
+  DEEPSEEK_API_KEY?: string
+  ANTHROPIC_API_KEY?: string
+  GOOGLE_GENERATIVE_AI_API_KEY?: string
+  OPENAI_API_KEY?: string
+  OPENCODE_API_KEY?: string
+  OPENCODE_BASE_URL?: string
+}
