@@ -79,10 +79,11 @@ export type BarRowsProps = {
   labelGap: number
   labelSide: number
   gap: number
+  white?: boolean
 }
 
 /** Rows of `label + bar`, as in the learn cards and the lesson diagram. */
-export function BarRows({ rows, fills, dashed, height, radius, labelWidth, labelSize, labelRule, labelGap, labelSide, gap }: BarRowsProps) {
+export function BarRows({ rows, fills, dashed, height, radius, labelWidth, labelSize, labelRule, labelGap, labelSide, gap, white }: BarRowsProps) {
   const colours = fills ?? rowFills(rows)
   return (
     <>
@@ -93,7 +94,7 @@ export function BarRows({ rows, fills, dashed, height, radius, labelWidth, label
             <span aria-hidden="true" style={{ width: labelWidth, display: 'inline-flex', justifyContent: 'center' }}>
               <Frac top={label[0]} bottom={label[1]} size={labelSize} rule={labelRule} gap={labelGap} side={labelSide} width={labelWidth} />
             </span>
-            <Bar fills={colours[i]!} height={height} radius={radius} dashed={dashed?.[i]} />
+            <Bar fills={colours[i]!} height={height} radius={radius} dashed={dashed?.[i]} white={white} />
           </span>
         )
       })}

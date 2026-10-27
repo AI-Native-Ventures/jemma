@@ -111,7 +111,7 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
 
   if (phase === 'loading' || phase === 'error') {
     return (
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col leading-[normal]">
         <AppHeader firstName={firstName} />
         {phase === 'loading' ? (
           <Loading warmup={warmup.length} tries={tryCount} learnNote={learnNote(topic, lesson?.format)} />
@@ -124,7 +124,7 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
 
   const step = phase === 'warmup' ? 0 : phase === 'learn' ? 1 : phase === 'try' ? 2 : 3
   return (
-    <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-ground font-sans lg:static lg:z-auto lg:min-h-dvh lg:overflow-visible">
+    <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-ground font-sans leading-[normal] lg:static lg:z-auto lg:min-h-dvh lg:overflow-visible">
       {phase === 'progress' ? (
         <header className="flex items-center justify-start pt-2.5 pr-[18px] pb-1.5 pl-2">
           <button type="button" aria-label="Close" onClick={() => router.push('/k')} className="flex size-11 cursor-pointer items-center justify-center rounded-12 border-0 bg-transparent text-ink">

@@ -208,7 +208,8 @@ export async function finishSession(sessionId: string): Promise<FinishedSession>
       .eq('id', sessionId)
     if (error) throw new Error(error.message)
     try {
-      await sendEvent('session.finished', { sessionId })
+      // Do not hold the child on a slow agent: give it 2 seconds, the queue keeps the event either way.
+      await Promise.race([sendEvent('session.finished', { sessionId }), new Promise((resolve) => setTimeout(resolve, 2000))])
     } catch {
       // The agent being slow or offline must not stop the child; the event is retried from the teacher's side.
     }

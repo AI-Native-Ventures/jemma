@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 export default async function HandbackPage() {
   const h = await getHandback()
   return (
-    <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans lg:min-h-dvh">
+    <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-ground font-sans leading-[normal] lg:static lg:z-auto lg:min-h-dvh lg:overflow-visible">
       <AppHeader firstName={h.firstName} />
       <div className="flex flex-1 flex-col gap-[22px] px-5 py-[30px]">
         <div className="flex flex-col items-center gap-4 text-center">

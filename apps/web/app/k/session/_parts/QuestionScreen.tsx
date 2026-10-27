@@ -127,7 +127,7 @@ export function QuestionScreen({ q, busy, onAnswer }: QuestionScreenProps) {
                   autoComplete="off"
                   value={top}
                   onChange={(e) => setTop(e.target.value.replace(/\D/g, '').slice(0, 3))}
-                  className="h-[76px] w-24 rounded-18 border-2 border-ink bg-card text-center text-[40px] font-bold text-ink"
+                  className="h-[76px] w-24 rounded-18 border-2 border-ink bg-card text-center text-[40px] font-bold text-ink outline-none"
                 />
                 <span aria-hidden="true" className="h-1 w-28 rounded-pill bg-ink" />
                 <label htmlFor="bottom" className="sr-only">Bottom number</label>
@@ -138,7 +138,7 @@ export function QuestionScreen({ q, busy, onAnswer }: QuestionScreenProps) {
                   autoComplete="off"
                   value={bottom}
                   onChange={(e) => setBottom(e.target.value.replace(/\D/g, '').slice(0, 3))}
-                  className="h-[76px] w-24 rounded-18 border-[3px] border-coral bg-card text-center text-[40px] font-bold text-ink"
+                  className="h-[76px] w-24 rounded-18 border-[3px] border-coral bg-card text-center text-[40px] font-bold text-ink outline-none"
                 />
               </div>
               <div aria-hidden="true" className="flex flex-col gap-[70px] text-[14px] font-semibold text-body">
@@ -183,7 +183,7 @@ export function QuestionScreen({ q, busy, onAnswer }: QuestionScreenProps) {
                   autoComplete="off"
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  className="h-[76px] w-48 rounded-18 border-[3px] border-coral bg-card text-center text-[40px] font-bold text-ink"
+                  className="h-[76px] w-48 rounded-18 border-[3px] border-coral bg-card text-center text-[40px] font-bold text-ink outline-none"
                 />
               </>
             )}

@@ -40,7 +40,7 @@ export default async function ChildToday() {
 
   if (!tonight) {
     return (
-      <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans lg:min-h-dvh">
+      <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans leading-[normal] lg:min-h-dvh">
         <AppHeader firstName={firstName} />
         <div className="flex flex-1 flex-col gap-5 px-5 pt-[18px] pb-[22px]">
           <div className="flex items-start gap-2.5">
@@ -83,7 +83,7 @@ export default async function ChildToday() {
   }
 
   return (
-    <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans lg:min-h-dvh">
+    <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans leading-[normal] lg:min-h-dvh">
       <AppHeader firstName={firstName} />
       <div className="flex flex-1 flex-col gap-[22px] px-5 pt-[18px] pb-[22px]">
         <div className="flex items-start gap-2.5">

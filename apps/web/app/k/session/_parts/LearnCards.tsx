@@ -26,6 +26,16 @@ export const AUDIO_ICON = (
   <svg {...svg}><path d="M4 14v-2a8 8 0 0 1 16 0v2" /><rect x="3.5" y="14" width="4" height="6" rx="1.5" /><rect x="16.5" y="14" width="4" height="6" rx="1.5" /></svg>
 )
 
+const PIECES: Record<number, string> = { 2: 'halves', 3: 'thirds', 4: 'quarters', 5: 'fifths', 6: 'sixths', 8: 'eighths', 10: 'tenths' }
+
+/** Two rows showing one amount cut two ways get the board's caption. */
+function sameAmountCaption(spec: Extract<DiagramSpec, { kind: 'fraction_bar' }>): string | null {
+  const [a, b] = spec.rows
+  if (spec.rows.length !== 2 || !a || !b || a.parts === b.parts || a.shaded * b.parts !== b.shaded * a.parts) return null
+  const name = PIECES[Math.max(a.parts, b.parts)]
+  return name ? `Same amount. Now it's in ${name}.` : null
+}
+
 function CardPicture({ spec }: { spec: DiagramSpec }) {
   if (spec.kind !== 'fraction_bar') return <DiagramView spec={spec} variant="learn" />
   return (
@@ -42,6 +52,7 @@ function CardPicture({ spec }: { spec: DiagramSpec }) {
         labelSide={3}
         gap={12}
       />
+      {sameAmountCaption(spec) ? <span className="text-center text-[15px] font-semibold text-ink">{sameAmountCaption(spec)}</span> : null}
     </div>
   )
 }

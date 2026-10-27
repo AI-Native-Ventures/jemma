@@ -21,7 +21,7 @@ function stepRows(step: Step, previous?: Step) {
   const restated = rows.length === 2 && Math.abs(value(first) - value(last)) < 1e-9 && first.parts !== last.parts
   if (restated) {
     const ratio = last.parts / first.parts
-    const dashed = Array.from({ length: last.parts }, (_, i) => i).filter((i) => Number.isInteger(ratio) && (i + 1) % ratio !== 0)
+    const dashed = Array.from({ length: last.parts }, (_, i) => i).filter((i) => Number.isInteger(ratio) && i < last.shaded && (i + 1) % ratio !== 0)
     return { rows: [last], fills: rowFills([last]), dashed: { 0: dashed } }
   }
   const prevRows = previous ? rowsOf(previous.diagram) : null
@@ -93,6 +93,7 @@ export function LearnDiagram({ lesson, onReady }: LearnDiagramProps) {
               rows={[contrastLast]}
               fills={[Array.from({ length: contrastLast.parts }, (_, i): Fill => (i < contrastLast.shaded ? 'grey' : 'none'))]}
               height={28}
+              white
               radius={7}
               labelWidth={34}
               labelSize={17}

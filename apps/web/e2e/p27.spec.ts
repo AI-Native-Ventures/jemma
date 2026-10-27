@@ -15,7 +15,14 @@ async function shot(page: Page, testInfo: TestInfo, board: string) {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.evaluate(() => document.fonts.ready)
   await page.addStyleTag({ content: 'nextjs-portal{display:none}' })
+  // The session overlay scrolls inside itself, so grow the viewport to its content to capture a whole board.
+  const height = await page.evaluate(() =>
+    Math.max(document.documentElement.scrollHeight, ...Array.from(document.querySelectorAll<HTMLElement>('.fixed.inset-0')).map((e) => e.scrollHeight)),
+  )
+  const size = page.viewportSize()!
+  if (height > size.height) await page.setViewportSize({ width: size.width, height })
   await page.screenshot({ path: actual(board), fullPage: true })
+  await page.setViewportSize(size)
 }
 
 const noHorizontalScroll = async (page: Page) =>
@@ -24,6 +31,9 @@ const noHorizontalScroll = async (page: Page) =>
 /** Answers the child gives to reach the seeded result: Q2 and Q5 wrong. */
 const WRONG: Record<string, string> = { '2/3 + 1/6': '3/9', '3/4 + 1/8': '4/12' }
 const answerFor = (prompt: string) => WRONG[prompt] ?? LESSON_QUESTIONS.find((q) => q.prompt === prompt)!.answer
+
+// A cold dev server compiles each route on first visit.
+test.setTimeout(60_000)
 
 let sandbox: OpenedSandbox | null = null
 test.afterEach(async () => {
@@ -127,7 +137,7 @@ test('the whole session: no right or wrong, only missed questions at the end, ga
     if (n < 5) await noFeedback()
   }
 
-  await expect(page.getByRole('heading', { name: 'You finished, Amina!' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'You finished, Amina!' })).toBeVisible({ timeout: 20_000 })
   await expect(page.getByRole('heading', { name: 'Question 2' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Question 5' })).toBeVisible()
   await expect(page.getByRole('heading', { name: /^Question [134]$/ })).toHaveCount(0)
@@ -141,6 +151,7 @@ test('the whole session: no right or wrong, only missed questions at the end, ga
   await page.getByRole('button', { name: 'Got it' }).click()
   await expect(page.getByRole('heading', { name: 'You moved it to Practising!' })).toBeVisible()
   await expect(page.locator('ol[aria-label=Stages] li[aria-current=step]')).toContainText('Practising')
+  await page.waitForTimeout(900)
   await shot(page, testInfo, 'child-progress')
 
   await page.getByRole('button', { name: 'Done' }).click()

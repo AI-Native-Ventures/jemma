@@ -147,7 +147,7 @@ export function LearnAudio({ lesson, firstName, onReady }: { lesson: LessonForCh
   const player = usePlayer(script, lesson.audio?.url ?? null)
   const [lang, setLang] = useState(false)
   const paragraphs = useMemo(() => paragraphsOf(script), [script])
-  const minutes = Math.max(1, Math.ceil(player.duration / 60))
+  const minutes = lesson.audio?.url ? Math.max(1, Math.ceil(player.duration / 60)) : lesson.minutes
   const playedBars = player.duration ? Math.round((player.position / player.duration) * BARS.length) : 0
   let seen = 0
   return (
