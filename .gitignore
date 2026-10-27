@@ -10,3 +10,4 @@ node_modules/
 .dev.vars
 next-env.d.ts
 *.tsbuildinfo
+apps/web/AGENTS.md
