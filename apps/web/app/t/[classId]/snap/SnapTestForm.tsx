@@ -24,7 +24,7 @@ const fieldCls = 'h-[52px] rounded-14 border border-muted-2 bg-card px-3.5 text-
 
 export function SnapTestForm({
   classId,
-  topics,
+  topics: allTopics,
   tests,
   defaultTitle,
   defaultDate,
@@ -40,14 +40,18 @@ export function SnapTestForm({
   const [title, setTitle] = useState(defaultTitle)
   const [date, setDate] = useState(defaultDate)
   const [outOf, setOutOf] = useState('10')
-  const [chosen, setChosen] = useState(() => pick(defaultTitle, topics))
+  const [chosen, setChosen] = useState(() => pick(defaultTitle, allTopics))
   const [touched, setTouched] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pending, start] = useTransition()
 
+  // Chips: the families of the topics the name points at, so a fractions test does not list the whole map.
+  const families = new Set(allTopics.filter((t) => pick(title, allTopics).has(t.id)).map((t) => t.family))
+  const topics = families.size ? allTopics.filter((t) => families.has(t.family)) : allTopics
+
   const onTitle = (v: string) => {
     setTitle(v)
-    if (!touched) setChosen(pick(v, topics))
+    if (!touched) setChosen(pick(v, allTopics))
   }
   const toggle = (id: string) => {
     setTouched(true)

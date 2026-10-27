@@ -181,6 +181,7 @@ test('marked class: review, paper photo and fix a mark', async ({ page }, testIn
     await expect(page.getByRole('heading', { name: "I'm not sure about question 7. I read 0,8. What does it say?" })).toBeVisible()
     await page.getByRole('button', { name: '0,6', exact: true }).click()
     await expect(page.getByText('0,6 matches the key. Question 7 gets 1 mark.')).toBeVisible()
+    await expect(page.getByText('Changed by you, was 0,8')).toBeVisible({ timeout: 20_000 })
     await noHorizontalScroll(page)
     await shot(page, testInfo, 'teacher-review')
 

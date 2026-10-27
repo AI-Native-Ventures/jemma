@@ -20,7 +20,7 @@ export function longDate(date: Date): string {
   return `${get('weekday')} ${get('day')} ${get('month')} ${get('year')}`
 }
 
-export type ClassTopic = { id: string; name: string; term: number }
+export type ClassTopic = { id: string; name: string; term: number; family: string }
 
 /** Topics on the class's approved map, in map order. */
 export async function getClassTopics(classId: string): Promise<ClassTopic[]> {
@@ -29,11 +29,11 @@ export async function getClassTopics(classId: string): Promise<ClassTopic[]> {
   if (!maps?.length) return []
   const { data } = await supabase
     .from('topics')
-    .select('id, name, term, position')
+    .select('id, name, term, family, position')
     .in('map_id', maps.map((m) => m.id))
     .order('term')
     .order('position')
-  return (data ?? []).map((t) => ({ id: t.id, name: t.name, term: t.term }))
+  return (data ?? []).map((t) => ({ id: t.id, name: t.name, term: t.term, family: t.family }))
 }
 
 export type TestRow = { id: string; title: string; writtenOn: string | null; outOf: number; keyStatus: 'draft' | 'approved' | null }
