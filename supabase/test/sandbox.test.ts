@@ -143,6 +143,8 @@ describe('sandboxes', () => {
     expect(fixed.map((g) => g.topic_name).sort()).toEqual(['Equivalent fractions', 'Ordering whole numbers', 'Rounding off'])
     expect(await ok(admin.from('curriculum_maps').select('id').eq('class_id', s.classId))).toHaveLength(0)
     expect(await ok(admin.from('tests').select('id').eq('class_id', s.classId))).toHaveLength(0)
+    const startLogins = await loginsOf(s.sandboxId)
+    expect(await ok(admin.from('notifications').select('id').in('user_id', [startLogins.logins.teacher!.userId, startLogins.logins.parent!.userId]))).toHaveLength(0)
 
     const papers = Object.values(SAMPLE_FILES.papers)
     expect(papers).toHaveLength(5)
@@ -291,6 +293,28 @@ describe('sandboxes', () => {
 
     const log = await ok(admin.from('activity_log').select('text').eq('class_id', s.classId))
     expect(log.map((l) => l.text)).toContain('Wrote a 10 minute reteach for adding fractions')
+
+    // Bell: pre-fix state, newest item unread, hrefs are app routes.
+    const bell = async (userId: string) =>
+      await ok(admin.from('notifications').select('title, href, read_at, created_at').eq('user_id', userId).order('created_at', { ascending: false }))
+    const { logins } = await loginsOf(s.sandboxId)
+    const tBell = await bell(logins.teacher!.userId)
+    expect(tBell.map((n) => [n.title, n.read_at === null])).toEqual([
+      ['Class Test 1 is marked', true],
+      ["You approved Thandi M as Amina's parent", false],
+      ['Your topic map is approved', false],
+    ])
+    expect(tBell.map((n) => n.href)).toEqual([`/t/${s.classId}/tests/${test!.id}`, `/t/${s.classId}/learners/${aminaId}/profile`, `/t/${s.classId}/curriculum`])
+    const pBell = await bell(logins.parent!.userId)
+    expect(pBell.map((n) => [n.title, n.read_at === null])).toEqual([
+      ["Tonight's lesson is ready", true],
+      ['Class Test 1 is marked: 6 out of 10', false],
+      ["Check Amina's homework", false],
+    ])
+    expect(pBell.map((n) => n.href)).toEqual([`/p/${aminaId}/learn`, `/p/${aminaId}/papers/${aminaPaper.id}`, expect.stringMatching(new RegExp(`^/p/${aminaId}/snap/[0-9a-f-]{36}$`))])
+    // A parent signed in sees only their own bell.
+    const parentClient = await signIn(s.sandboxId, 'parent')
+    expect(await ok(parentClient.from('notifications').select('id'))).toHaveLength(3)
   })
 
   test('stage session_done has Amina at 3 of 5 and the gap at Practising', async () => {
@@ -329,6 +353,24 @@ describe('sandboxes', () => {
     const trials = await ok(admin.from('format_trials').select('score, session_id').eq('child_id', amina!.id).eq('format', 'diagram'))
     expect(trials).toHaveLength(6)
     expect(trials.filter((t) => t.session_id === session!.id).map((t) => t.score)).toEqual([3])
+    const { logins } = await loginsOf(s.sandboxId)
+    const unread = async (userId: string) =>
+      (await ok(admin.from('notifications').select('title, read_at, created_at').eq('user_id', userId).order('created_at', { ascending: false })))
+    const tBell = await unread(logins.teacher!.userId)
+    expect(tBell.map((n) => [n.title, n.read_at === null])).toEqual([
+      ['Amina finished her lesson: 3 of 5', true],
+      ["Sipho's paper is done", false],
+      ['Class Test 1 is marked', false],
+      ["You approved Thandi M as Amina's parent", false],
+      ['Your topic map is approved', false],
+    ])
+    const pBell = await unread(logins.parent!.userId)
+    expect(pBell.map((n) => [n.title, n.read_at === null])).toEqual([
+      ['Amina finished her lesson: 3 of 5', true],
+      ["Tonight's lesson is ready", false],
+      ['Class Test 1 is marked: 6 out of 10', false],
+      ["Check Amina's homework", false],
+    ])
     const log = await ok(admin.from('activity_log').select('text').eq('child_id', amina!.id))
     expect(log.map((l) => l.text)).toContain('Amina finished her lesson: 3 of 5. Moved her to Practising')
   })
