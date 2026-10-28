@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useState, useTransition } from 'react'
 import { CheckIcon } from '@/components/ui/icons'
 import { ComingSheet } from '../../../_p21-client'
@@ -15,9 +16,9 @@ export function Decision({ classId, linkId }: { classId: string; linkId: string 
         <CheckIcon size={20} className="text-white" />
         Yes, approve
       </button>
-      <button type="button" disabled={pending} onClick={() => decide('declined')} className="flex h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card text-[17px] font-semibold text-ink disabled:opacity-50">
+      <PendingButton pending={pending} type="button" disabled={pending} onClick={() => decide('declined')} className="flex h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card text-[17px] font-semibold text-ink disabled:opacity-50">
         No, decline
-      </button>
+      </PendingButton>
       <button type="button" onClick={() => setOpen(true)} className="flex min-h-11 items-center self-center border-0 bg-transparent px-2 text-[15px] font-semibold text-ink underline underline-offset-[3px]">
         Not sure? Message her first
       </button>

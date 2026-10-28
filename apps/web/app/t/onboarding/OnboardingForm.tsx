@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useEffect, useState, useTransition } from 'react'
 import { CheckIcon } from '@/components/ui/icons'
 import { ComingButton } from '../_p21-client'
@@ -127,14 +128,14 @@ export function OnboardingForm({ initial }: { initial: SchoolHit | null }) {
         </fieldset>
       </section>
 
-      <button
+      <PendingButton pending={pending}
         type="button"
         disabled={!school || pending}
         onClick={() => school && start(() => saveOnboarding(school.id, grades))}
         className="flex h-[52px] items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white disabled:opacity-50"
       >
         Next: set up your class
-      </button>
+      </PendingButton>
       <div className="flex-1" />
     </>
   )

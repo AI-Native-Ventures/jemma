@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { ErrorRetry } from '@/components/blocks'
@@ -46,14 +47,14 @@ export function UploadButtons({ classId }: { classId: string }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
         <input ref={photos} type="file" accept="image/*" capture="environment" multiple hidden onChange={(e) => send(e.target.files)} />
         <input ref={file} type="file" accept="application/pdf,image/*" multiple hidden onChange={(e) => send(e.target.files)} />
-        <button type="button" disabled={pending} onClick={() => photos.current?.click()} style={outlined}>
+        <PendingButton pending={pending} type="button" disabled={pending} onClick={() => photos.current?.click()} style={outlined}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
           Take photos
-        </button>
-        <button type="button" disabled={pending} onClick={() => file.current?.click()} style={outlined}>
+        </PendingButton>
+        <PendingButton pending={pending} type="button" disabled={pending} onClick={() => file.current?.click()} style={outlined}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M5 15v3.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V15"/></svg>
           Add a file
-        </button>
+        </PendingButton>
       </div>
       {error ? <p role="alert" style={{ margin: 0, fontSize: 14, color: '#B8381F' }}>{error}</p> : null}
     </>

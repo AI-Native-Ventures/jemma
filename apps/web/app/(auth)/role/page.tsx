@@ -1,3 +1,4 @@
+import { PendingButton } from '@/components/ui/Button'
 import { redirect } from 'next/navigation'
 import { Wordmark } from '@/components/install'
 import { HOMES } from '@/components/blocks/nav'
@@ -66,7 +67,7 @@ export default async function RolePage() {
 
         <nav aria-label="Roles" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <form action={chooseRole.bind(null, 'teacher')}>
-            <button type="submit" style={card}>
+            <PendingButton type="submit" style={card}>
               <Tile bg="#E9E7F3">
                 <svg width="26" height="26" viewBox="0 0 24 24" {...stroke}>
                   <rect x="3.5" y="4" width="17" height="11.5" rx="1.5" />
@@ -76,10 +77,10 @@ export default async function RolePage() {
               </Tile>
               <Words title="Teacher" line="I snap my class's tests and see what they don't get yet." />
               <ChevronRight />
-            </button>
+            </PendingButton>
           </form>
           <form action={chooseRole.bind(null, 'parent')}>
-            <button type="submit" style={card}>
+            <PendingButton type="submit" style={card}>
               <Tile bg="#FFE3DA">
                 <svg width="26" height="26" viewBox="0 0 24 24" {...stroke}>
                   <circle cx="9" cy="7" r="3" />
@@ -90,7 +91,7 @@ export default async function RolePage() {
               </Tile>
               <Words title="Parent" line="I support my child at home and want to know they're okay." />
               <ChevronRight />
-            </button>
+            </PendingButton>
           </form>
           <ComingButton style={card}>
             <Tile bg="#FFD3C7">

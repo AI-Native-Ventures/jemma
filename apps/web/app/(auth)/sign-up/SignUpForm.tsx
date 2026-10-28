@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { useActionState } from 'react'
 import { requestSignUpCode } from '../actions'
@@ -52,9 +53,9 @@ export function SignUpForm() {
           {state.error}
         </p>
       ) : null}
-      <button type="submit" disabled={pending} style={{ ...primaryButton, opacity: pending ? 0.6 : 1 }}>
+      <PendingButton pending={pending} type="submit" disabled={pending} style={{ ...primaryButton, opacity: pending ? 0.6 : 1 }}>
         Send me a code
-      </button>
+      </PendingButton>
     </form>
   )
 }

@@ -1,3 +1,4 @@
+import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ChevronRightIcon, ClockIcon, GemIcon } from '@/components/ui/icons'
@@ -142,7 +143,7 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
             </ol>
             <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
               <form action={markReteachDone.bind(null, reteach.id)} className="contents">
-                <button
+                <PendingButton
                   type="submit"
                   disabled={done}
                   className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink text-[16px] font-semibold text-white disabled:opacity-60"
@@ -151,7 +152,7 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
                     <path d="m5 12.5 4.5 4.5L19 7.5" />
                   </svg>
                   {done ? 'Reteach done' : 'Mark reteach done'}
-                </button>
+                </PendingButton>
               </form>
               <PrintButton />
             </div>

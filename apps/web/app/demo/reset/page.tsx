@@ -1,3 +1,4 @@
+import { PendingButton } from '@/components/ui/Button'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getDemoState } from '@/lib/demo'
@@ -44,7 +45,7 @@ export default async function DemoResetPage() {
         </div>
         <div className="mt-1.5 flex flex-col gap-2">
           <form action={resetDemoAction} className="contents">
-            <button type="submit" className="flex h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-14 bg-ink font-[inherit] text-[17px] font-semibold text-white">Reset demo</button>
+            <PendingButton type="submit" className="flex h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-14 bg-ink font-[inherit] text-[17px] font-semibold text-white">Reset demo</PendingButton>
           </form>
           <a href="/demo/switch" className="flex h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card text-[17px] font-semibold text-ink no-underline">Keep my demo</a>
         </div>
