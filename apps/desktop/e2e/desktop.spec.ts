@@ -20,9 +20,8 @@ test.afterEach(async () => {
 })
 
 const typeCode = async (code: string) => {
-  await expect(page.getByLabel('Character 1 of 6')).toBeFocused() // the page's script has run
-  await page.getByLabel('Character 1 of 6').click()
-  await page.keyboard.type(code)
+  await expect(page.getByLabel('Character 6 of 6')).toBeVisible() // the page is up
+  for (const [i, c] of [...code].entries()) await page.getByLabel(`Character ${i + 1} of 6`).fill(c)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
 }
 
@@ -34,9 +33,6 @@ test('pairing with a code stores the credentials encrypted, never in plain text 
   expect(existsSync(join(userData, 'mcp-token.enc'))).toBe(false)
 
   // Lower case works: the boxes upper-case what is typed.
-  await page.getByLabel('Character 1 of 6').click()
-  await page.keyboard.press('Meta+A')
-  for (let i = 1; i <= 6; i++) await page.getByLabel(`Character ${i} of 6`).fill('')
   await typeCode(CODE.toLowerCase())
 
   await expect(page.getByRole('heading', { name: "Which AI should do Jemma's work?" })).toBeVisible()
