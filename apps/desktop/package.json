@@ -1,0 +1,30 @@
+{
+  "name": "desktop",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Jemma Desktop: runs Jemma's AI jobs on your own Claude Code or Codex",
+  "author": "Jemma",
+  "main": "dist/main.cjs",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "pnpm build && electron .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "e2e": "pnpm build && playwright test --workers=1",
+    "dist": "pnpm build && electron-builder --mac dir --config electron-builder.json"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@jemma/profiling": "workspace:*",
+    "@jemma/runner": "workspace:*",
+    "@playwright/test": "1.64.1",
+    "@supabase/supabase-js": "2.118.0",
+    "@types/node": "24.10.1",
+    "electron": "45.1.0",
+    "electron-builder": "26.18.0",
+    "esbuild": "0.28.2",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "appId": "app.jemma.desktop",
+  "productName": "Jemma Desktop",
+  "directories": { "output": "release" },
+  "files": ["dist/**/*", "package.json"],
+  "npmRebuild": false,
+  "asar": true,
+  "mac": {
+    "category": "public.app-category.education",
+    "identity": null,
+    "hardenedRuntime": false,
+    "gatekeeperAssess": false,
+    "target": [{ "target": "dir", "arch": ["arm64"] }]
+  }
+}

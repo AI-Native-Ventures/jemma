@@ -1,0 +1,3 @@
+/* TODO(design): replace with the desktop boards. Layout only, system font. */
+body { font-family: system-ui, sans-serif; margin: 16px; max-width: 520px; }
+ul { list-style: none; padding: 0; }
