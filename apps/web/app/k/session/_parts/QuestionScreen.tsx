@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { QuestionForChild } from '../[sessionId]/logic'
+import { PendingButton } from '@/components/ui/Button'
 import { Frac, isFraction, withFractions } from './Frac'
 
 const CHOICE_LETTERS = ['A', 'B', 'C', 'D']
@@ -81,7 +82,7 @@ export function QuestionScreen({ q, busy, onAnswer }: QuestionScreenProps) {
         </div>
         <Note>No rush. We look at your answers together at the end.</Note>
         <div className="flex-1" />
-        <button type="button" disabled={!value || busy} onClick={submit} className={nextClass}>Next</button>
+        <PendingButton type="button" pending={busy} disabled={!value || busy} onClick={submit} className={nextClass}>Next</PendingButton>
       </main>
     )
   }
@@ -192,7 +193,7 @@ export function QuestionScreen({ q, busy, onAnswer }: QuestionScreenProps) {
       </section>
       <Note>Take your time. You&apos;ll see how you did at the end.</Note>
       <div className="flex-1" />
-      <button type="button" disabled={!value || busy} onClick={submit} className={nextClass}>Next</button>
+      <PendingButton type="button" pending={busy} disabled={!value || busy} onClick={submit} className={nextClass}>Next</PendingButton>
     </main>
   )
 }

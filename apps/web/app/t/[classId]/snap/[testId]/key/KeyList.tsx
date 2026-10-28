@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import type { AnswerKeyItem } from '@jemma/profiling/schemas'
@@ -71,7 +72,7 @@ export function KeyList({
         onChange={(e) => setDraft(e.target.value)}
         className="h-11 min-w-0 flex-1 rounded-12 border border-muted-2 bg-card px-3 text-[16px] outline-none focus-visible:border-2 focus-visible:border-ink"
       />
-      <button type="button" disabled={pending} onClick={() => save(n, draft)} className="h-11 cursor-pointer rounded-12 border-none bg-ink px-4 text-[15px] font-semibold text-white">Save</button>
+      <PendingButton pending={pending} type="button" disabled={pending} onClick={() => save(n, draft)} className="h-11 cursor-pointer rounded-12 border-none bg-ink px-4 text-[15px] font-semibold text-white">Save</PendingButton>
     </span>
   )
 
@@ -164,10 +165,10 @@ export function KeyList({
       <div className="flex-1" />
       {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
       <div className="flex flex-col gap-2">
-        <button type="button" onClick={approve} disabled={pending} className="flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink text-[17px] font-semibold text-white disabled:opacity-60">
+        <PendingButton pending={pending} type="button" onClick={approve} disabled={pending} className="flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink text-[17px] font-semibold text-white disabled:opacity-60">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
           Approve key, snap papers
-        </button>
+        </PendingButton>
         <p className="m-0 text-center text-[13px] leading-[1.4] text-body">Jemma marks every paper against this key. Change it later and Jemma marks again.</p>
       </div>
     </>

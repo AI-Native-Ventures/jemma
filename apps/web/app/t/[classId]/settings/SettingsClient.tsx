@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useState, useTransition } from 'react'
 import { Sheet } from '@/components/ui'
 import { ChevronRightIcon } from '@/components/ui/icons'
@@ -34,9 +35,9 @@ export function NameSheet({ classId, name, onClose }: { classId: string; name: s
         Class name
       </label>
       <input id="edit-name" value={value} onChange={(e) => setValue(e.target.value)} className="h-[52px] rounded-14 border border-muted-2 bg-card px-3.5 text-[17px] text-ink" />
-      <button type="button" disabled={pending || !value.trim()} className={save} onClick={() => start(async () => { await renameClass(classId, value); onClose() })}>
+      <PendingButton pending={pending} type="button" disabled={pending || !value.trim()} className={save} onClick={() => start(async () => { await renameClass(classId, value); onClose() })}>
         Save
-      </button>
+      </PendingButton>
     </Sheet>
   )
 }
@@ -53,9 +54,9 @@ export function GradeSheet({ classId, grade, onClose }: { classId: string; grade
           </button>
         ))}
       </span>
-      <button type="button" disabled={pending} className={save} onClick={() => start(async () => { await setClassGrade(classId, value); onClose() })}>
+      <PendingButton pending={pending} type="button" disabled={pending} className={save} onClick={() => start(async () => { await setClassGrade(classId, value); onClose() })}>
         Save
-      </button>
+      </PendingButton>
     </Sheet>
   )
 }
@@ -67,13 +68,13 @@ export function SubjectSheet({ onClose }: { onClose: () => void }) {
 export function NewCodeButton({ classId }: { classId: string }) {
   const [pending, start] = useTransition()
   return (
-    <button type="button" disabled={pending} onClick={() => start(() => newClassCode(classId))} className="flex min-h-11 items-center justify-center gap-2 rounded-12 border border-muted-2 bg-card text-[15px] font-semibold text-ink">
+    <PendingButton pending={pending} type="button" disabled={pending} onClick={() => start(() => newClassCode(classId))} className="flex min-h-11 items-center justify-center gap-2 rounded-12 border border-muted-2 bg-card text-[15px] font-semibold text-ink">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M20 12a8 8 0 1 1-2.34-5.66" />
         <path d="M20 4v4.5h-4.5" />
       </svg>
       Make a new code
-    </button>
+    </PendingButton>
   )
 }
 
@@ -103,9 +104,9 @@ export function ParentToggle() {
 export function RemoveParentButton({ classId, parentId, childId, name }: { classId: string; parentId: string; childId: string; name: string }) {
   const [pending, start] = useTransition()
   return (
-    <button type="button" disabled={pending} aria-label={`Remove ${name}`} onClick={() => start(() => removeParent(classId, parentId, childId))} className={editBtn}>
+    <PendingButton pending={pending} type="button" disabled={pending} aria-label={`Remove ${name}`} onClick={() => start(() => removeParent(classId, parentId, childId))} className={editBtn}>
       Remove
-    </button>
+    </PendingButton>
   )
 }
 
@@ -126,9 +127,9 @@ export function AddLearnerRow({ classId }: { classId: string }) {
           Learner&apos;s first name
         </label>
         <input id="new-learner" value={name} onChange={(e) => setName(e.target.value)} className="h-[52px] rounded-14 border border-muted-2 bg-card px-3.5 text-[17px] text-ink" />
-        <button type="button" disabled={pending || !name.trim()} className={save} onClick={() => start(async () => { await addLearner(classId, name); setName(''); setOpen(false) })}>
+        <PendingButton pending={pending} type="button" disabled={pending || !name.trim()} className={save} onClick={() => start(async () => { await addLearner(classId, name); setName(''); setOpen(false) })}>
           Add
-        </button>
+        </PendingButton>
       </Sheet>
     </>
   )

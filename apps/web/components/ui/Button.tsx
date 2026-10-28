@@ -1,4 +1,7 @@
-import Link from 'next/link'
+'use client'
+
+import Link, { useLinkStatus } from 'next/link'
+import { useFormStatus } from 'react-dom'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'coral' | 'link'
@@ -9,6 +12,8 @@ type Common = {
   size?: ButtonSize
   icon?: ReactNode
   className?: string
+  /** Shows the spinner and blocks taps. A submit button inside a running server action form does this by itself. */
+  pending?: boolean
   children: ReactNode
 }
 
@@ -34,6 +39,38 @@ const sizes: Record<ButtonSize, string> = {
   xl: 'h-[68px] rounded-20 px-4 text-[24px]',
 }
 
+/** Small coral spinner pinned to the right edge, so the label and the button width do not move. */
+export function Spinner() {
+  return (
+    <span role="status" aria-label="Working" className="pointer-events-none absolute right-3 top-1/2 -mt-[9px] flex">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" className="animate-spin">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
+        <path d="M21 12a9 9 0 0 0-9-9" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      </svg>
+    </span>
+  )
+}
+
+function LinkSpinner() {
+  const { pending } = useLinkStatus()
+  return pending ? <Spinner /> : null
+}
+
+/**
+ * A plain button that shows it is working. Pending while its form's server action runs (a submit button), or when `pending` is true.
+ * Keeps its own classes and styles, so it can stand in for a hand-styled `<button>`.
+ */
+export function PendingButton({ pending: pendingProp, disabled, className = '', children, type, ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { pending?: boolean }) {
+  const form = useFormStatus()
+  const pending = Boolean(pendingProp) || (type === 'submit' && form.pending)
+  return (
+    <button {...rest} type={type} className={`relative ${className}`} disabled={disabled || pending} aria-busy={pending || undefined}>
+      {children}
+      {pending ? <Spinner /> : null}
+    </button>
+  )
+}
+
 export function Button(props: ButtonProps) {
   const { variant = 'primary', size = 'md', icon, className = '', children } = props
   const base = 'flex leading-[normal] items-center justify-center gap-2 no-underline disabled:opacity-50'
@@ -47,15 +84,16 @@ export function Button(props: ButtonProps) {
   )
   if (props.href !== undefined) {
     return (
-      <Link href={props.href} className={cls}>
+      <Link href={props.href} className={`relative ${cls}`}>
         {content}
+        <LinkSpinner />
       </Link>
     )
   }
-  const { variant: _v, size: _s, icon: _i, className: _c, children: _ch, href: _h, type = 'button', ...rest } = props
+  const { variant: _v, size: _s, icon: _i, className: _c, children: _ch, href: _h, type = 'button', pending, ...rest } = props
   return (
-    <button type={type} className={`${cls} cursor-pointer`} {...rest}>
+    <PendingButton type={type} pending={pending} className={`${cls} cursor-pointer`} {...rest}>
       {content}
-    </button>
+    </PendingButton>
   )
 }

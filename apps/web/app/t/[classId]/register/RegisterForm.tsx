@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Avatar, EyeIcon, font } from '../learners/_parts'
@@ -85,14 +86,14 @@ export function RegisterForm({ classId, day, rows }: { classId: string; day: str
 
       {error ? <p role="alert" style={{ margin: 0, fontSize: 14, color: '#B8381F' }}>{error}</p> : null}
       <div style={{ flex: 1 }} />
-      <button
+      <PendingButton pending={pending}
         type="button"
         onClick={save}
         disabled={pending}
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 52, borderRadius: 14, border: 'none', background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600, opacity: pending ? 0.6 : 1, cursor: 'pointer' }}
       >
         Save register
-      </button>
+      </PendingButton>
     </div>
   )
 }

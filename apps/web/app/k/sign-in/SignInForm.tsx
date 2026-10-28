@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition, type CSSProperties } from 'react'
 import { signInChild } from '@/lib/auth'
@@ -116,13 +117,13 @@ export function SignInForm() {
           {MESSAGES[error]}
         </p>
       )}
-      <button
+      <PendingButton pending={pending}
         type="submit"
         disabled={pending}
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 64, borderRadius: 20, border: 'none', background: '#FF6A4D', color: '#1F1D36', fontSize: 22, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', opacity: pending ? 0.6 : 1 }}
       >
         Sign in
-      </button>
+      </PendingButton>
     </form>
   )
 }

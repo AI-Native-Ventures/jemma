@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useState, useTransition } from 'react'
 import { ComingButton, ShareButton } from '../_p21-client'
 import { createClass } from './actions'
@@ -166,9 +167,9 @@ export function NewClassForm({ code, initialGrade }: { code: string; initialGrad
         </div>
       </section>
 
-      <button type="button" onClick={submit} disabled={pending} className="flex h-[52px] items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white disabled:opacity-50">
+      <PendingButton pending={pending} type="button" onClick={submit} disabled={pending} className="flex h-[52px] items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white disabled:opacity-50">
         Create class
-      </button>
+      </PendingButton>
       <div className="flex-1" />
     </>
   )

@@ -1,3 +1,4 @@
+import { PendingButton } from '@/components/ui/Button'
 import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
 import { getDemoState } from '@/lib/demo'
@@ -64,9 +65,9 @@ export default async function LinkPendingPage() {
               <span id="demo" style={{ fontSize: 15, fontWeight: 600 }}>In the demo you are {teacherName} too.</span>
             </p>
             <form action={switchToTeacher}>
-              <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, width: '100%', borderRadius: 14, background: ink, color: '#FFFFFF', fontSize: 17, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <PendingButton type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, width: '100%', borderRadius: 14, background: ink, color: '#FFFFFF', fontSize: 17, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
                 Switch to {teacherName} to approve
-              </button>
+              </PendingButton>
             </form>
             <a href={`/p/${pending.childId}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, fontSize: 15, fontWeight: 600, color: ink, textDecoration: 'underline', textUnderlineOffset: 3 }}>
               Approved already? Open {childName}&apos;s profile
