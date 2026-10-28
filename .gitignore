@@ -11,3 +11,7 @@ node_modules/
 next-env.d.ts
 *.tsbuildinfo
 apps/web/AGENTS.md
+
+# Playwright output
+test-results/
+playwright-report/
