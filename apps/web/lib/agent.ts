@@ -47,7 +47,7 @@ async function schoolOf(db: JemmaDb, payload: Record<string, string>): Promise<s
   throw new Error('sendEvent: payload names no record')
 }
 
-async function post(eventId: string): Promise<void> {
+export async function post(eventId: string): Promise<void> {
   const url = process.env.AGENT_URL
   if (!url) throw new Error('AGENT_URL is not set')
   const res = await fetch(`${url.replace(/\/$/, '')}/events`, {

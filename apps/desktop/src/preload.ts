@@ -1,13 +1,18 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
-/** What the plain settings and status pages may ask the main process. */
+/** What the plain screens may ask the main process. */
 contextBridge.exposeInMainWorld('jemma', {
-  getState: () => ipcRenderer.invoke('state:get'),
-  chooseAgent: (agent: 'claude' | 'codex') => ipcRenderer.invoke('agent:choose', agent),
-  setPaused: (paused: boolean) => ipcRenderer.invoke('paused:set', paused),
+  getState: (opts?: { fresh?: boolean }) => ipcRenderer.invoke('state:get', opts),
+  getShell: () => ipcRenderer.invoke('shell:get'),
+  getStopped: () => ipcRenderer.invoke('stopped:get'),
   pairWithCode: (code: string) => ipcRenderer.invoke('pair:code', code),
-  pairThisMac: () => ipcRenderer.invoke('pair:self'),
-  unpair: () => ipcRenderer.invoke('pair:clear'),
-  openWeb: () => ipcRenderer.invoke('web:open'),
+  signInWithEmail: () => ipcRenderer.invoke('signin:email'),
+  runOn: (agent: 'claude' | 'codex') => ipcRenderer.invoke('agent:run', agent),
+  keepCloud: () => ipcRenderer.invoke('agent:cloud'),
+  setPaused: (paused: boolean) => ipcRenderer.invoke('paused:set', paused),
+  showStopped: () => ipcRenderer.invoke('stopped:show'),
+  runStoppedInCloud: () => ipcRenderer.invoke('stopped:cloud'),
+  retryStoppedLater: () => ipcRenderer.invoke('stopped:retry'),
+  openExternal: (url: string) => ipcRenderer.invoke('external:open', url),
   onState: (cb: () => void) => ipcRenderer.on('state:changed', () => cb()),
 })

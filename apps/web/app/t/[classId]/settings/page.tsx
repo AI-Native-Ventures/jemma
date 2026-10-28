@@ -9,14 +9,6 @@ export const dynamic = 'force-dynamic'
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
 
-/**
- * SLOT: "Where Jemma's AI runs" (cloud or Jemma Desktop, `schools.ai_runner`).
- * The desktop boards are a later packet; render the setting here when they exist.
- */
-function AiRunnerSlot() {
-  return <div data-slot="ai-runner" hidden />
-}
-
 export default async function TeacherClassSettingsPage({ params }: { params: Promise<{ classId: string }> }) {
   const { classId } = await params
   const { cls, learners, parents } = await getSettings(classId)
@@ -78,7 +70,15 @@ export default async function TeacherClassSettingsPage({ params }: { params: Pro
           <AddLearnerRow classId={classId} />
         </Section>
 
-        <AiRunnerSlot />
+        <Section id="ai" title="Where Jemma's AI runs" gap={2}>
+          <Link href={`/t/${classId}/settings/ai-runner`} className="flex min-h-14 items-center gap-3 py-1.5 text-ink no-underline">
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <span className="text-[16px] font-medium">Jemma cloud or my Jemma Desktop</span>
+              <span className="text-[13px] leading-[1.35] text-body">Uses the plan you already pay for. Nothing extra.</span>
+            </span>
+            <ChevronRightIcon className="flex-none" />
+          </Link>
+        </Section>
 
         <Section id="year" title="End of the year" gap={2}>
           <Link href={`/t/${classId}/year-end`} className="flex min-h-14 items-center gap-3 py-1.5 text-ink no-underline">

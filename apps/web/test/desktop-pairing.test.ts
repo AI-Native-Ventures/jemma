@@ -57,6 +57,7 @@ describe('desktop pairing', () => {
     if (!res.ok) return
     expect(tokens).toHaveLength(1)
     expect(tokens[0]!.userId).toBe('user-1')
+    expect(res.userId).toBe('user-1')
     expect(tokens[0]!.hash).toBe(await hashSecret(res.token))
     expect(tokens[0]!.hash).not.toBe(res.token)
   })

@@ -4,7 +4,8 @@ import { describeStatus, describeJob } from '../src/status'
 describe('status in plain words', () => {
   it('names the state when nothing is running', () => {
     expect(describeStatus({ kind: 'off' })).toBe('Jemma Desktop is off')
-    expect(describeStatus({ kind: 'idle' })).toBe('Idle')
+    expect(describeStatus({ kind: 'ready' })).toBe('Ready')
+    expect(describeStatus({ kind: 'cant_run', reason: 'x' })).toBe("Can't run")
     expect(describeStatus({ kind: 'paused' })).toBe('Paused')
   })
 

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { createRunnerHost, type HostDeps } from '../src/runner-host'
 import type { Status } from '../src/status'
 
-const session = { userId: 'u1', email: 'a@b.test', displayName: 'Ms Banda', accessToken: 'at', supabaseUrl: 'https://x.supabase.test', supabaseAnonKey: 'anon', agentUrl: 'https://agent.test' }
+const conn = { db: {} as never, userId: 'u1', agentUrl: 'https://agent.test' }
 
 function setup(over: Partial<HostDeps> = {}) {
   const stops: string[] = []
@@ -10,14 +10,13 @@ function setup(over: Partial<HostDeps> = {}) {
   const statuses: Status[] = []
   const deps: HostDeps = {
     getToken: () => 'jmt_t',
-    getSession: async () => session,
+    getConnection: async () => conn,
     getSettings: () => ({ agent: 'claude', paused: false, runnerId: 'r1' }),
-    makeDb: () => ({}) as never,
     startRunner: (o) => {
       started.push({ agent: o.agent, url: o.mcp.url, token: o.mcp.token })
       return { stop: () => void stops.push(o.agent) }
     },
-    currentJob: async () => null,
+    currentStatus: async () => null,
     onStatus: (s) => void statuses.push(s),
     ...over,
   }
@@ -29,13 +28,13 @@ describe('runner host', () => {
     const { host, started, statuses } = setup()
     await host.refresh()
     expect(started).toEqual([{ agent: 'claude', url: 'https://agent.test/mcp', token: 'jmt_t' }])
-    expect(statuses.at(-1)).toEqual({ kind: 'idle' })
+    expect(statuses.at(-1)).toEqual({ kind: 'ready' })
   })
 
   it('is off until paired, signed in and an agent is chosen', async () => {
     for (const over of [
       { getToken: () => null },
-      { getSession: async () => null },
+      { getConnection: async () => null },
       { getSettings: () => ({ agent: null, paused: false, runnerId: 'r1' }) },
     ] as Partial<HostDeps>[]) {
       const { host, started, statuses } = setup(over)
@@ -71,14 +70,17 @@ describe('runner host', () => {
   })
 
   it('shows the running job in words and goes back to idle', async () => {
-    let job: string | null = 'Reading 3 of 5 papers'
-    const { host, statuses } = setup({ currentJob: async () => job })
+    let job: Status | null = { kind: 'running', label: 'Reading 3 of 5 papers' }
+    const { host, statuses } = setup({ currentStatus: async () => job })
     await host.refresh()
     await host.poll()
     expect(statuses.at(-1)).toEqual({ kind: 'running', label: 'Reading 3 of 5 papers' })
+    job = { kind: 'cant_run', reason: 'Claude Code hit its usage limit' }
+    await host.poll()
+    expect(statuses.at(-1)).toEqual({ kind: 'cant_run', reason: 'Claude Code hit its usage limit' })
     job = null
     await host.poll()
-    expect(statuses.at(-1)).toEqual({ kind: 'idle' })
+    expect(statuses.at(-1)).toEqual({ kind: 'ready' })
   })
 
   it('stop() stops the runner', async () => {

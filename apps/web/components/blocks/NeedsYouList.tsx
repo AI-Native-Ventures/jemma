@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { DesktopOffActions, DesktopOffIcon } from './DesktopOff'
 import { CheckDocIcon, ChevronRightIcon, ReviewDocIcon } from '../ui/icons'
 
 export type NeedsYouItem = {
@@ -7,6 +8,8 @@ export type NeedsYouItem = {
   detail: string
   /** `review` is the question-mark paper (teacher), `check` the ticked paper (parent). */
   icon?: 'review' | 'check'
+  /** The "Jemma Desktop is off" card: two buttons instead of a link. */
+  desktopOff?: boolean
 }
 
 export type NeedsYouListProps = {
@@ -24,7 +27,7 @@ export function NeedsYouList({ items, wide = false }: NeedsYouListProps) {
       className={
         wide
           ? 'flex flex-wrap items-center leading-[normal] gap-3.5 rounded-20 border border-[#FFC9BB] bg-coral-wash px-4 py-3.5'
-          : 'flex flex-col leading-[normal] gap-2 rounded-20 border border-[#FFC9BB] bg-coral-wash px-3.5 pt-3.5 pb-2'
+          : `flex flex-col leading-[normal] gap-2 rounded-20 border border-[#FFC9BB] bg-coral-wash px-3.5 pt-3.5 ${items.some((i) => i.desktopOff) ? 'pb-3.5' : 'pb-2'}`
       }
     >
       <div className={`flex items-center gap-2 ${wide ? '' : 'pl-0.5'}`}>
@@ -36,6 +39,22 @@ export function NeedsYouList({ items, wide = false }: NeedsYouListProps) {
         </span>
       </div>
       {items.map((item) => {
+        if (item.desktopOff) {
+          return (
+            <div key={item.href + item.title} className="flex flex-col gap-3.5 rounded-14 bg-card p-3 text-ink">
+              <div className="flex items-start gap-3">
+                <span aria-hidden="true" className="flex size-10 flex-none items-center justify-center rounded-12 bg-coral-tint">
+                  <DesktopOffIcon />
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
+                  <span className="text-[16px] leading-[1.3] font-semibold">{item.title}</span>
+                  <span className="text-[14px] leading-[1.4] text-body">{item.detail}</span>
+                </span>
+              </div>
+              <DesktopOffActions />
+            </div>
+          )
+        }
         const Icon = item.icon === 'check' ? CheckDocIcon : ReviewDocIcon
         return wide ? (
           <Link

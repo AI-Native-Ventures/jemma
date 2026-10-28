@@ -42,7 +42,7 @@ export async function issuePairingCode(store: PairingStore, userId: string, now 
   return { code, expiresAt }
 }
 
-export type ClaimResult = { ok: true; token: string } | { ok: false; reason: 'invalid' | 'rate_limited' }
+export type ClaimResult = { ok: true; token: string; userId: string } | { ok: false; reason: 'invalid' | 'rate_limited' }
 
 /** Swaps a pairing code for a fresh per-user MCP token, once. The token is returned here and never stored in the clear. */
 export async function claimPairing(store: PairingStore, typed: string, now = new Date()): Promise<ClaimResult> {
@@ -54,7 +54,7 @@ export async function claimPairing(store: PairingStore, typed: string, now = new
   if (!userId) return { ok: false, reason: 'invalid' }
   const token = randomToken()
   await store.insertToken(await hashSecret(token), userId, 'Jemma Desktop')
-  return { ok: true, token }
+  return { ok: true, token, userId }
 }
 
 function must<T extends { error: { message: string } | null }>(res: T, what: string): T {

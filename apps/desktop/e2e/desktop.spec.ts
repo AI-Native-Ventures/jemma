@@ -1,164 +1,103 @@
-import { chmodSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync, existsSync } from 'node:fs'
-import { createServer, type Server } from 'node:http'
-import type { AddressInfo } from 'node:net'
-import { tmpdir } from 'node:os'
+import { existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { _electron as electron, expect, test, type ElectronApplication } from '@playwright/test'
-
-const TOKEN = 'jmt_E2E_PLAIN_TOKEN_9f3a'
-const CODE = 'ABC234'
-const desktopDir = join(import.meta.dirname, '..')
-
-/** Fake `claude` and `codex` executables: they answer version and sign-in status and never run a prompt. */
-function fakeAgents(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'jemma-fake-agents-'))
-  const claude = `#!/bin/sh
-case "$1" in
-  --version) echo "2.1.0 (Claude Code)" ;;
-  auth) echo '{"loggedIn":true}' ;;
-  *) echo "fake claude must never receive a prompt" >&2; exit 9 ;;
-esac
-`
-  const codex = `#!/bin/sh
-case "$1" in
-  --version) echo "codex-cli 0.5.0" ;;
-  login) echo "Not logged in"; exit 1 ;;
-  *) echo "fake codex must never receive a prompt" >&2; exit 9 ;;
-esac
-`
-  for (const [name, body] of [['claude', claude], ['codex', codex]] as const) {
-    writeFileSync(join(dir, name), body)
-    chmodSync(join(dir, name), 0o755)
-  }
-  return dir
-}
-
-/** A stand-in for the Jemma web app: a page, a one-time code, and a signed-out session. */
-function stubWeb(): Promise<{ server: Server; url: string; claims: () => number }> {
-  let claimed = false
-  let claims = 0
-  const server = createServer((req, res) => {
-    if (req.method === 'POST' && req.url === '/api/desktop/pair/claim') {
-      let body = ''
-      req.on('data', (c) => (body += c))
-      req.on('end', () => {
-        claims++
-        const ok = !claimed && String(JSON.parse(body || '{}').code).trim().toUpperCase() === CODE
-        if (ok) claimed = true
-        res.writeHead(ok ? 200 : 400, { 'content-type': 'application/json' })
-        res.end(JSON.stringify(ok ? { token: TOKEN } : { error: 'invalid' }))
-      })
-      return
-    }
-    if (req.url === '/api/desktop/session') {
-      res.writeHead(401, { 'content-type': 'application/json' })
-      return res.end(JSON.stringify({ signedIn: false }))
-    }
-    res.writeHead(200, { 'content-type': 'text/html' })
-    res.end('<!doctype html><title>Jemma</title><h1>Jemma web app stand-in</h1>')
-  })
-  return new Promise((resolve) =>
-    server.listen(0, '127.0.0.1', () => resolve({ server, url: `http://127.0.0.1:${(server.address() as AddressInfo).port}`, claims: () => claims })),
-  )
-}
-
-function filesUnder(dir: string): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
-    const p = join(dir, e.name)
-    try {
-      return e.isDirectory() ? filesUnder(p) : [p]
-    } catch {
-      return []
-    }
-  })
-}
+import { expect, test, type ElectronApplication, type Page } from '@playwright/test'
+import { CODE, REFRESH, TOKEN, hook, launch, quit, readLatin1, regularFiles, stubWeb } from './helpers'
 
 let app: ElectronApplication
 let web: Awaited<ReturnType<typeof stubWeb>>
 let userData: string
+let page: Page
 
 test.beforeEach(async () => {
   web = await stubWeb()
-  userData = mkdtempSync(join(tmpdir(), 'jemma-desktop-data-'))
-  mkdirSync(userData, { recursive: true })
-  app = await electron.launch({
-    args: [desktopDir],
-    cwd: desktopDir,
-    env: {
-      ...process.env,
-      PATH: `${fakeAgents()}:/usr/bin:/bin`,
-      JEMMA_WEB_URL: web.url,
-      JEMMA_USER_DATA: userData,
-      JEMMA_TEST: '1',
-    },
-  })
+  ;({ app, userData } = await launch({ web: web.url }))
+  page = await app.firstWindow()
 })
 
 test.afterEach(async () => {
-  // Never leave an Electron process behind, even if a quit hangs.
-  const proc = app.process()
-  await Promise.race([app.close(), new Promise((r) => setTimeout(r, 15_000))])
-  proc.kill('SIGKILL')
+  await quit(app)
   web.server.close()
 })
 
-const hook = <T>(fn: (h: Record<string, (...a: unknown[]) => unknown>) => T) =>
-  app.evaluate((_, f) => (new Function('h', `return (${f})(h)`) as (h: unknown) => unknown)((globalThis as Record<string, unknown>).__jemmaTest), fn.toString())
+const typeCode = async (code: string) => {
+  await expect(page.getByLabel('Character 1 of 6')).toBeFocused() // the page's script has run
+  await page.getByLabel('Character 1 of 6').click()
+  await page.keyboard.type(code)
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+}
 
-test('starts and shows the web app', async () => {
-  const win = await app.firstWindow()
-  await expect(win.locator('h1')).toHaveText('Jemma web app stand-in')
-})
+test('pairing with a code stores the credentials encrypted, never in plain text on disk', async () => {
+  await expect(page.getByRole('heading', { name: 'Sign in to Jemma Desktop' })).toBeVisible()
 
-test('settings list Claude Code and Codex with their detected status', async () => {
-  await app.firstWindow()
-  await hook((h) => h.showSettings!())
-  const settings = app.windows().find((w) => w.url().endsWith('settings.html')) ?? (await app.waitForEvent('window'))
-  await expect(settings.locator('#claude-status')).toHaveText('Installed 2.1.0, signed in')
-  await expect(settings.locator('#codex-status')).toHaveText('Installed 0.5.0, not signed in')
-  await expect(settings.getByLabel('Claude Code')).toBeVisible()
-  await expect(settings.getByLabel('Codex')).toBeVisible()
-  await expect(settings.locator('#status')).toHaveText('Jemma Desktop is off')
-})
-
-test('pairing with a code stores the token encrypted, never in plain text on disk', async () => {
-  await app.firstWindow()
-  await hook((h) => h.showSettings!())
-  const settings = app.windows().find((w) => w.url().endsWith('settings.html')) ?? (await app.waitForEvent('window'))
-
-  await settings.locator('#code').fill('ZZZZZZ')
-  await settings.locator('#pair-code').click()
-  await expect(settings.locator('#pair-message')).toHaveText('That code did not work. Check it and try again.')
+  await typeCode('ZZZZZZ')
+  await expect(page.getByText('That code did not work. Check it and try again.')).toBeVisible()
   expect(existsSync(join(userData, 'mcp-token.enc'))).toBe(false)
 
-  await settings.locator('#code').fill(CODE.toLowerCase())
-  await settings.locator('#pair-code').click()
-  await expect(settings.locator('#pair-message')).toHaveText('Paired.')
-  await expect(settings.locator('#account')).toHaveText('Paired')
+  // Lower case works: the boxes upper-case what is typed.
+  await page.getByLabel('Character 1 of 6').click()
+  await page.keyboard.press('Meta+A')
+  for (let i = 1; i <= 6; i++) await page.getByLabel(`Character ${i} of 6`).fill('')
+  await typeCode(CODE.toLowerCase())
 
+  await expect(page.getByRole('heading', { name: "Which AI should do Jemma's work?" })).toBeVisible()
   const encrypted = join(userData, 'mcp-token.enc')
   expect(existsSync(encrypted)).toBe(true)
   expect(statSync(encrypted).size).toBeGreaterThan(0)
-  for (const file of filesUnder(userData)) {
-    if (!lstatSync(file).isFile()) continue // Chromium's Singleton* sockets and links
-    const bytes = readFileSync(file)
-    expect(bytes.toString('latin1'), file).not.toContain(TOKEN)
-    expect(bytes.toString('utf8'), file).not.toContain('E2E_PLAIN_TOKEN')
+  for (const file of regularFiles(userData)) {
+    const text = readLatin1(file)
+    expect(text, file).not.toContain(TOKEN)
+    expect(text, file).not.toContain(REFRESH)
   }
+})
 
-  // A code works once: the stand-in refuses the same code again.
-  await settings.locator('#code').fill(CODE)
-  await settings.locator('#pair-code').click()
-  await expect(settings.locator('#pair-message')).toHaveText('That code did not work. Check it and try again.')
+test('choosing an AI lists Claude Code and Codex with their detected status, then shows the web app under the strip', async () => {
+  await hook(app, (h) => h.setView!('choose'))
+  await expect(page.getByRole('heading', { name: "Which AI should do Jemma's work?" })).toBeVisible()
+  await expect(page.locator('section', { has: page.getByRole('heading', { name: 'Claude Code' }) })).toContainText('Installed and signed in')
+  await expect(page.locator('section', { has: page.getByRole('heading', { name: 'Codex' }) })).toContainText('Installed, not signed in')
+  await expect(page.getByText('Open Terminal and sign in to Codex. Then check again.')).toBeVisible()
+  await expect(page.getByRole('button', { name: "Run Jemma's work on Claude Code" })).toBeEnabled()
+
+  await page.getByRole('button', { name: "Run Jemma's work on Claude Code" }).click()
+  await expect.poll(() => hook(app, (h) => h.view!())).toBe('main')
+  await expect.poll(() => hook(app, (h) => h.webText!())).toContain('Jemma web app stand-in')
+})
+
+test('the strip shows Ready, Working, Paused and Can\'t run above the web view', async () => {
+  await hook(app, (h) => h.setAgent!('claude'))
+  await hook(app, (h) => h.setView!('main'))
+  await hook(app, (h) => h.setStatus!({ kind: 'ready' }))
+  await expect(page.locator('[role=status]')).toContainText('Jemma Desktop · Claude Code · Ready')
+  await hook(app, (h) => h.setStatus!({ kind: 'running', label: 'Reading 3 of 5 papers', done: 2, total: 5, timeLeft: 'About a minute left' }))
+  await expect(page.locator('[role=status]')).toContainText('Reading 3 of 5 papers')
+  await expect(page.locator('[role=status]')).toContainText('About a minute left')
+  await hook(app, (h) => h.setStatus!({ kind: 'paused' }))
+  await expect(page.locator('[role=status]')).toContainText('Paused · New work waits until you resume')
+  await expect(page.getByRole('button', { name: 'Resume' })).toBeVisible()
+  await hook(app, (h) => h.setStatus!({ kind: 'cant_run', reason: 'Claude Code hit its usage limit' }))
+  await expect(page.locator('[role=status]')).toContainText("Can't run · Claude Code hit its usage limit")
+  await expect(page.getByRole('button', { name: 'Run in the cloud this time' })).toBeVisible()
 })
 
 test('the tray shows the running job in plain words, with Pause and Quit', async () => {
-  await app.firstWindow()
-  await expect.poll(() => hook((h) => h.trayLabels!())).toEqual(
-    expect.arrayContaining(['Jemma Desktop is off', 'Pause', 'Quit Jemma Desktop']),
-  )
-  await hook((h) => h.setStatus!({ kind: 'running', label: 'Reading 3 of 5 papers' }))
-  expect(((await hook((h) => h.trayLabels!())) as string[])[0]).toBe('Reading 3 of 5 papers')
-  await hook((h) => h.setStatus!({ kind: 'idle' }))
-  expect(((await hook((h) => h.trayLabels!())) as string[])[0]).toBe('Idle')
+  await hook(app, (h) => h.setAgent!('claude'))
+  await hook(app, (h) => h.setStatus!({ kind: 'running', label: 'Reading 3 of 5 papers', done: 2, total: 5, className: '6B Mathematics', snappedAt: '15:40', timeLeft: 'About a minute left' }))
+  const labels = (await hook(app, (h) => h.trayLabels!())) as string[]
+  expect(labels).toEqual(expect.arrayContaining(['Jemma Desktop', 'Claude Code · Working', 'Reading 3 of 5 papers', '6B Mathematics · snapped at 15:40', 'Pause Jemma', 'Open Jemma', 'Settings', 'Quit Jemma Desktop']))
+  await hook(app, (h) => h.setStatus!({ kind: 'ready' }))
+  expect(((await hook(app, (h) => h.trayLabels!())) as string[])[1]).toBe('Claude Code · Ready')
+})
+
+test('Details opens the stopped-job dialog with Try again and Run in the cloud', async () => {
+  await hook(app, (h) => h.setAgent!('claude'))
+  await hook(app, (h) => h.setView!('main'))
+  await hook(app, (h) => h.override!({ stopped: { eventId: 'e1', what: "reading Sipho's paper", waits: "Sipho's paper", cloudFor: 'this paper only', reason: 'Claude Code hit its usage limit', why: 'usage limit reached', retryAt: new Date('2026-10-28T17:00:00').getTime() } }))
+  await hook(app, (h) => h.setStatus!({ kind: 'cant_run', reason: 'Claude Code hit its usage limit' }))
+  await page.getByRole('button', { name: 'Details' }).click()
+  await expect.poll(() => app.windows().some((w) => w.url().endsWith('stopped.html'))).toBe(true)
+  const dialog = app.windows().find((w) => w.url().endsWith('stopped.html'))!
+  await expect(dialog.getByRole('heading', { name: "Couldn't finish reading Sipho's paper." })).toBeVisible()
+  await expect(dialog.getByText('Claude Code stopped: usage limit reached.')).toBeVisible()
+  await expect(dialog.getByRole('button', { name: 'Try again at 17:00' })).toBeVisible()
+  await expect(dialog.getByRole('button', { name: 'Run in the cloud this time' })).toBeVisible()
 })
