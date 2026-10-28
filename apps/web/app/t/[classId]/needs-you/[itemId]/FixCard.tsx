@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { confirmPaper, resolveAnswer } from '../../snap/actions'
@@ -62,7 +63,7 @@ export function FixCard({
       {typing ? (
         <span className="flex gap-2">
           <input aria-label={`What question ${n} says`} value={text} onChange={(e) => setText(e.target.value)} className="h-11 min-w-0 flex-1 rounded-12 border border-muted-2 bg-card px-3 text-[16px] outline-none focus-visible:border-2 focus-visible:border-ink" />
-          <button type="button" disabled={pending || !text.trim()} onClick={() => choose(text)} className="h-11 cursor-pointer rounded-12 border-none bg-ink px-4 text-[15px] font-semibold text-white">Use this</button>
+          <PendingButton pending={pending} type="button" disabled={pending || !text.trim()} onClick={() => choose(text)} className="h-11 cursor-pointer rounded-12 border-none bg-ink px-4 text-[15px] font-semibold text-white">Use this</PendingButton>
         </span>
       ) : null}
       {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
@@ -92,7 +93,7 @@ export function ConfirmButton({ classId, paperId, name, disabled }: { classId: s
   return (
     <>
       {error ? <p role="alert" className="m-0 text-center text-[14px] text-coral-text">{error}</p> : null}
-      <button
+      <PendingButton pending={pending}
         type="button"
         disabled={pending || disabled}
         onClick={() =>
@@ -106,7 +107,7 @@ export function ConfirmButton({ classId, paperId, name, disabled }: { classId: s
       >
         {tick(20, 2.2)}
         Confirm {name}&apos;s paper
-      </button>
+      </PendingButton>
     </>
   )
 }

@@ -1,3 +1,4 @@
+import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
@@ -70,7 +71,7 @@ export default async function ParentFlagMarkPage({
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.4fr)', gap: 8 }}>
               <Link href={back} style={{ ...btn, border: '1.5px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36' }}>Cancel</Link>
-              <button type="submit" style={{ ...btn, border: 'none', background: '#1F1D36', color: '#FFFFFF', cursor: 'pointer' }}>{`Send to ${teacher}`}</button>
+              <PendingButton type="submit" style={{ ...btn, border: 'none', background: '#1F1D36', color: '#FFFFFF', cursor: 'pointer' }}>{`Send to ${teacher}`}</PendingButton>
             </div>
           </form>
         </section>

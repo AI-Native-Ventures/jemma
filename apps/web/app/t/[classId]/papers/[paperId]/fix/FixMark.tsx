@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
@@ -127,7 +128,7 @@ export function FixMark({
               </span>
             </fieldset>
             {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
-            <button type="button" disabled={!changed || pending} onClick={save} className="h-[52px] cursor-pointer rounded-14 border-none bg-ink text-[17px] font-semibold text-white disabled:cursor-not-allowed disabled:bg-soft-3 disabled:text-body">Save</button>
+            <PendingButton pending={pending} type="button" disabled={!changed || pending} onClick={save} className="h-[52px] cursor-pointer rounded-14 border-none bg-ink text-[17px] font-semibold text-white disabled:cursor-not-allowed disabled:bg-soft-3 disabled:text-body">Save</PendingButton>
             <p className="m-0 text-[14px] leading-[1.45] text-body">Change something to save. {parent ?? 'Their parent'} sees any change, with your name on it. Jemma learns from your fixes.</p>
           </section>
         </>

@@ -1,5 +1,6 @@
 'use client'
 
+import { Spinner } from '@/components/ui/Button'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
@@ -192,9 +193,10 @@ export function SnapTestForm({
           <div className="flex-1" />
           {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
           <div className="flex flex-col gap-1">
-            <label className={`flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink ${pending ? 'opacity-60' : ''}`}>
+            <label className={`relative flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink ${pending ? 'opacity-60' : ''}`}>
               <CameraIcon size={20} />
               Snap the memo
+              {pending ? <Spinner /> : null}
               <input
                 type="file"
                 accept="image/*"

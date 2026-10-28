@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { useRef, useState, useTransition } from 'react'
 import type { ClipboardEvent, KeyboardEvent } from 'react'
@@ -120,9 +121,9 @@ export function CodeForm({ email, length: LENGTH }: { email: string; length: num
             </span>
           ) : null}
         </fieldset>
-        <button type="submit" disabled={pending || filled < LENGTH} style={{ ...primaryButton, opacity: pending ? 0.6 : 1 }}>
+        <PendingButton pending={pending} type="submit" disabled={pending || filled < LENGTH} style={{ ...primaryButton, opacity: pending ? 0.6 : 1 }}>
           Sign in
-        </button>
+        </PendingButton>
       </form>
 
       <section aria-labelledby="noget" style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: 16, background: '#FFFFFF', border: `1px solid ${colors.line}`, borderRadius: 18 }}>
@@ -131,7 +132,7 @@ export function CodeForm({ email, length: LENGTH }: { email: string; length: num
         </h2>
         <p style={{ margin: 0, fontSize: 15, lineHeight: 1.45, color: colors.body }}>Check your spam folder. A new code can take a minute.</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
-          <button
+          <PendingButton pending={pending}
             type="button"
             onClick={sendNew}
             disabled={pending}
@@ -142,7 +143,7 @@ export function CodeForm({ email, length: LENGTH }: { email: string; length: num
               <path d="M20 4v4.5h-4.5" />
             </svg>
             Send a new code
-          </button>
+          </PendingButton>
           <Link href="/sign-in" style={{ display: 'flex', alignItems: 'center', minHeight: 44, padding: '0 10px', fontSize: 15, fontWeight: 600, color: colors.ink, textDecoration: 'underline', textUnderlineOffset: 3 }}>
             Use a different email
           </Link>

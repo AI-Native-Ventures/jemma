@@ -1,3 +1,4 @@
+import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { NeedsYouList } from '@/components/blocks'
 import { Headline } from '@/components/blocks'
@@ -135,7 +136,7 @@ function Detail({ detail, base }: { detail: GapDetail; base: string }) {
           </ol>
           <div className="flex flex-wrap gap-2">
             <form action={markReteachDone.bind(null, reteach.id)} className="contents">
-              <button
+              <PendingButton
                 type="submit"
                 disabled={done}
                 className="flex h-11 cursor-pointer items-center gap-2 rounded-12 border-none bg-ink px-4 text-[15px] font-semibold text-white disabled:opacity-60"
@@ -144,7 +145,7 @@ function Detail({ detail, base }: { detail: GapDetail; base: string }) {
                   <path d="m5 12.5 4.5 4.5L19 7.5" />
                 </svg>
                 {done ? 'Reteach done' : 'Mark reteach done'}
-              </button>
+              </PendingButton>
             </form>
             <PrintButton />
           </div>

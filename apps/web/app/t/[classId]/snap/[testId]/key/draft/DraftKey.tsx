@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { useState, useTransition } from 'react'
@@ -66,7 +67,7 @@ export function DraftKey({ classId, testId, items, unsure, approved, children }:
                   {editing === item.n ? (
                     <span className="flex gap-2">
                       <input aria-label={`Answer to question ${item.n}`} value={draft} onChange={(e) => setDraft(e.target.value)} className="h-[46px] min-w-0 flex-1 rounded-12 border border-muted-2 bg-card px-3 text-[16px] outline-none" />
-                      <button type="button" disabled={pending} onClick={() => save(item.n, draft)} className="h-[46px] cursor-pointer rounded-12 border-none bg-ink px-4 text-[15px] font-semibold text-white">Save</button>
+                      <PendingButton pending={pending} type="button" disabled={pending} onClick={() => save(item.n, draft)} className="h-[46px] cursor-pointer rounded-12 border-none bg-ink px-4 text-[15px] font-semibold text-white">Save</PendingButton>
                     </span>
                   ) : (
                     <span className="grid grid-cols-2 gap-2">
@@ -90,7 +91,7 @@ export function DraftKey({ classId, testId, items, unsure, approved, children }:
       {children}
       <div className="flex flex-col gap-2">
         {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
-        <button type="button" onClick={approve} disabled={pending || approved} className="flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink text-[17px] font-semibold text-white disabled:opacity-60">Approve key and snap papers</button>
+        <PendingButton pending={pending} type="button" onClick={approve} disabled={pending || approved} className="flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink text-[17px] font-semibold text-white disabled:opacity-60">Approve key and snap papers</PendingButton>
         <label className="flex min-h-11 cursor-pointer items-center justify-center text-[15px] font-semibold text-ink underline underline-offset-[3px] focus-within:outline-2 focus-within:outline-ink">
           A memo is safer: snap the memo instead
           <input type="file" accept="image/*" capture="environment" className="sr-only" disabled={pending} onChange={(e) => { memo(e.target.files?.[0]); e.target.value = '' }} />
