@@ -458,6 +458,50 @@ export type Database = {
           },
         ]
       }
+      desktop_pairing_attempts: {
+        Row: {
+          at: string
+          code_hash: string
+          id: string
+        }
+        ComputedFields: never
+        Insert: {
+          at?: string
+          code_hash: string
+          id?: string
+        }
+        Update: {
+          at?: string
+          code_hash?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      desktop_pairing_codes: {
+        Row: {
+          claimed_at: string | null
+          code_hash: string
+          created_at: string
+          expires_at: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          claimed_at?: string | null
+          code_hash: string
+          created_at?: string
+          expires_at: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string | null
+          code_hash?: string
+          created_at?: string
+          expires_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       enrolments: {
         Row: {
           child_id: string
