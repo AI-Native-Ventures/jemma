@@ -158,7 +158,7 @@ async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage): Pr
 
     // ---- Stage start ----
     const days = lastSchoolDays(now)
-    const term3PaperAt = dayIso(31)
+    const term3PaperAt = '2026-09-25T12:00:00.000Z'
     const startWork = [
       ok(admin.from('child_logins').insert({ code: childLoginCode, child_id: aminaId, user_id: learnerId, pin_set_by: parentId }), 'child_logins'),
       ok(admin.from('enrolments').insert(kids.map((k) => ({ class_id: classId, child_id: k.id }))), 'enrolments'),
