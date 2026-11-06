@@ -141,7 +141,7 @@ export default async function ParentProfilePage({ params }: { params: Promise<{ 
           <h2 id="noticed" style={css('margin:0 0 2px;font-size:17px;font-weight:600')}>What Jemma has noticed</h2>
           <ul style={css('list-style:none;margin:0;padding:0')}>
             {data.notices.map((n, i) => (
-              <li key={n.text} style={css(`display:flex;flex-direction:column;gap:10px;padding:14px 0;${i ? 'border-top:1px solid #EFEEF4' : ''}`)}>
+              <li key={`${i}-${n.text}`} style={css(`display:flex;flex-direction:column;gap:10px;padding:14px 0;${i ? 'border-top:1px solid #EFEEF4' : ''}`)}>
                 <span style={css('font-size:16px;line-height:1.45;font-weight:500')}>{n.text}</span>
                 <Chips chips={n.chips} />
               </li>
@@ -211,8 +211,8 @@ export default async function ParentProfilePage({ params }: { params: Promise<{ 
           </Link>
         </div>
         <ol style={css('list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px')}>
-          {data.did.map((d) => (
-            <li key={d.time + d.text} style={css('display:flex;gap:12px;font-size:14px;line-height:1.4')}>
+          {data.did.map((d, i) => (
+            <li key={`${i}-${d.time}-${d.text}`} style={css('display:flex;gap:12px;font-size:14px;line-height:1.4')}>
               <span style={css('width:66px;flex:none;color:#5D5A73;font-variant-numeric:tabular-nums')}>{d.time}</span>
               <span>{d.text}</span>
             </li>

@@ -171,8 +171,8 @@ export function ProfileLaptop({ data, extras, base }: { data: ProfileData; extra
           {data.notices.length > 0 ? (
             <section aria-label="What Jemma has noticed" style={css('display:flex;flex-direction:column;gap:10px')}>
               <h2 style={css('margin:0;font-size:18px;font-weight:600')}>What Jemma has noticed</h2>
-              {data.notices.map((n) => (
-                <div key={n.text} style={css('display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;padding:16px 18px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:18px')}>
+              {data.notices.map((n, i) => (
+                <div key={`${i}-${n.text}`} style={css('display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;padding:16px 18px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:18px')}>
                   <span style={css('flex:1 1 300px;font-size:16px;line-height:1.45;font-weight:500')}>{n.text}</span>
                   <Chips chips={n.chips} />
                 </div>
@@ -188,8 +188,8 @@ export function ProfileLaptop({ data, extras, base }: { data: ProfileData; extra
               </Link>
             </div>
             <ol style={css('list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px')}>
-              {data.did.map((d) => (
-                <li key={d.time + d.text} style={css('display:flex;gap:12px;font-size:14px;line-height:1.4')}>
+              {data.did.map((d, i) => (
+                <li key={`${i}-${d.time}-${d.text}`} style={css('display:flex;gap:12px;font-size:14px;line-height:1.4')}>
                   <span style={css('width:66px;flex:none;color:#5D5A73;font-variant-numeric:tabular-nums')}>{d.time}</span>
                   <span>{d.text}</span>
                 </li>

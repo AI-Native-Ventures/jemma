@@ -47,6 +47,14 @@ test('same image bytes give the same key, different bytes a different key', asyn
   expect(await replayKey('m', p([1, 2, 4]))).not.toBe(a)
 })
 
+test('attendance timestamps normalize across days while attendance counts stay meaningful', async () => {
+  const profile = (date: string, present: number, total: number) =>
+    params(JSON.stringify({ attendance: { present, total, away: [`${date}T08:00:00.000Z`] } }))
+  const key = await replayKey('m1', profile('2026-10-27', 9, 10))
+  expect(await replayKey('m1', profile('2026-11-06', 9, 10))).toBe(key)
+  expect(await replayKey('m1', profile('2026-11-06', 10, 11))).not.toBe(key)
+})
+
 test('SupabaseReplayStore reads and writes ai_replays', async () => {
   const rows = new Map<string, unknown>()
   const client = {

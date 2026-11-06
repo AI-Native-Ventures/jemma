@@ -321,7 +321,7 @@ export const HOMEWORK_ROWS = [
   { prompt: '0,3 + 0,4', wrote: '0,7', correct: true, confidence: 0.96 },
   { prompt: '0,6 + 0,25', wrote: '0,31', correct: false, confidence: 0.93, misconception: LAST_DIGITS },
   { prompt: '1,5 + 0,75', wrote: '2,25', correct: true, confidence: 0.95 },
-  { prompt: '0,2 + 0,45', wrote: '0,65', correct: true, confidence: 0.38 },
+  { prompt: '0,2 + 0,45', wrote: '0,65', correct: false, confidence: 0.38 },
   { prompt: '0,5 + 0,3', wrote: '0,8', correct: true, confidence: 0.94 },
 ]
 export const HOMEWORK_NEEDS = { title: 'Check the homework you snapped', detail: "Sunday · 5 answers, 1 I'm unsure about" }

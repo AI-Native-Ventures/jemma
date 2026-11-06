@@ -73,7 +73,7 @@ export function OnboardingForm({ initial }: { initial: SchoolHit | null }) {
               </span>
               <span className="flex flex-1 flex-col leading-[1.3]">
                 <span className="text-[17px] font-semibold">{s.name}</span>
-                <span className="text-[14px] text-body">{s.blurb}</span>
+                {s.blurb ? <span className="text-[14px] text-body">{s.blurb}</span> : null}
               </span>
               {on ? (
                 <span className="flex size-[26px] items-center justify-center rounded-pill bg-ink">
