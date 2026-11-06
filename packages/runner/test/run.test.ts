@@ -41,6 +41,12 @@ test('runJob passes only the Jemma MCP tools to Claude', async () => {
   expect(args.join(' ')).not.toContain('tok-secret')
 })
 
+test('runJob can stream stdout chunks for transcript inspection', async () => {
+  const chunks: string[] = []
+  await runJob(job, 'claude', mcp, { timeoutMs: 20_000, onStdout: (chunk) => chunks.push(chunk) })
+  expect(chunks.join('')).toContain('mcp__jemma__complete_job')
+})
+
 test('a job is done only when complete_job says done', async () => {
   for (const agent of ['claude', 'codex'] as const) {
     process.env.FAKE_MODE = 'done'

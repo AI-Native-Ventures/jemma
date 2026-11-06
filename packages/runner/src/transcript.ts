@@ -1,6 +1,6 @@
 import type { AgentName } from './agents'
 
-export type Transcript = { completed: 'done' | 'failed' | null; completeNote: string | null; lastMessage: string }
+export type Transcript = { completed: 'done' | 'failed' | null; completeNote: string | null; lastMessage: string; toolCalls: string[] }
 
 const isComplete = (name: unknown) => typeof name === 'string' && /(^|__|\.|\/)complete_job$/.test(name)
 
@@ -26,7 +26,7 @@ function status(input: Record<string, unknown>): 'done' | 'failed' | null {
  * Codex: `item.completed` events of type `mcp_tool_call` and `agent_message`.
  */
 export function parseTranscript(agent: AgentName, stdout: string): Transcript {
-  const out: Transcript = { completed: null, completeNote: null, lastMessage: '' }
+  const out: Transcript = { completed: null, completeNote: null, lastMessage: '', toolCalls: [] }
   const pending = new Map<string, { status: 'done' | 'failed' | null; note: string | null }>()
 
   for (const line of stdout.split('\n')) {
@@ -43,6 +43,7 @@ export function parseTranscript(agent: AgentName, stdout: string): Transcript {
       if (ev.type === 'assistant') {
         for (const b of blocks) {
           if (b.type === 'text' && typeof b.text === 'string' && b.text.trim()) out.lastMessage = b.text.trim()
+          if (b.type === 'tool_use' && typeof b.name === 'string') out.toolCalls.push(b.name)
           if (b.type === 'tool_use' && isComplete(b.name)) {
             const input = asObject(b.input)
             pending.set(String(b.id), { status: status(input), note: typeof input.note === 'string' ? input.note : null })
@@ -64,6 +65,7 @@ export function parseTranscript(agent: AgentName, stdout: string): Transcript {
     } else if (ev.type === 'item.completed' || ev.type === 'item.updated') {
       const item = ev.item ?? {}
       if (item.type === 'agent_message' && typeof item.text === 'string' && item.text.trim()) out.lastMessage = item.text.trim()
+      if (ev.type === 'item.completed' && item.type === 'mcp_tool_call' && typeof item.tool === 'string') out.toolCalls.push(item.tool)
       if (ev.type === 'item.completed' && item.type === 'mcp_tool_call' && isComplete(item.tool) && item.status !== 'failed' && !item.error) {
         const input = asObject(item.arguments)
         const s = status(input)
