@@ -46,7 +46,7 @@ function Glyph({ stage, size }: { stage: GapStage | null; size: number }) {
 const gapCard =
   'flex flex-col gap-3 rounded-18 border border-line bg-card py-4 pr-3 pl-4 text-ink no-underline'
 
-function HomeGap({ gap, index, base }: { gap: ClassGapView; index: number; base: string }) {
+function HomeGap({ gap, index, base, hideDots }: { gap: ClassGapView; index: number; base: string; hideDots: boolean }) {
   return (
     <Link href={`${base}/gaps/${gap.key}`} className={gapCard}>
       <span className="flex items-start gap-3">
@@ -54,7 +54,7 @@ function HomeGap({ gap, index, base }: { gap: ClassGapView; index: number; base:
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="text-[17px] leading-[1.3] font-semibold">{gap.topicName}</span>
           <span className="flex items-center gap-2 text-[14px] text-body">
-            <Dots filled={gap.count} total={gap.total} />
+            {!hideDots ? <Dots filled={gap.count} total={gap.total} /> : null}
             {gap.count} of {gap.total} learners
           </span>
         </span>
@@ -120,14 +120,14 @@ function NextGap({ gap, index, base }: { gap: ClassGapView; index: number; base:
   )
 }
 
-function Gaps({ home, base }: { home: ClassHome; base: string }) {
+function Gaps({ home, base, hideDots }: { home: ClassHome; base: string; hideDots: boolean }) {
   return (
     <section aria-labelledby="gaps" className="flex flex-col gap-2.5">
       <h2 id="gaps" className="m-0 text-[18px] font-semibold">
         What the class doesn&apos;t get yet
       </h2>
       {home.gaps.map((g, i) =>
-        home.mode === 'next' ? <NextGap key={g.key} gap={g} index={i} base={base} /> : <HomeGap key={g.key} gap={g} index={i} base={base} />,
+        home.mode === 'next' ? <NextGap key={g.key} gap={g} index={i} base={base} /> : <HomeGap key={g.key} gap={g} index={i} base={base} hideDots={hideDots} />,
       )}
     </section>
   )
@@ -272,6 +272,7 @@ export default async function TeacherClassHome({
 
 function PhoneHome({ home, base }: { home: ClassHome; base: string }) {
   const next = home.mode === 'next'
+  const desktopOff = home.needsYou.some((item) => item.desktopOff)
   return (
     <div className="flex flex-col gap-5 px-5 pt-3.5 pb-5 leading-[normal]">
       {next ? (
@@ -280,12 +281,12 @@ function PhoneHome({ home, base }: { home: ClassHome; base: string }) {
           <Headline>{home.headline}</Headline>
         </div>
       ) : (
-        <Headline action={home.topGapKey ? { href: `${base}/gaps/${home.topGapKey}`, label: 'See the papers it comes from' } : undefined}>
+        <Headline action={home.topGapKey && !desktopOff ? { href: `${base}/gaps/${home.topGapKey}`, label: 'See the papers it comes from' } : undefined}>
           {home.headline}
         </Headline>
       )}
       {next ? <NextCards home={home} base={base} /> : <NeedsYouList items={home.needsYou} />}
-      <Gaps home={home} base={base} />
+      <Gaps home={home} base={base} hideDots={desktopOff} />
       {!next && home.latestTest ? <LatestTest test={home.latestTest} base={base} /> : null}
       {next ? (
         <section aria-labelledby="did" className="flex flex-col gap-2.5 rounded-18 border border-line bg-card p-4">

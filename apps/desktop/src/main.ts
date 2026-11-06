@@ -19,6 +19,17 @@ const POLL_MS = 3_000
 const REFRESH_MS = 5 * 60_000
 const TITLE_BAR = 38
 const STRIP = 40
+// Keep the 1200px hosted class home in line with the desktop board without changing the web layout.
+const MAIN_PAGE_STYLE = `
+body.jemma-desktop-main aside[class~="w-[254px]"] { width: 232px !important; }
+body.jemma-desktop-main [class~="px-9"] { padding: 27px 30px 40px !important; }
+body.jemma-desktop-main [class~="gap-[22px]"] { gap: 20px !important; }
+body.jemma-desktop-main [class~="max-w-[760px]"] { max-width: 580px !important; }
+body.jemma-desktop-main h1[class~="text-[36px]"] { font-size: 30px !important; }
+body.jemma-desktop-main [aria-labelledby="detail"] { height: 438px !important; overflow: hidden !important; }
+body.jemma-desktop-main [aria-labelledby="detail"] h2 { font-size: 22px !important; }
+body.jemma-desktop-main [aria-labelledby="detail"] > div:nth-child(3) > div { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+`
 const NAMES: Record<AgentName, string> = { claude: 'Claude Code', codex: 'Codex' }
 
 if (process.env.JEMMA_USER_DATA) app.setPath('userData', process.env.JEMMA_USER_DATA)
@@ -136,6 +147,24 @@ function ensureWebView(): WebContentsView {
   const w = ensureWindow()
   if (!webView) {
     webView = new WebContentsView({ webPreferences: { contextIsolation: true, sandbox: true } })
+    const syncMainPageStyle = () => {
+      void webView?.webContents
+        .executeJavaScript(`
+          (() => {
+            const isClassHome = /^\\/t\\/[^/]+\\/?$/.test(window.location.pathname)
+            document.body?.classList.toggle('jemma-desktop-main', isClassHome)
+            if (!document.getElementById('jemma-desktop-main-style')) {
+              const style = document.createElement('style')
+              style.id = 'jemma-desktop-main-style'
+              style.textContent = ${JSON.stringify(MAIN_PAGE_STYLE)}
+              document.head?.append(style)
+            }
+          })()
+        `)
+        .catch((error) => log(`Could not sync desktop class-home layout: ${String(error)}`))
+    }
+    webView.webContents.on('dom-ready', syncMainPageStyle)
+    webView.webContents.on('did-navigate-in-page', syncMainPageStyle)
     webView.webContents.setWindowOpenHandler(({ url }) => {
       if (url.startsWith(WEB_URL)) return { action: 'allow' }
       void shell.openExternal(url)
