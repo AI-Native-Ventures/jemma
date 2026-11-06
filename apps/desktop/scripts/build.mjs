@@ -19,6 +19,7 @@ await build({
   target: 'node22',
   external: ['electron'],
   loader: { '.md': 'text' },
+  define: { 'process.env.JEMMA_DEFAULT_WEB_URL': JSON.stringify(process.env.JEMMA_DEFAULT_WEB_URL ?? 'http://localhost:3000') },
   logLevel: 'warning',
 })
 

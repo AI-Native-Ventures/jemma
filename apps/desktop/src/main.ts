@@ -13,7 +13,8 @@ import { createSettingsStore } from './settings-store'
 import { describeStatus, timeLeft, type Status } from './status'
 import { createTokenStore } from './token-store'
 
-const WEB_URL = (process.env.JEMMA_WEB_URL ?? 'http://localhost:3000').replace(/\/+$/, '')
+// JEMMA_WEB_URL wins at run time. JEMMA_DEFAULT_WEB_URL is baked in at build time (see scripts/build.mjs) so a double-click app knows where Jemma lives.
+const WEB_URL = (process.env.JEMMA_WEB_URL ?? process.env.JEMMA_DEFAULT_WEB_URL ?? 'http://localhost:3000').replace(/\/+$/, '')
 const TEST = process.env.JEMMA_TEST === '1'
 const POLL_MS = 3_000
 const REFRESH_MS = 5 * 60_000
