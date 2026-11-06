@@ -1,0 +1,512 @@
+[
+  {
+    "board": "Main",
+    "route": "/demo",
+    "role": "teacher",
+    "stage": "start",
+    "file390": "design/proof/390/Main.png",
+    "file1440": "design/proof/1440/Main.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "demo-switch",
+    "route": "/demo/switch",
+    "role": "teacher",
+    "stage": "start",
+    "file390": "design/proof/390/demo-switch.png",
+    "file1440": "design/proof/1440/demo-switch.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-classes",
+    "route": "/t",
+    "role": "teacher",
+    "stage": "start",
+    "file390": "design/proof/390/teacher-classes.png",
+    "file1440": "design/proof/1440/teacher-classes.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-curriculum-upload",
+    "route": "/t/1bf48c08-c653-48a8-a0ff-ddfecb20d08a/curriculum",
+    "role": "teacher",
+    "stage": "start",
+    "file390": "design/proof/390/teacher-curriculum-upload.png",
+    "file1440": "design/proof/1440/teacher-curriculum-upload.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-snap-test",
+    "route": "/t/1bf48c08-c653-48a8-a0ff-ddfecb20d08a/snap",
+    "role": "teacher",
+    "stage": "start",
+    "file390": "design/proof/390/teacher-snap-test.png",
+    "file1440": "design/proof/1440/teacher-snap-test.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "parent-add-child",
+    "route": "/p/add?code=DRMHSR&child=Amina",
+    "role": "parent",
+    "stage": "start",
+    "file390": "design/proof/390/parent-add-child.png",
+    "file1440": "design/proof/1440/parent-add-child.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "parent-consent",
+    "route": "/p/add/consent?code=DRMHSR&child=Amina",
+    "role": "parent",
+    "stage": "start",
+    "file390": "design/proof/390/parent-consent.png",
+    "file1440": "design/proof/1440/parent-consent.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "parent-link-pending",
+    "route": "/p/add/pending",
+    "role": "parent",
+    "stage": "start",
+    "file390": "design/proof/390/parent-link-pending.png",
+    "file1440": "design/proof/1440/parent-link-pending.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-link-request",
+    "route": "/t/1bf48c08-c653-48a8-a0ff-ddfecb20d08a/link-requests/020eb4ea-16de-4a6b-99c8-bd3592b9dc67",
+    "role": "teacher",
+    "stage": "start",
+    "file390": "design/proof/390/teacher-link-request.png",
+    "file1440": "design/proof/1440/teacher-link-request.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "child-nothing-tonight",
+    "route": "/k",
+    "role": "child",
+    "stage": "start",
+    "file390": "design/proof/390/child-nothing-tonight.png",
+    "file1440": "design/proof/1440/child-nothing-tonight.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-class-home",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-class-home.png",
+    "file1440": "design/proof/1440/teacher-class-home.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-gap",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/gaps/adding-fractions-with-different-denominators",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-gap.png",
+    "file1440": "design/proof/1440/teacher-gap.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-learners",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/learners",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-learners.png",
+    "file1440": "design/proof/1440/teacher-learners.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-learner",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/learners/8cb464b8-28a9-46e5-a92a-297e4b34c9e3",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-learner.png",
+    "file1440": "design/proof/1440/teacher-learner.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-child-profile",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/learners/8cb464b8-28a9-46e5-a92a-297e4b34c9e3/profile",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-child-profile.png",
+    "file1440": "design/proof/1440/teacher-child-profile.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-tests",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/tests",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-tests.png",
+    "file1440": "design/proof/1440/teacher-tests.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-test",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/tests/d392e4ae-8eed-41c1-914c-e6d4486e8dea",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-test.png",
+    "file1440": "design/proof/1440/teacher-test.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-question",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/tests/d392e4ae-8eed-41c1-914c-e6d4486e8dea/q/1",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-question.png",
+    "file1440": "design/proof/1440/teacher-question.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-curriculum-approved",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/curriculum",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-curriculum-approved.png",
+    "file1440": "design/proof/1440/teacher-curriculum-approved.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-curriculum-map",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/curriculum/map",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-curriculum-map.png",
+    "file1440": "design/proof/1440/teacher-curriculum-map.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-snap-key",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/snap/d392e4ae-8eed-41c1-914c-e6d4486e8dea/key",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-snap-key.png",
+    "file1440": "design/proof/1440/teacher-snap-key.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-snap-queue",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/snap/d392e4ae-8eed-41c1-914c-e6d4486e8dea/papers",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-snap-queue.png",
+    "file1440": "design/proof/1440/teacher-snap-queue.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-reading",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/snap/d392e4ae-8eed-41c1-914c-e6d4486e8dea/progress",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-reading.png",
+    "file1440": "design/proof/1440/teacher-reading.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-review",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/needs-you/70717d1c-c707-468c-9d58-03880071af9f",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-review.png",
+    "file1440": "design/proof/1440/teacher-review.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-paper",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/papers/78d6e5df-e84e-4fad-9973-6a469ce96f8e",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": "design/proof/390/teacher-paper.png",
+    "file1440": "design/proof/1440/teacher-paper.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "parent-profile",
+    "route": "/p/8cb464b8-28a9-46e5-a92a-297e4b34c9e3",
+    "role": "parent",
+    "stage": "marked",
+    "file390": "design/proof/390/parent-profile.png",
+    "file1440": "design/proof/1440/parent-profile.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "parent-report",
+    "route": "/p/8cb464b8-28a9-46e5-a92a-297e4b34c9e3/report",
+    "role": "parent",
+    "stage": "marked",
+    "file390": "design/proof/390/parent-report.png",
+    "file1440": "design/proof/1440/parent-report.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "parent-beyond",
+    "route": "/p/8cb464b8-28a9-46e5-a92a-297e4b34c9e3/beyond",
+    "role": "parent",
+    "stage": "marked",
+    "file390": "design/proof/390/parent-beyond.png",
+    "file1440": "design/proof/1440/parent-beyond.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "parent-topic",
+    "route": "/p/8cb464b8-28a9-46e5-a92a-297e4b34c9e3/topics/e6db0ff5-cf2e-4a70-95f3-758ab6187e62",
+    "role": "parent",
+    "stage": "marked",
+    "file390": "design/proof/390/parent-topic.png",
+    "file1440": "design/proof/1440/parent-topic.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "parent-paper",
+    "route": "/p/8cb464b8-28a9-46e5-a92a-297e4b34c9e3/papers/993b708c-36e1-497b-8b26-484d8f95b333",
+    "role": "parent",
+    "stage": "marked",
+    "file390": "design/proof/390/parent-paper.png",
+    "file1440": "design/proof/1440/parent-paper.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "parent-tests",
+    "route": "/p/8cb464b8-28a9-46e5-a92a-297e4b34c9e3/tests",
+    "role": "parent",
+    "stage": "marked",
+    "file390": "design/proof/390/parent-tests.png",
+    "file1440": "design/proof/1440/parent-tests.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "parent-learn",
+    "route": "/p/8cb464b8-28a9-46e5-a92a-297e4b34c9e3/learn",
+    "role": "parent",
+    "stage": "marked",
+    "file390": "design/proof/390/parent-learn.png",
+    "file1440": "design/proof/1440/parent-learn.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "parent-handover",
+    "route": "/p/8cb464b8-28a9-46e5-a92a-297e4b34c9e3/learn/handover",
+    "role": "parent",
+    "stage": "marked",
+    "file390": "design/proof/390/parent-handover.png",
+    "file1440": "design/proof/1440/parent-handover.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "parent-snap-type",
+    "route": "/p/8cb464b8-28a9-46e5-a92a-297e4b34c9e3/snap",
+    "role": "parent",
+    "stage": "marked",
+    "file390": "design/proof/390/parent-snap-type.png",
+    "file1440": "design/proof/1440/parent-snap-type.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "parent-activity",
+    "route": "/p/8cb464b8-28a9-46e5-a92a-297e4b34c9e3/activities/new",
+    "role": "parent",
+    "stage": "marked",
+    "file390": "design/proof/390/parent-activity.png",
+    "file1440": "design/proof/1440/parent-activity.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "child-today",
+    "route": "/k",
+    "role": "child",
+    "stage": "marked",
+    "file390": "design/proof/390/child-today.png",
+    "file1440": "design/proof/1440/child-today.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "child-gaps",
+    "route": "/k/gaps",
+    "role": "child",
+    "stage": "marked",
+    "file390": "design/proof/390/child-gaps.png",
+    "file1440": "design/proof/1440/child-gaps.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "laptop-teacher-class",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": null,
+    "file1440": "design/proof/1440/laptop-teacher-class.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "laptop-teacher-learners",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/learners",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": null,
+    "file1440": "design/proof/1440/laptop-teacher-learners.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "laptop-teacher-snap",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/snap/d392e4ae-8eed-41c1-914c-e6d4486e8dea/papers",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": null,
+    "file1440": "design/proof/1440/laptop-teacher-snap.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "laptop-teacher-review",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/needs-you/70717d1c-c707-468c-9d58-03880071af9f",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": null,
+    "file1440": "design/proof/1440/laptop-teacher-review.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "laptop-teacher-tests",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/tests",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": null,
+    "file1440": "design/proof/1440/laptop-teacher-tests.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "laptop-teacher-curriculum",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/curriculum",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": null,
+    "file1440": "design/proof/1440/laptop-teacher-curriculum.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "laptop-teacher-report",
+    "route": "/t/0faab51c-24df-4f55-ac6b-d3b80ada2933/report",
+    "role": "teacher",
+    "stage": "marked",
+    "file390": null,
+    "file1440": "design/proof/1440/laptop-teacher-report.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "laptop-parent-profile",
+    "route": "/p/8cb464b8-28a9-46e5-a92a-297e4b34c9e3",
+    "role": "parent",
+    "stage": "marked",
+    "file390": null,
+    "file1440": "design/proof/1440/laptop-parent-profile.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "laptop-parent-learn",
+    "route": "/p/8cb464b8-28a9-46e5-a92a-297e4b34c9e3/learn",
+    "role": "parent",
+    "stage": "marked",
+    "file390": null,
+    "file1440": "design/proof/1440/laptop-parent-learn.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "laptop-parent-tests",
+    "route": "/p/8cb464b8-28a9-46e5-a92a-297e4b34c9e3/tests",
+    "role": "parent",
+    "stage": "marked",
+    "file390": null,
+    "file1440": "design/proof/1440/laptop-parent-tests.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-class-next",
+    "route": "/t/8b262d15-474a-471b-8723-0f3e12f9b97d",
+    "role": "teacher",
+    "stage": "session_done",
+    "file390": "design/proof/390/teacher-class-next.png",
+    "file1440": "design/proof/1440/teacher-class-next.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "teacher-register",
+    "route": "/t/8b262d15-474a-471b-8723-0f3e12f9b97d/register",
+    "role": "teacher",
+    "stage": "session_done",
+    "file390": "design/proof/390/teacher-register.png",
+    "file1440": "design/proof/1440/teacher-register.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "parent-session",
+    "route": "/p/0e26b5d4-21dc-4cb0-9e97-13cacb7ccf09/sessions/1f6ae1bc-6eea-4ef0-ae04-e6e8e87be76f",
+    "role": "parent",
+    "stage": "session_done",
+    "file390": "design/proof/390/parent-session.png",
+    "file1440": "design/proof/1440/parent-session.png",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "board": "child-handback",
+    "route": "/k/done",
+    "role": "child",
+    "stage": "session_done",
+    "file390": "design/proof/390/child-handback.png",
+    "file1440": "design/proof/1440/child-handback.png",
+    "ok": true,
+    "note": ""
+  }
+]

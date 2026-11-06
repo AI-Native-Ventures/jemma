@@ -10,7 +10,11 @@ import { openSandbox } from './helpers/sandbox'
 // See docs/runbook.md.
 
 const LIVE = (process.env.AI_MODE ?? 'replay') !== 'replay'
-const AGENT_WAIT = LIVE ? 25 * 60_000 : 5 * 60_000
+const PREVIEW = Boolean(process.env.PREVIEW_URL)
+const AGENT_WAIT = PREVIEW ? 24 * 60_000 : LIVE ? 25 * 60_000 : 5 * 60_000
+const AGENT_URL = PREVIEW
+  ? process.env.PREVIEW_AGENT_URL ?? 'https://jemma-agent.horizonsystems.workers.dev'
+  : process.env.AGENT_URL
 
 const db = (): JemmaDb =>
   createServiceClient({ SUPABASE_URL: process.env.SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY! })
@@ -75,10 +79,10 @@ async function answerQuestion(page: Page, q: LessonQuestion, right: boolean) {
 test.use({ actionTimeout: 30_000 })
 
 test('the whole demo path', async ({ page }) => {
-  test.setTimeout(LIVE ? 60 * 60_000 : 20 * 60_000)
+  test.setTimeout(PREVIEW ? 29 * 60_000 : LIVE ? 60 * 60_000 : 20 * 60_000)
   const admin = db()
-  const health = await fetch(`${process.env.AGENT_URL}/health`).catch(() => null)
-  expect(health?.ok, `the agent worker must be running at ${process.env.AGENT_URL} (pnpm --filter agent dev)`).toBe(true)
+  const health = await fetch(`${AGENT_URL}/health`).catch(() => null)
+  expect(health?.ok, `the agent worker must be running at ${AGENT_URL} (pnpm --filter agent dev)`).toBe(true)
 
   const sb = await openSandbox(page, { stage: 'start', role: 'teacher' })
   try {
@@ -153,7 +157,10 @@ test('the whole demo path', async ({ page }) => {
     if (check.data?.length) {
       await page.goto(`${base}/needs-you/${check.data[0]!.id}`)
       await page.getByRole('button', { name: '0,6', exact: true }).click()
-      await expect(page.getByText(/^0,6 matches the key(?:\.|, so) [Qq]uestion 7 gets 1 mark\.$/).locator('visible=true')).toBeVisible() // the laptop board words it with "so"
+      const confirmation = test.info().project.name === 'laptop'
+        ? /^0,6 matches the key, so question 7 gets 1 mark\.$/
+        : /^0,6 matches the key\. Question 7 gets 1 mark\.$/
+      await expect(page.getByText(confirmation)).toBeVisible({ timeout: 30_000 })
       await page.getByRole('button', { name: "Confirm Sipho's paper" }).click()
     } else {
       await page.goto(`${base}/papers/${sipho.id}/fix?q=7`)
@@ -187,7 +194,10 @@ test('the whole demo path', async ({ page }) => {
     const content = lesson.data!.content as { warmup: LessonQuestion[]; questions: LessonQuestion[] }
     const byPrompt = new Map([...content.warmup, ...content.questions].map((q) => [q.prompt, q]))
     await page.goto(`/p/${sb.childId}/learn`)
-    await page.getByRole('link', { name: /^Start, then hand Amina the phone/ }).click()
+    const startSessionLink = test.info().project.name === 'laptop'
+      ? /^Start, then hand the phone to Amina$/
+      : /^Start, then hand Amina the phone/
+    await page.getByRole('link', { name: startSessionLink }).click()
     await page.waitForURL(`**/p/${sb.childId}/learn/handover`)
     await page.getByRole('button', { name: 'Amina has the phone' }).click()
     seen = await eventCount(schoolId)
