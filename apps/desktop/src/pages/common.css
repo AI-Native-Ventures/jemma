@@ -1,0 +1,9 @@
+@import url('../assets/outfit.css');
+body{margin:0;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;overflow:hidden}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+input{font:inherit}
+@keyframes jemmaPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.82);opacity:0.65}}
+.drag{-webkit-app-region:drag}
+.nodrag{-webkit-app-region:no-drag}

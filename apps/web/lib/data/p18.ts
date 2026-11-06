@@ -358,6 +358,20 @@ function gapSentence(g: ClassGapView): string {
     : `${g.count} of ${g.total} learners are stuck on ${lowerFirst(g.shortName)}.`
 }
 
+/** The "Jemma Desktop is off" card: what is waiting for the desktop runner and when it was snapped. */
+async function waitingForDesktop(): Promise<{ title: string; detail: string } | null> {
+  const supabase = await createSupabaseServer()
+  const { data } = await supabase.from('events').select('type, created_at').eq('status', 'queued').eq('runner', 'desktop').order('created_at')
+  if (!data?.length) return null
+  const papers = data.filter((e) => e.type === 'paper.snapped' || e.type === 'homework.snapped').length
+  const n = data.length
+  const what = papers === n ? (n === 1 ? 'paper is' : 'papers are') : n === 1 ? 'job is' : 'jobs are'
+  return {
+    title: `Jemma Desktop is off. ${n} ${what} waiting.`,
+    detail: `Snapped at ${partsOf(new Date(data[0]!.created_at)).time}. Your MacBook is asleep or Jemma Desktop is closed.`,
+  }
+}
+
 // ---- Public reads --------------------------------------------------------------------------
 
 export async function getClassHome(classId: string): Promise<ClassHome | null> {
@@ -369,11 +383,16 @@ export async function getClassHome(classId: string): Promise<ClassHome | null> {
   const reteach = top ? reteachOf(d, top.topicName) : null
 
   const open = d.needs.filter((n) => n.status === 'open')
-  const needsYou: NeedsYouItem[] = open.map((n) => ({
-    href: n.kind === 'approve_link' ? `${base}/link-requests/${n.ref_id}` : `${base}/needs-you/${n.id}`,
-    title: n.title,
-    detail: n.detail,
-  }))
+  const desktopOff = open.some((n) => n.kind === 'desktop_off') ? await waitingForDesktop() : null
+  const needsYou: NeedsYouItem[] = open.map((n) =>
+    n.kind === 'desktop_off' && desktopOff
+      ? { href: `${base}/settings/ai-runner`, title: desktopOff.title, detail: desktopOff.detail, desktopOff: true }
+      : {
+          href: n.kind === 'approve_link' ? `${base}/link-requests/${n.ref_id}` : `${base}/needs-you/${n.id}`,
+          title: n.title,
+          detail: n.detail,
+        },
+  )
   const lastDone = d.needs.find((n) => n.status === 'done' && n.kind === 'check_answer' && n.child_id)
   const doneName = lastDone?.child_id ? (d.names.get(lastDone.child_id) ?? null) : null
 

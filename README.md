@@ -97,7 +97,7 @@ The agent serves MCP at `/mcp` and needs a bearer token. See [docs/mcp-server.md
 | `apps/web` | The web app: Next.js on Cloudflare Workers (OpenNext). Teacher `/t`, parent `/p`, learner `/k`, and `/demo`. |
 | `apps/agent` | The agent worker: `/events`, `/mcp`, `/health`, the Queue consumer and the cron. |
 | `packages/profiling` | The MCP tools, zod schemas, job prompts, learning logic, model layer, orchestrator. |
-| `packages/runner` | The core of the Jemma Desktop runner (runs jobs on the user's own Claude Code or Codex). |
+| `packages/runner` and `apps/desktop` | Jemma Desktop runs jobs on the user's Claude Code or Codex subscription; pair it by entering the six-character code shown in the signed-in Jemma web app, and build the unsigned Mac app with `CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter desktop dist`. |
 | `supabase/migrations` | Database schema, row-level security, functions. |
 | `supabase/seed` | The made-up school, the demo sandboxes and the sample papers. |
 | `fixtures` | Synthetic papers and the sample curriculum. |
