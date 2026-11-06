@@ -1,6 +1,6 @@
 // The made-up cast of Hillview Primary and the start-stage seed values (from the boards).
 
-export const SCHOOL = { name: 'Hillview Primary', country: 'ZA' }
+export const SCHOOL = { name: 'Hillview Primary', country: 'ZA', region: 'Gauteng', grades: 'Grade R to 7' }
 export const CLASS = { name: '6B Mathematics', grade: 6, subject: 'Mathematics' }
 
 export const CHILD_PIN = '1234'

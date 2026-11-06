@@ -1226,8 +1226,10 @@ export type Database = {
           ai_runner: Database["public"]["Enums"]["runner"]
           country: string
           created_at: string
+          grades: string | null
           id: string
           name: string
+          region: string | null
           sandbox_id: string | null
         }
         ComputedFields: never
@@ -1235,16 +1237,20 @@ export type Database = {
           ai_runner?: Database["public"]["Enums"]["runner"]
           country: string
           created_at?: string
+          grades?: string | null
           id?: string
           name: string
+          region?: string | null
           sandbox_id?: string | null
         }
         Update: {
           ai_runner?: Database["public"]["Enums"]["runner"]
           country?: string
           created_at?: string
+          grades?: string | null
           id?: string
           name?: string
+          region?: string | null
           sandbox_id?: string | null
         }
         Relationships: []

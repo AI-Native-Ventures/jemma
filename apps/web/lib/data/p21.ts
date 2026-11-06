@@ -204,16 +204,17 @@ export async function getEmptyClass(classId: string): Promise<EmptyClassView> {
 
 // ---------- teacher-onboarding ----------
 
-/** The boards show a region and grade range for a school; the schema holds only the country, so ZA gets the demo school's line. */
-export const schoolBlurb = (country: string): string => (country === 'ZA' ? 'Gauteng · Grade R to 7' : country)
+/** Region and grade range line for a school, e.g. "Gauteng · Grade R to 7". Null when the school has neither. */
+export const schoolBlurb = (s: { region: string | null; grades: string | null }): string | null =>
+  [s.region, s.grades].filter(Boolean).join(' · ') || null
 
-export type OnboardingView = { name: string; school: { id: string; name: string; blurb: string } | null }
+export type OnboardingView = { name: string; school: { id: string; name: string; blurb: string | null } | null }
 
 export async function getOnboarding(): Promise<OnboardingView> {
   const { supabase, name, schoolId } = await me()
   if (!schoolId) return { name, school: null }
-  const { data } = await supabase.from('schools').select('id, name, country').eq('id', schoolId).maybeSingle()
-  return { name, school: data ? { id: data.id, name: data.name, blurb: schoolBlurb(data.country) } : null }
+  const { data } = await supabase.from('schools').select('id, name, region, grades').eq('id', schoolId).maybeSingle()
+  return { name, school: data ? { id: data.id, name: data.name, blurb: schoolBlurb(data) } : null }
 }
 
 // ---------- teacher-class-settings ----------
@@ -292,6 +293,10 @@ export async function getAccount(): Promise<AccountView> {
 
 // ---------- teacher-link-request ----------
 
+/** Sandbox addresses carry a per-sandbox tag (thandi.<tag>@demo.jemma.invalid); show the seeded parent's address. Real emails pass through. */
+export const displayEmail = (email: string): string =>
+  email.endsWith('@demo.jemma.invalid') ? `${email.split('@')[0]!.split('.')[0]}@example.com` : email
+
 export type LinkRequestView = {
   cls: ClassInfo
   linkId: string
@@ -323,7 +328,7 @@ export async function getLinkRequest(classId: string, linkId: string): Promise<L
     status: link.status,
     parentName,
     parentInitials: initialsOf(parentName),
-    parentEmail: user.user?.email ?? '',
+    parentEmail: displayEmail(user.user?.email ?? ''),
     childName: kid?.first_name ?? 'the child',
     enteredAt: clock(link.created_at),
     otherParents: count ?? 0,

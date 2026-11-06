@@ -78,7 +78,7 @@ async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage): Pr
 
   try {
     const school = await ok(
-      admin.from('schools').insert({ name: SCHOOL.name, country: SCHOOL.country, sandbox_id: sandboxId }).select('id').single(),
+      admin.from('schools').insert({ name: SCHOOL.name, country: SCHOOL.country, region: SCHOOL.region, grades: SCHOOL.grades, sandbox_id: sandboxId }).select('id').single(),
       'school',
     )
     const schoolId = school.id
@@ -131,8 +131,10 @@ async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage): Pr
       admin
         .from('children')
         .insert(
-          CAST.children.map((name) => ({
+          CAST.children.map((name, i) => ({
             school_id: schoolId, first_name: name, grade: CLASS.grade,
+            // A bulk insert shares one timestamp; spread it so the class list keeps the cast order.
+            created_at: new Date(now.getTime() - (CAST.children.length - i) * 1000).toISOString(),
             user_id: name === 'Amina' ? learnerId : null,
             parent_first_name: name === 'Amina' ? CAST.parent.firstName : null,
             parent_relation: name === 'Amina' ? CAST.parent.relation : null,
@@ -156,7 +158,7 @@ async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage): Pr
 
     // ---- Stage start ----
     const days = lastSchoolDays(now)
-    const term3PaperAt = dayIso(45)
+    const term3PaperAt = dayIso(31)
     const startWork = [
       ok(admin.from('child_logins').insert({ code: childLoginCode, child_id: aminaId, user_id: learnerId, pin_set_by: parentId }), 'child_logins'),
       ok(admin.from('enrolments').insert(kids.map((k) => ({ class_id: classId, child_id: k.id }))), 'enrolments'),
@@ -203,7 +205,7 @@ async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage): Pr
           admin
             .from('papers')
             .insert({
-              child_id: aminaId, owner: 'teacher', kind: 'test', status: 'marked', name_read: 'Amina',
+              child_id: aminaId, owner: 'parent', kind: 'test', status: 'marked', name_read: 'Amina',
               total: TERM3_ROWS.filter((r) => r.correct).length, created_at: term3PaperAt,
             })
             .select('id')

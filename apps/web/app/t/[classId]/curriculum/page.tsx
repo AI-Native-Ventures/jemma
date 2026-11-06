@@ -100,7 +100,7 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
         </ol>
       </section>
 
-      <Link href={`/t/${classId}/curriculum/map`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: 14, background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
+      <Link href={`/t/${classId}/curriculum/map`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, marginTop: 37, borderRadius: 14, background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
         Check the draft map
       </Link>
       <ComingLink>Or start from a map another teacher approved</ComingLink>
