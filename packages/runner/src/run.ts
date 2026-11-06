@@ -7,7 +7,12 @@ import { parseTranscript } from './transcript'
 
 export type RunnerJob = { eventId: string; prompt: string }
 export type McpTarget = { url: string; token: string }
-export type RunOptions = { timeoutMs?: number; extraDirs?: string[] }
+export type RunOptions = {
+  timeoutMs?: number
+  extraDirs?: string[]
+  onStdout?: (chunk: string) => void
+  onStderr?: (chunk: string) => void
+}
 export type RunResult = { status: 'done' | 'failed'; note: string }
 
 export const DEFAULT_TIMEOUT_MS = 10 * 60_000
@@ -85,8 +90,16 @@ export async function runJob(job: RunnerJob, agent: AgentName, mcp: McpTarget, o
     })
     let stdout = ''
     let stderr = ''
-    child.stdout.on('data', (d) => (stdout += d))
-    child.stderr.on('data', (d) => (stderr = (stderr + d).slice(-4000)))
+    child.stdout.on('data', (d) => {
+      const chunk = String(d)
+      stdout += chunk
+      opts.onStdout?.(chunk)
+    })
+    child.stderr.on('data', (d) => {
+      const chunk = String(d)
+      stderr = (stderr + chunk).slice(-4000)
+      opts.onStderr?.(chunk)
+    })
     child.stdin.on('error', () => {})
     child.stdin.end(job.prompt)
 
