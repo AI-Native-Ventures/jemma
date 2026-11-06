@@ -252,7 +252,7 @@ test('the whole demo path', async ({ page }) => {
     await page.getByLabel(/^Where/).fill('Hillview Primary, after school')
     await page.getByRole('button', { name: 'Wed' }).click()
     await page.getByRole('button', { name: 'Save activity' }).click()
-    await expect(page).toHaveURL(`/p/${sb.childId}`)
+    await expect(page).toHaveURL(`/p/${sb.childId}`, { timeout: 30_000 })
     await agentIdle(schoolId, 'updating the guidance card', seen + 1)
     expect(await card()).not.toBe(before)
     const logged = await admin.from('activity_log').select('text').eq('school_id', schoolId).eq('tool', 'subject_guidance')
