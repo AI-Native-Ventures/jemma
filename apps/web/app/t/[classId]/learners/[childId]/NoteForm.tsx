@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { EyeIcon, font } from '../_parts'
@@ -62,14 +63,14 @@ export function NoteForm({ childId, initialKind, linkedTo, name }: { childId: st
         {linkedTo ? `${linkedTo} sees this on ${name}'s profile. Jemma uses it in the guidance.` : `Jemma uses this in the guidance for ${name}.`}
       </p>
       {error ? <p role="alert" style={{ margin: 0, fontSize: 14, color: '#B8381F' }}>{error}</p> : null}
-      <button
+      <PendingButton pending={pending}
         type="button"
         onClick={submit}
         disabled={pending || !text.trim()}
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 48, borderRadius: 14, border: 'none', background: '#1F1D36', color: '#FFFFFF', fontSize: 16, fontWeight: 600, opacity: pending || !text.trim() ? 0.6 : 1, cursor: 'pointer' }}
       >
         Save note
-      </button>
+      </PendingButton>
     </section>
   )
 }

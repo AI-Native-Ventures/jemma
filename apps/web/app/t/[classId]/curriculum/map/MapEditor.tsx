@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useState, useSyncExternalStore, useTransition } from 'react'
 import { Button, Sheet } from '@/components/ui'
 import { addTopic, approveMap, moveTopic, renameTopic, resolveCheck } from '../actions'
@@ -199,7 +200,7 @@ function MapPhone({ view }: { view: MapView }) {
       </button>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4 }}>
-        <button
+        <PendingButton pending={pending}
           type="button"
           disabled={pending}
           onClick={() => run(() => approveMap(view.mapId))}
@@ -207,7 +208,7 @@ function MapPhone({ view }: { view: MapView }) {
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
           Approve map
-        </button>
+        </PendingButton>
         <p style={{ margin: 0, textAlign: 'center', fontSize: 13, color: '#5D5A73' }}>You can edit the map any time. Jemma re-tags past results.</p>
       </div>
 

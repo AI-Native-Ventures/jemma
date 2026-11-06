@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Desktop · Pair</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+input{font:inherit}
+</style>
+</helmet>
+<div style="width:1200px;height:800px;display:flex;flex-direction:column;background:#F7F7FA;border:1px solid #CFCDDC;border-radius:12px;overflow:hidden;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36">
+  <div style="height:38px;flex:none;position:relative;display:flex;align-items:center;padding:0 14px;background:#FFFFFF;border-bottom:1px solid #E7E6EF">
+    <span aria-hidden="true" style="display:flex;gap:8px"><span style="width:12px;height:12px;border-radius:999px;background:#FF5F57"></span><span style="width:12px;height:12px;border-radius:999px;background:#FEBC2E"></span><span style="width:12px;height:12px;border-radius:999px;background:#28C840"></span></span>
+    <span style="position:absolute;left:120px;right:120px;text-align:center;font-size:13px;font-weight:600;color:#5D5A73">Jemma Desktop</span>
+  </div>
+
+  <main style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;gap:56px;padding:40px 56px">
+    <section aria-labelledby="pair" style="width:440px;flex:none;display:flex;flex-direction:column;gap:22px">
+      <img src="/_blob/20e5ad4ffe4da31ddc0de8f3dd49cfb9" alt="jemma" style="width:92px;height:36px;display:block">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:13px"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+          <h1 id="pair" style="margin:0;font-size:34px;line-height:1.15;font-weight:600;letter-spacing:-0.02em">Sign in to Jemma Desktop</h1>
+        </div>
+        <p style="margin:0 0 0 28px;font-size:16px;line-height:1.45;color:#5D5A73;text-wrap:pretty">Enter the 6-character code shown in Jemma on your phone or browser.</p>
+      </div>
+
+      <form style="display:flex;flex-direction:column;gap:16px">
+        <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+          <legend style="padding:0;margin-bottom:10px;font-size:15px;font-weight:500">Code from Jemma</legend>
+          <span style="display:grid;grid-template-columns:repeat(6, minmax(0, 1fr));gap:8px">
+            <input type="text" maxlength="1" autocapitalize="characters" aria-label="Character 1 of 6" value="H" style="width:100%;height:64px;padding:0;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:28px;font-weight:600;text-align:center">
+            <input type="text" maxlength="1" autocapitalize="characters" aria-label="Character 2 of 6" value="4" style="width:100%;height:64px;padding:0;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:28px;font-weight:600;text-align:center">
+            <input type="text" maxlength="1" autocapitalize="characters" aria-label="Character 3 of 6" value="P" style="width:100%;height:64px;padding:0;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:28px;font-weight:600;text-align:center">
+            <input type="text" maxlength="1" autocapitalize="characters" aria-label="Character 4 of 6" value="9" style="width:100%;height:64px;padding:0;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:28px;font-weight:600;text-align:center">
+            <input type="text" maxlength="1" autocapitalize="characters" aria-label="Character 5 of 6" style="width:100%;height:64px;padding:0;border-radius:14px;border:2px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:28px;font-weight:600;text-align:center">
+            <input type="text" maxlength="1" autocapitalize="characters" aria-label="Character 6 of 6" style="width:100%;height:64px;padding:0;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:28px;font-weight:600;text-align:center">
+          </span>
+          <span style="font-size:14px;line-height:1.45;color:#5D5A73">Find it in Jemma: Where Jemma's AI runs, then Pair a desktop.</span>
+        </fieldset>
+        <a href="desktop-choose-ai.dc.html" style="display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:14px;background:#1F1D36;color:#FFFFFF;font-size:17px;font-weight:600;text-decoration:none">Sign in</a>
+      </form>
+
+      <div style="display:flex;align-items:center;gap:12px;font-size:14px;color:#5D5A73"><span aria-hidden="true" style="flex:1;height:1px;background:#E7E6EF"></span>or<span aria-hidden="true" style="flex:1;height:1px;background:#E7E6EF"></span></div>
+
+      <button type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:14px;border:1.5px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:17px;font-weight:600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4 7 8 6 8-6"/></svg>Sign in with email</button>
+    </section>
+
+    <section aria-labelledby="what" style="width:400px;flex:none;display:flex;flex-direction:column;gap:18px;padding:24px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:22px">
+      <h2 id="what" style="margin:0;font-size:18px;font-weight:600">What Jemma Desktop does</h2>
+      <ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px">
+        <li style="display:flex;align-items:flex-start;gap:12px">
+          <span aria-hidden="true" style="width:28px;height:28px;flex:none;border-radius:999px;background:#EEEDF5;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center">1</span>
+          <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font-size:16px;font-weight:600;line-height:1.3">Phones still snap tests</span><span style="font-size:14px;line-height:1.45;color:#5D5A73">Snap papers in Jemma the way you do now.</span></span>
+        </li>
+        <li style="display:flex;align-items:flex-start;gap:12px">
+          <span aria-hidden="true" style="width:28px;height:28px;flex:none;border-radius:999px;background:#EEEDF5;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center">2</span>
+          <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font-size:16px;font-weight:600;line-height:1.3">Your Mac does the thinking</span><span style="font-size:14px;line-height:1.45;color:#5D5A73">Your own Claude Code or Codex reads the papers and writes the lessons.</span></span>
+        </li>
+        <li style="display:flex;align-items:flex-start;gap:12px">
+          <span aria-hidden="true" style="width:28px;height:28px;flex:none;border-radius:999px;background:#EEEDF5;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center">3</span>
+          <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font-size:16px;font-weight:600;line-height:1.3">On the plan you already pay for</span><span style="font-size:14px;line-height:1.45;color:#5D5A73">Nothing extra to pay. Without Jemma Desktop, Jemma's cloud does the work on free models.</span></span>
+        </li>
+      </ol>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

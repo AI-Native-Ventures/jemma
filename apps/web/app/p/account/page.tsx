@@ -1,3 +1,4 @@
+import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { getAccount } from '@/lib/data/p26'
 import { BoardHeader, Chevron, ComingButton, ToggleRow} from './_ui'
@@ -61,9 +62,9 @@ export default async function ParentAccountPage() {
         </section>
 
         <form action={signOut} style={{ display: 'flex', flexDirection: 'column' }}>
-          <button type="submit" style={{ ...outlineButton, fontSize: 17 }}>
+          <PendingButton type="submit" style={{ ...outlineButton, fontSize: 17 }}>
             Sign out
-          </button>
+          </PendingButton>
         </form>
         <div style={{ flex: 1 }} />
       </main>

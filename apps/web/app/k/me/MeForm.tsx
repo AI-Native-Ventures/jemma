@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useEffect, useState } from 'react'
 import { signOutChild } from './actions'
 
@@ -114,9 +115,9 @@ export function MeForm({ firstName, initial }: { firstName: string; initial: str
       </section>
 
       <form action={signOutChild} style={{ display: 'contents' }}>
-        <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 60, borderRadius: 20, border: '2px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36', fontSize: 19, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+        <PendingButton type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 60, borderRadius: 20, border: '2px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36', fontSize: 19, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
           I&apos;m done for today
-        </button>
+        </PendingButton>
       </form>
       <p style={{ margin: 0, textAlign: 'center', fontSize: 16, lineHeight: 1.45, color: '#5D5A73' }}>A grown-up can change your PIN.</p>
     </>
