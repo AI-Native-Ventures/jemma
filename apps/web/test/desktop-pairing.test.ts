@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   CODE_TTL_MS,
+  GLOBAL_ATTEMPT_WINDOW_MS,
+  GLOBAL_MAX_ATTEMPTS,
   MAX_CLAIM_ATTEMPTS,
   claimPairing,
   hashSecret,
@@ -20,8 +22,14 @@ function memoryStore() {
     async countAttempts(hash, since) {
       return attempts.filter((a) => a.hash === hash && a.at >= since.getTime()).length
     },
+    async countAllAttempts(since) {
+      return attempts.filter((a) => a.at >= since.getTime()).length
+    },
     async recordAttempt(hash, at) {
       attempts.push({ hash, at: at.getTime() })
+    },
+    async pruneAttempts(before) {
+      for (let i = attempts.length - 1; i >= 0; i--) if (attempts[i]!.at < before.getTime()) attempts.splice(i, 1)
     },
     async consumeCode(hash, now) {
       const row = codes.get(hash)
@@ -33,7 +41,7 @@ function memoryStore() {
       tokens.push({ hash, userId, label })
     },
   }
-  return { store, codes, tokens }
+  return { store, codes, tokens, attempts }
 }
 
 const now = new Date('2026-10-28T10:00:00Z')
@@ -110,5 +118,29 @@ describe('desktop pairing', () => {
     expect((await claimPairing(store, 'QQQQQQ', now)).ok).toBe(false)
     const later = new Date(now.getTime() + CODE_TTL_MS + 1)
     expect(await claimPairing(store, 'QQQQQQ', later)).toEqual({ ok: false, reason: 'invalid' })
+  })
+
+  it('rate limits all tries together, so guessing many different codes does not get around it', async () => {
+    const { store, tokens } = memoryStore()
+    const { code } = await issuePairingCode(store, 'user-1', now)
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+    for (let i = 0; i < GLOBAL_MAX_ATTEMPTS; i++) {
+      const guess = `${alphabet[i % alphabet.length]}${alphabet[(i * 7) % alphabet.length]}AAAA`
+      expect(await claimPairing(store, guess, now)).toEqual({ ok: false, reason: 'invalid' })
+    }
+    expect(await claimPairing(store, 'ZZZZZZ', now)).toEqual({ ok: false, reason: 'rate_limited' })
+    // Even the right code waits while the whole endpoint is being hammered.
+    expect(await claimPairing(store, code, now)).toEqual({ ok: false, reason: 'rate_limited' })
+    expect(tokens).toHaveLength(0)
+    const later = new Date(now.getTime() + GLOBAL_ATTEMPT_WINDOW_MS + 1)
+    expect((await claimPairing(store, code, later)).ok).toBe(true)
+  })
+
+  it('forgets claim attempts older than an hour when a new code is issued', async () => {
+    const { store, attempts } = memoryStore()
+    await claimPairing(store, 'QQQQQQ', now)
+    expect(attempts).toHaveLength(1)
+    await issuePairingCode(store, 'user-1', new Date(now.getTime() + 61 * 60 * 1000))
+    expect(attempts).toHaveLength(0)
   })
 })

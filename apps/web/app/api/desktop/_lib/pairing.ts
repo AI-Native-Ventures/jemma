@@ -3,6 +3,14 @@ import type { JemmaDb } from '@jemma/profiling/db'
 export const CODE_TTL_MS = 10 * 60 * 1000
 export const MAX_CLAIM_ATTEMPTS = 5
 export const ATTEMPT_WINDOW_MS = 10 * 60 * 1000
+/**
+ * A claim hands out a session, so guessing must be slow whatever codes are tried: the per-code limit alone does not
+ * stop someone sending a different guess every time. 30 tries a minute across all codes (about 300 over a code's
+ * 10 minute life) against 32^6 (about 1.07 billion) possible codes.
+ */
+export const GLOBAL_MAX_ATTEMPTS = 30
+export const GLOBAL_ATTEMPT_WINDOW_MS = 60 * 1000
+const ATTEMPT_KEEP_MS = 60 * 60 * 1000
 const CODE_LENGTH = 6
 /** No 0, 1, I, O: a code is read off one screen and typed into another. */
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -16,7 +24,11 @@ export async function hashSecret(text: string): Promise<string> {
 export type PairingStore = {
   insertCode(hash: string, userId: string, expiresAt: Date): Promise<void>
   countAttempts(hash: string, since: Date): Promise<number>
+  /** All claim tries since a time, for any code. */
+  countAllAttempts(since: Date): Promise<number>
   recordAttempt(hash: string, at: Date): Promise<void>
+  /** Forget claim tries older than a time. */
+  pruneAttempts(before: Date): Promise<void>
   /** Atomic: marks an unclaimed, unexpired code as claimed and returns its user, or null. */
   consumeCode(hash: string, now: Date): Promise<string | null>
   insertToken(hash: string, userId: string, label: string): Promise<void>
@@ -38,6 +50,7 @@ export const normaliseCode = (typed: string) => typed.replace(/\s+/g, '').toUppe
 export async function issuePairingCode(store: PairingStore, userId: string, now = new Date()) {
   const code = randomCode()
   const expiresAt = new Date(now.getTime() + CODE_TTL_MS)
+  await store.pruneAttempts(new Date(now.getTime() - ATTEMPT_KEEP_MS))
   await store.insertCode(await hashSecret(code), userId, expiresAt)
   return { code, expiresAt }
 }
@@ -47,6 +60,9 @@ export type ClaimResult = { ok: true; token: string; userId: string } | { ok: fa
 /** Swaps a pairing code for a fresh per-user MCP token, once. The token is returned here and never stored in the clear. */
 export async function claimPairing(store: PairingStore, typed: string, now = new Date()): Promise<ClaimResult> {
   const hash = await hashSecret(normaliseCode(typed))
+  if ((await store.countAllAttempts(new Date(now.getTime() - GLOBAL_ATTEMPT_WINDOW_MS))) >= GLOBAL_MAX_ATTEMPTS) {
+    return { ok: false, reason: 'rate_limited' }
+  }
   const tries = await store.countAttempts(hash, new Date(now.getTime() - ATTEMPT_WINDOW_MS))
   if (tries >= MAX_CLAIM_ATTEMPTS) return { ok: false, reason: 'rate_limited' }
   await store.recordAttempt(hash, now)
@@ -83,6 +99,16 @@ export function supabasePairingStore(db: JemmaDb): PairingStore {
         'count attempts',
       )
       return res.count ?? 0
+    },
+    async countAllAttempts(since) {
+      const res = must(
+        await db.from('desktop_pairing_attempts').select('id', { count: 'exact', head: true }).gte('at', since.toISOString()),
+        'count all attempts',
+      )
+      return res.count ?? 0
+    },
+    async pruneAttempts(before) {
+      must(await db.from('desktop_pairing_attempts').delete().lt('at', before.toISOString()), 'prune attempts')
     },
     async recordAttempt(hash, at) {
       must(await db.from('desktop_pairing_attempts').insert({ code_hash: hash, at: at.toISOString() }), 'record attempt')
