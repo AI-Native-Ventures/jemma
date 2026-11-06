@@ -1,3 +1,4 @@
+import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
@@ -77,9 +78,9 @@ export default async function ParentNotificationsPage({ params }: { params: Prom
         title="Notifications"
         right={
           <form action={markAll}>
-            <button type="submit" style={{ minHeight: 44, padding: '0 8px', border: 'none', background: 'transparent', font: 'inherit', fontSize: 14, fontWeight: 600, color: '#1F1D36', textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer' }}>
+            <PendingButton type="submit" style={{ minHeight: 44, padding: '0 8px', border: 'none', background: 'transparent', font: 'inherit', fontSize: 14, fontWeight: 600, color: '#1F1D36', textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer' }}>
               Mark all read
-            </button>
+            </PendingButton>
           </form>
         }
       />

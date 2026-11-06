@@ -1,3 +1,4 @@
+import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
@@ -65,12 +66,12 @@ export default async function ParentHandoverPage({ params }: { params: Promise<{
           <span>When she&apos;s done she passes it back, and you see how it went.</span>
         </p>
         <form action={start} className="contents">
-          <button
+          <PendingButton
             type="submit"
             className="flex h-[52px] items-center justify-center gap-2 rounded-14 border-0 bg-ink text-[17px] font-semibold text-white"
           >
             {name} has the phone
-          </button>
+          </PendingButton>
         </form>
         <div className="flex-1" />
       </main>

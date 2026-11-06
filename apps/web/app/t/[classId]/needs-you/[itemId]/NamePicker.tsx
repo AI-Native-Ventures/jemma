@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { PageTitle, Diamond } from '../../snap/_parts'
@@ -112,9 +113,9 @@ export function NamePicker({
         </p>
       ) : null}
       {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
-      <button type="button" disabled={!pick || pending} onClick={submit} className="flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink text-[17px] font-semibold text-white disabled:opacity-50">
+      <PendingButton pending={pending} type="button" disabled={!pick || pending} onClick={submit} className="flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink text-[17px] font-semibold text-white disabled:opacity-50">
         Paper {position} is {pick?.name ?? '...'}&apos;s
-      </button>
+      </PendingButton>
     </div>
   )
 }

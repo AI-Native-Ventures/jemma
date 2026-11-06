@@ -1,5 +1,6 @@
 'use client'
 
+import { Spinner } from '@/components/ui/Button'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition, type ReactNode } from 'react'
@@ -98,9 +99,10 @@ export function Queue({
 
   return (
     <>
-      <label className={`flex h-[68px] cursor-pointer items-center justify-center gap-3 rounded-20 bg-coral text-[21px] font-bold text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink ${pending ? 'opacity-60' : ''}`}>
+      <label className={`relative flex h-[68px] cursor-pointer items-center justify-center gap-3 rounded-20 bg-coral text-[21px] font-bold text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink ${pending ? 'opacity-60' : ''}`}>
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" /><circle cx="12" cy="12.5" r="3.5" /></svg>
         Snap paper {next}
+        {pending ? <Spinner /> : null}
         <input {...cameraProps} data-testid="snap-paper" disabled={pending} onChange={(e) => { send(e.target.files?.[0], 'paper'); e.target.value = '' }} />
       </label>
       {lastPaper ? (

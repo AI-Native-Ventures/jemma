@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useActionState } from 'react'
 import { requestSignInCode } from '../actions'
 import { colors, errorText, primaryButton, textInput } from '../_parts'
@@ -20,9 +21,9 @@ export function SignInForm() {
           {state.error}
         </p>
       ) : null}
-      <button type="submit" disabled={pending} style={{ ...primaryButton, opacity: pending ? 0.6 : 1 }}>
+      <PendingButton pending={pending} type="submit" disabled={pending} style={{ ...primaryButton, opacity: pending ? 0.6 : 1 }}>
         Send me a sign-in code
-      </button>
+      </PendingButton>
       <p style={{ margin: 0, fontSize: 14, lineHeight: 1.45, color: colors.body }}>We email you a 6 digit code. No password to remember.</p>
     </form>
   )

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Desktop · Menu bar menu</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7FA}
+*{box-sizing:border-box}
+a{color:#1F1D36}a:hover{color:#B8381F}
+button{font:inherit;cursor:pointer}
+@keyframes jemmaPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.82);opacity:0.65}}
+</style>
+</helmet>
+<div style="width:320px;height:540px;display:flex;flex-direction:column;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;overflow:hidden">
+  <div aria-hidden="true" style="height:28px;flex:none;display:flex;align-items:center;justify-content:flex-end;padding:0 12px;background:#E9E8F0;border-bottom:1px solid #DCDBE6">
+    <span style="width:32px;height:22px;border-radius:6px;background:#D3D1E0;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 16 16"><polygon points="1,8 15,8 8,15" fill="#FF6A4D"/><polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#1F1D36" stroke-width="1.4"/></svg></span>
+  </div>
+
+  <section aria-label="Jemma Desktop menu" style="margin:6px 8px 0;display:flex;flex-direction:column;padding:6px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:12px;box-shadow:0 12px 32px rgba(31,29,54,0.14)">
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 8px 10px">
+      <span aria-hidden="true" style="width:34px;height:34px;flex:none;border-radius:10px;background:#FFF1ED;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" style="animation:jemmaPulse 1.6s ease-in-out infinite"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg></span>
+      <span style="flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25"><span style="font-size:15px;font-weight:700">Jemma Desktop</span><span style="font-size:13px;color:#5D5A73">Claude Code · Working</span></span>
+    </div>
+
+    <div aria-live="polite" style="display:flex;flex-direction:column;gap:8px;margin:0 2px;padding:12px;border-radius:10px;background:#F7F7FA">
+      <span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">Reading 3 of 5 papers</span><span style="font-size:13px;color:#5D5A73">6B Mathematics · snapped at 15:40</span></span>
+      <span aria-hidden="true" style="height:8px;border-radius:999px;background:#E4E3EC;overflow:hidden;display:flex"><span style="width:60%;background:#1F1D36;border-radius:999px"></span></span>
+      <span style="font-size:12px;color:#5D5A73">About a minute left</span>
+    </div>
+
+    <div aria-hidden="true" style="height:1px;background:#EFEEF4;margin:8px 4px"></div>
+    <h2 style="margin:0;padding:2px 8px 4px;font-size:12px;font-weight:600;color:#5D5A73">Earlier today</h2>
+    <ol style="list-style:none;margin:0;padding:0 8px;display:flex;flex-direction:column">
+      <li style="display:flex;align-items:center;gap:10px;min-height:30px;font-size:14px"><span style="width:38px;flex:none;color:#5D5A73;font-variant-numeric:tabular-nums">14:14</span><span>Planned tonight's lessons, 5 learners</span></li>
+      <li style="display:flex;align-items:center;gap:10px;min-height:30px;font-size:14px"><span style="width:38px;flex:none;color:#5D5A73;font-variant-numeric:tabular-nums">14:13</span><span>Wrote a 10 minute reteach</span></li>
+      <li style="display:flex;align-items:center;gap:10px;min-height:30px;font-size:14px"><span style="width:38px;flex:none;color:#5D5A73;font-variant-numeric:tabular-nums">14:12</span><span>Read 5 papers, 1 unsure</span></li>
+    </ol>
+
+    <div aria-hidden="true" style="height:1px;background:#EFEEF4;margin:8px 4px"></div>
+    <button type="button" style="display:flex;align-items:center;gap:10px;width:100%;min-height:36px;padding:0 8px;border:none;border-radius:7px;background:transparent;color:#1F1D36;font-size:14px;font-weight:500;text-align:left"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 5.5v13M15 5.5v13"/></svg>Pause Jemma</button>
+    <a href="desktop-main.dc.html" style="display:flex;align-items:center;gap:10px;min-height:36px;padding:0 8px;border-radius:7px;color:#1F1D36;font-size:14px;font-weight:500;text-decoration:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9h17"/></svg>Open Jemma</a>
+    <button type="button" style="display:flex;align-items:center;gap:10px;width:100%;min-height:36px;padding:0 8px;border:none;border-radius:7px;background:transparent;color:#1F1D36;font-size:14px;font-weight:500;text-align:left"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
+    <div aria-hidden="true" style="height:1px;background:#EFEEF4;margin:8px 4px"></div>
+    <button type="button" style="display:flex;align-items:center;gap:10px;width:100%;min-height:36px;padding:0 8px;border:none;border-radius:7px;background:transparent;color:#1F1D36;font-size:14px;font-weight:500;text-align:left"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v8"/><path d="M7 6.5a7 7 0 1 0 10 0"/></svg>Quit Jemma Desktop</button>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":320,"height":540}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

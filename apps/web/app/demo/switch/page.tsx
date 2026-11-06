@@ -1,3 +1,4 @@
+import { PendingButton } from '@/components/ui/Button'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { GemIcon } from '@/components/ui/icons'
@@ -91,7 +92,7 @@ export default async function DemoSwitchPage() {
                 ) : (
                   <form action={switchRoleAction}>
                     <input type="hidden" name="role" value={p.role} />
-                    <button type="submit" className={`${rowBase} cursor-pointer border border-line`}>{body}</button>
+                    <PendingButton type="submit" className={`${rowBase} cursor-pointer border border-line`}>{body}</PendingButton>
                   </form>
                 )}
               </li>

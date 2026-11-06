@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { approveMap, removeTopic, resolveCheck, saveTopic } from '../actions'
@@ -96,10 +97,10 @@ export function MapLaptop({ view }: { view: MapView }) {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5" /><path d="M5 15v3.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V15" /></svg>
               Documents
             </Link>
-            <button type="button" disabled={pending} onClick={() => run(() => approveMap(view.mapId))} style={{ display: 'flex', alignItems: 'center', gap: 8, height: 46, padding: '0 18px', borderRadius: 14, border: 'none', background: '#1F1D36', color: '#FFFFFF', fontSize: 15, fontWeight: 600 }}>
+            <PendingButton pending={pending} type="button" disabled={pending} onClick={() => run(() => approveMap(view.mapId))} style={{ display: 'flex', alignItems: 'center', gap: 8, height: 46, padding: '0 18px', borderRadius: 14, border: 'none', background: '#1F1D36', color: '#FFFFFF', fontSize: 15, fontWeight: 600 }}>
               {TICK}
               Approve map
-            </button>
+            </PendingButton>
           </div>
         </div>
 
@@ -273,8 +274,8 @@ function EditPanel({
 
       <p style={{ margin: 0, fontSize: 13, lineHeight: 1.45, color: '#5D5A73' }}>{`Found in the teaching plan, Term ${topic.term}. Every test question and lesson on this topic gets tagged to it.`}</p>
       <div style={{ display: 'flex', gap: 8 }}>
-        <button type="button" disabled={pending || !name.trim()} onClick={() => onSave(name.trim(), term, position, needs)} style={{ ...dark, flex: 1, height: 46 }}>Save</button>
-        <button type="button" disabled={pending} onClick={onRemove} style={{ ...light, height: 46, padding: '0 14px' }}>Remove topic</button>
+        <PendingButton pending={pending} type="button" disabled={pending || !name.trim()} onClick={() => onSave(name.trim(), term, position, needs)} style={{ ...dark, flex: 1, height: 46 }}>Save</PendingButton>
+        <PendingButton pending={pending} type="button" disabled={pending} onClick={onRemove} style={{ ...light, height: 46, padding: '0 14px' }}>Remove topic</PendingButton>
       </div>
     </>
   )

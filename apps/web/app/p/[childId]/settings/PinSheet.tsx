@@ -56,7 +56,7 @@ export function NewCodeButton({
             onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
             error={error}
           />
-          <Button type="submit" disabled={pending || pin.length !== 4}>
+          <Button type="submit" pending={pending} disabled={pin.length !== 4}>
             Save new code
           </Button>
         </form>

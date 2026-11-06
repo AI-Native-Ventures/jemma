@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { css, Icon } from '../../beyond/_parts'
@@ -147,14 +148,14 @@ export function ActivityForm({ childId, name }: { childId: string; name: string 
       ) : null}
 
       <div style={css('flex:1')} />
-      <button
+      <PendingButton pending={pending}
         type="button"
         onClick={save}
         disabled={pending}
         style={css('display:flex;align-items:center;justify-content:center;height:52px;border-radius:14px;border:none;background:#1F1D36;color:#FFFFFF;font-size:17px;font-weight:600;opacity:' + (pending ? '0.6' : '1'))}
       >
         Save activity
-      </button>
+      </PendingButton>
     </div>
   )
 }

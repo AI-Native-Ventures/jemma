@@ -1,3 +1,4 @@
+import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { GemIcon } from '@/components/ui/icons'
 import { getNotificationsPage, type NotificationRow } from '@/lib/data/p20'
@@ -98,12 +99,12 @@ export default async function TeacherNotificationsPage({ params }: { params: Pro
         title="Notifications"
         right={
           <form action={markAllRead.bind(null, classId)}>
-            <button
+            <PendingButton
               type="submit"
               className="min-h-11 cursor-pointer border-none bg-transparent px-2 text-[14px] font-semibold text-ink underline underline-offset-[3px]"
             >
               Mark all read
-            </button>
+            </PendingButton>
           </form>
         }
       />
