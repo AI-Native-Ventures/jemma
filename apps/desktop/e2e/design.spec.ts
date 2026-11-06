@@ -4,6 +4,8 @@ import { join } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { hook, launch, quit, stubWeb } from './helpers'
 
+test.skip(process.env.JEMMA_DESKTOP_E2E !== '1', 'Set JEMMA_DESKTOP_E2E=1 to run Electron e2e tests')
+
 const out = join(import.meta.dirname, '../../../design/actual')
 mkdirSync(out, { recursive: true })
 

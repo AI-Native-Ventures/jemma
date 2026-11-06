@@ -51,5 +51,5 @@ Everything the agent does goes through Jemma's own MCP server (19 tools). You ca
 - **Email sign-in is not part of the path.** The sign-in screen asks for a 6-digit code that is emailed to you, and the demo does not use it. If you try it, the email may arrive as a magic link instead of a code, depending on how the mail template is set. This was not tested against a real inbox for this document. Use the demo page.
 - **Some links lead to "Coming after the challenge".** A few screens link to features that are not built, such as messaging a teacher, starting from another teacher's map, and adding another teacher's code.
 - **No email, SMS or WhatsApp.** Jemma only shows notifications inside the app.
-- **Jemma Desktop.** Running jobs on your own Claude Code or Codex needs the Jemma Desktop app. Its runner core is in the repo (`packages/runner`) but the desktop app itself is not part of the live demo.
+- **Jemma Desktop.** The Mac app in `apps/desktop` runs jobs on your Claude Code or Codex subscription. Pair it by entering the six-character code shown in the signed-in Jemma web app; build the unsigned Mac app with `CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter desktop dist`.
 - **Phones.** Built and checked at 390 px (phone) and 1440 px (laptop). Light theme only.

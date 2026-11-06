@@ -3,6 +3,8 @@ import { join } from 'node:path'
 import { expect, test, type ElectronApplication, type Page } from '@playwright/test'
 import { CODE, REFRESH, TOKEN, hook, launch, quit, readLatin1, regularFiles, stubWeb } from './helpers'
 
+test.skip(process.env.JEMMA_DESKTOP_E2E !== '1', 'Set JEMMA_DESKTOP_E2E=1 to run Electron e2e tests')
+
 let app: ElectronApplication
 let web: Awaited<ReturnType<typeof stubWeb>>
 let userData: string
