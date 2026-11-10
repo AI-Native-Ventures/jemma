@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { createSandbox, deleteSandbox, resetSandbox } from '../seed/demo'
 import { SAMPLE_FILES } from '../seed/fixtures/sample-papers'
 import { classTest1Scores, classTest1ScoresBeforeFix } from '../seed/fixtures/class-test-1'
+import { CAST } from '../seed/fixtures/cast'
+import { longHistory } from '../seed/fixtures/long-history'
 import { classGaps } from '../../packages/profiling/src/logic'
 import {
   AnswerKeyItemSchema,
@@ -103,6 +105,10 @@ describe('sandboxes', () => {
     expect(history).toHaveLength(1)
     expect(await ok(admin.from('observations').select('id').in('child_id', childIds))).toHaveLength(2)
     expect(await ok(admin.from('attendance').select('child_id').in('child_id', childIds))).toHaveLength(50)
+    // The Long view records come back too, in their own table.
+    expect(await ok(admin.from('learner_records').select('id').in('child_id', childIds))).toHaveLength(
+      longHistory(new Date().getUTCFullYear(), CAST.teacher.displayName).length,
+    )
     expect(await ok(admin.from('activities').select('id').in('child_id', childIds))).toHaveLength(2)
     expect(await ok(admin.from('gaps').select('id').in('child_id', childIds).eq('stage', 'fixed'))).toHaveLength(3)
     expect(await ok(admin.from('format_trials').select('id').in('child_id', childIds))).toHaveLength(9)

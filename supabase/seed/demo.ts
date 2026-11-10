@@ -5,6 +5,7 @@ import { LessonSchema, ReteachSchema, GuidanceSchema, TopicMapDraftSchema, Answe
 import { classTest1Results, classTest1Roster, classTest1Scores, classTest1ScoresBeforeFix, classTest1Wrong, siphoQ7BeforeFix } from './fixtures/class-test-1'
 import { AMINA_ACTIVITIES, AWAY_DAY_INDEX, CAST, CHILD_PIN, CLASS, NOTES, SCHOOL, lastSchoolDays } from './fixtures/cast'
 import { FIXED_GAPS, FORMAT_FAMILY, FORMAT_TRIALS, TERM3_ROWS } from './fixtures/history'
+import { longHistory } from './fixtures/long-history'
 import {
   AMINA_LESSON, AMINA_LOG, CLASS_LOG, CURRICULUM_DOCS, HOMEWORK_NEEDS, SIPHO_NEEDS, WEEK_PLAN, PARENT_NOTES, TEACHER_NOTES, HOMEWORK_ROWS, LESSON_TOPIC, RETEACH, RETEACH_EXPLANATION, RETEACH_MISSING_BASIC, RETEACH_TOPIC, RETEACH_WHY,
   SESSION_DONE, SESSION_LOG, SESSION_TRY, SESSION_WARMUP, TEST_TITLE, TERMS, answerKeyItems, guidanceCard, topicMapDraft,
@@ -223,6 +224,13 @@ async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage): Pr
           'term 3 results',
         )
       })(),
+      // The Long view: three school years of made-up records, in their own table (every stage has them).
+      ok(
+        admin.from('learner_records').insert(
+          longHistory(now.getUTCFullYear(), CAST.teacher.displayName).map(({ child, ...row }) => ({ ...row, school_id: schoolId, child_id: childId[child]! })),
+        ),
+        'learner_records',
+      ),
       ensureSampleFiles(admin),
     ]
     await Promise.all(startWork)
