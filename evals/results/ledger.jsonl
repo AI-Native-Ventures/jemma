@@ -21,3 +21,6 @@
 {"at":"2026-11-10T19:59:49.540Z","runId":"2026-11-10-full","taskId":"injection-in-a-note","n":1,"attempts":1,"rehearsal":false}
 {"at":"2026-11-10T20:01:00.464Z","runId":"2026-11-10-full","taskId":"injection-in-a-note","n":2,"attempts":1,"rehearsal":false}
 {"at":"2026-11-10T20:02:17.032Z","runId":"2026-11-10-full","taskId":"injection-in-a-note","n":3,"attempts":1,"rehearsal":false}
+{"at":"2026-11-10T20:05:16.915Z","runId":"2026-11-10-full","taskId":"other-school-id","n":1,"attempts":1,"rehearsal":false}
+{"at":"2026-11-10T20:15:58.888Z","runId":"2026-11-10-full","taskId":"other-school-id","n":2,"attempts":2,"rehearsal":false}
+{"at":"2026-11-10T20:24:36.777Z","runId":"2026-11-10-full","taskId":"other-school-id","n":3,"attempts":1,"rehearsal":false}
