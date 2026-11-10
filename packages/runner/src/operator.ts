@@ -3,7 +3,7 @@ import { SupabaseReplayStore } from '@jemma/profiling/ai'
 import type { JemmaDb } from '@jemma/profiling/db'
 import { codeJobs } from '@jemma/profiling/orchestrator'
 import type { ToolContext } from '@jemma/profiling/tools'
-import { detectAgents, type AgentName, type AgentStatus } from './agents'
+import { detectAgent, type AgentName, type AgentStatus } from './agents'
 import { claimOperatorEvent, finishOperatorEvent, sendOperatorHeartbeat, type ClaimedEvent } from './claim'
 import { processEvent, type JobReport, type RunnerOptions, type StepInput, type StepResult } from './loop'
 import { DEFAULT_TIMEOUT_MS, runJob } from './run'
@@ -148,11 +148,6 @@ export function startOperator(o: OperatorOptions): Operator {
       return { status: 'failed', note: `the limit of ${o.maxJobs} agent runs was reached, nothing was run` }
     }
     started++
-    // The agent's complete_job call marks the event done after every step, while more steps may follow. The cloud keeps an
-    // event running until its whole plan is over, and "one event per school at a time" counts running events, so the event
-    // is put back to running within half a second. finish_operator_event settles it for good at the end.
-    const keepRunning = () => void o.db.from('events').update({ status: 'running', finished_at: null }).eq('id', event.id).eq('status', 'done').then(() => {}, () => {})
-    const hold = setInterval(keepRunning, 500)
     // Only the lines that name tool calls are kept: a vision job's stream is large.
     const kept: string[] = []
     let partial = ''
@@ -161,13 +156,8 @@ export function startOperator(o: OperatorOptions): Operator {
       partial = lines.pop() ?? ''
       for (const line of lines) if (line.slice(0, 80).includes('"assistant"') || line.slice(0, 80).includes('item.completed')) kept.push(line)
     }
-    try {
-      const res = await run({ eventId: event.id, prompt }, o.agent, mcp, { timeoutMs, onStdout })
-      return { ...res, toolCalls: parseTranscript(o.agent, kept.join('\n')).toolCalls }
-    } finally {
-      clearInterval(hold)
-      await o.db.from('events').update({ status: 'running', finished_at: null }).eq('id', event.id).eq('status', 'done')
-    }
+    const res = await run({ eventId: event.id, prompt }, o.agent, mcp, { timeoutMs, onStdout })
+    return { ...res, toolCalls: parseTranscript(o.agent, kept.join('\n')).toolCalls }
   }
 
   const runClaimed = async (event: ClaimedEvent) => {
@@ -211,7 +201,7 @@ export function startOperator(o: OperatorOptions): Operator {
 
   const first = (async () => {
     try {
-      version = (await (o.detect ?? detectAgents)())[o.agent]?.version ?? null
+      version = o.detect ? ((await o.detect())[o.agent as 'claude' | 'codex']?.version ?? null) : (await detectAgent(o.agent)).version
     } catch (err) {
       problem(err)
     }

@@ -1,7 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 import { afterAll, beforeAll, expect, test } from 'vitest'
+import { MemoryStore } from '@jemma/profiling/ai'
 import { createServiceClient, type Database, type JemmaDb } from '@jemma/profiling/db'
+import { completeJob } from '../../profiling/src/tools/complete-job'
 import { createSandbox, type Sandbox } from '../../profiling/test/helpers/sandbox'
 import { formatJobLine, startOperator, type OperatorOptions, type RunnerJob, type RunResult } from '../src'
 import { loadEnv } from './helpers'
@@ -434,35 +436,25 @@ test('operator loop: a whole paper event, plain-code steps in process, lesson-re
   }
 })
 
-test('operator loop: complete_job marking the event done between steps is undone while the plan goes on', async () => {
+test('operator loop: the real complete_job tool does not settle the event between steps; the operator settles it at the end', async () => {
   await db.from('reteach_plans').delete().eq('test_id', loopS.testId)
   const id = await queueOp(loopS, 'paper.snapped', { paperId: loopS.paperId })
-  const seen: { job: string; during: string | undefined; after: string | undefined }[] = []
-  let first = true
+  const seen: { job: string; status: string | undefined; finishedAt: string | null | undefined }[] = []
   const agent = fakeAgent({
     hold: async (call) => {
-      // what the real complete_job does at the end of a step: mark the event done
-      await db.from('events').update({ status: 'done', finished_at: new Date().toISOString() }).eq('id', call.eventId)
-      await new Promise((r) => setTimeout(r, 1300)) // the agent process takes a moment to exit
-      const during = (await db.from('events').select('status').eq('id', call.eventId).single()).data?.status
-      seen.push({ job: call.job, during, after: undefined })
-      if (first) {
-        first = false
-        expect((await db.from('events').select('finished_at').eq('id', call.eventId).single()).data?.finished_at).toBeNull()
-      }
+      // what the agent does at the end of every step, through the real tool
+      const ctx = { db, schoolId: loopS.schoolId, eventId: call.eventId, env: { replayStore: new MemoryStore() }, now: () => new Date() }
+      expect(await completeJob.run(ctx, { eventId: call.eventId, status: 'done' })).toEqual({ ok: true })
+      const row = (await db.from('events').select('status, finished_at').eq('id', call.eventId).single()).data
+      seen.push({ job: call.job, status: row?.status, finishedAt: row?.finished_at })
     },
   })
   const { op } = operate({ run: agent.run })
   try {
-    // seven agent steps in this plan; `settled` alone would see the transient done the fake agent writes itself
     await waitFor('all seven agent steps', async () => seen.length >= 7, 120_000)
-    for (const s of seen) expect(s.during, `${s.job} must show running while its process exits`).toBe('running')
-    await waitFor('the event to settle for good', async () => {
-      const status = async () => (await db.from('events').select('status').eq('id', id).single()).data?.status
-      if ((await status()) !== 'done') return false
-      await new Promise((r) => setTimeout(r, 1200)) // the final done must stay done
-      return (await status()) === 'done'
-    }, 60_000)
+    for (const s of seen) expect(s, `${s.job}: the event must still be running after complete_job`).toMatchObject({ status: 'running', finishedAt: null })
+    await waitFor('the event to settle', async () => (await db.from('events').select('status').eq('id', id).single()).data?.status === 'done', 60_000)
+    expect((await row(id)).finished_at).not.toBeNull()
   } finally {
     await op.stop()
   }

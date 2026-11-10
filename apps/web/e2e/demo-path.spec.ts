@@ -285,7 +285,7 @@ test('the whole demo path', async ({ page }) => {
     const note = 'Asked why we cannot just add the bottoms. Keen to try fraction strips.'
     await page.getByRole('textbox', { name: 'Note' }).fill(note)
     await page.getByRole('button', { name: 'Save note' }).click()
-    await expect(page.getByRole('region', { name: 'Earlier notes' }).getByText(note)).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Earlier notes' }).getByText(note)).toBeVisible({ timeout: 30_000 }) // a cold dev server or preview saves slowly
     await page.goto(`${base}/register`)
     await page.getByRole('button', { name: 'Mark everyone here' }).click()
     await page.getByRole('group', { name: 'Thabo' }).getByRole('button', { name: 'Away' }).click()

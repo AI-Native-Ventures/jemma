@@ -4,7 +4,7 @@
  *   pnpm operator
  *
  * Reads SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and AGENT_URL from the repo root .env.local (or the environment),
- * JEMMA_RUNNER_AGENT (claude or codex, default claude) and OPERATOR_CONCURRENCY (default 2).
+ * JEMMA_RUNNER_AGENT (claude, codex or goose, default claude; only claude has been proven) and OPERATOR_CONCURRENCY (default 2).
  * OPERATOR_MAX_JOBS stops it after that many agent runs. OPERATOR_TAG (default `default`) must match the
  * agent's AI_ROUTE_TAG: only events handed over with that tag are served.  OPERATOR_TRACE=<file> also appends one JSON line per job
  * (school, event, job, seconds, outcome, the agent's tool calls in order). Prints one line per job and appends the same lines to
@@ -30,7 +30,7 @@ const supabaseUrl = need('SUPABASE_URL')
 const serviceKey = need('SUPABASE_SERVICE_ROLE_KEY')
 const agentUrl = need('AGENT_URL')
 const agent = (env.JEMMA_RUNNER_AGENT ?? 'claude') as AgentName
-if (agent !== 'claude' && agent !== 'codex') throw new Error(`JEMMA_RUNNER_AGENT must be claude or codex, not ${agent}`)
+if (agent !== 'claude' && agent !== 'codex' && agent !== 'goose') throw new Error(`JEMMA_RUNNER_AGENT must be claude, codex or goose, not ${agent}`)
 const concurrency = Number(env.OPERATOR_CONCURRENCY ?? 2)
 const maxJobs = env.OPERATOR_MAX_JOBS ? Number(env.OPERATOR_MAX_JOBS) : undefined
 const traceFile = env.OPERATOR_TRACE
