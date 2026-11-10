@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { parseEnv } from 'node:util'
 import type { JemmaDb } from '../../packages/profiling/src/db/client'
 import { jobPlan } from '../../packages/profiling/src/plans'
+import { assertDevProject } from '../../packages/profiling/scripts/env'
 import { detectAgents, parseTranscript, runJob, startRunner, type AgentName, type RunOptions } from '../../packages/runner/src/index'
 import { createSandbox, type Sandbox } from '../../supabase/seed/demo'
 import { sendEvent } from '../../apps/web/lib/agent'
@@ -36,12 +37,6 @@ function required(env: Env, key: string): string {
   const value = env[key]
   if (!value) throw new Error(`required environment value is missing: ${key}`)
   return value
-}
-
-function assertDevProject(env: Env): void {
-  const url = new URL(required(env, 'SUPABASE_URL'))
-  const ref = url.hostname.split('.')[0]
-  if (ref !== 'ayxgctbemuvozwktstaa') throw new Error('configured Supabase project is not jemma-dev')
 }
 
 function configureProcess(): void {
