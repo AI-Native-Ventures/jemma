@@ -6,6 +6,7 @@ import { getClassHome, getGapDetail, type ClassGapView, type ClassHome, type Gap
 import { LaptopHome } from './LaptopHome'
 import { FullLogLink } from './log/FullLogLink'
 import { Only } from './Only'
+import { ShareCard } from './ShareCard'
 
 const dot = 'size-[9px] rounded-pill'
 
@@ -257,7 +258,7 @@ export default async function TeacherClassHome({
   if (!home) notFound()
   const base = `/t/${classId}`
   const next = home.mode === 'next'
-  const phone = <PhoneHome home={home} base={base} />
+  const phone = <PhoneHome home={home} base={base} classId={classId} />
   if (next) return <div className="lg:mx-auto lg:max-w-[640px]">{phone}</div>
   const key = home.gaps.some((g) => g.key === gap) ? gap! : home.topGapKey
   const detail = key ? await getGapDetail(classId, key) : null
@@ -265,13 +266,13 @@ export default async function TeacherClassHome({
     <>
       <Only on="phone">{phone}</Only>
       <Only on="laptop">
-        <LaptopHome home={home} detail={detail} base={base} />
+        <LaptopHome home={home} detail={detail} base={base} classId={classId} />
       </Only>
     </>
   )
 }
 
-function PhoneHome({ home, base }: { home: ClassHome; base: string }) {
+function PhoneHome({ home, base, classId }: { home: ClassHome; base: string; classId: string }) {
   const next = home.mode === 'next'
   const desktopOff = home.needsYou.some((item) => item.desktopOff)
   return (
@@ -286,6 +287,7 @@ function PhoneHome({ home, base }: { home: ClassHome; base: string }) {
           {home.headline}
         </Headline>
       )}
+      {home.shareCard ? <ShareCard classId={classId} card={home.shareCard} /> : null}
       {next ? <NextCards home={home} base={base} /> : <NeedsYouList items={home.needsYou} />}
       <Gaps home={home} base={base} hideDots={desktopOff} />
       {!next && home.latestTest ? <LatestTest test={home.latestTest} base={base} /> : null}

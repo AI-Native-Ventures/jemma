@@ -2,6 +2,7 @@ import { ReteachSchema, type Reteach } from '@jemma/profiling/schemas'
 import type { NeedsYouItem } from '@/components/blocks'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import { loadShortLabels } from '@/lib/topics'
+import { getShareCard, type ShareCardData } from './p50b'
 
 export type GapStage = 'new' | 'practising' | 'fixed'
 
@@ -88,6 +89,8 @@ export type ClassHome = {
   waiting: string[]
   activity: ActivityEntry[]
   topGapKey: string | null
+  /** A test is held (parents see nothing of it yet) and has a marked paper: the teacher can share it. */
+  shareCard: ShareCardData | null
 }
 
 export type GapDetail = {
@@ -450,6 +453,7 @@ export async function getClassHome(classId: string): Promise<ClassHome | null> {
   }
 
   const p = partsOf(d.now)
+  const shareCard = await getShareCard(classId)
   return {
     mode,
     headline,
@@ -463,6 +467,7 @@ export async function getClassHome(classId: string): Promise<ClassHome | null> {
     waiting,
     activity: (mode === 'next' ? d.log.slice(0, 4) : d.log.slice(0, 4).reverse()).map((l) => ({ at: logTime(l.at, d.now), text: l.text })),
     topGapKey: top?.key ?? null,
+    shareCard,
   }
 }
 
