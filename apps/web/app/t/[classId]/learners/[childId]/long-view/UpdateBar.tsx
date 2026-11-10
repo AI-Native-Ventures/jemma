@@ -42,7 +42,7 @@ export function UpdateBar({ childId, state, lastUpdated }: { childId: string; st
       {state === 'failed' ? (
         <ErrorRetry title="The update did not finish" body="Nothing was lost. What you see is from the last update that worked." onRetry={update} />
       ) : null}
-      <Button variant="secondary" size="sm" pending={running || pending} disabled={running || pending} onClick={update}>
+      <Button variant="secondary" size="sm" className="lg:w-auto lg:self-start lg:px-8" pending={running || pending} disabled={running || pending} onClick={update}>
         Update the Long view
       </Button>
       {running ? <p className="m-0 text-[14px] leading-[1.4] text-body">Jemma is looking at the records again. This can take a minute or two.</p> : null}

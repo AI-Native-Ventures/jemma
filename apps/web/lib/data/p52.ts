@@ -239,9 +239,9 @@ function sheetOfRecord(r: LongViewRecord): LvSheet {
 const answerLabel = (label: string) => label.replace(/, question (\d+)$/, ' · Q$1')
 
 /** Each run of marked answers is put in question order (Q2 before Q10). Records and notes keep the order they were stored in. */
-function inQuestionOrder(chips: LvEvidence[]): LvEvidence[] {
-  const out: LvEvidence[] = []
-  let run: LvEvidence[] = []
+export function inQuestionOrder<T extends { kind: string; label: string }>(chips: T[]): T[] {
+  const out: T[] = []
+  let run: T[] = []
   const flush = () => {
     out.push(...run.sort((a, b) => a.label.localeCompare(b.label, 'en', { numeric: true })))
     run = []
@@ -555,7 +555,7 @@ export async function loadSharedLongView(db: JemmaDb, childId: string): Promise<
         id: p.id,
         title: p.title,
         statement: p.statement,
-        labels: (evidence.success ? evidence.data : []).map((e) => answerLabel(e.label)),
+        labels: inQuestionOrder((evidence.success ? evidence.data : []).map((e) => ({ kind: e.kind as string, label: answerLabel(e.label) }))).map((e) => e.label),
         sharedOn: p.discussed_at ? dateLabel(p.discussed_at) : '',
       }
     }),

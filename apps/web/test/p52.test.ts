@@ -4,6 +4,7 @@ import {
   buildLongView,
   cellAlt,
   groupTerms,
+  inQuestionOrder,
   levelOf,
   linesFor,
   pillText,
@@ -325,6 +326,26 @@ describe('the patterns', () => {
       'Class Test 1 · Q2',
       'Class Test 1 · Q10',
       'Quiz: Adding fractions, Mrs Naidoo, 12 Aug 2025',
+    ])
+  })
+
+  it('orders each run of marked answers by question and leaves records and notes where they are (the parent list uses the same order)', () => {
+    const c = (kind: 'result' | 'record' | 'note', label: string) => ({ kind, label })
+    const out = inQuestionOrder([
+      c('result', 'Class Test 1 · Q10'),
+      c('result', 'Class Test 1 · Q2'),
+      c('record', 'Quiz: Z, Mrs Naidoo, 1 Feb 2026'),
+      c('result', 'Homework · Q11'),
+      c('result', 'Homework · Q3'),
+      c('note', 'Teacher note, term 3, Mrs Naidoo, 17 Aug 2025'),
+    ])
+    expect(out.map((e) => e.label)).toEqual([
+      'Class Test 1 · Q2',
+      'Class Test 1 · Q10',
+      'Quiz: Z, Mrs Naidoo, 1 Feb 2026',
+      'Homework · Q3',
+      'Homework · Q11',
+      'Teacher note, term 3, Mrs Naidoo, 17 Aug 2025',
     ])
   })
 
