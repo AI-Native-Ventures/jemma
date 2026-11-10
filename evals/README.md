@@ -81,6 +81,15 @@ This work is allowed a limited number of live goose runs (45), free OpenRouter m
 
 `pnpm evals:report` reads `evals/results/<run id>/` (the newest run folder that does not start with `rehearsal-`, or `--run NAME`) and writes `EVALS.md`. It fails, and writes nothing, when any of the 33 result files (or their streams) is missing. The model's paid price is read from OpenRouter's public models endpoint the first time and saved in `pricing.json` in the run folder (`--refresh-price` reads it again). The one hand-written part is `analysis.json` in the run folder, which holds the explanation and next steps for the failure that is not fixed; the generator checks that it is about the task the results say is weakest.
 
+## Judging saved runs again
+
+A check is plain code on the facts and the transcript, and both are saved with the run. When a check turns out to have flagged something harmless, `evals/rescore.ts` judges the saved runs of one task again with the current check and no model: the stream, the facts and the event are not changed, only `checks`, `pass` and `extras`. The earlier verdict stays in the file under `rescored`, the original files are copied to `superseded/<name>/` in the run folder, and the change is written down in `changes.json` of the run folder, which EVALS.md prints as written. It was used once, for `file-server-confined`.
+
+```bash
+pnpm --filter @jemma/runner exec node --import tsx --import ../profiling/scripts/register-md.mjs ../../evals/rescore.ts \
+  --run-id <run id> --task <task id> --keep-as <folder name> --why "what the check got wrong"
+```
+
 ## Unit tests
 
 `packages/runner/test/evals-*.test.ts` (picked up by the runner's vitest project, so by `pnpm test`): the checks of every task against prepared rows and transcripts (a good run and bad runs), the report generator (it refuses missing results, pass and fail both render, variation, cost, the weakest task), and the harness pieces (nothing secret saved, the environment goose sees, the live-cap ledger, a real `runJob` with the fake goose feeding the checks). They call no model and no database.

@@ -320,7 +320,7 @@ export function renderReport(input: ReportInput): string {
 
   if (changes.length) {
     push('## Changes made while the runs were going', '')
-    push('These were written by the author when it happened, and are shown as written. A task that was run again keeps its first results in the folder named under "Kept".', '')
+    push('These were written by the author when it happened, and are shown as written. A task that was run again, or judged again, keeps its earlier results in the folder named under "Kept".', '')
     for (const c of changes) push(`- \`${c.taskId}\`: ${c.what.trim()} Why: ${c.why.trim()} Kept: ${c.evidence.trim()}`)
     push('')
   }
