@@ -3,8 +3,8 @@ import type { JemmaDb } from './db'
 import type { JemmaEvent } from './schemas/events'
 import { ok } from './tools/context'
 
-/** The 7 AI jobs. Each has a prompt file `jobs/<job>.md` (see jobs/README.md). */
-export const AI_JOBS = ['draft_map', 'read_key', 'read_paper', 'diagnose', 'class_report', 'write_lesson', 'guidance'] as const
+/** The AI jobs. Each has a prompt file `jobs/<job>.md` (see jobs/README.md). */
+export const AI_JOBS = ['draft_map', 'read_key', 'read_paper', 'diagnose', 'class_report', 'write_lesson', 'guidance', 'long_view'] as const
 /** Plain-code steps that sit in the plans next to the AI jobs. */
 export const CODE_JOBS = ['plan_next_session', 'update_learner_profile'] as const
 export const JOB_NAMES = [...AI_JOBS, ...CODE_JOBS] as const
@@ -86,6 +86,8 @@ export async function jobPlan(event: JemmaEvent, db: JemmaDb): Promise<JobStep[]
       if (paper.status === 'marked' && paper.child_id) return [{ job: 'diagnose', ids: { childId: paper.child_id, paperId: event.paperId } }]
       return []
     }
+    case 'long_view.requested':
+      return [{ job: 'long_view', ids: { childId: event.childId } }]
   }
 }
 
@@ -150,6 +152,7 @@ export async function postconditions(event: JemmaEvent, db: JemmaDb): Promise<st
     }
     case 'observation.added':
     case 'activity.added':
+    case 'long_view.requested':
       break
   }
   return missing
