@@ -91,6 +91,16 @@ TTS_PROXY_URL=http://localhost:8799 AI_MODE=record \
 
 Answers land in the `ai_replays` table on jemma-dev (service role only).
 
+## Evals
+
+`pnpm evals` runs the eleven eval tasks (three runs each) on the real agent path with Goose and a free open-weights model, checks every outcome in code, and writes `EVALS.md` from the saved results in `evals/results/<run id>/`. `pnpm evals:report` rewrites `EVALS.md` from those files alone and fails if any of the 33 result files is missing. Never edit `EVALS.md` by hand.
+
+- Needs Goose, `OPENROUTER_API_KEY` (a free key) and the database values in `.env.local` (the local stack or jemma-dev). It starts its own agent worker on port 8756 and stops it at the end.
+- Every run makes its own sandbox and MCP token on the database and deletes both when it ends, also when it fails. The command ends with a sweep for leftovers and prints what it found.
+- `pnpm evals --rehearse done --task class-report --runs 1` tests the flow with a fake goose: no model, nothing counted. Use it after any harness change.
+- Live goose runs are counted in `evals/results/ledger.jsonl` (cap 45 for the eval packet). Free models are slow and busy at times: if the model is down, wait and run again.
+- Details, the task list and how a task is built: `evals/README.md`.
+
 ## Reset
 
 - A judge or you: open `/demo/reset` in the app (it rebuilds the sandbox in about 10 seconds).
