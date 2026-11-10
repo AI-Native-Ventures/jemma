@@ -4,7 +4,7 @@ import { createServiceClient, type JemmaDb } from '../../packages/profiling/src/
 import { shareResults, type ShareDeps } from '../../apps/web/lib/share-results'
 
 // "Share with parents" on real rows: the three fields, the approval with the teacher's name, who is told, who may share.
-// A small school made for this file on jemma-dev. No agent and no model: the event and the Long view request are stubs.
+// A small school made for this file on jemma-dev. No agent and no model: the event is a stub.
 
 const url = process.env.SUPABASE_URL!
 const anonKey = process.env.SUPABASE_ANON_KEY!
@@ -95,12 +95,11 @@ async function heldTest(status: 'marked' | 'needs_you' = 'marked'): Promise<stri
   return t!.id
 }
 
-const deps = (key = 'teacher'): ShareDeps & { send: ReturnType<typeof vi.fn>; askLongView: ReturnType<typeof vi.fn> } => ({
+const deps = (key = 'teacher'): ShareDeps & { send: ReturnType<typeof vi.fn> } => ({
   teacher: users[key]!.client,
   admin: service,
   userId: users[key]!.id,
   send: vi.fn(async () => 'event-id'),
-  askLongView: vi.fn(async () => ({ sent: [], skipped: [], failed: [] })),
 })
 const testRow = async (id: string) => (await ok(service.from('tests').select('held, shared_at, shared_by').eq('id', id).single()))!
 const notesOf = async (userId: string) => ok(service.from('notifications').select('title, body, href').eq('user_id', userId).order('created_at'))
@@ -130,8 +129,7 @@ describe('shareResults on real rows', () => {
 
     expect(d.send).toHaveBeenCalledTimes(1)
     expect(d.send).toHaveBeenCalledWith('test.shared', { testId })
-    expect(d.askLongView).toHaveBeenCalledTimes(1)
-    expect([...d.askLongView.mock.calls[0]![0]].sort()).toEqual([ids.amina, ids.thabo].sort())
+    expect([...(r.ok ? r.childIds : [])].sort()).toEqual([ids.amina, ids.thabo].sort())
   })
 
   test('sharing a second time does nothing: the first time, the approval and the messages stay as they were', async () => {
@@ -143,7 +141,6 @@ describe('shareResults on real rows', () => {
     expect(await testRow(testId)).toEqual(first)
     expect(await ok(service.from('approvals').select('id').eq('ref_id', testId))).toHaveLength(1)
     expect(d.send).not.toHaveBeenCalled()
-    expect(d.askLongView).not.toHaveBeenCalled()
   })
 
   test('a parent cannot share, and neither can the teacher of another school', async () => {

@@ -132,6 +132,7 @@ test.describe('Share with parents', () => {
       // One tap on the test page. The card goes, and one quiet line says who shared and when.
       await page.goto(`${base}/tests/${testId}`)
       await check(card()).toBeVisible()
+      const longViewsBefore = (await db.from('events').select('id').eq('school_id', schoolId).eq('type', 'long_view.requested')).data!.length
       await card().getByRole('button', { name: 'Share with parents' }).click()
       await check(card()).toHaveCount(0)
       const line = page.getByText(/^Shared with parents by Ms Banda, \w{3} \d{1,2} \w{3} \d\d:\d\d$/)
@@ -139,7 +140,7 @@ test.describe('Share with parents', () => {
       await noHorizontalScroll(page)
       await proof(page, 'test-page-after')
 
-      // What was kept: the three fields, the approval with the teacher's name, and the two events for the agent (stand-in).
+      // What was kept: the three fields, the approval with the teacher's name, and the one event for the agent (stand-in).
       const row = await db.from('tests').select('held, shared_at, shared_by').eq('id', testId).single()
       expect(row.data).toMatchObject({ held: false, shared_by: (await peopleOf(sb.sandboxId)).logins.teacher.userId })
       expect(row.data!.shared_at).toBeTruthy()
@@ -147,7 +148,7 @@ test.describe('Share with parents', () => {
       expect(approvals.data).toEqual([{ decided_by_name: 'Ms Banda', decision: 'shared', note: 'Class Test 1: Fractions and decimals' }])
       const events = await db.from('events').select('type').eq('school_id', schoolId).in('type', ['test.shared', 'long_view.requested'])
       expect(events.data!.filter((e) => e.type === 'test.shared')).toHaveLength(1)
-      expect(events.data!.filter((e) => e.type === 'long_view.requested')).toHaveLength(4)
+      expect(events.data!.filter((e) => e.type === 'long_view.requested')).toHaveLength(longViewsBefore) // sharing asks for the lessons and nothing else
 
       // Class home and the progress page show nothing more about it.
       await page.goto(base)

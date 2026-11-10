@@ -96,9 +96,8 @@ function setup(state = fresh(), opts: { teaches?: boolean; failNotify?: boolean 
   const teacher = memoryDb(state, opts)
   const admin = memoryDb(state, opts)
   const send = vi.fn(async () => 'event-1')
-  const askLongView = vi.fn(async (ids: string[]) => ({ sent: ids, skipped: [], failed: [] }))
-  const deps: ShareDeps = { teacher: teacher.db, admin: admin.db, userId: TEACHER, send, askLongView, now: () => new Date('2026-11-10T09:30:00Z'), ...over }
-  return { state, deps, send, askLongView, admin }
+  const deps: ShareDeps = { teacher: teacher.db, admin: admin.db, userId: TEACHER, send, now: () => new Date('2026-11-10T09:30:00Z'), ...over }
+  return { state, deps, send, admin }
 }
 
 afterEach(() => vi.restoreAllMocks())
@@ -130,24 +129,22 @@ describe('shareResults', () => {
     expect(state.notifications).toHaveLength(2)
   })
 
-  it('asks for the Long view of exactly the learners with a marked paper, once, and sends test.shared once', async () => {
-    const { deps, send, askLongView } = setup()
-    await shareResults(deps, CLASS, TEST)
-    expect(askLongView).toHaveBeenCalledTimes(1)
-    expect(askLongView).toHaveBeenCalledWith([AMINA, THABO])
+  it('sends test.shared once, and answers with the learners who have a marked paper', async () => {
+    const { deps, send } = setup()
+    const result = await shareResults(deps, CLASS, TEST)
     expect(send).toHaveBeenCalledTimes(1)
     expect(send).toHaveBeenCalledWith('test.shared', { testId: TEST })
+    expect(result).toEqual({ ok: true, shared: true, childIds: [AMINA, THABO] })
   })
 
   it('sharing twice does nothing the second time: no approval, no message, no event', async () => {
-    const { state, deps, send, askLongView } = setup()
+    const { state, deps, send } = setup()
     await shareResults(deps, CLASS, TEST)
     const again = await shareResults(deps, CLASS, TEST)
     expect(again).toMatchObject({ ok: true, shared: false })
     expect(state.approvals).toHaveLength(1)
     expect(state.notifications).toHaveLength(2)
     expect(send).toHaveBeenCalledTimes(1)
-    expect(askLongView).toHaveBeenCalledTimes(1)
     expect(state.tests[0]!.shared_at).toBe('2026-11-10T09:30:00.000Z') // the first time stays
   })
 
@@ -160,13 +157,12 @@ describe('shareResults', () => {
   })
 
   it('refuses someone who does not teach the class, and writes nothing', async () => {
-    const { state, deps, send, askLongView } = setup(fresh(), { teaches: false })
+    const { state, deps, send } = setup(fresh(), { teaches: false })
     expect(await shareResults(deps, CLASS, TEST)).toEqual({ ok: false, message: 'Only the class teacher can share results.' })
     expect(state.tests[0]).toMatchObject({ held: true, shared_at: null, shared_by: null })
     expect(state.approvals).toEqual([])
     expect(state.notifications).toEqual([])
     expect(send).not.toHaveBeenCalled()
-    expect(askLongView).not.toHaveBeenCalled()
   })
 
   it('refuses a test that is not in this class', async () => {
@@ -196,32 +192,20 @@ describe('shareResults', () => {
     const send = vi.fn(async () => {
       throw new Error('agent /events answered 500')
     })
-    const { state, deps, askLongView } = setup(fresh(), {}, { send })
+    const { state, deps } = setup(fresh(), {}, { send })
     expect(await shareResults(deps, CLASS, TEST)).toMatchObject({ ok: true, shared: true })
     expect(state.tests[0]).toMatchObject({ held: false })
     expect(state.approvals).toHaveLength(1)
-    expect(askLongView).toHaveBeenCalledTimes(1) // the Long view is asked for even when test.shared failed
-  })
-
-  it('still shares when the Long view request fails', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
-    const askLongView = vi.fn(async () => {
-      throw new Error('boom')
-    })
-    const { state, deps, send } = setup(fresh(), {}, { askLongView })
-    expect(await shareResults(deps, CLASS, TEST)).toMatchObject({ ok: true, shared: true })
-    expect(state.approvals).toHaveLength(1)
-    expect(send).toHaveBeenCalledTimes(1)
+    expect(state.notifications).toHaveLength(2)
   })
 
   it('still shares when the messages cannot be saved', async () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const { state, deps, send, askLongView } = setup(fresh(), { failNotify: true })
+    const { state, deps, send } = setup(fresh(), { failNotify: true })
     expect(await shareResults(deps, CLASS, TEST)).toMatchObject({ ok: true, shared: true })
     expect(state.tests[0]).toMatchObject({ held: false })
     expect(state.notifications).toEqual([])
     expect(spy).toHaveBeenCalled()
     expect(send).toHaveBeenCalledTimes(1)
-    expect(askLongView).toHaveBeenCalledTimes(1)
   })
 })

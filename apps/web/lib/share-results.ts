@@ -2,7 +2,6 @@ import type { JemmaDb } from '@jemma/profiling/db'
 import { notify } from '@jemma/profiling/notify'
 import { sendEvent } from './agent'
 import { recordApproval } from './approvals'
-import { requestLongView } from './long-view'
 
 // "Share with parents": the one tap that lets a parent and a learner see a class test. Until then the test is held:
 // row level security hides its marks, gaps and log lines from the family, and Jemma plans no lesson from it.
@@ -15,8 +14,6 @@ export type ShareDeps = {
   admin: JemmaDb
   userId: string
   send?: typeof sendEvent
-  /** Asks the agent to update the Long view of these learners. Never throws in real life; a failure here still does not fail the share. */
-  askLongView?: (childIds: string[]) => Promise<unknown>
   now?: () => Date
 }
 
@@ -30,12 +27,11 @@ const log = (what: string, e: unknown) => console.error(`share results: ${what}:
  * must be marked. The write names `held = true`, so sharing twice (or two taps at once) does it once: the second call answers
  * `shared: false` and does nothing more. After the three fields are written, the rest is done on a best effort and never fails the share:
  * the approval (with the teacher's name), one message for each approved parent of each learner with a marked paper, then
- * `test.shared` (Jemma plans the lessons) and the Long view update for those learners, side by side.
+ * `test.shared` (Jemma plans each learner's next session, lesson and guidance).
  */
 export async function shareResults(deps: ShareDeps, classId: string, testId: string): Promise<ShareResult> {
   const { teacher, admin, userId } = deps
   const send = deps.send ?? sendEvent
-  const askLongView = deps.askLongView ?? requestLongView
   const now = (deps.now ?? (() => new Date()))()
 
   const teaches = await teacher.rpc('teaches_class', { cls: classId })
@@ -81,14 +77,11 @@ export async function shareResults(deps: ShareDeps, classId: string, testId: str
     log('could not find the parents to tell', e)
   }
 
-  // Jemma plans the lessons and looks at each Long view again. Side by side, and neither can fail the share: the fields and the approval are saved.
-  await Promise.all([
-    Promise.resolve()
-      .then(() => send('test.shared', { testId }))
-      .catch((e) => log('could not post test.shared to the agent', e)),
-    Promise.resolve()
-      .then(() => askLongView(childIds))
-      .catch((e) => log('could not ask for the Long view update', e)),
-  ])
+  // Jemma plans the lessons. This cannot fail the share either: the fields and the approval are saved, and a missed post leaves a queued event.
+  try {
+    await send('test.shared', { testId })
+  } catch (e) {
+    log('could not post test.shared to the agent', e)
+  }
   return { ok: true, shared: true, childIds }
 }

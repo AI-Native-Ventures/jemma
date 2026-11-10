@@ -44,7 +44,7 @@ describe('the seeded test', () => {
     const box = await ok(service.from('demo_sandboxes').select('logins').eq('id', s.sandboxId).single())
     const login = (box!.logins as Record<string, { email: string; password: string }>).parent!
     const parent = createClient(url, anonKey, opts)
-    const signedIn = await parent.auth.signInWithPassword(login)
+    const signedIn = await parent.auth.signInWithPassword({ email: login.email, password: login.password })
     expect(signedIn.error).toBeNull()
     const papers = await ok(service.from('papers').select('id').eq('test_id', test.id))
     const results = await ok(parent.from('question_results').select('id').in('paper_id', papers.map((p) => p.id)))

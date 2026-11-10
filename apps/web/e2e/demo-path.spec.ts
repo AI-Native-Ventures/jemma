@@ -190,7 +190,7 @@ test('the whole demo path', async ({ page }) => {
     await page.goto(base)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     const childIds = papers.data!.map((p) => p.child_id).filter((c): c is string => !!c)
-    const markedChildIds = papers.data!.filter((p) => p.status === 'marked').map((p) => p.child_id!)
+    const markedCount = papers.data!.filter((p) => p.status === 'marked').length
     const paperIds = papers.data!.map((p) => p.id)
     const stillNeedYou = papers.data!.filter((p) => p.status === 'needs_you').length
     expect((await admin.from('tests').select('held, shared_at, shared_by').eq('id', testId).single()).data).toEqual({ held: true, shared_at: null, shared_by: null })
@@ -209,23 +209,19 @@ test('the whole demo path', async ({ page }) => {
     await page.goto(base)
     const shareCard = page.getByRole('region', { name: 'Results are ready. Parents see nothing yet.' })
     await expect(shareCard).toBeVisible()
-    await expect(shareCard.getByText(`${markedChildIds.length} papers marked`)).toBeVisible()
+    await expect(shareCard.getByText(`${markedCount} papers marked`)).toBeVisible()
     if (stillNeedYou > 0) {
       await expect(shareCard.getByText(`${stillNeedYou} still ${stillNeedYou === 1 ? 'needs' : 'need'} you. You can share now and those follow when you have checked them.`)).toBeVisible()
     }
     seen = await eventCount(schoolId)
     await shareCard.getByRole('button', { name: 'Share with parents' }).click()
     await expect(shareCard).toBeHidden({ timeout: 60_000 })
-    // Jemma now plans each lesson, and looks at every Long view again. Every job must finish before Sipho's fix changes what they read:
+    // Jemma now plans each learner's session, lesson and guidance. Every job must finish before Sipho's fix changes what they read:
     // a recorded answer is found by the content of its input.
     await agentIdle(schoolId, 'planning the lessons after the share', seen)
-    const afterShare = await admin.from('events').select('type, status, payload').eq('school_id', schoolId).in('type', ['test.shared', 'long_view.requested'])
-    const sharedEvents = afterShare.data!.filter((e) => e.type === 'test.shared')
+    const sharedEvents = (await admin.from('events').select('status, payload').eq('school_id', schoolId).eq('type', 'test.shared')).data!
     expect(sharedEvents).toHaveLength(1)
-    expect(sharedEvents[0]!.payload).toMatchObject({ testId })
-    const longViews = afterShare.data!.filter((e) => e.type === 'long_view.requested')
-    expect(longViews.map((e) => (e.payload as { childId: string }).childId).sort()).toEqual([...markedChildIds].sort())
-    expect(afterShare.data!.every((e) => e.status === 'done')).toBe(true)
+    expect(sharedEvents[0]).toMatchObject({ status: 'done', payload: { testId } })
     // The three fields, and the approval with Ms Banda's name.
     const shared = await admin.from('tests').select('held, shared_at, shared_by').eq('id', testId).single()
     expect(shared.data).toMatchObject({ held: false })
