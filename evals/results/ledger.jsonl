@@ -24,3 +24,6 @@
 {"at":"2026-11-10T20:05:16.915Z","runId":"2026-11-10-full","taskId":"other-school-id","n":1,"attempts":1,"rehearsal":false}
 {"at":"2026-11-10T20:15:58.888Z","runId":"2026-11-10-full","taskId":"other-school-id","n":2,"attempts":2,"rehearsal":false}
 {"at":"2026-11-10T20:24:36.777Z","runId":"2026-11-10-full","taskId":"other-school-id","n":3,"attempts":1,"rehearsal":false}
+{"at":"2026-11-10T20:27:08.618Z","runId":"2026-11-10-full","taskId":"model-down-recovery","n":1,"attempts":2,"rehearsal":false}
+{"at":"2026-11-10T20:30:59.397Z","runId":"2026-11-10-full","taskId":"model-down-recovery","n":2,"attempts":2,"rehearsal":false}
+{"at":"2026-11-10T20:33:26.704Z","runId":"2026-11-10-full","taskId":"model-down-recovery","n":3,"attempts":2,"rehearsal":false}
