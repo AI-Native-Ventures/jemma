@@ -5,6 +5,7 @@ import type { JemmaDb } from '@jemma/profiling/db'
 import { markAnswer } from '@jemma/profiling/logic'
 import { AnswerKeyItemSchema, type AnswerKeyItem, type EventPayload, type EventType } from '@jemma/profiling/schemas'
 import { sendEvent } from '@/lib/agent'
+import { recordApproval } from '@/lib/approvals'
 import { requireRole } from '@/lib/auth'
 import { READ_MIN } from '@/lib/data/p31'
 import { UPLOAD_PREFIX } from '@/lib/data/p34'
@@ -165,7 +166,7 @@ export async function confirmKeyItem(classId: string, testId: string, n: number,
 
 export async function approveKey(classId: string, testId: string): Promise<ActionResult> {
   try {
-    const { admin } = await ownTest(classId, testId)
+    const { admin, schoolId, userId } = await ownTest(classId, testId)
     const key = await loadKey(admin, testId)
     if (key.items.length === 0) return fail('There are no answers to approve yet.')
     const open = key.items.filter((i) => i.confidence < READ_MIN || i.note).map((i) => i.n)
@@ -173,6 +174,7 @@ export async function approveKey(classId: string, testId: string): Promise<Actio
     const { error } = await admin.from('answer_keys').update({ status: 'approved', approved_at: new Date().toISOString() }).eq('test_id', testId)
     if (error) return fail(error.message)
     await admin.from('needs_you_items').update({ status: 'done' }).eq('kind', 'approve_key').eq('ref_id', testId).eq('status', 'open')
+    await recordApproval(admin, { schoolId, kind: 'answer_key', refId: testId, decision: 'approved', userId })
     revalidatePath(`/t/${classId}`)
     return { ok: true }
   } catch (e) {
@@ -313,7 +315,7 @@ export async function resolveAnswer(
   answer: string,
 ): Promise<ActionResult<{ correct: boolean; mark: number; total: number }>> {
   try {
-    const { admin, userId, paper, test } = await ownItem(classId, itemId)
+    const { admin, userId, schoolId, paper, test } = await ownItem(classId, itemId)
     const text = answer.trim()
     if (!text) return fail('Type what it says.')
     const key = await keyFor(admin, test.id, n)
@@ -334,6 +336,7 @@ export async function resolveAnswer(
       .eq('id', row.id)
     if (error) return fail(error.message)
     const total = await retotal(admin, paper.id)
+    await recordApproval(admin, { schoolId, kind: 'mark', refId: paper.id, childId: paper.child_id, decision: 'edited', userId })
     revalidatePath(`/t/${classId}/needs-you/${itemId}`)
     return { ok: true, correct, mark, total }
   } catch (e) {
@@ -344,7 +347,7 @@ export async function resolveAnswer(
 /** Paper `itemId` belongs to `childId`. If it was the last unnamed paper and one learner is left, that learner gets it. */
 export async function resolveName(classId: string, itemId: string, childId: string): Promise<ActionResult<{ also: string | null }>> {
   try {
-    const { admin, supabase, paper, test, item } = await ownItem(classId, itemId)
+    const { admin, supabase, userId, schoolId, paper, test, item } = await ownItem(classId, itemId)
     const { data: enrolled } = await supabase.from('enrolments').select('child_id').eq('class_id', classId).eq('child_id', childId).maybeSingle()
     if (!enrolled) return fail('That learner is not in this class.')
 
@@ -371,6 +374,7 @@ export async function resolveName(classId: string, itemId: string, childId: stri
       const { data: kid } = await admin.from('children').select('first_name').eq('id', left[0]!).single()
       also = kid?.first_name ?? null
     }
+    await recordApproval(admin, { schoolId, kind: 'paper_name', refId: paper.id, decision: 'confirmed', userId })
     revalidatePath(`/t/${classId}`)
     return { ok: true, also }
   } catch (e) {
@@ -381,7 +385,7 @@ export async function resolveName(classId: string, itemId: string, childId: stri
 /** The teacher is happy with the paper: it is marked, the item is done and the agent hears about it. */
 export async function confirmPaper(classId: string, paperId: string): Promise<ActionResult> {
   try {
-    const { admin, paper } = await ownPaper(classId, paperId)
+    const { admin, userId, schoolId, paper } = await ownPaper(classId, paperId)
     const { data: rows } = await admin.from('question_results').select('n, answer_read, read_confidence, changed_by').eq('paper_id', paperId)
     const open = (rows ?? []).filter((r) => r.changed_by === null && r.read_confidence < READ_MIN).map((r) => r.n)
     if (open.length) return fail(`Question ${Math.min(...open)} still needs you.`)
@@ -389,6 +393,7 @@ export async function confirmPaper(classId: string, paperId: string): Promise<Ac
     const upd = await admin.from('papers').update({ status: 'marked' }).eq('id', paperId)
     if (upd.error) return fail(upd.error.message)
     await admin.from('needs_you_items').update({ status: 'done' }).eq('ref_id', paperId).eq('status', 'open').in('kind', ['check_answer', 'confirm_scan'])
+    await recordApproval(admin, { schoolId, kind: 'paper', refId: paperId, childId: paper.child_id, decision: 'confirmed', userId })
     await notifyAgent('paper.checked', { paperId })
     revalidatePath(`/t/${classId}`)
     return { ok: true }
@@ -427,6 +432,7 @@ export async function fixMark(
       .eq('id', resultId)
     if (error) return fail(error.message)
     const total = await retotal(admin, paper.id)
+    await recordApproval(admin, { schoolId: t.schoolId, kind: 'mark', refId: paper.id, childId: paper.child_id, decision: 'edited', userId })
     await notifyAgent('paper.checked', { paperId: paper.id })
     revalidatePath(`/t/${classId}/papers/${paper.id}/fix`)
     return { ok: true, mark, total }

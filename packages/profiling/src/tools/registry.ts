@@ -4,17 +4,19 @@ import { getChildContext } from './read/get-child-context'
 import { getClassResults } from './read/get-class-results'
 import { getCurriculumDoc } from './read/get-curriculum-doc'
 import { getJob } from './read/get-job'
+import { getLearnerHistory } from './read/get-learner-history'
 import { getLearnerProfile } from './read/get-learner-profile'
 import { getMemo } from './read/get-memo'
 import { getPaper } from './read/get-paper'
 import { saveAnswerKey } from './save/save-answer-key'
 import { saveTopicMapDraft } from './save/save-topic-map-draft'
-import { addActivity, addObservation, recordAttendance, subjectGuidance } from './save'
+import { addActivity, addObservation, logExternalCalls, recordAttendance, subjectGuidance } from './save'
 import { markPaper } from './save/mark-paper'
 import { classGapReport } from './save/class-gap-report'
 import { updateLearnerProfile } from './save/update-learner-profile'
 import { planNextSession } from './save/plan-next-session'
 import { saveLesson } from './save/save-lesson'
+import { saveLongView } from './save/save-long-view'
 
 export { defineTool } from './context'
 export type { ToolDef } from './context'
@@ -41,6 +43,9 @@ export const registry: ToolDef<any, any>[] = [
   classGapReport,
   planNextSession,
   saveLesson,
+  logExternalCalls,
+  getLearnerHistory,
+  saveLongView,
 ]
 
 export { registerSpeech } from '../speech'

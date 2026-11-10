@@ -11,7 +11,7 @@ const json = (body: unknown, status: number) => Response.json(body, { status })
 async function mcp(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const auth = await authenticate(request, env)
   if (!auth) return new Response('Unauthorized', { status: 401, headers: { 'www-authenticate': 'Bearer' } })
-  const toolCtx = toolContext(env, auth.scope.schoolId, null, auth.scope.schoolIds)
+  const toolCtx = toolContext(env, auth.scope.schoolId, null, auth.scope.schoolIds, 'mcp')
   return createMcpHandler(createJemmaMcpServer(toolCtx), { route: '/mcp' })(request, env, ctx)
 }
 

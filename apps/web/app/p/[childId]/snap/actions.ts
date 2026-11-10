@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import type { EventPayload, EventType } from '@jemma/profiling/schemas'
 import { sendEvent } from '@/lib/agent'
+import { recordApproval } from '@/lib/approvals'
 import { requireRole } from '@/lib/auth'
 import { asKind, getReadAnswers, getSnapPaper, SNAP_KINDS } from '@/lib/data/p32'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
@@ -79,7 +80,7 @@ export async function confirmScan(
   confirmed: number[] = [],
 ): Promise<ActionResult> {
   try {
-    const { admin, userId } = await parentOfChild(childId)
+    const { admin, userId, schoolId } = await parentOfChild(childId)
     const paper = await getSnapPaper(childId, paperId)
     if (!paper) return fail('That snap is not yours.')
     if (paper.status !== 'needs_you') return fail('That snap is not waiting for you.')
@@ -97,6 +98,7 @@ export async function confirmScan(
     const done = await admin.from('papers').update({ status: 'marked', error: null }).eq('id', paperId)
     if (done.error) return fail(done.error.message)
     await admin.from('needs_you_items').update({ status: 'done' }).eq('ref_id', paperId).eq('kind', 'confirm_scan')
+    await recordApproval(admin, { schoolId, kind: 'homework_scan', refId: paperId, childId, decision: 'confirmed', userId })
     await notifyAgent('homework.snapped', { paperId })
     revalidatePath(`/p/${childId}`)
     return { ok: true }

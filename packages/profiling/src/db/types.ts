@@ -178,6 +178,64 @@ export type Database = {
           },
         ]
       }
+      approvals: {
+        Row: {
+          child_id: string | null
+          created_at: string
+          decided_at: string
+          decided_by: string
+          decided_by_name: string
+          decision: string
+          id: string
+          kind: string
+          note: string | null
+          ref_id: string
+          school_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          child_id?: string | null
+          created_at?: string
+          decided_at?: string
+          decided_by: string
+          decided_by_name: string
+          decision: string
+          id?: string
+          kind: string
+          note?: string | null
+          ref_id: string
+          school_id: string
+        }
+        Update: {
+          child_id?: string | null
+          created_at?: string
+          decided_at?: string
+          decided_by?: string
+          decided_by_name?: string
+          decision?: string
+          id?: string
+          kind?: string
+          note?: string | null
+          ref_id?: string
+          school_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approvals_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approvals_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attendance: {
         Row: {
           child_id: string
@@ -715,6 +773,91 @@ export type Database = {
           },
         ]
       }
+      learner_records: {
+        Row: {
+          child_id: string
+          created_at: string
+          family: string | null
+          grade: number
+          happened_on: string
+          id: string
+          logged_at: string
+          marks: number | null
+          out_of: number | null
+          present: number | null
+          quality: string
+          school_id: string
+          source: string
+          teacher_name: string
+          term: number
+          text: string | null
+          title: string
+          topic_name: string | null
+          total: number | null
+          year: number
+        }
+        ComputedFields: never
+        Insert: {
+          child_id: string
+          created_at?: string
+          family?: string | null
+          grade: number
+          happened_on: string
+          id?: string
+          logged_at: string
+          marks?: number | null
+          out_of?: number | null
+          present?: number | null
+          quality?: string
+          school_id: string
+          source: string
+          teacher_name: string
+          term: number
+          text?: string | null
+          title: string
+          topic_name?: string | null
+          total?: number | null
+          year: number
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          family?: string | null
+          grade?: number
+          happened_on?: string
+          id?: string
+          logged_at?: string
+          marks?: number | null
+          out_of?: number | null
+          present?: number | null
+          quality?: string
+          school_id?: string
+          source?: string
+          teacher_name?: string
+          term?: number
+          text?: string | null
+          title?: string
+          topic_name?: string | null
+          total?: number | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learner_records_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learner_records_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lessons: {
         Row: {
           audio_path: string | null
@@ -760,6 +903,84 @@ export type Database = {
             columns: ["topic_id"]
             isOneToOne: false
             referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      long_view_patterns: {
+        Row: {
+          active: boolean
+          approved_at: string | null
+          approved_by: string | null
+          approved_by_name: string | null
+          child_id: string
+          created_at: string
+          discussed_at: string | null
+          discussed_by: string | null
+          discussed_by_name: string | null
+          dismissed_at: string | null
+          dismissed_by: string | null
+          evidence: NonNullable<Json>
+          family: string
+          id: string
+          kind: string
+          statement: string
+          status: string
+          terms: NonNullable<Json>
+          title: string
+          updated_at: string
+        }
+        ComputedFields: never
+        Insert: {
+          active?: boolean
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_by_name?: string | null
+          child_id: string
+          created_at?: string
+          discussed_at?: string | null
+          discussed_by?: string | null
+          discussed_by_name?: string | null
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          evidence: NonNullable<Json>
+          family: string
+          id?: string
+          kind: string
+          statement: string
+          status?: string
+          terms: NonNullable<Json>
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_by_name?: string | null
+          child_id?: string
+          created_at?: string
+          discussed_at?: string | null
+          discussed_by?: string | null
+          discussed_by_name?: string | null
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          evidence?: NonNullable<Json>
+          family?: string
+          id?: string
+          kind?: string
+          statement?: string
+          status?: string
+          terms?: NonNullable<Json>
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "long_view_patterns_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
             referencedColumns: ["id"]
           },
         ]
@@ -1484,6 +1705,76 @@ export type Database = {
           },
         ]
       }
+      tool_calls: {
+        Row: {
+          created_at: string
+          duration_ms: number
+          engine: string | null
+          error: string | null
+          event_id: string | null
+          id: string
+          input: NonNullable<Json>
+          model: string | null
+          ok: boolean
+          output: Json | null
+          school_id: string
+          server: string
+          started_at: string
+          tool: string
+          via: string
+        }
+        ComputedFields: never
+        Insert: {
+          created_at?: string
+          duration_ms?: number
+          engine?: string | null
+          error?: string | null
+          event_id?: string | null
+          id?: string
+          input?: NonNullable<Json>
+          model?: string | null
+          ok: boolean
+          output?: Json | null
+          school_id: string
+          server?: string
+          started_at: string
+          tool: string
+          via?: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number
+          engine?: string | null
+          error?: string | null
+          event_id?: string | null
+          id?: string
+          input?: NonNullable<Json>
+          model?: string | null
+          ok?: boolean
+          output?: Json | null
+          school_id?: string
+          server?: string
+          started_at?: string
+          tool?: string
+          via?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_calls_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_calls_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       topics: {
         Row: {
           created_at: string
@@ -1623,6 +1914,7 @@ export type Database = {
         | "approve_link"
         | "confirm_scan"
         | "desktop_off"
+        | "review_long_view"
       need_status: "open" | "done"
       obs_kind: "participation" | "confidence" | "effort" | "behaviour"
       paper_kind: "test" | "homework" | "textbook" | "report"
@@ -1775,6 +2067,7 @@ export const Constants = {
         "approve_link",
         "confirm_scan",
         "desktop_off",
+        "review_long_view",
       ],
       need_status: ["open", "done"],
       obs_kind: ["participation", "confidence", "effort", "behaviour"],

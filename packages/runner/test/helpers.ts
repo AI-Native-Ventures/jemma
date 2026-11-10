@@ -7,7 +7,7 @@ import { parseEnv } from 'node:util'
 
 export const FAKES = fileURLToPath(new URL('./fakes', import.meta.url))
 
-/** Puts the fake claude and codex first on PATH. Returns a restore function. */
+/** Puts the fake claude, codex and goose first on PATH. Returns a restore function. */
 export function useFakes(): () => void {
   const before = process.env.PATH
   process.env.PATH = `${FAKES}:${before}`
@@ -16,6 +16,7 @@ export function useFakes(): () => void {
     delete process.env.FAKE_MODE
     delete process.env.FAKE_LOG
     delete process.env.FAKE_SIGNED_IN
+    delete process.env.FAKE_GOOSE_MODES
   }
 }
 
