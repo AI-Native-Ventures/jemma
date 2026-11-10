@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "runId": "2026-11-10-full",
+  "taskId": "class-report",
+  "n": 2,
+  "startedAt": "2026-11-10T19:29:03.649Z",
+  "rehearsal": false,
+  "seconds": 118.9,
+  "wallSeconds": 153.3,
+  "dbRoundTripMs": 477,
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "the event ended done",
+      "pass": true,
+      "detail": "status=done; error=none; runner note=The job is complete. Here's a summary of what was done: **Gap 1 identified:** \"Adds the tops and the bottoms\" for the topic *Adding fractions with different den"
+    },
+    {
+      "name": "exactly one reteach plan exists for the test (no double write)",
+      "pass": true,
+      "detail": "rows=1"
+    },
+    {
+      "name": "the reteach plan passes the app's own schema and why, missing basic and explanation are set",
+      "pass": true,
+      "detail": "schema valid; why=set; missing basic=set; explanation=set"
+    },
+    {
+      "name": "the plan was written by this run (it differs from the seeded one)",
+      "pass": true,
+      "detail": "differs from the seeded plan"
+    },
+    {
+      "name": "the plan is about a real class gap in the seeded results",
+      "pass": true,
+      "detail": "plan topic \"Adding fractions with different denominators\" is one of the code's gaps [Adding fractions with different denominators, Adding decimals, Comparing fractions]; its text names: Adding fractions with different denominators"
+    },
+    {
+      "name": "the report copy exists in the reports folder",
+      "pass": true,
+      "detail": "2136 characters"
+    },
+    {
+      "name": "the report copy cites question numbers, all of them real",
+      "pass": true,
+      "detail": "cites 1, 2, 4 (test has 10 questions)"
+    },
+    {
+      "name": "class_gap_report answered ok",
+      "pass": true,
+      "detail": "1 call(s)"
+    }
+  ],
+  "event": {
+    "status": "done",
+    "error": null
+  },
+  "run": {
+    "status": "done",
+    "note": "The job is complete. Here's a summary of what was done: **Gap 1 identified:** \"Adds the tops and the bottoms\" for the topic *Adding fractions with different denominators* - 8 wrong answers across 3 learners. **Learners in gap 1:** Amina (Q1, Q2, Q4), Thabo (Q1, Q2, Q4), and Naledi (Q1, Q4). **What was saved via `class_gap_report`:** - `why`: Learners think you add the top numbers together and the bottom numbers together, as if each fraction were just two separate whole numbers. - `missingBasic`: Adding fractions with the same denominator. - `explanation`: Two short sentences for the teacher to say aloud about common denominators and adding only the tops. - `reteach`: A 10-minute lesson for Amina, Thabo and Naledi using fraction bars or paper strips, with 4 steps adding to 10 minutes and an exit question. **Markdown copy** written to `<reports>/class_report-e147ff46-1a2d-4d03-baf8-2e928d9c3f7c.md`, with all claims tied to question numbers. **Job completed** with status `done`."
+  },
+  "attempts": [
+    {
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "seconds": 113.1,
+      "status": "done",
+      "note": "The job is complete. Here's a summary of what was done: **Gap 1 identified:** \"Adds the tops and the bottoms\" for the topic *Adding fractions with different denominators* - 8 wrong answers across 3 learners. **Learners in gap 1:** Amina (Q1, Q2, Q4), Thabo (Q1, Q2, Q4), and Naledi (Q1, Q4). **What w",
+      "saved": true,
+      "timedOut": false,
+      "tokens": {
+        "input": 115497,
+        "output": 3913,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "nvidia/nemotron-3.5-super-vl:free",
+  "tokens": {
+    "input": 115497,
+    "output": 3913,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_job",
+    "jemma__get_class_results",
+    "jemma__get_memo",
+    "jemma__class_gap_report",
+    "files__create_directory",
+    "files__write_file",
+    "jemma__complete_job"
+  ],
+  "reported": true,
+  "facts": {
+    "reteachRows": 1,
+    "reteach": {
+      "topicName": "Adding fractions with different denominators",
+      "content": {
+        "steps": [
+          {
+            "text": "Show 1/2 and 1/4 on fraction bars. Ask: are the pieces the same size? No.",
+            "minutes": 2
+          },
+          {
+            "text": "Turn 1/2 into 2/4. Now both are quarters. Add the tops only: 2 + 1 = 3. Answer: 3/4.",
+            "minutes": 3
+          },
+          {
+            "text": "Do 2/3 + 1/6 together. Turn 2/3 into 4/6. Add tops: 4 + 1 = 5. Answer: 5/6.",
+            "minutes": 3
+          },
+          {
+            "text": "Learners try 1/2 + 1/4 on their own. Check that they convert first, then add only the tops.",
+            "minutes": 2
+          }
+        ],
+        "title": "Adding fractions with different denominators",
+        "minutes": 10,
+        "youNeed": "Fraction bars or paper strips, and a chalkboard",
+        "audience": "Amina, Thabo and Naledi",
+        "exitQuestion": "What do we do before we add the tops of two fractions?"
+      },
+      "why": "Learners think you add the top numbers together and the bottom numbers together, as if each fraction were just two separate whole numbers.",
+      "missingBasic": "Adding fractions with the same denominator",
+      "explanation": "To add fractions, the pieces must be the same size. We find a common denominator first, then add only the tops."
+    },
+    "classGapTopics": [
+      "Adding fractions with different denominators",
+      "Adding decimals",
+      "Comparing fractions"
+    ],
+    "outOf": 10,
+    "reportName": "class_report-e147ff46-1a2d-4d03-baf8-2e928d9c3f7c.md",
+    "report": "# Class Gap Report - Gap 1\n\n**Class:** e147ff46-1a2d-4d03-baf8-2e928d9c3f7c  \n**Test:** dbc5f433-6747-4618-8cf9-ad238cd67d94 (Class Test 1: Fractions and decimals, out of 10)\n\n## Gap 1 - Most common mistake\n\n**Topic:** Adding fractions with different denominators  \n**Mistake label:** Adds the tops and the bottoms  \n**Count:** 8 wrong answers across 3 learners  \n**Example:** 1/2 + 1/4 = 2/6\n\n### Why\n\nLearners think you add the top numbers together and the bottom numbers together, as if each fraction were just two separate whole numbers.\n\n### Missing basic\n\nAdding fractions with the same denominator.\n\n### Explanation (for the teacher to say aloud)\n\nTo add fractions, the pieces must be the same size. We find a common denominator first, then add only the tops.\n\n## Learners in gap 1\n\n| Learner | Child ID | Wrong answers (question - answer read) |\n|---------|----------|----------------------------------------|\n| Amina | 367d5ea9-c038-40c9-bd95-03800589762b | Q1 \"1/2 + 1/4\" → \"2/6\"; Q2 \"2/3 + 1/6\" → \"3/9\"; Q4 \"1 1/2 + 2 1/4\" → \"3 2/6\" |\n| Naledi | 8b771507-1675-4153-95cd-cdd3356e6aed | Q1 \"1/2 + 1/4\" → \"2/6\"; Q4 \"1 1/2 + 2 1/4\" → \"3 2/6\" |\n| Thabo | 340e22ea-8ac6-4132-80ad-b48c986b9049 | Q1 \"1/2 + 1/4\" → \"2/6\"; Q2 \"2/3 + 1/6\" → \"3/9\"; Q4 \"1 1/2 + 2 1/4\" → \"3 2/6\" |\n\n## Reteach plan\n\n**Title:** Adding fractions with different denominators  \n**Audience:** Amina, Thabo and Naledi  \n**You need:** Fraction bars or paper strips, and a chalkboard  \n**Total minutes:** 10\n\n### Steps\n\n1. **2 minutes** - Show 1/2 and 1/4 on fraction bars. Ask: are the pieces the same size? No.\n2. **3 minutes** - Turn 1/2 into 2/4. Now both are quarters. Add the tops only: 2 + 1 = 3. Answer: 3/4.\n3. **3 minutes** - Do 2/3 + 1/6 together. Turn 2/3 into 4/6. Add tops: 4 + 1 = 5. Answer: 5/6.\n4. **2 minutes** - Learners try 1/2 + 1/4 on their own. Check that they convert first, then add only the tops.\n\n### Exit question\n\nWhat do we do before we add the tops of two fractions?\n\n---\n\n*Sources: class results from test dbc5f433-6747-4618-8cf9-ad238cd67d94; memo answer key from the test memo page. All question numbers refer to the test items.*",
+    "reportChars": 2136,
+    "classReportActivity": 2
+  },
+  "state": {
+    "classId": "e147ff46-1a2d-4d03-baf8-2e928d9c3f7c",
+    "testId": "dbc5f433-6747-4618-8cf9-ad238cd67d94",
+    "paperId": "6e842031-3178-4f68-b4b0-21b0a78f57c3",
+    "before": {
+      "topicName": "Adding fractions with different denominators",
+      "content": {
+        "steps": [
+          {
+            "text": "Fold one strip into halves and one into quarters.",
+            "minutes": 2
+          },
+          {
+            "text": "Lay them side by side. How many quarters fit in a half? Write 1/2 = 2/4.",
+            "minutes": 3
+          },
+          {
+            "text": "Add 1/2 + 1/4 with the strips. Count the quarters: 3/4. Ask why 2/6 is smaller than 1/2.",
+            "minutes": 3
+          },
+          {
+            "text": "Exit question on the board: 1/3 + 1/6.",
+            "minutes": 2
+          }
+        ],
+        "title": "Fraction strips",
+        "minutes": 10,
+        "youNeed": "3 paper strips per learner, all the same length.",
+        "audience": "whole class",
+        "exitQuestion": "1/3 + 1/6"
+      },
+      "why": "4 of 5 add the tops and the bottoms. It points back to equivalent fractions, a Term 1 basic.",
+      "missingBasic": "Equivalent fractions · Term 1",
+      "explanation": "The bottom number says the size of the pieces. Halves and quarters are different sizes, so they can't be added until the bottoms match."
+    }
+  },
+  "extras": {},
+  "liveAttempts": 1,
+  "sandboxIds": [
+    "172def63-dc74-467f-8fc7-2c53da786402"
+  ],
+  "stream": "class-report-2.jsonl",
+  "scrubbed": true,
+  "cleanup": []
+}

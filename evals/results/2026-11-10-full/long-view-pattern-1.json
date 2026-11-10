@@ -1,0 +1,247 @@
+{
+  "version": 1,
+  "runId": "2026-11-10-full",
+  "taskId": "long-view-pattern",
+  "n": 1,
+  "startedAt": "2026-11-10T19:47:34.692Z",
+  "rehearsal": false,
+  "seconds": 54,
+  "wallSeconds": 83.1,
+  "dbRoundTripMs": 687,
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "the event ended done",
+      "pass": true,
+      "detail": "status=done; error=none; runner note=Done. The long view for Amina (child `0c97de61-259c-4da1-9a1f-7700b646c7e7`) was saved with two draft patterns: 1. **struggle:fractions** - \"Fractions marks sta"
+    },
+    {
+      "name": "code finds at least one candidate for the learner (precondition)",
+      "pass": true,
+      "detail": "candidates: struggle:fractions, strength:shapes"
+    },
+    {
+      "name": "the model read the history through get_learner_history",
+      "pass": true,
+      "detail": "yes"
+    },
+    {
+      "name": "the saved patterns' keys are exactly the code's candidates",
+      "pass": true,
+      "detail": "code found [strength:shapes, struggle:fractions]; saved [strength:shapes, struggle:fractions]"
+    },
+    {
+      "name": "each saved pattern has evidence, and the evidence is the code's own",
+      "pass": true,
+      "detail": "2 pattern(s), evidence counts 5, 8"
+    },
+    {
+      "name": "titles are 1 to 70 characters and statements 1 to 320",
+      "pass": true,
+      "detail": "all within the limits"
+    },
+    {
+      "name": "no saved title or statement uses a banned word",
+      "pass": true,
+      "detail": "2 pattern(s) read, none found"
+    },
+    {
+      "name": "the statement names terms that are in the candidate",
+      "pass": true,
+      "detail": "every term named is in the candidate"
+    },
+    {
+      "name": "every saved pattern is a draft for the teacher",
+      "pass": true,
+      "detail": "statuses: draft, draft"
+    }
+  ],
+  "event": {
+    "status": "done",
+    "error": null
+  },
+  "run": {
+    "status": "done",
+    "note": "Done. The long view for Amina (child `0c97de61-259c-4da1-9a1f-7700b646c7e7`) was saved with two draft patterns: 1. **struggle:fractions** - \"Fractions marks stayed low\" over Grade 5 Term 3 to Grade 6 Term 2, citing the teacher note about guessing when bottom numbers differ. 2. **strength:shapes** - \"Shapes marks stayed high\" from Grade 4 Term 4 to Grade 6 Term 2, honestly noting Grade 5 Term 3 has no shapes work, citing two teacher notes about drawing and explaining shapes. The job `ea9b4faf-8d0e-43a8-9d93-ab6a44b7c5e1` is marked complete."
+  },
+  "attempts": [
+    {
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "seconds": 49.9,
+      "status": "done",
+      "note": "Done. The long view for Amina (child `0c97de61-259c-4da1-9a1f-7700b646c7e7`) was saved with two draft patterns: 1. **struggle:fractions** - \"Fractions marks stayed low\" over Grade 5 Term 3 to Grade 6 Term 2, citing the teacher note about guessing when bottom numbers differ. 2. **strength:shapes** - ",
+      "saved": true,
+      "timedOut": false,
+      "tokens": {
+        "input": 63963,
+        "output": 3116,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "nvidia/nemotron-3.5-super-vl:free",
+  "tokens": {
+    "input": 63963,
+    "output": 3116,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_learner_history",
+    "jemma__save_long_view",
+    "jemma__complete_job"
+  ],
+  "reported": true,
+  "facts": {
+    "childId": "0c97de61-259c-4da1-9a1f-7700b646c7e7",
+    "candidates": [
+      {
+        "key": "struggle:fractions",
+        "kind": "struggle",
+        "family": "fractions",
+        "terms": [
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 3,
+            "percent": 40
+          },
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 4,
+            "percent": 35
+          },
+          {
+            "grade": 6,
+            "year": 2026,
+            "term": 1,
+            "percent": 30
+          },
+          {
+            "grade": 6,
+            "year": 2026,
+            "term": 2,
+            "percent": 40
+          }
+        ],
+        "since": [],
+        "missingTerms": [],
+        "evidenceIds": [
+          "880d7f74-5d9b-4195-bee5-9cceaa3f6fb8",
+          "9d099453-6780-4b94-b30d-1611f6909065",
+          "3d73b35f-df26-49dd-bb74-73b58f610924",
+          "bdd58243-0a04-4898-980c-1a36b1c1cd22"
+        ]
+      },
+      {
+        "key": "strength:shapes",
+        "kind": "strength",
+        "family": "shapes",
+        "terms": [
+          {
+            "grade": 4,
+            "year": 2024,
+            "term": 4,
+            "percent": 85
+          },
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 1,
+            "percent": 90
+          },
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 2,
+            "percent": 90
+          },
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 4,
+            "percent": 85
+          },
+          {
+            "grade": 6,
+            "year": 2026,
+            "term": 1,
+            "percent": 90
+          },
+          {
+            "grade": 6,
+            "year": 2026,
+            "term": 2,
+            "percent": 95
+          }
+        ],
+        "since": [],
+        "missingTerms": [
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 3
+          }
+        ],
+        "evidenceIds": [
+          "25ca8031-9eef-49b6-8c60-9bf78fe0ad6e",
+          "3cab20a6-8725-4b3b-8d1b-df7a54f140b5",
+          "0fbb2828-3940-480b-9c3c-82e527db7f8f",
+          "aa03fde3-7ebc-4df8-aab4-d34034d733af",
+          "65229830-1d8b-4d4a-b65f-6d236d67c3bb",
+          "20de420e-2982-4691-80db-ad9b821d4a33"
+        ]
+      }
+    ],
+    "patterns": [
+      {
+        "key": "struggle:fractions",
+        "title": "Fractions marks stayed low",
+        "statement": "Fractions marks stayed low from Grade 5 Term 3 to Grade 6 Term 2.",
+        "status": "draft",
+        "evidenceIds": [
+          "880d7f74-5d9b-4195-bee5-9cceaa3f6fb8",
+          "9d099453-6780-4b94-b30d-1611f6909065",
+          "3d73b35f-df26-49dd-bb74-73b58f610924",
+          "bdd58243-0a04-4898-980c-1a36b1c1cd22"
+        ],
+        "evidenceCount": 5
+      },
+      {
+        "key": "strength:shapes",
+        "title": "Shapes marks stayed high",
+        "statement": "Shapes marks stayed high from Grade 4 Term 4 to Grade 6 Term 2. Grade 5 Term 3 has no shapes work.",
+        "status": "draft",
+        "evidenceIds": [
+          "25ca8031-9eef-49b6-8c60-9bf78fe0ad6e",
+          "3cab20a6-8725-4b3b-8d1b-df7a54f140b5",
+          "0fbb2828-3940-480b-9c3c-82e527db7f8f",
+          "aa03fde3-7ebc-4df8-aab4-d34034d733af",
+          "65229830-1d8b-4d4a-b65f-6d236d67c3bb",
+          "20de420e-2982-4691-80db-ad9b821d4a33"
+        ],
+        "evidenceCount": 8
+      }
+    ],
+    "reviewItems": 1,
+    "observations": 2,
+    "activities": 2,
+    "parentNotifications": 0,
+    "parentNeeds": 0
+  },
+  "state": {
+    "childId": "0c97de61-259c-4da1-9a1f-7700b646c7e7"
+  },
+  "extras": {
+    "modelListed": 2,
+    "droppedByTool": 0
+  },
+  "liveAttempts": 1,
+  "sandboxIds": [
+    "d9986d90-11df-4757-858a-f24893428074"
+  ],
+  "stream": "long-view-pattern-1.jsonl",
+  "scrubbed": false,
+  "cleanup": []
+}

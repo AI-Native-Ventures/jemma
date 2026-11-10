@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "runId": "2026-11-10-full",
+  "taskId": "long-view-nothing-to-say",
+  "n": 2,
+  "startedAt": "2026-11-10T19:52:53.045Z",
+  "rehearsal": false,
+  "seconds": 28.5,
+  "wallSeconds": 43.2,
+  "dbRoundTripMs": 312,
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "the event ended done",
+      "pass": true,
+      "detail": "status=done; error=none; runner note=Done. The learner's history had no patterns (`candidates` empty), so I saved an empty long view and marked the job done."
+    },
+    {
+      "name": "the model saved through save_long_view and the tool answered ok",
+      "pass": true,
+      "detail": "1 call(s)"
+    },
+    {
+      "name": "code finds no candidate for the learner (precondition)",
+      "pass": true,
+      "detail": "candidates: none"
+    },
+    {
+      "name": "zero patterns were saved",
+      "pass": true,
+      "detail": "saved: none"
+    },
+    {
+      "name": "no review item was opened for the teacher",
+      "pass": true,
+      "detail": "review items: 0"
+    }
+  ],
+  "event": {
+    "status": "done",
+    "error": null
+  },
+  "run": {
+    "status": "done",
+    "note": "Done. The learner's history had no patterns (`candidates` empty), so I saved an empty long view and marked the job done."
+  },
+  "attempts": [
+    {
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "seconds": 23,
+      "status": "done",
+      "note": "Done. The learner's history had no patterns (`candidates` empty), so I saved an empty long view and marked the job done.",
+      "saved": true,
+      "timedOut": false,
+      "tokens": {
+        "input": 54815,
+        "output": 400,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "nvidia/nemotron-3.5-super-vl:free",
+  "tokens": {
+    "input": 54815,
+    "output": 400,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_learner_history",
+    "jemma__save_long_view",
+    "jemma__complete_job"
+  ],
+  "reported": true,
+  "facts": {
+    "childId": "cf9682bc-95ec-45e7-b36c-17a3821cd4d8",
+    "candidates": [],
+    "patterns": [],
+    "reviewItems": 0,
+    "observations": 0,
+    "activities": 0,
+    "parentNotifications": 0,
+    "parentNeeds": 0
+  },
+  "state": {
+    "childId": "cf9682bc-95ec-45e7-b36c-17a3821cd4d8"
+  },
+  "extras": {
+    "saveCalled": true,
+    "modelListed": 0,
+    "droppedByTool": 0
+  },
+  "liveAttempts": 1,
+  "sandboxIds": [
+    "ead593a7-a095-4c26-a85a-301fb313e751"
+  ],
+  "stream": "long-view-nothing-to-say-2.jsonl",
+  "scrubbed": false,
+  "cleanup": []
+}

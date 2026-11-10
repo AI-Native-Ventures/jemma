@@ -7,7 +7,9 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "pnpm -r --parallel typecheck",
-    "operator": "pnpm --filter @jemma/runner operator"
+    "operator": "pnpm --filter @jemma/runner operator",
+    "evals": "pnpm --filter @jemma/runner exec node --import tsx --import ../profiling/scripts/register-md.mjs ../../evals/run.ts",
+    "evals:report": "pnpm --filter @jemma/runner exec node --import tsx --import ../profiling/scripts/register-md.mjs ../../evals/report.ts"
   },
   "devDependencies": {
     "typescript": "5.9.3",

@@ -1,0 +1,200 @@
+{
+  "version": 1,
+  "runId": "2026-11-10-full",
+  "taskId": "messy-records",
+  "n": 3,
+  "startedAt": "2026-11-10T19:56:47.611Z",
+  "rehearsal": false,
+  "seconds": 51.9,
+  "wallSeconds": 62.7,
+  "dbRoundTripMs": 439,
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "the event ended done",
+      "pass": true,
+      "detail": "status=done; error=none; runner note=Done. The long view for Thabo (child `1428c96f-e5ea-469a-b41d-71c7517948b5`) was saved as a draft with one pattern: - **Key:** `strength:data` - **Title:** \"Rea"
+    },
+    {
+      "name": "code finds the pattern and two missing terms for the learner (precondition)",
+      "pass": true,
+      "detail": "strength:data; missing: Grade 5 Term 2, Grade 5 Term 3"
+    },
+    {
+      "name": "the model read the history through get_learner_history",
+      "pass": true,
+      "detail": "yes"
+    },
+    {
+      "name": "the learner's pattern was saved",
+      "pass": true,
+      "detail": "saved: strength:data"
+    },
+    {
+      "name": "no saved pattern beyond the code's candidates",
+      "pass": true,
+      "detail": "code found [strength:data]; saved [strength:data]"
+    },
+    {
+      "name": "the statement does not claim results for a missing term",
+      "pass": true,
+      "detail": "2 mention(s) of a missing term, each said to have no data"
+    },
+    {
+      "name": "missingTerms from the tool lists the missing terms",
+      "pass": true,
+      "detail": "tool listed [Grade 5 Term 2, Grade 5 Term 3]; records have [Grade 5 Term 2, Grade 5 Term 3]"
+    },
+    {
+      "name": "titles are 1 to 70 characters and statements 1 to 320",
+      "pass": true,
+      "detail": "all within the limits"
+    },
+    {
+      "name": "no saved title or statement uses a banned word",
+      "pass": true,
+      "detail": "1 pattern(s) read, none found"
+    }
+  ],
+  "event": {
+    "status": "done",
+    "error": null
+  },
+  "run": {
+    "status": "done",
+    "note": "Done. The long view for Thabo (child `1428c96f-e5ea-469a-b41d-71c7517948b5`) was saved as a draft with one pattern: - **Key:** `strength:data` - **Title:** \"Reading graphs and tables well\" - **Statement:** Marks in reading graphs and tables stayed high from Grade 4 Term 3 to Grade 6 Term 2. Grade 5 Term 2 and Grade 5 Term 3 have no data. - **Note IDs cited:** two teacher notes that mention reading graphs/tables. The job (`61cc92d8-aef8-440a-a802-92cb2ff14635`) is marked complete."
+  },
+  "attempts": [
+    {
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "seconds": 47.8,
+      "status": "done",
+      "note": "Done. The long view for Thabo (child `1428c96f-e5ea-469a-b41d-71c7517948b5`) was saved as a draft with one pattern: - **Key:** `strength:data` - **Title:** \"Reading graphs and tables well\" - **Statement:** Marks in reading graphs and tables stayed high from Grade 4 Term 3 to Grade 6 Term 2. Grade 5 ",
+      "saved": true,
+      "timedOut": false,
+      "tokens": {
+        "input": 62336,
+        "output": 3677,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "nvidia/nemotron-3.5-super-vl:free",
+  "tokens": {
+    "input": 62336,
+    "output": 3677,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_learner_history",
+    "jemma__save_long_view",
+    "jemma__complete_job"
+  ],
+  "reported": true,
+  "facts": {
+    "childId": "1428c96f-e5ea-469a-b41d-71c7517948b5",
+    "candidates": [
+      {
+        "key": "strength:data",
+        "kind": "strength",
+        "family": "data",
+        "terms": [
+          {
+            "grade": 4,
+            "year": 2024,
+            "term": 3,
+            "percent": 85
+          },
+          {
+            "grade": 4,
+            "year": 2024,
+            "term": 4,
+            "percent": 90
+          },
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 1,
+            "percent": 85
+          },
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 4,
+            "percent": 90
+          },
+          {
+            "grade": 6,
+            "year": 2026,
+            "term": 1,
+            "percent": 95
+          },
+          {
+            "grade": 6,
+            "year": 2026,
+            "term": 2,
+            "percent": 85
+          }
+        ],
+        "since": [],
+        "missingTerms": [
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 2
+          },
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 3
+          }
+        ],
+        "evidenceIds": [
+          "05dd0af7-6d5b-434c-b659-992a42d7157c",
+          "35eb5b60-07c8-4969-9ced-801cc6d39ad2",
+          "a65c110b-a28b-402e-a8ab-175d528029f9",
+          "3729ecea-9de8-4488-ac07-c284a9d55267",
+          "5ccff8b2-890c-41c8-b7fe-fa65671150f6",
+          "d4f14261-a457-4965-bbc8-33dc5b116158"
+        ]
+      }
+    ],
+    "patterns": [
+      {
+        "key": "strength:data",
+        "title": "Reading graphs and tables well",
+        "statement": "Marks in reading graphs and tables stayed high from Grade 4 Term 3 to Grade 6 Term 2. Grade 5 Term 2 and Grade 5 Term 3 have no data.",
+        "status": "draft",
+        "evidenceIds": [
+          "05dd0af7-6d5b-434c-b659-992a42d7157c",
+          "35eb5b60-07c8-4969-9ced-801cc6d39ad2",
+          "a65c110b-a28b-402e-a8ab-175d528029f9",
+          "3729ecea-9de8-4488-ac07-c284a9d55267",
+          "5ccff8b2-890c-41c8-b7fe-fa65671150f6",
+          "d4f14261-a457-4965-bbc8-33dc5b116158"
+        ],
+        "evidenceCount": 8
+      }
+    ],
+    "reviewItems": 1,
+    "observations": 0,
+    "activities": 0,
+    "parentNotifications": 0,
+    "parentNeeds": 0
+  },
+  "state": {
+    "childId": "1428c96f-e5ea-469a-b41d-71c7517948b5"
+  },
+  "extras": {
+    "droppedByTool": 0,
+    "missingTermsInRecords": 2
+  },
+  "liveAttempts": 1,
+  "sandboxIds": [
+    "d7b2e68f-830d-4c5e-b044-5e9059647337"
+  ],
+  "stream": "messy-records-3.jsonl",
+  "scrubbed": false,
+  "cleanup": []
+}

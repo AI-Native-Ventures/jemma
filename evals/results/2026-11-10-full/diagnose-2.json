@@ -1,0 +1,217 @@
+{
+  "version": 1,
+  "runId": "2026-11-10-full",
+  "taskId": "diagnose",
+  "n": 2,
+  "startedAt": "2026-11-10T19:43:40.575Z",
+  "rehearsal": false,
+  "seconds": 58.2,
+  "wallSeconds": 84.3,
+  "dbRoundTripMs": 473,
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "the event ended done",
+      "pass": true,
+      "detail": "status=done; error=none; runner note=Job complete. Here's a summary of the diagnosis for Thabo (childId: `0b2bbef9-b6dc-4804-8a8a-e611346d114c`) on test `5abea53f-564f-426e-9579-85b7312c78b9`: | Q "
+    },
+    {
+      "name": "update_learner_profile answered ok",
+      "pass": true,
+      "detail": "1 call(s)"
+    },
+    {
+      "name": "every wrong answer of the learner got a misconception",
+      "pass": true,
+      "detail": "5 wrong answers, each with one"
+    },
+    {
+      "name": "gaps are opened only for topics where the learner has wrong answers, and at least one is opened",
+      "pass": true,
+      "detail": "4 gap(s): Adding fractions with different denominators, Adding mixed numbers, Comparing fractions, Adding decimals"
+    },
+    {
+      "name": "every gap's evidence ids are this learner's wrong answers",
+      "pass": true,
+      "detail": "all evidence ids are his wrong answers"
+    },
+    {
+      "name": "nobody else's diagnosis or gaps were touched",
+      "pass": true,
+      "detail": "unchanged"
+    }
+  ],
+  "event": {
+    "status": "done",
+    "error": null
+  },
+  "run": {
+    "status": "done",
+    "note": "Job complete. Here's a summary of the diagnosis for Thabo (childId: `0b2bbef9-b6dc-4804-8a8a-e611346d114c`) on test `5abea53f-564f-426e-9579-85b7312c78b9`: | Q | Wrong answer | Misconception | Gap topic | Missing basic | |---|-------------|---------------|-----------|---------------| | 1 | 1/2 + 1/4 = 2/6 | Adds the tops and the bottoms | Adding fractions with different denominators | Equivalent fractions | | 2 | 2/3 + 1/6 = 3/9 | Adds the tops and the bottoms | Adding fractions with different denominators | Equivalent fractions | | 4 | 1 1/2 + 2 1/4 = 3 2/6 | Adds the tops and the bottoms | Adding mixed numbers | Adding fractions with different denominators | | 6 | Bigger: 2/3 or 3/5 → 3/5 | Thinks bigger numbers make a bigger fraction | Comparing fractions | null | | 8 | 0,5 + 0,25 = 0,30 | Lines up the last digits | Adding decimals | null | 4 gaps were opened. The job has been marked done."
+  },
+  "attempts": [
+    {
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "seconds": 54.8,
+      "status": "done",
+      "note": "Job complete. Here's a summary of the diagnosis for Thabo (childId: `0b2bbef9-b6dc-4804-8a8a-e611346d114c`) on test `5abea53f-564f-426e-9579-85b7312c78b9`: | Q | Wrong answer | Misconception | Gap topic | Missing basic | |---|-------------|---------------|-----------|---------------| | 1 | 1/2 + 1/4",
+      "saved": true,
+      "timedOut": false,
+      "tokens": {
+        "input": 70097,
+        "output": 4603,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "nvidia/nemotron-3.5-super-vl:free",
+  "tokens": {
+    "input": 70097,
+    "output": 4603,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_job",
+    "jemma__get_class_results",
+    "jemma__get_learner_profile",
+    "jemma__update_learner_profile",
+    "jemma__complete_job"
+  ],
+  "reported": true,
+  "facts": {
+    "results": [
+      {
+        "id": "c8e20bcc-f804-4e97-b3cf-cd5a43314f7c",
+        "n": 1,
+        "correct": false,
+        "misconception": "Adds the tops and the bottoms",
+        "gapTopic": "Adding fractions with different denominators"
+      },
+      {
+        "id": "a3cac42c-af47-4056-b2df-1f5df7674516",
+        "n": 2,
+        "correct": false,
+        "misconception": "Adds the tops and the bottoms",
+        "gapTopic": "Adding fractions with different denominators"
+      },
+      {
+        "id": "8815fc41-87da-4d9b-9e0b-75f31aead1be",
+        "n": 3,
+        "correct": true,
+        "misconception": null,
+        "gapTopic": null
+      },
+      {
+        "id": "8078724c-f230-4807-906f-afba94f12bd9",
+        "n": 4,
+        "correct": false,
+        "misconception": "Adds the tops and the bottoms",
+        "gapTopic": "Adding mixed numbers"
+      },
+      {
+        "id": "34782523-66e5-4192-b0ec-bc4db502c234",
+        "n": 5,
+        "correct": true,
+        "misconception": null,
+        "gapTopic": null
+      },
+      {
+        "id": "233c2322-cb5a-4ab6-8ce9-8fa7a786b221",
+        "n": 6,
+        "correct": false,
+        "misconception": "Thinks bigger numbers make a bigger fraction",
+        "gapTopic": "Comparing fractions"
+      },
+      {
+        "id": "ed991ad8-7880-4fe0-b440-b3f689149c79",
+        "n": 7,
+        "correct": true,
+        "misconception": null,
+        "gapTopic": null
+      },
+      {
+        "id": "aab22836-6b35-4bd0-b125-cad1f3c2e339",
+        "n": 8,
+        "correct": false,
+        "misconception": "Lines up the last digits",
+        "gapTopic": "Adding decimals"
+      },
+      {
+        "id": "5f5fd7b4-9337-4f65-82bc-dd2237dc8834",
+        "n": 9,
+        "correct": true,
+        "misconception": null,
+        "gapTopic": null
+      },
+      {
+        "id": "63d588b9-69c2-456c-a145-055ff72ac9c0",
+        "n": 10,
+        "correct": true,
+        "misconception": null,
+        "gapTopic": null
+      }
+    ],
+    "gaps": [
+      {
+        "topicName": "Adding fractions with different denominators",
+        "stage": "new",
+        "evidence": [
+          "c8e20bcc-f804-4e97-b3cf-cd5a43314f7c",
+          "a3cac42c-af47-4056-b2df-1f5df7674516"
+        ]
+      },
+      {
+        "topicName": "Adding mixed numbers",
+        "stage": "new",
+        "evidence": [
+          "8078724c-f230-4807-906f-afba94f12bd9"
+        ]
+      },
+      {
+        "topicName": "Comparing fractions",
+        "stage": "new",
+        "evidence": [
+          "233c2322-cb5a-4ab6-8ce9-8fa7a786b221"
+        ]
+      },
+      {
+        "topicName": "Adding decimals",
+        "stage": "new",
+        "evidence": [
+          "aab22836-6b35-4bd0-b125-cad1f3c2e339"
+        ]
+      }
+    ],
+    "othersAfter": "{\"results\":[{\"id\":\"076e11ca-41df-402c-9408-54b56531f5b1\",\"misconception\":\"Adds the tops and the bottoms\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"0ae6423d-018b-4e1d-baac-c0272af88bba\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"0ef4d959-a426-43a9-885e-4e1199758170\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"10df0b27-e5ea-4281-bb6c-99c86c315b00\",\"misconception\":\"Adds the tops and the bottoms\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"1725cee7-aaf7-40bd-8760-b5c52a20d05a\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"1bc15dfe-75d9-4154-92ce-365414bc0107\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"1d0dc5ed-c666-4ecb-a3b0-c2734e89c4af\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"20309a8e-9359-4d14-9d73-297aeb854a26\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"23bbf59d-777a-4408-ae56-3ca0237de268\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"343a1e97-6c95-495a-8a48-eaac598d6c7e\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"45560a36-a0bd-45b2-b39d-7c683bc83ad7\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"45b87543-c47a-452a-a281-af58b512da1a\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"474dcd39-763f-4fc1-bd1a-8db03d246884\",\"misconception\":\"Lines up the last digits\",\"gap_topic_id\":\"01f1088d-9347-4d5e-8a41-c5967bd02eaf\"},{\"id\":\"4bb9a5fb-7ecb-42e3-ac2b-7240a3eba330\",\"misconception\":\"Adds the tops and keeps one bottom\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"536103f0-c4ed-48d7-a1fb-8ebc8f32cf6e\",\"misconception\":\"Lines up the last digits\",\"gap_topic_id\":\"01f1088d-9347-4d5e-8a41-c5967bd02eaf\"},{\"id\":\"538bbeda-e562-4e91-ab33-36181e0c8b77\",\"misconception\":\"Adds the tops and the bottoms\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"58f00929-fa9e-4d4c-91ac-de28998515f7\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"5dc7a5cb-8d2b-454e-9f7e-47a221b4b5e0\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"60621b31-89ec-4ec9-b13f-35abac4f131c\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"613ee3d1-3e66-473e-b263-46cf929a7917\",\"misconception\":\"Thinks bigger numbers make a bigger fraction\",\"gap_topic_id\":\"fa0c0943-66fe-46e3-8a74-74bcf9550df4\"},{\"id\":\"6598933e-d983-4bd5-8870-c503374e939d\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"6857688f-f377-4df0-904d-8f8289497590\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"73a5fb24-6548-43e1-81bd-7ca316bb9ffe\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"7be6a1b1-a2e5-4dd8-8fed-d750f989302a\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"826722ed-e4b3-40db-99d3-24ef61094c1a\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"889584b5-8286-4360-8187-41900b8c023c\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"88e2d233-84d0-4fd7-ae2d-0950f9aa779c\",\"misconception\":\"Adds the tops and the bottoms\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"8e316433-a254-4602-ba89-af4a7a675019\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"97d22b42-5217-4afb-bd4f-946a7f39fb1a\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"a14977f4-7bb4-4152-a8c3-52a1b9401c0c\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"ab8c5d7d-c34d-4cd0-8a1d-51c76530b41d\",\"misconception\":\"Adds the tops and the bottoms\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"bb633e88-3180-4a4c-872a-0dc9940fbdf8\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"c19c7330-e9c7-46f3-9f89-a1c4fb572125\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"cfbdf34c-fad4-44f7-b997-1ad8b1c9e507\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"dbade9a3-bab8-4c68-90b5-707e85b3a299\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"e0a349fe-d042-4ef5-a839-c18f8b733177\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"e102c7e3-b6bd-460c-b6d2-b233e048fd06\",\"misconception\":\"Adds the tops and the bottoms\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"e645ae5b-916c-4418-8786-1c7828beb047\",\"misconception\":\"Adds the tops and the bottoms\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"ebc47220-b450-4675-ad2e-c10f031b97d4\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"f3f741f1-44ba-4873-a384-a5c5069f7ee6\",\"misconception\":null,\"gap_topic_id\":null}],\"gaps\":[{\"id\":\"09b6da40-1558-47c0-89af-9382a69e9176\",\"topic_name\":\"Adding decimals\",\"stage\":\"new\",\"evidence\":[\"536103f0-c4ed-48d7-a1fb-8ebc8f32cf6e\"]},{\"id\":\"19847f8d-ce5b-4264-8c23-58b306595e09\",\"topic_name\":\"Rounding off\",\"stage\":\"fixed\",\"evidence\":[]},{\"id\":\"2abfd971-d877-47ba-8428-a6993fcb943c\",\"topic_name\":\"Equivalent fractions\",\"stage\":\"fixed\",\"evidence\":[]},{\"id\":\"5e44bb75-52f8-41bf-8faa-1248f072ec55\",\"topic_name\":\"Adding fractions with different denominators\",\"stage\":\"new\",\"evidence\":[\"538bbeda-e562-4e91-ab33-36181e0c8b77\",\"e102c7e3-b6bd-460c-b6d2-b233e048fd06\",\"4bb9a5fb-7ecb-42e3-ac2b-7240a3eba330\"]},{\"id\":\"9c5c9978-e9f0-4b35-9a9b-34444b21397d\",\"topic_name\":\"Comparing fractions\",\"stage\":\"new\",\"evidence\":[\"613ee3d1-3e66-473e-b263-46cf929a7917\"]},{\"id\":\"b0ca367c-abd9-4b74-8fb7-281453a6ee8a\",\"topic_name\":\"Ordering whole numbers\",\"stage\":\"fixed\",\"evidence\":[]},{\"id\":\"be959777-3740-4450-8a2d-6ae95d5c7557\",\"topic_name\":\"Adding fractions with different denominators\",\"stage\":\"new\",\"evidence\":[\"ab8c5d7d-c34d-4cd0-8a1d-51c76530b41d\",\"88e2d233-84d0-4fd7-ae2d-0950f9aa779c\"]},{\"id\":\"cb8e1a46-8a71-4f89-b917-5c2f0a18083e\",\"topic_name\":\"Adding fractions with different denominators\",\"stage\":\"new\",\"evidence\":[\"e645ae5b-916c-4418-8786-1c7828beb047\",\"10df0b27-e5ea-4281-bb6c-99c86c315b00\",\"076e11ca-41df-402c-9408-54b56531f5b1\"]},{\"id\":\"cf7e9bd7-8c20-48e7-aed0-2c7907513dc2\",\"topic_name\":\"Adding decimals\",\"stage\":\"new\",\"evidence\":[\"474dcd39-763f-4fc1-bd1a-8db03d246884\",\"f3a6b59d-58f7-4391-9825-03341159f80d\",\"0c429ce2-2a51-44b7-af72-393432aecf65\"]}]}"
+  },
+  "state": {
+    "childId": "0b2bbef9-b6dc-4804-8a8a-e611346d114c",
+    "paperId": "6c4c6d28-d89c-4e6c-b15c-f0835bc7cf0f",
+    "testId": "5abea53f-564f-426e-9579-85b7312c78b9",
+    "wrongResultIds": [
+      "c8e20bcc-f804-4e97-b3cf-cd5a43314f7c",
+      "aab22836-6b35-4bd0-b125-cad1f3c2e339",
+      "a3cac42c-af47-4056-b2df-1f5df7674516",
+      "8078724c-f230-4807-906f-afba94f12bd9",
+      "233c2322-cb5a-4ab6-8ce9-8fa7a786b221"
+    ],
+    "allowedTopics": [
+      "Adding fractions with different denominators",
+      "Adding decimals",
+      "Adding mixed numbers",
+      "Comparing fractions"
+    ],
+    "othersBefore": "{\"results\":[{\"id\":\"076e11ca-41df-402c-9408-54b56531f5b1\",\"misconception\":\"Adds the tops and the bottoms\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"0ae6423d-018b-4e1d-baac-c0272af88bba\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"0ef4d959-a426-43a9-885e-4e1199758170\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"10df0b27-e5ea-4281-bb6c-99c86c315b00\",\"misconception\":\"Adds the tops and the bottoms\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"1725cee7-aaf7-40bd-8760-b5c52a20d05a\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"1bc15dfe-75d9-4154-92ce-365414bc0107\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"1d0dc5ed-c666-4ecb-a3b0-c2734e89c4af\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"20309a8e-9359-4d14-9d73-297aeb854a26\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"23bbf59d-777a-4408-ae56-3ca0237de268\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"343a1e97-6c95-495a-8a48-eaac598d6c7e\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"45560a36-a0bd-45b2-b39d-7c683bc83ad7\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"45b87543-c47a-452a-a281-af58b512da1a\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"474dcd39-763f-4fc1-bd1a-8db03d246884\",\"misconception\":\"Lines up the last digits\",\"gap_topic_id\":\"01f1088d-9347-4d5e-8a41-c5967bd02eaf\"},{\"id\":\"4bb9a5fb-7ecb-42e3-ac2b-7240a3eba330\",\"misconception\":\"Adds the tops and keeps one bottom\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"536103f0-c4ed-48d7-a1fb-8ebc8f32cf6e\",\"misconception\":\"Lines up the last digits\",\"gap_topic_id\":\"01f1088d-9347-4d5e-8a41-c5967bd02eaf\"},{\"id\":\"538bbeda-e562-4e91-ab33-36181e0c8b77\",\"misconception\":\"Adds the tops and the bottoms\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"58f00929-fa9e-4d4c-91ac-de28998515f7\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"5dc7a5cb-8d2b-454e-9f7e-47a221b4b5e0\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"60621b31-89ec-4ec9-b13f-35abac4f131c\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"613ee3d1-3e66-473e-b263-46cf929a7917\",\"misconception\":\"Thinks bigger numbers make a bigger fraction\",\"gap_topic_id\":\"fa0c0943-66fe-46e3-8a74-74bcf9550df4\"},{\"id\":\"6598933e-d983-4bd5-8870-c503374e939d\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"6857688f-f377-4df0-904d-8f8289497590\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"73a5fb24-6548-43e1-81bd-7ca316bb9ffe\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"7be6a1b1-a2e5-4dd8-8fed-d750f989302a\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"826722ed-e4b3-40db-99d3-24ef61094c1a\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"889584b5-8286-4360-8187-41900b8c023c\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"88e2d233-84d0-4fd7-ae2d-0950f9aa779c\",\"misconception\":\"Adds the tops and the bottoms\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"8e316433-a254-4602-ba89-af4a7a675019\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"97d22b42-5217-4afb-bd4f-946a7f39fb1a\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"a14977f4-7bb4-4152-a8c3-52a1b9401c0c\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"ab8c5d7d-c34d-4cd0-8a1d-51c76530b41d\",\"misconception\":\"Adds the tops and the bottoms\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"bb633e88-3180-4a4c-872a-0dc9940fbdf8\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"c19c7330-e9c7-46f3-9f89-a1c4fb572125\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"cfbdf34c-fad4-44f7-b997-1ad8b1c9e507\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"dbade9a3-bab8-4c68-90b5-707e85b3a299\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"e0a349fe-d042-4ef5-a839-c18f8b733177\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"e102c7e3-b6bd-460c-b6d2-b233e048fd06\",\"misconception\":\"Adds the tops and the bottoms\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"e645ae5b-916c-4418-8786-1c7828beb047\",\"misconception\":\"Adds the tops and the bottoms\",\"gap_topic_id\":\"0a9933d9-ae2a-4892-97e0-bab5634be66d\"},{\"id\":\"ebc47220-b450-4675-ad2e-c10f031b97d4\",\"misconception\":null,\"gap_topic_id\":null},{\"id\":\"f3f741f1-44ba-4873-a384-a5c5069f7ee6\",\"misconception\":null,\"gap_topic_id\":null}],\"gaps\":[{\"id\":\"09b6da40-1558-47c0-89af-9382a69e9176\",\"topic_name\":\"Adding decimals\",\"stage\":\"new\",\"evidence\":[\"536103f0-c4ed-48d7-a1fb-8ebc8f32cf6e\"]},{\"id\":\"19847f8d-ce5b-4264-8c23-58b306595e09\",\"topic_name\":\"Rounding off\",\"stage\":\"fixed\",\"evidence\":[]},{\"id\":\"2abfd971-d877-47ba-8428-a6993fcb943c\",\"topic_name\":\"Equivalent fractions\",\"stage\":\"fixed\",\"evidence\":[]},{\"id\":\"5e44bb75-52f8-41bf-8faa-1248f072ec55\",\"topic_name\":\"Adding fractions with different denominators\",\"stage\":\"new\",\"evidence\":[\"538bbeda-e562-4e91-ab33-36181e0c8b77\",\"e102c7e3-b6bd-460c-b6d2-b233e048fd06\",\"4bb9a5fb-7ecb-42e3-ac2b-7240a3eba330\"]},{\"id\":\"9c5c9978-e9f0-4b35-9a9b-34444b21397d\",\"topic_name\":\"Comparing fractions\",\"stage\":\"new\",\"evidence\":[\"613ee3d1-3e66-473e-b263-46cf929a7917\"]},{\"id\":\"b0ca367c-abd9-4b74-8fb7-281453a6ee8a\",\"topic_name\":\"Ordering whole numbers\",\"stage\":\"fixed\",\"evidence\":[]},{\"id\":\"be959777-3740-4450-8a2d-6ae95d5c7557\",\"topic_name\":\"Adding fractions with different denominators\",\"stage\":\"new\",\"evidence\":[\"ab8c5d7d-c34d-4cd0-8a1d-51c76530b41d\",\"88e2d233-84d0-4fd7-ae2d-0950f9aa779c\"]},{\"id\":\"cb8e1a46-8a71-4f89-b917-5c2f0a18083e\",\"topic_name\":\"Adding fractions with different denominators\",\"stage\":\"new\",\"evidence\":[\"e645ae5b-916c-4418-8786-1c7828beb047\",\"10df0b27-e5ea-4281-bb6c-99c86c315b00\",\"076e11ca-41df-402c-9408-54b56531f5b1\"]},{\"id\":\"cf7e9bd7-8c20-48e7-aed0-2c7907513dc2\",\"topic_name\":\"Adding decimals\",\"stage\":\"new\",\"evidence\":[\"474dcd39-763f-4fc1-bd1a-8db03d246884\",\"f3a6b59d-58f7-4391-9825-03341159f80d\",\"0c429ce2-2a51-44b7-af72-393432aecf65\"]}]}"
+  },
+  "extras": {
+    "readToolGaveResultIds": true
+  },
+  "liveAttempts": 1,
+  "sandboxIds": [
+    "aa5e4e21-3872-4262-bb65-ac3f978308d6"
+  ],
+  "stream": "diagnose-2.jsonl",
+  "scrubbed": false,
+  "cleanup": []
+}

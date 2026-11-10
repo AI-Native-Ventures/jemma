@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "runId": "2026-11-10-full",
+  "taskId": "long-view-nothing-to-say",
+  "n": 1,
+  "startedAt": "2026-11-10T19:52:03.713Z",
+  "rehearsal": false,
+  "seconds": 32.7,
+  "wallSeconds": 49.3,
+  "dbRoundTripMs": 278,
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "the event ended done",
+      "pass": true,
+      "detail": "status=done; error=none; runner note=The job is complete. The learner's history had no candidates (code found no patterns), so `save_long_view` was called with an empty list and saved 0 patterns. T"
+    },
+    {
+      "name": "the model saved through save_long_view and the tool answered ok",
+      "pass": true,
+      "detail": "1 call(s)"
+    },
+    {
+      "name": "code finds no candidate for the learner (precondition)",
+      "pass": true,
+      "detail": "candidates: none"
+    },
+    {
+      "name": "zero patterns were saved",
+      "pass": true,
+      "detail": "saved: none"
+    },
+    {
+      "name": "no review item was opened for the teacher",
+      "pass": true,
+      "detail": "review items: 0"
+    }
+  ],
+  "event": {
+    "status": "done",
+    "error": null
+  },
+  "run": {
+    "status": "done",
+    "note": "The job is complete. The learner's history had no candidates (code found no patterns), so `save_long_view` was called with an empty list and saved 0 patterns. The job was then marked done."
+  },
+  "attempts": [
+    {
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "seconds": 28.9,
+      "status": "done",
+      "note": "The job is complete. The learner's history had no candidates (code found no patterns), so `save_long_view` was called with an empty list and saved 0 patterns. The job was then marked done.",
+      "saved": true,
+      "timedOut": false,
+      "tokens": {
+        "input": 55435,
+        "output": 653,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "nvidia/nemotron-3.5-super-vl:free",
+  "tokens": {
+    "input": 55435,
+    "output": 653,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_learner_history",
+    "jemma__save_long_view",
+    "jemma__complete_job"
+  ],
+  "reported": true,
+  "facts": {
+    "childId": "90f9768d-a3d6-4f55-ab80-34502056ce68",
+    "candidates": [],
+    "patterns": [],
+    "reviewItems": 0,
+    "observations": 0,
+    "activities": 0,
+    "parentNotifications": 0,
+    "parentNeeds": 0
+  },
+  "state": {
+    "childId": "90f9768d-a3d6-4f55-ab80-34502056ce68"
+  },
+  "extras": {
+    "saveCalled": true,
+    "modelListed": 0,
+    "droppedByTool": 0
+  },
+  "liveAttempts": 1,
+  "sandboxIds": [
+    "ba451097-f4b9-45b0-874d-a93b7d09d887"
+  ],
+  "stream": "long-view-nothing-to-say-1.jsonl",
+  "scrubbed": false,
+  "cleanup": []
+}

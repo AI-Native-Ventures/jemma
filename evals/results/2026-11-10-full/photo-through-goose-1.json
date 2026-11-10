@@ -1,0 +1,226 @@
+{
+  "version": 1,
+  "runId": "2026-11-10-full",
+  "taskId": "photo-through-goose",
+  "n": 1,
+  "startedAt": "2026-11-10T20:58:08.660Z",
+  "rehearsal": false,
+  "seconds": 163,
+  "wallSeconds": 242.3,
+  "dbRoundTripMs": 1098,
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "the event ended done",
+      "pass": true,
+      "detail": "status=done; error=none; runner note=The paper has been read and saved via `mark_paper`, and the job is complete. **Summary of what was read from Amina's paper (Hillview Primary School, Grade 6, Cl"
+    },
+    {
+      "name": "get_paper answered ok",
+      "pass": true,
+      "detail": "1 call(s)"
+    },
+    {
+      "name": "the photo reached the model through goose as image content",
+      "pass": true,
+      "detail": "get_paper answers carried: image, text"
+    },
+    {
+      "name": "mark_paper answered ok",
+      "pass": true,
+      "detail": "1 call(s); ok"
+    },
+    {
+      "name": "the paper ends marked",
+      "pass": true,
+      "detail": "status=marked; error=none; open items=0"
+    },
+    {
+      "name": "the paper has the right total, for the right learner",
+      "pass": true,
+      "detail": "total=6 (the sample is 6); learner matched=true; name read=Amina"
+    },
+    {
+      "name": "every answer is marked as the key says",
+      "pass": true,
+      "detail": "10 answers, all marked right or wrong as the sample says"
+    }
+  ],
+  "event": {
+    "status": "done",
+    "error": null
+  },
+  "run": {
+    "status": "done",
+    "note": "The paper has been read and saved via `mark_paper`, and the job is complete. **Summary of what was read from Amina's paper (Hillview Primary School, Grade 6, Class Test 1):** | # | Prompt | Answer as written | |---|--------|-------------------| | 1 | 1/2 + 1/4 = | 2/6 | | 2 | 2/3 + 1/6 = | 3/9 | | 3 | 3/4 - 1/2 = | 1/4 | | 4 | 1 1/2 + 2 1/4 = | 3 2/6 | | 5 | Work out 2/5 of 20 | 8 | | 6 | Which fraction is bigger? Circle it. 2/3 3/5 | 2/3 | | 7 | Write 3/5 as a decimal | 0,6 | | 8 | 0,5 + 0,25 = | 0,30 | | 9 | Which fraction is equal to 0,25? Circle the letter | B | | 10 | Thabo has R20... How much money does he have left? | R5 | Jemma's code has already marked every answer against the answer key (total: 6/10). No marking decisions were made by me - I only copied what was written on the page."
+  },
+  "attempts": [
+    {
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "seconds": 149.1,
+      "status": "done",
+      "note": "The paper has been read and saved via `mark_paper`, and the job is complete. **Summary of what was read from Amina's paper (Hillview Primary School, Grade 6, Class Test 1):** | # | Prompt | Answer as written | |---|--------|-------------------| | 1 | 1/2 + 1/4 = | 2/6 | | 2 | 2/3 + 1/6 = | 3/9 | | 3",
+      "saved": true,
+      "timedOut": false,
+      "tokens": {
+        "input": 55754,
+        "output": 1302,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "nvidia/nemotron-3.5-super-vl:free",
+  "tokens": {
+    "input": 55754,
+    "output": 1302,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_paper",
+    "jemma__mark_paper",
+    "jemma__complete_job"
+  ],
+  "reported": false,
+  "facts": {
+    "paper": {
+      "status": "marked",
+      "total": 6,
+      "childId": "3f2d2108-3b90-44f0-b1a3-fa31c1ca3042",
+      "nameRead": "Amina",
+      "error": null
+    },
+    "results": [
+      {
+        "n": 1,
+        "answerRead": "2/6",
+        "correct": false,
+        "confidence": 0.95
+      },
+      {
+        "n": 2,
+        "answerRead": "3/9",
+        "correct": false,
+        "confidence": 0.95
+      },
+      {
+        "n": 3,
+        "answerRead": "1/4",
+        "correct": true,
+        "confidence": 0.95
+      },
+      {
+        "n": 4,
+        "answerRead": "3 2/6",
+        "correct": false,
+        "confidence": 0.95
+      },
+      {
+        "n": 5,
+        "answerRead": "8",
+        "correct": true,
+        "confidence": 0.95
+      },
+      {
+        "n": 6,
+        "answerRead": "2/3",
+        "correct": true,
+        "confidence": 0.95
+      },
+      {
+        "n": 7,
+        "answerRead": "0,6",
+        "correct": true,
+        "confidence": 0.95
+      },
+      {
+        "n": 8,
+        "answerRead": "0,30",
+        "correct": false,
+        "confidence": 0.95
+      },
+      {
+        "n": 9,
+        "answerRead": "B",
+        "correct": true,
+        "confidence": 0.95
+      },
+      {
+        "n": 10,
+        "answerRead": "R5",
+        "correct": true,
+        "confidence": 0.95
+      }
+    ],
+    "needsYou": 0
+  },
+  "state": {
+    "childId": "3f2d2108-3b90-44f0-b1a3-fa31c1ca3042",
+    "paperId": "3b90fa66-e611-4d7d-8709-28baaf056469",
+    "expectedTotal": 6,
+    "expected": [
+      {
+        "n": 1,
+        "answer": "2/6",
+        "correct": false
+      },
+      {
+        "n": 2,
+        "answer": "3/9",
+        "correct": false
+      },
+      {
+        "n": 3,
+        "answer": "1/4",
+        "correct": true
+      },
+      {
+        "n": 4,
+        "answer": "3 2/6",
+        "correct": false
+      },
+      {
+        "n": 5,
+        "answer": "8",
+        "correct": true
+      },
+      {
+        "n": 6,
+        "answer": "2/3",
+        "correct": true
+      },
+      {
+        "n": 7,
+        "answer": "0,6",
+        "correct": true
+      },
+      {
+        "n": 8,
+        "answer": "0,30",
+        "correct": false
+      },
+      {
+        "n": 9,
+        "answer": "B",
+        "correct": true
+      },
+      {
+        "n": 10,
+        "answer": "R5",
+        "correct": true
+      }
+    ]
+  },
+  "extras": {
+    "answersReadExactly": 10,
+    "answersExpected": 10,
+    "totalRead": 6
+  },
+  "liveAttempts": 1,
+  "sandboxIds": [
+    "859f8ff7-c3c1-4c4d-9eb4-17277f2eb1c1"
+  ],
+  "stream": "photo-through-goose-1.jsonl",
+  "scrubbed": false,
+  "cleanup": []
+}
