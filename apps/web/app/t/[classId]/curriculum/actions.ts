@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import type { JemmaDb } from '@jemma/profiling/db'
 import { requireRole } from '@/lib/auth'
 import { retryEvent, sendEvent } from '@/lib/agent'
+import { recordApproval } from '@/lib/approvals'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import {
@@ -199,6 +200,7 @@ export async function approveMap(mapId: string): Promise<void> {
   ok(await admin.from('needs_you_items').update({ status: 'done' }).eq('kind', 'approve_map').eq('ref_id', mapId))
   ok(await admin.rpc('retag_results', { map: mapId }))
   ok(await admin.from('activity_log').insert({ school_id: cls.data.school_id, class_id: map.class_id, at: now, tool: 'approve_map', text: `Saved the map you approved: ${plural(topicCount(read.draft), 'topic')}` }))
+  await recordApproval(admin, { schoolId: cls.data.school_id, kind: 'topic_map', refId: mapId, decision: 'approved', userId: (await requireRole('teacher')).userId })
 
   revalidatePath(`/t/${map.class_id}/curriculum`, 'layout')
   redirect(`/t/${map.class_id}/curriculum`)

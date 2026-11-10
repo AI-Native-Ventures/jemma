@@ -1,6 +1,6 @@
 import type { z } from 'zod'
 import type { AiEnv } from '../ai'
-import type { JemmaDb } from '../db'
+import type { JemmaDb, Json } from '../db'
 
 export type ToolContext = {
   db: JemmaDb
@@ -11,6 +11,12 @@ export type ToolContext = {
   eventId: string | null
   env: AiEnv
   now: () => Date
+  /** How the tool is reached: inside a cloud job (the default) or through the MCP server. It is saved on the tool log. */
+  via?: 'cloud' | 'mcp'
+  /** The engine that drives an MCP client (claude, codex, goose), when it is known. Saved on the tool log. */
+  engine?: string | null
+  /** The model behind the call. A cloud call falls back to `env.LLM_MODEL`. Saved on the tool log. */
+  model?: string | null
 }
 
 export class OutOfScopeError extends Error {
@@ -146,6 +152,115 @@ export type ToolDef<I extends z.ZodObject = z.ZodObject, O extends z.ZodType = z
   run(ctx: ToolContext, input: z.infer<I>): Promise<z.infer<O> | WithImages<z.infer<O>>>
 }
 
+/** Longest string the tool log keeps whole. A longer one is stored as its length. */
+const LOG_MAX_STRING = 2000
+const LOG_MAX_DEPTH = 12
+
+const noNul = (text: string) => (text.includes('\u0000') ? text.replaceAll('\u0000', '') : text)
+
+function trimValue(value: unknown, depth: number, parents: WeakSet<object>): Json | undefined {
+  if (value === null) return null
+  switch (typeof value) {
+    case 'string': {
+      const text = noNul(value)
+      return text.length > LOG_MAX_STRING ? `<${text.length} characters>` : text
+    }
+    case 'number':
+      return Number.isFinite(value) ? value : null
+    case 'boolean':
+      return value
+    case 'bigint':
+      return String(value)
+    case 'object':
+      break
+    default:
+      return undefined
+  }
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value.toISOString()
+  if (ArrayBuffer.isView(value) || value instanceof ArrayBuffer) return `<${value.byteLength} bytes>`
+  if (depth >= LOG_MAX_DEPTH || parents.has(value)) return '<too deep>'
+  parents.add(value)
+  try {
+    if (Array.isArray(value)) return value.map((item) => trimValue(item, depth + 1, parents) ?? null)
+    const out: { [key: string]: Json | undefined } = {}
+    for (const [key, item] of Object.entries(value)) {
+      const trimmed = trimValue(item, depth + 1, parents)
+      if (trimmed !== undefined) out[noNul(key)] = trimmed
+    }
+    return out
+  } finally {
+    parents.delete(value)
+  }
+}
+
+/** A copy of `value` that is safe to keep in the tool log: plain JSON, with every string over 2000 characters replaced by `<N characters>`. */
+export function trimForLog(value: unknown): Json {
+  return trimValue(value, 0, new WeakSet()) ?? null
+}
+
+/** What the log keeps of a tool result. Image data is never stored: only the output and how many images there were. */
+function outputForLog(result: unknown): Json {
+  return isWithImages(result) ? { output: trimForLog(result.output), images: result.images.length } : trimForLog(result)
+}
+
+const messageOf = (err: unknown) => noNul(err instanceof Error ? err.message : String(err))
+
+function eventIdOf(ctx: ToolContext, input: unknown): string | null {
+  if (ctx.eventId) return ctx.eventId
+  const fromInput = typeof input === 'object' && input !== null ? (input as { eventId?: unknown }).eventId : undefined
+  return typeof fromInput === 'string' && UUID.test(fromInput) ? fromInput : null
+}
+
+type Outcome = { ok: true; result: unknown } | { ok: false; error: unknown }
+
+/** Saves one row on the tool log. It never throws: a logging failure must not change what the tool returns or cause a retry of a save. */
+async function logToolCall(ctx: ToolContext, tool: string, input: unknown, outcome: Outcome, startedAt: Date, durationMs: number): Promise<void> {
+  try {
+    const via = ctx.via ?? 'cloud'
+    const row = {
+      school_id: ctx.schoolId,
+      event_id: eventIdOf(ctx, input),
+      server: 'jemma',
+      tool,
+      via,
+      engine: ctx.engine ?? null,
+      model: ctx.model !== undefined ? ctx.model : via === 'cloud' ? (ctx.env.LLM_MODEL ?? null) : null,
+      input: trimForLog(input) ?? {},
+      output: outcome.ok ? outputForLog(outcome.result) : null,
+      ok: outcome.ok,
+      error: outcome.ok ? null : messageOf(outcome.error),
+      started_at: startedAt.toISOString(),
+      duration_ms: Math.max(0, Math.round(durationMs)),
+    }
+    let res = await ctx.db.from('tool_calls').insert(row)
+    // A made-up event id (an out of scope or wrong call) must not hide the call itself: log it with no event.
+    if (res.error?.code === '23503' && row.event_id) res = await ctx.db.from('tool_calls').insert({ ...row, event_id: null })
+    if (res.error) console.error(`tool log: could not save the call to ${tool}: ${res.error.message}`)
+  } catch (e) {
+    console.error(`tool log: could not save the call to ${tool}: ${messageOf(e)}`)
+  }
+}
+
+/**
+ * Defines a tool. Every call is saved on the tool log (`tool_calls`) with its input, output, time and who ran it, whether it
+ * comes through the MCP server or straight from a cloud job. `log_external_calls` writes its own rows, so it is left alone.
+ */
 export function defineTool<I extends z.ZodObject, O extends z.ZodType>(def: ToolDef<I, O>): ToolDef<I, O> {
-  return def
+  if (def.name === 'log_external_calls') return def
+  return {
+    ...def,
+    async run(ctx, input) {
+      const startedAt = ctx.now()
+      const began = Date.now()
+      let outcome: Outcome
+      try {
+        outcome = { ok: true, result: await def.run(ctx, input) }
+      } catch (error) {
+        outcome = { ok: false, error }
+      }
+      await logToolCall(ctx, def.name, input, outcome, startedAt, Date.now() - began)
+      if (!outcome.ok) throw outcome.error
+      return outcome.result as Awaited<ReturnType<ToolDef<I, O>['run']>>
+    },
+  }
 }

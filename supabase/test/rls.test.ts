@@ -181,3 +181,64 @@ describe('row level security', () => {
     expect(bad.error).not.toBeNull()
   })
 })
+
+describe('tool log and approvals', () => {
+  const callRow = (schoolId: string, tool: string) => ({
+    school_id: schoolId, tool, via: 'cloud', input: { x: 1 }, output: { y: 2 }, ok: true, started_at: new Date().toISOString(),
+  })
+
+  test('the teacher of the school reads the tool log, nobody else does', async () => {
+    await ok(service.from('tool_calls').insert([callRow(ids.sA, `${tag}_a`), callRow(ids.sB, `${tag}_b`)]))
+    const mine = await ok(users.teacherA.client.from('tool_calls').select('tool, school_id'))
+    expect(mine.map((r) => r.tool)).toEqual([`${tag}_a`])
+    expect(mine[0]!.school_id).toBe(ids.sA)
+    // A teacher of another school reads their own school's rows only, never school A's.
+    const other = await ok(users.teacherB.client.from('tool_calls').select('tool').eq('school_id', ids.sA))
+    expect(other).toEqual([])
+    expect((await ok(users.teacherB.client.from('tool_calls').select('tool'))).map((r) => r.tool)).toEqual([`${tag}_b`])
+    // Parents and learners read nothing, not even in their own school.
+    for (const who of ['parent1', 'parent2', 'childA1']) {
+      expect(await ok(users[who]!.client.from('tool_calls').select('id').eq('school_id', ids.sA))).toEqual([])
+      expect(await ok(users[who]!.client.from('tool_calls').select('id'))).toEqual([])
+    }
+    const anon = createClient(url, anonKey, opts)
+    const { data } = await anon.from('tool_calls').select('id')
+    expect(data ?? []).toEqual([])
+  })
+
+  test('nobody writes the tool log with a user token', async () => {
+    for (const who of ['teacherA', 'parent1', 'childA1']) {
+      const ins = await users[who]!.client.from('tool_calls').insert(callRow(ids.sA, `${tag}_forged`))
+      expect(ins.error).not.toBeNull()
+    }
+    const upd = await users.teacherA.client.from('tool_calls').update({ ok: false }).eq('school_id', ids.sA).select('id')
+    expect(upd.data ?? []).toEqual([])
+    const del = await users.teacherA.client.from('tool_calls').delete().eq('school_id', ids.sA).select('id')
+    expect(del.data ?? []).toEqual([])
+    expect(await ok(service.from('tool_calls').select('id').eq('tool', `${tag}_forged`))).toEqual([])
+    expect((await ok(service.from('tool_calls').select('id').eq('tool', `${tag}_a`))).length).toBe(1)
+  })
+
+  test('the teacher of the school reads every approval of the school, a parent only their own', async () => {
+    const ref = crypto.randomUUID()
+    await ok(
+      service.from('approvals').insert([
+        { school_id: ids.sA, kind: 'topic_map', ref_id: ref, decision: 'approved', decided_by: users.teacherA.id, decided_by_name: 'teacherA' },
+        { school_id: ids.sA, kind: 'homework_scan', ref_id: ref, child_id: ids.a1, decision: 'confirmed', decided_by: users.parent1.id, decided_by_name: 'parent1' },
+        { school_id: ids.sB, kind: 'topic_map', ref_id: ref, decision: 'approved', decided_by: users.teacherB.id, decided_by_name: 'teacherB' },
+      ]),
+    )
+    const teacher = await ok(users.teacherA.client.from('approvals').select('decided_by_name').eq('ref_id', ref))
+    expect(teacher.map((r) => r.decided_by_name).sort()).toEqual(['parent1', 'teacherA'])
+    const otherTeacher = await ok(users.teacherB.client.from('approvals').select('decided_by_name').eq('ref_id', ref))
+    expect(otherTeacher.map((r) => r.decided_by_name)).toEqual(['teacherB'])
+    const own = await ok(users.parent1.client.from('approvals').select('decided_by_name').eq('ref_id', ref))
+    expect(own.map((r) => r.decided_by_name)).toEqual(['parent1'])
+    expect(await ok(users.parent2.client.from('approvals').select('id').eq('ref_id', ref))).toEqual([])
+    expect(await ok(users.childA1.client.from('approvals').select('id').eq('ref_id', ref))).toEqual([])
+    const forged = await users.parent1.client.from('approvals').insert({
+      school_id: ids.sA, kind: 'topic_map', ref_id: ref, decision: 'approved', decided_by: users.parent1.id, decided_by_name: 'parent1',
+    })
+    expect(forged.error).not.toBeNull()
+  })
+})
