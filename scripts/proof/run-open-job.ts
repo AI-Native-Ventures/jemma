@@ -70,8 +70,10 @@ type RunRecord = {
   toolCalls: string[]
   tokens: { input: number; output: number; costUsd: number } | null
   reported: boolean | null
-  /** Informational: does the worker offer log_external_calls (P50a builds it)? */
+  /** Does the worker offer log_external_calls? */
   workerHasLogTool: boolean | null
+  /** What the tool log (`tool_calls`) holds for this run's school, counted. */
+  toolLog: { runnerRows: number; agentRunRows: number; mcpRows: Record<string, number> } | null
   checks: Check[]
   reportFile: string | null
   error: string | null
@@ -162,7 +164,7 @@ async function oneRun(n: number, shared: Shared): Promise<RunRecord> {
   const { admin, env, reportsDir } = shared
   const record: RunRecord = {
     n, sandboxId: null, eventId: null, finalModel: null, status: 'not started', note: '', seconds: 0, attempts: [], toolCalls: [], tokens: null,
-    reported: null, workerHasLogTool: null, checks: [], reportFile: null, error: null,
+    reported: null, workerHasLogTool: null, toolLog: null, checks: [], reportFile: null, error: null,
   }
   const check = (name: string, pass: boolean, detail: string) => record.checks.push({ name, pass, detail })
   const secrets: string[] = [required(env, 'OPENROUTER_API_KEY')]
@@ -301,14 +303,15 @@ async function oneRun(n: number, shared: Shared): Promise<RunRecord> {
     const calls: TranscriptCall[] = seen?.calls ?? []
     record.toolCalls = calls.map((c) => `${c.server}__${c.tool}${c.ok ? '' : ' (error)'}`)
     record.tokens = sumTokens(record.attempts.map((a) => a.tokens))
-    for (const need of ['jemma__get_job', 'jemma__get_class_results', 'jemma__class_gap_report', 'jemma__complete_job', 'files__write_file']) {
+    // The model chooses its own calls. get_job is not required: the prompt already carries the job and its ids.
+    for (const need of ['jemma__get_class_results', 'jemma__class_gap_report', 'jemma__complete_job', 'files__write_file']) {
       const hit = calls.some((c) => `${c.server}__${c.tool}` === need && c.ok)
       check(`tool call ${need} answered ok`, hit, hit ? 'yes' : 'missing or errored')
     }
-    const order = ['jemma__get_job', 'jemma__get_class_results', 'jemma__class_gap_report', 'files__write_file', 'jemma__complete_job']
+    const order = ['jemma__get_class_results', 'jemma__class_gap_report', 'files__write_file', 'jemma__complete_job']
     const names = calls.map((c) => `${c.server}__${c.tool}`)
     const positions = order.map((o) => names.indexOf(o))
-    check('save, then the file copy, then complete_job', positions.every((p) => p >= 0) && positions.every((p, i) => i === 0 || p > positions[i - 1]!), positions.join(','))
+    check('reads, then the save, then the file copy, then complete_job', positions.every((p) => p >= 0) && positions.every((p, i) => i === 0 || p > positions[i - 1]!), positions.join(','))
 
     // rows: same checks as the P48 proof
     const [reteachQuery, classQuery, testAgain, mapsQuery, logsQuery] = await Promise.all([
@@ -334,6 +337,38 @@ async function oneRun(n: number, shared: Shared): Promise<RunRecord> {
     }
     const logs = logsQuery.data ?? []
     check('class report activity rows are in the sandbox school', logs.length >= 1 && logs.every((r) => r.school_id === sandbox.schoolId && r.class_id === sandbox.classId), `rows=${logs.length}`)
+
+    // The tool log: did the borrowed calls and the usage get logged, and did the server log Jemma's own calls?
+    if (record.workerHasLogTool) {
+      const logQuery = await admin
+        .from('tool_calls')
+        .select('server, tool, via, engine, model, input, output, ok, event_id, started_at')
+        .eq('school_id', sandbox.schoolId)
+        .gte('started_at', new Date(Date.parse(startedAt) - 5_000).toISOString())
+      const rows = logQuery.data ?? []
+      const runnerRows = rows.filter((r) => r.via === 'runner' && r.tool !== 'agent_run')
+      const usageRows = rows.filter((r) => r.via === 'runner' && r.server === 'runner' && r.tool === 'agent_run')
+      const borrowed = calls.filter((c) => c.server !== 'jemma')
+      check('log_external_calls answered true', record.reported === true, `reported=${record.reported}${logQuery.error ? `; read error: ${logQuery.error.message}` : ''}`)
+      check(
+        'one runner row per borrowed call: via runner, engine goose, the model id, server and tool, input and output present, ok matches',
+        runnerRows.length === borrowed.length &&
+          borrowed.every((c) => runnerRows.some((r) => r.server === c.server && r.tool === c.tool && r.engine === 'goose' && r.model === record.finalModel && r.event_id === eventId && r.ok === c.ok && r.input !== null && typeof r.input === 'object' && Object.keys(r.input as object).length > 0 && r.output !== null)),
+        `rows=${runnerRows.length} (${runnerRows.map((r) => `${r.server}.${r.tool}`).join(', ')}); borrowed calls=${borrowed.length}`,
+      )
+      const u = usageRows[0]?.output as { inputTokens?: unknown; outputTokens?: unknown; costUsd?: unknown } | null | undefined
+      check('one agent_run usage row with tokens and cost, model id and engine', usageRows.length === 1 && usageRows[0]!.engine === 'goose' && usageRows[0]!.model === record.finalModel && typeof u?.inputTokens === 'number' && typeof u?.outputTokens === 'number' && typeof u?.costUsd === 'number', `rows=${usageRows.length}; output=${JSON.stringify(u ?? null)}`)
+      const loggedText = JSON.stringify([...runnerRows, ...usageRows])
+      const leaked = secrets.filter((secret) => secret && loggedText.includes(secret))
+      check('no token or key in the runner rows', leaked.length === 0 && !/bearer/i.test(loggedText), `${loggedText.length} characters searched`)
+      const mcpRows = rows.filter((r) => r.via === 'mcp' && r.server === 'jemma')
+      const wanted = new Map<string, number>()
+      for (const c of calls) if (c.server === 'jemma') wanted.set(c.tool, (wanted.get(c.tool) ?? 0) + 1)
+      const have: Record<string, number> = {}
+      for (const r of mcpRows) have[r.tool] = (have[r.tool] ?? 0) + 1
+      check('server-side row (via mcp) for each Jemma tool call the model made', [...wanted].every(([tool, n]) => (have[tool] ?? 0) >= n), `model called ${[...wanted].map(([t, n]) => `${t} x${n}`).join(', ')}; server logged ${Object.entries(have).map(([t, n]) => `${t} x${n}`).join(', ')}`)
+      record.toolLog = { runnerRows: runnerRows.length, agentRunRows: usageRows.length, mcpRows: have }
+    }
 
     // the borrowed server's copy of the report
     const reportName = `class_report-${sandbox.classId}.md`

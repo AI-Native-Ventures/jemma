@@ -2,11 +2,11 @@
 
 ## Result
 
-Jemma's runner now has a third engine: Goose, an open-source agent, driving a free open-weights model on OpenRouter, with Jemma's own MCP server and one borrowed MCP server (the official filesystem server). Three full `class_report` jobs ran through the desktop runner path on `jemma-dev`. All three finished `done` on the first model in the list (`nvidia/nemotron-3.5-super-vl:free`), with no fallback needed. In each run the model chose its own tool calls, saved the class report through Jemma's MCP server, wrote a Markdown copy of the report with the borrowed file server, and called `complete_job`.
+Jemma's runner now has a third engine: Goose, an open-source agent, driving a free open-weights model on OpenRouter, with Jemma's own MCP server and one borrowed MCP server (the official filesystem server). Four full `class_report` jobs ran through the desktop runner path on `jemma-dev` (runs 1 to 3 first, run 4 after P50a was merged, see "Run 4"). All four finished `done` on the first model in the list (`nvidia/nemotron-3.5-super-vl:free`), with no fallback needed. In each run the model chose its own tool calls, saved the class report through Jemma's MCP server, wrote a Markdown copy of the report with the borrowed file server, and called `complete_job`.
 
-One thing did not match the packet: in runs 2 and 3 the model did not call `jemma get_job` (the prompt does not tell it to, and the event id and ids are already in the prompt). Run 1 did. The other four required calls were made in every run. This is recorded as a failed check below, not hidden.
+The model chose its own calls. Only run 1 called `jemma get_job`. Runs 2, 3 and 4 did not need it: the runner's prompt already carries the job and its ids, so a run without `get_job` is correct. The proof script no longer requires it (the first version did; the table below applies the corrected rule to the same recorded transcripts).
 
-Live AI use: 3 live goose runs against OpenRouter (cap 12), all three succeeded. Everything else (about fifteen goose runs while building and testing) ran against a scripted stand-in for OpenRouter on a loopback port, or against an address that does not answer, so no model was called.
+Live AI use: 4 live goose runs against OpenRouter (cap 12), all four succeeded. Everything else (about fifteen goose runs while building and testing) ran against a scripted stand-in for OpenRouter on a loopback port, or against an address that does not answer, so no model was called.
 
 ## What was proven, and the evidence
 
@@ -15,6 +15,7 @@ Live AI use: 3 live goose runs against OpenRouter (cap 12), all three succeeded.
 | 1 | `49b54d9f-9c34-438f-b5b7-0cc8e5793e23` | `cb1ba5ce-2d4f-4622-b5b6-c2c44d7bbea9` | `nvidia/nemotron-3.5-super-vl:free` | 48.7 | 51.0 | 83,886 / 3,496 | 0 |
 | 2 | `000acccf-fd82-4dfe-beba-1e332e8c681e` | `5a779b0d-2232-44e0-8f65-ddf11e37dc04` | `nvidia/nemotron-3.5-super-vl:free` | 82.4 | 84.8 | 86,311 / 4,447 | 0 |
 | 3 | `95e74454-0e5f-4c2e-8f9c-36208360c25b` | `65e6420d-f31f-43fa-b546-57dfd709cc57` | `nvidia/nemotron-3.5-super-vl:free` | 54.8 | 57.3 | 82,178 / 2,904 | 0 |
+| 4 | `df8ecd0c-65f8-409e-8d46-31e7389e2ed3` | `bc95e9e3-3776-4945-b583-95cdd1b4ef4f` | `nvidia/nemotron-3.5-super-vl:free` | 56.6 | 60.1 | 87,319 / 4,304 | 0 |
 
 "Whole job seconds" runs from starting the runner to the end of the goose run. Tokens are what Goose reported on its final `complete` line (all turns of the run added up).
 
@@ -25,33 +26,53 @@ Tool calls in order, as parsed from each run's stream-json (`server__tool`). All
 | 1 | `jemma__get_job`, `jemma__get_class_results`, `jemma__get_memo`, `jemma__class_gap_report`, `files__write_file`, `jemma__complete_job` |
 | 2 | `jemma__get_class_results`, `jemma__get_memo`, `files__create_directory`, `jemma__class_gap_report`, `files__write_file`, `jemma__complete_job` |
 | 3 | `jemma__get_class_results`, `jemma__get_memo`, `jemma__class_gap_report`, `files__write_file`, `jemma__complete_job` |
+| 4 | `jemma__get_class_results`, `jemma__get_memo`, `jemma__class_gap_report`, `files__write_file`, `jemma__complete_job` |
 
-Checks per run (done by `scripts/proof/run-open-job.ts` after the run, from the database and the files):
+Checks per run (done by `scripts/proof/run-open-job.ts` after the run, from the database and the files). `jemma get_job` is not a check any more.
 
-| Check | Run 1 | Run 2 | Run 3 |
-| --- | --- | --- | --- |
-| Heartbeat row scoped to the synthetic teacher, `chosen = goose` | pass | pass | pass |
-| Event settled `done`, runner `desktop`, claimed by the teacher, no error | pass | pass | pass |
-| `jemma get_job` called and answered | pass | FAIL (not called) | FAIL (not called) |
-| `get_class_results`, `class_gap_report`, `complete_job`, `files write_file` called and answered | pass | pass | pass |
-| Order: `get_job`, reads, save, file copy, `complete_job` (script check) | pass | FAIL (get_job absent; the other calls are in the right order) | FAIL (get_job absent; the other calls are in the right order) |
-| Reteach row passes `ReteachSchema`, and `why`, `missing_basic`, `explanation` are set | pass | pass | pass |
-| Reteach row scoped to the sandbox class, test and school; topic belongs to the class map | pass | pass | pass |
-| Reteach row differs from the seeded row (written by this run) | pass | pass | pass |
-| Two `class_gap_report` activity rows, in the sandbox school and class | pass | pass | pass |
-| Report file exists and is not empty (1783, 2152, 1800 characters) | pass | pass | pass |
-| Report file cites question numbers | pass | pass | pass |
+| Check | Run 1 | Run 2 | Run 3 | Run 4 |
+| --- | --- | --- | --- | --- |
+| Heartbeat row scoped to the synthetic teacher, `chosen = goose` | pass | pass | pass | pass |
+| Event settled `done`, runner `desktop`, claimed by the teacher, no error | pass | pass | pass | pass |
+| `get_class_results`, `class_gap_report`, `complete_job`, `files write_file` called and answered | pass | pass | pass | pass |
+| Order: reads, then the save, then the file copy, then `complete_job` | pass | pass | pass | pass |
+| Reteach row passes `ReteachSchema`, and `why`, `missing_basic`, `explanation` are set | pass | pass | pass | pass |
+| Reteach row scoped to the sandbox class, test and school; topic belongs to the class map | pass | pass | pass | pass |
+| Reteach row differs from the seeded row (written by this run) | pass | pass | pass | pass |
+| Two `class_gap_report` activity rows, in the sandbox school and class | pass | pass | pass | pass |
+| Report file exists and is not empty (1783, 2152, 1800, 2002 characters) | pass | pass | pass | pass |
+| Report file cites question numbers | pass | pass | pass | pass |
 
-The scoping and schema checks are the same ones the P48 proof used. In the script's own pass count, run 1 passed 15 of 15 and runs 2 and 3 passed 13 of 15: the two failures in each are the missing `get_job` call, counted once as a missing call and once in the ordering check (the order check expects `get_job` first).
+The scoping and schema checks are the same ones the P48 proof used. Runs 1 to 3 were first scored with a version of the script that also required `get_job` first: run 1 passed 15 of 15 and runs 2 and 3 passed 13 of 15, the two misses being only the absent `get_job` (once as a missing call, once in the order check). Run 4 was scored by the corrected script and passed every check. The transcripts of runs 2 and 3 have reads, save, file copy and `complete_job` in the right order.
 
-The report copies are in `docs/proof/open-runner/report-1.md`, `report-2.md` and `report-3.md`. Each names the questions the claims come from (for example "Q1, Q2, Q4" and "Source: marked test results, questions 1, 2 and 4"). Em dashes the model or goose wrote were replaced with a hyphen when the files were saved.
+The report copies are in `docs/proof/open-runner/report-1.md` to `report-4.md`. Each names the questions the claims come from (for example "Q1, Q2, Q4" and "Source: marked test results, questions 1, 2 and 4"). Em dashes the model or goose wrote were replaced with a hyphen when the files were saved.
 
-The raw stream-json of each run is in `docs/proof/open-runner/run-1.jsonl`, `run-2.jsonl`, `run-3.jsonl`. Banner lines that are not JSON were dropped, one `jemma_attempt` line was added before each model's attempt, and the OpenRouter key, the bearer token and em dashes were removed. Before committing, all six files were searched for the real OpenRouter key value (read from `.env.local`), for any authorization header text, and for the prefix OpenRouter keys start with: no match in any file. The bearer tokens were random per run, kept in memory, and deleted from `mcp_tokens` after each run (a follow-up query found zero `p49-open-runner-proof` rows).
+The raw stream-json of each run is in `docs/proof/open-runner/run-1.jsonl` to `run-4.jsonl`. Banner lines that are not JSON were dropped, one `jemma_attempt` line was added before each model's attempt, and the OpenRouter key, the bearer token and em dashes were removed. Before committing, all eight files were searched for the real OpenRouter key value (read from `.env.local`), for any authorization header text, and for the prefix OpenRouter keys start with: no match in any file. The bearer tokens were random per run, kept in memory, and deleted from `mcp_tokens` after each run (a follow-up query found zero `p49-open-runner-proof` rows, after run 4 as well).
+
+## Run 4: the borrowed calls are logged (after merging P50a)
+
+`develop` (with P50a: the `tool_calls` table, migration 0016 already on `jemma-dev`, and the real `log_external_calls` tool) was merged into this branch without conflicts. Then the local agent worker on port 8749 was started from the merged code and one more live `class_report` run was done (the 4th live run; model `nvidia/nemotron-3.5-super-vl:free`, 56.6 seconds, 87,319 tokens in and 4,304 out, event `bc95e9e3-3776-4945-b583-95cdd1b4ef4f`, sandbox `df8ecd0c-65f8-409e-8d46-31e7389e2ed3`). All checks passed, including the ones below. I checked the rows again with a separate SELECT afterwards.
+
+- `log_external_calls` returned true (the runner's `onReport` callback gave `true`; the worker's `tools/list` had the tool).
+- The `tool_calls` rows of that sandbox's school, in time order (6 rows):
+
+| Time | via | server | tool | engine | model | event | Input, output |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 09:34:42 | mcp | jemma | get_class_results | none | none | none | in 49 characters, out 7,366 |
+| 09:34:43 | mcp | jemma | get_memo | none | none | none | in 49, out 711 |
+| 09:35:03 | mcp | jemma | class_gap_report | none | none | none | in 1,099, out 1,242 |
+| 09:35:18 | runner | files | write_file | goose | `nvidia/nemotron-3.5-super-vl:free` | this event | in 176, out 171 |
+| 09:35:22 | mcp | jemma | complete_job | none | none | this event | in 66, out 11 |
+| 09:35:31 | runner | runner | agent_run | goose | `nvidia/nemotron-3.5-super-vl:free` | this event | in 2, out 53 |
+
+- The runner rows: one `files` / `write_file` row (via `runner`, engine `goose`, the model id, `ok` true, input has `path` and `content`, output holds the file server's answer) and exactly one `agent_run` usage row whose output is `{"costUsd":0,"inputTokens":87319,"outputTokens":4304}`. The server trims any string over 2,000 characters in the log, so the report text in the `write_file` input shows as `<2002 characters>`; the path is kept.
+- Server-side rows (via `mcp`): one for each Jemma tool the model called (`get_class_results`, `get_memo`, `class_gap_report`, `complete_job`), counts equal to the calls in the transcript. The server cannot tell which engine or model is behind a token, so those rows have no engine or model, and an event id only where the input carries one (`complete_job`).
+- No token or key: the rows of that school were searched for the bearer token, the OpenRouter key and the word "bearer": no match. The saved stream is `docs/proof/open-runner/run-4.jsonl` with the same search (no match) and `report-4.md`.
 
 ## Failures
 
 - Live runs: none. 3 of 3 finished on the first model. The fallback models were never tried live, and `google/gemma-4-31b-it:free` (down on 10 Nov per the packet) was never reached.
-- The borrowed-call report (`log_external_calls`) answered false in all three runs. The worker on this branch has 19 tools and `log_external_calls` is not one of them (checked with `tools/list` for each run). This is the expected path: P50a builds the tool. The runner swallowed it and the jobs were not affected. This is the unit-tested "tool missing" path, seen once for real.
+- In runs 1 to 3 the borrowed-call report (`log_external_calls`) answered false: the worker on this branch then had 19 tools and `log_external_calls` was not one of them (checked with `tools/list` for each run), because P50a was not merged yet. The runner swallowed it and the jobs were not affected, which is the unit-tested "tool missing" path seen once for real. After P50a was merged (run 4) it answered true.
 - Rehearsal failures (stand-in provider, no live model). These are what the building and testing found, and each one changed the code:
   - Goose 1.45.0 with `--no-profile` ignores the recipe's own extensions. The model was offered `tools: []` and every call came back `-32002: Tool 'jemma__get_job' not found. Available tools: []`. Without `--no-profile` the same recipe offers all 16 file tools. `goose recipe validate` passes either way.
   - The filesystem server took goose's working folder as its allowed folder, so a write to the reports folder was refused (`Access denied - path outside allowed directories`). See the security note below.
@@ -84,7 +105,7 @@ Disclosure: before the isolation existed, my investigation runs of goose (09:20 
 
 ## Proof: the borrowed-call report matches the contract
 
-The payload `reportCalls` sends to `log_external_calls` is `{ eventId, engine, model, usage, calls }`: `engine` is `claude`, `codex` or `goose`, `model` is a string or null, `usage` is `{ inputTokens, outputTokens, costUsd }` or null, and each call is `{ server, tool, input, output, ok, at }` with `at` an ISO time. Only calls whose server is not `jemma` go in, at most 50. Three tests check the exact key sets (an extra field on a call, such as the transcript's `answered`, is stripped): `test/report-calls.test.ts`, `test/goose-run.test.ts`, and `test/goose-real.test.ts` for a real goose run (calls `files.list_allowed_directories` and `files.write_file`, usage 30 / 6 for three requests of 10 / 2 tokens, model `stand-in/model:free`). The packet's P50a contract was compared by reading its text in the brief, not against P50a's code, which is not on this branch.
+The payload `reportCalls` sends to `log_external_calls` is `{ eventId, engine, model, usage, calls }`: `engine` is `claude`, `codex` or `goose`, `model` is a string or null, `usage` is `{ inputTokens, outputTokens, costUsd }` or null, and each call is `{ server, tool, input, output, ok, at }` with `at` an ISO time. Only calls whose server is not `jemma` go in, at most 50. Three tests check the exact key sets (an extra field on a call, such as the transcript's `answered`, is stripped): `test/report-calls.test.ts`, `test/goose-run.test.ts`, and `test/goose-real.test.ts` for a real goose run (calls `files.list_allowed_directories` and `files.write_file`, usage 30 / 6 for three requests of 10 / 2 tokens, model `stand-in/model:free`). After P50a was merged, the payload was also compared with the real tool's schema (`packages/profiling/src/tools/save/log-external-calls.ts`: `engine` is `claude`, `codex` or `goose`, `model` and `usage` can be null, at most 50 calls, each call has `server`, `tool`, `input`, `output`, `ok` and an ISO `at`, and a call to server `jemma` is rejected). It matches, and run 4 below was accepted by it.
 
 ## Why the borrowed server
 
@@ -142,10 +163,9 @@ JEMMA_GOOSE_REAL=1 pnpm --filter @jemma/runner exec vitest run goose-real
 - The `guidance` job and its report copy on goose. The prompt step is unit tested, never run live.
 - Windows and Linux. Only macOS was used.
 - The fallback with real free-model failures. It was proven with a stand-in provider (and with a fake goose in the unit tests), never with a real provider outage.
-- `log_external_calls` against the real tool. It did not exist on the worker used here.
 - The default reports folder (`<home>/Jemma/reports`). The proof used a temp folder.
 - Goose with a user who already has a goose config. The runner points goose at an empty config folder, and that was only checked on a Mac with no goose config at all.
 - Whether the job still works when `npx` cannot reach npm (the file server is downloaded on first use), when `npx` is not on goose's PATH (a desktop app started from Finder has a short PATH; nothing here adds to it), or on Node older than 24 (the file server declares node >= 24; npm printed an engines warning on Node 22.20.0 and the server still started).
 - The Electron desktop app and its UI. Goose is not offered there. Nothing in this proof touched the desktop app.
-- How often the model skips `get_job` (2 of 3 runs here) and whether other models in the list behave the same. No live run used the fallback models.
+- Whether the other models in the list choose the same calls. No live run used the fallback models.
 - Test-first order: the pure-code pieces (recipe, parser, report-calls) were written before their tests. Mutation checks were run afterwards (never treating a save as saved, and counting an errored answer as ok both fail tests).
