@@ -1,0 +1,86 @@
+#!/usr/bin/env node
+// Fake `goose` for runner tests. It reads the recipe, logs what it was given, and prints a stream-json run.
+// FAKE_MODE (or FAKE_GOOSE_MODES, a JSON map from model id to mode, which wins):
+//   done | provider_error | read_only | saved_then_fail | tool_error | complete_failed | hang
+// FAKE_LOG: file that records argv, the recipe text and mode, and the environment the run saw.
+import { appendFileSync, readFileSync, statSync } from 'node:fs'
+import { spawn } from 'node:child_process'
+
+const args = process.argv.slice(2)
+const log = (o) => process.env.FAKE_LOG && appendFileSync(process.env.FAKE_LOG, JSON.stringify(o) + '\n')
+const out = (o) => process.stdout.write(JSON.stringify(o) + '\n')
+
+if (args[0] === '--version') {
+  console.log(' 1.45.0')
+  process.exit(0)
+}
+
+// stdin must be closed by the parent, or this never ends
+let stdin = ''
+for await (const chunk of process.stdin) stdin += chunk
+
+const i = args.indexOf('--recipe')
+const file = i >= 0 ? args[i + 1] : null
+const recipe = file ? readFileSync(file, 'utf8') : ''
+const model = recipe.match(/goose_model: "([^"]*)"/)?.[1] ?? null
+const modes = JSON.parse(process.env.FAKE_GOOSE_MODES ?? '{}')
+const mode = modes[model] ?? process.env.FAKE_MODE ?? 'done'
+log({
+  bin: 'goose',
+  args,
+  recipe,
+  recipeMode: file ? statSync(file).mode & 0o777 : null,
+  model,
+  mode,
+  stdin,
+  cwd: process.cwd(),
+  token: process.env.JEMMA_MCP_TOKEN ?? null,
+  key: process.env.OPENROUTER_API_KEY ?? null,
+  keyring: process.env.GOOSE_DISABLE_KEYRING ?? null,
+})
+
+let clock = 1794290000
+let n = 0
+const message = (role, content) => out({ type: 'message', message: { id: `m${n++}`, role, created: clock++, content, metadata: {} } })
+const request = (id, name, input) =>
+  message('assistant', [{ type: 'toolRequest', id, toolCall: { status: 'success', value: { name, arguments: input } } }])
+const answer = (id, text, status = 'success', extra = {}) =>
+  message('user', [{ type: 'toolResponse', id, toolResult: { status, value: { content: [{ type: 'text', text }], ...extra } } }])
+const say = (text) => message('assistant', [{ type: 'text', text }])
+const finish = (tokens = 100) =>
+  out({ type: 'complete', total_tokens: tokens + 10, input_tokens: tokens, output_tokens: 10, cache_read_input_tokens: 0, cache_write_input_tokens: 0, cost_usd: 0.0 })
+
+console.log('\n    __( O)>  fake goose')
+console.log('   \\____)    session')
+console.log('     L L     goose is ready')
+
+if (mode === 'hang') {
+  const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' })
+  log({ childPid: child.pid })
+  setInterval(() => {}, 1000)
+} else if (mode === 'provider_error') {
+  say('Provider error: the model ' + model + ' answered with a server error.')
+  finish(0)
+} else {
+  request('c1', 'jemma__get_job', { eventId: 'e' })
+  answer('c1', '{"job":"class_report"}')
+  if (mode === 'read_only') {
+    say('I looked and stopped.')
+    finish()
+  } else {
+    request('c2', 'jemma__class_gap_report', { classId: 'k', testId: 't' })
+    answer('c2', '{"ok":true}')
+    if (mode === 'saved_then_fail') {
+      say('Provider error after the save.')
+      finish()
+    } else {
+      request('c3', 'files__write_file', { path: '/reports/class_report-k.md', content: '# Report' })
+      answer('c3', 'Successfully wrote to /reports/class_report-k.md', 'success', { structuredContent: { content: 'Successfully wrote to /reports/class_report-k.md' } })
+      request('c4', 'jemma__complete_job', { eventId: 'e', status: mode === 'complete_failed' ? 'failed' : 'done', note: 'because' })
+      if (mode === 'tool_error') answer('c4', 'not in this school', 'success', { isError: true })
+      else answer('c4', '{"ok":true}')
+      say('All finished.')
+      finish()
+    }
+  }
+}
