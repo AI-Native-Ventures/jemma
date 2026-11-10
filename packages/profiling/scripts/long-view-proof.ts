@@ -1,8 +1,9 @@
 // Proof run for the Long view (P52a): a fresh `start` sandbox on jemma-dev, then `long_view.requested` for each of the 5 learners,
 // one at a time, on a LOCAL agent worker that is already running (default http://localhost:8755). It does not call a model itself:
 // the worker does, in its own AI_MODE (cache to record, replay to prove the recording holds in another sandbox).
-// After the 5, a sixth event runs for Amina once Class Test 1 (written in Term 3 of the class year, 3 of 4 fractions answers right)
-// is in her marks: her fractions struggle ended one term before, so the pattern comes back with that newer result beside it.
+// After the 5, a sixth event runs for Amina once two class tests are in her marks (Class Test 1 in Term 3 of the class year, 3 of 4
+// fractions answers right, and Class Test 2 in Term 4, all right): her fractions struggle ended two terms before, so the pattern
+// comes back with those newer results beside it.
 // Run: node --import tsx --import ./scripts/register-md.mjs scripts/long-view-proof.ts --label record --out /path/record.json [--agent http://localhost:8755] [--against /path/record.json]
 // With --against, the saved patterns are compared with an earlier run's, row by row.
 // Env: .env.local (jemma-dev and EVENTS_SECRET). Keys are never printed. The sandbox is deleted at the end unless --keep is given.
@@ -23,7 +24,7 @@ const out = arg('--out')
 const against = arg('--against')
 const keep = process.argv.includes('--keep')
 const LEARNERS = ['Amina', 'Thabo', 'Lerato', 'Sipho', 'Naledi']
-const NEWER = 'Amina + Class Test 1'
+const NEWER = 'Amina + Class Tests 1 and 2'
 const TIMEOUT_MS = 15 * 60 * 1000
 
 const env = loadEnv()
@@ -32,7 +33,7 @@ if (!env.EVENTS_SECRET) throw new Error('EVENTS_SECRET is not set in .env.local'
 if (!/^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(agent)) throw new Error(`--agent must be a local worker, got ${agent}`)
 const db: JemmaDb = createServiceClient({ SUPABASE_URL: env.SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY! })
 
-type Saved = { kind: string; family: string; status: string; title: string; statement: string; sinceThen: boolean }
+type Saved = { kind: string; family: string; status: string; title: string; statement: string; newerTerms: number }
 type Row = {
   learner: string
   status: string
@@ -51,20 +52,28 @@ async function ok<T>(q: PromiseLike<{ data: T; error: { message: string } | null
   return data as NonNullable<T>
 }
 
-/** Class Test 1 for Amina in Term 3 of the class year: 4 fractions answers, 3 right. */
-async function addClassTest(classId: string, childId: string) {
+/**
+ * Two class tests for Amina after her struggle: Class Test 1 in Term 3 of the class year (4 fractions answers, 3 right)
+ * and Class Test 2 in Term 4 (4 answers, all right).
+ */
+async function addClassTests(classId: string, childId: string) {
   const year = new Date().getUTCFullYear()
   const map = await ok(db.from('curriculum_maps').insert({ class_id: classId, status: 'approved' }).select('id').single())
   const topic = await ok(db.from('topics').insert({ map_id: map.id, term: 3, position: 1, name: 'Adding fractions', family: 'fractions' }).select('id').single())
-  const test = await ok(db.from('tests').insert({ class_id: classId, title: 'Class Test 1', written_on: `${year}-08-20`, out_of: 4, topic_ids: [topic.id] }).select('id').single())
-  const paper = await ok(db.from('papers').insert({ test_id: test.id, child_id: childId, owner: 'teacher', kind: 'test', status: 'marked', name_read: 'Amina', total: 3 }).select('id').single())
-  await ok(
-    db.from('question_results').insert(
-      [true, true, true, false].map((right, i) => ({
-        paper_id: paper.id, child_id: childId, n: i + 1, prompt: `1/2 + 1/${i + 3}`, answer_read: right ? 'right' : 'wrong', read_confidence: 0.95, correct: right, mark: right ? 1 : 0, topic_id: topic.id, topic_name: 'Adding fractions',
-      })),
-    ).select('id'),
-  )
+  for (const [title, day, rights] of [
+    ['Class Test 1', `${year}-08-20`, [true, true, true, false]],
+    ['Class Test 2', `${year}-11-05`, [true, true, true, true]],
+  ] as const) {
+    const test = await ok(db.from('tests').insert({ class_id: classId, title, written_on: day, out_of: 4, topic_ids: [topic.id] }).select('id').single())
+    const paper = await ok(db.from('papers').insert({ test_id: test.id, child_id: childId, owner: 'teacher', kind: 'test', status: 'marked', name_read: 'Amina', total: rights.filter(Boolean).length }).select('id').single())
+    await ok(
+      db.from('question_results').insert(
+        rights.map((right, i) => ({
+          paper_id: paper.id, child_id: childId, n: i + 1, prompt: `1/2 + 1/${i + 3}`, answer_read: right ? 'right' : 'wrong', read_confidence: 0.95, correct: right, mark: right ? 1 : 0, topic_id: topic.id, topic_name: 'Adding fractions',
+        })),
+      ).select('id'),
+    )
+  }
 }
 
 async function main() {
@@ -99,7 +108,7 @@ async function main() {
       if (!('candidates' in history)) throw new Error('unexpected tool output')
       const saved = (await ok(db.from('long_view_patterns').select('kind, family, status, title, statement, terms').eq('child_id', childId).order('family'))).map((r) => ({
         kind: r.kind, family: r.family, status: r.status, title: r.title, statement: r.statement,
-        sinceThen: (r.terms as { sinceThen?: boolean }[]).some((t) => t.sinceThen),
+        newerTerms: (r.terms as { since?: boolean }[]).filter((t) => t.since).length,
       }))
 
       // The model's answer for this event is the replay row written during it (record and cache modes). Screen it again to say what was dropped and why.
@@ -118,14 +127,14 @@ async function main() {
         }
       }
       rows.push({
-        learner: rowLabel, status: row.status, seconds, attempts: row.attempts, error: row.error, candidates: history.candidates.map((c) => `${c.key}${c.sinceThen ? ' (newer result)' : ''}`),
+        learner: rowLabel, status: row.status, seconds, attempts: row.attempts, error: row.error, candidates: history.candidates.map((c) => `${c.key}${c.since.length ? ` (${c.since.length} newer)` : ''}`),
         saved, dropped, modelAnswered,
       })
       console.log(`[${label}] ${rowLabel}: ${row.status} in ${seconds.toFixed(1)} s, ${saved.length} saved, ${dropped.length} dropped${row.error ? `, error: ${row.error.slice(0, 160)}` : ''}`)
     }
 
     for (const name of LEARNERS) await run(name, name)
-    await addClassTest(s.classId, kids.find((k) => k.first_name === 'Amina')!.id)
+    await addClassTests(s.classId, kids.find((k) => k.first_name === 'Amina')!.id)
     await run('Amina', NEWER)
   } finally {
     if (!keep) await deleteSandbox(db, s.sandboxId).catch((e) => console.log(`[${label}] could not delete the sandbox: ${e}`))

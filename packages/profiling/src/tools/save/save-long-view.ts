@@ -23,13 +23,11 @@ const plural = (n: number, one: string, many: string) => (n === 1 ? one : many)
 const quoted = (words: string[]) => words.map((w) => `"${w}"`).join(', ')
 
 /**
- * What goes into `long_view_patterns.terms` for a candidate: its run, and when the pattern ended one term before the newest,
- * that newest result as a last entry flagged `sinceThen: true`. No extra column is needed.
+ * What goes into `long_view_patterns.terms` for a candidate: its run, then the newer terms that followed it (oldest first),
+ * each flagged `since: true`. No extra column is needed.
  */
-export function storedTerms(c: Pick<PatternCandidate, 'terms' | 'sinceThen'>): LongViewStoredTerm[] {
-  if (!c.sinceThen) return c.terms
-  const { grade, year, term, percent, points } = c.sinceThen
-  return [...c.terms, { grade, year, term, percent, points, sinceThen: true }]
+export function storedTerms(c: Pick<PatternCandidate, 'terms' | 'since'>): LongViewStoredTerm[] {
+  return [...c.terms, ...c.since.map(({ grade, year, term, percent, points }) => ({ grade, year, term, percent, points, since: true }))]
 }
 
 /** True when the stored terms are `now`, field for field (jsonb does not keep key order). */
@@ -38,7 +36,7 @@ function sameTerms(stored: unknown, now: LongViewStoredTerm[]): boolean {
   if (!parsed.success || parsed.data.length !== now.length) return false
   return parsed.data.every((t, i) => {
     const n = now[i]!
-    return t.grade === n.grade && t.year === n.year && t.term === n.term && t.percent === n.percent && t.points === n.points && !!t.sinceThen === !!n.sinceThen
+    return t.grade === n.grade && t.year === n.year && t.term === n.term && t.percent === n.percent && t.points === n.points && !!t.since === !!n.since
   })
 }
 

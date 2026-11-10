@@ -7,13 +7,17 @@ import type { LongViewEvidence, LongViewKind, LongViewTerm, PatternCandidate } f
 export const STRUGGLE_BELOW = 50
 /** A family is a strength in a term when its percent is at or above this. */
 export const STRENGTH_FROM = 80
-/** A pattern needs this many terms with data, in a row, ending at the latest one. */
+/** A pattern needs this many terms with data, in a row. */
 export const MIN_TERMS = 3
+/** A pattern may be followed by this many newer terms with data (listed in `since`). With more, it is not a candidate. */
+export const MAX_SINCE = 2
+/** Sources kept on each newer term in `since`. */
+export const MAX_SINCE_SOURCES = 6
 /** A family needs this many marks (or answers) in a term for that term to count. Fewer is "no data". */
 export const MIN_POINTS = 3
 /** Sources listed as evidence on one pattern. The rest are counted in `more`. */
 export const MAX_EVIDENCE = 12
-/** Places in the evidence list the run itself keeps (when it has that many sources), so a newer result never crowds it out. */
+/** Places in the evidence list the run itself keeps (when it has that many sources), so newer results never crowd it out. */
 export const MIN_RUN_EVIDENCE = 6
 
 export type SlotRef = { year: number; term: number }
@@ -245,9 +249,10 @@ function runEndingAt(slots: TableSlot[], end: number, kind: LongViewKind): Table
 /**
  * The strengths and struggles that hold across terms. Per family, from its terms with data in order, a candidate is a run of
  * MIN_TERMS or more terms in a row in which every term is below STRUGGLE_BELOW (a struggle) or at or above STRENGTH_FROM (a strength).
- * The run may end at the family's latest term with data, or at the term with data just before it. In that second case the latest term
- * did not continue the run (it was better than a struggle, or weaker than a strength): it comes back as `sinceThen` so the pattern is
- * still shown, with the newer result beside it. A run that ended two or more terms with data ago is not a candidate.
+ * The run may be followed by 0, 1 or MAX_SINCE (2) newer terms with data. Those newer terms did not continue it (a struggle was
+ * followed by something better, a strength by something weaker, or a better term was followed by another weak one): they come back
+ * oldest first as `since`, so the pattern is still shown with the newer results beside it. The run that ends nearest the latest
+ * term wins. With 3 or more newer terms with data, the pattern is not a candidate.
  * Terms with no data inside the run's span are skipped, never guessed, and are listed in `missingTerms`.
  */
 export function findPatterns(table: FamilyTable[]): PatternCandidate[] {
@@ -255,34 +260,27 @@ export function findPatterns(table: FamilyTable[]): PatternCandidate[] {
   for (const { family, slots } of [...table].sort((a, b) => a.family.localeCompare(b.family))) {
     const ordered = [...slots].sort(compareSlots)
     const latest = ordered.length - 1
-    if (latest < 0) continue
 
     let run: TableSlot[] = []
     let kind: LongViewKind | null = null
-    let newer: TableSlot | null = null
-    const atLatest = kindOfPercent(ordered[latest]!.percent)
-    if (atLatest) {
-      run = runEndingAt(ordered, latest, atLatest)
-      if (run.length >= MIN_TERMS) kind = atLatest
-    }
-    if (!kind && latest >= 1) {
-      const before = kindOfPercent(ordered[latest - 1]!.percent)
-      if (before) {
-        run = runEndingAt(ordered, latest - 1, before)
-        if (run.length >= MIN_TERMS) {
-          kind = before
-          newer = ordered[latest]!
-        }
-      }
+    let newer: TableSlot[] = []
+    for (let skipped = 0; skipped <= MAX_SINCE && !kind && latest - skipped >= 0; skipped++) {
+      const end = latest - skipped
+      const endsWith = kindOfPercent(ordered[end]!.percent)
+      if (!endsWith) continue
+      const candidateRun = runEndingAt(ordered, end, endsWith)
+      if (candidateRun.length < MIN_TERMS) continue
+      run = candidateRun
+      kind = endsWith
+      newer = ordered.slice(end + 1)
     }
     if (!kind) continue
 
-    // Newest first: the newer result, then the run. The newer result may fill the places the run does not need, but never more than all but MIN_RUN_EVIDENCE of them.
+    // Newest first: the newer results (newest term first), then the run. The run keeps at least MIN_RUN_EVIDENCE places when it has that many sources.
     const runSources: LongViewEvidence[] = [...run].reverse().flatMap((s) => s.sources)
-    const newerSources: LongViewEvidence[] = newer?.sources ?? []
-    const newerTake = Math.min(newerSources.length, MAX_EVIDENCE - Math.min(runSources.length, MIN_RUN_EVIDENCE))
-    const evidence = [...newerSources.slice(0, newerTake), ...runSources].slice(0, MAX_EVIDENCE)
-    const total = newerSources.length + runSources.length
+    const newerSources: LongViewEvidence[] = [...newer].reverse().flatMap((s) => s.sources.slice(0, MAX_SINCE_SOURCES))
+    const evidence = [...newerSources.slice(0, MAX_EVIDENCE - Math.min(runSources.length, MIN_RUN_EVIDENCE)), ...runSources].slice(0, MAX_EVIDENCE)
+    const total = newer.reduce((n, s) => n + s.sources.length, 0) + runSources.length
     const candidate: PatternCandidate = {
       key: patternKey(kind, family),
       kind,
@@ -290,9 +288,7 @@ export function findPatterns(table: FamilyTable[]): PatternCandidate[] {
       terms: run.map(({ grade, year, term, percent, points }) => ({ grade, year, term, percent, points })),
       evidence,
       missingTerms: missingSlots(run),
-      sinceThen: newer
-        ? { grade: newer.grade, year: newer.year, term: newer.term, percent: newer.percent, points: newer.points, sources: newerSources.slice(0, MAX_EVIDENCE) }
-        : null,
+      since: newer.map(({ grade, year, term, percent, points, sources }) => ({ grade, year, term, percent, points, sources: sources.slice(0, MAX_SINCE_SOURCES) })),
     }
     if (total > evidence.length) candidate.more = total - evidence.length
     out.push(candidate)
