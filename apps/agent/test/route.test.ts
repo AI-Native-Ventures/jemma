@@ -11,7 +11,8 @@ vi.setConfig({ testTimeout: 60_000, hookTimeout: 120_000 })
 const testEnv = rawEnv as unknown as Env
 const base = { ...testEnv, AI_MODE: 'live', EVENTS_QUEUE: { send: vi.fn(async () => {}) } } as never as Env
 const db = createServiceClient({ SUPABASE_URL: base.SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY: base.SUPABASE_SERVICE_ROLE_KEY })
-const tag = `rt${Date.now()}`
+// The sandbox join code is the last 12 characters of the tag: a random end keeps it apart from events.test.ts starting in the same millisecond.
+const tag = `rt${Date.now()}${Math.floor(Math.random() * 1e4)}`
 const runners: string[] = []
 let cloud: Sandbox
 
