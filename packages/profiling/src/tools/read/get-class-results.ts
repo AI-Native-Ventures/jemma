@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { assertInSchool, defineTool } from '../context'
 
 const ResultSchema = z.object({
+  resultId: z.string(),
   n: z.number(),
   prompt: z.string(),
   answerRead: z.string(),
@@ -32,7 +33,7 @@ export const getClassResults = defineTool({
     if (marked.length === 0) return { testId, outOf: test.data.out_of, learners: [] }
     const [kids, results] = await Promise.all([
       db.from('children').select('id, first_name').in('id', marked.map((p) => p.child_id!)),
-      db.from('question_results').select('paper_id, n, prompt, answer_read, read_confidence, correct, mark, topic_name, misconception').in('paper_id', marked.map((p) => p.id)).order('n'),
+      db.from('question_results').select('id, paper_id, n, prompt, answer_read, read_confidence, correct, mark, topic_name, misconception').in('paper_id', marked.map((p) => p.id)).order('n'),
     ])
     if (kids.error) throw new Error(kids.error.message)
     if (results.error) throw new Error(results.error.message)
@@ -46,7 +47,7 @@ export const getClassResults = defineTool({
           firstName: kids.data.find((k) => k.id === p.child_id)?.first_name ?? '',
           paperId: p.id,
           total: p.total ?? rows.reduce((sum, r) => sum + r.mark, 0),
-          results: rows.map((r) => ({ n: r.n, prompt: r.prompt, answerRead: r.answer_read, confidence: r.read_confidence, correct: r.correct, mark: r.mark, topicName: r.topic_name, misconception: r.misconception })),
+          results: rows.map((r) => ({ resultId: r.id, n: r.n, prompt: r.prompt, answerRead: r.answer_read, confidence: r.read_confidence, correct: r.correct, mark: r.mark, topicName: r.topic_name, misconception: r.misconception })),
         }
       }),
     }

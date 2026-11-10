@@ -8,6 +8,7 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "try-real": "tsx scripts/try-real.ts",
+    "operator": "tsx scripts/operator.ts",
     "open-job": "node --import tsx --import ../profiling/scripts/register-md.mjs ../../scripts/proof/run-open-job.ts"
   },
   "dependencies": {

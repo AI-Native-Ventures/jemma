@@ -1,5 +1,6 @@
 import { createServiceClient, type JemmaDb } from '@jemma/profiling/db'
 import { expect, test, type Page } from '@playwright/test'
+import { TERMS, topicMapDraft } from '../../../supabase/seed/fixtures/marked-state'
 import { signInWithPassword } from './helpers/session'
 import { openSandbox } from './helpers/sandbox'
 
@@ -11,7 +12,14 @@ import { openSandbox } from './helpers/sandbox'
 
 const LIVE = (process.env.AI_MODE ?? 'replay') !== 'replay'
 const PREVIEW = Boolean(process.env.PREVIEW_URL)
-const AGENT_WAIT = PREVIEW ? 24 * 60_000 : LIVE ? 25 * 60_000 : 5 * 60_000
+// SLOW_AI=1: a real model on the owner's laptop does the AI work (the operator runner), about a minute per job.
+// It only makes the waits longer. No assertion changes.
+const SLOW_AI = Boolean(process.env.SLOW_AI)
+// SEED_MAP=1: start at step 2. The sample curriculum is a PDF, `draft_map` always runs on the cloud model (a PDF cannot be read
+// through MCP), so a run that wants every other AI job on the operator puts the approved map in place first, with the seed's own
+// inserts (the ones the `marked` sandbox uses). Every assertion of step 1 still runs.
+const SEED_MAP = Boolean(process.env.SEED_MAP)
+const AGENT_WAIT = SLOW_AI ? 60 * 60_000 : PREVIEW ? 24 * 60_000 : LIVE ? 25 * 60_000 : 5 * 60_000
 const AGENT_URL = PREVIEW
   ? process.env.PREVIEW_AGENT_URL ?? 'https://jemma-agent.horizonsystems.workers.dev'
   : process.env.AGENT_URL
@@ -79,7 +87,7 @@ async function answerQuestion(page: Page, q: LessonQuestion, right: boolean) {
 test.use({ actionTimeout: 30_000 })
 
 test('the whole demo path', async ({ page }) => {
-  test.setTimeout(PREVIEW ? 29 * 60_000 : LIVE ? 60 * 60_000 : 20 * 60_000)
+  test.setTimeout(SLOW_AI ? 4 * 60 * 60_000 : PREVIEW ? 29 * 60_000 : LIVE ? 60 * 60_000 : 20 * 60_000)
   const admin = db()
   const health = await fetch(`${AGENT_URL}/health`).catch(() => null)
   expect(health?.ok, `the agent worker must be running at ${AGENT_URL} (pnpm --filter agent dev)`).toBe(true)
@@ -92,17 +100,40 @@ test('the whole demo path', async ({ page }) => {
     const base = `/t/${sb.classId}`
 
     // 1. Teacher uploads the curriculum, Jemma drafts the map, the teacher approves it.
-    await page.goto(`${base}/curriculum`)
-    let seen = await eventCount(schoolId)
-    await page.getByRole('button', { name: 'Use the sample curriculum' }).click()
-    await agentIdle(schoolId, 'drafting the map', seen)
-    await page.goto(`${base}/curriculum`)
-    await page.getByRole('link', { name: 'Check the draft map' }).click()
-    await page.waitForURL(/\/curriculum\/map$/, { timeout: 60_000 }) // a dev server compiles the route on first visit
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(/topics in \d terms?/)
-    await page.getByRole('button', { name: 'Approve map' }).click()
-    await page.waitForURL(`**${base}/curriculum`)
-    await expect(page.getByText(/^Approved /)).toBeVisible()
+    let seen = 0
+    if (SEED_MAP) {
+      const approved = await admin
+        .from('curriculum_maps')
+        .insert({ class_id: sb.classId, status: 'approved', draft: topicMapDraft() as never, approved_at: new Date().toISOString() })
+        .select('id')
+        .single()
+      expect(approved.error).toBeNull()
+      const rows = await admin
+        .from('topics')
+        .insert(
+          TERMS.flatMap((t) =>
+            t.topics.map((p, i) => ({ map_id: approved.data!.id, term: t.term, position: i + 1, name: p.name, short_name: p.short ?? p.name, family: p.family, misconceptions: p.misconceptions })),
+          ),
+        )
+        .select('id, name')
+      expect(rows.error).toBeNull()
+      const topicId = new Map(rows.data!.map((t) => [t.name, t.id]))
+      for (const p of TERMS.flatMap((t) => t.topics).filter((t) => t.needs.length)) {
+        await admin.from('topics').update({ prerequisite_ids: p.needs.map((n) => topicId.get(n)!) }).eq('id', topicId.get(p.name)!)
+      }
+    } else {
+      await page.goto(`${base}/curriculum`)
+      seen = await eventCount(schoolId)
+      await page.getByRole('button', { name: 'Use the sample curriculum' }).click()
+      await agentIdle(schoolId, 'drafting the map', seen)
+      await page.goto(`${base}/curriculum`)
+      await page.getByRole('link', { name: 'Check the draft map' }).click()
+      await page.waitForURL(/\/curriculum\/map$/, { timeout: 60_000 }) // a dev server compiles the route on first visit
+      await expect(page.getByRole('heading', { level: 1 })).toContainText(/topics in \d terms?/)
+      await page.getByRole('button', { name: 'Approve map' }).click()
+      await page.waitForURL(`**${base}/curriculum`)
+      await expect(page.getByText(/^Approved /)).toBeVisible()
+    }
     const map = await admin.from('curriculum_maps').select('id, status').eq('class_id', sb.classId).single()
     expect(map.data?.status).toBe('approved')
     const topics = await admin.from('topics').select('id').eq('map_id', map.data!.id)
@@ -254,7 +285,7 @@ test('the whole demo path', async ({ page }) => {
     const note = 'Asked why we cannot just add the bottoms. Keen to try fraction strips.'
     await page.getByRole('textbox', { name: 'Note' }).fill(note)
     await page.getByRole('button', { name: 'Save note' }).click()
-    await expect(page.getByRole('region', { name: 'Earlier notes' }).getByText(note)).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Earlier notes' }).getByText(note)).toBeVisible({ timeout: 30_000 }) // a cold dev server or preview saves slowly
     await page.goto(`${base}/register`)
     await page.getByRole('button', { name: 'Mark everyone here' }).click()
     await page.getByRole('group', { name: 'Thabo' }).getByRole('button', { name: 'Away' }).click()

@@ -1,3 +1,5 @@
+import { mkdirSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { createServiceClient } from '@jemma/profiling/db'
 import { expect, test, type Page } from '@playwright/test'
 import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
@@ -83,3 +85,124 @@ test('a tab switch shows the top progress bar within 300 ms', async ({ page }, t
   await expect.poll(() => page.url(), { timeout: 30_000 }).not.toBe(before)
   await expect(bar).toHaveAttribute('data-state', 'idle', { timeout: 10_000 })
 })
+
+const PROOF_DIR = resolve(import.meta.dirname, '../../../design/proof/p55')
+
+/** Saves a proof image with the dev-only Next.js indicator hidden. */
+async function proofShot(page: Page, name: string) {
+  mkdirSync(PROOF_DIR, { recursive: true })
+  await page.addStyleTag({ content: 'nextjs-portal{display:none !important}' })
+  await page.screenshot({ path: resolve(PROOF_DIR, `${name}.png`) })
+}
+
+/**
+ * Holds the demo sign-in (the server action posts to /demo) so the pending row stays on screen while it is measured.
+ * `finish` aborts the held post and removes the hold: the sign-in never reaches the server, so no sandbox is made.
+ */
+async function holdDemoSignIn(page: Page) {
+  let release!: () => void
+  const released = new Promise<void>((r) => {
+    release = r
+  })
+  const isDemoPath = (url: URL) => url.pathname === '/demo'
+  const handler = async (route: import('@playwright/test').Route) => {
+    if (route.request().method() !== 'POST') return route.continue()
+    await released
+    await route.abort().catch(() => undefined)
+  }
+  await page.route(isDemoPath, handler)
+  return async () => {
+    release()
+    await page.unroute(isDemoPath, handler)
+  }
+}
+
+/** Where every part of a pending row sits, read from the browser's own layout (text is measured by its own boxes, not its container's). */
+async function readPendingRow(page: Page, name: string) {
+  return page.evaluate((personName) => {
+    const button = document.querySelector<HTMLElement>('button[aria-busy="true"]')
+    if (!button) throw new Error('no pending row on the page')
+    const box = button.getBoundingClientRect()
+    let maxRight = 0
+    const grow = (r: DOMRect) => {
+      if (r.width === 0 && r.height === 0) return
+      maxRight = Math.max(maxRight, r.right)
+    }
+    for (const el of button.querySelectorAll('*')) grow(el.getBoundingClientRect())
+    const walker = document.createTreeWalker(button, NodeFilter.SHOW_TEXT)
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.textContent?.trim()) continue
+      const range = document.createRange()
+      range.selectNodeContents(node)
+      for (const r of range.getClientRects()) grow(r)
+    }
+    const spans = [...button.querySelectorAll('span')]
+    const nameBox = spans.find((s) => s.children.length === 0 && s.textContent === personName)?.getBoundingClientRect()
+    const statusBox = button.querySelector('[role="status"]')?.getBoundingClientRect()
+    return {
+      buttonRight: box.right,
+      buttonLeft: box.left,
+      buttonTop: box.top,
+      buttonBottom: box.bottom,
+      buttonHeight: box.height,
+      maxRight,
+      nameHeight: nameBox?.height ?? -1,
+      status: statusBox ? { left: statusBox.left, right: statusBox.right, top: statusBox.top, bottom: statusBox.bottom } : null,
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }
+  }, name)
+}
+
+const OPENING = 'Opening your copy of Hillview Primary'
+
+const SIGN_IN_ROWS = [
+  { name: 'Ms Banda', detail: 'Teacher · Grade 6 Mathematics', pill: true, tag: '', widths: [320, 390, 460, 1440] },
+  { name: 'Thandi M', detail: "Parent · Amina's mother", pill: false, tag: 'parent-', widths: [390] },
+  { name: 'Amina', detail: 'Learner · Grade 6', pill: false, tag: 'learner-', widths: [390] },
+]
+
+for (const row of SIGN_IN_ROWS) {
+  for (const width of row.widths) {
+    test(`the demo sign-in row keeps its shape while it opens (${row.name}, ${width} px)`, async ({ page }, testInfo) => {
+      test.skip(testInfo.project.name !== 'phone', 'sized by the test itself, in the phone project')
+      await page.setViewportSize({ width, height: 844 })
+      await page.goto('/demo')
+      const button = page.getByRole('button', { name: new RegExp(`^${row.name}`) })
+      await expect(button).toBeVisible()
+      await proofShot(page, `demo-idle-${row.tag}${width}`)
+
+      const finish = await holdDemoSignIn(page)
+      try {
+        await button.click()
+        await page.locator('button[aria-busy="true"]').waitFor({ timeout: 10_000 })
+        await expect(button.getByText(OPENING)).toBeVisible(SHOWN)
+        await proofShot(page, `demo-pending-${row.tag}${width}`)
+
+        const m = await readPendingRow(page, row.name)
+        // (a) nothing inside the row reaches past its right edge
+        expect(m.maxRight, 'right edge of the furthest thing in the row').toBeLessThanOrEqual(m.buttonRight + 0.5)
+        // (b) the name stays on one line
+        expect(m.nameHeight, `height of "${row.name}"`).toBeGreaterThan(0)
+        expect(m.nameHeight, `height of "${row.name}"`).toBeLessThan(30)
+        // (c) the pill and the detail line step aside while it opens
+        if (row.pill) await expect(button.getByText('Start here')).toBeHidden(SHOWN)
+        await expect(button.getByText(row.detail)).toBeHidden(SHOWN)
+        // (d) the working text is shown, inside the row
+        expect(m.status, 'the working text').not.toBeNull()
+        expect(m.status!.left).toBeGreaterThanOrEqual(m.buttonLeft - 0.5)
+        expect(m.status!.right).toBeLessThanOrEqual(m.buttonRight + 0.5)
+        expect(m.status!.top).toBeGreaterThanOrEqual(m.buttonTop - 0.5)
+        expect(m.status!.bottom).toBeLessThanOrEqual(m.buttonBottom + 0.5)
+        // (e) the row does not grow tall
+        expect(m.buttonHeight, 'row height').toBeLessThanOrEqual(110)
+        // (f) the page does not scroll sideways
+        expect(m.scrollWidth, 'page width').toBeLessThanOrEqual(m.clientWidth)
+        // the hold really kept the judge on /demo
+        expect(new URL(page.url()).pathname).toBe('/demo')
+      } finally {
+        await finish()
+      }
+    })
+  }
+}

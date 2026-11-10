@@ -137,7 +137,7 @@ Read the marked results of one test per learner, with the prompts and the answer
 
 - Kind: read
 - Input: `{ testId: string }`
-- Output: `{ testId: string, outOf: number, learners: { childId: string, firstName: string, paperId: string, total: number, results: { n: number, prompt: string, answerRead: string, confidence: number, correct: boolean, mark: number, topicName: string, misconception: string | null }[] }[] }`
+- Output: `{ testId: string, outOf: number, learners: { childId: string, firstName: string, paperId: string, total: number, results: { resultId: string, n: number, prompt: string, answerRead: string, confidence: number, correct: boolean, mark: number, topicName: string, misconception: string | null }[] }[] }`. `resultId` is the id `update_learner_profile` asks for in each diagnosis.
 
 ### `get_child_context`
 
@@ -159,7 +159,7 @@ Code does the work, in `packages/profiling/src/logic/long-view.ts`. Terms are ca
 
 ### `complete_job`
 
-Mark an event finished. Call it last, after the save tool, with status done, or failed and a short note.
+Mark an event finished. Call it last, after the save tool, with status done, or failed and a short note. When a runner on a desktop is running the event, the runner settles it itself and this call changes nothing.
 
 - Kind: save
 - Input: `{ eventId: string, status: "done" | "failed", note?: string }`
