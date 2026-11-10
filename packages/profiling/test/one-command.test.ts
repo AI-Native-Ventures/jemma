@@ -34,6 +34,14 @@ describe('start.sh', () => {
     expect(script).toContain('AI_MODE=replay')
   })
 
+  test('starts the web app with .env.local in its environment (its proxy cannot see the file by itself)', () => {
+    const line = read('start.sh')
+      .split('\n')
+      .find((l) => l.includes('--filter web dev'))
+    expect(line, 'the line that starts the web app').toBeDefined()
+    expect(line).toContain('export_env_file')
+  })
+
   test('uses the local agent config, the pinned supabase CLI and the standard ports', () => {
     const script = read('start.sh')
     expect(script).toContain('dev:local')

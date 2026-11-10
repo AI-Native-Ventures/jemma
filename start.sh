@@ -140,6 +140,21 @@ stop_servers() {
   rm -f "$PIDFILE"
 }
 
+# export_env_file: puts every KEY=value of .env.local into this process's environment (run it in a subshell). The web
+# app's proxy does not see the repo-root .env.local on its own (Next only hands it values from the environment).
+export_env_file() {
+  local line key value
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in '' | '#'*) continue ;; esac
+    key="${line%%=*}"
+    value="${line#*=}"
+    case "$key" in '' | *[!A-Za-z0-9_]*) continue ;; esac
+    value="${value#\"}"
+    value="${value%\"}"
+    export "$key=$value"
+  done <.env.local
+}
+
 # env_file_value KEY FILE: the value of KEY=value in a dotenv file (quotes removed).
 env_file_value() {
   awk -F= -v k="$1" '$1 == k { v = substr($0, length(k) + 2); gsub(/^["'"'"']|["'"'"']$/, "", v); print v; exit }' "$2" 2>/dev/null || true
@@ -450,7 +465,7 @@ trap cleanup INT TERM
 set -m
 (exec "${PNPM[@]}" --filter agent dev:local >"$LOGS/agent.log" 2>&1 </dev/null) &
 AGENT_PID=$!
-(exec "${PNPM[@]}" --filter web dev >"$LOGS/web.log" 2>&1 </dev/null) &
+(export_env_file; exec "${PNPM[@]}" --filter web dev >"$LOGS/web.log" 2>&1 </dev/null) &
 WEB_PID=$!
 printf 'agent=%s\nweb=%s\n' "$AGENT_PID" "$WEB_PID" >"$PIDFILE"
 
