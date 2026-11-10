@@ -1,5 +1,6 @@
 import { createServiceClient, type JemmaDb } from '@jemma/profiling/db'
 import { expect, test, type Page } from '@playwright/test'
+import { createClient } from '@supabase/supabase-js'
 import { TERMS, topicMapDraft } from '../../../supabase/seed/fixtures/marked-state'
 import { signInWithPassword } from './helpers/session'
 import { openSandbox } from './helpers/sandbox'
@@ -52,6 +53,14 @@ async function agentIdle(schoolId: string, what: string, since: number): Promise
     await new Promise((r) => setTimeout(r, 2000))
   }
   throw new Error(`the agent did not finish ${what} in ${AGENT_WAIT / 1000} seconds`)
+}
+
+/** A client signed in as one of the sandbox people, with the anon key and their own session: it reads what row level security lets that person read. */
+async function readAs(login: { email: string; password: string }) {
+  const client = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!, { auth: { persistSession: false, autoRefreshToken: false } })
+  const { data, error } = await client.auth.signInWithPassword(login)
+  if (error) throw new Error(`sign in as a sandbox person failed: ${error.message}`)
+  return { client, userId: data.user.id }
 }
 
 async function sampleFile(path: string, name: string) {
@@ -156,7 +165,7 @@ test('the whole demo path', async ({ page }) => {
     expect(key.data?.status).toBe('approved')
     expect((key.data!.items as unknown[]).length).toBe(10)
 
-    // 3. The 5 sample papers: Jemma reads and marks them, finds the gaps, writes the class report and each lesson.
+    // 3. The 5 sample papers: Jemma reads and marks them, finds the gaps and writes the class report. The test is held, so she plans no lesson yet.
     seen = await eventCount(schoolId)
     if (test.info().project.name === 'laptop') {
       // The laptop page has no sample button: the teacher uploads the five scans (each file becomes a paper).
@@ -180,6 +189,55 @@ test('the whole demo path', async ({ page }) => {
     expect(reteach.data!.length).toBeGreaterThan(0)
     await page.goto(base)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    const childIds = papers.data!.map((p) => p.child_id).filter((c): c is string => !!c)
+    const markedCount = papers.data!.filter((p) => p.status === 'marked').length
+    const paperIds = papers.data!.map((p) => p.id)
+    const stillNeedYou = papers.data!.filter((p) => p.status === 'needs_you').length
+    expect((await admin.from('tests').select('held, shared_at, shared_by').eq('id', testId).single()).data).toEqual({ held: true, shared_at: null, shared_by: null })
+    expect((await admin.from('sessions').select('id').eq('status', 'planned').in('child_id', childIds)).data).toEqual([]) // no lesson from a result the parent may not see yet
+
+    // 3b. Share with parents. Until Ms Banda taps, a parent and the learner read nothing of this test (checked through their own sessions).
+    // Thandi is linked to Amina for a moment, with the service role, only to read as a parent would. The link is taken away again below, so step 5 starts as before.
+    const thandi = await readAs(logins.parent)
+    const aminaLogin = await readAs(logins.learner)
+    const link0 = await admin.from('parent_links').insert({ parent_id: thandi.userId, child_id: sb.childId, class_id: sb.classId, status: 'approved' }).select('id').single()
+    expect(link0.error).toBeNull()
+    const readable = async (who: Awaited<ReturnType<typeof readAs>>) => (await who.client.from('question_results').select('id').in('paper_id', paperIds)).data?.length ?? -1
+    expect(await readable(thandi)).toBe(0)
+    expect(await readable(aminaLogin)).toBe(0)
+
+    await page.goto(base)
+    const shareCard = page.getByRole('region', { name: 'Results are ready. Parents see nothing yet.' })
+    await expect(shareCard).toBeVisible()
+    await expect(shareCard.getByText(`${markedCount} papers marked`)).toBeVisible()
+    if (stillNeedYou > 0) {
+      await expect(shareCard.getByText(`${stillNeedYou} still ${stillNeedYou === 1 ? 'needs' : 'need'} you. You can share now and those follow when you have checked them.`)).toBeVisible()
+    }
+    seen = await eventCount(schoolId)
+    await shareCard.getByRole('button', { name: 'Share with parents' }).click()
+    await expect(shareCard).toBeHidden({ timeout: 60_000 })
+    // Jemma now plans each learner's session, lesson and guidance. Every job must finish before Sipho's fix changes what they read:
+    // a recorded answer is found by the content of its input.
+    await agentIdle(schoolId, 'planning the lessons after the share', seen)
+    const sharedEvents = (await admin.from('events').select('status, payload').eq('school_id', schoolId).eq('type', 'test.shared')).data!
+    expect(sharedEvents).toHaveLength(1)
+    expect(sharedEvents[0]).toMatchObject({ status: 'done', payload: { testId } })
+    // The three fields, and the approval with Ms Banda's name.
+    const shared = await admin.from('tests').select('held, shared_at, shared_by').eq('id', testId).single()
+    expect(shared.data).toMatchObject({ held: false })
+    expect(shared.data!.shared_at).toBeTruthy()
+    const approval = await admin.from('approvals').select('decided_by, decided_by_name').eq('kind', 'share_results').eq('ref_id', testId)
+    expect(approval.data).toHaveLength(1)
+    expect(approval.data![0]).toMatchObject({ decided_by: shared.data!.shared_by, decided_by_name: 'Ms Banda' })
+    // Now the family reads the marks, and the planned lesson is there for step 6.
+    expect(await readable(thandi)).toBeGreaterThan(0)
+    expect(await readable(aminaLogin)).toBeGreaterThan(0)
+    const bell = await admin.from('notifications').select('title, body, href').eq('user_id', thandi.userId).like('title', '% is marked')
+    expect(bell.data).toHaveLength(1)
+    expect(bell.data![0]).toMatchObject({ body: expect.stringMatching(/^\d+ out of 10$/), href: `/p/${sb.childId}/tests` })
+    const lessons = await admin.from('sessions').select('id').eq('child_id', sb.childId).eq('status', 'planned').not('lesson_id', 'is', null)
+    expect(lessons.data!.length).toBeGreaterThan(0)
+    await admin.from('parent_links').delete().eq('id', link0.data!.id)
 
     // 4. Teacher fixes Sipho Q7: through Needs you when Jemma was unsure, else on the marked paper.
     const sipho = papers.data!.find((p) => p.name_read === 'Sipho')!

@@ -1670,8 +1670,11 @@ export type Database = {
         Row: {
           class_id: string
           created_at: string
+          held: boolean
           id: string
           out_of: number
+          shared_at: string | null
+          shared_by: string | null
           title: string
           topic_ids: string[]
           written_on: string | null
@@ -1680,8 +1683,11 @@ export type Database = {
         Insert: {
           class_id: string
           created_at?: string
+          held?: boolean
           id?: string
           out_of: number
+          shared_at?: string | null
+          shared_by?: string | null
           title: string
           topic_ids?: string[]
           written_on?: string | null
@@ -1689,8 +1695,11 @@ export type Database = {
         Update: {
           class_id?: string
           created_at?: string
+          held?: boolean
           id?: string
           out_of?: number
+          shared_at?: string | null
+          shared_by?: string | null
           title?: string
           topic_ids?: string[]
           written_on?: string | null
@@ -1861,6 +1870,7 @@ export type Database = {
           type: string
         }[]
       }
+      event_shared: { Args: { ev: string }; Returns: boolean }
       finish_event: {
         Args: {
           error_in: string
@@ -1877,11 +1887,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      gap_shared: { Args: { evidence: string[] }; Returns: boolean }
       heartbeat: {
         Args: { agents_in: Json; chosen_in: string; runner: string }
         Returns: undefined
       }
       is_child_user: { Args: { child: string }; Returns: boolean }
+      is_family: { Args: { child: string }; Returns: boolean }
       my_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["user_role"]
@@ -1891,6 +1903,7 @@ export type Database = {
         Args: { agent_in: string; runner: string; tag_in?: string; version_in: string }
         Returns: undefined
       }
+      paper_shared: { Args: { p: string }; Returns: boolean }
       parent_of: { Args: { child: string }; Returns: boolean }
       retag_results: { Args: { map: string }; Returns: undefined }
       teaches_child: { Args: { child: string }; Returns: boolean }

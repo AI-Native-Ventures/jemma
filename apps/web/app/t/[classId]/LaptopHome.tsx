@@ -4,6 +4,7 @@ import { NeedsYouList } from '@/components/blocks'
 import { Headline } from '@/components/blocks'
 import { markReteachDone } from './gaps/actions'
 import { FullLogLink } from './log/FullLogLink'
+import { ShareCard } from './ShareCard'
 import { PrintButton } from './gaps/LaptopPrintButton'
 import { numberWord, type ClassGapView, type ClassHome, type GapDetail } from '@/lib/data/p18'
 
@@ -157,7 +158,7 @@ function Detail({ detail, base }: { detail: GapDetail; base: string }) {
 }
 
 /** Board `laptop-teacher-class`: needs-you strip, gaps beside the selected gap, then what Jemma did. */
-export function LaptopHome({ home, detail, base }: { home: ClassHome; detail: GapDetail | null; base: string }) {
+export function LaptopHome({ home, detail, base, classId }: { home: ClassHome; detail: GapDetail | null; base: string; classId: string }) {
   const selected = detail?.gap.key
   const test = home.latestTest
   return (
@@ -178,6 +179,8 @@ export function LaptopHome({ home, detail, base }: { home: ClassHome; detail: Ga
             </Link>
           </div>
         </div>
+
+        {home.shareCard ? <ShareCard classId={classId} card={home.shareCard} className="max-w-[760px]" /> : null}
 
         <NeedsYouList items={home.needsYou} wide />
 

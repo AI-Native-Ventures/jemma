@@ -312,13 +312,25 @@ async function buildMarked(c: MarkedCtx): Promise<void> {
   // Class Test 1 with its approved key.
   const keyItems = answerKeyItems().map((i) => AnswerKeyItemSchema.parse(i))
   const mapTopics = [...new Set(keyItems.map((i) => i.topicName))]
+  // The seeded test is already shared with parents (40 minutes ago, by Ms Banda), so every screen and spec that starts from the
+  // `marked` or `session_done` stage keeps working. A test made in the app starts held (see `createTest`).
   const test = await ok(
     admin
       .from('tests')
-      .insert({ class_id: classId, title: TEST_TITLE, written_on: c.now.toISOString().slice(0, 10), out_of: 10, topic_ids: mapTopics.map(tid) })
+      .insert({
+        class_id: classId, title: TEST_TITLE, written_on: c.now.toISOString().slice(0, 10), out_of: 10, topic_ids: mapTopics.map(tid),
+        held: false, shared_at: c.at(40), shared_by: teacherId,
+      })
       .select('id')
       .single(),
     'test',
+  )
+  await ok(
+    admin.from('approvals').insert({
+      school_id: schoolId, kind: 'share_results', ref_id: test.id, decision: 'shared', decided_by: teacherId, decided_by_name: CAST.teacher.displayName,
+      decided_at: c.at(40), note: TEST_TITLE,
+    }),
+    'share approval',
   )
   const memoPath = `${schoolId}/${test.id}/memo${extOf(SAMPLE_FILES.memo)}`
   await Promise.all([

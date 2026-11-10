@@ -56,6 +56,18 @@ describe('plain labels', () => {
     expect(approvalText(approval({ kind: 'homework_scan', decision: 'confirmed', decided_by_name: 'Thandi M' }))).toBe('Thandi M confirmed a homework scan')
     expect(approvalText(approval({ kind: 'brand_new', decision: 'shared' }))).toBe('Ms Banda shared brand_new')
   })
+
+  it('names the test when results are shared with parents, and still reads well without a title', () => {
+    expect(approvalText({ ...approval({ kind: 'share_results', decision: 'shared' }), note: 'Class Test 1' })).toBe('Ms Banda shared the results of Class Test 1 with parents')
+    expect(approvalText({ ...approval({ kind: 'share_results', decision: 'shared' }), note: null })).toBe('Ms Banda shared the results of a test with parents')
+    expect(approvalText(approval({ kind: 'share_results', decision: 'shared' }))).toBe('Ms Banda shared the results of a test with parents')
+  })
+
+  it('shows the test title in a merged log entry', () => {
+    const row = { ...approval({ kind: 'share_results', decision: 'shared' }), note: 'Class Test 1' }
+    const entry = mergeLog([], [row], new Date('2026-11-10T10:00:00Z')).entries[0]
+    expect(entry).toMatchObject({ kind: 'approval', text: 'Ms Banda shared the results of Class Test 1 with parents' })
+  })
 })
 
 describe('time label', () => {

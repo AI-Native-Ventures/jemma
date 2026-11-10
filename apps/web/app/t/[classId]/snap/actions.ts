@@ -9,6 +9,7 @@ import { recordApproval } from '@/lib/approvals'
 import { requireRole } from '@/lib/auth'
 import { READ_MIN } from '@/lib/data/p31'
 import { UPLOAD_PREFIX } from '@/lib/data/p34'
+import { shareResults } from '@/lib/share-results'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
@@ -91,13 +92,32 @@ export async function createTest(
     if (!Number.isInteger(input.outOf) || input.outOf < 1 || input.outOf > 200) return fail('Out of must be a whole number.')
     const { data, error } = await admin
       .from('tests')
-      .insert({ class_id: classId, title, written_on: parseDate(input.writtenOn), out_of: input.outOf, topic_ids: input.topicIds })
+      // A new test is held: parents and the learner see nothing of it until the teacher taps "Share with parents" (`shareTest`).
+      .insert({ class_id: classId, title, written_on: parseDate(input.writtenOn), out_of: input.outOf, topic_ids: input.topicIds, held: true })
       .select('id')
       .single()
     if (error) return fail(error.message)
     return { ok: true, testId: data.id }
   } catch (e) {
     return fail(e instanceof Error ? e.message : 'Could not make the test.')
+  }
+}
+
+/**
+ * "Share with parents": one tap per test. The teacher's name and the time are kept, the approved parents are told, and Jemma
+ * plans each learner's next lesson. Sharing a test that was already shared answers ok and does nothing more.
+ */
+export async function shareTest(classId: string, testId: string): Promise<ActionResult<{ shared: boolean }>> {
+  try {
+    const { userId, supabase, admin } = await teacherOfClass(classId)
+    const done = await shareResults({ teacher: supabase as unknown as JemmaDb, admin, userId }, classId, testId)
+    if (!done.ok) return fail(done.message)
+    revalidatePath(`/t/${classId}`)
+    revalidatePath(`/t/${classId}/tests/${testId}`)
+    revalidatePath(`/t/${classId}/snap/${testId}/progress`)
+    return { ok: true, shared: done.shared }
+  } catch (e) {
+    return fail(e instanceof Error ? e.message : 'Could not share the results.')
   }
 }
 

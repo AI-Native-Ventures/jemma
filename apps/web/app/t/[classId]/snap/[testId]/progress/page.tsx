@@ -1,5 +1,7 @@
 import { WhatJemmaDid } from '@/components/blocks'
 import { getKeyView, getPile, getTestLog, hhmm } from '@/lib/data/p31'
+import { getShareState } from '@/lib/data/p50b'
+import { ShareCard } from '../../../ShareCard'
 import { Poller } from '../../Poller'
 import { Flow } from '../../_parts'
 
@@ -11,7 +13,7 @@ const check = (aria: string) => (
 /** Board `teacher-reading`: Jemma reads the pile. Refreshes every 2 s while anything is queued or reading. */
 export default async function ReadingPage({ params }: { params: Promise<{ classId: string; testId: string }> }) {
   const { classId, testId } = await params
-  const [key, pile] = await Promise.all([getKeyView(classId, testId), getPile(testId)])
+  const [key, pile, share] = await Promise.all([getKeyView(classId, testId), getPile(testId), getShareState(classId, testId)])
   const since = pile[0]?.createdAt ?? new Date(0).toISOString()
   const log = await getTestLog(classId, since)
   const done = pile.filter((p) => p.status === 'marked' || p.status === 'needs_you' || p.status === 'failed').length
@@ -37,6 +39,8 @@ export default async function ReadingPage({ params }: { params: Promise<{ classI
           {busy ? "About a minute left. You can leave this screen. Anything I'm unsure about goes to Needs you." : "All read. Anything I'm unsure about is in Needs you."}
         </p>
       </section>
+
+      {share.card ? <ShareCard classId={classId} card={share.card} /> : null}
 
       <section aria-labelledby="papers" className="flex flex-col rounded-20 border border-line bg-card px-4 py-2">
         <h2 id="papers" className="mt-2 mb-1 text-[16px] font-semibold">Papers</h2>

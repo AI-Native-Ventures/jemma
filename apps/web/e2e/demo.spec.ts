@@ -50,6 +50,8 @@ async function cookieSandbox(page: import('@playwright/test').Page): Promise<str
 test('Try the demo signs in as Ms Banda', async ({ page }) => {
   await page.goto('/demo')
   await expect(page.getByRole('heading', { name: 'Try the demo', level: 1 })).toBeVisible()
+  // No copy yet: step 3 names the code in words, not "class code the class code".
+  await expect(page.locator('li', { hasText: "link Amina with Ms Banda's class code, then open her profile." })).toBeVisible()
   await page.getByRole('button', { name: /Ms Banda/ }).click()
   await expect(page).toHaveURL(/\/t\/[0-9a-f-]{36}\/curriculum$/, { timeout: 60_000 })
   await cookieSandbox(page)
@@ -65,6 +67,10 @@ test('Main shows the copy and this sandbox join code', async ({ page }) => {
   await expect(page.getByText("Parent · Amina's mother")).toBeVisible()
   await expect(page.getByText('Learner · Grade 6')).toBeVisible()
   await expect(page.getByText(s.joinCode)).toBeVisible()
+  // The guide tells the judge to share, and ends on the Long view.
+  await expect(page.getByText('Then tap Share with parents.', { exact: false })).toBeVisible()
+  await expect(page.locator('li', { hasText: `link Amina with class code ${s.joinCode}, then open her profile.` })).toBeVisible()
+  await expect(page.getByText("see the result, the updated gaps and Amina's Long view.")).toBeVisible()
   await expect(page.getByText(/Your copy started today at \d\d:\d\d\./)).toBeVisible()
   await expect(page.getByText('Every person and paper here is made up.')).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
@@ -86,6 +92,34 @@ test('switch role shows the next demo step', async ({ page }) => {
   await expect(page).toHaveURL(/\/p$/)
   await page.goto('/demo/switch')
   await expect(page.getByText('Step 1 of 5')).toBeVisible()
+})
+
+test('switch role names the next step as the copy moves on, and waits for the share', async ({ page }) => {
+  // Five papers are marked after the teacher snapped them, but nothing is shared yet: the judge is still on step 2 and is told to share.
+  const marked = await openSandbox(page, { stage: 'marked', role: 'teacher' })
+  opened.push(marked)
+  await page.goto('/demo/switch')
+  await expect(page.getByText('Step 2 of 5')).toBeVisible()
+  await expect(page.getByText('Next: sign in as Ms Banda, snap the memo and 5 papers, then tap Share with parents.')).toBeVisible()
+
+  // A finished copy is on step 5, which ends on the Long view.
+  const finished = await openSandbox(page, { stage: 'session_done', role: 'teacher' })
+  opened.push(finished)
+  await page.goto('/demo/switch')
+  await expect(page.getByText('Step 5 of 5')).toBeVisible()
+  await expect(page.getByText("Next: see the result and the updated gaps as Ms Banda and as Thandi, then open Amina's Long view as Ms Banda.")).toBeVisible()
+
+  // Hold its test again (as if the teacher had not shared it): the step goes back to 2 until the share.
+  const db = admin()
+  const { data: school } = await db.from('demo_sandboxes').select('school_id').eq('id', finished.sandboxId).single()
+  const { data: tests } = await db.from('tests').select('id').eq('class_id', finished.classId)
+  expect(school?.school_id).toBeTruthy()
+  await db.from('tests').update({ held: true }).in('id', tests!.map((t) => t.id))
+  await page.goto('/demo/switch')
+  await expect(page.getByText('Step 2 of 5')).toBeVisible()
+  await db.from('tests').update({ held: false }).in('id', tests!.map((t) => t.id))
+  await page.goto('/demo/switch')
+  await expect(page.getByText('Step 5 of 5')).toBeVisible()
 })
 
 test('reset demo keeps the judge on /demo', async ({ page }) => {

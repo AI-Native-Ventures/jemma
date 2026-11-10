@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { ChevronRightIcon } from '@/components/ui/icons'
 import { getTestDetail } from '@/lib/data/p20'
+import { getShareState } from '@/lib/data/p50b'
+import { ShareCard } from '../../ShareCard'
 import { BackHeader, Lead } from '../back-header'
 
 const Stat = ({ value, label }: { value: string; label: string }) => (
@@ -23,7 +25,7 @@ const Squares = ({ dots }: { dots: boolean[] }) => (
 
 export default async function TeacherTestPage({ params }: { params: Promise<{ classId: string; testId: string }> }) {
   const { classId, testId } = await params
-  const { cls, test, hardestLine } = await getTestDetail(classId, testId)
+  const [{ cls, test, hardestLine }, share] = await Promise.all([getTestDetail(classId, testId), getShareState(classId, testId)])
   const base = `/t/${classId}`
 
   return (
@@ -36,6 +38,8 @@ export default async function TeacherTestPage({ params }: { params: Promise<{ cl
             {test.dayLabel} · out of {test.outOf} · {test.papers} papers
           </p>
         </div>
+        {share.card ? <ShareCard classId={classId} card={share.card} /> : null}
+        {share.sharedLine ? <p className="m-0 text-[14px] leading-[1.4] text-body">{share.sharedLine}</p> : null}
         {hardestLine ? <Lead>{hardestLine}</Lead> : null}
 
         <div className="grid grid-cols-3 gap-2">

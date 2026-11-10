@@ -125,8 +125,9 @@ From `packages/profiling/src/schemas/events.ts`:
 | `session.finished` | `update_learner_profile`, `plan_next_session`, `write_lesson` |
 | `observation.added`, `activity.added` | `guidance` |
 | `homework.snapped` | `read_paper`, then `diagnose` after the parent confirms the scan |
+| `test.shared` | Per learner with a marked paper: `plan_next_session`, `write_lesson`, `guidance` (after the teacher taps Share with parents) |
 
-The test tail is: `diagnose` per marked learner, `class_report`, then per learner `plan_next_session`, `write_lesson`, `guidance`.
+The test tail is: `diagnose` per marked learner, `class_report`, then per learner `plan_next_session`, `write_lesson`, `guidance`. While a test is held (every test made in the app starts held, see Gates below) the tail stops after `diagnose` and `class_report`, and `postconditions` ask for planned sessions only once the test is shared. `test.shared` does the rest and takes the same tail lock.
 
 ## The jobs table
 
@@ -167,6 +168,7 @@ Every table has RLS on. The service role (used by the agent and the MCP server) 
 - A **learner** sees only themselves.
 - Helper functions in `0002_rls.sql`: `my_role`, `my_school`, `teaches_class`, `teaches_child`, `parent_of`, `is_child_user`, `can_see_child`. Policies on child data use `can_see_child`.
 - The browser can write only a few things directly: teacher notes (`observations`, as the author), attendance (for children the teacher teaches), parent-added activities, and marking its own Needs you items and notifications read. Everything else goes through the server.
+- A test that is held (`tests.held`, set by `0018_share_gate.sql`) is hidden from the family: for an approved parent and the learner, `papers`, `question_results`, `gaps` and the child's `activity_log` lines come from a shared test only (helpers `is_family`, `paper_shared`, `gap_shared`, `event_shared`). Homework and papers with no test stay visible. The teacher branch of every policy is unchanged.
 - Needs you items and notifications are visible to their owner only.
 - `child_logins`, `child_login_attempts`, `ai_replays`, `demo_sandboxes` and `mcp_tokens` have RLS on and no policy, so only the service role can touch them.
 - The service role key is used only on the server (web server code and the agent). It is never sent to the browser.
@@ -183,6 +185,18 @@ Every table has RLS on. The service role (used by the agent and the MCP server) 
 - **Child sign-in.** A child signs in with a login code and a 4-digit PIN that the parent sets. PINs are hashed with a server-side pepper (`CHILD_PIN_PEPPER`), and wrong tries are counted in `child_login_attempts`.
 - **Teen chats.** There is no chat feature in v1, so no chat with a teenager is stored or sent to a model. Teen invites and chat screens are in the design files but are not built. If chat is added later it needs its own privacy review first.
 - **Demo sandboxes.** A judge gets a private copy of the school. Reset rebuilds only that copy.
+
+## Gates
+
+What Jemma may not do on its own. Each gate is a person tapping, and the log screen lists every approval with the person's name.
+
+| Jemma may not, on its own | Who must approve | Where the name is kept |
+| --- | --- | --- |
+| Use a topic map | The teacher: Approve map | `approvals` (`topic_map`) |
+| Mark against an answer key | The teacher: Approve key | `approvals` (`answer_key`) |
+| Count a mark it is unsure of | The teacher: check and confirm the paper in Needs you | `approvals` (`mark`, `paper`), `question_results.changed_by` |
+| Link a guardian to a child | The teacher: say yes to the request | `approvals` (`guardian_link`), `parent_links.decided_at` |
+| Show a test to a parent or learner, or plan a lesson from it | The teacher: Share with parents, once per test | `approvals` (`share_results`), `tests.shared_by`, `tests.shared_at` |
 
 ## Replay and cache modes
 

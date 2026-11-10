@@ -1,6 +1,6 @@
 import type { JemmaDb } from '@jemma/profiling/db'
 
-/** What was decided on: the topic map, the answer key, a mark, a paper, a link request, a reteach, a homework scan, a Long view pattern or the talk about one. */
+/** What was decided on: the topic map, the answer key, a mark, a paper, a link request, a reteach, a homework scan, a Long view pattern, the talk about one, or sharing a test's results with parents. */
 export type ApprovalKind =
   | 'topic_map'
   | 'answer_key'
@@ -12,6 +12,7 @@ export type ApprovalKind =
   | 'homework_scan'
   | 'long_view_pattern'
   | 'long_view_talk'
+  | 'share_results'
 
 export type ApprovalDecision = 'approved' | 'declined' | 'edited' | 'confirmed' | 'shared'
 
