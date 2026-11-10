@@ -300,6 +300,8 @@ describe('changes made to the test set while the runs were going', () => {
     expect(text).toContain('Kept: evals/results/test-run/superseded/file-server-confined-first-pass/')
     expect(text).toContain('Apart from the changes listed in "Changes made while the runs were going", nothing was retried, dropped or hand-edited.')
     expect(text).not.toContain('Nothing was retried, dropped or hand-edited.')
+    expect(text).toContain('and the notes under "Changes made while the runs were going" (`changes.json` in the same folder)')
+    expect(renderReport(input(allResults()))).not.toContain('changes.json')
   })
   test('writeReport reads changes.json from the run folder', async () => {
     const dir = writeRun('withchanges')
