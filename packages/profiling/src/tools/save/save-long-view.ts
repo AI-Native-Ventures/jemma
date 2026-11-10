@@ -6,10 +6,11 @@ import {
   LongViewDraftSchema,
   LongViewEvidenceListSchema,
   LongViewStatusSchema,
-  LongViewTermsSchema,
+  LongViewStoredTermsSchema,
   type LongViewDraftPattern,
   type LongViewEvidence,
-  type LongViewTerm,
+  type LongViewStoredTerm,
+  type PatternCandidate,
 } from '../../schemas/long-view'
 import type { Database } from '../../db/types'
 import { assertInSchool, contextFor, defineTool, logActivity, ok } from '../context'
@@ -21,13 +22,23 @@ const plural = (n: number, one: string, many: string) => (n === 1 ? one : many)
 
 const quoted = (words: string[]) => words.map((w) => `"${w}"`).join(', ')
 
-/** True when the stored terms are the candidate's terms, field for field (jsonb does not keep key order). */
-function sameTerms(stored: unknown, now: LongViewTerm[]): boolean {
-  const parsed = LongViewTermsSchema.safeParse(stored)
+/**
+ * What goes into `long_view_patterns.terms` for a candidate: its run, and when the pattern ended one term before the newest,
+ * that newest result as a last entry flagged `sinceThen: true`. No extra column is needed.
+ */
+export function storedTerms(c: Pick<PatternCandidate, 'terms' | 'sinceThen'>): LongViewStoredTerm[] {
+  if (!c.sinceThen) return c.terms
+  const { grade, year, term, percent, points } = c.sinceThen
+  return [...c.terms, { grade, year, term, percent, points, sinceThen: true }]
+}
+
+/** True when the stored terms are `now`, field for field (jsonb does not keep key order). */
+function sameTerms(stored: unknown, now: LongViewStoredTerm[]): boolean {
+  const parsed = LongViewStoredTermsSchema.safeParse(stored)
   if (!parsed.success || parsed.data.length !== now.length) return false
   return parsed.data.every((t, i) => {
     const n = now[i]!
-    return t.grade === n.grade && t.year === n.year && t.term === n.term && t.percent === n.percent && t.points === n.points
+    return t.grade === n.grade && t.year === n.year && t.term === n.term && t.percent === n.percent && t.points === n.points && !!t.sinceThen === !!n.sinceThen
   })
 }
 
@@ -103,11 +114,12 @@ export const saveLongView = defineTool({
       const cand = candidates.get(a.key)!
       const row = existing.find((r) => r.kind === cand.kind && r.family === cand.family)
       const evidence = [...cand.evidence, ...a.notes]
+      const terms = storedTerms(cand)
       if (!row) {
         const made = await ok(
           own.db
             .from('long_view_patterns')
-            .insert({ child_id: childId, kind: cand.kind, family: cand.family, title: a.title, statement: a.statement, terms: cand.terms, evidence, status: 'draft', active: true })
+            .insert({ child_id: childId, kind: cand.kind, family: cand.family, title: a.title, statement: a.statement, terms, evidence, status: 'draft', active: true })
             .select('id')
             .single(),
         )
@@ -117,14 +129,14 @@ export const saveLongView = defineTool({
       let patch: PatternUpdate | null = null
       let status = LongViewStatusSchema.parse(row.status)
       if (status === 'draft') {
-        patch = { title: a.title, statement: a.statement, terms: cand.terms, evidence, active: true }
+        patch = { title: a.title, statement: a.statement, terms, evidence, active: true }
       } else if (status === 'approved' || status === 'discussed') {
         // The teacher has seen these words. They stay, and so do the notes they cited. Only the numbers behind them are renewed.
         const kept = LongViewEvidenceListSchema.parse(row.evidence).filter((e) => e.kind === 'note')
-        patch = { terms: cand.terms, evidence: [...cand.evidence, ...kept], active: true }
-      } else if (!sameTerms(row.terms, cand.terms)) {
+        patch = { terms, evidence: [...cand.evidence, ...kept], active: true }
+      } else if (!sameTerms(row.terms, terms)) {
         // Dismissed, but the records have moved on: the teacher is asked again.
-        patch = { status: 'draft', title: a.title, statement: a.statement, terms: cand.terms, evidence, active: true, dismissed_by: null, dismissed_at: null }
+        patch = { status: 'draft', title: a.title, statement: a.statement, terms, evidence, active: true, dismissed_by: null, dismissed_at: null }
         status = 'draft'
       } else if (!row.active) {
         patch = { active: true }

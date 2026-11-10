@@ -32,9 +32,21 @@ export const LongViewEvidenceSchema = z.object({
 })
 export type LongViewEvidence = z.infer<typeof LongViewEvidenceSchema>
 
-/** The jsonb columns of `long_view_patterns`. */
 export const LongViewTermsSchema = z.array(LongViewTermSchema)
 export const LongViewEvidenceListSchema = z.array(LongViewEvidenceSchema)
+
+/**
+ * A term as it is stored in `long_view_patterns.terms`. The last entry may be the newest result, flagged `sinceThen: true`:
+ * the pattern held up to the term before it, and this later term did not continue it.
+ */
+export const LongViewStoredTermSchema = LongViewTermSchema.extend({ sinceThen: z.boolean().optional() })
+export type LongViewStoredTerm = z.infer<typeof LongViewStoredTermSchema>
+/** The jsonb columns of `long_view_patterns`. */
+export const LongViewStoredTermsSchema = z.array(LongViewStoredTermSchema)
+
+/** The family's newest term with data when it did not continue the pattern, with what it rests on (newest first, at most 12). */
+export const SinceThenSchema = LongViewTermSchema.extend({ sources: LongViewEvidenceListSchema })
+export type SinceThen = z.infer<typeof SinceThenSchema>
 
 /** A pattern code found in the records. The model never writes one: it only words it. */
 export const PatternCandidateSchema = z.object({
@@ -49,6 +61,11 @@ export const PatternCandidateSchema = z.object({
   more: z.number().int().optional(),
   /** Terms inside the span with no data for this family. They were skipped, never guessed. */
   missingTerms: z.array(MissingTermSchema),
+  /**
+   * Null when the pattern runs to the family's newest term with data. Otherwise the pattern ended one term with data before the newest,
+   * and this is that newest term (better than a struggle, or weaker than a strength). A pattern that ended earlier is not a candidate.
+   */
+  sinceThen: SinceThenSchema.nullable(),
 })
 export type PatternCandidate = z.infer<typeof PatternCandidateSchema>
 
@@ -114,7 +131,7 @@ export const LongViewPatternSchema = z.object({
   family: z.string(),
   title: z.string(),
   statement: z.string(),
-  terms: LongViewTermsSchema,
+  terms: LongViewStoredTermsSchema,
   evidence: LongViewEvidenceListSchema,
   status: LongViewStatusSchema,
   active: z.boolean(),

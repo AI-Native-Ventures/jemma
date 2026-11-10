@@ -13,6 +13,8 @@ export const MIN_TERMS = 3
 export const MIN_POINTS = 3
 /** Sources listed as evidence on one pattern. The rest are counted in `more`. */
 export const MAX_EVIDENCE = 12
+/** Places in the evidence list the run itself keeps (when it has that many sources), so a newer result never crowds it out. */
+export const MIN_RUN_EVIDENCE = 6
 
 export type SlotRef = { year: number; term: number }
 export type GradedSlot = SlotRef & { grade: number }
@@ -233,35 +235,66 @@ export function kindOfPercent(percent: number): LongViewKind | null {
   return null
 }
 
+/** The run of terms that all meet the same kind, ending at `slots[end]`, longest first extended backwards. */
+function runEndingAt(slots: TableSlot[], end: number, kind: LongViewKind): TableSlot[] {
+  let start = end
+  while (start > 0 && kindOfPercent(slots[start - 1]!.percent) === kind) start--
+  return slots.slice(start, end + 1)
+}
+
 /**
- * The strengths and struggles that hold across terms. Per family, from its terms with data in order, take the longest run that
- * ends at the family's most recent term with data and in which every term is below STRUGGLE_BELOW (a struggle) or at or above
- * STRENGTH_FROM (a strength). A run of MIN_TERMS or more is a candidate. Terms with no data inside the span are skipped, never
- * guessed, and are listed in `missingTerms`.
+ * The strengths and struggles that hold across terms. Per family, from its terms with data in order, a candidate is a run of
+ * MIN_TERMS or more terms in a row in which every term is below STRUGGLE_BELOW (a struggle) or at or above STRENGTH_FROM (a strength).
+ * The run may end at the family's latest term with data, or at the term with data just before it. In that second case the latest term
+ * did not continue the run (it was better than a struggle, or weaker than a strength): it comes back as `sinceThen` so the pattern is
+ * still shown, with the newer result beside it. A run that ended two or more terms with data ago is not a candidate.
+ * Terms with no data inside the run's span are skipped, never guessed, and are listed in `missingTerms`.
  */
 export function findPatterns(table: FamilyTable[]): PatternCandidate[] {
   const out: PatternCandidate[] = []
   for (const { family, slots } of [...table].sort((a, b) => a.family.localeCompare(b.family))) {
     const ordered = [...slots].sort(compareSlots)
-    const last = ordered[ordered.length - 1]
-    if (!last) continue
-    const kind = kindOfPercent(last.percent)
-    if (!kind) continue
-    let start = ordered.length - 1
-    while (start > 0 && kindOfPercent(ordered[start - 1]!.percent) === kind) start--
-    const run = ordered.slice(start)
-    if (run.length < MIN_TERMS) continue
+    const latest = ordered.length - 1
+    if (latest < 0) continue
 
-    const sources: LongViewEvidence[] = [...run].reverse().flatMap((s) => s.sources)
+    let run: TableSlot[] = []
+    let kind: LongViewKind | null = null
+    let newer: TableSlot | null = null
+    const atLatest = kindOfPercent(ordered[latest]!.percent)
+    if (atLatest) {
+      run = runEndingAt(ordered, latest, atLatest)
+      if (run.length >= MIN_TERMS) kind = atLatest
+    }
+    if (!kind && latest >= 1) {
+      const before = kindOfPercent(ordered[latest - 1]!.percent)
+      if (before) {
+        run = runEndingAt(ordered, latest - 1, before)
+        if (run.length >= MIN_TERMS) {
+          kind = before
+          newer = ordered[latest]!
+        }
+      }
+    }
+    if (!kind) continue
+
+    // Newest first: the newer result, then the run. The newer result may fill the places the run does not need, but never more than all but MIN_RUN_EVIDENCE of them.
+    const runSources: LongViewEvidence[] = [...run].reverse().flatMap((s) => s.sources)
+    const newerSources: LongViewEvidence[] = newer?.sources ?? []
+    const newerTake = Math.min(newerSources.length, MAX_EVIDENCE - Math.min(runSources.length, MIN_RUN_EVIDENCE))
+    const evidence = [...newerSources.slice(0, newerTake), ...runSources].slice(0, MAX_EVIDENCE)
+    const total = newerSources.length + runSources.length
     const candidate: PatternCandidate = {
       key: patternKey(kind, family),
       kind,
       family,
       terms: run.map(({ grade, year, term, percent, points }) => ({ grade, year, term, percent, points })),
-      evidence: sources.slice(0, MAX_EVIDENCE),
+      evidence,
       missingTerms: missingSlots(run),
+      sinceThen: newer
+        ? { grade: newer.grade, year: newer.year, term: newer.term, percent: newer.percent, points: newer.points, sources: newerSources.slice(0, MAX_EVIDENCE) }
+        : null,
     }
-    if (sources.length > MAX_EVIDENCE) candidate.more = sources.length - MAX_EVIDENCE
+    if (total > evidence.length) candidate.more = total - evidence.length
     out.push(candidate)
   }
   return out

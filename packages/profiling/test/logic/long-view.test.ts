@@ -248,11 +248,15 @@ describe('findPatterns thresholds', () => {
     expect(run([90, 20, 20, 20]).map((c) => [c.kind, c.terms.length])).toEqual([['struggle', 3]])
   })
 
-  test('the run must end at the latest slot with data', () => {
-    // Three weak terms, then a decent one: that is not a current struggle.
-    expect(run([20, 20, 20, 60])).toEqual([])
-    // The family has moved on: strength at the end, weak before.
-    expect(run([20, 20, 20, 85])).toEqual([])
+  test('the run ends at the latest slot with data, or at the one just before it', () => {
+    // Ends at the latest: nothing came after it.
+    expect(run([20, 20, 20, 20])[0]!.sinceThen).toBeNull()
+    // Ends one before the latest: the newest result is kept, and shown as such (see "a better newest result" below).
+    expect(run([20, 20, 20, 60])[0]!.sinceThen).toMatchObject({ percent: 60 })
+    // Ended two or more slots with data ago: not a candidate.
+    expect(run([20, 20, 20, 60, 70])).toEqual([])
+    expect(run([20, 20, 20, 60, 20])).toEqual([])
+    expect(run([20, 20, 20, 85, 85])).toEqual([])
   })
 
   test('the longest run that ends at the latest slot is taken', () => {
@@ -283,6 +287,89 @@ describe('findPatterns thresholds', () => {
       { grade: 5, year: 2025, term: 1, percent: 20, points: 10 },
       { grade: 5, year: 2025, term: 2, percent: 40, points: 10 },
     ])
+  })
+})
+
+describe('a better newest result (sinceThen)', () => {
+  const run = (percents: number[], family = 'fractions') => only(percents.map((p, i) => quiz(2025 + Math.floor(i / 4), (i % 4) + 1, p, family)))
+
+  test('a struggle that ended one slot before the latest carries the newer slot', () => {
+    const [c] = run([20, 30, 40, 60])
+    expect(c).toMatchObject({ key: 'struggle:fractions', kind: 'struggle' })
+    expect(c!.terms.map((t) => t.percent)).toEqual([20, 30, 40])
+    expect(c!.sinceThen).toMatchObject({ grade: 5, year: 2025, term: 4, percent: 60, points: 10 })
+    expect(c!.sinceThen!.sources).toHaveLength(1)
+    expect(c!.sinceThen!.sources[0]).toMatchObject({ kind: 'record', label: expect.stringContaining('Mrs Naidoo') })
+    // The newer result is the newest evidence, and the run's evidence follows it.
+    expect(c!.evidence).toHaveLength(4)
+    expect(c!.evidence[0]).toEqual(c!.sinceThen!.sources[0])
+  })
+
+  test('a strength that ended one slot before the latest carries a weaker newer slot', () => {
+    const [c] = run([85, 90, 95, 50], 'shapes')
+    expect(c).toMatchObject({ key: 'strength:shapes', kind: 'strength' })
+    expect(c!.terms).toHaveLength(3)
+    expect(c!.sinceThen).toMatchObject({ percent: 50 })
+  })
+
+  test('the newer slot may swing all the way to the other side', () => {
+    const [weak] = run([20, 30, 40, 90])
+    expect(weak).toMatchObject({ kind: 'struggle', sinceThen: { percent: 90 } })
+    const [strong] = run([90, 85, 80, 10])
+    expect(strong).toMatchObject({ kind: 'strength', sinceThen: { percent: 10 } })
+  })
+
+  test('a run that reaches the latest slot has no sinceThen, and a newer slot that continues it is part of the run', () => {
+    expect(run([60, 20, 30, 40])[0]).toMatchObject({ terms: [{ percent: 20 }, { percent: 30 }, { percent: 40 }], sinceThen: null })
+    expect(run([20, 30, 40, 45])[0]).toMatchObject({ sinceThen: null })
+    expect(run([20, 30, 40, 45])[0]!.terms).toHaveLength(4)
+  })
+
+  test('a run that is too short is not rescued by the newer slot', () => {
+    expect(run([20, 30, 60])).toEqual([])
+    expect(run([60, 20, 30, 60])).toEqual([])
+  })
+
+  test('a slot with too few marks is not the newest slot with data', () => {
+    const thin = rec({ year: 2026, term: 1, marks: 2, outOf: 2 })
+    const [c] = only([quiz(2025, 2, 20), quiz(2025, 3, 30), quiz(2025, 4, 40), thin])
+    expect(c!.sinceThen).toBeNull()
+    expect(c!.terms).toHaveLength(3)
+  })
+
+  test('the newer result sits in the same year or the next, and its missing terms stay out of the run', () => {
+    const [c] = only([quiz(2025, 1, 20), quiz(2025, 2, 30), quiz(2025, 3, 40), quiz(2026, 2, 70)])
+    expect(c!.sinceThen).toMatchObject({ year: 2026, term: 2, percent: 70 })
+    // 2025 T4 and 2026 T1 lie between the run and the newer result: they are not inside the run, so nothing is listed.
+    expect(c!.missingTerms).toEqual([])
+  })
+
+  test('current answers can be the newer result, and are named by their test', () => {
+    const results = [1, 2, 3, 4].map((n) => result({ id: `ct-${n}`, correct: n <= 3, isoDate: '2026-08-20', label: `Class Test 1, question ${n}` }))
+    const [c] = only([quiz(2025, 4, 20), quiz(2026, 1, 30), quiz(2026, 2, 40)], results)
+    expect(c!.sinceThen).toMatchObject({ grade: 5, year: 2026, term: 3, percent: 75, points: 4 })
+    expect(c!.sinceThen!.sources.map((x) => x.label).sort()).toEqual([1, 2, 3, 4].map((n) => `Class Test 1, question ${n}`))
+    expect(c!.sinceThen!.sources.every((x) => x.kind === 'result')).toBe(true)
+  })
+
+  test('evidence is cut at 12, and the newer result never crowds out the run: the run keeps at least 6 places', () => {
+    const results = Array.from({ length: 10 }, (_, n) => result({ id: `ct-${n}`, correct: true, isoDate: '2026-08-20', label: `Class Test 1, question ${n + 1}` }))
+    // A short run (3 records): the newer result may use the places the run does not need.
+    const [short] = only([quiz(2025, 4, 20), quiz(2026, 1, 30), quiz(2026, 2, 40)], results)
+    expect(short!.sinceThen!.sources).toHaveLength(10)
+    expect(short!.evidence).toHaveLength(12)
+    expect(short!.evidence.slice(0, 9).every((e) => e.kind === 'result')).toBe(true)
+    expect(short!.evidence.slice(9).map((e) => e.kind)).toEqual(['record', 'record', 'record'])
+    // 10 answers and 3 records were there, 12 are listed.
+    expect(short!.more).toBe(1)
+
+    // A long run (12 records): the newer result keeps 6 places and the run the other 6.
+    const many = [[2025, 4], [2026, 1], [2026, 2]].flatMap(([y, t]) => [1, 2, 3, 4].map((i) => rec({ year: y!, term: t!, marks: 5, outOf: 20, happenedOn: `${y}-${String((t! - 1) * 3 + 1).padStart(2, '0')}-0${i}` })))
+    const [long] = only(many, results)
+    expect(long!.evidence).toHaveLength(12)
+    expect(long!.evidence.slice(0, 6).every((e) => e.kind === 'result')).toBe(true)
+    expect(long!.evidence.slice(6).every((e) => e.kind === 'record')).toBe(true)
+    expect(long!.more).toBe(10)
   })
 })
 

@@ -10,7 +10,7 @@ import { loadProfile } from '../src/tools/read/get-learner-profile'
 import { SaveLongViewOutputSchema, saveLongView } from '../src/tools/save/save-long-view'
 import { runLongView } from '../src/jobs/cloud/long-view'
 import { jobPlan, postconditions } from '../src/plans'
-import { EventSchema, LearnerHistorySchema, type LearnerHistory } from '../src/schemas'
+import { EventSchema, LearnerHistorySchema, LongViewStoredTermsSchema, type LearnerHistory } from '../src/schemas'
 import longViewPrompt from '../src/jobs/long_view.md'
 import { createSandbox as createDemo, deleteSandbox } from '../../../supabase/seed'
 import { createSandbox as createSmall, type Sandbox } from './helpers/sandbox'
@@ -505,7 +505,7 @@ describe('the long_view job', () => {
   test('the prompt file tells the model the rules', () => {
     for (const text of [
       'get_learner_history', 'save_long_view', 'complete_job', '<untrusted>', 'Never a label', 'other learners', 'subject or career',
-      'at most two short sentences', 'noteIds', 'empty list', 'missing',
+      'at most two short sentences', 'noteIds', 'empty list', 'missing', 'sinceThen', 'newest result', 'better', 'weaker', 'no praise words',
     ]) expect(longViewPrompt).toContain(text)
     expect(longViewPrompt).not.toContain(String.fromCharCode(0x2014))
   })
@@ -529,6 +529,146 @@ describe('the long_view.requested event', () => {
     } finally {
       await close()
     }
+  })
+})
+
+describe('a newer result after a pattern that held (sinceThen)', () => {
+  let c: Demo
+  const year = new Date().getUTCFullYear()
+
+  beforeAll(async () => {
+    c = await demo()
+    // Amina writes Class Test 1 in Term 3 of the class year: 3 of 4 fractions answers right. Her struggle ran from Grade 5 Term 3 to Grade 6 Term 2.
+    const map = (await db.from('curriculum_maps').insert({ class_id: c.classId, status: 'approved' }).select('id').single()).data!
+    const topic = (await db.from('topics').insert({ map_id: map.id, term: 3, position: 1, name: 'Adding fractions', family: 'fractions' }).select('id').single()).data!
+    const test = (await db.from('tests').insert({ class_id: c.classId, title: 'Class Test 1', written_on: `${year}-08-20`, out_of: 4, topic_ids: [topic.id] }).select('id').single()).data!
+    const paper = (await db.from('papers').insert({ test_id: test.id, child_id: c.kids.Amina!, owner: 'teacher', kind: 'test', status: 'marked', name_read: 'Amina', total: 3 }).select('id').single()).data!
+    await db.from('question_results').insert(
+      [true, true, true, false].map((right, i) => ({
+        paper_id: paper.id, child_id: c.kids.Amina!, n: i + 1, prompt: `1/2 + 1/${i + 3}`, answer_read: right ? 'x' : 'y', read_confidence: 0.95, correct: right, mark: right ? 1 : 0, topic_id: topic.id, topic_name: 'Adding fractions',
+      })),
+    )
+  })
+  afterAll(async () => {
+    if (c) await deleteSandbox(db, c.sandboxId).catch(() => undefined)
+  })
+
+  const ctxC = (): ToolContext => ctxFor(c)
+  const readC = async () => LearnerHistorySchema.parse(await getLearnerHistory.run(ctxC(), { childId: c.kids.Amina! }))
+  const rowsC = async () => (await db.from('long_view_patterns').select('*').eq('child_id', c.kids.Amina!).order('family')).data!
+  const saveC = async (patterns: Parameters<typeof saveLongView.run>[1]['patterns']) =>
+    SaveLongViewOutputSchema.parse(await saveLongView.run(ctxC(), { childId: c.kids.Amina!, patterns }))
+  const clearC = async () => {
+    await db.from('long_view_patterns').delete().eq('child_id', c.kids.Amina!)
+    await db.from('needs_you_items').delete().eq('child_id', c.kids.Amina!).eq('kind', 'review_long_view')
+  }
+
+  test("Amina keeps her fractions struggle, with Class Test 1 shown as the newer result, and her shapes strength", async () => {
+    const h = await readC()
+    expect(h.candidates.map((x) => x.key)).toEqual(['struggle:fractions', 'strength:shapes'])
+    const fractions = h.candidates[0]!
+    expect(fractions.terms.at(-1)).toMatchObject({ grade: 6, year, term: 2 })
+    expect(fractions.sinceThen).toMatchObject({ grade: 6, year, term: 3, percent: 75, points: 4 })
+    expect(fractions.sinceThen!.sources.map((x) => x.label).sort()).toEqual([1, 2, 3, 4].map((n) => `Class Test 1, question ${n}`))
+    expect(fractions.sinceThen!.sources.every((x) => x.kind === 'result')).toBe(true)
+    // The newer result is the newest evidence, the run's records follow.
+    expect(fractions.evidence.slice(0, 4).every((e) => e.kind === 'result')).toBe(true)
+    expect(fractions.evidence.slice(4).every((e) => e.kind === 'record')).toBe(true)
+    expect(h.candidates[1]!.sinceThen).toBeNull()
+    expect(h.families.find((f) => f.family === 'fractions')!.bySlot.at(-1)).toMatchObject({ year, term: 3, percent: 75, points: 4 })
+  })
+
+  test('the saved pattern stores the newer result as a last, flagged term, and its sources in the evidence', async () => {
+    await clearC()
+    const h = await readC()
+    const out = await saveC([{ key: 'struggle:fractions', ...GOOD }, { key: 'strength:shapes', ...SHAPES }])
+    expect(out.saved).toBe(2)
+    const rows = await rowsC()
+    const fractions = rows.find((r) => r.family === 'fractions')!
+    const terms = LongViewStoredTermsSchema.parse(fractions.terms)
+    const candidate = h.candidates[0]!
+    expect(terms).toHaveLength(candidate.terms.length + 1)
+    expect(terms.slice(0, -1)).toEqual(candidate.terms)
+    expect(terms.at(-1)).toEqual({ grade: 6, year, term: 3, percent: 75, points: 4, sinceThen: true })
+    expect(terms.slice(0, -1).some((t) => t.sinceThen)).toBe(false)
+    expect(fractions.evidence).toEqual(candidate.evidence)
+    expect((fractions.evidence as { kind: string }[]).filter((e) => e.kind === 'result')).toHaveLength(4)
+    // A pattern that runs to the newest term has no flagged term.
+    expect(LongViewStoredTermsSchema.parse(rows.find((r) => r.family === 'shapes')!.terms).some((t) => t.sinceThen)).toBe(false)
+  })
+
+  test('a dismissed pattern comes back as a draft when a newer result appears, and stays dismissed when nothing changed', async () => {
+    await clearC()
+    await saveC([{ key: 'struggle:fractions', ...GOOD }])
+    const [row] = await rowsC()
+    await db.from('long_view_patterns').update({ status: 'dismissed', dismissed_by: c.teacherId, dismissed_at: '2026-11-01T10:00:00Z' }).eq('id', row!.id)
+    const same = await saveC([{ key: 'struggle:fractions', title: 'Fresh words', statement: 'Fresh words.' }])
+    expect(same.patterns).toEqual([{ id: row!.id, key: 'struggle:fractions', status: 'dismissed' }])
+    // The records as they were before Class Test 1: the run only.
+    const before = LongViewStoredTermsSchema.parse(row!.terms).filter((t) => !t.sinceThen)
+    await db.from('long_view_patterns').update({ terms: before }).eq('id', row!.id)
+    const revived = await saveC([{ key: 'struggle:fractions', title: 'Fresh words', statement: 'Fresh words.' }])
+    expect(revived.patterns).toEqual([{ id: row!.id, key: 'struggle:fractions', status: 'draft' }])
+    const [after] = await rowsC()
+    expect(after).toMatchObject({ status: 'draft', title: 'Fresh words', dismissed_by: null })
+    expect(LongViewStoredTermsSchema.parse(after!.terms).at(-1)).toMatchObject({ sinceThen: true, percent: 75 })
+  })
+
+  test('an approved pattern gets the newer result in its terms and keeps its words', async () => {
+    await clearC()
+    await saveC([{ key: 'struggle:fractions', ...GOOD }])
+    const [row] = await rowsC()
+    const before = LongViewStoredTermsSchema.parse(row!.terms).filter((t) => !t.sinceThen)
+    await db.from('long_view_patterns').update({ status: 'approved', approved_by: c.teacherId, approved_by_name: 'Ms Banda', terms: before }).eq('id', row!.id)
+    await saveC([{ key: 'struggle:fractions', title: 'Changed', statement: 'Changed.' }])
+    const [after] = await rowsC()
+    expect(after).toMatchObject({ status: 'approved', title: GOOD.title, statement: GOOD.statement })
+    expect(LongViewStoredTermsSchema.parse(after!.terms).at(-1)).toMatchObject({ sinceThen: true, percent: 75 })
+  })
+
+  test('the model is shown the newer result, with its test name, and the job saves what it writes', async () => {
+    await clearC()
+    const model = mockModel({
+      patterns: [
+        { key: 'struggle:fractions', title: 'Fractions are hard when the bottom numbers differ', statement: `Fractions marks stayed low from Grade 5 Term 3 to Grade 6 Term 2. The newest result, Class Test 1 in Grade 6 Term 3, was better.` },
+      ],
+    })
+    await runLongView(ctxC(), 'no-event', { childId: c.kids.Amina! }, model)
+    const user = JSON.stringify(model.doGenerateCalls[0]!.prompt.filter((m) => m.role === 'user'))
+    expect(user).toContain('sinceThen')
+    expect(user).toContain('Class Test 1, question 1')
+    expect(user).toMatch(/<untrusted>[\s\S]*sinceThen[\s\S]*<\/untrusted>/)
+    const rows = await rowsC()
+    expect(rows.map((r) => r.family)).toEqual(['fractions'])
+    expect(rows[0]!.statement).toContain('Class Test 1')
+    await clearC()
+  })
+})
+
+// The marked stage adds this year's answers on top of the long history. Amina's fractions then have two newer terms with data
+// (the Term 3 paper at 63% and Class Test 1 at 67%), so her struggle ended two terms ago and is not a candidate. That depends on
+// the date: the Term 3 paper is dated 25 Sept 2026 and Class Test 1 on the day the sandbox is made.
+const inQ4Of2026 = new Date().getUTCFullYear() === 2026 && new Date().getUTCMonth() >= 9
+describe.skipIf(!inQ4Of2026)('the marked stage', () => {
+  let m: Demo
+  beforeAll(async () => {
+    const s = await createDemo(db, { stage: 'marked' })
+    const kids = (await db.from('children').select('id, first_name').eq('school_id', s.schoolId)).data!
+    m = { sandboxId: s.sandboxId, schoolId: s.schoolId, classId: s.classId, kids: Object.fromEntries(kids.map((k) => [k.first_name, k.id])), teacherId: '' }
+  })
+  afterAll(async () => {
+    if (m) await deleteSandbox(db, m.sandboxId).catch(() => undefined)
+  })
+
+  test("Amina's fractions struggle ended two terms ago, so only her shapes strength is found; the others are as in the start stage", async () => {
+    const amina = await history(m, 'Amina')
+    const fractions = amina.families.find((f) => f.family === 'fractions')!.bySlot
+    expect(fractions.slice(-4).map((t) => [t.year, t.term, t.percent < 50])).toEqual([[2026, 1, true], [2026, 2, true], [2026, 3, false], [2026, 4, false]])
+    expect(amina.candidates.map((x) => x.key)).toEqual(['strength:shapes'])
+    expect((await history(m, 'Thabo')).candidates.map((x) => x.key)).toEqual(['strength:data'])
+    expect((await history(m, 'Lerato')).candidates.map((x) => x.key)).toEqual(['strength:whole_numbers'])
+    expect((await history(m, 'Sipho')).candidates).toEqual([])
+    expect((await history(m, 'Naledi')).candidates.map((x) => x.key)).toEqual(['struggle:measurement'])
   })
 })
 
