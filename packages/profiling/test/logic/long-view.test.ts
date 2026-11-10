@@ -291,9 +291,10 @@ describe('missing terms', () => {
     const [c] = only([quiz(2025, 1, 90), quiz(2025, 4, 85), quiz(2026, 1, 95)])
     expect(c!.kind).toBe('strength')
     expect(c!.terms.map((t) => [t.year, t.term])).toEqual([[2025, 1], [2025, 4], [2026, 1]])
+    // The grade of a missing term comes from the term before it.
     expect(c!.missingTerms).toEqual([
-      { year: 2025, term: 2 },
-      { year: 2025, term: 3 },
+      { grade: 5, year: 2025, term: 2 },
+      { grade: 5, year: 2025, term: 3 },
     ])
   })
 
@@ -301,7 +302,7 @@ describe('missing terms', () => {
     const thin = rec({ year: 2025, term: 2, family: 'fractions', marks: 2, outOf: 2 })
     const [c] = only([quiz(2025, 1, 20), thin, quiz(2025, 3, 30), quiz(2025, 4, 10)])
     expect(c!.terms).toHaveLength(3)
-    expect(c!.missingTerms).toEqual([{ year: 2025, term: 2 }])
+    expect(c!.missingTerms).toEqual([{ grade: 5, year: 2025, term: 2 }])
   })
 
   test('a run with no gap lists none', () => {
@@ -329,8 +330,18 @@ describe('missing terms', () => {
       { grade: 6, year: 2026, term: 1 },
     ])
     expect(missingSlots(slots)).toEqual([
+      { grade: 5, year: 2025, term: 2 },
+      { grade: 5, year: 2025, term: 3 },
+    ])
+    // Without grades, a missing term has none.
+    expect(missingSlots(slots.map(({ year, term }) => ({ year, term })))).toEqual([
       { year: 2025, term: 2 },
       { year: 2025, term: 3 },
+    ])
+    // A missing term in a later year moves the grade on by the years in between.
+    expect(missingSlots([{ grade: 5, year: 2025, term: 4 }, { grade: 6, year: 2026, term: 3 }])).toEqual([
+      { grade: 6, year: 2026, term: 1 },
+      { grade: 6, year: 2026, term: 2 },
     ])
     expect(missingSlots([])).toEqual([])
     expect(missingSlots(slots.slice(0, 1))).toEqual([])
@@ -371,7 +382,7 @@ describe('evidence', () => {
     const [cand] = only([quiz(2026, 1, 20), quiz(2026, 2, 30)], results)
     expect(cand!.terms.map((t) => [t.year, t.term])).toEqual([[2026, 1], [2026, 2], [2026, 4]])
     expect(cand!.evidence.slice(0, 3).map((e) => e.kind)).toEqual(['result', 'result', 'result'])
-    expect(cand!.missingTerms).toEqual([{ year: 2026, term: 3 }])
+    expect(cand!.missingTerms).toEqual([{ grade: 5, year: 2026, term: 3 }])
   })
 })
 

@@ -11,6 +11,9 @@ export type LongViewStatus = z.infer<typeof LongViewStatusSchema>
 /** A calendar term: Jan to Mar is 1, Apr to Jun 2, Jul to Sep 3, Oct to Dec 4. */
 export const SlotRefSchema = z.object({ year: z.number().int(), term: z.number().int().min(1).max(4) })
 
+/** A term with nothing in it. The grade is worked out from the terms around it. */
+export const MissingTermSchema = SlotRefSchema.extend({ grade: z.number().int().optional() })
+
 /** A term of one family that a pattern rests on. `points` is how many marks or answers stand behind `percent`. */
 export const LongViewTermSchema = z.object({
   grade: z.number().int(),
@@ -45,7 +48,7 @@ export const PatternCandidateSchema = z.object({
   /** How many more sources there were than the 12 listed. Only present when the list was cut. */
   more: z.number().int().optional(),
   /** Terms inside the span with no data for this family. They were skipped, never guessed. */
-  missingTerms: z.array(SlotRefSchema),
+  missingTerms: z.array(MissingTermSchema),
 })
 export type PatternCandidate = z.infer<typeof PatternCandidateSchema>
 
@@ -76,7 +79,7 @@ export const LearnerHistorySchema = z.object({
     z.object({ grade: z.number().int(), year: z.number().int(), term: z.number().int(), present: z.number(), total: z.number(), percent: z.number() }),
   ),
   /** Terms between the first and the last one with records that have nothing at all. */
-  missingTerms: z.array(SlotRefSchema),
+  missingTerms: z.array(MissingTermSchema),
   /** Marked pieces left out because the marks could not be read clearly. */
   notCounted: z.array(z.object({ id: z.string(), label: z.string() })),
   /** Pieces written into the records more than 60 days after they happened. They still count. */

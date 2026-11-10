@@ -9,6 +9,7 @@ export const EventSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('observation.added'), childId: z.string() }),
   z.object({ type: z.literal('activity.added'), childId: z.string() }),
   z.object({ type: z.literal('homework.snapped'), paperId: z.string() }),
+  z.object({ type: z.literal('long_view.requested'), childId: z.string() }),
 ])
 export type JemmaEvent = z.infer<typeof EventSchema>
 export type EventType = JemmaEvent['type']

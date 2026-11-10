@@ -207,15 +207,21 @@ export function historySlots(records: LongViewRecord[], results: LongViewResult[
   return [...grades.values()].sort(compareSlots)
 }
 
-/** Terms between the first and the last of `slots` that are not in it. Nothing is said about terms before the first or after the last. */
-export function missingSlots(slots: SlotRef[]): SlotRef[] {
+/**
+ * Terms between the first and the last of `slots` that are not in it. Nothing is said about terms before the first or after the last.
+ * When the slots carry a grade, a missing term gets one too: the grade of the term before it, moved on by the years in between.
+ */
+export function missingSlots(slots: (SlotRef & { grade?: number })[]): (SlotRef & { grade?: number })[] {
   if (slots.length < 2) return []
   const sorted = [...slots].sort(compareSlots)
-  const have = new Set(sorted.map(slotKey))
+  const have = new Map(sorted.map((x) => [slotKey(x), x]))
   const last = sorted[sorted.length - 1]!
-  const out: SlotRef[] = []
-  for (let s = nextSlot(sorted[0]!); compareSlots(s, last) < 0; s = nextSlot(s)) {
-    if (!have.has(slotKey(s))) out.push(s)
+  const out: (SlotRef & { grade?: number })[] = []
+  let before = sorted[0]!
+  for (let s = nextSlot(before); compareSlots(s, last) < 0; s = nextSlot(s)) {
+    const known = have.get(slotKey(s))
+    if (known) before = known
+    else out.push(before.grade === undefined ? { year: s.year, term: s.term } : { grade: before.grade + (s.year - before.year), year: s.year, term: s.term })
   }
   return out
 }
