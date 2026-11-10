@@ -92,7 +92,8 @@ export function whoRan(row: Pick<ToolCallRow, 'via' | 'engine' | 'model'>): stri
   return 'Jemma cloud'
 }
 
-const APPROVAL_WORDS: Record<string, Partial<Record<string, string>>> = {
+/** What a person did, as the end of the sentence. A function gets the note kept with the decision (`share_results` keeps the test title). */
+const APPROVAL_WORDS: Record<string, Partial<Record<string, string | ((note: string | null) => string)>>> = {
   topic_map: { approved: 'approved the topic map' },
   answer_key: { approved: 'approved the answer key' },
   mark: { edited: 'changed an answer on a paper' },
@@ -103,11 +104,13 @@ const APPROVAL_WORDS: Record<string, Partial<Record<string, string>>> = {
   homework_scan: { confirmed: 'confirmed a homework scan' },
   long_view_pattern: { approved: 'said a Long view pattern looks right', declined: 'set a Long view pattern aside' },
   long_view_talk: { confirmed: 'talked to a parent about a Long view pattern' },
+  share_results: { shared: (note) => `shared the results of ${note?.trim() || 'a test'} with parents` },
 }
 
 /** "Ms Banda approved the topic map". */
-export function approvalText(row: Pick<ApprovalRow, 'kind' | 'decision' | 'decided_by_name'>): string {
-  const words = APPROVAL_WORDS[row.kind]?.[row.decision] ?? `${row.decision} ${row.kind}`
+export function approvalText(row: Pick<ApprovalRow, 'kind' | 'decision' | 'decided_by_name'> & { note?: string | null }): string {
+  const found = APPROVAL_WORDS[row.kind]?.[row.decision]
+  const words = typeof found === 'function' ? found(row.note ?? null) : (found ?? `${row.decision} ${row.kind}`)
   return `${row.decided_by_name} ${words}`
 }
 
