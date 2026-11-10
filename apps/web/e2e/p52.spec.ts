@@ -21,7 +21,9 @@ async function proof(page: Page, name: string, fullPage = true) {
   mkdirSync(proofDir, { recursive: true })
   const width = page.viewportSize()!.width >= 1024 ? 1440 : 390
   await page.evaluate(() => document.fonts.ready)
-  await page.addStyleTag({ content: 'nextjs-portal{display:none} *{transition:none !important;animation:none !important}' })
+  // The bottom bar sticks to the window: in a whole-page picture it would float in the middle, so it goes to the end of the page.
+  const bar = fullPage ? 'nav.sticky.bottom-0{position:static !important}' : ''
+  await page.addStyleTag({ content: `nextjs-portal{display:none} *{transition:none !important;animation:none !important} ${bar}` })
   await page.screenshot({ path: resolve(proofDir, `${name}-${width}.png`), fullPage })
 }
 
@@ -71,7 +73,7 @@ async function logins(sandboxId: string) {
   return { schoolId: row.data!.school_id, logins: row.data!.logins as Logins }
 }
 
-const longViewEvents = async (childId: string, status?: string) => {
+const longViewEvents = async (childId: string, status?: 'queued' | 'running' | 'done' | 'failed') => {
   let q = admin().from('events').select('id, status, created_at').eq('type', 'long_view.requested').eq('payload->>childId', childId).order('created_at')
   if (status) q = q.eq('status', status)
   return (await q).data ?? []

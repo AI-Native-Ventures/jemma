@@ -302,6 +302,32 @@ describe('the patterns', () => {
     expect(orphan).toMatchObject({ kind: 'result', href: null })
   })
 
+  it('lists the marked answers of one paper in question order: Q2 before Q10', () => {
+    const answer = (n: number) => ({ id: `res-${n}`, correct: false, family: 'fractions', isoDate: '2026-11-03', label: `Class Test 1, question ${n}`, grade: 6, paperId: 'paper-9', n })
+    const v = buildLongView(
+      input({
+        records: [record({ id: 'rec-a' })],
+        results: [answer(1), answer(2), answer(10)],
+        patterns: [
+          pattern({
+            evidence: [
+              { kind: 'result', id: 'res-1', label: 'Class Test 1, question 1' },
+              { kind: 'result', id: 'res-10', label: 'Class Test 1, question 10' },
+              { kind: 'result', id: 'res-2', label: 'Class Test 1, question 2' },
+              { kind: 'record', id: 'rec-a', label: 'Quiz: Adding fractions, Mrs Naidoo, 12 Aug 2025' },
+            ],
+          }),
+        ],
+      }),
+    )
+    expect(v.groups.drafts[0]!.evidence.map((e) => e.label)).toEqual([
+      'Class Test 1 · Q1',
+      'Class Test 1 · Q2',
+      'Class Test 1 · Q10',
+      'Quiz: Adding fractions, Mrs Naidoo, 12 Aug 2025',
+    ])
+  })
+
   it('states the decision in plain words', () => {
     const v = buildLongView(
       input({

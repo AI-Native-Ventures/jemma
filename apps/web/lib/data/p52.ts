@@ -238,7 +238,26 @@ function sheetOfRecord(r: LongViewRecord): LvSheet {
 /** `Class Test 1, question 4` is shown as `Class Test 1 · Q4`. */
 const answerLabel = (label: string) => label.replace(/, question (\d+)$/, ' · Q$1')
 
-const byKindThenFamily = (a: LvPattern, b: LvPattern) => (a.kind === b.kind ? 0 : a.kind === 'struggle' ? -1 : 1) || a.family.localeCompare(b.family)
+/** Each run of marked answers is put in question order (Q2 before Q10). Records and notes keep the order they were stored in. */
+function inQuestionOrder(chips: LvEvidence[]): LvEvidence[] {
+  const out: LvEvidence[] = []
+  let run: LvEvidence[] = []
+  const flush = () => {
+    out.push(...run.sort((a, b) => a.label.localeCompare(b.label, 'en', { numeric: true })))
+    run = []
+  }
+  for (const chip of chips) {
+    if (chip.kind === 'result') run.push(chip)
+    else {
+      flush()
+      out.push(chip)
+    }
+  }
+  flush()
+  return out
+}
+
+const byKindThenFamily =(a: LvPattern, b: LvPattern) => (a.kind === b.kind ? 0 : a.kind === 'struggle' ? -1 : 1) || a.family.localeCompare(b.family)
 
 function updateOf(events: LongViewInput['events'], patterns: PatternRow[], now: Date): LvUpdate {
   const sorted = [...events].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
@@ -341,7 +360,7 @@ export function buildLongView(input: LongViewInput): LongView {
       runTerms: run.length,
       pill: pillText(kind, run.length, since.length > 0),
       since: since.length ? `Since then: ${since.map((t) => `Grade ${t.grade} Term ${t.term}, ${Math.round(t.percent)} percent`).join(' · ')}` : null,
-      evidence: (evidence.success ? evidence.data : []).map(chipOf),
+      evidence: inQuestionOrder((evidence.success ? evidence.data : []).map(chipOf)),
       status: p.status as LongViewStatus,
       active: p.active,
       noLongerShows: !p.active,
