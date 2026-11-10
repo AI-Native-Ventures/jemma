@@ -47,7 +47,7 @@ jobs:
           set -a
           . ./.env.local
           set +a
-          "$HOME/.claude/coord-work/heavy-run.sh" pnpm test
+          pnpm test
 
       - name: Install the browser
         timeout-minutes: 10

@@ -150,6 +150,9 @@ describe('the GitHub workflow', () => {
     expect(ci).toContain('pnpm test')
     expect(ci).toContain('demo-path --project=phone --workers=1')
     expect(ci).toContain('.jemma/logs/')
+    // Nothing from a worker's own machine belongs in a workflow that runs on GitHub.
+    expect(ci).not.toContain('.claude')
+    expect(ci).not.toContain('heavy-run')
   })
 })
 
