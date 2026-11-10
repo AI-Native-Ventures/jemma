@@ -16,7 +16,7 @@ You need:
 - The database values in `.env.local` (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `EVENTS_SECRET`). Only the local stack or the team's dev project are accepted (`packages/profiling/scripts/env.ts`).
 - Nothing running on port 8756. The command starts its own agent worker there and stops it at the end.
 
-One full run is about 33 runs of 10 to 25 seconds of setup plus the model time: expect about an hour with a free model that is not busy. If the model is down, wait and run it again. Results that already exist for a run id are skipped, so an interrupted run continues where it stopped (`--force` redoes them).
+A full pass is 33 runs of 15 to 60 seconds of setup plus the model time. The saved pass added up to about 84 minutes of run time on a good line (a slow database line adds minutes to every run): expect one and a half to two hours with a free model that is not busy. If the model is down, wait and run it again. Results that already exist for a run id are skipped, so an interrupted run continues where it stopped (`--force` redoes them).
 
 Options: `--task a,b` (some tasks), `--runs N`, `--run-id NAME` (the folder in `evals/results`), `--cap N` (live goose runs allowed in all, default 45), `--rehearse MODE` (see below), `--reuse-worker`, `--no-report`, `--no-line-wait`, `--timeout-minutes N`.
 
