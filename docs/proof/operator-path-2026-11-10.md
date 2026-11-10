@@ -4,12 +4,13 @@ Packet P54: the owner's Mac does the AI work for the hosted app, with Claude Cod
 
 ## Result in plain words
 
-- The operator runner works. Model steps were missed in the cloud, handed to the laptop, run by the real `claude` CLI and saved through the Jemma MCP server. 19 of 25 agent runs finished as done.
+- The operator runner works. Model steps were missed in the cloud, handed to the laptop, run by the real `claude` CLI and saved through the Jemma MCP server. 22 of 28 agent runs finished as done.
 - Rules after the coordinator's correction (all unit tested; the tag rule and the `draft_map` rule are also shown live, the desktop-school rule only by tests): the operator only takes events the cloud handed to it, **never the events of a school that runs on a desktop**; a routing tag (`AI_ROUTE_TAG` on the agent, `OPERATOR_TAG` on the operator) keeps stacks on one database apart; `draft_map` is **never** handed to the laptop and runs on the cloud model.
-- Job kinds proven through real Claude: `read_key`, `read_paper` (vision through MCP images), `class_report`, `write_lesson` (twice: after a paper, and after a session), `guidance`. `diagnose` was proven only with a local, uncommitted patch (blocker 2 below). The two plain-code steps (`plan_next_session`, `update_learner_profile`) ran inside the operator with no agent. `draft_map` was not run through Claude, by decision.
-- The whole demo path was **not** run through Claude in one go. The agent-run budget (30) had 25 runs used by the time the rules were final, and the full path needs about 29. Two blockers also stand: the curriculum PDF (now handled by the `draft_map` rule) and the result ids (blocker 2, not fixed in the branch).
+- Job kinds proven through real Claude, each in its own run: `read_key`, `read_paper` (vision through MCP images), `diagnose`, `class_report`, `write_lesson` (after a paper and after `session.finished`), `guidance` (after a teacher note, after a parent activity). The two plain-code steps (`plan_next_session`, `update_learner_profile`) ran inside the operator with no agent. `draft_map` was not run through Claude, by decision.
+- Two limits, stated plainly. **Curriculum PDFs are read by the cloud model**: `draft_map` is never handed to the laptop, because Claude Code cannot read a PDF that comes back through MCP; every other AI job can run on the laptop. **The whole demo path was proven in pieces, not in one run**: the budget of 30 agent runs does not cover a full run (about 29 are needed), so one full run, with the ready `SEED_MAP=1` switch, is left for the deployed preview.
+- Fixes made on the way, all tested: the operator never takes the events of a desktop school (final rule), `complete_job` no longer settles an event a desktop runner is running, and `get_class_results` now returns each result's id (`resultId`).
 - Proof B (rescue) and proof C (recorded answers, no handoff) passed, and the acceptance run (AI_ROUTE unset, replay, phone) passed on its second try.
-- Agent runs used: 25 of the 30 allowed (3 of them by mistake, on another worker's events). Time spent in agent runs: 12.4 minutes.
+- Agent runs used: 28 of the 30 allowed in the table below, 3 of them by mistake on another worker's events. (The coordinator's own count is one higher, 29; either way the cap held.) Time spent in agent runs: 14.7 minutes.
 
 ## Setup
 
@@ -20,14 +21,15 @@ Packet P54: the owner's Mac does the AI work for the hosted app, with Claude Cod
 | Database | jemma-dev only. Migration 0017 applied with psql only (no `supabase` command was ever run). The functions were replaced several times as the rules changed; the migration file is the final form and the live database matches it. |
 | Agent worker | local `wrangler dev` on 8754 with `AI_ROUTE=operator`, `AI_ROUTE_TAG=p54-proof`, `LLM_MODEL` and `VISION_MODEL` set to `nvidia/nemotron-3.5-lightning:free` (no recordings), both fallback lists set to the same id (so none), `AI_MODE=replay` and `TTS_PROVIDER=none`. Replay mode means that even with no operator online the worker could not have called a free model. No Workers AI speech was used. |
 | Web app | local dev server on 3254, phone project, headless, `--workers=1`, `SLOW_AI=1` for the long runs. |
-| Operator | `pnpm operator` from this worktree with `OPERATOR_TAG=p54-proof` (runs R5 and the routing proof; R1 to R4 ran before tags existed), `OPERATOR_MAX_JOBS` as the cap and `OPERATOR_TRACE` for the tool call lists. The script removes the Supabase keys and every provider key from the environment before Claude starts. |
+| Operator | `pnpm operator` from this worktree with `OPERATOR_TAG=p54-proof` (runs R5 and R6 and the routing proof; R1 to R4 ran before tags existed), `OPERATOR_MAX_JOBS` as the cap and `OPERATOR_TRACE` for the tool call lists. The script removes the Supabase keys and every provider key from the environment before Claude starts. |
 
 ## A: every agent run, in order
 
 - **R1** is the packet's own run of `demo-path.spec.ts` (`SLOW_AI=1`). It stopped at step 1.
 - **R2 and R3** use a temporary copy of the spec (not committed) with one change: after "Use the sample curriculum" the `curriculum.uploaded` event is cancelled and the draft map is stored from the seed fixture, because Claude cannot read the PDF. R2 was before the keep-running fix, R3 after it. Both ran with the earlier handoff-only flag, which is now gone.
-- **R4** is `packages/runner/scripts/proof-tail.ts`: one `paper.checked` event on a `marked` sandbox, run with a local, uncommitted patch that adds `resultId` to `get_class_results`. Its first line (diagnose, 29 s) is a first go whose script ended too early (it took the `complete_job` done for the end); the second go is the other five lines. The tail stopped at the event's postconditions: the seeded `marked` sandbox has open gaps for three other learners with no planned session, and a `paper.checked` plan only plans the checked learner. That is the seed, not the operator.
+- **R4** is `packages/runner/scripts/proof-tail.ts`: one `paper.checked` event on a `marked` sandbox, run with the result-id change as a local, uncommitted patch (it is committed now). Its first line (diagnose, 29 s) is a first go whose script ended too early (it took the `complete_job` done for the end); the second go is the other five lines. The tail stopped at the event's postconditions: the seeded `marked` sandbox has open gaps for three other learners with no planned session, and a `paper.checked` plan only plans the checked learner. That is the seed, not the operator.
 - **R5** is the live routing proof after the correction (tag `p54-proof`): `proof-route.ts` (guidance) and `proof-session.ts` (the `session.finished` plan).
+- **R6** is the final code (develop merged, `complete_job` fix, result ids): `proof-session.ts` again and `proof-guidance.ts` (guidance after a real teacher note and after a real parent activity), tag `p54-proof`, operator cap 3.
 
 | Run | Event type | Job | Seconds | Outcome | Tool calls in order | Note |
 | --- | --- | --- | ---: | --- | --- | --- |
@@ -59,8 +61,13 @@ Packet P54: the owner's Mac does the AI work for the hosted app, with Claude Cod
 | R5 | session.finished | update_learner_profile | 2 | done | none (ran in the operator, no agent) |  |
 | R5 | session.finished | plan_next_session | 1 | done | none (ran in the operator, no agent) |  |
 | R5 | session.finished | write_lesson | 83 | done | get_job > get_child_context > save_lesson > complete_job |  |
+| R6 | session.finished | update_learner_profile | 2 | done | none (ran in the operator, no agent) |  |
+| R6 | session.finished | plan_next_session | 1 | done | none (ran in the operator, no agent) |  |
+| R6 | session.finished | write_lesson | 77 | done | get_job > get_child_context > save_lesson > complete_job |  |
+| R6 | observation.added | guidance | 26 | done | get_learner_profile > subject_guidance > complete_job |  |
+| R6 | activity.added | guidance | 36 | done | get_learner_profile > subject_guidance > complete_job |  |
 
-Totals: 25 agent runs (19 done, 6 failed) and 3 plain-code steps run inside the operator with no agent. Agent time 745 seconds. Typical times: memo 31 s, each paper 24 s, diagnose 30 to 40 s, class report 34 s, lesson 83 to 97 s, guidance 23 s.
+Totals: 28 agent runs (22 done, 6 failed) and 5 plain-code steps run inside the operator with no agent. Agent time 885 seconds. Typical times: memo 31 s, each paper 24 s, diagnose 30 to 40 s, class report 34 s, lesson 77 to 97 s, guidance 23 to 36 s.
 
 Vision through MCP image content worked: all ten paper reads and both memo reads saved their results (`get_paper` or `get_memo`, then `mark_paper` or `save_answer_key`, then `complete_job`).
 
@@ -95,42 +102,38 @@ activity_log lines: ["update_learner_profile: Amina finished the lesson: 3 of 5.
 
 The two plain-code steps ran in the operator (2.1 s and 0.8 s) and `write_lesson` was one agent run (83 s, `get_job`, `get_child_context`, `save_lesson`, `complete_job`). Known quirk: a hand-off in the middle of a plan restarts the plan in the operator, so a plain-code step the cloud already ran runs again and "What Jemma did" gets its line twice (seen above for `update_learner_profile`). The steps are safe to repeat.
 
+## Final code on the live stack (R6)
+
+After the merge of develop and the `complete_job` and result-id fixes, same stack and tag:
+
+```
+planned sessions before / questions in the planned lesson before: [3,null]
+POST /events: 202
+event (SELECT): {"status":"done","runner":"desktop","error":null,"payload":{"type":"session.finished","route":"operator","route_tag":"p54-proof","sessionId":"ee972251-0933-4c49-9255-c47e67c0c9b2"}}
+planned sessions after / questions in the planned lesson after: [3,null]
+activity_log lines: ["update_learner_profile: Amina finished the lesson: 3 of 5. Kept Amina at Practising","update_learner_profile: Amina finished the lesson: 3 of 5. Kept Amina at Practising","save_lesson: Built tonight's 12-minute lesson on adding decimals, as a spoken lesson"]
+```
+
+```
+teacher note: POST /events: 202
+teacher note: event (SELECT): {"status":"done","runner":"desktop","claimed_by":null,"error":null,"payload":{"type":"observation.added","route":"operator","childId":"75f91d72-6482-4d4f-b268-f9b5b50bc43c","route_tag":"p54-proof"}}
+teacher note: guidance card updated_at before / after: ["2026-11-10T11:18:36.406477+00:00","2026-11-10T11:19:05.203+00:00"]
+teacher note: activity_log lines: ["subject_guidance: Used your note on Amina in her guidance card"]
+parent activity: POST /events: 202
+parent activity: event (SELECT): {"status":"done","runner":"desktop","claimed_by":null,"error":null,"payload":{"type":"activity.added","route":"operator","childId":"75f91d72-6482-4d4f-b268-f9b5b50bc43c","route_tag":"p54-proof"}}
+parent activity: guidance card updated_at before / after: ["2026-11-10T11:19:05.203+00:00","2026-11-10T11:19:48.25+00:00"]
+parent activity: activity_log lines: ["subject_guidance: Used your note on Amina in her guidance card"]
+```
+
+`write_lesson` after `session.finished` took 77 s, guidance after a real teacher note 27 s and after a real parent activity 36 s. Each event ended `done`, `runner = desktop`, `claimed_by` empty, with the tag on its payload, the guidance card's `updated_at` moved each time, and no one-time token or presence row was left. The event stayed running through the agent's own `complete_job` call and was settled by the operator at the end (no put-back needed any more).
+
 ## What failed and what I changed
 
 1. **My mistake: foreign events (R1, three runs).** The first design let an operator also serve events of desktop schools whose owner had no Desktop heartbeat. On the shared jemma-dev database my first live run claimed three `observation.added` events from another worker's test sandbox (events `0380e68f`, `8b6c0c17`, `729a0b3d`; schools `345359b5`, `ef7cf63d`, `61275bab`) and ran Claude on them. Their schools were deleted while the jobs ran, so the jobs failed. Those 3 runs count against the cap. Fix, as the coordinator ordered: that rule is gone. `claim_operator_event(runner, tag_in)` takes only events with `payload.route = 'operator'` and the operator's `route_tag`, and skips any school with `ai_runner = 'desktop'`. Between the first fix idea (an opt-in flag, used for R2 to R4) and the final rule no other foreign events were touched. A forgotten read-only snapshot poller of mine ran against jemma-dev until I found and stopped it; it only read.
-2. **`complete_job` marked the event done after every step (found in R2).** The MCP tool `complete_job` sets the event to done, so a plan with more steps looked finished. The spec's idle wait fired early and the one-event-per-school rule was open for a moment. Fix in `startOperator`: the event is put back to running within half a second and settled for good by `finish_operator_event`. Test: "complete_job marking the event done between steps is undone while the plan goes on".
+2. **`complete_job` marked the event done after every step (found in R2).** The MCP tool `complete_job` set the event to done, so a plan with more steps looked finished: the spec's idle wait fired early and the one-event-per-school rule was open for a moment. First fix: the operator put the event back to running within half a second. Final fix, as the coordinator ordered: `complete_job` does not change `events.status` when the event's `runner` is `desktop` (the runner settles the event with `finish_event` or `finish_operator_event` after the whole plan); cloud events behave as before. The put-back is gone. Tests: the tool leaves a desktop event alone (`read-tools.test.ts`), and an operator run with the real tool keeps the event running between steps and settles it at the end.
 3. **Acceptance run, first try.** It failed at step 8: after "Save note" the 5 second default wait for the note ended while the button still said "Working" (a slow dev server, nothing to do with the AI path). The second try passed. I did not change the spec for it.
 4. **Blocker 1, the curriculum PDF.** `get_curriculum_doc` returns the PDF as an MCP embedded resource and Claude Code treats it as an opaque binary (the runner uses `--tools ""`). Decision by the coordinator: not fixed. `draft_map` is never handed to the operator (`NO_HANDOFF_JOBS`, unit tested and shown live above). Known limit, also in the runbook: curriculum PDFs are read by the cloud model; every other AI job can run on the laptop.
-5. **Blocker 2, result ids, not fixed (needs a decision).** `diagnose` cannot finish through Claude: `update_learner_profile` needs a `resultId` per wrong answer and `get_class_results` leaves out `question_results.id`. The suggested fix, tested in R4 and not committed (it is outside this packet's files):
-
-```diff
-@@ -2,6 +2,7 @@ import { z } from 'zod'
- import { assertInSchool, defineTool } from '../context'
- 
- const ResultSchema = z.object({
-+  resultId: z.string(),
-   n: z.number(),
-   prompt: z.string(),
-   answerRead: z.string(),
-@@ -32,7 +33,7 @@ export const getClassResults = defineTool({
-     if (marked.length === 0) return { testId, outOf: test.data.out_of, learners: [] }
-     const [kids, results] = await Promise.all([
-       db.from('children').select('id, first_name').in('id', marked.map((p) => p.child_id!)),
--      db.from('question_results').select('paper_id, n, prompt, answer_read, read_confidence, correct, mark, topic_name, misconception').in('paper_id', marked.map((p) => p.id)).order('n'),
-+      db.from('question_results').select('id, paper_id, n, prompt, answer_read, read_confidence, correct, mark, topic_name, misconception').in('paper_id', marked.map((p) => p.id)).order('n'),
-     ])
-     if (kids.error) throw new Error(kids.error.message)
-     if (results.error) throw new Error(results.error.message)
-@@ -46,7 +47,7 @@ export const getClassResults = defineTool({
-           firstName: kids.data.find((k) => k.id === p.child_id)?.first_name ?? '',
-           paperId: p.id,
-           total: p.total ?? rows.reduce((sum, r) => sum + r.mark, 0),
--          results: rows.map((r) => ({ n: r.n, prompt: r.prompt, answerRead: r.answer_read, confidence: r.read_confidence, correct: r.correct, mark: r.mark, topicName: r.topic_name, misconception: r.misconception })),
-+          results: rows.map((r) => ({ resultId: r.id, n: r.n, prompt: r.prompt, answerRead: r.answer_read, confidence: r.read_confidence, correct: r.correct, mark: r.mark, topicName: r.topic_name, misconception: r.misconception })),
-         }
-       }),
-     }
-```
+5. **Blocker 2, result ids (fixed, authorised by the coordinator).** `diagnose` could not finish through Claude: `update_learner_profile` needs a `resultId` per wrong answer and `get_class_results` left out `question_results.id`. The tool now returns `resultId` for each result (test: every id is a real `question_results` row). Condition kept: the recorded cloud answers stay valid. No cloud job reads this tool (`diagnose` loads its inputs in code, `class_report` computes the gaps in code), so no prompt changed, and the proof is the demo path in replay with `AI_ROUTE` unset after the change: it passed (7.1 minutes) with zero replay misses in the agent log. The patch was first tested live in R4.
 
 ## B: the rescue
 
@@ -157,6 +160,8 @@ Run before the tag existed, with the same routing code path: agent restarted wit
 ## Acceptance
 
 - `AI_ROUTE` unset, `demo-path.spec.ts`, phone, replay: failed once on the slow note save (item 3 above), then passed in 6.5 minutes.
+- After the result-id and `complete_job` changes, with develop merged: `demo-path.spec.ts`, phone, replay, `AI_ROUTE` unset: passed in 7.1 minutes, 11 events processed by the agent, zero `Replay miss` lines in its log.
+- Step 8 now gives the assertion after "Save note" a 30 second timeout (it failed once locally and on the deployed preview at the default 5 seconds); nothing else in that step changed.
 - `SEED_MAP=1` (new switch, starts at step 2 with the seed's own approved map and topics; every step 1 assertion still runs), replay, no operator: reached step 2, so the seeded approved map and topics were accepted and every step 1 assertion held, but the run did not finish: on the memo page two answers needed a check ("Check question 8 first") and the spec's approve step never became possible, so it timed out after 20 minutes. The recorded memo read was made against the map the free model drafted from the sample PDF, and the seed's map names topics differently (my inference, not checked further). So `SEED_MAP=1` is for runs where the model reads the memo live (the operator), not for replay with the existing recordings. It was not run with Claude: the agent-run budget is spent.
 - The wait switch `SLOW_AI=1` only lengthens `AGENT_WAIT` (60 minutes) and the test timeout (4 hours). No assertion changed.
 
@@ -165,7 +170,7 @@ Run before the tag existed, with the same routing code path: agent restarted wit
 1. Agent: `AI_ROUTE=operator`, `AI_ROUTE_TAG=<your tag>`, `AI_MODE=replay`, `TTS_PROVIDER=none`, `LLM_MODEL` and `VISION_MODEL` (and both fallback lists) set to `nvidia/nemotron-3.5-lightning:free` in `apps/agent/.dev.vars`, then `pnpm --filter agent exec wrangler dev --port 8754`.
 2. Operator: `OPERATOR_TAG=<your tag> ANTHROPIC_MODEL=claude-sonnet-5-5 AGENT_URL=http://localhost:8754 OPERATOR_MAX_JOBS=<cap> OPERATOR_TRACE=<file> pnpm operator`.
 3. Spec: `SEED_MAP=1 SLOW_AI=1 AI_MODE=replay PLAYWRIGHT_PORT=3254 AGENT_URL=http://localhost:8754 pnpm --filter web exec playwright test demo-path --project=phone --workers=1`.
-4. B: `AI_ROUTE_TAG=<tag> AGENT_URL=http://localhost:8754 pnpm --filter @jemma/runner exec tsx scripts/proof-rescue.ts` (no operator running). Routing proof: `scripts/proof-route.ts` and `scripts/proof-session.ts` the same way (operator running). R4: `scripts/proof-tail.ts` (needs the result-id patch).
+4. B: `AI_ROUTE_TAG=<tag> AGENT_URL=http://localhost:8754 pnpm --filter @jemma/runner exec tsx scripts/proof-rescue.ts` (no operator running). Routing proof: `scripts/proof-route.ts`, `scripts/proof-session.ts` and `scripts/proof-guidance.ts` the same way (operator running). R4: `scripts/proof-tail.ts`.
 
 ## NOT verified
 
@@ -174,7 +179,8 @@ Run before the tag existed, with the same routing code path: agent restarted wit
 - More than one judge at once. One sandbox school at a time was served live; two schools at once is covered only by the unit test with a fake agent.
 - Codex and goose as the operator's agent. Only Claude ran.
 - Laptop sleep with the lid closed. `caffeinate` was seen to start and to stop with the process; sleep was not tried.
-- **The whole demo path through Claude in one run.** Not run: the budget of 30 agent runs does not cover it (about 29 needed, 25 already used) and `diagnose` needs the result-id fix first. Seen through Claude in separate runs: memo, five papers, class report, lesson, guidance, the `session.finished` plan. Not run through Claude: `draft_map` (by decision), the whole Sipho fix as its own step (R4 covers the same plan for another learner), and `activity.added` guidance (same job as `observation.added`).
+- **The whole demo path through Claude in one run.** Not run: the budget of 30 agent runs does not cover it (about 29 needed). Seen through Claude in separate runs: memo, five papers, diagnose (with the result-id change, R4), class report, lesson after a paper and after a session, guidance after a note and after an activity. Not run through Claude: `draft_map` (by decision), and the Sipho fix as its own step (R4 covers the same plan for another learner). `SEED_MAP=1` with real Claude was not run; in replay it reached step 2 and then hung on a memo check, so it is for live runs only.
+- `diagnose` was not run again after the result-id change was committed (R4 ran the identical change as an uncommitted patch).
 - Which model Claude really used (only the environment variable was set).
 - That the lessons, guidance and diagnoses Claude saved are good. Only that they were saved and the event steps completed.
 - A second operator on the same database, and the operator on a different network from the agent.
