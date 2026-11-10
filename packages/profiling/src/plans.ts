@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { JemmaDb } from './db'
 import type { JemmaEvent } from './schemas/events'
-import { ok } from './tools/context'
+import { maybe, ok } from './tools/context'
 
 /** The AI jobs. Each has a prompt file `jobs/<job>.md` (see jobs/README.md). */
 export const AI_JOBS = ['draft_map', 'read_key', 'read_paper', 'diagnose', 'class_report', 'write_lesson', 'guidance', 'long_view'] as const
@@ -27,12 +27,14 @@ function perChildTail(childIds: string[]): JobStep[] {
  * board shows class gaps next to an open check: per child `diagnose` for marked papers, then `class_report`, then the
  * per child tail. With `onlyChild` (after the teacher checks one paper) only that learner is diagnosed and planned,
  * and the class report is redone. Returns [] while any paper is still being read, or for a failed paper.
+ * While the test is held (the teacher has not shared it with parents) the plan stops after the diagnoses and the class
+ * report: no session, lesson or guidance is made from a result the parent may not see yet. `test.shared` does those.
  */
 async function testTail(db: JemmaDb, paperId: string, onlyChild = false): Promise<JobStep[]> {
   const paper = await ok(db.from('papers').select('id, test_id, status, child_id').eq('id', paperId).single())
   if (!paper.test_id || paper.status === 'failed') return []
   const [test, papers] = await Promise.all([
-    ok(db.from('tests').select('class_id').eq('id', paper.test_id).single()),
+    ok(db.from('tests').select('class_id, held').eq('id', paper.test_id).single()),
     ok(db.from('papers').select('id, child_id, status').eq('test_id', paper.test_id)),
   ])
   // This paper may be read earlier in the same plan (paper.snapped): count it as marked.
@@ -46,8 +48,20 @@ async function testTail(db: JemmaDb, paperId: string, onlyChild = false): Promis
   return [
     ...childIds.map((childId) => ({ job: 'diagnose' as const, ids: { testId, childId } })),
     { job: 'class_report' as const, ids: { classId: test.class_id, testId } },
-    ...perChildTail(childIds),
+    ...(test.held ? [] : perChildTail(childIds)),
   ]
+}
+
+/** Learners with a marked paper in a test, once each, in paper order. */
+async function markedChildren(db: JemmaDb, testId: string): Promise<string[]> {
+  const papers = await ok(db.from('papers').select('child_id, status').eq('test_id', testId))
+  return [...new Set(papers.filter((p) => p.status === 'marked' && p.child_id).map((p) => p.child_id as string))]
+}
+
+/** True when the teacher has not shared the test with parents yet. A test that is not found counts as held: nothing is planned for it. */
+async function isHeld(db: JemmaDb, testId: string): Promise<boolean> {
+  const test = await maybe(db.from('tests').select('held').eq('id', testId).maybeSingle())
+  return test ? test.held : true
 }
 
 /**
@@ -88,6 +102,9 @@ export async function jobPlan(event: JemmaEvent, db: JemmaDb): Promise<JobStep[]
     }
     case 'long_view.requested':
       return [{ job: 'long_view', ids: { childId: event.childId } }]
+    case 'test.shared':
+      // The teacher shared the results: now each learner with a marked paper gets the next session, the lesson and the guidance.
+      return (await isHeld(db, event.testId)) ? [] : perChildTail(await markedChildren(db, event.testId))
   }
 }
 
@@ -96,9 +113,22 @@ const UNREAD = ['queued', 'reading']
 /**
  * What an event must have produced once its job plan is done. Empty means met.
  * A test's tail (reteach plan, a planned session per learner with an open gap) is due once no paper of the test is still being read; papers waiting in Needs you count as resolved.
+ * The planned sessions are only due once the test is shared with parents (`held` is false): `test.shared` asks for them for the learners with a marked paper.
  */
 export async function postconditions(event: JemmaEvent, db: JemmaDb): Promise<string[]> {
   const missing: string[] = []
+  /** Every learner in `childIds` with an open gap needs a planned session. */
+  const sessionsFor = async (childIds: string[]) => {
+    if (childIds.length === 0) return
+    const [gaps, sessions] = await Promise.all([
+      ok(db.from('gaps').select('child_id, stage').in('child_id', childIds)),
+      ok(db.from('sessions').select('child_id').eq('status', 'planned').in('child_id', childIds)),
+    ])
+    const planned = new Set(sessions.map((s) => s.child_id))
+    for (const childId of new Set(gaps.filter((g) => g.stage !== 'fixed').map((g) => g.child_id))) {
+      if (!planned.has(childId)) missing.push(`no planned session for child ${childId}`)
+    }
+  }
   const tail = async (paperId: string) => {
     const paper = await ok(db.from('papers').select('id, test_id, status').eq('id', paperId).single())
     if (paper.status === 'failed') return missing.push(`paper ${paperId} failed to read`)
@@ -110,16 +140,9 @@ export async function postconditions(event: JemmaEvent, db: JemmaDb): Promise<st
     if (papers.length === 0) return
     const reteach = await ok(db.from('reteach_plans').select('id').eq('test_id', paper.test_id).limit(1))
     if (reteach.length === 0) missing.push(`no reteach plan for test ${paper.test_id}`)
-    const childIds = [...new Set(papers.map((p) => p.child_id).filter((c): c is string => !!c))]
-    if (childIds.length === 0) return
-    const [gaps, sessions] = await Promise.all([
-      ok(db.from('gaps').select('child_id, stage').in('child_id', childIds)),
-      ok(db.from('sessions').select('child_id').eq('status', 'planned').in('child_id', childIds)),
-    ])
-    const planned = new Set(sessions.map((s) => s.child_id))
-    for (const childId of new Set(gaps.filter((g) => g.stage !== 'fixed').map((g) => g.child_id))) {
-      if (!planned.has(childId)) missing.push(`no planned session for child ${childId}`)
-    }
+    // Planned sessions are only due once the teacher has shared the test: until then `test.shared` owns them.
+    if (await isHeld(db, paper.test_id)) return
+    await sessionsFor([...new Set(papers.map((p) => p.child_id).filter((c): c is string => !!c))])
   }
   switch (event.type) {
     case 'curriculum.uploaded': {
@@ -150,6 +173,9 @@ export async function postconditions(event: JemmaEvent, db: JemmaDb): Promise<st
       if (next.length === 0 && gaps.some((g) => g.stage !== 'fixed')) missing.push(`no planned session for child ${session.child_id}`)
       break
     }
+    case 'test.shared':
+      if (!(await isHeld(db, event.testId))) await sessionsFor(await markedChildren(db, event.testId))
+      break
     case 'observation.added':
     case 'activity.added':
     case 'long_view.requested':

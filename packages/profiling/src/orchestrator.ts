@@ -197,10 +197,12 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
    */
   const takeTail = async (parsed: JemmaEvent): Promise<boolean> => {
     if (tailLock) return true
-    if (parsed.type !== 'paper.snapped' && parsed.type !== 'paper.checked') return true
-    const paper = await maybe(db.from('papers').select('test_id').eq('id', parsed.paperId).maybeSingle())
-    if (!paper?.test_id) return true
-    const key = `lock:tail:${paper.test_id}`
+    // `test.shared` holds the test id itself. A paper event finds it through its paper.
+    let testId: string | null | undefined
+    if (parsed.type === 'test.shared') testId = parsed.testId
+    else if (parsed.type === 'paper.snapped' || parsed.type === 'paper.checked') testId = (await maybe(db.from('papers').select('test_id').eq('id', parsed.paperId).maybeSingle()))?.test_id
+    if (!testId) return true
+    const key = `lock:tail:${testId}`
     for (let tries = 0; tries < 2; tries++) {
       const ins = await db.from('ai_replays').insert({ key, model: 'lock', response: { eventId } as never })
       if (!ins.error) {
