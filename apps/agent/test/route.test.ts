@@ -13,6 +13,7 @@ const base = { ...testEnv, AI_MODE: 'live', EVENTS_QUEUE: { send: vi.fn(async ()
 const db = createServiceClient({ SUPABASE_URL: base.SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY: base.SUPABASE_SERVICE_ROLE_KEY })
 // The sandbox join code is the last 12 characters of the tag: a random end keeps it apart from events.test.ts starting in the same millisecond.
 const tag = `rt${Date.now()}${Math.floor(Math.random() * 1e4)}`
+const TAG = `at-${tag}`
 const runners: string[] = []
 let cloud: Sandbox
 
@@ -26,17 +27,15 @@ async function newEvent(extra: Record<string, unknown> = {}, payload: Record<str
   return data.id
 }
 const row = async (id: string) => (await db.from('events').select('status, runner, payload, error').eq('id', id).single()).data!
-const operatorOnline = async () => {
+const operatorOnline = async (runnerTag = TAG) => {
   const runner = crypto.randomUUID()
   runners.push(runner)
-  const { error } = await db.from('operator_presence').insert({ runner_id: runner, agent: 'claude' })
+  const { error } = await db.from('operator_presence').insert({ runner_id: runner, agent: 'claude', tag: runnerTag })
   if (error) throw new Error(error.message)
 }
 
 beforeAll(async () => {
   cloud = await createSandbox(db, `${tag}c`)
-  // A desktop event that stays running keeps this school busy, so an operator claiming in the shared database never takes our events.
-  await db.from('events').insert({ school_id: cloud.schoolId, type: 'observation.added', payload: { type: 'observation.added', childId: cloud.aminaId }, runner: 'desktop', status: 'running' })
 })
 afterAll(async () => {
   if (runners.length) await db.from('operator_presence').delete().in('runner_id', runners)
@@ -60,14 +59,14 @@ test('with AI_ROUTE=operator and an operator online, a miss hands the event to t
     throw new ReplayMissError('c'.repeat(64), 'test: unrecorded')
   })
   const id = await newEvent()
-  await processEvent({ ...base, AI_ROUTE: 'operator' } as Env, id, { guidance: guidance as never })
+  await processEvent({ ...base, AI_ROUTE: 'operator', AI_ROUTE_TAG: TAG } as Env, id, { guidance: guidance as never })
   expect(modes).toEqual(['replay'])
   expect(await row(id)).toMatchObject({ status: 'queued', runner: 'desktop', error: null })
-  expect((await row(id)).payload).toMatchObject({ route: 'operator' })
+  expect((await row(id)).payload).toMatchObject({ route: 'operator', route_tag: TAG })
 
   // a queue redelivery of the same event must not take it back from the laptop
   const again = vi.fn(async () => {})
-  await processEvent({ ...base, AI_ROUTE: 'operator' } as Env, id, { guidance: again as never })
+  await processEvent({ ...base, AI_ROUTE: 'operator', AI_ROUTE_TAG: TAG } as Env, id, { guidance: again as never })
   expect(again).not.toHaveBeenCalled()
   expect(await row(id)).toMatchObject({ status: 'queued', runner: 'desktop' })
 })
@@ -77,7 +76,20 @@ test('an event sent back to the cloud (cloud_live) runs with the worker AI_MODE'
   const modes: unknown[] = []
   const guidance = vi.fn(async (ctx: { env: { AI_MODE?: string } }) => void modes.push(ctx.env.AI_MODE))
   const id = await newEvent({}, { route: 'cloud_live' })
-  await processEvent({ ...base, AI_ROUTE: 'operator' } as Env, id, { guidance: guidance as never })
+  await processEvent({ ...base, AI_ROUTE: 'operator', AI_ROUTE_TAG: TAG } as Env, id, { guidance: guidance as never })
   expect(modes).toEqual(['live'])
   expect((await row(id)).status).toBe('done')
+})
+
+test('an operator of another tag is not enough: the miss runs on the worker own model and nothing is handed off', async () => {
+  await operatorOnline(`other-${TAG}`)
+  const modes: unknown[] = []
+  const guidance = vi.fn(async (ctx: { env: { AI_MODE?: string } }) => {
+    modes.push(ctx.env.AI_MODE)
+    if (ctx.env.AI_MODE === 'replay') throw new ReplayMissError('d'.repeat(64), 'test: unrecorded')
+  })
+  const id = await newEvent()
+  await processEvent({ ...base, AI_ROUTE: 'operator', AI_ROUTE_TAG: `nobody-${TAG}` } as Env, id, { guidance: guidance as never })
+  expect(modes).toEqual(['replay', 'live'])
+  expect(await row(id)).toMatchObject({ status: 'done', runner: 'cloud' })
 })

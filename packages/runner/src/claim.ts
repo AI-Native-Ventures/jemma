@@ -22,18 +22,17 @@ export async function finishEvent(db: JemmaDb, eventId: string, status: 'done' |
 }
 
 /** Upserts the operator's presence row (server-side clock). Needs the service role. */
-export async function sendOperatorHeartbeat(db: JemmaDb, runnerId: string, agent: string, version: string | null): Promise<void> {
-  const { error } = await db.rpc('operator_heartbeat', { runner: runnerId, agent_in: agent, version_in: version as string })
+export async function sendOperatorHeartbeat(db: JemmaDb, runnerId: string, agent: string, version: string | null, tag = 'default'): Promise<void> {
+  const { error } = await db.rpc('operator_heartbeat', { runner: runnerId, agent_in: agent, version_in: version as string, tag_in: tag })
   if (error) throw new Error(`operator_heartbeat failed: ${error.message}`)
 }
 
 /**
- * Claims the oldest event an operator may run (handed off by the cloud, or of a desktop school whose owner's Desktop
- * is away), or null. One event per school at a time; two operators never get the same one. Needs the service role.
- * With `onlyHandoffs` the events of desktop schools are left alone (for a shared database).
+ * Claims the oldest event the cloud handed to an operator with this routing tag, or null. Events of desktop schools are
+ * never claimed. One event per school at a time; two operators never get the same one. Needs the service role.
  */
-export async function claimOperatorEvent(db: JemmaDb, runnerId: string, onlyHandoffs = false): Promise<ClaimedEvent | null> {
-  const { data, error } = await db.rpc('claim_operator_event', onlyHandoffs ? { runner: runnerId, only_handoffs: true } : { runner: runnerId })
+export async function claimOperatorEvent(db: JemmaDb, runnerId: string, tag = 'default'): Promise<ClaimedEvent | null> {
+  const { data, error } = await db.rpc('claim_operator_event', { runner: runnerId, tag_in: tag })
   if (error) throw new Error(`claim_operator_event failed: ${error.message}`)
   return data?.[0] ?? null
 }

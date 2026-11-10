@@ -30,6 +30,8 @@ export type RunDeps = {
    * (`handed_off`), else the step runs with the worker's own AI_MODE.
    */
   route?: 'cloud' | 'operator'
+  /** Routing tag of this stack (agent variable AI_ROUTE_TAG, default `default`). A hand-off carries it, and only an operator with the same tag sees the event. */
+  routeTag?: string
 }
 
 export type RunResult = { status: 'done' | 'failed' | 'cancelled' | 'handed_off' }
@@ -56,6 +58,9 @@ const MAX_SIBLING_WAITS = 300
 export const DESKTOP_TIMEOUT_MS = 10 * 60 * 1000
 /** An operator runner counts as online when it was seen within this long (it beats every 30 s). */
 export const OPERATOR_ONLINE_MS = 90_000
+/** Jobs that are never handed to an operator: on a replay miss they go straight to the cloud model, even with an operator online. A curriculum PDF cannot be read through MCP. */
+export const NO_HANDOFF_JOBS: ReadonlySet<string> = new Set(['draft_map'])
+export const DEFAULT_ROUTE_TAG = 'default'
 
 const text = (err: unknown) => (err instanceof Error ? err.message : String(err))
 
@@ -85,10 +90,10 @@ export function isReplayMiss(err: unknown): boolean {
   return walk(err, 0)
 }
 
-/** True when an operator runner (the owner's laptop) has been seen in the last 90 seconds. */
-export async function operatorOnline(db: JemmaDb, now: Date = new Date()): Promise<boolean> {
+/** True when an operator runner with this routing tag (the owner's laptop) has been seen in the last 90 seconds. */
+export async function operatorOnline(db: JemmaDb, now: Date = new Date(), tag: string = DEFAULT_ROUTE_TAG): Promise<boolean> {
   const since = new Date(now.getTime() - OPERATOR_ONLINE_MS).toISOString()
-  const rows = await ok(db.from('operator_presence').select('runner_id').gte('last_seen', since).limit(1))
+  const rows = await ok(db.from('operator_presence').select('runner_id').eq('tag', tag).gte('last_seen', since).limit(1))
   return rows.length > 0
 }
 
@@ -218,6 +223,7 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
 
   // AI_ROUTE=operator: recorded answers first, then an operator's laptop, then the worker's own model. Only for
   // events of a cloud school that were not already sent back to the cloud (`cloud_live`).
+  const routeTag = deps.routeTag || DEFAULT_ROUTE_TAG
   let ownMode = true // true: the job sees `deps.env` as it is. Set below for a routed event.
   const replayCtx: ToolContext = { ...ctx, env: { ...deps.env, AI_MODE: 'replay' } }
 
@@ -226,18 +232,20 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
     if (!run) throw new Error(`job not available: ${step.job}`)
     let transient = 0
     let badOutput = 0
+    let ownThisStep = false // a job that is never handed off runs once with the worker's own AI_MODE after its miss
     for (let attempt = 1; ; attempt++) {
       await guard()
       attempts = Math.max(attempts, attempt)
       try {
-        await run(ownMode ? ctx : replayCtx, eventId, step.ids)
+        await run(ownMode || ownThisStep ? ctx : replayCtx, eventId, step.ids)
         return
       } catch (err) {
         // A missing recorded answer is not a transient or bad-output failure, whatever its text says: never retried.
         if (isReplayMiss(err)) {
-          if (ownMode) throw err
-          if (await operatorOnline(db, now())) throw new HandOff()
-          ownMode = true // no operator: the rest of this run uses the worker's own AI_MODE
+          if (ownMode || ownThisStep) throw err
+          if (NO_HANDOFF_JOBS.has(step.job)) ownThisStep = true
+          else if (await operatorOnline(db, now(), routeTag)) throw new HandOff()
+          else ownMode = true // no operator: the rest of this run uses the worker's own AI_MODE
         } else if (isTransient(err) && transient < BACKOFF_MS.length) await sleep(BACKOFF_MS[transient++]!)
         else if (isBadOutput(err) && badOutput < 1) badOutput++
         else throw err
@@ -294,7 +302,7 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
       // The owner's laptop does this event. Nothing failed: queue it for an operator and let go of the test's tail.
       await releaseTail()
       const moved = await ok(
-        db.from('events').update({ runner: 'desktop', status: 'queued', claimed_by: null, attempts, payload: { ...payload, route: 'operator' } as never }).eq('id', eventId).eq('status', 'running').select('id'),
+        db.from('events').update({ runner: 'desktop', status: 'queued', claimed_by: null, attempts, payload: { ...payload, route: 'operator', route_tag: routeTag } as never }).eq('id', eventId).eq('status', 'running').select('id'),
       )
       return { status: moved.length ? 'handed_off' : 'cancelled' }
     }
@@ -374,22 +382,25 @@ export async function runInCloud(
  * Automatic rescue when the owner's laptop goes away. When no operator runner has been seen for 90 seconds, every event
  * handed to an operator (`payload.route = 'operator'`) that is queued, or running on the desktop side (the laptop died
  * mid-job), goes back to the cloud: `runner = 'cloud'`, queued, `payload.route = 'cloud_live'` (never handed off again),
- * and `enqueue` puts it on the queue. Returns how many were moved. `schoolIds` limits the check (tests on a shared database).
+ * and `enqueue` puts it on the queue. Returns how many were moved. Looks only at presence rows and events of its routing `tag`.
+ * `schoolIds` limits the check (tests on a shared database).
  */
 export async function checkOperatorTimeouts(
   db: JemmaDb,
   enqueue: (eventId: string) => Promise<void>,
   now: Date = new Date(),
   schoolIds?: string[],
+  tag: string = DEFAULT_ROUTE_TAG,
 ): Promise<number> {
-  if (await operatorOnline(db, now)) return 0
+  if (await operatorOnline(db, now, tag)) return 0
   let query = db
     .from('events')
     .select('id, status, payload')
     .eq('payload->>route', 'operator')
     .or('status.eq.queued,and(status.eq.running,runner.eq.desktop)')
   if (schoolIds) query = query.in('school_id', schoolIds)
-  const waiting = await ok(query.order('created_at'))
+  // Only events handed off by this stack (its tag); an event without a tag counts as `default`.
+  const waiting = (await ok(query.order('created_at'))).filter((e) => ((e.payload as { route_tag?: unknown }).route_tag ?? DEFAULT_ROUTE_TAG) === tag)
   let moved = 0
   for (const e of waiting) {
     const payload = { ...(e.payload as Record<string, unknown>), route: 'cloud_live' }

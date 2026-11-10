@@ -924,6 +924,7 @@ export type Database = {
           agent: string | null
           last_seen: string
           runner_id: string
+          tag: string
           version: string | null
         }
         ComputedFields: never
@@ -931,12 +932,14 @@ export type Database = {
           agent?: string | null
           last_seen?: string
           runner_id: string
+          tag?: string
           version?: string | null
         }
         Update: {
           agent?: string | null
           last_seen?: string
           runner_id?: string
+          tag?: string
           version?: string | null
         }
         Relationships: []
@@ -1552,7 +1555,7 @@ export type Database = {
         }[]
       }
       claim_operator_event: {
-        Args: { only_handoffs?: boolean; runner: string }
+        Args: { runner: string; tag_in?: string }
         Returns: {
           attempts: number
           claimed_by: string | null
@@ -1594,7 +1597,7 @@ export type Database = {
       }
       my_school: { Args: Record<PropertyKey, never>; Returns: string }
       operator_heartbeat: {
-        Args: { agent_in: string; runner: string; version_in: string }
+        Args: { agent_in: string; runner: string; tag_in?: string; version_in: string }
         Returns: undefined
       }
       parent_of: { Args: { child: string }; Returns: boolean }

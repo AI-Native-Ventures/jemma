@@ -3,39 +3,46 @@ import { createClient } from '@supabase/supabase-js'
 import { afterAll, beforeAll, expect, test } from 'vitest'
 import { createServiceClient, type Database, type JemmaDb } from '@jemma/profiling/db'
 import { createSandbox, type Sandbox } from '../../profiling/test/helpers/sandbox'
-import { claimOperatorEvent, formatJobLine, startOperator, type OperatorOptions, type RunnerJob, type RunResult } from '../src'
+import { formatJobLine, startOperator, type OperatorOptions, type RunnerJob, type RunResult } from '../src'
 import { loadEnv } from './helpers'
 
 // Operator runner. Part 1: the SQL rules of migration 0017 (operator_presence, operator_heartbeat, claim_operator_event,
-// finish_operator_event). Part 2: the operator loop with a fake agent run. All in one file on purpose: the claim is global,
-// so the two parts must never run at the same time. Runs against jemma-dev. Test events are dated in the year 2000 so they
-// are always the oldest eligible ones, and a claim that picks up someone else's event is put back at once.
+// finish_operator_event). Part 2: the operator loop with a fake agent run. All in one file on purpose: the parts share
+// sandboxes and must not run at the same time. Runs against jemma-dev. Every event and every runner here carries a routing
+// tag made for this run, so nothing of anyone else's on the shared database can be seen or taken by these tests.
 
 const env = loadEnv()
 const db: JemmaDb = createServiceClient({ SUPABASE_URL: env.SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY! })
 const tag = `op${Date.now()}`
+const TAG = `t-${tag}`
+const OTHER_TAG = `x-${tag}`
 let cloud: Sandbox
-let deskA: Sandbox
-let deskB: Sandbox
-let mine: Set<string>
+let cloud2: Sandbox
+let desk: Sandbox
 const runners: string[] = []
 let clock = 0
 
-const beat = async (runner = randomUUID()) => {
-  const { error } = await db.rpc('operator_heartbeat', { runner, agent_in: 'claude', version_in: '9.9.9' })
+const beat = async (runner = randomUUID(), tagIn = TAG) => {
+  const { error } = await db.rpc('operator_heartbeat', { runner, agent_in: 'claude', version_in: '9.9.9', tag_in: tagIn })
   expect(error).toBeNull()
   runners.push(runner)
   return runner
 }
 
-const queue = async (s: Sandbox, extra: { route?: string; runner?: 'cloud' | 'desktop' } = {}) => {
+/** A handed-off event by default (route operator, this run's tag). `route: false` leaves the marker out, `tagged: false` the tag, `tag` sets another one. */
+const queue = async (s: Sandbox, extra: { route?: boolean; tagged?: boolean; tag?: string; runner?: 'cloud' | 'desktop' } = {}) => {
   const created_at = new Date(Date.UTC(2000, 0, 1, 0, 0, clock++)).toISOString()
   const { data, error } = await db
     .from('events')
     .insert({
       school_id: s.schoolId,
       type: 'observation.added',
-      payload: { type: 'observation.added', childId: s.aminaId, ...(extra.route ? { route: extra.route } : {}) },
+      payload: {
+        type: 'observation.added',
+        childId: s.aminaId,
+        ...(extra.route === false ? {} : { route: 'operator' }),
+        ...(extra.tagged === false ? {} : { route_tag: extra.tag ?? TAG }),
+      },
       runner: extra.runner ?? 'desktop',
       created_at,
     })
@@ -45,55 +52,53 @@ const queue = async (s: Sandbox, extra: { route?: string; runner?: 'cloud' | 'de
   return data.id
 }
 
-/** Claims through the function. An event that is not one of ours is put back at once. */
-const claim = async (runner: string) => {
-  const { data, error } = await db.rpc('claim_operator_event', { runner })
+const claim = async (runner: string, tagIn = TAG) => {
+  const { data, error } = await db.rpc('claim_operator_event', { runner, tag_in: tagIn })
   if (error) throw new Error(error.message)
-  const row = data?.[0] ?? null
-  if (row && !mine.has(row.school_id)) {
-    await db.from('events').update({ status: 'queued', attempts: row.attempts - 1 }).eq('id', row.id)
-    return null
-  }
-  return row
+  return data?.[0] ?? null
 }
 
 const row = async (id: string) => (await db.from('events').select('status, runner, claimed_by, attempts, error, finished_at').eq('id', id).single()).data!
 
 beforeAll(async () => {
   cloud = await createSandbox(db, `${tag}c`)
-  deskA = await createSandbox(db, `${tag}a`, 'desktop')
-  deskB = await createSandbox(db, `${tag}b`, 'desktop')
-  mine = new Set([cloud.schoolId, deskA.schoolId, deskB.schoolId])
+  cloud2 = await createSandbox(db, `${tag}d`)
+  desk = await createSandbox(db, `${tag}a`, 'desktop')
 })
 afterAll(async () => {
-  for (const s of [cloud, deskA, deskB]) await db.from('runner_presence').delete().eq('user_id', s?.teacherId ?? randomUUID())
   if (runners.length) await db.from('operator_presence').delete().in('runner_id', runners)
   await cloud?.cleanup()
-  await deskA?.cleanup()
-  await deskB?.cleanup()
+  await cloud2?.cleanup()
+  await desk?.cleanup()
 })
 
-test('operator_heartbeat upserts one presence row and moves last_seen', async () => {
+test('operator_heartbeat upserts one presence row (with its tag) and moves last_seen', async () => {
   const runner = await beat()
   const first = (await db.from('operator_presence').select('*').eq('runner_id', runner).single()).data!
-  expect(first).toMatchObject({ agent: 'claude', version: '9.9.9' })
+  expect(first).toMatchObject({ agent: 'claude', version: '9.9.9', tag: TAG })
   await new Promise((r) => setTimeout(r, 1100))
-  const { error } = await db.rpc('operator_heartbeat', { runner, agent_in: 'codex', version_in: '1.0.0' })
+  const { error } = await db.rpc('operator_heartbeat', { runner, agent_in: 'codex', version_in: '1.0.0', tag_in: TAG })
   expect(error).toBeNull()
   const again = await db.from('operator_presence').select('*').eq('runner_id', runner)
   expect(again.data).toHaveLength(1)
-  expect(again.data![0]).toMatchObject({ agent: 'codex', version: '1.0.0' })
+  expect(again.data![0]).toMatchObject({ agent: 'codex', version: '1.0.0', tag: TAG })
   expect(new Date(again.data![0]!.last_seen).getTime()).toBeGreaterThan(new Date(first.last_seen).getTime())
+  // a heartbeat with no tag is the default tag
+  const plain = randomUUID()
+  runners.push(plain)
+  expect((await db.rpc('operator_heartbeat', { runner: plain, agent_in: 'claude', version_in: '1' })).error).toBeNull()
+  expect((await db.from('operator_presence').select('tag').eq('runner_id', plain).single()).data!.tag).toBe('default')
 })
 
-test('claim_operator_event needs a presence row', async () => {
-  const { error } = await db.rpc('claim_operator_event', { runner: randomUUID() })
-  expect(error?.message).toMatch(/unknown runner/)
+test('claim_operator_event needs a presence row with the same tag', async () => {
+  expect((await db.rpc('claim_operator_event', { runner: randomUUID(), tag_in: TAG })).error?.message).toMatch(/unknown runner/)
+  const runner = await beat()
+  expect((await db.rpc('claim_operator_event', { runner, tag_in: OTHER_TAG })).error?.message).toMatch(/unknown runner/)
 })
 
 test('a handed-off event (route operator) is claimed: running, attempts + 1, claimed_by left empty', async () => {
   const runner = await beat()
-  const id = await queue(cloud, { route: 'operator' })
+  const id = await queue(cloud)
   const got = await claim(runner)
   expect(got?.id).toBe(id)
   expect(await row(id)).toMatchObject({ status: 'running', runner: 'desktop', claimed_by: null, attempts: 1 })
@@ -102,7 +107,7 @@ test('a handed-off event (route operator) is claimed: running, attempts + 1, cla
 
 test('a desktop event of a cloud school without the route marker is not an operator event', async () => {
   const runner = await beat()
-  const id = await queue(cloud)
+  const id = await queue(cloud, { route: false })
   expect(await claim(runner)).toBeNull()
   expect(await row(id)).toMatchObject({ status: 'queued', attempts: 0 })
   await db.from('events').delete().eq('id', id)
@@ -110,7 +115,7 @@ test('a desktop event of a cloud school without the route marker is not an opera
 
 test('a cloud event is never claimed, route marker or not', async () => {
   const runner = await beat()
-  const id = await queue(cloud, { route: 'operator', runner: 'cloud' })
+  const id = await queue(cloud, { runner: 'cloud' })
   expect(await claim(runner)).toBeNull()
   expect((await row(id)).status).toBe('queued')
   await db.from('events').delete().eq('id', id)
@@ -118,37 +123,42 @@ test('a cloud event is never claimed, route marker or not', async () => {
 
 test('an event already running or finished is not claimed again', async () => {
   const runner = await beat()
-  const id = await queue(cloud, { route: 'operator' })
+  const id = await queue(cloud)
   await db.from('events').update({ status: 'done' }).eq('id', id)
   expect(await claim(runner)).toBeNull()
   await db.from('events').delete().eq('id', id)
 })
 
-test('a desktop school without a fresh Desktop heartbeat is served; a fresh owner heartbeat holds it back', async () => {
+test('the events of a school that runs on a desktop are never claimed, marked or not, whatever the Desktop heartbeat', async () => {
   const runner = await beat()
-  const id = await queue(deskA)
-  const presence = randomUUID()
-  const seen = async (at: Date) => {
-    const up = await db.from('runner_presence').upsert({ runner_id: presence, user_id: deskA.teacherId, agents: {}, chosen: 'claude', last_seen: at.toISOString() })
-    expect(up.error).toBeNull()
-  }
-  await seen(new Date())
+  const plain = await queue(desk, { route: false, tagged: false })
+  const marked = await queue(desk)
   expect(await claim(runner)).toBeNull()
-  expect((await row(id)).status).toBe('queued')
-  await seen(new Date(Date.now() - 119_000 + 5_000)) // 1 minute 54 seconds ago: still fresh
-  expect(await claim(runner)).toBeNull()
-  await seen(new Date(Date.now() - 3 * 60_000)) // 3 minutes ago: the owner's Desktop is gone
-  const got = await claim(runner)
-  expect(got?.id).toBe(id)
-  expect(await row(id)).toMatchObject({ status: 'running', claimed_by: null })
-  await db.rpc('finish_operator_event', { event: id, status_in: 'done', error_in: null as never })
-  await db.from('runner_presence').delete().eq('runner_id', presence)
+  expect(await row(plain)).toMatchObject({ status: 'queued', attempts: 0 })
+  expect(await row(marked)).toMatchObject({ status: 'queued', attempts: 0 })
+  await db.from('events').delete().in('id', [plain, marked])
+})
+
+test('the routing tag keeps stacks apart: an event of another tag, or with no tag, is not seen', async () => {
+  const mine = await beat()
+  const theirs = await beat(randomUUID(), OTHER_TAG)
+  const foreign = await queue(cloud, { tag: OTHER_TAG })
+  const untagged = await queue(cloud, { tagged: false }) // counts as the default tag
+  expect(await claim(mine)).toBeNull()
+  expect(await row(foreign)).toMatchObject({ status: 'queued', attempts: 0 })
+  expect(await row(untagged)).toMatchObject({ status: 'queued', attempts: 0 })
+  // the runner of the other tag gets its own event and nothing of ours
+  expect((await claim(theirs, OTHER_TAG))?.id).toBe(foreign)
+  expect(await claim(theirs, OTHER_TAG)).toBeNull()
+  expect(await row(untagged)).toMatchObject({ status: 'queued', attempts: 0 })
+  await db.rpc('finish_operator_event', { event: foreign, status_in: 'done', error_in: null as never })
+  await db.from('events').delete().eq('id', untagged)
 })
 
 test('one event per school at a time: the next one waits until the first is settled', async () => {
   const runner = await beat()
-  const first = await queue(deskB, { route: 'operator' })
-  const second = await queue(deskB, { route: 'operator' })
+  const first = await queue(cloud2)
+  const second = await queue(cloud2)
   expect((await claim(runner))?.id).toBe(first)
   expect(await claim(runner)).toBeNull() // the first still runs
   expect((await row(second)).status).toBe('queued')
@@ -159,39 +169,39 @@ test('one event per school at a time: the next one waits until the first is sett
 
 test('two operators at once never get the same event, nor two events of one school', async () => {
   const [a, b] = [await beat(), await beat()]
-  const one = await queue(deskB, { route: 'operator' })
+  const one = await queue(cloud2)
   const [x, y] = await Promise.all([claim(a), claim(b)])
   expect([x, y].filter(Boolean)).toHaveLength(1)
   expect((x ?? y)!.id).toBe(one)
   await db.rpc('finish_operator_event', { event: one, status_in: 'done', error_in: null as never })
 
   // two events in one school: still one claim wins
-  const p = await queue(deskB, { route: 'operator' })
-  const q = await queue(deskB, { route: 'operator' })
+  const p = await queue(cloud2)
+  const q = await queue(cloud2)
   const both = await Promise.all([claim(a), claim(b), claim(a), claim(b)])
   expect(both.filter(Boolean)).toHaveLength(1)
-  const running = await db.from('events').select('id').eq('school_id', deskB.schoolId).eq('status', 'running')
+  const running = await db.from('events').select('id').eq('school_id', cloud2.schoolId).eq('status', 'running')
   expect(running.data).toHaveLength(1)
   await db.from('events').delete().in('id', [p, q])
 })
 
 test('events of different schools run side by side, one each', async () => {
   const [a, b] = [await beat(), await beat()]
-  const inB = await queue(deskB, { route: 'operator' })
-  const inCloud = await queue(cloud, { route: 'operator' })
+  const inTwo = await queue(cloud2)
+  const inOne = await queue(cloud)
   const got: string[] = []
   for (let i = 0; i < 6 && got.length < 2; i++) {
     const [x, y] = await Promise.all([claim(a), claim(b)])
     got.push(...[x, y].filter((r) => r !== null).map((r) => r!.id))
   }
-  expect(new Set(got)).toEqual(new Set([inB, inCloud]))
+  expect(new Set(got)).toEqual(new Set([inTwo, inOne]))
   expect(got).toHaveLength(2)
   for (const id of got) await db.rpc('finish_operator_event', { event: id, status_in: 'done', error_in: null as never })
 })
 
 test('finish_operator_event settles an operator event only', async () => {
   const runner = await beat()
-  const id = await queue(cloud, { route: 'operator' })
+  const id = await queue(cloud)
   expect((await claim(runner))?.id).toBe(id)
   const failed = await db.rpc('finish_operator_event', { event: id, status_in: 'failed', error_in: 'it broke' })
   expect(failed.error).toBeNull()
@@ -205,30 +215,17 @@ test('finish_operator_event settles an operator event only', async () => {
   expect(bad.error?.message).toMatch(/takes done or failed/)
 
   // not an operator event: claimed by a user's Desktop, or a cloud event, or cancelled
-  const userClaimed = await queue(cloud, { route: 'operator' })
+  const userClaimed = await queue(cloud)
   await db.from('events').update({ status: 'running', claimed_by: cloud.teacherId }).eq('id', userClaimed)
-  const cloudRun = await queue(cloud, { runner: 'cloud' })
+  const cloudRun = await queue(cloud, { runner: 'cloud', route: false })
   await db.from('events').update({ status: 'running' }).eq('id', cloudRun)
-  const cancelled = await queue(cloud, { route: 'operator' })
+  const cancelled = await queue(cloud)
   await db.from('events').update({ status: 'cancelled' }).eq('id', cancelled)
   for (const e of [userClaimed, cloudRun, cancelled]) await db.rpc('finish_operator_event', { event: e, status_in: 'done', error_in: null as never })
   expect((await row(userClaimed)).status).toBe('running')
   expect((await row(cloudRun)).status).toBe('running')
   expect((await row(cancelled)).status).toBe('cancelled')
   await db.from('events').delete().in('id', [userClaimed, cloudRun, cancelled])
-})
-
-test('claim_operator_event with only_handoffs leaves desktop-school events alone; with one argument it serves them', async () => {
-  const runner = await beat()
-  const desktopSchoolEvent = await queue(deskB) // older, no route marker: served unless only_handoffs is set
-  const handoff = await queue(cloud, { route: 'operator' })
-  const only = await db.rpc('claim_operator_event', { runner, only_handoffs: true })
-  expect(only.error).toBeNull()
-  expect(only.data?.[0]?.id).toBe(handoff) // the older desktop-school event was skipped, not blocking
-  expect(await row(desktopSchoolEvent)).toMatchObject({ status: 'queued', attempts: 0 })
-  await db.rpc('finish_operator_event', { event: handoff, status_in: 'done', error_in: null as never })
-  expect((await claim(runner))?.id).toBe(desktopSchoolEvent) // the one-argument form, as before
-  await db.rpc('finish_operator_event', { event: desktopSchoolEvent, status_in: 'done', error_in: null as never })
 })
 
 test('signed-in users and anonymous callers cannot run the three functions or read the table', async () => {
@@ -238,11 +235,11 @@ test('signed-in users and anonymous callers cannot run the three functions or re
   const signed = await user.auth.signInWithPassword({ email: `${tag}a-teacher@example.test`, password: `${tag}a-Passw0rd!` })
   expect(signed.error).toBeNull()
   const runner = await beat()
-  const id = await queue(cloud, { route: 'operator' })
+  const id = await queue(cloud)
   for (const client of [anon, user]) {
     const calls = [
-      await client.rpc('operator_heartbeat', { runner: randomUUID(), agent_in: 'x', version_in: 'y' }),
-      await client.rpc('claim_operator_event', { runner }),
+      await client.rpc('operator_heartbeat', { runner: randomUUID(), agent_in: 'x', version_in: 'y', tag_in: TAG }),
+      await client.rpc('claim_operator_event', { runner, tag_in: TAG }),
       await client.rpc('finish_operator_event', { event: id, status_in: 'done', error_in: null as never }),
     ]
     for (const res of calls) {
@@ -261,14 +258,14 @@ test('signed-in users and anonymous callers cannot run the three functions or re
 const TOPIC = 'Adding fractions with different denominators'
 const sha256 = (value: string) => createHash('sha256').update(value).digest('hex')
 let loopS: Sandbox
+let loopS2: Sandbox
 let loopD: Sandbox
 let parentId: string
 
 beforeAll(async () => {
   loopS = await createSandbox(db, `${tag}ls`)
+  loopS2 = await createSandbox(db, `${tag}l2`)
   loopD = await createSandbox(db, `${tag}ld`, 'desktop')
-  mine.add(loopS.schoolId)
-  mine.add(loopD.schoolId)
   const p = await db.auth.admin.createUser({ email: `${tag}-parent@example.test`, password: `${tag}-Passw0rd!`, email_confirm: true })
   if (p.error) throw p.error
   parentId = p.data.user.id
@@ -277,6 +274,7 @@ beforeAll(async () => {
 })
 afterAll(async () => {
   await loopS?.cleanup()
+  await loopS2?.cleanup()
   await loopD?.cleanup()
   if (parentId) await db.auth.admin.deleteUser(parentId)
 })
@@ -285,7 +283,7 @@ const queueOp = async (s: Sandbox, type: string, payload: Record<string, string>
   const created_at = new Date(Date.UTC(2000, 1, 1, 0, 0, clock++)).toISOString()
   const { data, error } = await db
     .from('events')
-    .insert({ school_id: s.schoolId, type, payload: { type, ...payload, ...(extra.route ? { route: 'operator' } : {}) }, runner: 'desktop', created_at } as never)
+    .insert({ school_id: s.schoolId, type, payload: { type, ...payload, ...(extra.route ? { route: 'operator', route_tag: TAG } : {}) }, runner: 'desktop', created_at } as never)
     .select('id')
     .single()
   if (error) throw error
@@ -307,18 +305,10 @@ const waitFor = async (what: string, fn: () => Promise<boolean>, ms = 30_000) =>
     await new Promise((res) => setTimeout(res, 50))
   }
 }
-const presenceRow = async (runnerId: string) => (await db.from('operator_presence').select('agent, version, last_seen').eq('runner_id', runnerId).maybeSingle()).data
+const presenceRow = async (runnerId: string) => (await db.from('operator_presence').select('agent, version, tag, last_seen').eq('runner_id', runnerId).maybeSingle()).data
 const tokenRows = async (token: string) => (await db.from('mcp_tokens').select('school_id, label').eq('token_hash', sha256(token))).data!
-
-/** The mine-only claim: an event that is not one of ours is put back at once (the claim is global on a shared database). */
-const claimMine: typeof claimOperatorEvent = async (client, runnerId, onlyHandoffs) => {
-  const got = await claimOperatorEvent(client, runnerId, onlyHandoffs)
-  if (got && !mine.has(got.school_id)) {
-    await client.from('events').update({ status: 'queued', attempts: got.attempts - 1 }).eq('id', got.id)
-    return null
-  }
-  return got
-}
+/** The event is settled first and its token deleted right after (a `finally`), so wait for the deletion. */
+const tokenGone = (token: string) => waitFor('the one-time token to be deleted', async () => (await tokenRows(token)).length === 0, 10_000)
 
 type Call = { job: string; ids: Record<string, string>; eventId: string; token: string; url: string; tokenRow: { school_id: string | null; label: string } | null }
 const writes: Record<string, (ids: Record<string, string>, eventId: string) => Promise<void>> = {
@@ -356,7 +346,7 @@ const operate = (extra: Partial<OperatorOptions>) => {
   const lines: string[] = []
   const runnerId = randomUUID()
   runners.push(runnerId)
-  const op = startOperator({ db, runnerId, agent: 'claude', agentUrl: 'https://agent.example.test/', concurrency: 1, pollMs: 200, heartbeatMs: 10_000, detect: fakeDetect, claim: claimMine, onLog: (l) => lines.push(l), ...extra })
+  const op = startOperator({ db, runnerId, agent: 'claude', agentUrl: 'https://agent.example.test/', concurrency: 1, pollMs: 200, heartbeatMs: 10_000, detect: fakeDetect, tag: TAG, onLog: (l) => lines.push(l), ...extra })
   return { op, lines, runnerId }
 }
 
@@ -374,7 +364,7 @@ test('operator loop: one-time token for the school, one agent run, settled done,
     expect(call.token).toMatch(/^[0-9a-f]{64}$/) // 32 random bytes as hex
     expect(call.tokenRow?.school_id).toBe(loopS.schoolId) // a school token, while the job ran
     expect(call.tokenRow?.label).toMatch(/^operator /)
-    expect(await tokenRows(call.token)).toEqual([]) // deleted once the event ended
+    await tokenGone(call.token) // deleted once the event ended
     expect(lines.some((l) => /^\d\d:\d\d:\d\d {2}observation\.added {2}guidance {2}\d+s {2}done$/.test(l))).toBe(true)
     expect(await presenceRow(runnerId)).toMatchObject({ agent: 'claude', version: '1.2.3' })
   } finally {
@@ -385,7 +375,7 @@ test('operator loop: one-time token for the school, one agent run, settled done,
 
 test('operator loop: every event gets its own token, and a job that throws fails the event and still deletes the token', async () => {
   const ok = await queueOp(loopS, 'observation.added', { childId: loopS.aminaId })
-  const bad = await queueOp(loopD, 'observation.added', { childId: loopD.aminaId }, { route: false })
+  const bad = await queueOp(loopS2, 'observation.added', { childId: loopS2.aminaId })
   const agent = fakeAgent({
     hold: async (call) => {
       if (call.eventId === bad) throw new Error('the agent crashed')
@@ -397,8 +387,8 @@ test('operator loop: every event gets its own token, and a job that throws fails
     expect(await settled(bad)).toMatchObject({ status: 'failed', error: 'the agent crashed' })
     const tokens = agent.calls.map((c) => c.token)
     expect(new Set(tokens).size).toBe(2)
-    for (const t of tokens) expect(await tokenRows(t)).toEqual([])
-    expect(agent.calls.find((c) => c.eventId === bad)?.tokenRow?.school_id).toBe(loopD.schoolId)
+    for (const t of tokens) await tokenGone(t)
+    expect(agent.calls.find((c) => c.eventId === bad)?.tokenRow?.school_id).toBe(loopS2.schoolId)
   } finally {
     await op.stop()
   }
@@ -495,7 +485,7 @@ test('operator loop: unmet postconditions fail the event with the cloud message'
 test('operator loop: with two claim loops two schools run side by side, one event per school at a time', async () => {
   const a1 = await queueOp(loopS, 'observation.added', { childId: loopS.aminaId })
   const a2 = await queueOp(loopS, 'observation.added', { childId: loopS.thaboId })
-  const b = await queueOp(loopD, 'observation.added', { childId: loopD.aminaId }, { route: false })
+  const b = await queueOp(loopS2, 'observation.added', { childId: loopS2.aminaId })
   let release: () => void = () => {}
   const gate = new Promise<void>((r) => (release = r))
   let active = 0
@@ -542,14 +532,14 @@ test('operator loop: stop takes the presence row away at once, claims nothing ne
     await waitFor('the job to start', async () => started)
     const stopping = op.stop()
     await waitFor('the presence row to go', async () => (await presenceRow(runnerId)) === null)
-    const later = await queueOp(loopD, 'observation.added', { childId: loopD.aminaId }, { route: false })
+    const later = await queueOp(loopS2, 'observation.added', { childId: loopS2.aminaId })
     await new Promise((r) => setTimeout(r, 800))
     expect((await db.from('events').select('status').eq('id', later).single()).data!.status).toBe('queued') // no new claim
     expect((await db.from('events').select('status').eq('id', running).single()).data!.status).toBe('running') // still running
     release()
     await stopping
     expect((await settled(running)).status).toBe('done')
-    expect(await tokenRows(agent.calls[0]!.token)).toEqual([])
+    await tokenGone(agent.calls[0]!.token)
     expect(await presenceRow(runnerId)).toBeNull()
     expect(lines.at(-1)).toBe('operator stopped')
     await db.from('events').delete().eq('id', later)
@@ -575,20 +565,26 @@ test('operator loop: maxJobs stops it after that many agent runs and the next st
   }
 })
 
-test('operator loop: with onlyHandoffs the events of a desktop school are left alone, handed-off events are served', async () => {
+test('operator loop: events of a desktop school, and handed-off events of another tag, are never served', async () => {
   const desktopEvent = await queueOp(loopD, 'observation.added', { childId: loopD.aminaId }, { route: false })
+  const markedDesktop = await queueOp(loopD, 'observation.added', { childId: loopD.aminaId })
+  const otherTag = await queueOp(loopS2, 'observation.added', { childId: loopS2.aminaId })
+  await db.from('events').update({ payload: { type: 'observation.added', childId: loopS2.aminaId, route: 'operator', route_tag: OTHER_TAG } }).eq('id', otherTag)
   const handoff = await queueOp(loopS, 'observation.added', { childId: loopS.aminaId })
   const agent = fakeAgent()
-  const { op } = operate({ run: agent.run, onlyHandoffs: true })
+  const { op, lines } = operate({ run: agent.run })
   try {
     expect((await settled(handoff)).status).toBe('done')
-    await new Promise((r) => setTimeout(r, 1000))
+    await new Promise((r) => setTimeout(r, 1200))
     expect(agent.calls.map((c) => c.eventId)).toEqual([handoff])
-    expect((await db.from('events').select('status, attempts, claimed_by').eq('id', desktopEvent).single()).data).toEqual({ status: 'queued', attempts: 0, claimed_by: null })
+    for (const id of [desktopEvent, markedDesktop, otherTag]) {
+      expect((await db.from('events').select('status, attempts, claimed_by').eq('id', id).single()).data).toEqual({ status: 'queued', attempts: 0, claimed_by: null })
+    }
+    expect(lines.some((l) => l.endsWith(`tag ${TAG}`))).toBe(true)
   } finally {
     await op.stop()
   }
-  await db.from('events').delete().eq('id', desktopEvent)
+  await db.from('events').delete().in('id', [desktopEvent, markedDesktop, otherTag])
 })
 
 test('operator loop: the heartbeat keeps last_seen fresh', async () => {

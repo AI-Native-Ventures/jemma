@@ -5,7 +5,7 @@ import { afterAll, afterEach, beforeAll, expect, test, vi } from 'vitest'
 import { getModel, MemoryStore, ReplayMissError, withReplay, type AiEnv } from '../src/ai'
 import { generateJson } from '../src/ai/json'
 import { createServiceClient, type JemmaDb } from '../src/db'
-import { checkOperatorTimeouts, isReplayMiss, OPERATOR_ONLINE_MS, runEvent, type CloudJob } from '../src/orchestrator'
+import { checkOperatorTimeouts, isReplayMiss, NO_HANDOFF_JOBS, OPERATOR_ONLINE_MS, runEvent, type CloudJob } from '../src/orchestrator'
 import { loadEnv } from './helpers/env'
 import { createSandbox, type Sandbox } from './helpers/sandbox'
 
@@ -16,6 +16,9 @@ const env = loadEnv()
 const db: JemmaDb = createServiceClient({ SUPABASE_URL: env.SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY! })
 const tag = `rt${Date.now()}${Math.floor(Math.random() * 1000)}`
 const MODEL = 'test/not-recorded:free'
+// Every hand-off, presence row and rescue here carries a tag made for this run: nothing else on the shared database can see them.
+const TAG = `rt-${tag}`
+const OTHER_TAG = `xt-${tag}`
 const store = new MemoryStore()
 const baseEnv: AiEnv = { LLM_PROVIDER: 'openrouter', LLM_MODEL: MODEL, AI_MODE: 'live', replayStore: store }
 const noSleep = async () => {}
@@ -37,10 +40,10 @@ async function newEvent(sb: Sandbox, type: string, payload: Record<string, strin
   return data.id
 }
 const event = async (id: string) => (await db.from('events').select('*').eq('id', id).single()).data!
-const online = async (lastSeen = new Date()) => {
+const online = async (lastSeen = new Date(), runnerTag = TAG) => {
   const runner = crypto.randomUUID()
   runners.push(runner)
-  const { error } = await db.from('operator_presence').insert({ runner_id: runner, last_seen: lastSeen.toISOString(), agent: 'claude' })
+  const { error } = await db.from('operator_presence').insert({ runner_id: runner, last_seen: lastSeen.toISOString(), agent: 'claude', tag: runnerTag })
   if (error) throw new Error(error.message)
   return runner
 }
@@ -54,9 +57,6 @@ const lock = async (testId: string) => (await db.from('ai_replays').select('key'
 beforeAll(async () => {
   s = await createSandbox(db, tag)
   desk = await createSandbox(db, `${tag}d`, 'desktop')
-  // jemma-dev is shared and an operator may be claiming there. A desktop event that stays running keeps this school
-  // busy ("one event per school at a time"), so no claim ever takes the events this file hands off.
-  await db.from('events').insert({ school_id: s.schoolId, type: 'observation.added', payload: { type: 'observation.added', childId: s.aminaId }, runner: 'desktop', status: 'running' })
 })
 // Presence rows made at a fake time in the future would count as "online" for the next test's earlier fake clock.
 afterEach(async () => {
@@ -124,7 +124,7 @@ test('a recorded answer completes the event in the cloud, whatever the worker AI
   }
   await online() // an operator is there, and still is not needed
   const id = await newEvent(s, 'observation.added', { childId: s.aminaId })
-  const out = await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', sleep: noSleep })
+  const out = await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', routeTag: TAG, sleep: noSleep })
   expect(out).toEqual({ status: 'done' })
   expect(modes).toEqual(['replay'])
   expect(await event(id)).toMatchObject({ status: 'done', runner: 'cloud', error: null })
@@ -134,7 +134,7 @@ test('a recorded answer completes the event in the cloud, whatever the worker AI
 test('a step that needs no model completes in the cloud with no operator', async () => {
   const guidance = vi.fn(async () => {})
   const id = await newEvent(s, 'observation.added', { childId: s.aminaId })
-  const out = await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', sleep: noSleep, now: farFuture })
+  const out = await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', routeTag: TAG, sleep: noSleep, now: farFuture })
   expect(out).toEqual({ status: 'done' })
   expect(guidance).toHaveBeenCalledTimes(1)
 })
@@ -148,14 +148,14 @@ test('a miss with an operator online hands the event off: queued for the desktop
     await ask(ctx as never, 'a prompt with timeout 429 rate limit in it') // the miss text names a timeout, which must not count as transient
   }
   const id = await newEvent(s, 'observation.added', { childId: s.aminaId })
-  const out = await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', sleep: async (ms) => void sleeps.push(ms) })
+  const out = await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', routeTag: TAG, sleep: async (ms) => void sleeps.push(ms) })
   expect(out).toEqual({ status: 'handed_off' })
   expect(calls).toEqual(['replay'])
   expect(sleeps).toEqual([])
   const row = await event(id)
   expect(row).toMatchObject({ status: 'queued', runner: 'desktop', error: null, claimed_by: null })
   expect(row.finished_at).toBeNull()
-  expect(row.payload).toMatchObject({ type: 'observation.added', childId: s.aminaId, route: 'operator' })
+  expect(row.payload).toMatchObject({ type: 'observation.added', childId: s.aminaId, route: 'operator', route_tag: TAG })
 })
 
 test('a handed-off miss releases the tail lock and skips the postconditions', async () => {
@@ -165,7 +165,7 @@ test('a handed-off miss releases the tail lock and skips the postconditions', as
     await ask(ctx as never, 'diagnose a paper nobody recorded')
   }
   const id = await newEvent(s, 'paper.snapped', { paperId: s.paperId })
-  const out = await runEvent(id, { db, env: baseEnv, jobs: { diagnose }, route: 'operator', sleep: noSleep })
+  const out = await runEvent(id, { db, env: baseEnv, jobs: { diagnose }, route: 'operator', routeTag: TAG, sleep: noSleep })
   expect(out).toEqual({ status: 'handed_off' }) // the postconditions (no reteach plan yet) would have failed it
   expect(await lock(s.testId)).toBe(0)
   expect(await event(id)).toMatchObject({ status: 'queued', runner: 'desktop', error: null })
@@ -181,7 +181,7 @@ test('a miss wrapped by another error is still handed off', async () => {
     }
   }
   const id = await newEvent(s, 'observation.added', { childId: s.aminaId })
-  expect(await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', sleep: noSleep })).toEqual({ status: 'handed_off' })
+  expect(await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', routeTag: TAG, sleep: noSleep })).toEqual({ status: 'handed_off' })
 })
 
 test('a miss with no operator online runs the step again with the worker AI_MODE (the cloud model)', async () => {
@@ -191,7 +191,7 @@ test('a miss with no operator online runs the step again with the worker AI_MODE
     if (ctx.env.AI_MODE === 'replay') await ask(ctx as never, 'a miss')
   }
   const id = await newEvent(s, 'observation.added', { childId: s.aminaId })
-  const out = await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', sleep: noSleep, now: farFuture })
+  const out = await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', routeTag: TAG, sleep: noSleep, now: farFuture })
   expect(out).toEqual({ status: 'done' })
   expect(modes).toEqual(['replay', 'live'])
   expect(await event(id)).toMatchObject({ status: 'done', runner: 'cloud' })
@@ -204,10 +204,10 @@ test('an operator last seen 91 seconds ago does not count; one last seen 89 seco
   }
   await online(new Date(at.getTime() - OPERATOR_ONLINE_MS - 1000))
   const lateId = await newEvent(s, 'observation.added', { childId: s.aminaId })
-  expect(await runEvent(lateId, { db, env: baseEnv, jobs: { guidance }, route: 'operator', sleep: noSleep, now: () => at })).toEqual({ status: 'done' })
+  expect(await runEvent(lateId, { db, env: baseEnv, jobs: { guidance }, route: 'operator', routeTag: TAG, sleep: noSleep, now: () => at })).toEqual({ status: 'done' })
   await online(new Date(at.getTime() - OPERATOR_ONLINE_MS + 1000))
   const id2 = await newEvent(s, 'observation.added', { childId: s.aminaId })
-  expect(await runEvent(id2, { db, env: baseEnv, jobs: { guidance }, route: 'operator', sleep: noSleep, now: () => at })).toEqual({ status: 'handed_off' })
+  expect(await runEvent(id2, { db, env: baseEnv, jobs: { guidance }, route: 'operator', routeTag: TAG, sleep: noSleep, now: () => at })).toEqual({ status: 'handed_off' })
 })
 
 test('an event marked cloud_live is never handed off: it runs with the worker AI_MODE and no replay pass', async () => {
@@ -217,7 +217,7 @@ test('an event marked cloud_live is never handed off: it runs with the worker AI
     modes.push(ctx.env.AI_MODE)
   }
   const id = await newEvent(s, 'observation.added', { childId: s.aminaId, route: 'cloud_live' })
-  expect(await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', sleep: noSleep })).toEqual({ status: 'done' })
+  expect(await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', routeTag: TAG, sleep: noSleep })).toEqual({ status: 'done' })
   expect(modes).toEqual(['live'])
   expect(((await event(id)).payload as { route?: string }).route).toBe('cloud_live')
 })
@@ -244,7 +244,7 @@ test('with route operator the same miss in the worker own replay mode, after the
     await ask(ctx as never, 'still a miss')
   }
   const id = await newEvent(s, 'observation.added', { childId: s.aminaId })
-  const out = await runEvent(id, { db, env: { ...baseEnv, AI_MODE: 'replay' }, jobs: { guidance }, route: 'operator', sleep: noSleep, now: farFuture })
+  const out = await runEvent(id, { db, env: { ...baseEnv, AI_MODE: 'replay' }, jobs: { guidance }, route: 'operator', routeTag: TAG, sleep: noSleep, now: farFuture })
   expect(out).toEqual({ status: 'failed' })
   expect(calls).toEqual(['replay', 'replay'])
 })
@@ -256,19 +256,72 @@ test('a school that runs on a desktop is not routed: it keeps the old path', asy
     modes.push(ctx.env.AI_MODE)
   }
   const id = await newEvent(desk, 'observation.added', { childId: desk.aminaId })
-  expect(await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', sleep: noSleep })).toEqual({ status: 'done' })
+  expect(await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', routeTag: TAG, sleep: noSleep })).toEqual({ status: 'done' })
   expect(modes).toEqual(['live'])
+})
+
+test('draft_map is never handed off: on a miss it runs with the worker AI_MODE even with an operator online', async () => {
+  expect(NO_HANDOFF_JOBS.has('draft_map')).toBe(true)
+  await online()
+  const modes: (string | undefined)[] = []
+  const draft_map: CloudJob = async (ctx) => {
+    modes.push(ctx.env.AI_MODE)
+    if (ctx.env.AI_MODE === 'replay') await ask(ctx as never, 'the curriculum, unrecorded')
+  }
+  const id = await newEvent(s, 'curriculum.uploaded', { mapId: s.mapId })
+  const out = await runEvent(id, { db, env: baseEnv, jobs: { draft_map }, route: 'operator', routeTag: TAG, sleep: noSleep })
+  expect(out).toEqual({ status: 'failed' }) // no postcondition met: the fake drafts nothing. What counts is that it was not handed off.
+  expect(modes).toEqual(['replay', 'live'])
+  const row = await event(id)
+  expect(row).toMatchObject({ runner: 'cloud', status: 'failed' })
+  expect(row.error).toMatch(/no topics drafted/)
+  expect((row.payload as { route?: string }).route).toBeUndefined()
+})
+
+test('draft_map that misses in the worker own replay mode fails once, still not handed off', async () => {
+  await online()
+  const calls: (string | undefined)[] = []
+  const draft_map: CloudJob = async (ctx) => {
+    calls.push(ctx.env.AI_MODE)
+    await ask(ctx as never, 'the curriculum, unrecorded again')
+  }
+  const id = await newEvent(s, 'curriculum.uploaded', { mapId: s.mapId })
+  const out = await runEvent(id, { db, env: { ...baseEnv, AI_MODE: 'replay' }, jobs: { draft_map }, route: 'operator', routeTag: TAG, sleep: noSleep })
+  expect(out).toEqual({ status: 'failed' })
+  expect(calls).toEqual(['replay', 'replay'])
+  expect(await event(id)).toMatchObject({ runner: 'cloud', status: 'failed' })
+})
+
+test('an operator of another tag does not count as online, and a hand-off carries the stack tag', async () => {
+  await online(new Date(), OTHER_TAG)
+  const modes: (string | undefined)[] = []
+  const guidance: CloudJob = async (ctx) => {
+    modes.push(ctx.env.AI_MODE)
+    if (ctx.env.AI_MODE === 'replay') await ask(ctx as never, 'unrecorded, only a foreign operator is online')
+  }
+  const id = await newEvent(s, 'observation.added', { childId: s.aminaId })
+  expect(await runEvent(id, { db, env: baseEnv, jobs: { guidance }, route: 'operator', routeTag: TAG, sleep: noSleep, now: () => new Date(Date.now() + 5 * 86_400_000) })).toEqual({ status: 'done' })
+  expect(modes).toEqual(['replay', 'live'])
+
+  // with an operator of our own tag online the same miss is handed off, and says whose
+  await online(new Date(), TAG)
+  const id2 = await newEvent(s, 'observation.added', { childId: s.aminaId })
+  expect(await runEvent(id2, { db, env: baseEnv, jobs: { guidance }, route: 'operator', routeTag: TAG, sleep: noSleep })).toEqual({ status: 'handed_off' })
+  expect((await event(id2)).payload).toMatchObject({ route: 'operator', route_tag: TAG })
+  // the default tag is used when no tag is given
+  const id3 = await newEvent(s, 'observation.added', { childId: s.aminaId })
+  expect(await runEvent(id3, { db, env: baseEnv, jobs: { guidance }, route: 'operator', sleep: noSleep, now: () => new Date(Date.now() + 7 * 86_400_000) })).toEqual({ status: 'done' })
 })
 
 // ---- the automatic rescue ----------------------------------------------------------------------------------------
 
 test('checkOperatorTimeouts sends waiting and orphaned operator events back to the cloud, once', async () => {
   await db.from('events').delete().eq('school_id', s.schoolId).eq('payload->>route', 'operator') // left by the tests above
-  const queued = await newEvent(s, 'observation.added', { childId: s.aminaId, route: 'operator' }, { runner: 'desktop' })
-  const orphan = await newEvent(s, 'observation.added', { childId: s.aminaId, route: 'operator' }, { runner: 'desktop', status: 'running', claimed_by: null })
+  const queued = await newEvent(s, 'observation.added', { childId: s.aminaId, route: 'operator', route_tag: TAG }, { runner: 'desktop' })
+  const orphan = await newEvent(s, 'observation.added', { childId: s.aminaId, route: 'operator', route_tag: TAG }, { runner: 'desktop', status: 'running', claimed_by: null })
   const plainDesktop = await newEvent(desk, 'observation.added', { childId: desk.aminaId }, { runner: 'desktop' })
   const live = await newEvent(s, 'observation.added', { childId: s.aminaId, route: 'cloud_live' }, { runner: 'cloud' })
-  const finished = await newEvent(s, 'observation.added', { childId: s.aminaId, route: 'operator' }, { runner: 'desktop', status: 'done' })
+  const finished = await newEvent(s, 'observation.added', { childId: s.aminaId, route: 'operator', route_tag: TAG }, { runner: 'desktop', status: 'done' })
   const sent: string[] = []
   const enqueue = async (id: string) => void sent.push(id)
   const scope = [s.schoolId, desk.schoolId] // jemma-dev is shared: only this file's schools
@@ -276,12 +329,12 @@ test('checkOperatorTimeouts sends waiting and orphaned operator events back to t
   // 1. an operator was seen 30 seconds before the clock: nothing moves
   const clock = farFuture(4)
   await online(new Date(clock.getTime() - 30_000))
-  expect(await checkOperatorTimeouts(db, enqueue, clock, scope)).toBe(0)
+  expect(await checkOperatorTimeouts(db, enqueue, clock, scope, TAG)).toBe(0)
   expect(await event(queued)).toMatchObject({ runner: 'desktop', status: 'queued' })
 
   // 2. 91 seconds after that sighting no operator has been seen for 90 seconds: both events go back
   const later = new Date(clock.getTime() + 61_000)
-  expect(await checkOperatorTimeouts(db, enqueue, later, scope)).toBe(2)
+  expect(await checkOperatorTimeouts(db, enqueue, later, scope, TAG)).toBe(2)
   for (const id of [queued, orphan]) {
     expect(await event(id)).toMatchObject({ runner: 'cloud', status: 'queued', claimed_by: null })
     expect((await event(id)).payload).toMatchObject({ route: 'cloud_live', type: 'observation.added' })
@@ -293,23 +346,39 @@ test('checkOperatorTimeouts sends waiting and orphaned operator events back to t
 
   // 3. the same event is never rescued twice, and a cloud_live event is not handed off again
   sent.length = 0
-  expect(await checkOperatorTimeouts(db, enqueue, later, scope)).toBe(0)
+  expect(await checkOperatorTimeouts(db, enqueue, later, scope, TAG)).toBe(0)
   expect(sent).toEqual([])
 })
 
+test('checkOperatorTimeouts only looks at its own tag: another tag neither keeps events waiting nor loses them', async () => {
+  await db.from('events').delete().eq('school_id', s.schoolId).eq('payload->>route', 'operator')
+  const mine = await newEvent(s, 'observation.added', { childId: s.aminaId, route: 'operator', route_tag: TAG }, { runner: 'desktop' })
+  const theirs = await newEvent(s, 'observation.added', { childId: s.aminaId, route: 'operator', route_tag: OTHER_TAG }, { runner: 'desktop' })
+  const sent: string[] = []
+  const enqueue = async (id: string) => void sent.push(id)
+  const clock = farFuture(6)
+  await online(new Date(clock.getTime() - 10_000), OTHER_TAG) // an operator of the other tag is there, ours is not
+  expect(await checkOperatorTimeouts(db, enqueue, clock, [s.schoolId], TAG)).toBe(1)
+  expect(sent).toEqual([mine])
+  expect(await event(theirs)).toMatchObject({ runner: 'desktop', status: 'queued' })
+  expect((await event(theirs)).payload).toMatchObject({ route_tag: OTHER_TAG, route: 'operator' })
+  // the other tag's operator keeps its own events safe from our check, and ours is not asked about theirs
+  expect(await checkOperatorTimeouts(db, enqueue, clock, [s.schoolId], OTHER_TAG)).toBe(0)
+})
+
 test('checkOperatorTimeouts keeps an event for the next minute when the queue refuses it', async () => {
-  const id = await newEvent(s, 'observation.added', { childId: s.aminaId, route: 'operator' }, { runner: 'desktop' })
+  const id = await newEvent(s, 'observation.added', { childId: s.aminaId, route: 'operator', route_tag: TAG }, { runner: 'desktop' })
   let n = 0
   const enqueue = async (eventId: string) => {
     if (eventId === id && n++ === 0) throw new Error('queue down')
   }
   const scope = [s.schoolId]
-  expect(await checkOperatorTimeouts(db, enqueue, farFuture(5), scope)).toBe(0)
+  expect(await checkOperatorTimeouts(db, enqueue, farFuture(5), scope, TAG)).toBe(0)
   // the failed send put the event back as it was, so the next run sends it
   expect(n).toBe(1)
   expect(await event(id)).toMatchObject({ runner: 'desktop', status: 'queued' })
-  expect((await event(id)).payload).toMatchObject({ route: 'operator' })
-  expect(await checkOperatorTimeouts(db, enqueue, farFuture(5), scope)).toBe(1)
+  expect((await event(id)).payload).toMatchObject({ route: 'operator', route_tag: TAG })
+  expect(await checkOperatorTimeouts(db, enqueue, farFuture(5), scope, TAG)).toBe(1)
   expect(n).toBe(2)
   expect(await event(id)).toMatchObject({ runner: 'cloud', status: 'queued' })
   expect((await event(id)).payload).toMatchObject({ route: 'cloud_live' })

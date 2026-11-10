@@ -15,6 +15,7 @@ Copy `.env.example` to `.env.local` at the repo root. `apps/web` reads it, and `
 | `TTS_PROVIDER`, `TTS_MODEL` | Lesson audio: `workers-ai` and `@cf/deepgram/aura-2-en`. |
 | `AI_MODE` | `live` (call the model), `record` (call it and store the answer in `ai_replays`), `replay` (use the stored answer, never call a model, a miss is an error), `cache` (use the stored answer when the key exists, else call the model and store it). |
 | `AI_ROUTE` | `cloud` (default): the agent does the AI work as above. `operator`: each job tries recorded answers first, then the owner's laptop (the operator runner below), and only when no laptop is online the agent's own model. |
+| `AI_ROUTE_TAG` | Routing tag of this stack, default `default`. A hand-off carries it and only an operator runner with the same `OPERATOR_TAG` takes the event, so two stacks that share one database never take each other's events. |
 | `OPENROUTER_API_KEY` | Key for the free models. |
 | `AGENT_URL` | Where the web app posts events, `http://localhost:8787` locally. |
 | `EVENTS_SECRET` | Shared secret between web and agent for `POST /events`. |
@@ -82,7 +83,7 @@ Answers land in the `ai_replays` table on jemma-dev (service role only).
 
 ## Run the operator runner
 
-The operator runner lets the owner's Mac do the AI work for the hosted app, with the Claude Code that is signed in on that Mac (his own subscription). For every job the order is: a recorded answer if there is one (instant), else his laptop, else the free cloud model, and only when his laptop is off. It serves any school, so judges' sandboxes are served too.
+The operator runner lets the owner's Mac do the AI work for the hosted app, with the Claude Code that is signed in on that Mac (his own subscription). For every job the order is: a recorded answer if there is one (instant), else his laptop, else the free cloud model, and only when his laptop is off. It serves any school the cloud hands work to, so judges' sandboxes are served too. It only takes events the cloud handed over (never the events of a school that runs on a desktop), and only those with its own routing tag.
 
 ```bash
 pnpm operator
@@ -92,18 +93,20 @@ What it needs:
 
 - The repo with `pnpm install` done, and `.env.local` at the repo root with `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and `AGENT_URL` (the public URL of the agent worker the hosted app uses).
 - `claude` installed and signed in (`claude auth status`). Set `JEMMA_RUNNER_AGENT=codex` to use Codex instead. No API key is used: provider keys and the Supabase keys are removed from the environment before the agent starts, so the subscription is what gets used.
-- The agent worker running with `AI_ROUTE=operator`. Without it the cloud does all AI work itself and the operator only serves schools that run on a desktop.
-- Optional: `OPERATOR_CONCURRENCY` (jobs at a time, default 2) and `OPERATOR_MAX_JOBS` (stop after that many agent runs).
+- The agent worker running with `AI_ROUTE=operator`. Without it the cloud does all AI work itself and the operator has nothing to do.
+- Optional: `OPERATOR_CONCURRENCY` (jobs at a time, default 2), `OPERATOR_MAX_JOBS` (stop after that many agent runs) and `OPERATOR_TAG` (default `default`, must equal the agent's `AI_ROUTE_TAG`; give a test stack its own tag so it cannot touch anyone else's events on a shared database).
+
+Known limit: curriculum PDFs are read by the cloud model. `draft_map` is never handed to the laptop (Claude Code cannot read a PDF that comes back through MCP), so it always runs on the agent's own model; every other AI job can run on the laptop.
 
 It prints one line per job (time, event type, job, seconds, done or failed) and adds the same lines to `~/Jemma/operator.log`. On a Mac it runs `caffeinate` so the Mac does not go to sleep from idleness. Ctrl-C stops it cleanly: no new jobs, running jobs finish, its presence row is removed. Press Ctrl-C twice to quit at once.
 
 The laptop must stay on, awake and online. Closing the lid or running the battery flat stops it. When it is off:
 
-- The runner beats every 30 seconds. After 90 seconds without a beat the agent counts it as offline.
+- The runner beats every 30 seconds. After 90 seconds without a beat (of its tag) the agent counts it as offline.
 - A job that misses its recorded answer then runs on the agent's own model (the free cloud model), as it did before.
 - Jobs already handed to the laptop go back to the cloud within a minute (the agent's cron runs every minute), marked `cloud_live` so they are never handed to a laptop again. This includes a job the laptop was running when it died.
 
-Try it on one machine: put `AI_ROUTE=operator` in `apps/agent/.dev.vars`, start the agent, then run `AGENT_URL=http://localhost:8787 pnpm operator`. Give the agent a `LLM_MODEL` and `VISION_MODEL` that have no recordings to force every AI job to the operator.
+Try it on one machine: put `AI_ROUTE=operator` and your own `AI_ROUTE_TAG` (for example `me-test`) in `apps/agent/.dev.vars`, start the agent, then run `OPERATOR_TAG=me-test AGENT_URL=http://localhost:8787 pnpm operator`. Give the agent a `LLM_MODEL` and `VISION_MODEL` that have no recordings to force every AI job to the operator.
 
 ## Reset
 

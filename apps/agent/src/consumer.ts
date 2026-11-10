@@ -59,7 +59,7 @@ export async function processEvent(env: Env, eventId: string, jobs: CloudJobs = 
   const handedOff = row.data.runner === 'desktop' && (row.data.payload as { route?: unknown } | null)?.route === 'operator'
   if (handedOff) return
   const ctx = toolContext(env, row.data.school_id, eventId)
-  await runEvent(eventId, { db, env: ctx.env, jobs, final, route: env.AI_ROUTE === 'operator' ? 'operator' : 'cloud' })
+  await runEvent(eventId, { db, env: ctx.env, jobs, final, route: env.AI_ROUTE === 'operator' ? 'operator' : 'cloud', routeTag: env.AI_ROUTE_TAG || undefined })
 }
 
 /** Cron: asks the owner when a desktop event has waited 10 minutes with no Jemma Desktop heartbeat. */
@@ -72,7 +72,7 @@ export async function checkDesktop(env: Env): Promise<number> {
  * back to the cloud (marked `cloud_live`, so they are never handed off again) and onto the queue.
  */
 export async function checkOperator(env: Env): Promise<number> {
-  return checkOperatorTimeouts(createServiceClient(env), async (eventId) => void (await env.EVENTS_QUEUE.send({ eventId })))
+  return checkOperatorTimeouts(createServiceClient(env), async (eventId) => void (await env.EVENTS_QUEUE.send({ eventId })), new Date(), undefined, env.AI_ROUTE_TAG || undefined)
 }
 
 /** Marks an event failed after its last queue delivery blew up outside the job plan. */

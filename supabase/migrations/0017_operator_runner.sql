@@ -1,62 +1,54 @@
 -- Operator runner: the owner's own Mac serves the hosted app with his Claude Code.
 -- Additive only. Everything here is executable by service_role only (the operator runner holds the service key).
+--
+-- An operator serves ONLY events the cloud handed to it (payload.route = 'operator'), never the events of a school that
+-- runs on a desktop. A routing tag keeps separate stacks that share one database apart: the cloud writes
+-- payload.route_tag on a hand-off, and an operator only sees events and presence rows of its own tag.
 
 -- One row per running operator runner. last_seen is the server clock.
 create table operator_presence (
   runner_id uuid primary key,
   last_seen timestamptz not null default now(),
   agent text,
-  version text
+  version text,
+  tag text not null default 'default'
 );
 alter table operator_presence enable row level security; -- no policies: service role only
 revoke all on operator_presence from public, anon, authenticated;
 
-create function operator_heartbeat(runner uuid, agent_in text, version_in text) returns void
+create function operator_heartbeat(runner uuid, agent_in text, version_in text, tag_in text default 'default') returns void
 language plpgsql security definer set search_path = public as $$
 begin
-  insert into operator_presence (runner_id, last_seen, agent, version)
-  values (runner, now(), agent_in, version_in)
+  insert into operator_presence (runner_id, last_seen, agent, version, tag)
+  values (runner, now(), agent_in, version_in, coalesce(tag_in, 'default'))
   on conflict (runner_id) do update
-    set last_seen = now(), agent = excluded.agent, version = excluded.version;
+    set last_seen = now(), agent = excluded.agent, version = excluded.version, tag = excluded.tag;
 end;
 $$;
 
--- Claims the oldest event an operator may run, or returns zero rows. An event qualifies when it is queued with
--- runner 'desktop' and EITHER the cloud handed it off (payload.route = 'operator') OR its school runs on a desktop and
--- nobody of that school has a Jemma Desktop heartbeat from the last 2 minutes. One event per school runs at a time,
--- so two papers of one test never race for the test's tail. Two operators never get the same event.
--- With only_handoffs true the second kind (desktop schools) is left alone: for a shared database, where a runner must
--- not take other people's desktop-school events. Callers that pass only `runner` get the default, false.
-create function claim_operator_event(runner uuid, only_handoffs boolean default false) returns setof events
+-- Claims the oldest event this operator may run, or returns zero rows. An event qualifies when it is queued with
+-- runner 'desktop', the cloud handed it off (payload.route = 'operator') and its payload.route_tag (default 'default')
+-- is the operator's tag. Events of a school that runs on a desktop are never claimed. One event per school runs at a time, so two papers of one test never race for the test's tail.
+-- Two operators never get the same event. The runner must have a presence row with the same tag.
+create function claim_operator_event(runner uuid, tag_in text default 'default') returns setof events
 language plpgsql security definer set search_path = public as $$
 declare
   cand record;
   picked uuid;
   got boolean;
   busy boolean;
+  wanted text := coalesce(tag_in, 'default');
 begin
-  if not exists (select 1 from operator_presence where operator_presence.runner_id = runner) then
+  if not exists (select 1 from operator_presence where operator_presence.runner_id = runner and operator_presence.tag = wanted) then
     raise exception 'unknown runner';
   end if;
 
   for cand in
     select e.id, e.school_id from events e
     where e.status = 'queued' and e.runner = 'desktop'
-      and (
-        e.payload->>'route' = 'operator'
-        or (
-          not only_handoffs
-          and exists (select 1 from schools s where s.id = e.school_id and s.ai_runner = 'desktop')
-          and not exists (
-            select 1 from runner_presence rp
-            where rp.last_seen > now() - interval '2 minutes'
-              and (
-                rp.user_id in (select p.user_id from profiles p where p.school_id = e.school_id)
-                or rp.user_id in (select c.teacher_id from classes c where c.school_id = e.school_id)
-              )
-          )
-        )
-      )
+      and e.payload->>'route' = 'operator'
+      and coalesce(e.payload->>'route_tag', 'default') = wanted
+      and not exists (select 1 from schools s where s.id = e.school_id and s.ai_runner = 'desktop') -- never a desktop school's events
     order by e.created_at, e.id
     for update of e skip locked
   loop
@@ -95,7 +87,7 @@ begin
 end;
 $$;
 
-revoke all on function operator_heartbeat(uuid, text, text), claim_operator_event(uuid, boolean), finish_operator_event(uuid, event_status, text)
+revoke all on function operator_heartbeat(uuid, text, text, text), claim_operator_event(uuid, text), finish_operator_event(uuid, event_status, text)
   from public, anon, authenticated;
-grant execute on function operator_heartbeat(uuid, text, text), claim_operator_event(uuid, boolean), finish_operator_event(uuid, event_status, text)
+grant execute on function operator_heartbeat(uuid, text, text, text), claim_operator_event(uuid, text), finish_operator_event(uuid, event_status, text)
   to service_role;

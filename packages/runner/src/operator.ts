@@ -29,11 +29,8 @@ export type OperatorOptions = {
   onLog?: (line: string) => void
   /** The same job with its detail (school, agent tool calls in order). For traces and proofs. */
   onJob?: (report: JobReport) => void
-  /**
-   * Serve only events the cloud handed off (`payload.route = 'operator'`), not the events of desktop schools. For a shared
-   * database (tests, proofs) where other people's desktop-school events must be left alone. Default off.
-   */
-  onlyHandoffs?: boolean
+  /** Routing tag (OPERATOR_TAG): only events the cloud handed off with the same tag (AI_ROUTE_TAG) are served. Default `default`. */
+  tag?: string
   /** Stop after this many agent runs (a cap for paid or limited live runs). The step that hits it fails without running. */
   maxJobs?: number
   heartbeatMs?: number
@@ -92,7 +89,7 @@ export function startOperator(o: OperatorOptions): Operator {
   const beat = async () => {
     if (stopping) return
     try {
-      await sendOperatorHeartbeat(o.db, o.runnerId, o.agent, version)
+      await sendOperatorHeartbeat(o.db, o.runnerId, o.agent, version, o.tag ?? 'default')
       lastProblem = ''
     } catch (err) {
       problem(err)
@@ -208,7 +205,7 @@ export function startOperator(o: OperatorOptions): Operator {
     }
   }
 
-  const claim = () => (o.claim ?? claimOperatorEvent)(o.db, o.runnerId, o.onlyHandoffs)
+  const claim = () => (o.claim ?? claimOperatorEvent)(o.db, o.runnerId, o.tag ?? 'default')
 
   const ticker = setInterval(() => void beat(), o.heartbeatMs ?? HEARTBEAT_MS)
 
@@ -222,7 +219,7 @@ export function startOperator(o: OperatorOptions): Operator {
     const cutoff = new Date(Date.now() - STALE_TOKEN_MS).toISOString()
     await o.db.from('mcp_tokens').delete().like('label', `${TOKEN_LABEL} %`).lt('created_at', cutoff)
     await beat() // claim_operator_event needs the presence row
-    log(`operator online: ${o.agent}${version ? ` ${version}` : ''}, ${concurrency} at a time`)
+    log(`operator online: ${o.agent}${version ? ` ${version}` : ''}, ${concurrency} at a time${o.tag && o.tag !== 'default' ? `, tag ${o.tag}` : ''}`)
   })()
 
   const loops = Array.from({ length: concurrency }, async () => {

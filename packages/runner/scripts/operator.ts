@@ -5,8 +5,8 @@
  *
  * Reads SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and AGENT_URL from the repo root .env.local (or the environment),
  * JEMMA_RUNNER_AGENT (claude or codex, default claude) and OPERATOR_CONCURRENCY (default 2).
- * OPERATOR_MAX_JOBS stops it after that many agent runs. OPERATOR_ONLY_HANDOFFS=1 serves only events the cloud handed
- * over (use it on a shared database).  OPERATOR_TRACE=<file> also appends one JSON line per job
+ * OPERATOR_MAX_JOBS stops it after that many agent runs. OPERATOR_TAG (default `default`) must match the
+ * agent's AI_ROUTE_TAG: only events handed over with that tag are served.  OPERATOR_TRACE=<file> also appends one JSON line per job
  * (school, event, job, seconds, outcome, the agent's tool calls in order). Prints one line per job and appends the same lines to
  * ~/Jemma/operator.log. Ctrl-C: no new jobs, running jobs finish, the presence row is removed. Press it twice to quit now.
  */
@@ -34,7 +34,7 @@ if (agent !== 'claude' && agent !== 'codex') throw new Error(`JEMMA_RUNNER_AGENT
 const concurrency = Number(env.OPERATOR_CONCURRENCY ?? 2)
 const maxJobs = env.OPERATOR_MAX_JOBS ? Number(env.OPERATOR_MAX_JOBS) : undefined
 const traceFile = env.OPERATOR_TRACE
-const onlyHandoffs = env.OPERATOR_ONLY_HANDOFFS === '1'
+const tag = env.OPERATOR_TAG || 'default'
 
 // The agent CLI starts with this process's environment. It must see none of the keys here, and it must use the
 // signed-in subscription: a provider key in the environment would be billed instead.
@@ -67,7 +67,7 @@ if (platform() === 'darwin') {
 }
 
 const db = createServiceClient({ SUPABASE_URL: supabaseUrl, SUPABASE_SERVICE_ROLE_KEY: serviceKey })
-out(`${new Date().toISOString().slice(0, 10)}  operator starting: ${agent}, ${concurrency} at a time, log ${logFile}`)
+out(`${new Date().toISOString().slice(0, 10)}  operator starting: ${agent}, ${concurrency} at a time, tag ${tag}, log ${logFile}`)
 const trace = (report: JobReport) => {
   if (!traceFile) return
   const { event, step, seconds, status, note, toolCalls } = report
@@ -78,7 +78,7 @@ const trace = (report: JobReport) => {
     // the screen line is enough
   }
 }
-const operator = startOperator({ db, runnerId: randomUUID(), agent, agentUrl, concurrency, maxJobs, onlyHandoffs, onLog: out, onJob: trace })
+const operator = startOperator({ db, runnerId: randomUUID(), agent, agentUrl, concurrency, maxJobs, tag, onLog: out, onJob: trace })
 
 let leaving = false
 const leave = async () => {
