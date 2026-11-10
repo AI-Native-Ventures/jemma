@@ -31,7 +31,7 @@ body.jemma-desktop-main [aria-labelledby="detail"] { height: 438px !important; o
 body.jemma-desktop-main [aria-labelledby="detail"] h2 { font-size: 22px !important; }
 body.jemma-desktop-main [aria-labelledby="detail"] > div:nth-child(3) > div { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
 `
-const NAMES: Record<AgentName, string> = { claude: 'Claude Code', codex: 'Codex' }
+const NAMES: Record<AgentName, string> = { claude: 'Claude Code', codex: 'Codex', goose: 'Goose' }
 
 if (process.env.JEMMA_USER_DATA) app.setPath('userData', process.env.JEMMA_USER_DATA)
 

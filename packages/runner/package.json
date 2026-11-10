@@ -7,10 +7,12 @@
   "main": "src/index.ts",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "try-real": "tsx scripts/try-real.ts"
+    "try-real": "tsx scripts/try-real.ts",
+    "open-job": "node --import tsx --import ../profiling/scripts/register-md.mjs ../../scripts/proof/run-open-job.ts"
   },
   "dependencies": {
     "@jemma/profiling": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.32.2",
     "@supabase/supabase-js": "2.118.0"
   },
   "devDependencies": {

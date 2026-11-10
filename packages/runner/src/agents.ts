@@ -1,6 +1,6 @@
 import { defaultExtraDirs, exec, findBin } from './exec'
 
-export type AgentName = 'claude' | 'codex'
+export type AgentName = 'claude' | 'codex' | 'goose'
 export type AgentStatus = { installed: boolean; version: string | null; signedIn: boolean | 'unknown' }
 export type DetectOptions = { extraDirs?: string[] }
 
@@ -37,7 +37,19 @@ async function codexStatus(bin: string): Promise<AgentStatus> {
   return { installed: true, version, signedIn }
 }
 
+/**
+ * Goose has no login of its own: it talks to OpenRouter with a key from the environment. So "signed in" means
+ * `OPENROUTER_API_KEY` is set. No prompt is sent.
+ */
+export async function detectGoose(opts: DetectOptions = {}): Promise<AgentStatus> {
+  const bin = findBin('goose', opts.extraDirs ?? defaultExtraDirs())
+  if (!bin) return NOT_INSTALLED
+  const v = await exec(bin, ['--version'])
+  return { installed: true, version: parseVersion(v.stdout), signedIn: Boolean(process.env.OPENROUTER_API_KEY?.trim()) }
+}
+
 export async function detectAgent(name: AgentName, opts: DetectOptions = {}): Promise<AgentStatus> {
+  if (name === 'goose') return detectGoose(opts)
   const bin = findBin(name, opts.extraDirs ?? defaultExtraDirs())
   if (!bin) return NOT_INSTALLED
   return name === 'claude' ? claudeStatus(bin) : codexStatus(bin)
