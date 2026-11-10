@@ -44,6 +44,53 @@ describe('start.sh', () => {
   })
 })
 
+describe('start.sh only ever talks to the local database', () => {
+  const script = read('start.sh')
+  const codeLines = script.split('\n').filter((line) => !/^\s*#/.test(line))
+  const code = codeLines.join('\n')
+  // Every call goes through `sb ...`: collect what follows it.
+  const calls = [...code.matchAll(/(?:^|[\s(])sb\s+([^\n;|&)"]*)/g)].map((m) => m[1]!.replace(/\s*\d*>\S*/g, '').trim())
+
+  test('the Supabase command line is run in exactly one place, the sb helper', () => {
+    expect(code.match(/exec supabase/g)).toHaveLength(1)
+    const helper = code.slice(code.indexOf('sb() {'), code.indexOf('\n}\n', code.indexOf('sb() {')))
+    expect(helper).toContain('exec supabase "$@"')
+    expect(helper).toContain('cli_guard')
+    expect(helper).toContain('-u SUPABASE_ACCESS_TOKEN')
+    expect(helper).toContain('-u SUPABASE_PROJECT_ID')
+    expect(helper).toContain('-u SUPABASE_DB_PASSWORD')
+    expect(helper).toContain('DO_NOT_TRACK=1')
+  })
+
+  test('only start, stop, status and db reset --local are used', () => {
+    expect(calls.length).toBeGreaterThanOrEqual(4)
+    const allowed = [/^start$/, /^stop$/, /^status -o env$/, /^db reset --local$/]
+    expect(calls.filter((call) => !allowed.some((ok) => ok.test(call)))).toEqual([])
+    for (const wanted of ['start', 'stop', 'status -o env', 'db reset --local']) expect(calls, wanted).toContain(wanted)
+  })
+
+  test('never links, lists projects, reads services, pushes, or names a hosted project', () => {
+    const banned = ['--linked', '--project-ref', '--db-url', 'sb link', 'sb login', 'sb projects', 'sb services', 'sb db push', 'sb migration', 'sb gen', 'sb functions', 'sb secrets']
+    for (const word of banned) expect(code, word).not.toContain(word)
+    expect(code).not.toMatch(/supabase\s+(link|login|projects|services|db push|migration|gen|functions|secrets|branches|orgs)\b/)
+  })
+
+  test('the .env.local it writes holds no SUPABASE_PROJECT_ID, token or password', () => {
+    expect(code).not.toMatch(/echo "SUPABASE_(PROJECT_ID|ACCESS_TOKEN|DB_PASSWORD)=/)
+    expect(code).toContain('echo "SUPABASE_URL=$api_url"')
+  })
+
+  test('stops before the command line when an env file could reach a hosted project', () => {
+    expect(code).toContain('cli_guard()')
+    for (const key of ['SUPABASE_PROJECT_ID', 'SUPABASE_ACCESS_TOKEN', 'SUPABASE_DB_PASSWORD']) expect(code).toContain(key)
+    expect(code).toContain('supabase/.temp/project-ref')
+    // The guard runs in step 1, before the first call, and --force sets the old .env.local aside before any call.
+    expect(code.indexOf('\ncli_guard\n')).toBeGreaterThan(-1)
+    expect(code.indexOf('mv .env.local .env.local.bak')).toBeGreaterThan(-1)
+    expect(code.indexOf('mv .env.local .env.local.bak')).toBeLessThan(code.indexOf('run_logged supabase sb start'))
+  })
+})
+
 describe('the local stack files', () => {
   test('supabase/config.toml names the local project', () => {
     expect(read('supabase/config.toml')).toMatch(/^project_id = "jemma-local"$/m)

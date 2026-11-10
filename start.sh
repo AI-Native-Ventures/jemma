@@ -41,7 +41,7 @@ export WRANGLER_SEND_METRICS=false
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
 # Settings left over in the shell would beat the files this script writes. Jemma runs on the local stack only.
-unset SUPABASE_URL SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY SUPABASE_DB_URL SUPABASE_PROJECT_ID SUPABASE_ACCESS_TOKEN \
+unset SUPABASE_URL SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY SUPABASE_DB_URL SUPABASE_PROJECT_ID SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD \
   NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY AGENT_URL EVENTS_SECRET CHILD_PIN_PEPPER AI_MODE \
   LLM_PROVIDER LLM_MODEL LLM_MODEL_FALLBACKS VISION_PROVIDER VISION_MODEL VISION_MODEL_FALLBACKS \
   FIX_AFTER_DAYS READ_CONFIDENCE_MIN
@@ -197,10 +197,43 @@ check_needs() {
 LOCAL_URL_PATTERN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?(/.*)?$'
 KEEP_ENV=0
 
+# The Supabase command line quietly uses the stored login and reads SUPABASE_PROJECT_ID from the dotenv files in this
+# folder, which could reach a hosted project. So it is never called while anything here could point it there.
+cli_guard() {
+  local f url
+  for f in .env .env.local .env.development .env.development.local .env.production .env.production.local supabase/.env supabase/.env.local; do
+    [ -f "$f" ] || continue
+    if grep -Eq '^[[:space:]]*(export[[:space:]]+)?SUPABASE_(PROJECT_ID|ACCESS_TOKEN|DB_PASSWORD)[[:space:]]*=[[:space:]]*[^[:space:]#]' "$f"; then
+      fail "$f sets SUPABASE_PROJECT_ID, SUPABASE_ACCESS_TOKEN or SUPABASE_DB_PASSWORD, which could point the Supabase command line at a hosted project, so I did not run it. Remove that line, or run ./start.sh --force to set .env.local aside, then run ./start.sh again."
+    fi
+  done
+  if [ -f .env.local ]; then
+    url="$(env_file_value SUPABASE_URL .env.local)"
+    if [ -n "$url" ] && ! printf '%s' "$url" | grep -Eq "$LOCAL_URL_PATTERN"; then
+      fail ".env.local points at a Supabase project that is not on this machine, so I did not run the Supabase command line. Move it away, or run ./start.sh --force to set it aside (saved as .env.local.bak)."
+    fi
+  fi
+  for f in supabase/.temp/project-ref supabase/.temp/linked-project.json; do
+    if [ -e "$f" ]; then
+      fail "$f links this folder to a hosted Supabase project, so I did not run the Supabase command line. Delete the supabase/.temp folder, then run ./start.sh again."
+    fi
+  done
+}
+
+# The only door to the Supabase command line, and it only opens for the local stack: start, stop, status and
+# db reset --local. Never link, projects, services, db push, --linked or --project-ref. A test reads this file to keep it so.
+sb() {
+  cli_guard
+  env -u SUPABASE_ACCESS_TOKEN -u SUPABASE_PROJECT_ID -u SUPABASE_DB_PASSWORD DO_NOT_TRACK=1 "${PNPM[@]}" exec supabase "$@"
+}
+
 check_env_file() {
   local url key
   [ -f .env.local ] || return 0
   if [ "$FORCE" = 1 ]; then
+    # Set aside now, before the Supabase command line runs, so it never sees it.
+    mv .env.local .env.local.bak
+    say "Your old .env.local is saved as .env.local.bak"
     return 0
   fi
   url="$(env_file_value SUPABASE_URL .env.local)"
@@ -244,10 +277,10 @@ if [ "$STOP" = 1 ]; then
   say "Stopping Jemma."
   stop_servers
   say "The app is stopped."
-  if command -v node >/dev/null 2>&1 && { command -v pnpm >/dev/null 2>&1 || command -v corepack >/dev/null 2>&1; } \
-    && command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1 && [ -d node_modules/supabase ]; then
-    if command -v pnpm >/dev/null 2>&1; then PNPM=(pnpm); else PNPM=(corepack pnpm); fi
-    "${PNPM[@]}" exec supabase stop 2>&1 || say "The database could not be stopped. Check Docker."
+  if command -v node >/dev/null 2>&1 && command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1 && [ -d node_modules/supabase ]; then
+    if command -v pnpm >/dev/null 2>&1; then PNPM=(pnpm); elif command -v corepack >/dev/null 2>&1; then PNPM=(corepack pnpm); else fail "pnpm is not installed, so I cannot stop the local database."; fi
+    cli_guard
+    sb stop 2>&1 || say "The database could not be stopped. Check Docker."
     say "The local database is stopped."
   else
     say "Docker is not running or Jemma was never installed here, so there is no local database to stop."
@@ -258,11 +291,9 @@ fi
 step 1 "Checking what you need (Docker, Node 22 or newer, pnpm)."
 check_needs
 check_env_file
+cli_guard
 check_ports
 say "Everything needed is here."
-
-# The supabase CLI that pnpm installed for this repo, run from the repo root.
-sb() { "${PNPM[@]}" exec supabase "$@"; }
 
 # ---------------------------------------------------------------- step 2: packages
 
@@ -275,13 +306,31 @@ fi
 # ---------------------------------------------------------------- step 3: database and file storage
 
 step 3 "Starting the local database and file storage (Supabase in Docker). The first time this downloads a few GB and takes about 10 minutes."
+cli_guard
 if ! run_logged supabase sb start; then
   tail_log supabase
   fail "The local database did not start. Usual causes: Docker has too little memory (give it 4 GB or more), the network dropped while images downloaded (run ./start.sh again), or another Supabase project is using ports 54321 to 54324 (stop it, then run ./start.sh again)."
 fi
-if ! run_logged supabase sb migration up --local; then
-  tail_log supabase
-  fail "The database tables could not be set up. The log is in .jemma/logs/supabase.log"
+# `supabase start` sets up a brand new database from supabase/migrations. A database from an earlier run, or one
+# made from older migrations, is rebuilt (local database only) so the tables always match the files.
+migrations_hash() {
+  node -e '
+    const fs = require("node:fs"), crypto = require("node:crypto"), dir = "supabase/migrations"
+    const hash = crypto.createHash("sha256")
+    for (const name of fs.readdirSync(dir).sort()) { hash.update(name); hash.update(fs.readFileSync(dir + "/" + name)) }
+    process.stdout.write(hash.digest("hex"))
+  '
+}
+MIGRATIONS_NOW="$(migrations_hash)"
+MIGRATIONS_DONE="$(cat "$STATE/migrations.sha" 2>/dev/null || true)"
+if [ "$MIGRATIONS_NOW" != "$MIGRATIONS_DONE" ]; then
+  say "Setting up the database tables from supabase/migrations (local database only)."
+  if ! run_logged supabase sb db reset --local; then
+    tail_log supabase
+    fail "The database tables could not be set up. The log is in .jemma/logs/supabase.log"
+  fi
+  mkdir -p "$STATE"
+  printf '%s' "$MIGRATIONS_NOW" >"$STATE/migrations.sha"
 fi
 say "The local database is up, with every table and storage bucket in place."
 
@@ -307,10 +356,6 @@ else
   [ -n "$service_key" ] || service_key="$(status_value SECRET_KEY)"
   if [ -z "$api_url" ] || [ -z "$anon_key" ] || [ -z "$service_key" ]; then
     fail "The local database did not report its address and keys. Run ./start.sh --stop, then ./start.sh again."
-  fi
-  if [ -f .env.local ]; then
-    cp .env.local .env.local.bak
-    say "Your old .env.local is saved as .env.local.bak"
   fi
   (
     umask 077
@@ -354,7 +399,7 @@ step 5 "Loading the recorded AI answers (no model is called, no key is needed)."
 [ -f fixtures/ai-replays.json.gz ] || fail "fixtures/ai-replays.json.gz is missing. Run: git checkout fixtures/ai-replays.json.gz"
 if ! run_logged replays "${PNPM[@]}" --filter @jemma/profiling exec tsx "$ROOT/scripts/load-replays.ts"; then
   tail_log replays
-  fail "The recorded answers could not be loaded. The log is in .jemma/logs/replays.log"
+  fail "The recorded answers could not be loaded. The log is in .jemma/logs/replays.log. If the tables are missing, delete .jemma/migrations.sha and run ./start.sh again."
 fi
 
 # ---------------------------------------------------------------- step 6: the agent and the web app
