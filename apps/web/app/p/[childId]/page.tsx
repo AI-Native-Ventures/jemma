@@ -2,10 +2,12 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
 import { getProfile, type MarkRow } from '@/lib/data/p23'
+import { getSharedLongView } from '@/lib/data/p52'
 import { getProfileExtras } from '@/lib/data/p36'
 import { Only } from './_only'
 import { ProfileLaptop } from './_profile-laptop'
 import { Chevron, css, Diamond, Icon } from './beyond/_parts'
+import { LongViewCard } from './long-view/_card'
 
 type Chip = NonNullable<Awaited<ReturnType<typeof getProfile>>>['notices'][number]['chips'][number]
 
@@ -49,8 +51,9 @@ const CARD = 'display:flex;flex-direction:column;background:#FFFFFF;border:1px s
 export default async function ParentProfilePage({ params }: { params: Promise<{ childId: string }> }) {
   const { childId } = await params
   await requireRole('parent')
-  const [data, extras] = await Promise.all([getProfile(childId), getProfileExtras(childId)])
+  const [data, extras, shared] = await Promise.all([getProfile(childId), getProfileExtras(childId), getSharedLongView(childId)])
   if (!data) notFound()
+  const longView = shared ? <LongViewCard base={`/p/${childId}`} teacherName={shared.teacherName} count={shared.patterns.length} /> : null
   const { child } = data
   const base = `/p/${childId}`
 
@@ -102,6 +105,8 @@ export default async function ParentProfilePage({ params }: { params: Promise<{ 
           ))}
         </section>
       ) : null}
+
+      {longView}
 
       {data.marks.length > 0 ? (
         <section aria-labelledby="marks" style={css(`${CARD};gap:2px;padding:16px`)}>
@@ -223,7 +228,7 @@ export default async function ParentProfilePage({ params }: { params: Promise<{ 
     </Only>
     </div>
     <Only at="laptop">
-    <ProfileLaptop data={data} extras={extras} base={base} />
+    <ProfileLaptop data={data} extras={extras} base={base} longView={longView} />
     </Only>
     </>
   )

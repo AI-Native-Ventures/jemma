@@ -1,11 +1,15 @@
 // Per-judge demo sandboxes: a made-up school with its own users, at one of three stages.
 // Server only: needs the service role client.
 import type { Json, JemmaDb } from '../../packages/profiling/src/db'
+import type { ToolContext } from '../../packages/profiling/src/tools/context'
+import { loadHistory } from '../../packages/profiling/src/tools/read/get-learner-history'
+import { storedTerms } from '../../packages/profiling/src/tools/save/save-long-view'
 import { LessonSchema, ReteachSchema, GuidanceSchema, TopicMapDraftSchema, AnswerKeyItemSchema } from '../../packages/profiling/src/schemas'
 import { classTest1Results, classTest1Roster, classTest1Scores, classTest1ScoresBeforeFix, classTest1Wrong, siphoQ7BeforeFix } from './fixtures/class-test-1'
 import { AMINA_ACTIVITIES, AWAY_DAY_INDEX, CAST, CHILD_PIN, CLASS, NOTES, SCHOOL, lastSchoolDays } from './fixtures/cast'
 import { FIXED_GAPS, FORMAT_FAMILY, FORMAT_TRIALS, TERM3_ROWS } from './fixtures/history'
 import { longHistory } from './fixtures/long-history'
+import { PATTERN_LEARNERS, wordPatterns } from './fixtures/long-view-wording'
 import {
   AMINA_LESSON, AMINA_LOG, CLASS_LOG, CURRICULUM_DOCS, HOMEWORK_NEEDS, SIPHO_NEEDS, WEEK_PLAN, PARENT_NOTES, TEACHER_NOTES, HOMEWORK_ROWS, LESSON_TOPIC, RETEACH, RETEACH_EXPLANATION, RETEACH_MISSING_BASIC, RETEACH_TOPIC, RETEACH_WHY,
   SESSION_DONE, SESSION_LOG, SESSION_TRY, SESSION_WARMUP, TEST_TITLE, TERMS, answerKeyItems, guidanceCard, topicMapDraft,
@@ -498,6 +502,10 @@ async function buildMarked(c: MarkedCtx): Promise<void> {
     ok(admin.rpc('retag_results', { map: map.id }), 'retag_results'),
   ])
 
+  // The Long view: what the long_view job would have saved, as drafts for the teacher, with a Needs you item for each learner.
+  // Code finds the patterns (the same `loadHistory` the tool reads), the wording comes from a small fixture.
+  await seedLongView(c)
+
   // Bell items for this stage; only the newest is unread.
   const fill = (path: string, ids: Record<string, string>) => path.replace(/\{(\w+)\}/g, (_, k: string) => ids[k]!)
   const ids = { amina: aminaId, test: test.id, sipho: paperOf.get(childId.sipho!)!, aminaPaper: paperOf.get(aminaId)!, homework: hwPaper.id, session: session.id }
@@ -547,6 +555,40 @@ async function buildMarked(c: MarkedCtx): Promise<void> {
       ),
       ok(admin.from('activity_log').insert({ school_id: schoolId, class_id: classId, child_id: aminaId, at: finishedAt, text: SESSION_LOG, tool: 'update_learner_profile' }), 'session log'),
     ])
+  }
+}
+
+/** Draft Long view patterns for Amina and Naledi, saved the way `save_long_view` saves them, and the teacher's Needs you items. */
+async function seedLongView(c: MarkedCtx): Promise<void> {
+  const { admin, schoolId, teacherId } = c
+  const ctx: ToolContext = { db: admin, schoolId, eventId: null, env: {} as ToolContext['env'], now: () => c.now }
+  for (const name of PATTERN_LEARNERS) {
+    const id = c.childId[name]!
+    const { history, noteLabels } = await loadHistory(ctx, id)
+    const words = wordPatterns(history.candidates, history.notes)
+    if (words.length === 0) continue
+    const byKey = new Map(history.candidates.map((cand) => [cand.key, cand]))
+    await ok(
+      admin.from('long_view_patterns').insert(
+        words.map((w) => {
+          const cand = byKey.get(w.key)!
+          const notes = w.noteIds.map((noteId) => ({ kind: 'note' as const, id: noteId, label: noteLabels.get(noteId)! }))
+          return {
+            child_id: id, kind: cand.kind, family: cand.family, title: w.title, statement: w.statement,
+            terms: json(storedTerms(cand)), evidence: json([...cand.evidence, ...notes]), status: 'draft', active: true,
+          }
+        }),
+      ),
+      `long view patterns for ${name}`,
+    )
+    await ok(
+      admin.from('needs_you_items').insert({
+        owner_id: teacherId, school_id: schoolId, child_id: id, kind: 'review_long_view', ref_id: id, status: 'open',
+        title: `Look at ${history.child.firstName}'s Long view`,
+        detail: `${words.length} ${words.length === 1 ? 'pattern' : 'patterns'} to check before anything is shared.`,
+      }),
+      `long view needs you for ${name}`,
+    )
   }
 }
 

@@ -5,6 +5,7 @@ import type { JemmaDb } from '@jemma/profiling/db'
 import { insertObservation } from '@jemma/profiling/records'
 import { sendEvent } from '@/lib/agent'
 import { requireRole } from '@/lib/auth'
+import { requestLongView } from '@/lib/long-view'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
 const KINDS = ['participation', 'confidence', 'effort', 'behaviour'] as const
@@ -21,12 +22,15 @@ export async function saveNote(childId: string, kind: Kind, text: string): Promi
   } catch {
     return { ok: false, reason: 'Could not save the note. Try again.' }
   }
-  try {
-    await sendEvent('observation.added', { childId })
-  } catch (e) {
-    // The event row is already recorded by sendEvent before it posts; the note itself is saved.
-    console.error('observation.added not delivered', e)
-  }
+  // The agent hears about the note and the Long view asks for its update at the same time, so the teacher waits once, not twice.
+  // Neither can fail the note: `requestLongView` never throws and skips a learner whose update is already waiting.
+  await Promise.all([
+    sendEvent('observation.added', { childId }).catch((e) => {
+      // The event row is already recorded by sendEvent before it posts; the note itself is saved.
+      console.error('observation.added not delivered', e)
+    }),
+    requestLongView([childId]),
+  ])
   revalidatePath('/t/[classId]/learners/[childId]', 'page')
   return { ok: true }
 }

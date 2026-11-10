@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getChildProfileView, dayLabel } from '@/lib/data/p19'
+import { getLongViewSummary } from '@/lib/data/p52'
 import { BackHeader, Chevron, Diamond, EyeIcon, Page, card, font } from '../../_parts'
 
 const docIcon = (
@@ -31,6 +32,7 @@ export default async function ChildProfilePage({ params }: { params: Promise<{ c
   const { classId, childId } = await params
   const v = await getChildProfileView(classId, childId)
   if (!v) notFound()
+  const longView = await getLongViewSummary(childId)
   const base = `/t/${classId}`
   const heading =
     v.average === null
@@ -140,6 +142,20 @@ export default async function ChildProfilePage({ params }: { params: Promise<{ c
             </ul>
           </section>
         ) : null}
+
+        <Link
+          href={`${base}/learners/${v.id}/long-view`}
+          style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 12px 14px 14px', background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 18, textDecoration: 'none', color: '#1F1D36' }}
+        >
+          <span aria-hidden="true" style={{ width: 38, height: 38, flex: 'none', borderRadius: 12, background: '#EEEDF5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="7" r="1.6" /><circle cx="12" cy="7" r="1.6" /><circle cx="18" cy="7" r="1.6" /><circle cx="6" cy="17" r="1.6" /><circle cx="12" cy="17" r="1.6" /><circle cx="18" cy="17" r="1.6" /></svg>
+          </span>
+          <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2, lineHeight: 1.3 }}>
+            <span style={{ fontSize: 16, fontWeight: 600 }}>Long view</span>
+            <span style={{ fontSize: 14, color: '#5D5A73' }}>{longView}</span>
+          </span>
+          <Chevron />
+        </Link>
 
         <section aria-labelledby="tnotes" style={{ ...card(20), gap: 12, padding: 16 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>

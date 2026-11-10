@@ -307,6 +307,10 @@ test('the whole demo path', async ({ page }) => {
     expect(await card()).not.toBe(before)
     const logged = await admin.from('activity_log').select('text').eq('school_id', schoolId).eq('tool', 'subject_guidance')
     expect(logged.data!.length).toBeGreaterThan(0)
+    // The teacher's note also asked for a Long view update for Amina, and the agent finished it.
+    const longView = await admin.from('events').select('status').eq('school_id', schoolId).eq('type', 'long_view.requested').eq('payload->>childId', sb.childId)
+    expect(longView.data!.length).toBeGreaterThan(0)
+    expect(longView.data!.every((e) => e.status === 'done')).toBe(true)
     await page.goto(`/p/${sb.childId}`)
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Amina')
   } finally {
