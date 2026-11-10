@@ -35,6 +35,22 @@ test('happy path: the tool is called with the exact contract, over HTTP, with th
   expect(server.auth.every((a) => a === 'Bearer tok-1')).toBe(true)
 })
 
+test('the payload has exactly the contract keys and nothing else', async () => {
+  server = await startFakeMcp({ withTool: true })
+  // an extra field on a call (here `answered`, which the transcript keeps) must not leak into what is sent
+  const withExtra = [{ ...call('files', 'write_file', 1), answered: true }, call('jemma', 'complete_job', 2)]
+  expect(await reportCalls({ url: server.url, token: 't' }, report(withExtra as ExternalCallsReport['calls']))).toBe(true)
+  const sent = server.inputs[0] as Record<string, unknown>
+  expect(Object.keys(sent).sort()).toEqual(['calls', 'engine', 'eventId', 'model', 'usage'])
+  expect(Object.keys(sent.usage as object).sort()).toEqual(['costUsd', 'inputTokens', 'outputTokens'])
+  const calls = sent.calls as Record<string, unknown>[]
+  expect(calls).toHaveLength(1)
+  expect(Object.keys(calls[0]!).sort()).toEqual(['at', 'input', 'ok', 'output', 'server', 'tool'])
+  expect(typeof calls[0]!.at).toBe('string')
+  expect(Number.isNaN(Date.parse(calls[0]!.at as string))).toBe(false)
+  expect(typeof calls[0]!.ok).toBe('boolean')
+})
+
 test('no model and no usage are sent as null', async () => {
   server = await startFakeMcp({ withTool: true })
   expect(await reportCalls({ url: server.url, token: 't' }, { ...report([call('files', 'write_file')]), model: null, usage: null, engine: 'codex' })).toBe(true)

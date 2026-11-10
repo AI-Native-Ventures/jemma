@@ -83,6 +83,11 @@ test('the borrowed calls and the cost are reported once, to the same server and 
   expect(mcpServer.inputs).toHaveLength(1)
   const sent = mcpServer.inputs[0] as { eventId: string; engine: string; model: string; usage: unknown; calls: { server: string; tool: string; ok: boolean; at: string }[] }
   expect(sent).toMatchObject({ eventId: 'evt-1', engine: 'goose', model: 'model-a:free', usage: { inputTokens: 100, outputTokens: 10, costUsd: 0 } })
+  // exactly the contract: nothing else on the payload, on a call or on the usage; Jemma's own calls are not in it
+  expect(Object.keys(sent).sort()).toEqual(['calls', 'engine', 'eventId', 'model', 'usage'])
+  expect(Object.keys(sent.usage as object).sort()).toEqual(['costUsd', 'inputTokens', 'outputTokens'])
+  expect(sent.calls.every((c) => Object.keys(c).sort().join() === 'at,input,ok,output,server,tool' && c.server !== 'jemma')).toBe(true)
+  expect(sent.calls.length).toBeLessThanOrEqual(50)
   expect(sent.calls.map((c) => `${c.server}.${c.tool}`)).toEqual(['files.write_file'])
   expect(sent.calls[0]).toMatchObject({ ok: true, input: { path: '/reports/class_report-k.md' } })
   expect(sent.calls[0]!.at).toMatch(/^2026-|^20\d\d-/)

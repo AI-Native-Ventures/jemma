@@ -70,6 +70,22 @@ Goose tells every MCP server its own working folder as a "root". The filesystem 
 
 The recipe now passes `--confine-roots`, so the server can only see the reports folder, whatever folder goose reports. This is the "path-escape protection" the borrowed server is there for. It is guarded by an opt-in test (`test/goose-real.test.ts`, see below).
 
+## Proof: goose stays out of the owner's own folders
+
+Goose runs with `GOOSE_PATH_ROOT` set to a folder inside the job's temp folder, and `GOOSE_DISABLE_KEYRING=1`.
+
+- Reads. `test/goose-real.test.ts` (opt-in, real goose, stand-in provider, no model) makes a stand-in home folder whose goose config folder holds a hints file with a canary string. Goose puts a hints file into the model's prompt. Run without `GOOSE_PATH_ROOT` (the control), the canary reached the model. Run through `runJob`, it did not. Removing `GOOSE_PATH_ROOT` from `gooseEnv` makes that test fail.
+- Writes. In the same test, after a `runJob` run the stand-in home folder holds only the config folder the test made and npm's own `.npm` cache (from `npx`, not goose). The control run did create `.local/share/goose` and `.local/state/goose` there, so the check can see a write.
+- The owner's real folders. Listing, sizes and mtimes of `~/.config/goose`, `~/.local/share/goose` and `~/.local/state/goose` (and the other places goose could use: `~/.cache/goose`, `~/Library/Application Support/goose`, `~/Library/Caches/goose`, `~/.goose`) were identical before and after the whole runner suite with `JEMMA_GOOSE_REAL=1` (58 tests, including the real-goose ones through `runJob`). Before and after also matched around the earlier real-goose test alone.
+- Keychain. `GOOSE_DISABLE_KEYRING=1` is in the child's environment on every run (asserted by a unit test through the fake goose and by `gooseEnv`'s test). Goose printed no keychain prompt and no dialog appeared. I did not read keychain activity directly (the `security` command is off limits), so this is the setting plus no prompt, not an observation of the keychain.
+- What the runner does not isolate: `npx` keeps its cache in the user's `~/.npm` (that is how the file server is fetched), and the reports folder is written by design.
+
+Disclosure: before the isolation existed, my investigation runs of goose (09:20 to 09:35 on 10 Nov, stand-in provider and one unreachable-provider run) used the real goose folders, one mutation check of the isolation (about 10:38, on purpose, isolation removed) did the same, and the offline `goose recipe validate` and `--render-recipe` test ran without isolation until I found it and fixed it (it now uses a throwaway root). The coordinator's own spike also wrote there earlier. So `~/.local/share/goose` and `~/.local/state/goose` hold log files, `projects.json` and session database changes from today. `~/.config/goose` was never changed (its mtimes are from 28 Aug and 3 Nov). Those logs hold only stand-in prompts and fake values (for example the fake token `test-token` from a scratch recipe). None of the three live runs is in them (their prompts name Amina and none of the real logs does; those runs happened with the isolation on). I left those files alone because they are the owner's folders and the spike's files are mixed in with mine.
+
+## Proof: the borrowed-call report matches the contract
+
+The payload `reportCalls` sends to `log_external_calls` is `{ eventId, engine, model, usage, calls }`: `engine` is `claude`, `codex` or `goose`, `model` is a string or null, `usage` is `{ inputTokens, outputTokens, costUsd }` or null, and each call is `{ server, tool, input, output, ok, at }` with `at` an ISO time. Only calls whose server is not `jemma` go in, at most 50. Three tests check the exact key sets (an extra field on a call, such as the transcript's `answered`, is stripped): `test/report-calls.test.ts`, `test/goose-run.test.ts`, and `test/goose-real.test.ts` for a real goose run (calls `files.list_allowed_directories` and `files.write_file`, usage 30 / 6 for three requests of 10 / 2 tokens, model `stand-in/model:free`). The packet's P50a contract was compared by reading its text in the brief, not against P50a's code, which is not on this branch.
+
 ## Why the borrowed server
 
 Borrowed: the official MCP filesystem server, because sandboxed, allow-listed file access with path-escape protection is security code we should not write and audit ourselves.
@@ -129,7 +145,7 @@ JEMMA_GOOSE_REAL=1 pnpm --filter @jemma/runner exec vitest run goose-real
 - `log_external_calls` against the real tool. It did not exist on the worker used here.
 - The default reports folder (`<home>/Jemma/reports`). The proof used a temp folder.
 - Goose with a user who already has a goose config. The runner points goose at an empty config folder, and that was only checked on a Mac with no goose config at all.
-- Whether the job still works when `npx` cannot reach npm (the file server is downloaded on first use).
+- Whether the job still works when `npx` cannot reach npm (the file server is downloaded on first use), when `npx` is not on goose's PATH (a desktop app started from Finder has a short PATH; nothing here adds to it), or on Node older than 24 (the file server declares node >= 24; npm printed an engines warning on Node 22.20.0 and the server still started).
 - The Electron desktop app and its UI. Goose is not offered there. Nothing in this proof touched the desktop app.
 - How often the model skips `get_job` (2 of 3 runs here) and whether other models in the list behave the same. No live run used the fallback models.
 - Test-first order: the pure-code pieces (recipe, parser, report-calls) were written before their tests. Mutation checks were run afterwards (never treating a save as saved, and counting an errored answer as ok both fail tests).

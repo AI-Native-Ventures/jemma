@@ -166,7 +166,8 @@ const realGoose = findBin('goose') // looked up at load time, before the fakes g
 test.skipIf(!realGoose)('the real goose accepts the recipe and keeps template openers literal', () => {
   const dir = tmp('jemma-recipe-')
   const file = writeGooseRecipe(dir, { prompt: 'Keep {{ name }} and {% x %} and {# y #} and {{{ z }}} as they are.', mcp, reportsDir: '/tmp', model: 'vendor/model:free' })
-  const env = { ...process.env, GOOSE_DISABLE_KEYRING: '1' }
+  // goose's own folders go into a throwaway root, so this test never touches the user's real goose config, logs or sessions
+  const env = { ...process.env, GOOSE_DISABLE_KEYRING: '1', GOOSE_PATH_ROOT: tmp('jemma-goose-root-') }
   execFileSync(realGoose!, ['recipe', 'validate', file], { env, stdio: 'pipe' })
   const rendered = execFileSync(realGoose!, ['run', '--recipe', file, '--render-recipe'], { env, encoding: 'utf8' })
   expect(rendered).toContain('Keep {{ name }} and {% x %} and {# y #} and {{{ z }}} as they are.')
