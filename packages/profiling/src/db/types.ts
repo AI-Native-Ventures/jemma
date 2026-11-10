@@ -1140,6 +1140,31 @@ export type Database = {
           },
         ]
       }
+      operator_presence: {
+        Row: {
+          agent: string | null
+          last_seen: string
+          runner_id: string
+          tag: string
+          version: string | null
+        }
+        ComputedFields: never
+        Insert: {
+          agent?: string | null
+          last_seen?: string
+          runner_id: string
+          tag?: string
+          version?: string | null
+        }
+        Update: {
+          agent?: string | null
+          last_seen?: string
+          runner_id?: string
+          tag?: string
+          version?: string | null
+        }
+        Relationships: []
+      }
       paper_pages: {
         Row: {
           created_at: string
@@ -1820,7 +1845,31 @@ export type Database = {
           type: string
         }[]
       }
+      claim_operator_event: {
+        Args: { runner: string; tag_in?: string }
+        Returns: {
+          attempts: number
+          claimed_by: string | null
+          created_at: string
+          error: string | null
+          finished_at: string | null
+          id: string
+          payload: NonNullable<Json>
+          runner: Database["public"]["Enums"]["runner"]
+          school_id: string
+          status: Database["public"]["Enums"]["event_status"]
+          type: string
+        }[]
+      }
       finish_event: {
+        Args: {
+          error_in: string
+          event: string
+          status_in: Database["public"]["Enums"]["event_status"]
+        }
+        Returns: undefined
+      }
+      finish_operator_event: {
         Args: {
           error_in: string
           event: string
@@ -1838,6 +1887,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       my_school: { Args: Record<PropertyKey, never>; Returns: string }
+      operator_heartbeat: {
+        Args: { agent_in: string; runner: string; tag_in?: string; version_in: string }
+        Returns: undefined
+      }
       parent_of: { Args: { child: string }; Returns: boolean }
       retag_results: { Args: { map: string }; Returns: undefined }
       teaches_child: { Args: { child: string }; Returns: boolean }
