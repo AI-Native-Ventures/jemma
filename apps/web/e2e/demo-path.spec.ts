@@ -11,7 +11,10 @@ import { openSandbox } from './helpers/sandbox'
 
 const LIVE = (process.env.AI_MODE ?? 'replay') !== 'replay'
 const PREVIEW = Boolean(process.env.PREVIEW_URL)
-const AGENT_WAIT = PREVIEW ? 24 * 60_000 : LIVE ? 25 * 60_000 : 5 * 60_000
+// SLOW_AI=1: a real model on the owner's laptop does the AI work (the operator runner), about a minute per job.
+// It only makes the waits longer. No assertion changes.
+const SLOW_AI = Boolean(process.env.SLOW_AI)
+const AGENT_WAIT = SLOW_AI ? 60 * 60_000 : PREVIEW ? 24 * 60_000 : LIVE ? 25 * 60_000 : 5 * 60_000
 const AGENT_URL = PREVIEW
   ? process.env.PREVIEW_AGENT_URL ?? 'https://jemma-agent.horizonsystems.workers.dev'
   : process.env.AGENT_URL
@@ -79,7 +82,7 @@ async function answerQuestion(page: Page, q: LessonQuestion, right: boolean) {
 test.use({ actionTimeout: 30_000 })
 
 test('the whole demo path', async ({ page }) => {
-  test.setTimeout(PREVIEW ? 29 * 60_000 : LIVE ? 60 * 60_000 : 20 * 60_000)
+  test.setTimeout(SLOW_AI ? 4 * 60 * 60_000 : PREVIEW ? 29 * 60_000 : LIVE ? 60 * 60_000 : 20 * 60_000)
   const admin = db()
   const health = await fetch(`${AGENT_URL}/health`).catch(() => null)
   expect(health?.ok, `the agent worker must be running at ${AGENT_URL} (pnpm --filter agent dev)`).toBe(true)

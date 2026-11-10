@@ -5,7 +5,8 @@
   "packageManager": "pnpm@10.27.0",
   "scripts": {
     "test": "vitest run",
-    "typecheck": "pnpm -r --parallel typecheck"
+    "typecheck": "pnpm -r --parallel typecheck",
+    "operator": "pnpm --filter @jemma/runner operator"
   },
   "devDependencies": {
     "typescript": "5.9.3",

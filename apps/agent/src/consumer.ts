@@ -1,6 +1,6 @@
 import { SupabaseReplayStore } from '@jemma/profiling/ai'
 import { createServiceClient } from '@jemma/profiling/db'
-import { checkDesktopTimeouts, runEvent } from '@jemma/profiling/orchestrator'
+import { checkDesktopTimeouts, checkOperatorTimeouts, runEvent } from '@jemma/profiling/orchestrator'
 import type { ToolContext } from '@jemma/profiling/tools'
 import type { Env } from './env'
 import { cloudJobs, type CloudJobs } from './jobs'
@@ -41,11 +41,13 @@ export const MAX_QUEUE_RETRIES = 3
 /**
  * Runs one event in the cloud. Events for a desktop school stay queued with runner 'desktop' (the cron check
  * asks the owner if the runner stays away). The run itself is `runEvent`: job plan, retries, cancellation, postconditions.
+ * With `AI_ROUTE=operator` each job tries recorded answers first and hands the event to the owner's laptop on a miss;
+ * an event already handed off (queued for the desktop side with `payload.route = 'operator'`) is left alone here.
  * `final` is true on the last queue delivery, when a still-failing event must be marked failed.
  */
 export async function processEvent(env: Env, eventId: string, jobs: CloudJobs = cloudJobs, final = true): Promise<void> {
   const db = createServiceClient(env)
-  const row = await db.from('events').select('id, school_id, status').eq('id', eventId).maybeSingle()
+  const row = await db.from('events').select('id, school_id, status, runner, payload').eq('id', eventId).maybeSingle()
   if (row.error) throw new Error(row.error.message)
   if (!row.data || row.data.status !== 'queued') return
   const school = await db.from('schools').select('ai_runner').eq('id', row.data.school_id).single()
@@ -54,13 +56,23 @@ export async function processEvent(env: Env, eventId: string, jobs: CloudJobs = 
     await db.from('events').update({ runner: 'desktop' }).eq('id', eventId).eq('status', 'queued')
     return
   }
+  const handedOff = row.data.runner === 'desktop' && (row.data.payload as { route?: unknown } | null)?.route === 'operator'
+  if (handedOff) return
   const ctx = toolContext(env, row.data.school_id, eventId)
-  await runEvent(eventId, { db, env: ctx.env, jobs, final })
+  await runEvent(eventId, { db, env: ctx.env, jobs, final, route: env.AI_ROUTE === 'operator' ? 'operator' : 'cloud' })
 }
 
 /** Cron: asks the owner when a desktop event has waited 10 minutes with no Jemma Desktop heartbeat. */
 export async function checkDesktop(env: Env): Promise<number> {
   return checkDesktopTimeouts(createServiceClient(env))
+}
+
+/**
+ * Cron, every minute: when no operator runner has been seen for 90 seconds, events handed to the owner's laptop go
+ * back to the cloud (marked `cloud_live`, so they are never handed off again) and onto the queue.
+ */
+export async function checkOperator(env: Env): Promise<number> {
+  return checkOperatorTimeouts(createServiceClient(env), async (eventId) => void (await env.EVENTS_QUEUE.send({ eventId })))
 }
 
 /** Marks an event failed after its last queue delivery blew up outside the job plan. */

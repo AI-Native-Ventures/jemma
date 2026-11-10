@@ -13,6 +13,8 @@ export interface Env {
   TTS_PROVIDER?: string
   TTS_MODEL?: string
   AI_MODE?: 'live' | 'record' | 'replay' | 'cache'
+  /** `cloud` (default): the worker does the AI work. `operator`: recorded answers first, then the owner's laptop, then the worker's own model. */
+  AI_ROUTE?: 'cloud' | 'operator'
   OPENROUTER_API_KEY?: string
   DEEPSEEK_API_KEY?: string
   ANTHROPIC_API_KEY?: string

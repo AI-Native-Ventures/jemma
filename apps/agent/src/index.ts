@@ -1,7 +1,7 @@
 import { createMcpHandler } from 'agents/mcp'
 import { createJemmaMcpServer } from '@jemma/profiling/tools'
 import { authenticate } from './auth'
-import { checkDesktop, failEvent, MAX_QUEUE_RETRIES, processEvent, toolContext } from './consumer'
+import { checkDesktop, checkOperator, failEvent, MAX_QUEUE_RETRIES, processEvent, toolContext } from './consumer'
 import type { Env } from './env'
 
 export type { Env } from './env'
@@ -51,5 +51,6 @@ export default {
   },
   async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     ctx.waitUntil(checkDesktop(env))
+    ctx.waitUntil(checkOperator(env))
   },
 } satisfies ExportedHandler<Env, { eventId: string }>
