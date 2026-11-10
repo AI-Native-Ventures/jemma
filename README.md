@@ -37,7 +37,7 @@ The live demo is at https://jemma-web.horizonsystems.workers.dev. To run Jemma o
 
 1. Open `/demo`. You get your own copy of Hillview Primary, a made-up school. Nothing you do reaches other judges.
 2. Pick a person: **Ms Banda** (teacher), **Thandi M** (parent, Amina's mother) or **Amina** (a Grade 6 learner). Ms Banda is the place to start.
-3. Follow the five steps on the page: approve the topic map, snap the memo and five papers (sample papers are there if you have none), link Amina with the class code, run tonight's session as Amina, then see the result as Ms Banda and Thandi.
+3. Follow the five steps on the page: approve the topic map, snap the memo and five papers (sample papers are there if you have none) and tap Share with parents, link Amina with the class code, run tonight's session as Amina, then see the result as Ms Banda and Thandi and open Amina's Long view.
 4. Use **Reset demo** to put your copy back to step 1. It takes about 10 seconds.
 
 More detail is in [docs/judges.md](docs/judges.md). Every person and paper is made up.

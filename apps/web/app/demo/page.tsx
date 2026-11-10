@@ -16,10 +16,10 @@ const PEOPLE = [
 
 const STEPS = [
   ['Teacher:', " upload the curriculum, approve Jemma's topic map."],
-  ['Teacher:', ' snap the memo and 5 papers. Use the sample papers if you have none.'],
-  ['Parent:', ' link Amina with class code '],
+  ['Teacher:', ' snap the memo and 5 papers. Use the sample papers if you have none. Then tap Share with parents.'],
+  ['Parent:', ' link Amina with '],
   ['Amina:', " run tonight's session."],
-  ['Teacher and parent:', ' see the result and the updated gaps.'],
+  ['Teacher and parent:', " see the result, the updated gaps and Amina's Long view."],
 ] as const
 
 function Wordmark() {
@@ -80,7 +80,13 @@ export default async function DemoPage() {
                   {what}
                   {i === 2 ? (
                     <>
-                      {demo ? <span className="inline-block rounded-md bg-coral-tint px-1.5 font-bold tracking-[0.08em]">{demo.joinCode}</span> : 'the class code'}
+                      {demo ? (
+                        <>
+                          class code <span className="inline-block rounded-md bg-coral-tint px-1.5 font-bold tracking-[0.08em]">{demo.joinCode}</span>
+                        </>
+                      ) : (
+                        "Ms Banda's class code"
+                      )}
                       , then open her profile.
                     </>
                   ) : null}

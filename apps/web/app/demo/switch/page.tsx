@@ -19,10 +19,10 @@ const PEOPLE: { role: DemoRole; initials: string; avatar: string; name: string; 
 
 const NEXT: Record<number, string> = {
   1: "Next: sign in as Ms Banda, upload the curriculum and approve Jemma's topic map.",
-  2: 'Next: sign in as Ms Banda and snap the memo and 5 papers.',
+  2: 'Next: sign in as Ms Banda, snap the memo and 5 papers, then tap Share with parents.',
   3: "Next: sign in as Thandi and link Amina with Ms Banda's class code.",
   4: "Next: sign in as Amina and run tonight's session.",
-  5: 'Next: see the result and the updated gaps as Ms Banda and as Thandi.',
+  5: "Next: see the result and the updated gaps as Ms Banda and as Thandi, then open Amina's Long view as Ms Banda.",
 }
 
 const rowBase = 'flex min-h-16 w-full items-center gap-3 rounded-[16px] bg-card py-2 pr-3.5 pl-2.5 text-left font-[inherit] text-ink no-underline'

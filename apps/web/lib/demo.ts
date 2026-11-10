@@ -51,20 +51,40 @@ async function count(q: PromiseLike<{ count: number | null; error: { message: st
   return n ?? 0
 }
 
+/** What exists in the judge's copy, as far as the demo path cares. */
+export type StepFacts = {
+  mapApproved: boolean
+  /** Marked papers of the class's tests. */
+  markedPapers: number
+  /** Of those, the marked papers of tests the teacher has not shared with parents yet. */
+  markedPapersHeld: number
+  hasChild: boolean
+  linked: boolean
+  sessionsDone: number
+}
+
+/**
+ * Where the judge is on the 5-step path. Step 2 (snap the memo and 5 papers, then tap Share with parents) lasts until
+ * 5 papers are marked and no test of the class with a marked paper is still held.
+ */
+export function stepFrom(f: StepFacts): DemoState['step'] {
+  if (!f.mapApproved) return 1
+  if (f.markedPapers < 5 || f.markedPapersHeld > 0) return 2
+  if (!f.hasChild || !f.linked) return 3
+  return f.sessionsDone ? 5 : 4
+}
+
 async function stepOf(db: JemmaDb, classId: string, childId: string | null): Promise<DemoState['step']> {
   const head = { count: 'exact', head: true } as const
   const mapApproved = await count(db.from('curriculum_maps').select('id', head).eq('class_id', classId).eq('status', 'approved'))
   if (!mapApproved) return 1
-  const { data: tests } = await db.from('tests').select('id').eq('class_id', classId)
-  const marked = await count(
-    db.from('papers').select('id', head).in('test_id', (tests ?? []).map((t) => t.id)).eq('status', 'marked'),
-  )
-  if (marked < 5) return 2
-  if (!childId) return 3
-  const linked = await count(db.from('parent_links').select('parent_id', head).eq('child_id', childId).eq('status', 'approved'))
-  if (!linked) return 3
-  const done = await count(db.from('sessions').select('id', head).eq('child_id', childId).eq('status', 'done'))
-  return done ? 5 : 4
+  const { data: tests } = await db.from('tests').select('id, held').eq('class_id', classId)
+  const marked = (ids: string[]) => count(db.from('papers').select('id', head).in('test_id', ids).eq('status', 'marked'))
+  const markedPapers = await marked((tests ?? []).map((t) => t.id))
+  const markedPapersHeld = markedPapers < 5 ? 0 : await marked((tests ?? []).filter((t) => t.held).map((t) => t.id))
+  const linked = childId ? await count(db.from('parent_links').select('parent_id', head).eq('child_id', childId).eq('status', 'approved')) : 0
+  const sessionsDone = childId && linked ? await count(db.from('sessions').select('id', head).eq('child_id', childId).eq('status', 'done')) : 0
+  return stepFrom({ mapApproved: true, markedPapers, markedPapersHeld, hasChild: Boolean(childId), linked: linked > 0, sessionsDone })
 }
 
 /** The judge's sandbox, read with the service role (the page may be open while signed out). Null when there is none. */
