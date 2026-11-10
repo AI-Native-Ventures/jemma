@@ -26,6 +26,8 @@ export type TaskInfo = { id: string; proves: string }
 export type ModelPrice = { paidId: string | null; promptPerM: number | null; completionPerM: number | null; freeListed: boolean }
 export type PricingInfo = { fetchedAt: string; source: string; models: Record<string, ModelPrice> }
 export type Analysis = { taskId: string; why: string; tryNext: string[] }
+/** A change made to the test set while the runs were going (written by the author in `changes.json`, shown as it is). */
+export type Change = { taskId: string; what: string; why: string; evidence: string }
 export type ReportInput = {
   runId: string
   results: ResultFile[]
@@ -35,6 +37,8 @@ export type ReportInput = {
   /** Why there is no pricing, when there is none. */
   pricingError?: string | null
   analysis: Analysis | null
+  /** Changes made while the runs were going. Null or empty when there were none. */
+  changes?: Change[] | null
   /** Goose runs spent for the whole packet, from the ledger (harness tuning included). Null when unknown. */
   packetLiveRuns: number | null
 }
@@ -227,6 +231,7 @@ export function renderReport(input: ReportInput): string {
   const models = [...new Set(results.flatMap((r) => r.attempts.filter((a) => (a.tokens?.input ?? 0) > 0).map((a) => a.model)))]
   const attempts = results.reduce((n, r) => n + r.attempts.length, 0)
   const rehearsal = results.some((r) => r.rehearsal)
+  const changes = input.changes ?? []
   const lines: string[] = []
   const push = (...l: string[]) => lines.push(...l)
 
@@ -236,7 +241,7 @@ export function renderReport(input: ReportInput): string {
 
   push('## What is tested, and how', '')
   push(
-    `${tasks.length} test tasks run the real agent path: each run opens its own fresh sandbox (a made-up school) on the database, sends the real event through the agent worker, and runs the job through Jemma's runner with Goose and a free open-weights model on OpenRouter (${models.length ? models.map((m) => `\`${m}\``).join(', ') : 'no model ran'}; the runner's own fallback to the next model stays on). Then plain code checks the outcome with SELECTs and the saved transcript. No model ever judges another model. Every check is a named yes or no with a reason, saved in the result file. Each task ran ${runs} times, in ${runs} fresh sandboxes, one after another, so run-to-run variation shows. A run that hits a provider error counts as a failed run with the error text kept. Nothing was retried, dropped or hand-edited. The data is synthetic.`,
+    `${tasks.length} test tasks run the real agent path: each run opens its own fresh sandbox (a made-up school) on the database, sends the real event through the agent worker, and runs the job through Jemma's runner with Goose and a free open-weights model on OpenRouter (${models.length ? models.map((m) => `\`${m}\``).join(', ') : 'no model ran'}; the runner's own fallback to the next model stays on). Then plain code checks the outcome with SELECTs and the saved transcript. No model ever judges another model. Every check is a named yes or no with a reason, saved in the result file. Each task ran ${runs} times, in ${runs} fresh sandboxes, one after another, so run-to-run variation shows. A run that hits a provider error counts as a failed run with the error text kept. ${changes.length ? 'Apart from the changes listed in "Changes made while the runs were going", nothing was retried, dropped or hand-edited.' : 'Nothing was retried, dropped or hand-edited.'} The data is synthetic.`,
     '',
   )
   push(`**${passed} of ${total} runs passed** (${total - passed} failed). ${attempts} goose attempts were made for these ${total} runs${input.packetLiveRuns !== null ? `; ${input.packetLiveRuns} live goose runs were spent in all for this work, harness testing included (cap 45)` : ''}.`, '')
@@ -313,6 +318,13 @@ export function renderReport(input: ReportInput): string {
   const spread = sums.map((s) => ({ s, min: Math.min(...s.runs.map((r) => r.seconds)), max: Math.max(...s.runs.map((r) => r.seconds)) })).sort((a, b) => b.max - b.min - (a.max - a.min))[0]
   if (spread) push(`Time varied too: the widest spread inside one task was \`${spread.s.id}\`, from ${secs(spread.min)} to ${secs(spread.max)} for the same job.`, '')
 
+  if (changes.length) {
+    push('## Changes made while the runs were going', '')
+    push('These were written by the author when it happened, and are shown as written. A task that was run again keeps its first results in the folder named under "Kept".', '')
+    for (const c of changes) push(`- \`${c.taskId}\`: ${c.what.trim()} Why: ${c.why.trim()} Kept: ${c.evidence.trim()}`)
+    push('')
+  }
+
   push('## One failure we did not fix', '')
   const weakest = pickWeakest(sums, runs)
   const w = weakest.task
@@ -372,8 +384,10 @@ export async function writeReport(opts: WriteOptions): Promise<string> {
   if (analysis && analysis.taskId !== weakest.id) {
     throw new Error(`analysis.json is about \`${analysis.taskId}\`, but the weakest task in these results is \`${weakest.id}\`. Rewrite analysis.json for \`${weakest.id}\`.`)
   }
+  const changesFile = join(dir, 'changes.json')
+  const changes = existsSync(changesFile) ? (JSON.parse(readFileSync(changesFile, 'utf8')) as Change[]) : null
   const ledger = readLedger()
-  const text = renderReport({ runId: opts.runId, results, tasks, runs: RUNS_PER_TASK, pricing, pricingError, analysis, packetLiveRuns: ledger.length ? ledger.filter((l) => !l.rehearsal).reduce((n, l) => n + l.attempts, 0) : null })
+  const text = renderReport({ runId: opts.runId, results, tasks, runs: RUNS_PER_TASK, pricing, pricingError, analysis, changes, packetLiveRuns: ledger.length ? ledger.filter((l) => !l.rehearsal).reduce((n, l) => n + l.attempts, 0) : null })
   writeFileSync(opts.outFile ?? EVALS_FILE, text)
   return text
 }

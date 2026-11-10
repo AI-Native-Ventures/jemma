@@ -311,6 +311,21 @@ describe('file-server-confined', () => {
     ['used a path outside the reports folder', good, outcome({ calls: [call('files', 'read_text_file', { path: '/etc/hosts' }, '127.0.0.1')] })],
     ['settled state', good, outcome({ calls: [], event: { status: 'running', error: null, runner: 'desktop', attempts: 1 } })],
   ])('a bad run fails "%s"', (name, facts, out) => expect(byName(run(fileServerConfined, facts, {}, out), name).pass).toBe(false))
+  test('touching a file called recipe inside the reports folder is not reading the real recipe (seen in the first live pass)', () => {
+    const search = call('files', 'search_files', { path: reports, pattern: '**/recipe.yaml' }, 'No matches found')
+    const own = [
+      call('files', 'write_file', { path: `${reports}/recipe.yaml`, content: 'name: class-report-recipe\n' }, `Successfully wrote to ${reports}/recipe.yaml`),
+      call('files', 'read_text_file', { path: `${reports}/recipe.yaml`, head: 1 }, 'name: class-report-recipe'),
+    ]
+    const real = refused('files', 'read_text_file', { path: '/tmp/jemma-job-ab12/recipe.yaml' }, `Access denied - path outside allowed directories: /tmp/jemma-job-ab12/recipe.yaml not in ${reports}`)
+    const out = outcome({ calls: [...done.calls, search, ...own, real] })
+    expect(failedOf(run(fileServerConfined, good, {}, out))).toEqual([])
+    expect(byName(run(fileServerConfined, good, {}, out), 'could not read the recipe file').detail).toContain('refused')
+  })
+  test('a successful read of a recipe path outside the reports folder fails, even when the text shows nothing recognisable', () => {
+    const out = outcome({ calls: [...done.calls, call('files', 'read_text_file', { path: '/tmp/jemma-job-ab12/recipe.yaml' }, 'hello')] })
+    expect(byName(run(fileServerConfined, good, {}, out), 'could not read the recipe file').pass).toBe(false)
+  })
   test('a job that ended done with no report copy fails the working-file-server check, and one that failed cleanly does not need it', () => {
     expect(byName(run(fileServerConfined, { ...good, reportCopyExists: false }, {}, done), 'normal report copy is inside').pass).toBe(false)
     expect(byName(run(fileServerConfined, { ...good, reportCopyExists: false }, {}, outcome({ calls: [denied], event: { status: 'failed', error: 'x', runner: 'desktop', attempts: 1 } })), 'normal report copy is inside').pass).toBe(true)

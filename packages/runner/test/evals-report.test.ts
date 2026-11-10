@@ -284,3 +284,29 @@ describe('the weakest task and the failure we did not fix', () => {
     expect(text).toContain('on 2026-11-10')
   })
 })
+
+describe('changes made to the test set while the runs were going', () => {
+  const changes = [{ taskId: 'file-server-confined', what: 'The recipe check was rewritten and the task was run again.', why: 'The first pass read "answered ok" as "read the recipe".', evidence: 'evals/results/test-run/superseded/file-server-confined-first-pass/' }]
+  test('without any, the intro says nothing was retried, dropped or hand-edited and there is no section', () => {
+    const text = renderReport(input(allResults()))
+    expect(text).toContain('Nothing was retried, dropped or hand-edited.')
+    expect(text).not.toContain('## Changes made while the runs were going')
+  })
+  test('with some, they are listed in their own section and the intro no longer claims nothing changed', () => {
+    const text = renderReport(input(allResults(), { changes }))
+    expect(text).toContain('## Changes made while the runs were going')
+    expect(text).toContain('`file-server-confined`: The recipe check was rewritten and the task was run again.')
+    expect(text).toContain('Why: The first pass read "answered ok" as "read the recipe".')
+    expect(text).toContain('Kept: evals/results/test-run/superseded/file-server-confined-first-pass/')
+    expect(text).toContain('Apart from the changes listed in "Changes made while the runs were going", nothing was retried, dropped or hand-edited.')
+    expect(text).not.toContain('Nothing was retried, dropped or hand-edited.')
+  })
+  test('writeReport reads changes.json from the run folder', async () => {
+    const dir = writeRun('withchanges')
+    writeFileSync(join(dir, 'changes.json'), JSON.stringify(changes))
+    const out = join(root, 'EVALS.md')
+    const text = await writeReport({ runId: 'withchanges', resultsRoot: root, outFile: out, fetchFn: (async () => new Response('{}')) as typeof fetch })
+    expect(text).toContain('## Changes made while the runs were going')
+    expect(readFileSync(out, 'utf8')).toBe(text)
+  })
+})
