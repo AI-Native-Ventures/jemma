@@ -22,14 +22,15 @@ export async function saveNote(childId: string, kind: Kind, text: string): Promi
   } catch {
     return { ok: false, reason: 'Could not save the note. Try again.' }
   }
-  try {
-    await sendEvent('observation.added', { childId })
-  } catch (e) {
-    // The event row is already recorded by sendEvent before it posts; the note itself is saved.
-    console.error('observation.added not delivered', e)
-  }
-  // The Long view takes in a new teacher note. This never fails the note: it skips a learner whose update is already waiting.
-  await requestLongView([childId])
+  // The agent hears about the note and the Long view asks for its update at the same time, so the teacher waits once, not twice.
+  // Neither can fail the note: `requestLongView` never throws and skips a learner whose update is already waiting.
+  await Promise.all([
+    sendEvent('observation.added', { childId }).catch((e) => {
+      // The event row is already recorded by sendEvent before it posts; the note itself is saved.
+      console.error('observation.added not delivered', e)
+    }),
+    requestLongView([childId]),
+  ])
   revalidatePath('/t/[classId]/learners/[childId]', 'page')
   return { ok: true }
 }
