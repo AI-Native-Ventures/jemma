@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { AgentName } from './agents'
 import { defaultExtraDirs, findBin, killTree, spawn } from './exec'
-import { ensureReportsDir, gooseArgs, gooseEnv, gooseJobPrompt, gooseModels, writeGooseRecipe } from './goose'
+import { ensureReportsDir, gooseArgs, gooseEnv, gooseHome, gooseJobPrompt, gooseModels, writeGooseRecipe } from './goose'
 import { externalCalls, reportCalls } from './report-calls'
 import { parseTranscript, savedSomething, type Transcript, type TranscriptCall, type TranscriptUsage } from './transcript'
 
@@ -32,6 +32,8 @@ export type RunOptions = {
   reportsDir?: string
   /** Goose only: called after each model has run. */
   onAttempt?: (attempt: GooseAttempt) => void
+  /** Called once after the run with what `log_external_calls` answered: true or false, or null when there was nothing to report. */
+  onReport?: (logged: boolean | null) => void
 }
 export type RunResult = { status: 'done' | 'failed'; note: string }
 
@@ -133,6 +135,9 @@ function failureNote(agent: AgentName, seen: Transcript, stderr: string, code: n
   )
 }
 
+/** Goose prints this on stderr when the `jemma` extension did not start. */
+const JEMMA_UNREACHABLE = /Failed to start extension 'jemma'/
+
 /** One line, no em dash: a note ends up on the event and on screen. */
 const plain = (text: string) => text.replace(/\u2014/g, '-').replace(/\s+/g, ' ').trim()
 
@@ -143,10 +148,19 @@ const sumUsage = (a: TranscriptUsage | null, b: TranscriptUsage | null): Transcr
  * After a run, tell the Jemma server which borrowed tools it used and what it cost (`log_external_calls`). Skipped
  * when there is nothing to say. Never throws: the result of the job does not depend on it.
  */
-async function reportRun(job: RunnerJob, engine: AgentName, mcp: McpTarget, model: string | null, calls: TranscriptCall[], usage: TranscriptUsage | null): Promise<void> {
+async function reportRun(
+  job: RunnerJob,
+  engine: AgentName,
+  mcp: McpTarget,
+  model: string | null,
+  calls: TranscriptCall[],
+  usage: TranscriptUsage | null,
+  opts: RunOptions,
+): Promise<void> {
   const external = externalCalls(calls)
-  if (external.length === 0 && !usage) return
-  await reportCalls(mcp, { eventId: job.eventId, engine, model, usage, calls: external }).catch(() => false)
+  if (external.length === 0 && !usage) return opts.onReport?.(null)
+  const logged = await reportCalls(mcp, { eventId: job.eventId, engine, model, usage, calls: external }).catch(() => false)
+  opts.onReport?.(logged)
 }
 
 /**
@@ -182,7 +196,7 @@ async function runGoose(job: RunnerJob, bin: string, mcp: McpTarget, dir: string
     const file = writeGooseRecipe(dir, { prompt, mcp, reportsDir, model })
     const ran = await spawnAgent(bin, gooseArgs(file), {
       cwd: dir,
-      env: gooseEnv(process.env, mcp.token),
+      env: gooseEnv(process.env, mcp.token, gooseHome(dir)),
       stdin: null,
       timeoutMs: left,
       onStdout: opts.onStdout,
@@ -211,6 +225,12 @@ async function runGoose(job: RunnerJob, bin: string, mcp: McpTarget, dir: string
       result = { status: 'failed', note: `goose timed out after ${Math.round(timeoutMs / 1000)} seconds` }
       break
     }
+    // Goose goes on without an extension it could not start, and the model then talks about the missing tools.
+    // Another model cannot fix a Jemma server that does not answer, so say so and stop.
+    if (!done && JEMMA_UNREACHABLE.test(ran.stderr)) {
+      result = { status: 'failed', note: 'goose could not connect to the Jemma server (is the agent worker running, and is the token right?)' }
+      break
+    }
     if (done) {
       result = { status: 'done', note }
       break
@@ -226,7 +246,7 @@ async function runGoose(job: RunnerJob, bin: string, mcp: McpTarget, dir: string
     status: 'failed',
     note: failures.length > 1 ? `no model finished the job. ${failures.join('. ')}` : (failures[0]?.replace(/^[^:]*: /, '') ?? 'goose had no model to run'),
   }
-  await reportRun(job, 'goose', mcp, model, calls, usage)
+  await reportRun(job, 'goose', mcp, model, calls, usage, opts)
   return result
 }
 
@@ -265,7 +285,7 @@ export async function runJob(job: RunnerJob, agent: AgentName, mcp: McpTarget, o
     if (ran.timedOut) return { status: 'failed', note: `${agent} timed out after ${Math.round(timeoutMs / 1000)} seconds` }
 
     const seen = parseTranscript(agent, ran.stdout)
-    await reportRun(job, agent, mcp, null, seen.calls, seen.usage)
+    await reportRun(job, agent, mcp, null, seen.calls, seen.usage, opts)
     if (seen.completed === 'done') return { status: 'done', note: seen.lastMessage }
     return { status: 'failed', note: failureNote(agent, seen, ran.stderr, ran.code) }
   } finally {

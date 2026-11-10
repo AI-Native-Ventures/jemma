@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Fake `goose` for runner tests. It reads the recipe, logs what it was given, and prints a stream-json run.
 // FAKE_MODE (or FAKE_GOOSE_MODES, a JSON map from model id to mode, which wins):
-//   done | provider_error | read_only | saved_then_fail | tool_error | complete_failed | hang
+//   done | provider_error | read_only | saved_then_fail | tool_error | complete_failed | jemma_down | hang
 // FAKE_LOG: file that records argv, the recipe text and mode, and the environment the run saw.
 import { appendFileSync, readFileSync, statSync } from 'node:fs'
 import { spawn } from 'node:child_process'
@@ -37,6 +37,7 @@ log({
   token: process.env.JEMMA_MCP_TOKEN ?? null,
   key: process.env.OPENROUTER_API_KEY ?? null,
   keyring: process.env.GOOSE_DISABLE_KEYRING ?? null,
+  home: process.env.GOOSE_PATH_ROOT ?? null,
 })
 
 let clock = 1794290000
@@ -58,8 +59,13 @@ if (mode === 'hang') {
   const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' })
   log({ childPid: child.pid })
   setInterval(() => {}, 1000)
+} else if (mode === 'jemma_down') {
+  process.stderr.write("Warning: Failed to start extension 'jemma' (failed to initialize MCP client), continuing without it\n")
+  say('I cannot find any tools to call.')
+  finish(5)
 } else if (mode === 'provider_error') {
-  say('Provider error: the model ' + model + ' answered with a server error.')
+  // real goose words its errors with an em dash; a note must come out without one
+  say('Provider error ' + String.fromCharCode(0x2014) + ' the model ' + model + ' answered with a server error.')
   finish(0)
 } else {
   request('c1', 'jemma__get_job', { eventId: 'e' })

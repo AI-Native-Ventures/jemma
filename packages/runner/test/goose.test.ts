@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdtempSync, statSync, readFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, rmSync, statSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, expect, test } from 'vitest'
@@ -11,6 +11,8 @@ import {
   detectGoose,
   ensureReportsDir,
   gooseArgs,
+  gooseEnv,
+  gooseHome,
   gooseJobPrompt,
   gooseModels,
   gooseRecipe,
@@ -27,10 +29,19 @@ const header = (job: string, ids: Record<string, string>) =>
   [`You are running one Jemma job for event evt-1.`, `Job: ${job}`, `Ids: ${JSON.stringify(ids)}`, '', 'Use only the Jemma MCP tools.'].join('\n')
 
 let restore: () => void
+const made: string[] = []
+const tmp = (prefix: string) => {
+  const dir = mkdtempSync(join(tmpdir(), prefix))
+  made.push(dir)
+  return dir
+}
 beforeAll(() => {
   restore = useFakes()
 })
-afterAll(() => restore())
+afterAll(() => {
+  restore()
+  for (const dir of made) rmSync(dir, { recursive: true, force: true })
+})
 
 test('the recipe carries the two servers, the model and the prompt, and the token only in the file', () => {
   const text = gooseRecipe({ prompt: 'Read the paper.\nThen "finish" it.', mcp, reportsDir: '/data/reports', model: 'vendor/model:free' })
@@ -41,7 +52,8 @@ test('the recipe carries the two servers, the model and the prompt, and the toke
   expect(text).toContain('type: stdio')
   expect(text).toContain('name: files')
   expect(text).toContain('cmd: npx')
-  expect(text).toContain(`args: ["-y", "@modelcontextprotocol/server-filesystem@${FILESYSTEM_SERVER_VERSION}", "/data/reports"]`)
+  // --confine-roots: goose's own working folder must not replace the reports folder as the allowed one
+  expect(text).toContain(`args: ["-y", "@modelcontextprotocol/server-filesystem@${FILESYSTEM_SERVER_VERSION}", "--confine-roots", "/data/reports"]`)
   expect(text.match(/timeout: 300/g)).toHaveLength(2)
   expect(text).toContain('goose_provider: openrouter')
   expect(text).toContain('goose_model: "vendor/model:free"')
@@ -55,7 +67,7 @@ test('template openers in a prompt stay literal', () => {
 })
 
 test('the recipe file is written with mode 0600 and the arguments never hold the token', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'jemma-recipe-'))
+  const dir = tmp('jemma-recipe-')
   const file = writeGooseRecipe(dir, { prompt: 'p', mcp, reportsDir: '/r', model: 'm' })
   expect(statSync(file).mode & 0o777).toBe(0o600)
   expect(readFileSync(file, 'utf8')).toContain(mcp.token)
@@ -64,10 +76,16 @@ test('the recipe file is written with mode 0600 and the arguments never hold the
   expect(args.join(' ')).not.toContain('Bearer')
 })
 
-test('goose runs from the recipe with no session, no profile, 20 turns and stream-json', () => {
-  expect(gooseArgs('/tmp/job/recipe.yaml')).toEqual([
-    'run', '--recipe', '/tmp/job/recipe.yaml', '--no-session', '--no-profile', '--max-turns', '20', '--output-format', 'stream-json',
-  ])
+test('goose runs from the recipe with no session, 20 turns and stream-json, and never with --no-profile', () => {
+  const args = gooseArgs('/tmp/job/recipe.yaml')
+  expect(args).toEqual(['run', '--recipe', '/tmp/job/recipe.yaml', '--no-session', '--max-turns', '20', '--output-format', 'stream-json'])
+  // --no-profile makes goose 1.45.0 ignore the recipe's extensions, so the model would get no tools
+  expect(args).not.toContain('--no-profile')
+})
+
+test('goose gets an empty config folder of its own, the key, the keychain switch and the token', () => {
+  const env = gooseEnv({ OPENROUTER_API_KEY: 'k', PATH: '/bin' }, 'tok', gooseHome('/tmp/job'))
+  expect(env).toMatchObject({ OPENROUTER_API_KEY: 'k', GOOSE_DISABLE_KEYRING: '1', GOOSE_PATH_ROOT: '/tmp/job/goose-home', JEMMA_MCP_TOKEN: 'tok', PATH: '/bin' })
 })
 
 test('models: the open model first, then the fallbacks, once each', () => {
@@ -79,7 +97,7 @@ test('models: the open model first, then the fallbacks, once each', () => {
 })
 
 test('the reports folder defaults to <home>/Jemma/reports and is created when missing', () => {
-  const home = mkdtempSync(join(tmpdir(), 'jemma-home-'))
+  const home = tmp('jemma-home-')
   expect(reportsDirPath({}, home)).toBe(join(home, 'Jemma', 'reports'))
   const made = ensureReportsDir({}, home)
   expect(existsSync(join(home, 'Jemma', 'reports'))).toBe(true)
@@ -146,7 +164,7 @@ test('detectGoose: a missing goose is reported as not installed, and detectAgent
 // The real goose, offline: no model, no network. Skipped on a machine without goose.
 const realGoose = findBin('goose') // looked up at load time, before the fakes go on PATH
 test.skipIf(!realGoose)('the real goose accepts the recipe and keeps template openers literal', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'jemma-recipe-'))
+  const dir = tmp('jemma-recipe-')
   const file = writeGooseRecipe(dir, { prompt: 'Keep {{ name }} and {% x %} and {# y #} and {{{ z }}} as they are.', mcp, reportsDir: '/tmp', model: 'vendor/model:free' })
   const env = { ...process.env, GOOSE_DISABLE_KEYRING: '1' }
   execFileSync(realGoose!, ['recipe', 'validate', file], { env, stdio: 'pipe' })

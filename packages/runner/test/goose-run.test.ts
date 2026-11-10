@@ -1,4 +1,4 @@
-import { mkdtempSync } from 'node:fs'
+import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, afterEach, beforeAll, beforeEach, expect, test } from 'vitest'
@@ -35,6 +35,7 @@ beforeEach(async () => {
   mcpServer = await startFakeMcp({ withTool: true, token: 'tok-secret' })
 })
 afterEach(async () => {
+  rmSync(reports, { recursive: true, force: true })
   await mcpServer.close()
   if (savedKey === undefined) delete process.env.OPENROUTER_API_KEY
   else process.env.OPENROUTER_API_KEY = savedKey
@@ -52,7 +53,8 @@ test('goose gets the recipe, never the token in argv, the key and the keychain s
   const [call] = runs()
   const args: string[] = call!.args
   expect(args.slice(0, 2)).toEqual(['run', '--recipe'])
-  for (const flag of ['--no-session', '--no-profile']) expect(args).toContain(flag)
+  expect(args).toContain('--no-session')
+  expect(args).not.toContain('--no-profile')
   expect(args[args.indexOf('--max-turns') + 1]).toBe('20')
   expect(args[args.indexOf('--output-format') + 1]).toBe('stream-json')
   expect(args.join(' ')).not.toContain('tok-secret')
@@ -61,6 +63,9 @@ test('goose gets the recipe, never the token in argv, the key and the keychain s
   expect(call!.stdin).toBe('')
   expect(call!.key).toBe('or-key-xyz')
   expect(call!.keyring).toBe('1')
+  // goose's own config folder is empty and inside the job's temp folder, so no profile extension can load
+  const bare = (path: string) => path.replace(/^\/private/, '') // macOS reports /private/var for /var
+  expect(bare(call!.home)).toBe(`${bare(call!.cwd)}/goose-home`)
   expect(call!.token).toBe('tok-secret')
   // the recipe holds the token and the prompt, and the model that ran
   expect(call!.recipe).toContain('Authorization: "Bearer tok-secret"')
@@ -138,7 +143,8 @@ test('when every model fails, each was tried once and the note says why', async 
   expect(runs().map((r) => r.model)).toEqual(MODELS)
   expect(res.note).toContain('no model finished the job')
   expect(res.note).toContain('model-a:free')
-  expect(res.note).not.toMatch(/—/)
+  expect(res.note).toContain('Provider error - the model model-a:free answered with a server error.')
+  expect(res.note).not.toContain(String.fromCharCode(0x2014))
 })
 
 test('a timeout kills the whole process tree, fails the job and does not start another model', async () => {
@@ -152,6 +158,24 @@ test('a timeout kills the whole process tree, fails the job and does not start a
   const child = readLog(log).find((l) => l.childPid)!
   await new Promise((r) => setTimeout(r, 300))
   expect(alive(child.childPid)).toBe(false)
+})
+
+test('a Jemma server goose could not reach fails the job plainly and does not try the other models', async () => {
+  process.env.FAKE_MODE = 'jemma_down'
+  const res = await runJob(job, 'goose', target(), opts())
+  expect(res.status).toBe('failed')
+  expect(res.note).toContain('could not connect to the Jemma server')
+  expect(runs()).toHaveLength(1)
+})
+
+test('onReport says what the report call answered: true, false, or null when there was nothing to report', async () => {
+  const seen: (boolean | null)[] = []
+  await runJob(job, 'goose', target(), opts({ onReport: (v: boolean | null) => seen.push(v) }))
+  await mcpServer.close()
+  mcpServer = await startFakeMcp({ withTool: false })
+  await runJob(job, 'goose', target(), opts({ onReport: (v: boolean | null) => seen.push(v) }))
+  await runJob(job, 'claude', target(), { timeoutMs: 20_000, onReport: (v: boolean | null) => seen.push(v) })
+  expect(seen).toEqual([true, false, null])
 })
 
 test('only class_report and guidance get the Markdown copy step', async () => {

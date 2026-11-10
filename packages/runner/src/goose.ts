@@ -100,7 +100,10 @@ function quoted(text: string): string {
 export type GooseRecipeInput = { prompt: string; mcp: McpTarget; reportsDir: string; model: string }
 
 /**
- * The recipe file text. The Jemma server comes in with its bearer token in `headers`, so the file must be written
+ * The recipe file text. The file server gets `--confine-roots`: goose tells it its own working folder as a "root", and
+ * without the flag that root replaces the reports folder, so the server would be limited to the job's temp folder (where
+ * this recipe, with the bearer token, lives) instead. With the flag a root outside the reports folder is ignored.
+ * The Jemma server comes in with its bearer token in `headers`, so the file must be written
  * with mode 0600 and the token never appears in argv. The prompt is the recipe's `prompt`, so stdin is not used.
  */
 export function gooseRecipe({ prompt, mcp, reportsDir, model }: GooseRecipeInput): string {
@@ -119,7 +122,7 @@ export function gooseRecipe({ prompt, mcp, reportsDir, model }: GooseRecipeInput
     '  - type: stdio',
     '    name: files',
     '    cmd: npx',
-    `    args: [${['-y', `${FILESYSTEM_SERVER}@${FILESYSTEM_SERVER_VERSION}`, reportsDir].map(quoted).join(', ')}]`,
+    `    args: [${['-y', `${FILESYSTEM_SERVER}@${FILESYSTEM_SERVER_VERSION}`, '--confine-roots', reportsDir].map(quoted).join(', ')}]`,
     `    timeout: ${EXTENSION_TIMEOUT_SECONDS}`,
     'settings:',
     '  goose_provider: openrouter',
@@ -135,12 +138,25 @@ export function writeGooseRecipe(dir: string, input: GooseRecipeInput): string {
   return file
 }
 
-/** No session file, no default extensions, at most 20 turns, one JSON event per line. */
+/**
+ * No session file, at most 20 turns, one JSON event per line. Not `--no-profile`: in goose 1.45.0 that flag also drops
+ * the recipe's own extensions (the model is then offered no tools at all, checked on 10 Nov 2026). Goose's default
+ * extensions are kept out another way: `gooseEnv` points goose at an empty config folder of its own.
+ */
 export function gooseArgs(recipeFile: string): string[] {
-  return ['run', '--recipe', recipeFile, '--no-session', '--no-profile', '--max-turns', GOOSE_MAX_TURNS, '--output-format', 'stream-json']
+  return ['run', '--recipe', recipeFile, '--no-session', '--max-turns', GOOSE_MAX_TURNS, '--output-format', 'stream-json']
 }
 
-/** Goose's child environment: the OpenRouter key goes through, the keychain is off, the token is the user's. */
-export function gooseEnv(base: Env, token: string): Record<string, string | undefined> {
-  return { ...base, OPENROUTER_API_KEY: base.OPENROUTER_API_KEY, GOOSE_DISABLE_KEYRING: '1', JEMMA_MCP_TOKEN: token }
+/** Where goose keeps its config, sessions and logs for one job: inside the job's temp folder, gone when the job ends. */
+export function gooseHome(dir: string): string {
+  return join(dir, 'goose-home')
+}
+
+/**
+ * Goose's child environment: the OpenRouter key goes through, the keychain is off, the token is the user's, and goose
+ * uses an empty config folder (`GOOSE_PATH_ROOT`), so no extension from the user's own goose setup can load and its
+ * request logs do not outlive the job.
+ */
+export function gooseEnv(base: Env, token: string, home: string): Record<string, string | undefined> {
+  return { ...base, OPENROUTER_API_KEY: base.OPENROUTER_API_KEY, GOOSE_DISABLE_KEYRING: '1', GOOSE_PATH_ROOT: home, JEMMA_MCP_TOKEN: token }
 }
