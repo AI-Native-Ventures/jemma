@@ -48,7 +48,7 @@ flowchart LR
 | Runner package | `packages/runner` | The core of the Jemma Desktop runner: finds Claude Code or Codex on the machine, claims queued events, runs the agent with the Jemma MCP server, sends heartbeats. The Electron app in `apps/desktop` runs jobs on the user's Claude Code or Codex subscription; pair it by entering the six-character code shown in the signed-in Jemma web app, and build the unsigned Mac app with `CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter desktop dist`. |
 | Database | `supabase/migrations` | Postgres with row-level security. 13 migration files. |
 | Storage | Supabase Storage | Four private buckets: `papers`, `curriculum`, `lesson-audio`, `sample-papers`. No public access and no storage policies: files are reached with signed URLs or the service role. |
-| MCP server | `packages/profiling/src/server.ts`, served by `apps/agent` | 19 tools. See [mcp-server.md](mcp-server.md). |
+| MCP server | `packages/profiling/src/server.ts`, served by `apps/agent` | 20 tools. See [mcp-server.md](mcp-server.md). |
 | Cloud runner | `apps/agent` + `packages/profiling/src/jobs/cloud` | Runs the 7 AI jobs on free models. |
 | Desktop runner | `packages/runner` | Runs the same jobs on the user's own Claude Code or Codex subscription, through `/mcp`. |
 

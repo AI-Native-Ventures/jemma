@@ -178,6 +178,64 @@ export type Database = {
           },
         ]
       }
+      approvals: {
+        Row: {
+          child_id: string | null
+          created_at: string
+          decided_at: string
+          decided_by: string
+          decided_by_name: string
+          decision: string
+          id: string
+          kind: string
+          note: string | null
+          ref_id: string
+          school_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          child_id?: string | null
+          created_at?: string
+          decided_at?: string
+          decided_by: string
+          decided_by_name: string
+          decision: string
+          id?: string
+          kind: string
+          note?: string | null
+          ref_id: string
+          school_id: string
+        }
+        Update: {
+          child_id?: string | null
+          created_at?: string
+          decided_at?: string
+          decided_by?: string
+          decided_by_name?: string
+          decision?: string
+          id?: string
+          kind?: string
+          note?: string | null
+          ref_id?: string
+          school_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approvals_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approvals_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attendance: {
         Row: {
           child_id: string
@@ -1455,6 +1513,76 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tool_calls: {
+        Row: {
+          created_at: string
+          duration_ms: number
+          engine: string | null
+          error: string | null
+          event_id: string | null
+          id: string
+          input: NonNullable<Json>
+          model: string | null
+          ok: boolean
+          output: Json | null
+          school_id: string
+          server: string
+          started_at: string
+          tool: string
+          via: string
+        }
+        ComputedFields: never
+        Insert: {
+          created_at?: string
+          duration_ms?: number
+          engine?: string | null
+          error?: string | null
+          event_id?: string | null
+          id?: string
+          input?: NonNullable<Json>
+          model?: string | null
+          ok: boolean
+          output?: Json | null
+          school_id: string
+          server?: string
+          started_at: string
+          tool: string
+          via?: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number
+          engine?: string | null
+          error?: string | null
+          event_id?: string | null
+          id?: string
+          input?: NonNullable<Json>
+          model?: string | null
+          ok?: boolean
+          output?: Json | null
+          school_id?: string
+          server?: string
+          started_at?: string
+          tool?: string
+          via?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_calls_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_calls_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
             referencedColumns: ["id"]
           },
         ]
