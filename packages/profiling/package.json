@@ -35,6 +35,7 @@
     "./tools": "./src/tools/index.ts",
     "./jobs": "./src/jobs/cloud/index.ts",
     "./records": "./src/records.ts",
+    "./notify": "./src/notify.ts",
     "./orchestrator": "./src/orchestrator.ts"
   }
 }

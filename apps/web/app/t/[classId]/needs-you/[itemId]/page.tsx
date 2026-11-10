@@ -27,6 +27,8 @@ export default async function NeedsYouItemPage({
   const { q } = await searchParams
   const item = await getNeedsItem(itemId)
   if (item.kind === 'approve_key') redirect(`/t/${classId}/snap/${item.paperId}/key`)
+  // For this kind `ref_id` (kept in `paperId`) is the learner.
+  if (item.kind === 'review_long_view') redirect(`/t/${classId}/learners/${item.paperId}/long-view`)
   if (item.kind !== 'check_answer' && item.kind !== 'unreadable_name') notFound()
 
   const view = await getPaperView(classId, item.paperId)

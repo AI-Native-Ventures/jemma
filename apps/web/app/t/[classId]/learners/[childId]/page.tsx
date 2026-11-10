@@ -1,6 +1,7 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getLearnerView } from '@/lib/data/p19'
-import { Avatar, BackHeader, Diamond, Page, card, font } from '../_parts'
+import { Avatar, BackHeader, Chevron, Diamond, Page, card, font } from '../_parts'
 import { NoteForm } from './NoteForm'
 
 export default async function LearnerPage({ params }: { params: Promise<{ classId: string; childId: string }> }) {
@@ -35,6 +36,14 @@ export default async function LearnerPage({ params }: { params: Promise<{ classI
             <span>{v.summary}</span>
           </p>
         </section>
+
+        <Link href={`/t/${classId}/learners/${v.id}/long-view`} style={{ ...card(20), flexDirection: 'row', alignItems: 'center', gap: 12, padding: '14px 12px 14px 16px', textDecoration: 'none', color: '#1F1D36' }}>
+          <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2, lineHeight: 1.3 }}>
+            <span style={{ fontSize: 16, fontWeight: 600 }}>Long view</span>
+            <span style={{ fontSize: 14, color: '#5D5A73' }}>{v.name} across the terms and years</span>
+          </span>
+          <Chevron />
+        </Link>
 
         <NoteForm childId={v.id} initialKind="participation" linkedTo={v.linkedTo} name={v.name} />
 

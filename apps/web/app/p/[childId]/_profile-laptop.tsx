@@ -87,7 +87,7 @@ const ACTIVITY_DEFAULT = (
 )
 
 /** Board laptop-parent-profile at 1440: headline and tonight button, needs you bar, then marks / noticed / did beside focus / notes / attendance / activities. */
-export function ProfileLaptop({ data, extras, base }: { data: ProfileData; extras: ProfileExtras; base: string }) {
+export function ProfileLaptop({ data, extras, base, longView = null }: { data: ProfileData; extras: ProfileExtras; base: string; longView?: ReactNode }) {
   const { child } = data
   return (
     <LaptopShell
@@ -118,6 +118,7 @@ export function ProfileLaptop({ data, extras, base }: { data: ProfileData; extra
         ) : null
       }
     >
+      {longView}
       {data.needs.length > 0 ? (
         <section aria-label="Needs you" style={css('display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:14px 16px;background:#FFF4F1;border:1px solid #FFC9BB;border-radius:20px')}>
           <div style={css('display:flex;align-items:center;gap:8px')}>

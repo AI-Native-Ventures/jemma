@@ -99,13 +99,18 @@ function Detail({ view, profile, extras, base }: { view: LearnerView; profile: C
             </span>
           </div>
         </div>
-        <Link href={paperHref} className="flex h-[46px] flex-none items-center justify-center gap-2 rounded-14 bg-ink px-[18px] text-[15px] font-semibold text-white no-underline">
-          <svg width="15" height="15" viewBox="0 0 24 24" strokeWidth="1.9" {...svg} stroke="#FFFFFF">
-            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-            <path d="M14 3v5h5M9 13h6M9 17h4" />
-          </svg>
-          See her paper or fix a mark
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href={`${base}/learners/${view.id}/long-view`} className="flex h-[46px] flex-none items-center justify-center rounded-14 border-[1.5px] border-ink bg-card px-[18px] text-[15px] font-semibold text-ink no-underline">
+            Long view
+          </Link>
+          <Link href={paperHref} className="flex h-[46px] flex-none items-center justify-center gap-2 rounded-14 bg-ink px-[18px] text-[15px] font-semibold text-white no-underline">
+            <svg width="15" height="15" viewBox="0 0 24 24" strokeWidth="1.9" {...svg} stroke="#FFFFFF">
+              <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+              <path d="M14 3v5h5M9 13h6M9 17h4" />
+            </svg>
+            See her paper or fix a mark
+          </Link>
+        </div>
       </div>
       {view.linkedTo ? (
         <p className="m-0 inline-flex items-center gap-2 gap-y-0 self-start rounded-pill bg-soft-2 px-3 py-1.5 text-[14px] font-medium">

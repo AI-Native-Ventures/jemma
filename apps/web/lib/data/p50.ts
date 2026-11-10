@@ -101,6 +101,8 @@ const APPROVAL_WORDS: Record<string, Partial<Record<string, string>>> = {
   guardian_link: { approved: "approved a parent's request to link", declined: "declined a parent's request to link" },
   reteach: { confirmed: 'marked a reteach as taught' },
   homework_scan: { confirmed: 'confirmed a homework scan' },
+  long_view_pattern: { approved: 'said a Long view pattern looks right', declined: 'set a Long view pattern aside' },
+  long_view_talk: { confirmed: 'talked to a parent about a Long view pattern' },
 }
 
 /** "Ms Banda approved the topic map". */
