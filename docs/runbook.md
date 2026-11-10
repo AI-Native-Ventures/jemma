@@ -2,6 +2,16 @@
 
 How to run Jemma locally, record AI answers once and replay them, and reset a demo. Synthetic data only. The only Supabase project used here is jemma-dev.
 
+## One command
+
+`./start.sh` at the repo root sets up and runs everything on a clean machine with Docker and Node 22 or newer: the packages, a local Supabase stack (`supabase/config.toml`), `.env.local` and `apps/agent/.dev.vars` from that stack's own values, the recorded AI answers (`fixtures/ai-replays.json.gz`, loaded by `scripts/load-replays.ts`), the agent worker on :8787 (`pnpm --filter agent dev:local`, which uses `apps/agent/wrangler.local.jsonc` and has no `AI` binding) and the web app on :3000. It runs in `AI_MODE=replay`, so no key and no model are needed.
+
+- `./start.sh --stop` stops the app and the local database. `./start.sh --force` replaces an existing `.env.local` (saved as `.env.local.bak`). `./start.sh --ci` runs the same set-up in the background and exits 0 when both health checks pass. Logs are in `.jemma/logs/`.
+- It never overwrites an `.env.local` that points anywhere but the local stack. The Docker check comes first: without a running Docker it stops at step 1.
+- The GitHub workflow `.github/workflows/ci.yml` runs `./start.sh --ci`, `pnpm typecheck`, `pnpm test` and the phone demo-path test on a clean Ubuntu machine, on every push.
+- To refresh the recorded answers after a new recording on jemma-dev: `pnpm --filter @jemma/profiling exec tsx ../../scripts/export-replays.ts` (read only, writes the fixture), then commit `fixtures/ai-replays.json.gz`. Check the size (under 40 MB) and that no real email or key is in it: a test does this.
+- Scripts that use the service key (`export-replays`, `live-smoke`, `proof/run-real-job`) run only against the local stack or a project whose address contains `JEMMA_ALLOWED_SUPABASE_REF` (default: jemma-dev).
+
 ## Env vars
 
 Copy `.env.example` to `.env.local` at the repo root. `apps/web` reads it, and `bash .superset/setup.sh` copies it to `apps/agent/.dev.vars` for the agent worker.

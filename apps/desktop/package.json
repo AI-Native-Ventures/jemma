@@ -2,6 +2,7 @@
   "name": "desktop",
   "version": "0.0.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "description": "Jemma Desktop: runs Jemma's AI jobs on your own Claude Code or Codex",
   "author": "Jemma",

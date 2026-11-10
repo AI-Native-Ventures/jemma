@@ -1,5 +1,7 @@
 # Jemma
 
+[![CI](https://github.com/AI-Native-Ventures/jemma/actions/workflows/ci.yml/badge.svg)](https://github.com/AI-Native-Ventures/jemma/actions/workflows/ci.yml)
+
 Each school child's own AI tutor. The teacher feeds it, the parent teaches with it, and the child fills their own gaps.
 
 - **The teacher feeds Jemma.** They upload the curriculum and photograph a class test. Jemma marks every paper, finds what each child gets wrong and why, and tells the teacher what to reteach.
@@ -8,7 +10,9 @@ Each school child's own AI tutor. The teacher feeds it, the parent teaches with 
 
 Jemma keeps a learner profile over time: marks by topic, gaps and their stage, sessions, teacher notes, attendance, activities and a subject guidance card. Jemma has its own MCP server, and every piece of AI work goes through its tools.
 
-Built for the Agentic Africa Challenge, learner profiling track. Licence: to be announced.
+Built for the Agentic Africa Challenge, learner profiling track. Licence: MIT.
+
+Built between 23 October and 15 November 2026 with AI coding tools, as the challenge allows.
 
 ## The agent loop
 
@@ -29,7 +33,7 @@ Design reference images from `design/reference/` (rendered from the v1 design bo
 
 ## Try the live demo
 
-The live link is to be announced with the submission: `<live link>`.
+The live demo is at https://jemma-web.horizonsystems.workers.dev. To run Jemma on your own machine instead, see [Run it](#run-it).
 
 1. Open `/demo`. You get your own copy of Hillview Primary, a made-up school. Nothing you do reaches other judges.
 2. Pick a person: **Ms Banda** (teacher), **Thandi M** (parent, Amina's mother) or **Amina** (a Grade 6 learner). Ms Banda is the place to start.
@@ -38,9 +42,43 @@ The live link is to be announced with the submission: `<live link>`.
 
 More detail is in [docs/judges.md](docs/judges.md). Every person and paper is made up.
 
-## Run it locally
+## Run it
 
-You need a current Node (built and tested on Node 26), pnpm 10.27.0 (the repo pins it in `package.json`), and a Supabase project of your own with the migrations in `supabase/migrations` applied.
+```bash
+./start.sh
+```
+
+That one command sets everything up and starts Jemma on your machine, with made-up data and recorded AI answers. No keys, no accounts and no AI model are needed.
+
+You need three things:
+
+1. **Docker**, running. It holds the local database and file storage.
+2. **Node 22 or newer.** pnpm comes with it (the script uses corepack if you do not have pnpm).
+3. **About 10 minutes and a few GB of disk the first time**, to download the Supabase images. Later starts reuse them.
+
+If something is missing, the script stops at the first step and says exactly what to get.
+
+What you will see: six numbered steps, each with one plain line (check what you need, install the packages, start the local database, write the settings, load the recorded AI answers, start the agent and the web app). When both servers answer, it prints:
+
+```
+Jemma is running. Open http://localhost:3000/demo
+```
+
+Open that page and follow [Try the live demo](#try-the-live-demo) from step 1. You get your own copy of the made-up school Hillview Primary.
+
+How it works on your machine: the local database is Supabase in Docker (`supabase/config.toml`, with the migrations in `supabase/migrations`). Jemma runs with `AI_MODE=replay`, so every model call is answered from `fixtures/ai-replays.json.gz`, 142 answers recorded earlier with free models. The agent worker runs from `apps/agent/wrangler.local.jsonc`, which has no Cloudflare speech binding, so lessons are saved with no audio and the player uses browser speech. Jemma only knows the answers recorded for the demo path: the sample curriculum, the five sample papers and the sessions that follow. Something new, such as your own photo, has no recorded answer and the job shows an error.
+
+To stop:
+
+- **Ctrl-C** stops the web app and the agent. The database keeps running, so the next `./start.sh` reuses it.
+- **`./start.sh --stop`** stops the app and the database.
+- **`./start.sh --force`** writes a fresh `.env.local`. Without it, the script never overwrites an existing `.env.local`: if yours points anywhere but the local database, it stops and tells you.
+
+Logs are in `.jemma/logs/` (`install.log`, `supabase.log`, `replays.log`, `agent.log`, `web.log`). `./start.sh --ci` does the same set-up with the app in the background and exits when both servers answer. GitHub Actions uses it to check, on a clean machine, that the repo runs (see the badge at the top).
+
+## Run against your own Supabase project
+
+Use this if you want a hosted Supabase project instead of the local database. You need Node 22 or newer (built and tested on Node 26), pnpm 10.27.0 (the repo pins it in `package.json`), and a Supabase project of your own with the migrations in `supabase/migrations` applied.
 
 ```bash
 pnpm install
@@ -58,6 +96,7 @@ Env vars that matter (all in `.env.example`, with a comment for each):
 | `LLM_PROVIDER`, `LLM_MODEL`, `VISION_PROVIDER`, `VISION_MODEL` | The text and photo models. Use free ones. |
 | `OPENROUTER_API_KEY` | Key for the free models. |
 | `AI_MODE` | `live`, `record`, `replay` or `cache`. See below. |
+| `JEMMA_ALLOWED_SUPABASE_REF` | The project ref the maintenance scripts may run against, besides the local database. |
 
 Start the two servers in two terminals:
 
@@ -66,12 +105,14 @@ pnpm --filter agent dev    # agent worker on http://localhost:8787 (wrangler dev
 pnpm --filter web dev      # web app on http://localhost:3000
 ```
 
-Then open `http://localhost:3000/demo`. The agent also needs a Cloudflare connection once for the Workers AI binding: run `pnpm --filter agent exec wrangler login` if `wrangler dev` cannot reach Cloudflare. Without it, audio lessons are saved with no audio and the player uses browser speech. The first start can take about a minute while it connects. Check it with `curl http://localhost:8787/health`, which answers `{"ok":true}`.
+Then open `http://localhost:3000/demo`. `pnpm --filter agent dev` also needs a Cloudflare connection once for the Workers AI binding: run `pnpm --filter agent exec wrangler login` if `wrangler dev` cannot reach Cloudflare. If you have no Cloudflare login, use `pnpm --filter agent dev:local` instead: it runs the same agent without the speech binding. Without speech, audio lessons are saved with no audio and the player uses browser speech. The first start can take about a minute while it connects. Check it with `curl http://localhost:8787/health`, which answers `{"ok":true}`.
+
+To load the recorded answers into your own project (needed for `AI_MODE=replay`), run `pnpm --filter @jemma/profiling exec tsx ../../scripts/load-replays.ts`.
 
 Run the checks:
 
 ```bash
-pnpm test         # vitest, all packages (needs the Supabase env: several tests use a real project)
+pnpm test         # vitest, all packages (needs the Supabase env: several tests use a real database, the local one from ./start.sh is fine)
 pnpm typecheck    # tsc in every package
 ```
 
@@ -84,11 +125,25 @@ Every model call goes through a replay layer, controlled by `AI_MODE` in `apps/a
 - `replay`: use only stored answers. A missing one is an error. No model is called.
 - `cache`: use a stored answer if there is one, otherwise call the model and store it.
 
-Tests never call a live model. Free models are slow and fail often, so the judges' deployment runs in `cache` after one warm-up run. A fresh Supabase project has no stored answers, so `replay` fails until you have run once in `record` or `cache`. Steps for recording and for the browser demo-path test are in [docs/runbook.md](docs/runbook.md). Stop every dev server you start.
+Tests never call a live model. Free models are slow and fail often, so the judges' deployment runs in `cache` after one warm-up run. `./start.sh` runs in `replay` and loads the recorded answers for you. A fresh Supabase project of your own has no stored answers, so `replay` fails until you have loaded them (see above) or run once in `record` or `cache`. Steps for recording and for the browser demo-path test are in [docs/runbook.md](docs/runbook.md). Stop every dev server you start.
 
 ### Connect an MCP client
 
 The agent serves MCP at `/mcp` and needs a bearer token. See [docs/mcp-server.md](docs/mcp-server.md).
+
+## What is not finished
+
+- **English and Maths only.** The demo has one class, Grade 6 Mathematics. Only Grade 6 data is seeded.
+- **Not built yet:** Grade 8 to 12 question types, teen invites, chat, billing, offline mode and messages between teacher and parent. Screens that link to them say "Coming after the challenge".
+- **No live in-browser camera for teachers.** Teachers snap with the phone's own camera, one photo per page.
+- **No email, SMS or WhatsApp.** Jemma only shows notifications inside the app.
+- **Email sign-in is not part of the demo path** and was not tested against a real inbox. Use the demo page.
+- **Free models are slow and fail often.** A full run of the demo path with no recorded answers took about 15 to 25 minutes when it was recorded. If you upload something new, that call goes to a free model and can take minutes or fail. `./start.sh` avoids this by using recorded answers only, so it cannot handle new input.
+- **No spoken lessons in the one-command run.** Speech needs a Cloudflare connection, so the player uses browser speech.
+- **Phones and laptops only.** Built and checked at 390 px (phone) and 1440 px (laptop). Light theme only.
+- **Synthetic data only.** No real learner is in the system.
+
+More detail is in [docs/architecture.md](docs/architecture.md) (what is not built) and [docs/judges.md](docs/judges.md) (known limits).
 
 ## Repo map
 
@@ -117,4 +172,4 @@ The agent serves MCP at `/mcp` and needs a bearer token. See [docs/mcp-server.md
 
 - Synthetic learner data only. No real learner information in this repo.
 - No em dashes in any copy, code or docs. A test checks this.
-- The licence is not chosen yet. Do not add a licence file.
+- Jemma is MIT licensed (see `LICENSE`). Keep the licence file and the `license` field in every `package.json`.

@@ -1,0 +1,83 @@
+name: CI
+
+# Proves on a clean machine that a stranger can run Jemma with one command:
+# ./start.sh --ci sets up the local Supabase stack, the recorded AI answers, the agent and the web app,
+# then the typecheck, the tests and the phone demo path run against it. No key, no account, no model.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  one-command-run:
+    name: One command run
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Check start.sh
+        run: |
+          bash -n start.sh
+          shellcheck start.sh
+
+      - name: Start Jemma with one command
+        timeout-minutes: 20
+        run: ./start.sh --ci
+
+      - name: Typecheck
+        timeout-minutes: 10
+        run: pnpm typecheck
+
+      - name: Tests
+        timeout-minutes: 15
+        run: |
+          set -a
+          . ./.env.local
+          set +a
+          "$HOME/.claude/coord-work/heavy-run.sh" pnpm test
+
+      - name: Install the browser
+        timeout-minutes: 10
+        run: pnpm --filter web exec playwright install --with-deps chromium
+
+      # start.sh already runs the web app on port 3000 and a second dev server cannot share its folder,
+      # so the spec uses that running app (PREVIEW_URL) instead of starting its own.
+      - name: Demo path on a phone
+        timeout-minutes: 22
+        env:
+          PLAYWRIGHT_HTML_OPEN: never
+          PREVIEW_URL: http://localhost:3000
+          PREVIEW_AGENT_URL: http://localhost:8787
+        run: |
+          set -a
+          . ./.env.local
+          set +a
+          pnpm --filter web exec playwright test demo-path --project=phone --workers=1 --reporter=list,html
+
+      - name: Upload the logs and the Playwright report
+        if: failure() || cancelled()
+        uses: actions/upload-artifact@v7
+        with:
+          name: jemma-logs
+          path: |
+            .jemma/logs/
+            apps/web/playwright-report/
+            apps/web/test-results/
+          if-no-files-found: ignore
+
+      - name: Stop Jemma
+        if: always()
+        run: ./start.sh --stop

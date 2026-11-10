@@ -15,3 +15,9 @@ apps/web/AGENTS.md
 # Playwright output
 test-results/
 playwright-report/
+
+# start.sh: logs, process ids and backups of the run
+.jemma/
+
+# Supabase CLI scratch files
+supabase/.temp/
