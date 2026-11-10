@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest'
 import { classReport } from '../../../evals/tasks/class-report'
 import { KEEP_OUT, withScrubbedEnv } from '../../../evals/lib/env'
-import { hookFinish } from '../../../evals/lib/hook'
+import { hookFinish, settledEvent } from '../../../evals/lib/hook'
 import { appendLedger, liveSpent, readLedger } from '../../../evals/lib/ledger'
 import { assertNoLeaks, clean } from '../../../evals/lib/redact'
 import { parseResult } from '../../../evals/lib/result'
@@ -263,3 +263,40 @@ describe('a real runJob with the fake goose feeds the checks', () => {
   })
 })
 
+describe('an event that the runner could not settle at once (a slow or dropped line)', () => {
+  test('a failed finish_event call is recorded with its message, and still wakes the waiter', async () => {
+    const answers = [{ error: { message: 'TypeError: fetch failed' } }, { error: null }]
+    const fake = { rpc: () => Promise.resolve(answers.shift()) }
+    let finished = 0
+    const errors: string[] = []
+    const hooked = hookFinish(fake as never, () => finished++, errors) as unknown as { rpc: (fn: string) => Promise<unknown> }
+    await hooked.rpc('finish_event')
+    await hooked.rpc('finish_event')
+    await new Promise((r) => setTimeout(r, 0))
+    expect(finished).toBe(2)
+    expect(errors).toEqual(['finish_event said: TypeError: fetch failed'])
+  })
+
+  test('settledEvent keeps reading until the event is done or failed, so a retry after a failed call is seen', async () => {
+    const rows = [{ status: 'running' }, { status: 'running' }, { status: 'failed' }]
+    let i = 0
+    const waits: number[] = []
+    const got = await settledEvent(async () => rows[Math.min(i++, rows.length - 1)]!, { timeoutMs: 60_000, pollMs: 1_000, sleep: async (ms) => void waits.push(ms), now: () => waits.length * 1_000 })
+    expect(got).toEqual({ status: 'failed' })
+    expect(waits).toEqual([1_000, 1_000])
+  })
+
+  test('an event that stays running is returned as it is after the time is up, not waited on for ever', async () => {
+    let t = 0
+    const got = await settledEvent(async () => ({ status: 'running' }), { timeoutMs: 5_000, pollMs: 1_000, sleep: async (ms) => void (t += ms), now: () => t })
+    expect(got).toEqual({ status: 'running' })
+    expect(t).toBeGreaterThanOrEqual(5_000)
+    expect(t).toBeLessThan(7_000)
+  })
+
+  test('an event that is already done is returned without waiting', async () => {
+    let slept = 0
+    expect(await settledEvent(async () => ({ status: 'done' }), { timeoutMs: 5_000, pollMs: 1_000, sleep: async () => void slept++, now: () => 0 })).toEqual({ status: 'done' })
+    expect(slept).toBe(0)
+  })
+})

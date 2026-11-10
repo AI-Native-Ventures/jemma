@@ -20,7 +20,7 @@ import {
 import { createSandbox, deleteSandbox, type Sandbox } from '../../supabase/seed/demo'
 import { sendEvent } from '../../apps/web/lib/agent'
 import { appendLedger } from './ledger'
-import { hookFinish } from './hook'
+import { hookFinish, settledEvent } from './hook'
 import { measureRoundTrip, readOneSchool } from './line'
 import { baseName, RESULT_VERSION, type ResultFile } from './result'
 import { saveResult } from './save'
@@ -106,6 +106,7 @@ export async function runOnce(task: Task, n: number, shared: Shared): Promise<Re
   let checks: ResultFile['checks'] = []
   let extras: ResultFile['extras'] = {}
   let jobSeconds = 0
+  const finishErrors: string[] = []
   let dbRoundTripMs: number | null = null
 
   try {
@@ -155,7 +156,7 @@ export async function runOnce(task: Task, n: number, shared: Shared): Promise<Re
       const read = await admin.from('events').select('status, runner').eq('id', eventId).single()
       if (read.error) throw new Error(`event read failed: ${read.error.message}`)
       return read.data.status === 'queued' && read.data.runner === 'desktop' ? read.data : null
-    }, 60_000, 'the event to route to the desktop runner')
+    }, 180_000, 'the event to route to the desktop runner')
 
     // The job of this task, from the real plan for the real event.
     const plan = await jobPlan(EventSchema.parse({ ...prepared.event.payload, type: prepared.event.type }), user)
@@ -175,7 +176,7 @@ export async function runOnce(task: Task, n: number, shared: Shared): Promise<Re
     const timeoutMs = shared.timeoutMs ?? JOB_TIMEOUT_MS
     const runnerStart = Date.now()
     runner = startRunner({
-      supabase: hookFinish(user, finish),
+      supabase: hookFinish(user, finish, finishErrors),
       runnerId: randomUUID(),
       agent: 'goose',
       mcp: { url: `${shared.agentUrl}/mcp`, token },
@@ -209,8 +210,16 @@ export async function runOnce(task: Task, n: number, shared: Shared): Promise<Re
 
     await withTimeout(finished, timeoutMs + 120_000, 'the runner to settle the event')
     jobSeconds = round1((Date.now() - runnerStart) / 1000)
-    const eventRow = await admin.from('events').select('status, error, runner, attempts').eq('id', eventId).single()
-    if (eventRow.error) throw new Error(`event read failed: ${eventRow.error.message}`)
+    // The runner settles the event with finish_event after the plan. When that call fails on a slow line, the runner
+    // tries once more with `failed`, so read until the event is settled (or the time is up) instead of once.
+    const settled = await settledEvent(async () => {
+      const row = await admin.from('events').select('status, error, runner, attempts').eq('id', eventId).single()
+      if (row.error) throw new Error(`event read failed: ${row.error.message}`)
+      return row.data
+    })
+    const eventRow = {
+      data: settled.status === 'done' || settled.status === 'failed' || finishErrors.length === 0 ? settled : { ...settled, error: settled.error ?? finishErrors.join('; ').slice(0, 300) },
+    }
 
     const parsed = attemptsRaw.map((a) => parseTranscript('goose', a.stdout))
     const attempts: AttemptRecord[] = attemptsRaw.map((a, i) => ({
