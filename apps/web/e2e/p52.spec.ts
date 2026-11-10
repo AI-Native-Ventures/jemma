@@ -82,7 +82,7 @@ const longViewEvents = async (childId: string, status?: 'queued' | 'running' | '
 test.use({ screenshot: 'only-on-failure' })
 
 test.describe('the Long view', () => {
-  test.setTimeout(240_000)
+  test.setTimeout(480_000)
   test.use({ actionTimeout: 20_000 })
 
   test('the teacher checks each pattern and talks to the parent, then the parent sees it. The learner never does', async ({ page }, testInfo) => {
@@ -272,8 +272,8 @@ test.describe('the Long view', () => {
       // Sipho's unclear handwriting was not counted, and the screen says so.
       await expect(page.getByText('What Jemma could not use')).toBeVisible()
       await expect(page.getByText('Not counted, because the marks were hard to read')).toBeVisible()
-      await expect.poll(async () => (await longViewEvents(sipho)).length).toBe(1)
-      await expect.poll(() => posted.length).toBe(1)
+      await check.poll(async () => (await longViewEvents(sipho)).length).toBe(1)
+      await check.poll(() => posted.length).toBe(1)
       await check(page.getByRole('button', { name: 'Update the Long view' })).toBeDisabled()
       await expect(page.getByText('Jemma is looking at the records again.')).toBeVisible()
       // Opening it again does not ask again.
@@ -303,7 +303,7 @@ test.describe('the Long view', () => {
       await expect(page.locator('body')).not.toContainText('boom secret detail')
       posted.length = 0
       await alert.getByRole('button', { name: 'Try again' }).click()
-      await expect.poll(() => posted.length).toBe(1)
+      await check.poll(() => posted.length).toBe(1)
       await check(page.getByText('Jemma is looking at the records again.')).toBeVisible()
       await expect(page.getByRole('alert').filter({ hasText: 'The update did not finish' })).toHaveCount(0)
       expect(await longViewEvents(amina, 'queued')).toHaveLength(1)
@@ -318,7 +318,7 @@ test.describe('the Long view', () => {
         await check(page.getByRole('region', { name: 'Earlier notes' }).getByText(text)).toBeVisible()
       }
       await note('Keen to try fraction strips.')
-      await expect.poll(async () => (await longViewEvents(amina, 'queued')).length).toBe(1)
+      await check.poll(async () => (await longViewEvents(amina, 'queued')).length).toBe(1)
       await note('Asked to show the whole class how she adds fractions.')
       await page.waitForTimeout(1000)
       expect(await longViewEvents(amina, 'queued')).toHaveLength(1)

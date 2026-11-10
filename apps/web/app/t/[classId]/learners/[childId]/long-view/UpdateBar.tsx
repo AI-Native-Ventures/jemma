@@ -16,14 +16,17 @@ const POLL_MS = 4000
 export function UpdateBar({ childId, state, lastUpdated }: { childId: string; state: 'idle' | 'running' | 'failed'; lastUpdated: string | null }) {
   const router = useRouter()
   const [pending, start] = useTransition()
+  const [looking, look] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const running = state === 'running'
 
+  // One look at a time: the next one is planned only after the screen has taken in the last answer.
+  // (Looks that overlap would queue up behind each other, and a slow server would never get to show the result.)
   useEffect(() => {
-    if (!running) return
-    const timer = setInterval(() => router.refresh(), POLL_MS)
-    return () => clearInterval(timer)
-  }, [running, router])
+    if (!running || looking) return
+    const timer = setTimeout(() => look(() => router.refresh()), POLL_MS)
+    return () => clearTimeout(timer)
+  }, [running, looking, router])
 
   const update = () => {
     setError(null)
