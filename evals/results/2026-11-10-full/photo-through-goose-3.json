@@ -1,0 +1,226 @@
+{
+  "version": 1,
+  "runId": "2026-11-10-full",
+  "taskId": "photo-through-goose",
+  "n": 3,
+  "startedAt": "2026-11-10T21:03:26.918Z",
+  "rehearsal": false,
+  "seconds": 80.1,
+  "wallSeconds": 114.3,
+  "dbRoundTripMs": 1114,
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "the event ended done",
+      "pass": true,
+      "detail": "status=done; error=none; runner note=Job completed successfully. I read Amina's snapped paper (Grade 6 Mathematics Class Test 1: Fractions and Decimals) and copied all 10 answers exactly as written"
+    },
+    {
+      "name": "get_paper answered ok",
+      "pass": true,
+      "detail": "1 call(s)"
+    },
+    {
+      "name": "the photo reached the model through goose as image content",
+      "pass": true,
+      "detail": "get_paper answers carried: image, text"
+    },
+    {
+      "name": "mark_paper answered ok",
+      "pass": true,
+      "detail": "1 call(s); ok"
+    },
+    {
+      "name": "the paper ends marked",
+      "pass": true,
+      "detail": "status=marked; error=none; open items=0"
+    },
+    {
+      "name": "the paper has the right total, for the right learner",
+      "pass": true,
+      "detail": "total=6 (the sample is 6); learner matched=true; name read=Amina"
+    },
+    {
+      "name": "every answer is marked as the key says",
+      "pass": true,
+      "detail": "10 answers, all marked right or wrong as the sample says"
+    }
+  ],
+  "event": {
+    "status": "done",
+    "error": null
+  },
+  "run": {
+    "status": "done",
+    "note": "Job completed successfully. I read Amina's snapped paper (Grade 6 Mathematics Class Test 1: Fractions and Decimals) and copied all 10 answers exactly as written, without marking anything: | Q | Answer as written | |---|---| | 1 | 2/6 | | 2 | 3/9 | | 3 | 1/4 | | 4 | 3 2/6 | | 5 | 8 | | 6 | 2/3 | | 7 | 0,6 | | 8 | 0,30 | | 9 | B | | 10 | R5 | Jemma's code handled the marking against the answer key (total 6). The job is now marked done."
+  },
+  "attempts": [
+    {
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "seconds": 76.3,
+      "status": "done",
+      "note": "Job completed successfully. I read Amina's snapped paper (Grade 6 Mathematics Class Test 1: Fractions and Decimals) and copied all 10 answers exactly as written, without marking anything: | Q | Answer as written | |---|---| | 1 | 2/6 | | 2 | 3/9 | | 3 | 1/4 | | 4 | 3 2/6 | | 5 | 8 | | 6 | 2/3 | | 7 ",
+      "saved": true,
+      "timedOut": false,
+      "tokens": {
+        "input": 57237,
+        "output": 1968,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "nvidia/nemotron-3.5-super-vl:free",
+  "tokens": {
+    "input": 57237,
+    "output": 1968,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_paper",
+    "jemma__mark_paper",
+    "jemma__complete_job"
+  ],
+  "reported": true,
+  "facts": {
+    "paper": {
+      "status": "marked",
+      "total": 6,
+      "childId": "796649cd-ce22-45e8-9e4e-9c26e6b90d65",
+      "nameRead": "Amina",
+      "error": null
+    },
+    "results": [
+      {
+        "n": 1,
+        "answerRead": "2/6",
+        "correct": false,
+        "confidence": 0.95
+      },
+      {
+        "n": 2,
+        "answerRead": "3/9",
+        "correct": false,
+        "confidence": 0.95
+      },
+      {
+        "n": 3,
+        "answerRead": "1/4",
+        "correct": true,
+        "confidence": 0.95
+      },
+      {
+        "n": 4,
+        "answerRead": "3 2/6",
+        "correct": false,
+        "confidence": 0.95
+      },
+      {
+        "n": 5,
+        "answerRead": "8",
+        "correct": true,
+        "confidence": 0.95
+      },
+      {
+        "n": 6,
+        "answerRead": "2/3",
+        "correct": true,
+        "confidence": 0.95
+      },
+      {
+        "n": 7,
+        "answerRead": "0,6",
+        "correct": true,
+        "confidence": 0.95
+      },
+      {
+        "n": 8,
+        "answerRead": "0,30",
+        "correct": false,
+        "confidence": 0.95
+      },
+      {
+        "n": 9,
+        "answerRead": "B",
+        "correct": true,
+        "confidence": 0.95
+      },
+      {
+        "n": 10,
+        "answerRead": "R5",
+        "correct": true,
+        "confidence": 0.95
+      }
+    ],
+    "needsYou": 0
+  },
+  "state": {
+    "childId": "796649cd-ce22-45e8-9e4e-9c26e6b90d65",
+    "paperId": "121808e9-83d7-4c74-b60f-6c2e6d6e6668",
+    "expectedTotal": 6,
+    "expected": [
+      {
+        "n": 1,
+        "answer": "2/6",
+        "correct": false
+      },
+      {
+        "n": 2,
+        "answer": "3/9",
+        "correct": false
+      },
+      {
+        "n": 3,
+        "answer": "1/4",
+        "correct": true
+      },
+      {
+        "n": 4,
+        "answer": "3 2/6",
+        "correct": false
+      },
+      {
+        "n": 5,
+        "answer": "8",
+        "correct": true
+      },
+      {
+        "n": 6,
+        "answer": "2/3",
+        "correct": true
+      },
+      {
+        "n": 7,
+        "answer": "0,6",
+        "correct": true
+      },
+      {
+        "n": 8,
+        "answer": "0,30",
+        "correct": false
+      },
+      {
+        "n": 9,
+        "answer": "B",
+        "correct": true
+      },
+      {
+        "n": 10,
+        "answer": "R5",
+        "correct": true
+      }
+    ]
+  },
+  "extras": {
+    "answersReadExactly": 10,
+    "answersExpected": 10,
+    "totalRead": 6
+  },
+  "liveAttempts": 1,
+  "sandboxIds": [
+    "584618c0-6af7-411b-b43f-d465dc309e2f"
+  ],
+  "stream": "photo-through-goose-3.jsonl",
+  "scrubbed": false,
+  "cleanup": []
+}
