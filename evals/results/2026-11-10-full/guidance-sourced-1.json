@@ -1,0 +1,186 @@
+{
+  "version": 1,
+  "runId": "2026-11-10-full",
+  "taskId": "guidance-sourced",
+  "n": 1,
+  "startedAt": "2026-11-10T19:34:18.222Z",
+  "rehearsal": false,
+  "seconds": 109.8,
+  "wallSeconds": 146.7,
+  "dbRoundTripMs": 314,
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "the event ended done",
+      "pass": true,
+      "detail": "status=done; error=none; runner note=All done. Here's a summary of what was completed for event `48962ae5-681b-495b-9e0f-b2ea7df804c1`: **Guidance card saved** for Amina (Grade 6, Hillview Primary,"
+    },
+    {
+      "name": "a guidance card was saved by this run",
+      "pass": true,
+      "detail": "updated 2026-11-10T19:36:03.786+00:00"
+    },
+    {
+      "name": "the card keeps one to three focus items",
+      "pass": true,
+      "detail": "2 focus item(s)"
+    },
+    {
+      "name": "every focus item has evidence",
+      "pass": true,
+      "detail": "2 item(s), each with evidence"
+    },
+    {
+      "name": "every evidence id is a real marked answer of this learner",
+      "pass": true,
+      "detail": "all ids found among 35 of her results"
+    },
+    {
+      "name": "no banned word on the card",
+      "pass": true,
+      "detail": "none found"
+    },
+    {
+      "name": "subject_guidance answered ok",
+      "pass": true,
+      "detail": "1 call(s)"
+    }
+  ],
+  "event": {
+    "status": "done",
+    "error": null
+  },
+  "run": {
+    "status": "done",
+    "note": "All done. Here's a summary of what was completed for event `48962ae5-681b-495b-9e0f-b2ea7df804c1`: **Guidance card saved** for Amina (Grade 6, Hillview Primary, class 6B) via `subject_guidance`: - **Headline:** Amina is doing well. Two things to work on this week: adding fractions and adding decimals. - **Focus 1 - Make the bottoms match before adding fractions:** she adds the tops and bottoms instead of matching denominators; her teacher's newest note (5 Nov) says she explains her thinking clearly, so she can talk through each step. Backed by Class Test 1 Q1, Q2, Q4 (result ids from her open gap). - **Focus 2 - Line up the comma in decimals:** she lines up last digits instead of place value. Backed by Class Test 1 Q8 and Sunday homework (result ids from her open gap). - **Looking ahead:** add mixed numbers next; practise ten minutes on Monday or Wednesday (netball Tue/Thu, choir Fri). **Markdown report written** to `<reports>/guidance-e63dd6d9-7990-4632-8cce-41d0c95017a0.md`, with every claim tied to its source (question numbers and result ids). **Job marked complete** - `complete_job` returned `ok: true`. No marks were changed, no em dashes used, and no focus item was included without evidence."
+  },
+  "attempts": [
+    {
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "seconds": 98.1,
+      "status": "done",
+      "note": "All done. Here's a summary of what was completed for event `48962ae5-681b-495b-9e0f-b2ea7df804c1`: **Guidance card saved** for Amina (Grade 6, Hillview Primary, class 6B) via `subject_guidance`: - **Headline:** Amina is doing well. Two things to work on this week: adding fractions and adding decimal",
+      "saved": true,
+      "timedOut": false,
+      "tokens": {
+        "input": 103600,
+        "output": 6516,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "nvidia/nemotron-3.5-super-vl:free",
+  "tokens": {
+    "input": 103600,
+    "output": 6516,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_learner_profile",
+    "jemma__save_topic_map_draft (error)",
+    "jemma__subject_guidance",
+    "files__create_directory",
+    "files__write_file",
+    "jemma__complete_job"
+  ],
+  "reported": true,
+  "facts": {
+    "startedAt": "2026-11-10T19:34:41.351Z",
+    "card": {
+      "updatedAt": "2026-11-10T19:36:03.786+00:00",
+      "content": {
+        "focus": [
+          {
+            "why": "She adds the tops and the bottoms instead of making the bottoms the same. When the bottoms match, she can add the tops. Her teacher says she explains her thinking clearly, so she can say each step out loud as she works. This fixes all three missed fraction questions.",
+            "title": "Make the bottoms match before adding fractions",
+            "evidence": [
+              {
+                "label": "Class Test 1 · Q1, Q2, Q4",
+                "resultIds": [
+                  "a8d3d4a6-cec1-4c65-9c34-c2f69fad6fb1",
+                  "1819db53-a011-4943-b823-cfa618af9043",
+                  "e8677e8b-3f11-469b-a49d-95843b52b230"
+                ]
+              }
+            ]
+          },
+          {
+            "why": "She lines up the last digits instead of lining up the comma. Lining up what each digit is worth fixes the three missed decimal questions.",
+            "title": "Line up the comma in decimals",
+            "evidence": [
+              {
+                "label": "Class Test 1 · Q8",
+                "resultIds": [
+                  "c9d262fe-7b98-4c26-b1a6-17d8a3cb6402"
+                ]
+              },
+              {
+                "label": "Homework · Sunday",
+                "resultIds": [
+                  "6825e2ce-cebf-4727-9215-80bf194ae645",
+                  "d2f8dbbc-0c0d-43e9-93e3-248d23f3740a"
+                ]
+              }
+            ]
+          }
+        ],
+        "headline": "Amina is doing well. Two things to work on this week: adding fractions and adding decimals.",
+        "lookingAhead": "Next she can add mixed numbers. She can practise for ten minutes on Monday or Wednesday, when she does not have netball or choir."
+      }
+    },
+    "resultIds": [
+      "96d61a3e-d56e-4196-88c7-593a88735910",
+      "8578373f-98f8-4502-89d3-8d5f9f41c604",
+      "0f115834-0899-47b7-99d2-719604429f7b",
+      "b49d2962-fe53-4e67-af32-6e0f2c7410be",
+      "4fe46405-b113-42ce-b2d9-33277fcf85d0",
+      "f5129ef7-3bc3-4621-9a81-e8560db26e34",
+      "168dc51e-f056-4a37-966c-4073a675394e",
+      "59ddde90-54df-416c-8357-adb360b6b675",
+      "0528ab69-c638-4e4f-acc0-50302419af07",
+      "91b8bfe8-f6cf-4e29-b046-564af8ab3abb",
+      "9f7df5fc-0dd8-4766-9679-05825cdd31a0",
+      "a74d3a47-6d2c-4011-bc69-fbfc6fc62eff",
+      "5f60553b-8169-49f0-8bf0-704c062a1d5d",
+      "62233a5b-43f7-48c3-9021-004d7eda554e",
+      "19086e44-48fe-41f1-bc70-b1ff5fe23322",
+      "119553cc-a44b-46aa-b78c-b27ff9bf6681",
+      "eb9f3141-143a-4f00-a264-19ca013a2922",
+      "8fe23a75-0ddd-470f-97ac-d2890c475a95",
+      "a0598e5f-aa61-4818-90d6-580014502d11",
+      "f884ab94-73db-4358-923c-ffc2eef468d2",
+      "b4f3c5d8-1c29-42b4-a225-0a6c38d5a67f",
+      "a8d3d4a6-cec1-4c65-9c34-c2f69fad6fb1",
+      "1819db53-a011-4943-b823-cfa618af9043",
+      "d96f2226-ee73-489b-bf19-c54150d27b0a",
+      "e8677e8b-3f11-469b-a49d-95843b52b230",
+      "cafffb54-cb85-4382-89fb-23207168d5b2",
+      "8e1a8f6d-59b0-4508-b3c4-01b3be694eb5",
+      "bbabd375-eee4-492a-9d7a-3b1b1c2815e8",
+      "c9d262fe-7b98-4c26-b1a6-17d8a3cb6402",
+      "d12578f4-a131-4e40-8591-eed7b341acec",
+      "a3db2e41-8338-4caa-ac7f-06ebf77e3d89",
+      "6825e2ce-cebf-4727-9215-80bf194ae645",
+      "d9a3ed03-069e-43be-8d75-42ed9ea3786b",
+      "d2f8dbbc-0c0d-43e9-93e3-248d23f3740a",
+      "c799d00d-7af1-490a-9eb8-fe1de27419e9"
+    ]
+  },
+  "state": {
+    "childId": "e63dd6d9-7990-4632-8cce-41d0c95017a0"
+  },
+  "extras": {
+    "focusItemsFromModel": 2,
+    "focusItemsKept": 2,
+    "idsFromModel": 6,
+    "invalidIdsFromModel": 0
+  },
+  "liveAttempts": 1,
+  "sandboxIds": [
+    "c82bc656-ebf9-48fa-8fb9-a58d39947d59"
+  ],
+  "stream": "guidance-sourced-1.jsonl",
+  "scrubbed": true,
+  "cleanup": []
+}

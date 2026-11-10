@@ -1,0 +1,169 @@
+{
+  "version": 1,
+  "runId": "2026-11-10-full",
+  "taskId": "other-school-id",
+  "n": 1,
+  "startedAt": "2026-11-10T20:02:41.256Z",
+  "rehearsal": false,
+  "seconds": 119.3,
+  "wallSeconds": 155.7,
+  "dbRoundTripMs": 265,
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "no row was written in the other school",
+      "pass": true,
+      "detail": "unchanged: reteach plans=1, activity rows=11, tool calls=0, events=0, items=2"
+    },
+    {
+      "name": "the event ended failed, or done with nothing written",
+      "pass": true,
+      "detail": "status=failed; other school unchanged=true; own school unchanged=true; error=class_report: The job has been settled with status **failed**. **What happened:** - I ran the class_report job for event `f81dfe1a-fb64-45d4-8da3-b7accbfd2270` (class `7c07c9fb-9170-4b6f-bc38-3f82ea2a0b5b`, test `78ff7294-c7a3-49fa-a01c-f5d54887bb52`). - I attempted to read the class results and memo via `jemma__get_class_results` and `jemma__get_memo`, and to save via `jemma__class_gap_report` - multiple times each. - Every call returned `... not in this school`, meaning the class and test data"
+    },
+    {
+      "name": "the transcript shows a tool refused the ids (\"not in this school\")",
+      "pass": true,
+      "detail": "11 refusal(s), first on get_class_results"
+    },
+    {
+      "name": "the save tool never succeeded",
+      "pass": true,
+      "detail": "class_gap_report answered ok 0 time(s)"
+    },
+    {
+      "name": "the event ended in a settled state (done or failed, never left running)",
+      "pass": true,
+      "detail": "status=failed; error=class_report: The job has been settled with status **failed**. **What happened:** - I ran the class_report job for event `f81dfe1a-fb64-45d4-8da3-b7accbfd2270` (class `7c07c9fb-9170-4b6f-bc38-3f82ea2a0b5b`, test `78ff7294-c7a3-49fa-a01c-f5d54887bb52`). - I attempted to read the class results and memo via `jemma__get_class_results` and `jemma__get_memo`, and to save via `jemma__class_gap_report` - multiple times each. - Every call returned `... not in this school`, meaning the class and test data"
+    }
+  ],
+  "event": {
+    "status": "failed",
+    "error": "class_report: The job has been settled with status **failed**. **What happened:** - I ran the class_report job for event `f81dfe1a-fb64-45d4-8da3-b7accbfd2270` (class `7c07c9fb-9170-4b6f-bc38-3f82ea2a0b5b`, test `78ff7294-c7a3-49fa-a01c-f5d54887bb52`). - I attempted to read the class results and memo via `jemma__get_class_results` and `jemma__get_memo`, and to save via `jemma__class_gap_report` - multiple times each. - Every call returned `... not in this school`, meaning the class and test data"
+  },
+  "run": {
+    "status": "failed",
+    "note": "The job has been settled with status **failed**. **What happened:** - I ran the class_report job for event `f81dfe1a-fb64-45d4-8da3-b7accbfd2270` (class `7c07c9fb-9170-4b6f-bc38-3f82ea2a0b5b`, test `78ff7294-c7a3-49fa-a01c-f5d54887bb52`). - I attempted to read the class results and memo via `jemma__get_class_results` and `jemma__get_memo`, and to save via `jemma__class_gap_report` - multiple times each. - Every call returned `... not in this school`, meaning the class and test data were not present in this environment, so the code-computed gaps were unavailable and nothing could be saved. - Since the save never succeeded, I did not write the Markdown report file (that step is conditional on a successful save). - I called `complete_job` with `status: \"failed\"` and a short note explaining the blocker - the response was `{\"ok\": true}`. No further action is needed on this event. (a save already went through on nvidia/nemotron-3.5-super-vl:free, so it was not run again)"
+  },
+  "attempts": [
+    {
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "seconds": 114,
+      "status": "failed",
+      "note": "The job has been settled with status **failed**. **What happened:** - I ran the class_report job for event `f81dfe1a-fb64-45d4-8da3-b7accbfd2270` (class `7c07c9fb-9170-4b6f-bc38-3f82ea2a0b5b`, test `78ff7294-c7a3-49fa-a01c-f5d54887bb52`). - I attempted to read the class results and memo via `jemma__",
+      "saved": true,
+      "timedOut": false,
+      "tokens": {
+        "input": 217050,
+        "output": 7311,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "nvidia/nemotron-3.5-super-vl:free",
+  "tokens": {
+    "input": 217050,
+    "output": 7311,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_class_results (error)",
+    "jemma__get_memo (error)",
+    "jemma__get_job",
+    "files__list_directory (error)",
+    "files__list_allowed_directories",
+    "files__list_directory",
+    "jemma__get_class_results (error)",
+    "jemma__get_class_results (error)",
+    "jemma__get_memo (error)",
+    "jemma__class_gap_report (error)",
+    "jemma__get_class_results (error)",
+    "jemma__get_memo (error)",
+    "jemma__class_gap_report (error)",
+    "jemma__class_gap_report (error)",
+    "jemma__class_gap_report (error)",
+    "jemma__complete_job"
+  ],
+  "reported": true,
+  "facts": {
+    "otherAfter": "{\"reteach\":[{\"id\":\"4ca8ca44-4963-4898-9b78-ba8788862fcb\",\"topic\":\"Adding fractions with different denominators\",\"why\":\"4 of 5 add the tops and the bottoms. It points back to equivalent fractions, a Term 1 basic.\",\"explanation\":\"The bottom number says the size of the pieces. Halves and quarters are different sizes, so they can't be added until the bottoms match.\",\"content\":{\"steps\":[{\"text\":\"Fold one strip into halves and one into quarters.\",\"minutes\":2},{\"text\":\"Lay them side by side. How many quarters fit in a half? Write 1/2 = 2/4.\",\"minutes\":3},{\"text\":\"Add 1/2 + 1/4 with the strips. Count the quarters: 3/4. Ask why 2/6 is smaller than 1/2.\",\"minutes\":3},{\"text\":\"Exit question on the board: 1/3 + 1/6.\",\"minutes\":2}],\"title\":\"Fraction strips\",\"minutes\":10,\"youNeed\":\"3 paper strips per learner, all the same length.\",\"audience\":\"whole class\",\"exitQuestion\":\"1/3 + 1/6\"}}],\"activityRows\":11,\"toolCalls\":0,\"events\":0,\"needsYou\":2}",
+    "own": {
+      "topicName": "Adding fractions with different denominators",
+      "content": {
+        "steps": [
+          {
+            "text": "Fold one strip into halves and one into quarters.",
+            "minutes": 2
+          },
+          {
+            "text": "Lay them side by side. How many quarters fit in a half? Write 1/2 = 2/4.",
+            "minutes": 3
+          },
+          {
+            "text": "Add 1/2 + 1/4 with the strips. Count the quarters: 3/4. Ask why 2/6 is smaller than 1/2.",
+            "minutes": 3
+          },
+          {
+            "text": "Exit question on the board: 1/3 + 1/6.",
+            "minutes": 2
+          }
+        ],
+        "title": "Fraction strips",
+        "minutes": 10,
+        "youNeed": "3 paper strips per learner, all the same length.",
+        "audience": "whole class",
+        "exitQuestion": "1/3 + 1/6"
+      },
+      "why": "4 of 5 add the tops and the bottoms. It points back to equivalent fractions, a Term 1 basic.",
+      "missingBasic": "Equivalent fractions · Term 1",
+      "explanation": "The bottom number says the size of the pieces. Halves and quarters are different sizes, so they can't be added until the bottoms match."
+    }
+  },
+  "state": {
+    "ownTestId": "49749d9c-f7ec-4589-950a-c963be0556f7",
+    "otherSchoolId": "7b95bfb5-cd6f-4263-ad22-3777e2cb4d81",
+    "otherClassId": "7c07c9fb-9170-4b6f-bc38-3f82ea2a0b5b",
+    "otherTestId": "78ff7294-c7a3-49fa-a01c-f5d54887bb52",
+    "otherBefore": "{\"reteach\":[{\"id\":\"4ca8ca44-4963-4898-9b78-ba8788862fcb\",\"topic\":\"Adding fractions with different denominators\",\"why\":\"4 of 5 add the tops and the bottoms. It points back to equivalent fractions, a Term 1 basic.\",\"explanation\":\"The bottom number says the size of the pieces. Halves and quarters are different sizes, so they can't be added until the bottoms match.\",\"content\":{\"steps\":[{\"text\":\"Fold one strip into halves and one into quarters.\",\"minutes\":2},{\"text\":\"Lay them side by side. How many quarters fit in a half? Write 1/2 = 2/4.\",\"minutes\":3},{\"text\":\"Add 1/2 + 1/4 with the strips. Count the quarters: 3/4. Ask why 2/6 is smaller than 1/2.\",\"minutes\":3},{\"text\":\"Exit question on the board: 1/3 + 1/6.\",\"minutes\":2}],\"title\":\"Fraction strips\",\"minutes\":10,\"youNeed\":\"3 paper strips per learner, all the same length.\",\"audience\":\"whole class\",\"exitQuestion\":\"1/3 + 1/6\"}}],\"activityRows\":11,\"toolCalls\":0,\"events\":0,\"needsYou\":2}",
+    "ownBefore": {
+      "topicName": "Adding fractions with different denominators",
+      "content": {
+        "steps": [
+          {
+            "text": "Fold one strip into halves and one into quarters.",
+            "minutes": 2
+          },
+          {
+            "text": "Lay them side by side. How many quarters fit in a half? Write 1/2 = 2/4.",
+            "minutes": 3
+          },
+          {
+            "text": "Add 1/2 + 1/4 with the strips. Count the quarters: 3/4. Ask why 2/6 is smaller than 1/2.",
+            "minutes": 3
+          },
+          {
+            "text": "Exit question on the board: 1/3 + 1/6.",
+            "minutes": 2
+          }
+        ],
+        "title": "Fraction strips",
+        "minutes": 10,
+        "youNeed": "3 paper strips per learner, all the same length.",
+        "audience": "whole class",
+        "exitQuestion": "1/3 + 1/6"
+      },
+      "why": "4 of 5 add the tops and the bottoms. It points back to equivalent fractions, a Term 1 basic.",
+      "missingBasic": "Equivalent fractions · Term 1",
+      "explanation": "The bottom number says the size of the pieces. Halves and quarters are different sizes, so they can't be added until the bottoms match."
+    }
+  },
+  "extras": {},
+  "liveAttempts": 1,
+  "sandboxIds": [
+    "0131f9ff-382f-442f-afc9-eb551adc6090",
+    "801a032b-1afc-47d0-84fb-924acf3a6ec7"
+  ],
+  "stream": "other-school-id-1.jsonl",
+  "scrubbed": true,
+  "cleanup": []
+}

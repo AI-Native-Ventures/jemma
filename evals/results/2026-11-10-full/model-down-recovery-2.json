@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "runId": "2026-11-10-full",
+  "taskId": "model-down-recovery",
+  "n": 2,
+  "startedAt": "2026-11-10T20:27:08.637Z",
+  "rehearsal": false,
+  "seconds": 208.7,
+  "wallSeconds": 230.8,
+  "dbRoundTripMs": 283,
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "the first attempt, on the model that does not exist, failed",
+      "pass": true,
+      "detail": "model=nvidia/this-model-does-not-exist:free; status=failed; saved=false; said: Ran into this error: Request failed: Bad request (400): nvidia/this-model-does-not-exist:free is not a valid model ID..."
+    },
+    {
+      "name": "the runner moved to the next model",
+      "pass": true,
+      "detail": "second attempt on nvidia/nemotron-3.5-super-vl:free (done); 2 attempt(s) in all"
+    },
+    {
+      "name": "the event ended done",
+      "pass": true,
+      "detail": "status=done; error=none; runner note=The job is complete. Here's a summary of what was done: **Gap identified (Gap 1):** Adding fractions with different denominators - misconception \"Adds the tops "
+    },
+    {
+      "name": "exactly one reteach plan exists for the test (no double write)",
+      "pass": true,
+      "detail": "rows=1"
+    },
+    {
+      "name": "the save tool succeeded exactly once, and the plan is the new one",
+      "pass": true,
+      "detail": "class_gap_report answered ok 1 time(s); plan differs from the seeded one=true"
+    }
+  ],
+  "event": {
+    "status": "done",
+    "error": null
+  },
+  "run": {
+    "status": "done",
+    "note": "The job is complete. Here's a summary of what was done: **Gap identified (Gap 1):** Adding fractions with different denominators - misconception \"Adds the tops and the bottoms\" (count: 8 across 3 learners) **Learners affected:** Amina, Thabo and Naledi - Q1 (1/2 + 1/4 → \"2/6\"), Q2 (2/3 + 1/6 → \"3/9\"), Q4 (1 1/2 + 2 1/4 → \"3 2/6\") **What was saved via `class_gap_report`:** - `why`: Explains learners treat a fraction as two separate whole numbers instead of one part of a whole - `missingBasic`: Adding fractions with the same denominator (equivalent fractions) - `explanation`: Two sentences for the teacher to say aloud about making piece sizes match before adding - `reteach`: 10-minute lesson for Amina, Thabo and Naledi using fraction strips/squared paper, with steps adding to 10 minutes and an exit question **Markdown copy** written to `<reports>/class_report-6af02af4-6083-4fb8-b694-7e9d91aa8ba5.md` with all claims sourced to question numbers. **Job completed** with status \"done\" via `complete_job`."
+  },
+  "attempts": [
+    {
+      "model": "nvidia/this-model-does-not-exist:free",
+      "seconds": 15.8,
+      "status": "failed",
+      "note": "Ran into this error: Request failed: Bad request (400): nvidia/this-model-does-not-exist:free is not a valid model ID. Available models for this provider: aion-labs/aion-2.0, aion-labs/aion-3.0, aion-labs/aion-3.0-mini, aion-labs/aion-3.5, aion-labs/aion-3.5-mini, amazon/nova-2-lite-v1, amazon/nova-",
+      "saved": false,
+      "timedOut": false,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "costUsd": 0
+      }
+    },
+    {
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "seconds": 189,
+      "status": "done",
+      "note": "The job is complete. Here's a summary of what was done: **Gap identified (Gap 1):** Adding fractions with different denominators - misconception \"Adds the tops and the bottoms\" (count: 8 across 3 learners) **Learners affected:** Amina, Thabo and Naledi - Q1 (1/2 + 1/4 → \"2/6\"), Q2 (2/3 + 1/6 → \"3/9\"",
+      "saved": true,
+      "timedOut": false,
+      "tokens": {
+        "input": 115853,
+        "output": 4595,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "nvidia/nemotron-3.5-super-vl:free",
+  "tokens": {
+    "input": 115853,
+    "output": 4595,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_job",
+    "jemma__get_class_results",
+    "jemma__get_memo",
+    "files__create_directory",
+    "files__write_file",
+    "jemma__class_gap_report",
+    "jemma__complete_job"
+  ],
+  "reported": true,
+  "facts": {
+    "reteachRows": 1,
+    "reteach": {
+      "topicName": "Adding fractions with different denominators",
+      "content": {
+        "steps": [
+          {
+            "text": "Show 1/2 and 1/4 on fraction strips; ask which piece is bigger.",
+            "minutes": 2
+          },
+          {
+            "text": "Cut halves into quarters so both fractions have quarters; write 1/2 as 2/4.",
+            "minutes": 3
+          },
+          {
+            "text": "Add 2/4 + 1/4 = 3/4; repeat with 2/3 + 1/6 using sixths.",
+            "minutes": 3
+          },
+          {
+            "text": "Learners try 1/2 + 1/4 on their own and check.",
+            "minutes": 2
+          }
+        ],
+        "title": "Adding fractions with different denominators",
+        "minutes": 10,
+        "youNeed": "fraction strips or a fraction wall, squared paper, pencils",
+        "audience": "Amina, Thabo and Naledi",
+        "exitQuestion": "Add 1/2 and 1/4. First write 1/2 with a bottom of 4, then add."
+      },
+      "why": "Learners add the top numbers together and the bottom numbers together because they see a fraction as two separate whole numbers instead of one part of a whole.",
+      "missingBasic": "Adding fractions with the same denominator (equivalent fractions)",
+      "explanation": "The bottom number shows how many equal pieces the whole is cut into. Before we add, the pieces must be the same size, so we first make the bottoms match."
+    },
+    "classGapTopics": [
+      "Adding fractions with different denominators",
+      "Adding decimals",
+      "Comparing fractions"
+    ],
+    "outOf": 10,
+    "reportName": "class_report-6af02af4-6083-4fb8-b694-7e9d91aa8ba5.md",
+    "report": "# Class Report - Gap 1\n\n**Test:** Class Test 1: Fractions and decimals (testId f3f7386d-82cf-4db9-92cd-92b8cd6c3fc8)\n**Class:** 6af02af4-6083-4fb8-b694-7e9d91aa8ba5\n\n## Gap 1: Adding fractions with different denominators\n\n**Misconception (from code):** Adds the tops and the bottoms\n\n### Learners affected\n- Amina - Q1 (1/2 + 1/4 → answerRead \"2/6\"), Q2 (2/3 + 1/6 → answerRead \"3/9\"), Q4 (1 1/2 + 2 1/4 → answerRead \"3 2/6\")\n- Thabo - Q1 (\"2/6\"), Q2 (\"3/9\"), Q4 (\"3 2/6\")\n- Naledi - Q1 (\"2/6\"), Q4 (\"3 2/6\")\n\n### why\nLearners add the top numbers together and the bottom numbers together because they see a fraction as two separate whole numbers instead of one part of a whole.\n\n### missingBasic\nAdding fractions with the same denominator (making equivalent fractions / a common denominator)\n\n### explanation\nThe bottom number shows how many equal pieces the whole is cut into. Before we add, the pieces must be the same size, so we first make the bottoms match.\n\n## Reteach (gap 1)\n\n**title:** Adding fractions with different denominators\n**audience:** Amina, Thabo and Naledi\n**minutes:** 10\n**youNeed:** fraction strips or a fraction wall, squared paper, pencils\n\n**steps:**\n- 2 minutes: Show 1/2 and 1/4 on fraction strips; ask which piece is bigger.\n- 3 minutes: Cut halves into quarters so both fractions have quarters; write 1/2 as 2/4.\n- 3 minutes: Add 2/4 + 1/4 = 3/4; repeat with 2/3 + 1/6 using sixths.\n- 2 minutes: Learners try 1/2 + 1/4 on their own and check.\n\n**exitQuestion:** Add 1/2 and 1/4. First write 1/2 with a bottom of 4, then add.\n",
+    "reportChars": 1556,
+    "classReportActivity": 2
+  },
+  "state": {
+    "classId": "6af02af4-6083-4fb8-b694-7e9d91aa8ba5",
+    "testId": "f3f7386d-82cf-4db9-92cd-92b8cd6c3fc8",
+    "paperId": "2cb688bc-98bb-418e-9666-c8b0058d857b",
+    "before": {
+      "topicName": "Adding fractions with different denominators",
+      "content": {
+        "steps": [
+          {
+            "text": "Fold one strip into halves and one into quarters.",
+            "minutes": 2
+          },
+          {
+            "text": "Lay them side by side. How many quarters fit in a half? Write 1/2 = 2/4.",
+            "minutes": 3
+          },
+          {
+            "text": "Add 1/2 + 1/4 with the strips. Count the quarters: 3/4. Ask why 2/6 is smaller than 1/2.",
+            "minutes": 3
+          },
+          {
+            "text": "Exit question on the board: 1/3 + 1/6.",
+            "minutes": 2
+          }
+        ],
+        "title": "Fraction strips",
+        "minutes": 10,
+        "youNeed": "3 paper strips per learner, all the same length.",
+        "audience": "whole class",
+        "exitQuestion": "1/3 + 1/6"
+      },
+      "why": "4 of 5 add the tops and the bottoms. It points back to equivalent fractions, a Term 1 basic.",
+      "missingBasic": "Equivalent fractions · Term 1",
+      "explanation": "The bottom number says the size of the pieces. Halves and quarters are different sizes, so they can't be added until the bottoms match."
+    },
+    "realModel": "nvidia/nemotron-3.5-super-vl:free"
+  },
+  "extras": {
+    "attempts": 2,
+    "firstAttemptSaid": "Ran into this error: Request failed: Bad request (400): nvidia/this-model-does-not-exist:free is not a valid model ID..."
+  },
+  "liveAttempts": 2,
+  "sandboxIds": [
+    "35d416f5-605e-4a74-90f5-786c8d856e73"
+  ],
+  "stream": "model-down-recovery-2.jsonl",
+  "scrubbed": true,
+  "cleanup": []
+}

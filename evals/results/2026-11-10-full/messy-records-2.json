@@ -1,0 +1,200 @@
+{
+  "version": 1,
+  "runId": "2026-11-10-full",
+  "taskId": "messy-records",
+  "n": 2,
+  "startedAt": "2026-11-10T19:55:52.334Z",
+  "rehearsal": false,
+  "seconds": 44.2,
+  "wallSeconds": 55.3,
+  "dbRoundTripMs": 271,
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "the event ended done",
+      "pass": true,
+      "detail": "status=done; error=none; runner note=The job is complete. Here's a summary of what was done: **Learner:** Thabo (Grade 6) **Candidate found:** `strength:data` - marks in data topics (graphs, tables"
+    },
+    {
+      "name": "code finds the pattern and two missing terms for the learner (precondition)",
+      "pass": true,
+      "detail": "strength:data; missing: Grade 5 Term 2, Grade 5 Term 3"
+    },
+    {
+      "name": "the model read the history through get_learner_history",
+      "pass": true,
+      "detail": "yes"
+    },
+    {
+      "name": "the learner's pattern was saved",
+      "pass": true,
+      "detail": "saved: strength:data"
+    },
+    {
+      "name": "no saved pattern beyond the code's candidates",
+      "pass": true,
+      "detail": "code found [strength:data]; saved [strength:data]"
+    },
+    {
+      "name": "the statement does not claim results for a missing term",
+      "pass": true,
+      "detail": "2 mention(s) of a missing term, each said to have no data"
+    },
+    {
+      "name": "missingTerms from the tool lists the missing terms",
+      "pass": true,
+      "detail": "tool listed [Grade 5 Term 2, Grade 5 Term 3]; records have [Grade 5 Term 2, Grade 5 Term 3]"
+    },
+    {
+      "name": "titles are 1 to 70 characters and statements 1 to 320",
+      "pass": true,
+      "detail": "all within the limits"
+    },
+    {
+      "name": "no saved title or statement uses a banned word",
+      "pass": true,
+      "detail": "1 pattern(s) read, none found"
+    }
+  ],
+  "event": {
+    "status": "done",
+    "error": null
+  },
+  "run": {
+    "status": "done",
+    "note": "The job is complete. Here's a summary of what was done: **Learner:** Thabo (Grade 6) **Candidate found:** `strength:data` - marks in data topics (graphs, tables, tally charts, pictograms, bar graphs) stayed high from Grade 4 Term 3 through Grade 6 Term 2 (85–95%). **Pattern saved:** - **Title:** \"Reading graphs and tables is a strong area\" - **Statement:** Marks in reading graphs and tables stayed high from Grade 4 Term 3 to Grade 6 Term 2. Grade 5 Term 2 and Grade 5 Term 3 have no data. - **NoteIds:** Two teacher notes that reference graphs/tables were cited. The pattern was saved as a draft for teacher review, and the job event was marked `done`."
+  },
+  "attempts": [
+    {
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "seconds": 40.7,
+      "status": "done",
+      "note": "The job is complete. Here's a summary of what was done: **Learner:** Thabo (Grade 6) **Candidate found:** `strength:data` - marks in data topics (graphs, tables, tally charts, pictograms, bar graphs) stayed high from Grade 4 Term 3 through Grade 6 Term 2 (85–95%). **Pattern saved:** - **Title:** \"Re",
+      "saved": true,
+      "timedOut": false,
+      "tokens": {
+        "input": 61118,
+        "output": 3060,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "nvidia/nemotron-3.5-super-vl:free",
+  "tokens": {
+    "input": 61118,
+    "output": 3060,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_learner_history",
+    "jemma__save_long_view",
+    "jemma__complete_job"
+  ],
+  "reported": true,
+  "facts": {
+    "childId": "a927f47e-a2d5-44e4-bf9a-020417e6bfdc",
+    "candidates": [
+      {
+        "key": "strength:data",
+        "kind": "strength",
+        "family": "data",
+        "terms": [
+          {
+            "grade": 4,
+            "year": 2024,
+            "term": 3,
+            "percent": 85
+          },
+          {
+            "grade": 4,
+            "year": 2024,
+            "term": 4,
+            "percent": 90
+          },
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 1,
+            "percent": 85
+          },
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 4,
+            "percent": 90
+          },
+          {
+            "grade": 6,
+            "year": 2026,
+            "term": 1,
+            "percent": 95
+          },
+          {
+            "grade": 6,
+            "year": 2026,
+            "term": 2,
+            "percent": 85
+          }
+        ],
+        "since": [],
+        "missingTerms": [
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 2
+          },
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 3
+          }
+        ],
+        "evidenceIds": [
+          "a4d0963d-f09c-4578-8994-9c039f92939f",
+          "1d780fd3-23d4-48c6-8de9-d18cd1e2e0fd",
+          "fc380d3c-3b3d-41ca-8491-dcb6a5ce1c30",
+          "361b0dce-a5ff-46ba-8c88-3c6cfa6181b4",
+          "3b738c4e-4893-4d59-9833-acd7a16824c5",
+          "9d5e82a4-0820-43e0-8c18-5fc1496e3f4b"
+        ]
+      }
+    ],
+    "patterns": [
+      {
+        "key": "strength:data",
+        "title": "Reading graphs and tables is a strong area",
+        "statement": "Marks in reading graphs and tables stayed high from Grade 4 Term 3 to Grade 6 Term 2. Grade 5 Term 2 and Grade 5 Term 3 have no data.",
+        "status": "draft",
+        "evidenceIds": [
+          "a4d0963d-f09c-4578-8994-9c039f92939f",
+          "1d780fd3-23d4-48c6-8de9-d18cd1e2e0fd",
+          "fc380d3c-3b3d-41ca-8491-dcb6a5ce1c30",
+          "361b0dce-a5ff-46ba-8c88-3c6cfa6181b4",
+          "3b738c4e-4893-4d59-9833-acd7a16824c5",
+          "9d5e82a4-0820-43e0-8c18-5fc1496e3f4b"
+        ],
+        "evidenceCount": 7
+      }
+    ],
+    "reviewItems": 1,
+    "observations": 0,
+    "activities": 0,
+    "parentNotifications": 0,
+    "parentNeeds": 0
+  },
+  "state": {
+    "childId": "a927f47e-a2d5-44e4-bf9a-020417e6bfdc"
+  },
+  "extras": {
+    "droppedByTool": 0,
+    "missingTermsInRecords": 2
+  },
+  "liveAttempts": 1,
+  "sandboxIds": [
+    "88b89af2-aed6-45d4-8a03-e2ac51fd0981"
+  ],
+  "stream": "messy-records-2.jsonl",
+  "scrubbed": false,
+  "cleanup": []
+}

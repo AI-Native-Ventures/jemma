@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "runId": "2026-11-10-full",
+  "taskId": "guidance-sourced",
+  "n": 3,
+  "startedAt": "2026-11-10T19:38:44.071Z",
+  "rehearsal": false,
+  "seconds": 122.8,
+  "wallSeconds": 145.3,
+  "dbRoundTripMs": 308,
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "the event ended done",
+      "pass": true,
+      "detail": "status=done; error=none; runner note=Job complete. Here's a summary of what was done: **Saved guidance card** for Amina (Grade 6, Hillview Primary) via `subject_guidance`: - **Headline:** \"Amina is"
+    },
+    {
+      "name": "a guidance card was saved by this run",
+      "pass": true,
+      "detail": "updated 2026-11-10T19:40:29.708+00:00"
+    },
+    {
+      "name": "the card keeps one to three focus items",
+      "pass": true,
+      "detail": "2 focus item(s)"
+    },
+    {
+      "name": "every focus item has evidence",
+      "pass": true,
+      "detail": "2 item(s), each with evidence"
+    },
+    {
+      "name": "every evidence id is a real marked answer of this learner",
+      "pass": true,
+      "detail": "all ids found among 35 of her results"
+    },
+    {
+      "name": "no banned word on the card",
+      "pass": true,
+      "detail": "none found"
+    },
+    {
+      "name": "subject_guidance answered ok",
+      "pass": true,
+      "detail": "1 call(s)"
+    }
+  ],
+  "event": {
+    "status": "done",
+    "error": null
+  },
+  "run": {
+    "status": "done",
+    "note": "Job complete. Here's a summary of what was done: **Saved guidance card** for Amina (Grade 6, Hillview Primary) via `subject_guidance`: - **Headline:** \"Amina is doing well. This week: match the fraction bottoms, then line up the comma in decimals.\" - **Focus 1:** Make the bottoms match before adding fractions - she adds the tops and bottoms in all 3 missed fraction questions. Cited evidence: resultIds `a4d8ea08…`, `51a8ade2…`, `355b7ad1…` (Adding fractions with different denominators). - **Focus 2:** Line up the comma in decimals by place value - she lines up the last digits instead. Cited evidence: resultIds `a1038ea3…` (Class Test 1), `6731008a…` and `3d5fba46…` (Sunday homework). - **Looking ahead:** teacher's newest note (Ms Banda, 5 Nov) says she explains her thinking clearly; next topics build on fractions. - Timing suggestion uses her activities (netball Tue/Thu, choir Fri) - practice Monday or Wednesday. - No em dashes, no careers, max two focus items, every claim backed by real evidence ids from her profile. **Markdown report** written to `<reports>/guidance-016df2b1-d41e-4160-b636-25fb0743d35d.md` with all sources cited. **Job marked done** via `complete_job` for event `0e85addd-9cf4-44d5-8fc1-327a9720a8c8`."
+  },
+  "attempts": [
+    {
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "seconds": 113.6,
+      "status": "done",
+      "note": "Job complete. Here's a summary of what was done: **Saved guidance card** for Amina (Grade 6, Hillview Primary) via `subject_guidance`: - **Headline:** \"Amina is doing well. This week: match the fraction bottoms, then line up the comma in decimals.\" - **Focus 1:** Make the bottoms match before adding",
+      "saved": true,
+      "timedOut": false,
+      "tokens": {
+        "input": 86196,
+        "output": 6893,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "nvidia/nemotron-3.5-super-vl:free",
+  "tokens": {
+    "input": 86196,
+    "output": 6893,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_learner_profile",
+    "files__create_directory",
+    "jemma__subject_guidance",
+    "files__write_file",
+    "jemma__complete_job"
+  ],
+  "reported": true,
+  "facts": {
+    "startedAt": "2026-11-10T19:38:56.024Z",
+    "card": {
+      "updatedAt": "2026-11-10T19:40:29.708+00:00",
+      "content": {
+        "focus": [
+          {
+            "why": "She adds the tops and the bottoms in her three missed fraction questions. Making the bottoms match first fixes all three. Keep practice short - ten minutes on Monday or Wednesday, when she has no netball or choir.",
+            "title": "Make the bottoms match before you add fractions",
+            "evidence": [
+              {
+                "label": "Adding fractions with different denominators - marked answers",
+                "resultIds": [
+                  "a4d8ea08-3121-4850-bd37-32c76abd09e3",
+                  "51a8ade2-2eb0-4261-9326-7b3645b2a74c",
+                  "355b7ad1-8240-41a1-a87e-3cbabbadc27a"
+                ]
+              }
+            ]
+          },
+          {
+            "why": "She lines up the last digits instead of what each digit is worth. Lining up the comma fixes her missed decimal questions.",
+            "title": "Line up the comma in decimals by place value",
+            "evidence": [
+              {
+                "label": "Adding decimals - marked answers",
+                "resultIds": [
+                  "a1038ea3-5186-4438-b140-ad1420f9b5bd",
+                  "6731008a-dc82-452a-a30d-8efe5dc42cf9",
+                  "3d5fba46-0483-4283-9057-796ae0f1b7d2"
+                ]
+              }
+            ]
+          }
+        ],
+        "headline": "Amina is doing well. This week: match the fraction bottoms, then line up the comma in decimals.",
+        "lookingAhead": "Her newest teacher note says she works well in a group and explains her thinking clearly. The next topics build on fractions, so fixing this now pays off."
+      }
+    },
+    "resultIds": [
+      "f4c07ee8-d5b0-41ba-ac22-f3f4dbb9f235",
+      "e0c4dc0a-37ad-4642-964e-36330b0a10dd",
+      "a6cbd0af-a969-4856-8160-bf4a19885d26",
+      "d0a58020-8ca7-4ba9-8ef1-82c2653ee314",
+      "9429f949-abc8-4512-a544-4523008b7611",
+      "14cf6d15-e25a-44d4-86a9-6dcf5854799c",
+      "abc7d7cc-0446-4a76-8111-7164efaafa60",
+      "80dc5c14-b8a1-4ccd-a384-3a7694b260de",
+      "949a8a27-4e4b-473b-abcc-13f81a6dcfba",
+      "51a8ade2-2eb0-4261-9326-7b3645b2a74c",
+      "e813f3e5-0da7-44d2-9196-81f86ec2cf8b",
+      "f7fd7679-3732-4416-b6c1-8f1cf9d47810",
+      "97509266-6e96-4eae-8988-2405dfa4e262",
+      "b68dcbd2-11a6-460c-ab34-632d3ab775b6",
+      "a1038ea3-5186-4438-b140-ad1420f9b5bd",
+      "65cc4c06-18fb-4eae-9672-7cc5791ab362",
+      "ac023404-facd-40bc-bce4-fc555688fb21",
+      "a9687673-0ab7-4331-b8e1-2da430cab643",
+      "6731008a-dc82-452a-a30d-8efe5dc42cf9",
+      "43c66d4f-b284-485e-8b24-5f991331b4cc",
+      "3d5fba46-0483-4283-9057-796ae0f1b7d2",
+      "7d68d7a9-bd9c-47bb-aaff-32f71880714a",
+      "c0f1c220-b156-4bd5-93fc-a45da08165cc",
+      "c16d9ca6-c6d4-42b9-8fbc-a7ad40a63ab4",
+      "699221dc-c1f4-49ef-b205-3ceadc80018e",
+      "aa79efbf-fcca-4e37-8744-b45295fbffb5",
+      "8bb72737-06c4-4176-9d5a-1596a6d3af3b",
+      "c4ddcad7-ad8c-4cd1-bd24-dc85fa444525",
+      "a49a5aab-31f5-4340-903b-e9b2950841c5",
+      "f786b041-0f27-49ba-b6fb-7c6e61a11844",
+      "f74c3051-458b-4785-9a3e-a7ef06935703",
+      "4ab272f9-195d-45f3-aa03-8e6c4424cd63",
+      "82e94f85-c4f8-4826-be09-457e7370936e",
+      "a4d8ea08-3121-4850-bd37-32c76abd09e3",
+      "355b7ad1-8240-41a1-a87e-3cbabbadc27a"
+    ]
+  },
+  "state": {
+    "childId": "016df2b1-d41e-4160-b636-25fb0743d35d"
+  },
+  "extras": {
+    "focusItemsFromModel": 2,
+    "focusItemsKept": 2,
+    "idsFromModel": 6,
+    "invalidIdsFromModel": 0
+  },
+  "liveAttempts": 1,
+  "sandboxIds": [
+    "29fa8ddf-33b0-4462-bda2-018aaff268cd"
+  ],
+  "stream": "guidance-sourced-3.jsonl",
+  "scrubbed": true,
+  "cleanup": []
+}

@@ -1,0 +1,200 @@
+{
+  "version": 1,
+  "runId": "2026-11-10-full",
+  "taskId": "messy-records",
+  "n": 1,
+  "startedAt": "2026-11-10T19:54:37.279Z",
+  "rehearsal": false,
+  "seconds": 58.7,
+  "wallSeconds": 75,
+  "dbRoundTripMs": 278,
+  "pass": true,
+  "error": null,
+  "checks": [
+    {
+      "name": "the event ended done",
+      "pass": true,
+      "detail": "status=done; error=none; runner note=Done. The Long view job for Thabo (childId `1f9f1088-e742-4e2c-b630-85435fe0eff5`) is complete: - One pattern saved as draft: `strength:data` - marks in charts "
+    },
+    {
+      "name": "code finds the pattern and two missing terms for the learner (precondition)",
+      "pass": true,
+      "detail": "strength:data; missing: Grade 5 Term 2, Grade 5 Term 3"
+    },
+    {
+      "name": "the model read the history through get_learner_history",
+      "pass": true,
+      "detail": "yes"
+    },
+    {
+      "name": "the learner's pattern was saved",
+      "pass": true,
+      "detail": "saved: strength:data"
+    },
+    {
+      "name": "no saved pattern beyond the code's candidates",
+      "pass": true,
+      "detail": "code found [strength:data]; saved [strength:data]"
+    },
+    {
+      "name": "the statement does not claim results for a missing term",
+      "pass": true,
+      "detail": "2 mention(s) of a missing term, each said to have no data"
+    },
+    {
+      "name": "missingTerms from the tool lists the missing terms",
+      "pass": true,
+      "detail": "tool listed [Grade 5 Term 2, Grade 5 Term 3]; records have [Grade 5 Term 2, Grade 5 Term 3]"
+    },
+    {
+      "name": "titles are 1 to 70 characters and statements 1 to 320",
+      "pass": true,
+      "detail": "all within the limits"
+    },
+    {
+      "name": "no saved title or statement uses a banned word",
+      "pass": true,
+      "detail": "1 pattern(s) read, none found"
+    }
+  ],
+  "event": {
+    "status": "done",
+    "error": null
+  },
+  "run": {
+    "status": "done",
+    "note": "Done. The Long view job for Thabo (childId `1f9f1088-e742-4e2c-b630-85435fe0eff5`) is complete: - One pattern saved as draft: `strength:data` - marks in charts and graphs stayed high from Grade 4 Term 3 to Grade 6 Term 2, with Grade 5 Terms 2–3 having no data. - Mr Dube's note (`ba0635a0-69bf-46e3-93a4-9dde189a1255`) about reading graphs and tables quickly was cited since it matches the pattern. - Job `ca21902b-8140-48ad-b341-d998847bc52b` marked `done`."
+  },
+  "attempts": [
+    {
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "seconds": 54.6,
+      "status": "done",
+      "note": "Done. The Long view job for Thabo (childId `1f9f1088-e742-4e2c-b630-85435fe0eff5`) is complete: - One pattern saved as draft: `strength:data` - marks in charts and graphs stayed high from Grade 4 Term 3 to Grade 6 Term 2, with Grade 5 Terms 2–3 having no data. - Mr Dube's note (`ba0635a0-69bf-46e3-9",
+      "saved": true,
+      "timedOut": false,
+      "tokens": {
+        "input": 61537,
+        "output": 3258,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "nvidia/nemotron-3.5-super-vl:free",
+  "tokens": {
+    "input": 61537,
+    "output": 3258,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_learner_history",
+    "jemma__save_long_view",
+    "jemma__complete_job"
+  ],
+  "reported": true,
+  "facts": {
+    "childId": "1f9f1088-e742-4e2c-b630-85435fe0eff5",
+    "candidates": [
+      {
+        "key": "strength:data",
+        "kind": "strength",
+        "family": "data",
+        "terms": [
+          {
+            "grade": 4,
+            "year": 2024,
+            "term": 3,
+            "percent": 85
+          },
+          {
+            "grade": 4,
+            "year": 2024,
+            "term": 4,
+            "percent": 90
+          },
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 1,
+            "percent": 85
+          },
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 4,
+            "percent": 90
+          },
+          {
+            "grade": 6,
+            "year": 2026,
+            "term": 1,
+            "percent": 95
+          },
+          {
+            "grade": 6,
+            "year": 2026,
+            "term": 2,
+            "percent": 85
+          }
+        ],
+        "since": [],
+        "missingTerms": [
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 2
+          },
+          {
+            "grade": 5,
+            "year": 2025,
+            "term": 3
+          }
+        ],
+        "evidenceIds": [
+          "c1cb194b-3b84-4841-9bf1-4ff5cacc9a36",
+          "9fff4ffc-5bae-417f-b262-2d60ff225781",
+          "20cd468f-90be-4694-933a-d0c82331039c",
+          "fb3b822e-a7a3-4607-937a-2e02aa816096",
+          "4cc60176-160c-4d80-a986-06b1e8a51862",
+          "44d7c206-a343-4591-864b-240f917fa20e"
+        ]
+      }
+    ],
+    "patterns": [
+      {
+        "key": "strength:data",
+        "title": "Doing well with charts and graphs over time",
+        "statement": "Marks in charts and graphs stayed high from Grade 4 Term 3 to Grade 6 Term 2. Grade 5 Term 2 and Grade 5 Term 3 have no data.",
+        "status": "draft",
+        "evidenceIds": [
+          "c1cb194b-3b84-4841-9bf1-4ff5cacc9a36",
+          "9fff4ffc-5bae-417f-b262-2d60ff225781",
+          "20cd468f-90be-4694-933a-d0c82331039c",
+          "fb3b822e-a7a3-4607-937a-2e02aa816096",
+          "4cc60176-160c-4d80-a986-06b1e8a51862",
+          "44d7c206-a343-4591-864b-240f917fa20e"
+        ],
+        "evidenceCount": 7
+      }
+    ],
+    "reviewItems": 1,
+    "observations": 0,
+    "activities": 0,
+    "parentNotifications": 0,
+    "parentNeeds": 0
+  },
+  "state": {
+    "childId": "1f9f1088-e742-4e2c-b630-85435fe0eff5"
+  },
+  "extras": {
+    "droppedByTool": 0,
+    "missingTermsInRecords": 2
+  },
+  "liveAttempts": 1,
+  "sandboxIds": [
+    "5c2e7b17-4c9d-4e9a-93d7-e6dea61543c3"
+  ],
+  "stream": "messy-records-1.jsonl",
+  "scrubbed": false,
+  "cleanup": []
+}
