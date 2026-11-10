@@ -57,9 +57,10 @@ export default async function DemoPage() {
                 <span aria-hidden="true" className={`flex size-11 flex-none items-center justify-center rounded-pill text-[15px] font-bold ${p.avatar}`}>{p.initials}</span>
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="text-[17px] font-semibold">{p.name}</span>
-                  <span className="text-[14px] text-body">{p.detail}</span>
+                  <span className="text-[14px] text-body group-aria-busy:hidden">{p.detail}</span>
+                  <span role="status" className="hidden text-[14px] text-body group-aria-busy:block">Opening your copy of Hillview Primary</span>
                 </span>
-                {p.start ? <span className="flex-none rounded-pill bg-coral px-2.5 py-[5px] text-[12px] font-semibold text-ink">Start here</span> : null}
+                {p.start ? <span className="flex-none rounded-pill bg-coral px-2.5 py-[5px] text-[12px] font-semibold text-ink group-aria-busy:hidden">Start here</span> : null}
               </PersonButton>
             </form>
           ))}
