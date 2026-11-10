@@ -29,6 +29,11 @@ export type OperatorOptions = {
   onLog?: (line: string) => void
   /** The same job with its detail (school, agent tool calls in order). For traces and proofs. */
   onJob?: (report: JobReport) => void
+  /**
+   * Serve only events the cloud handed off (`payload.route = 'operator'`), not the events of desktop schools. For a shared
+   * database (tests, proofs) where other people's desktop-school events must be left alone. Default off.
+   */
+  onlyHandoffs?: boolean
   /** Stop after this many agent runs (a cap for paid or limited live runs). The step that hits it fails without running. */
   maxJobs?: number
   heartbeatMs?: number
@@ -146,6 +151,11 @@ export function startOperator(o: OperatorOptions): Operator {
       return { status: 'failed', note: `the limit of ${o.maxJobs} agent runs was reached, nothing was run` }
     }
     started++
+    // The agent's complete_job call marks the event done after every step, while more steps may follow. The cloud keeps an
+    // event running until its whole plan is over, and "one event per school at a time" counts running events, so the event
+    // is put back to running within half a second. finish_operator_event settles it for good at the end.
+    const keepRunning = () => void o.db.from('events').update({ status: 'running', finished_at: null }).eq('id', event.id).eq('status', 'done').then(() => {}, () => {})
+    const hold = setInterval(keepRunning, 500)
     // Only the lines that name tool calls are kept: a vision job's stream is large.
     const kept: string[] = []
     let partial = ''
@@ -154,8 +164,13 @@ export function startOperator(o: OperatorOptions): Operator {
       partial = lines.pop() ?? ''
       for (const line of lines) if (line.slice(0, 80).includes('"assistant"') || line.slice(0, 80).includes('item.completed')) kept.push(line)
     }
-    const res = await run({ eventId: event.id, prompt }, o.agent, mcp, { timeoutMs, onStdout })
-    return { ...res, toolCalls: parseTranscript(o.agent, kept.join('\n')).toolCalls }
+    try {
+      const res = await run({ eventId: event.id, prompt }, o.agent, mcp, { timeoutMs, onStdout })
+      return { ...res, toolCalls: parseTranscript(o.agent, kept.join('\n')).toolCalls }
+    } finally {
+      clearInterval(hold)
+      await o.db.from('events').update({ status: 'running', finished_at: null }).eq('id', event.id).eq('status', 'done')
+    }
   }
 
   const runClaimed = async (event: ClaimedEvent) => {
@@ -193,6 +208,8 @@ export function startOperator(o: OperatorOptions): Operator {
     }
   }
 
+  const claim = () => (o.claim ?? claimOperatorEvent)(o.db, o.runnerId, o.onlyHandoffs)
+
   const ticker = setInterval(() => void beat(), o.heartbeatMs ?? HEARTBEAT_MS)
 
   const first = (async () => {
@@ -213,7 +230,7 @@ export function startOperator(o: OperatorOptions): Operator {
     while (!stopping) {
       let event: ClaimedEvent | null = null
       try {
-        event = await (o.claim ?? claimOperatorEvent)(o.db, o.runnerId)
+        event = await claim()
       } catch (err) {
         problem(err)
       }

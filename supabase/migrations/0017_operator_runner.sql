@@ -25,7 +25,9 @@ $$;
 -- runner 'desktop' and EITHER the cloud handed it off (payload.route = 'operator') OR its school runs on a desktop and
 -- nobody of that school has a Jemma Desktop heartbeat from the last 2 minutes. One event per school runs at a time,
 -- so two papers of one test never race for the test's tail. Two operators never get the same event.
-create function claim_operator_event(runner uuid) returns setof events
+-- With only_handoffs true the second kind (desktop schools) is left alone: for a shared database, where a runner must
+-- not take other people's desktop-school events. Callers that pass only `runner` get the default, false.
+create function claim_operator_event(runner uuid, only_handoffs boolean default false) returns setof events
 language plpgsql security definer set search_path = public as $$
 declare
   cand record;
@@ -43,7 +45,8 @@ begin
       and (
         e.payload->>'route' = 'operator'
         or (
-          exists (select 1 from schools s where s.id = e.school_id and s.ai_runner = 'desktop')
+          not only_handoffs
+          and exists (select 1 from schools s where s.id = e.school_id and s.ai_runner = 'desktop')
           and not exists (
             select 1 from runner_presence rp
             where rp.last_seen > now() - interval '2 minutes'
@@ -92,7 +95,7 @@ begin
 end;
 $$;
 
-revoke all on function operator_heartbeat(uuid, text, text), claim_operator_event(uuid), finish_operator_event(uuid, event_status, text)
+revoke all on function operator_heartbeat(uuid, text, text), claim_operator_event(uuid, boolean), finish_operator_event(uuid, event_status, text)
   from public, anon, authenticated;
-grant execute on function operator_heartbeat(uuid, text, text), claim_operator_event(uuid), finish_operator_event(uuid, event_status, text)
+grant execute on function operator_heartbeat(uuid, text, text), claim_operator_event(uuid, boolean), finish_operator_event(uuid, event_status, text)
   to service_role;

@@ -218,6 +218,19 @@ test('finish_operator_event settles an operator event only', async () => {
   await db.from('events').delete().in('id', [userClaimed, cloudRun, cancelled])
 })
 
+test('claim_operator_event with only_handoffs leaves desktop-school events alone; with one argument it serves them', async () => {
+  const runner = await beat()
+  const desktopSchoolEvent = await queue(deskB) // older, no route marker: served unless only_handoffs is set
+  const handoff = await queue(cloud, { route: 'operator' })
+  const only = await db.rpc('claim_operator_event', { runner, only_handoffs: true })
+  expect(only.error).toBeNull()
+  expect(only.data?.[0]?.id).toBe(handoff) // the older desktop-school event was skipped, not blocking
+  expect(await row(desktopSchoolEvent)).toMatchObject({ status: 'queued', attempts: 0 })
+  await db.rpc('finish_operator_event', { event: handoff, status_in: 'done', error_in: null as never })
+  expect((await claim(runner))?.id).toBe(desktopSchoolEvent) // the one-argument form, as before
+  await db.rpc('finish_operator_event', { event: desktopSchoolEvent, status_in: 'done', error_in: null as never })
+})
+
 test('signed-in users and anonymous callers cannot run the three functions or read the table', async () => {
   const opts = { auth: { persistSession: false, autoRefreshToken: false } }
   const anon = createClient<Database>(env.SUPABASE_URL!, env.SUPABASE_ANON_KEY!, opts)
@@ -298,8 +311,8 @@ const presenceRow = async (runnerId: string) => (await db.from('operator_presenc
 const tokenRows = async (token: string) => (await db.from('mcp_tokens').select('school_id, label').eq('token_hash', sha256(token))).data!
 
 /** The mine-only claim: an event that is not one of ours is put back at once (the claim is global on a shared database). */
-const claimMine: typeof claimOperatorEvent = async (client, runnerId) => {
-  const got = await claimOperatorEvent(client, runnerId)
+const claimMine: typeof claimOperatorEvent = async (client, runnerId, onlyHandoffs) => {
+  const got = await claimOperatorEvent(client, runnerId, onlyHandoffs)
   if (got && !mine.has(got.school_id)) {
     await client.from('events').update({ status: 'queued', attempts: got.attempts - 1 }).eq('id', got.id)
     return null
@@ -431,6 +444,40 @@ test('operator loop: a whole paper event, plain-code steps in process, lesson-re
   }
 })
 
+test('operator loop: complete_job marking the event done between steps is undone while the plan goes on', async () => {
+  await db.from('reteach_plans').delete().eq('test_id', loopS.testId)
+  const id = await queueOp(loopS, 'paper.snapped', { paperId: loopS.paperId })
+  const seen: { job: string; during: string | undefined; after: string | undefined }[] = []
+  let first = true
+  const agent = fakeAgent({
+    hold: async (call) => {
+      // what the real complete_job does at the end of a step: mark the event done
+      await db.from('events').update({ status: 'done', finished_at: new Date().toISOString() }).eq('id', call.eventId)
+      await new Promise((r) => setTimeout(r, 1300)) // the agent process takes a moment to exit
+      const during = (await db.from('events').select('status').eq('id', call.eventId).single()).data?.status
+      seen.push({ job: call.job, during, after: undefined })
+      if (first) {
+        first = false
+        expect((await db.from('events').select('finished_at').eq('id', call.eventId).single()).data?.finished_at).toBeNull()
+      }
+    },
+  })
+  const { op } = operate({ run: agent.run })
+  try {
+    // seven agent steps in this plan; `settled` alone would see the transient done the fake agent writes itself
+    await waitFor('all seven agent steps', async () => seen.length >= 7, 120_000)
+    for (const s of seen) expect(s.during, `${s.job} must show running while its process exits`).toBe('running')
+    await waitFor('the event to settle for good', async () => {
+      const status = async () => (await db.from('events').select('status').eq('id', id).single()).data?.status
+      if ((await status()) !== 'done') return false
+      await new Promise((r) => setTimeout(r, 1200)) // the final done must stay done
+      return (await status()) === 'done'
+    }, 60_000)
+  } finally {
+    await op.stop()
+  }
+})
+
 test('operator loop: unmet postconditions fail the event with the cloud message', async () => {
   await db.from('reteach_plans').delete().eq('test_id', loopS.testId)
   const id = await queueOp(loopS, 'paper.snapped', { paperId: loopS.paperId })
@@ -526,6 +573,22 @@ test('operator loop: maxJobs stops it after that many agent runs and the next st
   } finally {
     await op.stop()
   }
+})
+
+test('operator loop: with onlyHandoffs the events of a desktop school are left alone, handed-off events are served', async () => {
+  const desktopEvent = await queueOp(loopD, 'observation.added', { childId: loopD.aminaId }, { route: false })
+  const handoff = await queueOp(loopS, 'observation.added', { childId: loopS.aminaId })
+  const agent = fakeAgent()
+  const { op } = operate({ run: agent.run, onlyHandoffs: true })
+  try {
+    expect((await settled(handoff)).status).toBe('done')
+    await new Promise((r) => setTimeout(r, 1000))
+    expect(agent.calls.map((c) => c.eventId)).toEqual([handoff])
+    expect((await db.from('events').select('status, attempts, claimed_by').eq('id', desktopEvent).single()).data).toEqual({ status: 'queued', attempts: 0, claimed_by: null })
+  } finally {
+    await op.stop()
+  }
+  await db.from('events').delete().eq('id', desktopEvent)
 })
 
 test('operator loop: the heartbeat keeps last_seen fresh', async () => {

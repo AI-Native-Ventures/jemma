@@ -1552,7 +1552,7 @@ export type Database = {
         }[]
       }
       claim_operator_event: {
-        Args: { runner: string }
+        Args: { only_handoffs?: boolean; runner: string }
         Returns: {
           attempts: number
           claimed_by: string | null

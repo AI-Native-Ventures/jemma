@@ -30,9 +30,10 @@ export async function sendOperatorHeartbeat(db: JemmaDb, runnerId: string, agent
 /**
  * Claims the oldest event an operator may run (handed off by the cloud, or of a desktop school whose owner's Desktop
  * is away), or null. One event per school at a time; two operators never get the same one. Needs the service role.
+ * With `onlyHandoffs` the events of desktop schools are left alone (for a shared database).
  */
-export async function claimOperatorEvent(db: JemmaDb, runnerId: string): Promise<ClaimedEvent | null> {
-  const { data, error } = await db.rpc('claim_operator_event', { runner: runnerId })
+export async function claimOperatorEvent(db: JemmaDb, runnerId: string, onlyHandoffs = false): Promise<ClaimedEvent | null> {
+  const { data, error } = await db.rpc('claim_operator_event', onlyHandoffs ? { runner: runnerId, only_handoffs: true } : { runner: runnerId })
   if (error) throw new Error(`claim_operator_event failed: ${error.message}`)
   return data?.[0] ?? null
 }
