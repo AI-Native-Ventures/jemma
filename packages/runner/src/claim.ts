@@ -20,3 +20,25 @@ export async function finishEvent(db: JemmaDb, eventId: string, status: 'done' |
   const res = await db.rpc('finish_event', { event: eventId, status_in: status, error_in: error as string })
   if (res.error) throw new Error(`finish_event failed: ${res.error.message}`)
 }
+
+/** Upserts the operator's presence row (server-side clock). Needs the service role. */
+export async function sendOperatorHeartbeat(db: JemmaDb, runnerId: string, agent: string, version: string | null, tag = 'default'): Promise<void> {
+  const { error } = await db.rpc('operator_heartbeat', { runner: runnerId, agent_in: agent, version_in: version as string, tag_in: tag })
+  if (error) throw new Error(`operator_heartbeat failed: ${error.message}`)
+}
+
+/**
+ * Claims the oldest event the cloud handed to an operator with this routing tag, or null. Events of desktop schools are
+ * never claimed. One event per school at a time; two operators never get the same one. Needs the service role.
+ */
+export async function claimOperatorEvent(db: JemmaDb, runnerId: string, tag = 'default'): Promise<ClaimedEvent | null> {
+  const { data, error } = await db.rpc('claim_operator_event', { runner: runnerId, tag_in: tag })
+  if (error) throw new Error(`claim_operator_event failed: ${error.message}`)
+  return data?.[0] ?? null
+}
+
+/** Settles an event an operator ran. */
+export async function finishOperatorEvent(db: JemmaDb, eventId: string, status: 'done' | 'failed', error: string | null): Promise<void> {
+  const res = await db.rpc('finish_operator_event', { event: eventId, status_in: status, error_in: error as string })
+  if (res.error) throw new Error(`finish_operator_event failed: ${res.error.message}`)
+}

@@ -72,9 +72,14 @@ test('read tools return images as MCP image content', async () => {
 
 test('get_class_results groups marked results by learner', async () => {
   const res = await call('get_class_results', { testId: s.testId })
-  const out = res.structuredContent as { learners: { firstName: string; results: unknown[] }[] }
+  const out = res.structuredContent as { learners: { firstName: string; results: { resultId: string }[] }[] }
   expect(out.learners.map((l) => l.firstName).sort()).toEqual(['Amina', 'Thabo'])
   expect(out.learners.find((l) => l.firstName === 'Amina')!.results).toHaveLength(2)
+  // every result carries its id, the one update_learner_profile asks for
+  const ids = out.learners.flatMap((l) => l.results.map((r) => r.resultId))
+  expect(ids).toHaveLength(4)
+  const found = await db.from('question_results').select('id').in('id', ids)
+  expect(found.data).toHaveLength(4)
 })
 
 test('get_job names the job for an event', async () => {
@@ -94,6 +99,24 @@ test('complete_job closes the event', async () => {
   const row = await db.from('events').select('status, error, finished_at').eq('id', eventId).single()
   expect(row.data).toMatchObject({ status: 'failed', error: 'boom' })
   expect(row.data!.finished_at).not.toBeNull()
+})
+
+test('complete_job leaves an event of a desktop runner alone: the runner settles it after the whole plan', async () => {
+  const desktop = await db
+    .from('events')
+    .insert({ school_id: s.schoolId, type: 'observation.added', payload: { type: 'observation.added', childId: s.aminaId }, status: 'running', runner: 'desktop' })
+    .select('id')
+    .single()
+  const id = desktop.data!.id
+  for (const status of ['done', 'failed'] as const) {
+    const res = await call('complete_job', { eventId: id, status, note: 'a step ended' })
+    expect(res.structuredContent).toEqual({ ok: true })
+    const row = await db.from('events').select('status, error, finished_at').eq('id', id).single()
+    expect(row.data).toEqual({ status: 'running', error: null, finished_at: null })
+  }
+  // a tool call for an event of another school is still refused
+  const other = await call('complete_job', { eventId: crypto.randomUUID(), status: 'done' })
+  expect(other.isError).toBe(true)
 })
 
 test('record writers validate and return ids', async () => {
