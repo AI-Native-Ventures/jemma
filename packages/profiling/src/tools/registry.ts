@@ -9,7 +9,7 @@ import { getMemo } from './read/get-memo'
 import { getPaper } from './read/get-paper'
 import { saveAnswerKey } from './save/save-answer-key'
 import { saveTopicMapDraft } from './save/save-topic-map-draft'
-import { addActivity, addObservation, recordAttendance, subjectGuidance } from './save'
+import { addActivity, addObservation, logExternalCalls, recordAttendance, subjectGuidance } from './save'
 import { markPaper } from './save/mark-paper'
 import { classGapReport } from './save/class-gap-report'
 import { updateLearnerProfile } from './save/update-learner-profile'
@@ -41,6 +41,7 @@ export const registry: ToolDef<any, any>[] = [
   classGapReport,
   planNextSession,
   saveLesson,
+  logExternalCalls,
 ]
 
 export { registerSpeech } from '../speech'

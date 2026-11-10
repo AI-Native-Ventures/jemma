@@ -5,13 +5,14 @@ import type { ToolContext } from '@jemma/profiling/tools'
 import type { Env } from './env'
 import { cloudJobs, type CloudJobs } from './jobs'
 
-export function toolContext(env: Env, schoolId: string, eventId: string | null, schoolIds?: string[]): ToolContext {
+export function toolContext(env: Env, schoolId: string, eventId: string | null, schoolIds?: string[], via: 'cloud' | 'mcp' = 'cloud'): ToolContext {
   const db = createServiceClient(env)
   return {
     db,
     schoolId,
     schoolIds,
     eventId,
+    via,
     now: () => new Date(),
     env: {
       LLM_PROVIDER: env.LLM_PROVIDER,

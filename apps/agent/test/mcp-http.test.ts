@@ -55,3 +55,20 @@ test.each([['school', schoolToken], ['user', userToken]])('/mcp with a %s token 
   const list = await rpc(token, { jsonrpc: '2.0', id: 2, method: 'tools/list' }, session)
   expect(await list.text()).toContain('get_learner_profile')
 })
+
+test('a tool call through /mcp is saved on the tool log as an MCP call', async () => {
+  const res = await rpc(schoolToken, init)
+  const session = res.headers.get('mcp-session-id') ?? undefined
+  await res.text()
+  await rpc(schoolToken, { jsonrpc: '2.0', method: 'notifications/initialized' }, session)
+  const call = await rpc(
+    schoolToken,
+    { jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'get_learner_profile', arguments: { childId: s.aminaId } } },
+    session,
+  )
+  expect(await call.text()).toContain('Amina')
+  const rows = await db.from('tool_calls').select('via, server, ok, input').eq('school_id', s.schoolId).eq('tool', 'get_learner_profile')
+  expect(rows.error).toBeNull()
+  expect(rows.data).toHaveLength(1)
+  expect(rows.data![0]).toMatchObject({ via: 'mcp', server: 'jemma', ok: true, input: { childId: s.aminaId } })
+})
