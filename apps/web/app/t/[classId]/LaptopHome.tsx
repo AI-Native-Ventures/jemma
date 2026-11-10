@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { NeedsYouList } from '@/components/blocks'
 import { Headline } from '@/components/blocks'
 import { markReteachDone } from './gaps/actions'
+import { FullLogLink } from './log/FullLogLink'
 import { PrintButton } from './gaps/LaptopPrintButton'
 import { numberWord, type ClassGapView, type ClassHome, type GapDetail } from '@/lib/data/p18'
 
@@ -229,6 +230,7 @@ export function LaptopHome({ home, detail, base }: { home: ClassHome; detail: Ga
               </li>
             ))}
           </ol>
+          <FullLogLink href={`${base}/log`} />
         </section>
       </div>
     </div>

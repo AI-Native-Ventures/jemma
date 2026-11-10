@@ -4,6 +4,7 @@ import { EmptyState, Headline, NeedsYouList, WhatJemmaDid } from '@/components/b
 import { ChevronRightIcon } from '@/components/ui/icons'
 import { getClassHome, getGapDetail, type ClassGapView, type ClassHome, type GapStage } from '@/lib/data/p18'
 import { LaptopHome } from './LaptopHome'
+import { FullLogLink } from './log/FullLogLink'
 import { Only } from './Only'
 
 const dot = 'size-[9px] rounded-pill'
@@ -306,9 +307,13 @@ function PhoneHome({ home, base }: { home: ClassHome; base: string }) {
               </li>
             ))}
           </ol>
+          <FullLogLink href={`${base}/log`} />
         </section>
       ) : (
-        <WhatJemmaDid entries={home.activity} seeAllHref={`${base}/notifications`} />
+        <div className="flex flex-col gap-1">
+          <WhatJemmaDid entries={home.activity} seeAllHref={`${base}/notifications`} />
+          <FullLogLink href={`${base}/log`} className="px-4" />
+        </div>
       )}
     </div>
   )
