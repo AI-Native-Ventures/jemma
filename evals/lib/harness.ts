@@ -21,6 +21,7 @@ import { createSandbox, deleteSandbox, type Sandbox } from '../../supabase/seed/
 import { sendEvent } from '../../apps/web/lib/agent'
 import { appendLedger } from './ledger'
 import { hookFinish } from './hook'
+import { measureRoundTrip, readOneSchool } from './line'
 import { baseName, RESULT_VERSION, type ResultFile } from './result'
 import { saveResult } from './save'
 import { answerContentTypes } from './stream'
@@ -47,6 +48,8 @@ export type Shared = {
   liveLeft(): number
   spend(attempts: number): void
   timeoutMs?: number
+  /** The database round trip in milliseconds (median of three reads). Default: three small reads through `admin`. */
+  measureRoundTrip?: () => Promise<number>
 }
 
 type Logins = { teacher: { userId: string; email: string; password: string }; parent: { userId: string } }
@@ -103,8 +106,11 @@ export async function runOnce(task: Task, n: number, shared: Shared): Promise<Re
   let checks: ResultFile['checks'] = []
   let extras: ResultFile['extras'] = {}
   let jobSeconds = 0
+  let dbRoundTripMs: number | null = null
 
   try {
+    // The line to the database, right before the run: a slow line shows in the results instead of hiding in the times.
+    dbRoundTripMs = await (shared.measureRoundTrip ?? (() => measureRoundTrip(() => readOneSchool(admin))))().catch(() => null)
     const sandbox = await createSandbox(admin, { stage: task.stage })
     sandboxes.push(sandbox)
     const school = await admin.from('schools').update({ ai_runner: 'desktop' }).eq('id', sandbox.schoolId).select('ai_runner').single()
@@ -266,6 +272,7 @@ export async function runOnce(task: Task, n: number, shared: Shared): Promise<Re
     rehearsal: shared.rehearsal,
     seconds: jobSeconds,
     wallSeconds,
+    dbRoundTripMs,
     pass: !error && checks.length > 0 && checks.every((c) => c.pass),
     error,
     checks,
@@ -285,6 +292,7 @@ export async function runOnce(task: Task, n: number, shared: Shared): Promise<Re
     scrubbed: false,
     cleanup,
   }
-  appendLedger({ at: new Date().toISOString(), runId: shared.runId, taskId: task.id, n, attempts: attemptsRaw.length, rehearsal: shared.rehearsal })
+  // A rehearsal (fake goose) is not a live run: it is not counted, and it leaves nothing in the committed ledger.
+  if (!shared.rehearsal) appendLedger({ at: new Date().toISOString(), runId: shared.runId, taskId: task.id, n, attempts: attemptsRaw.length, rehearsal: false })
   return saveResult(result, attemptsRaw, secrets, shared.outDir, [[reportsDir, '<reports>'], [evalRoot ?? '', '<run>']])
 }

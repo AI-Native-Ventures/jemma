@@ -133,11 +133,11 @@ describe('diagnose', () => {
     ['evidence ids are this learner', { ...good, gaps: [{ topicName: 'Comparing fractions', stage: 'new', evidence: [] }] }],
     ["nobody else's", { ...good, othersAfter: 'changed' }],
   ])('a bad run fails "%s"', (name, facts) => expect(byName(run(diagnose, facts, state, outcome({ calls })), name).pass).toBe(false))
-  test('a save that never worked is reported with the tool error, and the known missing ids show in the extras', () => {
+  test('a save that never worked is reported with the tool error, and the extras say whether the read tool gave result ids', () => {
     const checks = run(diagnose, { results: results.map((r) => ({ ...r, misconception: null })), gaps: [], othersAfter: 'same' }, state, outcome({ calls: [refused('jemma', 'update_learner_profile', {}, 'result abc is not this learner\'s answer')] }))
     expect(byName(checks, 'update_learner_profile answered ok')).toMatchObject({ pass: false, detail: expect.stringContaining("not this learner's answer") })
     const withoutIds = call('jemma', 'get_class_results', { testId: 't' }, { learners: [{ childId: 'c', results: [{ n: 1 }] }] })
-    const withIds = call('jemma', 'get_class_results', { testId: 't' }, { learners: [{ childId: 'c', results: [{ id: 'w1', n: 1 }] }] })
+    const withIds = call('jemma', 'get_class_results', { testId: 't' }, { learners: [{ childId: 'c', results: [{ resultId: 'w1', n: 1 }] }] })
     expect(diagnose.extras!(good, prepared(state), outcome({ calls: [withoutIds] }))).toEqual({ readToolGaveResultIds: false })
     expect(diagnose.extras!(good, prepared(state), outcome({ calls: [withIds] }))).toEqual({ readToolGaveResultIds: true })
   })

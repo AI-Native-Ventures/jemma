@@ -308,6 +308,8 @@ export function renderReport(input: ReportInput): string {
     for (const { s, why } of varied) push(`- \`${s.id}\` (${s.passes} of ${s.runs.length} passed): ${why}`)
     push('')
   }
+  const trips = results.map((r) => r.dbRoundTripMs).filter((v): v is number => typeof v === 'number')
+  if (trips.length > 0) push(`Median database round trip during these runs: ${num(median(trips))} ms (lowest ${num(Math.min(...trips))}, highest ${num(Math.max(...trips))}).`, '')
   const spread = sums.map((s) => ({ s, min: Math.min(...s.runs.map((r) => r.seconds)), max: Math.max(...s.runs.map((r) => r.seconds)) })).sort((a, b) => b.max - b.min - (a.max - a.min))[0]
   if (spread) push(`Time varied too: the widest spread inside one task was \`${spread.s.id}\`, from ${secs(spread.min)} to ${secs(spread.max)} for the same job.`, '')
 

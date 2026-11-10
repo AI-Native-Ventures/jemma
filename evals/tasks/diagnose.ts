@@ -44,8 +44,8 @@ async function othersSnapshot(admin: JemmaDb, testId: string, childId: string): 
  * misconception and gap topic, and his gaps are removed. The real event is `paper.checked` for his paper, which plans
  * the `diagnose` job first.
  *
- * Known on 10 Nov: `get_class_results` returns no result ids, so an agent cannot name the answers it diagnoses
- * (another packet fixes the tool). Until then this task is expected to fail, and the result says why.
+ * The model names the answers it diagnoses by `resultId`, which `get_class_results` returns since the operator packet
+ * (P54). Without result ids this job cannot save through an agent, so `extras` records whether the tool handed them over.
  */
 export const diagnose: Task<DiagnoseState, DiagnoseFacts> = {
   id: 'diagnose',
@@ -116,7 +116,7 @@ export const diagnose: Task<DiagnoseState, DiagnoseFacts> = {
   extras(_facts, _prepared, outcome) {
     const get = callsTo(outcome.calls, 'jemma', 'get_class_results').find((c) => c.ok)
     const text = JSON.stringify(get?.output ?? '')
-    // The known gap: this read tool does not hand over result ids (P54 changes that).
-    return { readToolGaveResultIds: get ? /"(resultId|id)"/.test(text) : null }
+    // Did the read tool hand over result ids? (It does since P54; this keeps the fact visible in the result file.)
+    return { readToolGaveResultIds: get ? /"resultId"/.test(text) : null }
   },
 }

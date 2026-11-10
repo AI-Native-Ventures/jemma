@@ -16,7 +16,7 @@ import {
   type PricingInfo,
   type ReportInput,
 } from '../../../evals/lib/render'
-import { baseName } from '../../../evals/lib/result'
+import { baseName, parseResult } from '../../../evals/lib/result'
 import { failing, result } from './evals-fixtures'
 
 const tasks = TASKS.map((t) => ({ id: t.id, proves: t.proves }))
@@ -93,6 +93,14 @@ describe('the generator refuses to run without every result file', () => {
     expect(() => loadResults(dir, tasks, 3)).toThrow(/version/)
     writeFileSync(join(dir, 'class-report-1.json'), 'not json')
     expect(() => loadResults(dir, tasks, 3)).toThrow(/not valid JSON/)
+  })
+  test('a result file may carry the round trip, older files without it still load, and a wrong type is refused', () => {
+    const base = result('class-report', 1)
+    expect(parseResult(JSON.stringify({ ...base, dbRoundTripMs: 1850 }), 'f').dbRoundTripMs).toBe(1850)
+    expect(parseResult(JSON.stringify({ ...base, dbRoundTripMs: null }), 'f').dbRoundTripMs).toBeNull()
+    const { dbRoundTripMs: _gone, ...old } = base as Record<string, unknown>
+    expect(parseResult(JSON.stringify(old), 'f').taskId).toBe('class-report')
+    expect(() => parseResult(JSON.stringify({ ...base, dbRoundTripMs: 'slow' }), 'f')).toThrow(/dbRoundTripMs/)
   })
   test('writeReport throws and writes nothing when a file is missing', async () => {
     const dir = writeRun('norun')
@@ -185,6 +193,25 @@ describe('variation and the cost paragraph', () => {
     const unread = renderReport(input(allResults(), { pricing: null, pricingError: 'OpenRouter answered 503' }))
     expect(unread).toContain('could not be read (OpenRouter answered 503)')
     expect(unread).not.toMatch(/would have cost/)
+  })
+  test('the Variation paragraph says what the database round trip was during the runs (median, lowest, highest)', () => {
+    const slow = renderReport(input(allResults((id, n) => ({ dbRoundTripMs: 1000 + (id === 'class-report' ? n * 100 : 0) + (id === 'diagnose' && n === 3 ? 4000 : 0) }))))
+    const section = slow.split('## Variation')[1]!.split('## One failure')[0]!
+    // 33 runs: 29 at 1000, class-report at 1100, 1200, 1300, diagnose run 3 at 5000 (replaces 1000): median 1000, lowest 1000, highest 5000
+    expect(section).toContain('Median database round trip during these runs: 1,000 ms (lowest 1,000, highest 5,000).')
+  })
+  test('the round trip sentence uses the runs that have a measurement, and is left out when none has', () => {
+    const some = renderReport(input(allResults((id, n) => (id === 'class-report' ? { dbRoundTripMs: 2000 + n * 10 } : {}))))
+    expect(some).toContain('Median database round trip during these runs: 2,020 ms (lowest 2,010, highest 2,030).')
+    expect(renderReport(input(allResults()))).not.toContain('database round trip')
+    const nulls = renderReport(input(allResults(() => ({ dbRoundTripMs: null }))))
+    expect(nulls).not.toContain('database round trip')
+  })
+  test('the sentence is in the Variation section, whether or not the runs agreed', () => {
+    const varied = renderReport(input(allResults((id, n) => ({ dbRoundTripMs: 900, ...(id === 'photo-through-goose' && n === 2 ? failing('x') : {}) }))))
+    const section = varied.split('## Variation')[1]!.split('## One failure')[0]!
+    expect(section).toContain('did not behave the same')
+    expect(section).toContain('Median database round trip during these runs: 900 ms (lowest 900, highest 900).')
   })
   test('fetchPricing reads the paid listing for a :free id from the public endpoint, and notes when there is none', async () => {
     const body = { data: [{ id: 'nvidia/nemotron-3.5-super-vl', pricing: { prompt: '0.0000002', completion: '0.0000008' } }, { id: 'nvidia/nemotron-3.5-super-vl:free', pricing: { prompt: '0', completion: '0' } }, { id: 'free/only:free', pricing: { prompt: '0', completion: '0' } }] }

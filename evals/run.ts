@@ -19,6 +19,8 @@ import { detectGoose } from '../packages/runner/src/index'
 import { assertAllowedDatabase, loadEnv, required } from './lib/env'
 import { runOnce, type Shared } from './lib/harness'
 import { liveSpent } from './lib/ledger'
+import { measureRoundTrip, readOneSchool, waitForCalmLine } from './lib/line'
+import { readFreePercent, waitForMemory } from './lib/memory'
 import { baseName, RESULTS_ROOT, readResultFile } from './lib/result'
 import { startWorker, WORKER_URL, type Worker } from './lib/worker'
 import { RUNS_PER_TASK, TASKS, taskById } from './tasks'
@@ -40,6 +42,8 @@ function args() {
     rehearse: value('--rehearse') ?? null,
     reuseWorker: argv.includes('--reuse-worker'),
     force: argv.includes('--force'),
+    /** Skip the wait for a calm line to the database (a slow line is still measured and saved). */
+    noLineWait: argv.includes('--no-line-wait'),
     report: !argv.includes('--no-report'),
     timeoutMinutes: value('--timeout-minutes') ? Number(value('--timeout-minutes')) : undefined,
   }
@@ -83,6 +87,14 @@ async function main(): Promise<void> {
   let spentNow = 0
   console.log(`live goose runs spent so far: ${spentAtStart} of ${a.cap}`)
 
+  const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+  const roundTrip = () => measureRoundTrip(() => readOneSchool(admin))
+  if (!rehearsal && !a.noLineWait) {
+    // A dead line would turn the set into a list of timeouts. Wait for it (10 minutes at a time, one hour at most), then go on anyway.
+    const line = await waitForCalmLine({ measure: roundTrip, sleep, log: (l) => console.log(l) })
+    if (line.startedAnyway) console.log(`the line stayed slow (${line.measurements.join(', ')} ms): the results record the round trip of every run`)
+  }
+
   const outDir = join(RESULTS_ROOT, a.runId)
   mkdirSync(outDir, { recursive: true })
   let worker: Worker | null = null
@@ -110,6 +122,7 @@ async function main(): Promise<void> {
         if (!rehearsal) spentNow += k
       },
       timeoutMs: a.timeoutMinutes ? a.timeoutMinutes * 60_000 : undefined,
+      measureRoundTrip: roundTrip,
     }
     for (const task of picked) {
       for (let n = 1; n <= a.runs; n++) {
@@ -124,6 +137,7 @@ async function main(): Promise<void> {
           console.log(`the live cap of ${a.cap} goose runs is reached: stopping before ${task.id} run ${n}`)
           throw new Error('live cap reached')
         }
+        await waitForMemory({ read: readFreePercent, sleep, log: (l) => console.log(l) })
         const t0 = Date.now()
         console.log(`RUN ${task.id} ${n}/${a.runs} ...`)
         const result = await runOnce(task, n, shared)

@@ -20,6 +20,11 @@ export type ResultFile = {
   seconds: number
   /** Seconds from opening the sandbox to cleaning it up. */
   wallSeconds: number
+  /**
+   * The database round trip right before this run: the median of three small reads, in milliseconds. Null when the
+   * measurement failed. Missing in files made before it was added. EVALS.md reports it so a slow line is visible.
+   */
+  dbRoundTripMs?: number | null
   /** Every check passed and the harness had no error. */
   pass: boolean
   /** A harness failure: the run could not be checked. Null when the checks ran. */
@@ -70,6 +75,7 @@ export function parseResult(text: string, where: string): ResultFile {
   if (typeof raw.n !== 'number') throw bad('n is missing')
   if (typeof raw.pass !== 'boolean') throw bad('pass is missing')
   if (typeof raw.seconds !== 'number' || typeof raw.wallSeconds !== 'number') throw bad('seconds are missing')
+  if (raw.dbRoundTripMs !== undefined && raw.dbRoundTripMs !== null && (typeof raw.dbRoundTripMs !== 'number' || !Number.isFinite(raw.dbRoundTripMs))) throw bad('dbRoundTripMs is not a number')
   if (!Array.isArray(raw.checks) || !raw.checks.every((c) => isObj(c) && typeof c.name === 'string' && typeof c.pass === 'boolean' && typeof c.detail === 'string')) throw bad('checks are malformed')
   if (!Array.isArray(raw.attempts) || !Array.isArray(raw.toolCalls)) throw bad('attempts or toolCalls are missing')
   if (!isObj(raw.extras)) throw bad('extras are missing')
