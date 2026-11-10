@@ -81,8 +81,19 @@ function Grid({ v }: { v: LongView }) {
         </table>
       </div>
       {v.columns.length > 6 ? <p className="m-0 text-[13px] leading-[1.4] text-body lg:hidden">Swipe sideways to see every term.</p> : null}
-      <p className="m-0 text-[13px] leading-[1.5] text-body">
-        <MiniDot level="full" /> full = 80 percent or more · <MiniDot level="half" /> half = 50 to 79 · <MiniDot level="empty" /> empty = below 50 · <MiniDot level="none" /> dashed outline = no results that term
+      <p className="m-0 flex flex-wrap gap-x-3 gap-y-1 text-[13px] leading-[1.5] text-body">
+        <span className="whitespace-nowrap">
+          <MiniDot level="full" /> full = 80 percent or more
+        </span>
+        <span className="whitespace-nowrap">
+          <MiniDot level="half" /> half = 50 to 79
+        </span>
+        <span className="whitespace-nowrap">
+          <MiniDot level="empty" /> empty = below 50
+        </span>
+        <span className="whitespace-nowrap">
+          <MiniDot level="none" /> dashed outline = no results that term
+        </span>
       </p>
     </Card>
   )

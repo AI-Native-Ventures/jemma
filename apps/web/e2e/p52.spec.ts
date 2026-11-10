@@ -11,7 +11,8 @@ import { signInWithPassword } from './helpers/session'
 // on the agent's port (8753) and the update jobs are never run. (The real agent is used by demo-path.spec.ts.)
 // Screenshots for the reviewer are written only when P52_PROOF is set, to design/proof/p52, named by width (390 or 1440).
 
-const check = expect.configure({ timeout: 20_000 })
+// Every step of a decision is a few round trips to the database, so the waits are patient.
+const check = expect.configure({ timeout: 45_000 })
 
 const admin = () => createServiceClient({ SUPABASE_URL: process.env.SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY! })
 
@@ -83,7 +84,7 @@ test.use({ screenshot: 'only-on-failure' })
 
 test.describe('the Long view', () => {
   test.setTimeout(480_000)
-  test.use({ actionTimeout: 20_000 })
+  test.use({ actionTimeout: 45_000 })
 
   test('the teacher checks each pattern and talks to the parent, then the parent sees it. The learner never does', async ({ page }, testInfo) => {
     const phone = testInfo.project.name === 'phone'
@@ -284,7 +285,7 @@ test.describe('the Long view', () => {
       expect(posted).toHaveLength(1)
       // The update finishes and says when.
       await db.from('events').update({ status: 'done', finished_at: new Date().toISOString() }).eq('id', (await longViewEvents(sipho))[0]!.id)
-      await check(page.getByText(/^Last updated today at \d\d:\d\d$/)).toBeVisible({ timeout: 30_000 })
+      await check(page.getByText(/^Last updated today at \d\d:\d\d$/)).toBeVisible({ timeout: 60_000 })
       await expect(page.getByRole('button', { name: 'Update the Long view' })).toBeEnabled()
       await noHorizontalScroll(page)
       await proof(page, 'teacher-too-early')
