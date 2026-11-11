@@ -1,3 +1,4 @@
+import { registry } from '@jemma/profiling/tools'
 import { describe, expect, it } from 'vitest'
 import { PAGE_SIZE, approvalText, mergeLog, timeLabel, toolLabel, whoRan, type ApprovalRow, type ToolCallRow } from '@/lib/data/p50'
 
@@ -32,6 +33,18 @@ describe('plain labels', () => {
     expect(toolLabel('jemma', 'save_answer_key')).toBe('Saved an answer key')
     expect(toolLabel('jemma', 'get_paper')).toBe('Read a paper')
     expect(toolLabel('jemma', 'something_new')).toBe('something_new')
+  })
+
+  it('has a plain label for every tool the Jemma server registers, so a new tool never reaches the log with its raw name', () => {
+    expect(registry.length).toBeGreaterThan(20)
+    const raw = registry.map((t) => t.name).filter((name) => toolLabel('jemma', name) === name)
+    expect(raw).toEqual([])
+    for (const t of registry) expect(toolLabel('jemma', t.name), t.name).toMatch(/^[A-Z][^_]*$/)
+  })
+
+  it('says the two Long view tools in plain words', () => {
+    expect(toolLabel('jemma', 'get_learner_history')).toBe("Read a learner's history")
+    expect(toolLabel('jemma', 'save_long_view')).toBe('Saved the Long view')
   })
 
   it('names a call to another server by its tool and server', () => {

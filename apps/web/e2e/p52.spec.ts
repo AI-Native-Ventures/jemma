@@ -20,7 +20,7 @@ const proofDir = resolve(import.meta.dirname, '../../../design/proof/p52')
 async function proof(page: Page, name: string, fullPage = true) {
   if (!process.env.P52_PROOF) return
   mkdirSync(proofDir, { recursive: true })
-  const width = page.viewportSize()!.width >= 1024 ? 1440 : 390
+  const width = page.viewportSize()!.width >= 1024 ? 1440 : page.viewportSize()!.width
   await page.evaluate(() => document.fonts.ready)
   // The bottom bar sticks to the window: in a whole-page picture it would float in the middle, so it goes to the end of the page.
   const bar = fullPage ? 'nav.sticky.bottom-0{position:static !important}' : ''
@@ -130,7 +130,41 @@ test.describe('the Long view', () => {
       await expect(page.getByText(/full = 80 percent or more/)).toBeVisible()
       await expect(page.getByText(/dashed outline = no results that term/)).toBeVisible()
       await noHorizontalScroll(page)
-      if (!phone) expect(await page.getByRole('region', { name: /scrolls sideways/ }).evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true)
+      const grid = page.getByRole('region', { name: /scrolls sideways/ })
+      const firstTerm = table.getByRole('columnheader', { name: 'Grade 4 Term 1' })
+      const lastTerm = table.getByRole('columnheader', { name: 'Grade 6 Term 4' })
+      /** Every term is on the screen: the card does not scroll, the first and the last term header are inside the window, no strand name is cut off, no two dots touch. */
+      const everyTermShows = async (width: number) => {
+        expect(await grid.evaluate((el) => el.scrollWidth <= el.clientWidth), `the grid scrolls at ${width}`).toBe(true)
+        for (const head of [firstTerm, lastTerm]) {
+          const box = (await head.boundingBox())!
+          expect(box.x, `a term header starts outside the window at ${width}`).toBeGreaterThanOrEqual(0)
+          expect(box.x + box.width, `a term header ends outside the window at ${width}`).toBeLessThanOrEqual(width)
+        }
+        const cut = await table.getByRole('rowheader').evaluateAll((rows) => rows.filter((r) => r.scrollWidth > r.clientWidth).map((r) => r.textContent))
+        expect(cut, `strand names are cut off at ${width}`).toEqual([])
+        const dots = await table.getByRole('row').nth(2).getByRole('img').evaluateAll((els) => els.map((el) => el.firstElementChild!.getBoundingClientRect()).map((r) => ({ left: r.left, right: r.right, width: r.width })))
+        expect(dots.length).toBeGreaterThan(6)
+        for (let i = 1; i < dots.length; i++) expect(dots[i]!.left - dots[i - 1]!.right, `two dots touch at ${width}`).toBeGreaterThanOrEqual(2)
+        await expect(page.getByText('Swipe sideways to see every term.')).toBeHidden()
+      }
+      if (phone) {
+        // From 360 px up a phone shows every term with no sideways scroll inside the card. Under that the card scrolls, never the page.
+        for (const width of [390, 360]) {
+          await page.setViewportSize({ width, height: 844 })
+          await everyTermShows(width)
+          await noHorizontalScroll(page)
+        }
+        await proof(page, 'teacher-grid', false)
+        await page.setViewportSize({ width: 320, height: 844 })
+        await noHorizontalScroll(page)
+        await expect(page.getByText('Swipe sideways to see every term.')).toBeVisible()
+        await proof(page, 'teacher-grid', false)
+        await page.setViewportSize({ width: 390, height: 844 })
+        await everyTermShows(390)
+      } else {
+        await everyTermShows(1440)
+      }
 
       // Two patterns, both drafts. A pattern that newer terms followed is never called running.
       await expect(page.getByRole('article')).toHaveCount(2)
@@ -148,7 +182,21 @@ test.describe('the Long view', () => {
       await expect(page.getByRole('button', { name: 'Update the Long view' })).toBeVisible()
       // No ranking and no comparison with other learners anywhere on the screen.
       await expect(page.locator('main')).not.toContainText(/class average|rank|better than|than the class|classmates/i)
+      // A pattern with more than 4 sources shows its first 3 chips and "Show all N". Tapped, it shows all N, and a chip opens its sheet.
+      const sourcesOf = (card: typeof fractions) => card.getByRole('region', { name: /^Where this comes from/ })
+      const chipsOf = (card: typeof fractions) => sourcesOf(card).locator('a, button:not([aria-expanded])')
+      await expect(chipsOf(fractions)).toHaveCount(3)
+      await expect(chipsOf(shapes)).toHaveCount(3)
       await proof(page, 'teacher-drafts')
+      const showAll = sourcesOf(fractions).getByRole('button', { name: /^Show all \d+$/ })
+      await expect(showAll).toHaveAttribute('aria-expanded', 'false')
+      expect((await showAll.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+      const total = Number((await showAll.innerText()).match(/\d+/)![0])
+      expect(total).toBeGreaterThan(4)
+      await showAll.click()
+      await expect(chipsOf(fractions)).toHaveCount(total)
+      await expect(sourcesOf(fractions).getByRole('button', { name: 'Show fewer' })).toHaveAttribute('aria-expanded', 'true')
+      await proof(page, 'teacher-sources-open')
 
       // A marked answer links to the paper at that question.
       const answer = fractions.locator('a[href*="/papers/"]').first()

@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import type { CSSProperties } from 'react'
 import { EmptyState } from '@/components/blocks'
 import { Card } from '@/components/ui'
 import { requireRole } from '@/lib/auth'
@@ -8,13 +9,16 @@ import { PatternCard, SetAside } from './PatternCard'
 import { OpenUpdate, UpdateBar } from './UpdateBar'
 
 const DOT = 'block size-[22px] rounded-pill'
+/** A crowded grid on a phone: the dot is 16 px, and never wider than its column less 3 px, so two dots never touch. From a laptop up it is the usual 22 px. */
+const DOT_CROWDED = 'block rounded-pill max-lg:mx-auto max-lg:aspect-square max-lg:w-[calc(100%-3px)] max-lg:max-w-4 lg:size-[22px]'
 
 /** One dot of the grid. Full, half and empty are filled, half-filled and a ring; dashed means no results that term. */
-function Dot({ level }: { level: DotLevel }) {
-  if (level === 'full') return <span aria-hidden="true" className={`${DOT} bg-ink`} />
-  if (level === 'half') return <span aria-hidden="true" className={`${DOT} border-[1.5px] border-ink bg-[linear-gradient(90deg,var(--color-ink)_50%,transparent_50%)]`} />
-  if (level === 'empty') return <span aria-hidden="true" className={`${DOT} border-[1.5px] border-ink bg-card`} />
-  return <span aria-hidden="true" className={`${DOT} border-[1.5px] border-dashed border-muted-2`} />
+function Dot({ level, crowded = false }: { level: DotLevel; crowded?: boolean }) {
+  const size = crowded ? DOT_CROWDED : DOT
+  if (level === 'full') return <span aria-hidden="true" className={`${size} bg-ink`} />
+  if (level === 'half') return <span aria-hidden="true" className={`${size} border-[1.5px] border-ink bg-[linear-gradient(90deg,var(--color-ink)_50%,transparent_50%)]`} />
+  if (level === 'empty') return <span aria-hidden="true" className={`${size} border-[1.5px] border-ink bg-card`} />
+  return <span aria-hidden="true" className={`${size} border-[1.5px] border-dashed border-muted-2`} />
 }
 
 function MiniDot({ level }: { level: DotLevel }) {
@@ -25,6 +29,14 @@ function MiniDot({ level }: { level: DotLevel }) {
   )
 }
 
+/** Up to this many term columns a phone fits the whole grid in its card. More than this, or a window under 360 px, and the grid scrolls inside the card as before. */
+const PHONE_FITS = 12
+/** A phone column is never narrower than this, and the strand names get 96 px. */
+const PHONE_COLUMN_MIN = 15
+const PHONE_STRAND_WIDTH = 96
+/** In a 320 px window the card is 254 px wide, so from this many terms the grid has to scroll inside it, and says so. */
+const SCROLLS_UNDER_360_FROM = 11
+
 /** Strands down the side, terms across, grouped under their grade. The strand names stay put when the grid scrolls sideways. */
 function Grid({ v }: { v: LongView }) {
   if (v.rows.length === 0) {
@@ -34,13 +46,32 @@ function Grid({ v }: { v: LongView }) {
       </Card>
     )
   }
+  const terms = v.columns.length
+  // From a laptop up nothing here changes. On a phone a grid of 12 terms or fewer is laid out in the card's width (strand names wrap onto two lines, the
+  // terms share the rest, and 7 or more terms get smaller dots). Anything bigger keeps the sideways scroll.
+  const fits = terms <= PHONE_FITS
+  const crowded = fits && terms > 6
+  const table = fits
+    ? 'w-full table-fixed min-w-[var(--grid-min)] border-separate border-spacing-0 lg:w-full lg:table-auto lg:min-w-max'
+    : 'min-w-max border-separate border-spacing-0 lg:w-full'
+  const strand = fits ? 'max-lg:pr-2 max-lg:text-[13px] max-lg:whitespace-normal lg:whitespace-nowrap' : 'whitespace-nowrap'
+  const cell = fits ? 'max-lg:px-0 lg:px-[5px]' : 'px-[5px]'
+  const termLabel = crowded ? 'text-[12px] max-lg:text-[11px]' : 'text-[12px]'
   return (
-    <Card as="section" radius={20} aria-labelledby="lv-grid" className="gap-3">
+    <Card as="section" radius={20} aria-labelledby="lv-grid" className={`gap-3 ${fits ? 'max-lg:p-3' : ''}`}>
       <h2 id="lv-grid" className="sr-only">
         Marks by strand and term
       </h2>
       <div className="-mx-1 overflow-x-auto px-1 pb-1" role="region" aria-label="Marks by strand and term, scrolls sideways" tabIndex={0}>
-        <table className="min-w-max border-separate border-spacing-0 lg:w-full">
+        <table className={table} style={fits ? ({ '--grid-min': `${PHONE_STRAND_WIDTH + terms * PHONE_COLUMN_MIN}px` } as CSSProperties) : undefined}>
+          {fits ? (
+            <colgroup>
+              <col className="max-lg:w-24" />
+              {v.columns.map((c) => (
+                <col key={c.key} />
+              ))}
+            </colgroup>
+          ) : null}
           <thead>
             <tr>
               <th scope="col" className="sticky left-0 z-10 bg-card p-0">
@@ -48,14 +79,26 @@ function Grid({ v }: { v: LongView }) {
               </th>
               {v.gradeGroups.map((g) => (
                 <th key={`${g.grade}-${g.span}`} scope="colgroup" colSpan={g.span} className="relative h-5 p-0 text-left">
-                  <span className="absolute top-0 left-1 text-[12px] leading-5 font-semibold whitespace-nowrap text-body">{g.span >= 2 ? `Grade ${g.grade}` : `Gr ${g.grade}`}</span>
+                  <span className="absolute top-0 left-1 text-[12px] leading-5 font-semibold whitespace-nowrap text-body max-lg:text-[11px]">
+                    {/* "Grade 4" when it has room: on a crowded phone grid that takes 3 terms, elsewhere 2. */}
+                    {crowded && g.span === 2 ? (
+                      <>
+                        <span className="lg:hidden">{`Gr ${g.grade}`}</span>
+                        <span className="max-lg:hidden">{`Grade ${g.grade}`}</span>
+                      </>
+                    ) : g.span >= 2 ? (
+                      `Grade ${g.grade}`
+                    ) : (
+                      `Gr ${g.grade}`
+                    )}
+                  </span>
                 </th>
               ))}
             </tr>
             <tr>
               <td className="sticky left-0 z-10 bg-card p-0" />
               {v.columns.map((c) => (
-                <th key={c.key} scope="col" className="relative px-[5px] pb-1 text-center text-[12px] leading-4 font-normal text-body">
+                <th key={c.key} scope="col" className={`relative ${cell} pb-1 text-center ${termLabel} leading-4 font-normal text-body`}>
                   <span aria-hidden="true">T{c.term}</span>
                   <span className="sr-only">{`Grade ${c.grade} Term ${c.term}`}</span>
                 </th>
@@ -65,13 +108,13 @@ function Grid({ v }: { v: LongView }) {
           <tbody>
             {v.rows.map((r) => (
               <tr key={r.family}>
-                <th scope="row" className="sticky left-0 z-10 bg-card py-1.5 pr-3 text-left text-[14px] leading-[1.2] font-semibold whitespace-nowrap">
+                <th scope="row" className={`sticky left-0 z-10 bg-card py-1.5 pr-3 text-left text-[14px] leading-[1.2] font-semibold ${strand}`}>
                   {r.name}
                 </th>
                 {r.cells.map((c, i) => (
-                  <td key={v.columns[i]!.key} className="px-[5px] py-1.5 text-center">
-                    <span role="img" aria-label={c.alt} className="inline-flex">
-                      <Dot level={c.level} />
+                  <td key={v.columns[i]!.key} className={`${cell} py-1.5 text-center`}>
+                    <span role="img" aria-label={c.alt} className={fits ? 'flex max-lg:justify-center lg:inline-flex' : 'inline-flex'}>
+                      <Dot level={c.level} crowded={crowded} />
                     </span>
                   </td>
                 ))}
@@ -80,7 +123,11 @@ function Grid({ v }: { v: LongView }) {
           </tbody>
         </table>
       </div>
-      {v.columns.length > 6 ? <p className="m-0 text-[13px] leading-[1.4] text-body lg:hidden">Swipe sideways to see every term.</p> : null}
+      {terms > PHONE_FITS ? (
+        <p className="m-0 text-[13px] leading-[1.4] text-body lg:hidden">Swipe sideways to see every term.</p>
+      ) : terms >= SCROLLS_UNDER_360_FROM ? (
+        <p className="m-0 hidden text-[13px] leading-[1.4] text-body max-[359px]:block">Swipe sideways to see every term.</p>
+      ) : null}
       <p className="m-0 flex flex-wrap gap-x-3 gap-y-1 text-[13px] leading-[1.5] text-body">
         <span className="whitespace-nowrap">
           <MiniDot level="full" /> full = 80 percent or more
