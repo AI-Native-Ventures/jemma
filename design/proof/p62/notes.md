@@ -1,0 +1,3 @@
+Done: subject runs through the Long view (migration 0020 applied to jemma-demo, 0021 written and not applied, tools, screens, five Long view answers recorded, fixture 162 rows, screenshots in this folder). Branch tip 2c9fc49 had CI success (run 43061160604, attempt 2) and the local replay check passed.
+Next: merge origin/develop (e2ac003 or newer, includes P64) into this branch, rerun typecheck, the touched tests and the demo-path replay check on the merged tip, then push once and report the CI run id.
+Known open: packages/profiling/scripts/long-view-proof.ts line 123 still passes keys to screenPatterns (needs history.candidates); tests of other packets (sandbox, share-gate, operator) timed out under load here and were not mine.
