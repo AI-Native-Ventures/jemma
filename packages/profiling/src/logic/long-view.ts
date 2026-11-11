@@ -144,6 +144,8 @@ export function answersToResults(src: AnswerSources): AnswerResult[] {
     const p = paper.get(a.paper_id)
     if (!t?.family || !p) return []
     const made = p.test_id ? test.get(p.test_id) : undefined
+    // A paper of a test the reader cannot see (another teacher's class) is left out: calling it homework would give it the wrong subject.
+    if (p.test_id && !made) return []
     const c = made ? klass.get(made.class_id) : undefined
     return [
       {

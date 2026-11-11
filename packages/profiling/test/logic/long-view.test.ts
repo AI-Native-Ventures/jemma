@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import {
   BANNED_WORDS,
+  answersToResults,
   MIN_POINTS,
   MIN_TERMS,
   STRENGTH_FROM,
@@ -685,5 +686,70 @@ describe('bannedWords with names that come from the data', () => {
   test('names with punctuation are matched as written and a blank name changes nothing', () => {
     expect(bannedWords('Quiz (Stream) results were low', ['Quiz (Stream) results'])).toEqual([])
     expect(bannedWords('A lazy term', ['', '   '])).toEqual(['lazy'])
+  })
+})
+
+
+describe('answersToResults: this year\'s answers take their subject and grade from the class of the test', () => {
+  const base = {
+    topics: [
+      { id: 'tp-frac', family: 'fractions', name: 'Adding fractions' },
+      { id: 'tp-read', family: 'reading', name: 'Reading comprehension' },
+    ],
+    papers: [
+      { id: 'pa-maths', test_id: 'te-maths', created_at: '2026-03-01T08:00:00Z' },
+      { id: 'pa-eng', test_id: 'te-eng', created_at: '2026-03-02T08:00:00Z' },
+      { id: 'pa-hw', test_id: null, created_at: '2026-11-02T10:00:00Z' },
+      { id: 'pa-hidden', test_id: 'te-hidden', created_at: '2026-03-03T08:00:00Z' },
+    ],
+    tests: [
+      { id: 'te-maths', title: 'Class Test 1', written_on: '2026-03-10', class_id: 'cl-maths' },
+      { id: 'te-eng', title: 'English Test 1', written_on: '2026-02-20', class_id: 'cl-eng' },
+    ],
+    classes: [
+      { id: 'cl-maths', subject: 'Maths', grade: 6 },
+      { id: 'cl-eng', subject: 'English', grade: 7 },
+    ],
+    homeworkGrade: 6,
+  }
+  const answer = (id: string, paper: string, topic: string | null, n = 1) => ({ id, paper_id: paper, n, correct: id.endsWith('r'), topic_id: topic })
+
+  test('an answer carries the subject (in its one written name), the grade and the id of its class', () => {
+    const [maths, english] = answersToResults({ ...base, answers: [answer('a1r', 'pa-maths', 'tp-frac'), answer('a2', 'pa-eng', 'tp-read', 4)] })
+    expect(maths).toMatchObject({ id: 'a1r', family: 'fractions', subject: 'Mathematics', grade: 6, classId: 'cl-maths', isoDate: '2026-03-10', label: 'Class Test 1, question 1', correct: true, paperId: 'pa-maths', n: 1 })
+    expect(english).toMatchObject({ id: 'a2', family: 'reading', subject: 'English', grade: 7, classId: 'cl-eng', isoDate: '2026-02-20', label: 'English Test 1, question 4', correct: false, testTitle: 'English Test 1', topicName: 'Reading comprehension' })
+  })
+
+  test('the grade is the class\'s, not the learner\'s current grade', () => {
+    const [english] = answersToResults({ ...base, homeworkGrade: 6, answers: [answer('a2', 'pa-eng', 'tp-read')] })
+    expect(english!.grade).toBe(7)
+  })
+
+  test('homework has no test and so no class: it is Mathematics in the learner\'s grade, dated by its paper', () => {
+    const [hw] = answersToResults({ ...base, answers: [answer('h1', 'pa-hw', 'tp-frac', 2)] })
+    expect(hw).toMatchObject({ subject: 'Mathematics', grade: 6, classId: null, label: 'Homework, question 2', isoDate: '2026-11-02T10:00:00Z', testTitle: null })
+  })
+
+  test('an answer with no topic, no family, no paper, or a paper of a test the reader cannot see is left out', () => {
+    const out = answersToResults({
+      ...base,
+      topics: [...base.topics, { id: 'tp-none', family: '', name: 'No family' }],
+      answers: [answer('x1', 'pa-maths', null), answer('x2', 'pa-maths', 'tp-none'), answer('x3', 'pa-missing', 'tp-frac'), answer('x4', 'pa-hidden', 'tp-frac'), answer('x5', 'pa-maths', 'tp-unknown'), answer('ok', 'pa-maths', 'tp-frac')],
+    })
+    expect(out.map((r) => r.id)).toEqual(['ok'])
+  })
+
+  test('a test with no date takes the date of its paper', () => {
+    const [r] = answersToResults({ ...base, tests: [{ id: 'te-maths', title: 'Undated', written_on: null, class_id: 'cl-maths' }], answers: [answer('u1', 'pa-maths', 'tp-frac')] })
+    expect(r!.isoDate).toBe('2026-03-01T08:00:00Z')
+  })
+
+  test('the results build the same table whichever way the answers came: the two subjects are apart', () => {
+    const results = answersToResults({ ...base, answers: [1, 2, 3].map((n) => answer(`m${n}`, 'pa-maths', 'tp-frac', n)).concat([1, 2, 3].map((n) => answer(`e${n}`, 'pa-eng', 'tp-read', n))) })
+    const { table } = buildTable([], results)
+    expect(table.map((f) => [f.subject, f.family, f.slots[0]!.grade])).toEqual([
+      ['Mathematics', 'fractions', 6],
+      ['English', 'reading', 7],
+    ])
   })
 })
