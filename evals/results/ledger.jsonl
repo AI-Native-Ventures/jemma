@@ -39,3 +39,9 @@
 {"at":"2026-11-11T08:19:50.470Z","runId":"2026-11-11-gemma","taskId":"class-report","n":1,"attempts":1,"rehearsal":false}
 {"at":"2026-11-11T08:20:57.152Z","runId":"2026-11-11-gemma","taskId":"class-report","n":2,"attempts":1,"rehearsal":false}
 {"at":"2026-11-11T08:22:06.118Z","runId":"2026-11-11-gemma","taskId":"class-report","n":3,"attempts":1,"rehearsal":false}
+{"at":"2026-11-11T09:52:50.134Z","runId":"2026-11-11-gemma-2","taskId":"class-report","n":1,"attempts":1,"rehearsal":false}
+{"at":"2026-11-11T09:53:26.232Z","runId":"2026-11-11-gemma-2","taskId":"class-report","n":2,"attempts":1,"rehearsal":false}
+{"at":"2026-11-11T09:54:16.561Z","runId":"2026-11-11-gemma-2","taskId":"class-report","n":3,"attempts":1,"rehearsal":false}
+{"at":"2026-11-11T09:56:02.175Z","runId":"2026-11-11-gemma-26b","taskId":"class-report","n":1,"attempts":1,"rehearsal":false}
+{"at":"2026-11-11T09:56:40.427Z","runId":"2026-11-11-gemma-26b","taskId":"class-report","n":2,"attempts":1,"rehearsal":false}
+{"at":"2026-11-11T09:57:21.293Z","runId":"2026-11-11-gemma-26b","taskId":"class-report","n":3,"attempts":1,"rehearsal":false}

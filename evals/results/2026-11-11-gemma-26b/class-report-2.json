@@ -1,0 +1,177 @@
+{
+  "version": 1,
+  "runId": "2026-11-11-gemma-26b",
+  "taskId": "class-report",
+  "n": 2,
+  "startedAt": "2026-11-11T09:56:02.184Z",
+  "rehearsal": false,
+  "seconds": 21,
+  "wallSeconds": 38.2,
+  "dbRoundTripMs": 187,
+  "pass": false,
+  "error": null,
+  "checks": [
+    {
+      "name": "the event ended done",
+      "pass": false,
+      "detail": "status=failed; error=class_report: google/gemma-4-26b-a4b-it:free: Ran into this error: Rate limit exceeded: Provider returned error. Please retry if you think this is; runner note=google/gemma-4-26b-a4b-it:free: Ran into this error: Rate limit exceeded: Provider returned error. Please retry if you think this is"
+    },
+    {
+      "name": "exactly one reteach plan exists for the test (no double write)",
+      "pass": true,
+      "detail": "rows=1"
+    },
+    {
+      "name": "the reteach plan passes the app's own schema and why, missing basic and explanation are set",
+      "pass": true,
+      "detail": "schema valid; why=set; missing basic=set; explanation=set"
+    },
+    {
+      "name": "the plan was written by this run (it differs from the seeded one)",
+      "pass": false,
+      "detail": "identical to the seeded plan"
+    },
+    {
+      "name": "the plan is about a real class gap in the seeded results",
+      "pass": true,
+      "detail": "plan topic \"Adding fractions with different denominators\" is one of the code's gaps [Adding fractions with different denominators, Adding decimals, Comparing fractions]; its text names: Adding fractions with different denominators"
+    },
+    {
+      "name": "the report copy exists in the reports folder",
+      "pass": false,
+      "detail": "no file class_report-8873908c-962c-412f-8328-03aabfb883b3.md"
+    },
+    {
+      "name": "the report copy cites question numbers, all of them real",
+      "pass": false,
+      "detail": "no question number found"
+    },
+    {
+      "name": "class_gap_report answered ok",
+      "pass": false,
+      "detail": "0 call(s)"
+    }
+  ],
+  "event": {
+    "status": "failed",
+    "error": "class_report: google/gemma-4-26b-a4b-it:free: Ran into this error: Rate limit exceeded: Provider returned error. Please retry if you think this is"
+  },
+  "run": {
+    "status": "failed",
+    "note": "google/gemma-4-26b-a4b-it:free: Ran into this error: Rate limit exceeded: Provider returned error. Please retry if you think this is"
+  },
+  "attempts": [
+    {
+      "model": "google/gemma-4-26b-a4b-it:free",
+      "seconds": 18.6,
+      "status": "failed",
+      "note": "Ran into this error: Rate limit exceeded: Provider returned error. Please retry if you think this is a transient or recoverable error.",
+      "providerError": "Rate limit exceeded: Provider returned error.",
+      "saved": false,
+      "timedOut": false,
+      "tokens": {
+        "input": 9340,
+        "output": 55,
+        "costUsd": 0
+      }
+    }
+  ],
+  "finalModel": "google/gemma-4-26b-a4b-it:free",
+  "tokens": {
+    "input": 9340,
+    "output": 55,
+    "costUsd": 0
+  },
+  "toolCalls": [
+    "jemma__get_class_results"
+  ],
+  "reported": true,
+  "facts": {
+    "reteachRows": 1,
+    "reteach": {
+      "topicName": "Adding fractions with different denominators",
+      "content": {
+        "steps": [
+          {
+            "text": "Fold one strip into halves and one into quarters.",
+            "minutes": 2
+          },
+          {
+            "text": "Lay them side by side. How many quarters fit in a half? Write 1/2 = 2/4.",
+            "minutes": 3
+          },
+          {
+            "text": "Add 1/2 + 1/4 with the strips. Count the quarters: 3/4. Ask why 2/6 is smaller than 1/2.",
+            "minutes": 3
+          },
+          {
+            "text": "Exit question on the board: 1/3 + 1/6.",
+            "minutes": 2
+          }
+        ],
+        "title": "Fraction strips",
+        "minutes": 10,
+        "youNeed": "3 paper strips per learner, all the same length.",
+        "audience": "whole class",
+        "exitQuestion": "1/3 + 1/6"
+      },
+      "why": "4 of 5 add the tops and the bottoms. It points back to equivalent fractions, a Term 1 basic.",
+      "missingBasic": "Equivalent fractions · Term 1",
+      "explanation": "The bottom number says the size of the pieces. Halves and quarters are different sizes, so they can't be added until the bottoms match."
+    },
+    "classGapTopics": [
+      "Adding fractions with different denominators",
+      "Adding decimals",
+      "Comparing fractions"
+    ],
+    "outOf": 10,
+    "reportName": "class_report-8873908c-962c-412f-8328-03aabfb883b3.md",
+    "report": null,
+    "reportChars": 0,
+    "classReportActivity": 0
+  },
+  "state": {
+    "classId": "8873908c-962c-412f-8328-03aabfb883b3",
+    "testId": "86803f75-650f-4d37-9cb8-b947ac4b5088",
+    "paperId": "31287c66-a2c2-48e8-a949-d811bfcd5257",
+    "before": {
+      "topicName": "Adding fractions with different denominators",
+      "content": {
+        "steps": [
+          {
+            "text": "Fold one strip into halves and one into quarters.",
+            "minutes": 2
+          },
+          {
+            "text": "Lay them side by side. How many quarters fit in a half? Write 1/2 = 2/4.",
+            "minutes": 3
+          },
+          {
+            "text": "Add 1/2 + 1/4 with the strips. Count the quarters: 3/4. Ask why 2/6 is smaller than 1/2.",
+            "minutes": 3
+          },
+          {
+            "text": "Exit question on the board: 1/3 + 1/6.",
+            "minutes": 2
+          }
+        ],
+        "title": "Fraction strips",
+        "minutes": 10,
+        "youNeed": "3 paper strips per learner, all the same length.",
+        "audience": "whole class",
+        "exitQuestion": "1/3 + 1/6"
+      },
+      "why": "4 of 5 add the tops and the bottoms. It points back to equivalent fractions, a Term 1 basic.",
+      "missingBasic": "Equivalent fractions · Term 1",
+      "explanation": "The bottom number says the size of the pieces. Halves and quarters are different sizes, so they can't be added until the bottoms match."
+    }
+  },
+  "extras": {},
+  "liveAttempts": 1,
+  "sandboxIds": [
+    "a05a9c00-b1ae-46c4-9f2c-8bebce679e75"
+  ],
+  "stream": "class-report-2.jsonl",
+  "scrubbed": false,
+  "cleanup": []
+}
