@@ -58,7 +58,7 @@ export function statementFor(c: PatternCandidate): string {
   return held
 }
 
-export type SeedPattern = { key: string; title: string; statement: string; noteIds: string[] }
+export type SeedPattern = { key: string; subject: string; title: string; statement: string; noteIds: string[] }
 
 /**
  * The wording for each candidate code found, in the shape `save_long_view` takes. The same rules the tool applies are applied here
@@ -69,9 +69,9 @@ export function wordPatterns(candidates: PatternCandidate[], notes: HistoryNote[
     const title = TITLES[c.key] ?? `Marks in ${strand(c.family)} stayed ${c.kind === 'struggle' ? 'low' : 'high'}`
     const speaks = NOTES[c.key]
     const noteIds = speaks ? notes.filter((n) => speaks.test(n.text)).map((n) => n.id) : []
-    return { key: c.key, title: title.charAt(0).toUpperCase() + title.slice(1), statement: statementFor(c), noteIds }
+    return { key: c.key, subject: c.subject, title: title.charAt(0).toUpperCase() + title.slice(1), statement: statementFor(c), noteIds }
   })
-  const { accepted, dropped } = screenPatterns(words, candidates.map((c) => c.key))
+  const { accepted, dropped } = screenPatterns(words, candidates)
   if (dropped.length > 0) throw new Error(`demo seed: Long view wording was dropped: ${dropped.map((d) => `${d.key} (${d.reason})`).join(', ')}`)
   return accepted
 }

@@ -1,5 +1,5 @@
 import type { LongViewEvidence, LongViewKind, LongViewTerm, PatternCandidate } from '../schemas/long-view'
-import { DEFAULT_SUBJECT, compareSubjects } from './strands'
+import { DEFAULT_SUBJECT, canonicalSubject, compareSubjects } from './strands'
 
 // The Long view: code finds the strengths and struggles that hold for 3 terms or more. A model only puts them in words.
 // Pure functions, no database. Terms are calendar quarters: Jan to Mar is 1, Apr to Jun 2, Jul to Sep 3, Oct to Dec 4.
@@ -99,8 +99,8 @@ export type LongViewRecord = {
 }
 
 /**
- * One marked answer of this year (from `question_results`). It takes its subject, grade and year from the class of the test it was
- * written in. `grade` is that class's grade. Without a `subject` an answer counts as Mathematics; without a `year` the year of its date is used.
+ * One marked answer of this year (from `question_results`). It takes its subject and grade from the class of the test it was written in
+ * (not from the learner's current grade). Without a `subject` an answer counts as Mathematics. Its term is the calendar quarter of its date.
  */
 export type LongViewResult = {
   id: string
@@ -110,7 +110,6 @@ export type LongViewResult = {
   label: string
   grade?: number
   subject?: string
-  year?: number
   /** The class the test belongs to, so a link to the paper opens under the right class. */
   classId?: string | null
   /** Names that come from the data, kept so the word check can leave them alone: the test's title and the topic. */
@@ -118,10 +117,51 @@ export type LongViewResult = {
   topicName?: string | null
 }
 
-/** The term of an answer: its class's year when it has one, else the year of its date. The term is the date's calendar quarter. */
-export function resultSlot(r: Pick<LongViewResult, 'isoDate' | 'year'>): SlotRef {
-  const slot = slotOf(r.isoDate)
-  return r.year === undefined ? slot : { year: r.year, term: slot.term }
+/** The rows `answersToResults` reads: this learner's marked answers, and what they hang from. */
+export type AnswerSources = {
+  answers: { id: string; paper_id: string; n: number; correct: boolean; topic_id: string | null }[]
+  topics: { id: string; family: string; name: string }[]
+  papers: { id: string; test_id: string | null; created_at: string }[]
+  tests: { id: string; title: string; written_on: string | null; class_id: string }[]
+  classes: { id: string; subject: string; grade: number }[]
+  /** Homework has no test and so no class. It counts as Mathematics (the only subject a homework scan can be today) in this grade. */
+  homeworkGrade: number
+}
+export type AnswerResult = LongViewResult & { paperId: string; n: number }
+
+/**
+ * This year's marked answers as results. An answer takes its strand from its topic and its date from its test (or its paper), and its
+ * subject and grade from the CLASS of the test, not from the learner's current grade: a learner in two classes has answers in two subjects.
+ * The tool and the screen both build their results here, so the two can never read an answer differently.
+ */
+export function answersToResults(src: AnswerSources): AnswerResult[] {
+  const topic = new Map(src.topics.map((t) => [t.id, t]))
+  const paper = new Map(src.papers.map((p) => [p.id, p]))
+  const test = new Map(src.tests.map((t) => [t.id, t]))
+  const klass = new Map(src.classes.map((c) => [c.id, c]))
+  return src.answers.flatMap((a) => {
+    const t = a.topic_id ? topic.get(a.topic_id) : undefined
+    const p = paper.get(a.paper_id)
+    if (!t?.family || !p) return []
+    const made = p.test_id ? test.get(p.test_id) : undefined
+    const c = made ? klass.get(made.class_id) : undefined
+    return [
+      {
+        id: a.id,
+        correct: a.correct,
+        family: t.family,
+        isoDate: made?.written_on ?? p.created_at,
+        label: `${made?.title ?? 'Homework'}, question ${a.n}`,
+        grade: c?.grade ?? src.homeworkGrade,
+        subject: c?.subject?.trim() ? canonicalSubject(c.subject) : DEFAULT_SUBJECT,
+        classId: c?.id ?? null,
+        testTitle: made?.title ?? null,
+        topicName: t.name,
+        paperId: a.paper_id,
+        n: a.n,
+      },
+    ]
+  })
 }
 
 export type TableSource = { kind: 'record' | 'result'; id: string; label: string }
@@ -139,11 +179,11 @@ const MARKED = new Set<LongViewRecord['source']>(['quiz', 'assignment', 'project
  */
 export function recordSubject(r: Pick<LongViewRecord, 'source' | 'subject'>): string | null {
   const named = r.subject?.trim()
-  return named ? named : MARKED.has(r.source) ? DEFAULT_SUBJECT : null
+  return named ? canonicalSubject(named) : MARKED.has(r.source) ? DEFAULT_SUBJECT : null
 }
 
 /** The subject of an answer: its class's, or Mathematics when it has none. */
-export const resultSubject = (r: Pick<LongViewResult, 'subject'>): string => r.subject?.trim() || DEFAULT_SUBJECT
+export const resultSubject = (r: Pick<LongViewResult, 'subject'>): string => (r.subject?.trim() ? canonicalSubject(r.subject) : DEFAULT_SUBJECT)
 
 /** The subjects a learner has: every subject with marked work or answers, or a record that names one. Mathematics first, then the usual order. */
 export function subjectsOf(records: LongViewRecord[], results: LongViewResult[]): string[] {
@@ -187,7 +227,7 @@ function gradesBySlot(records: LongViewRecord[], results: LongViewResult[]): Map
     out.set(key, Math.max(out.get(key) ?? grade, grade))
   }
   for (const r of records) see(r, r.grade)
-  for (const r of results) see(resultSlot(r), r.grade)
+  for (const r of results) see(slotOf(r.isoDate), r.grade)
   return out
 }
 
@@ -237,7 +277,7 @@ export function buildSubjectTable(
     items.push({ family: r.family, slot: r, grade: r.grade, got: r.marks, of: r.outOf, date: r.happenedOn, source: { kind: 'record', id: r.id, label: recordLabel(r) } })
   }
   for (const r of results) {
-    items.push({ family: r.family, slot: resultSlot(r), grade: r.grade ?? null, got: r.correct ? 1 : 0, of: 1, date: r.isoDate, source: { kind: 'result', id: r.id, label: r.label } })
+    items.push({ family: r.family, slot: slotOf(r.isoDate), grade: r.grade ?? null, got: r.correct ? 1 : 0, of: 1, date: r.isoDate, source: { kind: 'result', id: r.id, label: r.label } })
   }
 
   const grades = gradesBySlot(records, results)
@@ -284,7 +324,7 @@ export function historySlots(records: LongViewRecord[], results: LongViewResult[
     grades.set(key, { grade: Math.max(seen?.grade ?? grade, grade), year: slot.year, term: slot.term })
   }
   for (const r of records) see(r, r.grade)
-  for (const r of results) see(resultSlot(r), r.grade ?? currentGrade ?? grades.get(slotKey(resultSlot(r)))?.grade ?? 0)
+  for (const r of results) see(slotOf(r.isoDate), r.grade ?? currentGrade ?? grades.get(slotKey(slotOf(r.isoDate)))?.grade ?? 0)
   return [...grades.values()].sort(compareSlots)
 }
 

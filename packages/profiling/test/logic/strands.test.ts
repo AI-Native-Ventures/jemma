@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { DEFAULT_SUBJECT, compareSubjects, strandLabel, strandOrder } from '../../src/logic/strands'
+import { DEFAULT_SUBJECT, canonicalSubject, compareSubjects, sameSubject, strandLabel, strandOrder } from '../../src/logic/strands'
 
 describe('strand labels', () => {
   test('Mathematics keeps exactly the six labels and the order the Long view had before subjects', () => {
@@ -53,6 +53,20 @@ describe('strand labels', () => {
     expect(strandLabel('Maths', 'fractions')).toBe('Fractions')
     expect(strandLabel('natural sciences', 'life_living')).toBe('Life and living')
     expect(strandOrder('ENGLISH')).toEqual(['reading', 'writing', 'language', 'speaking_listening'])
+  })
+
+  test('two names are the same subject when they differ only by capitals, spaces or Maths', () => {
+    expect(sameSubject('Maths', ' mathematics')).toBe(true)
+    expect(sameSubject('English', 'english ')).toBe(true)
+    expect(sameSubject('English', 'Natural Sciences')).toBe(false)
+  })
+
+  test('a subject has one written name: Maths is Mathematics, and any other name keeps its words', () => {
+    expect(canonicalSubject('Maths')).toBe('Mathematics')
+    expect(canonicalSubject(' mathematics ')).toBe('Mathematics')
+    expect(canonicalSubject('english')).toBe('English')
+    expect(canonicalSubject('NATURAL SCIENCES')).toBe('Natural Sciences')
+    expect(canonicalSubject('  Technology ')).toBe('Technology')
   })
 
   test('the default subject is Mathematics, and subjects sort the way a teacher expects', () => {

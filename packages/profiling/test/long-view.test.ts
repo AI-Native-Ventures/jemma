@@ -50,6 +50,8 @@ afterAll(async () => {
 
 const history = async (d: Demo, name: string): Promise<LearnerHistory> => LearnerHistorySchema.parse(await getLearnerHistory.run(ctxFor(d), { childId: d.kids[name]! }))
 const slotName = (t: { year: number; term: number }) => `${t.year} T${t.term}`
+/** The Mathematics part of a history: the seeded learners have no other subject. */
+const maths = (h: LearnerHistory) => h.subjects.find((s) => s.subject === 'Mathematics')!
 
 describe('get_learner_history', () => {
   test('returns the designed candidates for each seeded learner', async () => {
@@ -74,8 +76,10 @@ describe('get_learner_history', () => {
     expect(fractions.evidence.every((e) => e.kind === 'record')).toBe(true)
     // Newest first.
     expect(fractions.evidence[0]!.label).toMatch(/Ms Banda/)
-    const names = h.families.map((f) => f.family)
-    expect(names).toEqual([...names].sort())
+    const names = maths(h).families.map((f) => f.family)
+    // The strands of a subject come in its own order (Mathematics: whole numbers, fractions, decimals, shapes, measurement, data).
+    expect(names).toEqual(['whole_numbers', 'fractions', 'decimals', 'shapes', 'measurement', 'data'].filter((n) => names.includes(n)))
+    expect(maths(h).families.find((f) => f.family === 'shapes')!.label).toBe('Shapes and space')
     expect(names).toEqual(expect.arrayContaining(['fractions', 'shapes', 'whole_numbers']))
   })
 
@@ -94,12 +98,12 @@ describe('get_learner_history', () => {
   test("Thabo's missing terms show, in the history and in his pattern", async () => {
     const h = await history(a, 'Thabo')
     const year = new Date().getUTCFullYear()
-    expect(h.missingTerms).toEqual([
+    expect(maths(h).missingTerms).toEqual([
       { grade: 5, year: year - 1, term: 2 },
       { grade: 5, year: year - 1, term: 3 },
     ])
     expect(h.candidates[0]!.missingTerms.map(slotName)).toEqual([`${year - 1} T2`, `${year - 1} T3`])
-    expect(h.slots).toHaveLength(8)
+    expect(maths(h).slots).toHaveLength(8)
     expect(h.attendanceByTerm).toHaveLength(8)
   })
 
@@ -117,9 +121,9 @@ describe('get_learner_history', () => {
   test("Sipho's two unclear fractions marks are not counted and no pattern is found", async () => {
     const h = await history(a, 'Sipho')
     expect(h.candidates).toEqual([])
-    expect(h.notCounted).toHaveLength(2)
-    expect(h.notCounted.every((n) => /Quiz|Assignment/.test(n.label))).toBe(true)
-    const fractions = h.families.find((f) => f.family === 'fractions')!
+    expect(maths(h).notCounted).toHaveLength(2)
+    expect(maths(h).notCounted.every((n) => /Quiz|Assignment/.test(n.label))).toBe(true)
+    const fractions = maths(h).families.find((f) => f.family === 'fractions')!
     expect(fractions.bySlot).toHaveLength(1)
   })
 
@@ -198,7 +202,7 @@ describe('save_long_view', () => {
     const out = await save(a, 'Amina', [{ key: 'struggle:fractions', ...GOOD, ...({ terms: [{ grade: 1, year: 1999, term: 1, percent: 1, points: 1 }], evidence: [{ kind: 'record', id: 'made-up', label: 'x' }] } as object) }])
     expect(out.saved).toBe(1)
     expect(out.dropped).toEqual([])
-    expect(out.patterns).toEqual([{ id: expect.any(String), key: 'struggle:fractions', status: 'draft' }])
+    expect(out.patterns).toEqual([{ id: expect.any(String), key: 'struggle:fractions', subject: 'Mathematics', status: 'draft' }])
     const [row] = await rowsOf(a, 'Amina')
     expect(row).toMatchObject({ kind: 'struggle', family: 'fractions', title: GOOD.title, statement: GOOD.statement, status: 'draft', active: true, approved_by: null, discussed_by: null })
     expect(row!.terms).toEqual(fractions.terms)
@@ -229,8 +233,8 @@ describe('save_long_view', () => {
     ])
     expect(out.saved).toBe(0)
     expect(out.dropped).toEqual([
-      { key: 'struggle:fractions', reason: 'uses the word "gifted"' },
-      { key: 'strength:shapes', reason: 'uses the words "smart", "engineer"' },
+      { key: 'struggle:fractions', subject: 'Mathematics', reason: 'uses the word "gifted"' },
+      { key: 'strength:shapes', subject: 'Mathematics', reason: 'uses the words "smart", "engineer"' },
     ])
     expect(await rowsOf(a, 'Amina')).toEqual([])
 
@@ -239,11 +243,11 @@ describe('save_long_view', () => {
       { key: 'strength:shapes', title: 'x'.repeat(71), statement: 'Fine.' },
     ])
     expect(bad.dropped).toEqual([
-      { key: 'struggle:fractions', reason: 'the title or statement is empty' },
-      { key: 'strength:shapes', reason: 'the title is longer than 70 characters' },
+      { key: 'struggle:fractions', subject: 'Mathematics', reason: 'the title or statement is empty' },
+      { key: 'strength:shapes', subject: 'Mathematics', reason: 'the title is longer than 70 characters' },
     ])
     const long = await save(a, 'Amina', [{ key: 'strength:shapes', title: 'x'.repeat(70), statement: 'y'.repeat(321) }])
-    expect(long.dropped).toEqual([{ key: 'strength:shapes', reason: 'the statement is longer than 320 characters' }])
+    expect(long.dropped).toEqual([{ key: 'strength:shapes', subject: 'Mathematics', reason: 'the statement is longer than 320 characters' }])
     const edge = await save(a, 'Amina', [{ key: 'strength:shapes', title: 'x'.repeat(70), statement: 'y'.repeat(320) }])
     expect(edge.saved).toBe(1)
   })
@@ -254,7 +258,7 @@ describe('save_long_view', () => {
       { key: 'struggle:fractions', title: 'Second', statement: 'Second.' },
     ])
     expect(out.saved).toBe(1)
-    expect(out.dropped).toEqual([{ key: 'struggle:fractions', reason: 'listed twice' }])
+    expect(out.dropped).toEqual([{ key: 'struggle:fractions', subject: 'Mathematics', reason: 'listed twice' }])
     expect((await rowsOf(a, 'Amina'))[0]!.title).toBe(GOOD.title)
   })
 
@@ -318,14 +322,14 @@ describe('save_long_view', () => {
     await db.from('long_view_patterns').update({ status: 'dismissed', dismissed_by: a.teacherId, dismissed_at: '2026-11-01T10:00:00Z' }).eq('child_id', a.kids.Amina!)
     // Same terms: nothing changes, not even the words.
     const same = await save(a, 'Amina', [{ key: 'struggle:fractions', title: 'Fresh words', statement: 'Fresh words.' }])
-    expect(same.patterns).toEqual([{ id: expect.any(String), key: 'struggle:fractions', status: 'dismissed' }])
+    expect(same.patterns).toEqual([{ id: expect.any(String), key: 'struggle:fractions', subject: 'Mathematics', status: 'dismissed' }])
     let [row] = await rowsOf(a, 'Amina')
     expect(row).toMatchObject({ status: 'dismissed', title: GOOD.title, dismissed_by: a.teacherId })
     // The records moved on (one more term, or a mark that changed): the pattern comes back as a draft with the new words.
     const terms = (row!.terms as { percent: number }[]).map((t, i) => (i === 0 ? { ...t, percent: t.percent + 7 } : t))
     await db.from('long_view_patterns').update({ terms }).eq('id', row!.id)
     const revived = await save(a, 'Amina', [{ key: 'struggle:fractions', title: 'Fresh words', statement: 'Fresh words.' }])
-    expect(revived.patterns).toEqual([{ id: row!.id, key: 'struggle:fractions', status: 'draft' }])
+    expect(revived.patterns).toEqual([{ id: row!.id, key: 'struggle:fractions', subject: 'Mathematics', status: 'draft' }])
     ;[row] = await rowsOf(a, 'Amina')
     expect(row).toMatchObject({ status: 'draft', title: 'Fresh words', statement: 'Fresh words.', dismissed_by: null, dismissed_at: null, active: true })
     expect((row!.terms as { percent: number }[])[0]!.percent).toBe((await history(a, 'Amina')).candidates[0]!.terms[0]!.percent)
@@ -583,7 +587,7 @@ describe('newer results after a pattern that held (since)', () => {
     expect(fractions.evidence.slice(0, 4).every((e) => e.kind === 'result')).toBe(true)
     expect(fractions.evidence.slice(4).every((e) => e.kind === 'record')).toBe(true)
     expect(h.candidates[1]!.since).toEqual([])
-    expect(h.families.find((f) => f.family === 'fractions')!.bySlot.at(-1)).toMatchObject({ year, term: 3, percent: 75, points: 4 })
+    expect(maths(h).families.find((f) => f.family === 'fractions')!.bySlot.at(-1)).toMatchObject({ year, term: 3, percent: 75, points: 4 })
   })
 
   test('the saved pattern stores the newer result as a last, flagged term, and its sources in the evidence', async () => {
@@ -611,12 +615,12 @@ describe('newer results after a pattern that held (since)', () => {
     const [row] = await rowsC()
     await db.from('long_view_patterns').update({ status: 'dismissed', dismissed_by: c.teacherId, dismissed_at: '2026-11-01T10:00:00Z' }).eq('id', row!.id)
     const same = await saveC([{ key: 'struggle:fractions', title: 'Fresh words', statement: 'Fresh words.' }])
-    expect(same.patterns).toEqual([{ id: row!.id, key: 'struggle:fractions', status: 'dismissed' }])
+    expect(same.patterns).toEqual([{ id: row!.id, key: 'struggle:fractions', subject: 'Mathematics', status: 'dismissed' }])
     // The records as they were before Class Test 1: the run only.
     const before = LongViewStoredTermsSchema.parse(row!.terms).filter((t) => !t.since)
     await db.from('long_view_patterns').update({ terms: before }).eq('id', row!.id)
     const revived = await saveC([{ key: 'struggle:fractions', title: 'Fresh words', statement: 'Fresh words.' }])
-    expect(revived.patterns).toEqual([{ id: row!.id, key: 'struggle:fractions', status: 'draft' }])
+    expect(revived.patterns).toEqual([{ id: row!.id, key: 'struggle:fractions', subject: 'Mathematics', status: 'draft' }])
     const [after] = await rowsC()
     expect(after).toMatchObject({ status: 'draft', title: 'Fresh words', dismissed_by: null })
     expect(LongViewStoredTermsSchema.parse(after!.terms).at(-1)).toMatchObject({ since: true, percent: 75 })
@@ -702,7 +706,7 @@ describe.skipIf(!inQ4Of2026)('the marked stage', () => {
 
   test("Amina keeps her fractions struggle with Term 3 (63%) and Class Test 1 in Term 4 (67%) beside it, and her shapes strength; the others are as in the start stage", async () => {
     const amina = await history(m, 'Amina')
-    const fractions = amina.families.find((f) => f.family === 'fractions')!.bySlot
+    const fractions = maths(amina).families.find((f) => f.family === 'fractions')!.bySlot
     expect(fractions.slice(-4).map((t) => [t.year, t.term, t.percent < 50])).toEqual([[2026, 1, true], [2026, 2, true], [2026, 3, false], [2026, 4, false]])
     expect(amina.candidates.map((x) => x.key)).toEqual(['struggle:fractions', 'strength:shapes'])
     const struggle = amina.candidates[0]!
@@ -765,7 +769,7 @@ describe('this year\'s marked answers join the history', () => {
   test('answers become terms from the test date, with the learner\'s grade and a label per answer', async () => {
     const ctx: ToolContext = { db, schoolId: s.schoolId, eventId: null, env: { replayStore: new MemoryStore() }, now: () => new Date() }
     const h = LearnerHistorySchema.parse(await getLearnerHistory.run(ctx, { childId: s.aminaId }))
-    const fractions = h.families.find((f) => f.family === 'fractions')!
+    const fractions = maths(h).families.find((f) => f.family === 'fractions')!
     expect(fractions.bySlot).toEqual([
       { grade: 6, year: 2026, term: 1, percent: 25, points: 20 },
       { grade: 6, year: 2026, term: 2, percent: 30, points: 20 },
@@ -780,7 +784,7 @@ describe('this year\'s marked answers join the history', () => {
     expect(candidate!.evidence.filter((e) => e.kind === 'result')).toHaveLength(10)
     expect(candidate!.evidence.filter((e) => e.kind === 'record')).toHaveLength(2)
     expect(candidate!.more).toBeUndefined()
-    expect(h.slots.map(slotName)).toEqual(['2026 T1', '2026 T2', '2026 T3', '2026 T4'])
+    expect(maths(h).slots.map(slotName)).toEqual(['2026 T1', '2026 T2', '2026 T3', '2026 T4'])
     // The answer with no topic is nowhere.
     expect(JSON.stringify(h)).not.toContain('Homework, question 3')
   })

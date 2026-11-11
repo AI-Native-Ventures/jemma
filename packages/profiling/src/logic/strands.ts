@@ -41,6 +41,25 @@ function subjectKey(subject: string): string {
   return key === 'maths' || key === 'math' ? 'mathematics' : key
 }
 
+/** The way a subject's name is written on the screen. */
+const SUBJECT_NAMES: Record<string, string> = {
+  mathematics: 'Mathematics',
+  english: 'English',
+  'natural sciences': 'Natural Sciences',
+  'social sciences': 'Social Sciences',
+}
+
+/**
+ * One name for one subject: `Maths`, `maths` and ` mathematics ` are all `Mathematics`, so a class that says Maths and records that say
+ * Mathematics are one subject. A subject that is not one of the usual four keeps its name, trimmed.
+ */
+export function canonicalSubject(subject: string): string {
+  return SUBJECT_NAMES[subjectKey(subject)] ?? subject.trim()
+}
+
+/** True when two names are the same subject: `Maths` and `mathematics ` are. */
+export const sameSubject = (a: string, b: string): boolean => subjectKey(a) === subjectKey(b)
+
 /** `patterns_and_algebra` becomes `Patterns and algebra`. An empty name is `Other`. */
 function humanise(family: string): string {
   const words = family.replace(/[_-]+/g, ' ').trim()

@@ -606,6 +606,17 @@ describe('subjects', () => {
     expect(only(records).map((c) => c.subject)).toEqual(['Mathematics'])
   })
 
+  test('Maths and Mathematics are one subject, so a class that says Maths and records that say Mathematics share one table', () => {
+    const records = [
+      inSubject('Mathematics', { year: 2025, term: 1, family: 'fractions', marks: 4, outOf: 10 }),
+      inSubject('Maths', { year: 2025, term: 2, family: 'fractions', marks: 4, outOf: 10 }),
+    ]
+    const answers = ['a', 'b', 'c'].map((id) => ({ ...result({ id, correct: false, isoDate: '2025-08-10' }), subject: 'maths ' }))
+    const { table } = buildTable(records, answers)
+    expect(table.map((f) => [f.subject, f.family, f.slots.length])).toEqual([['Mathematics', 'fractions', 3]])
+    expect(subjectsOf(records, answers)).toEqual(['Mathematics'])
+  })
+
   test('notes and attendance have no subject: they never make one, and they belong to every subject', () => {
     const note = rec({ year: 2025, term: 1, source: 'note', family: null, marks: null, outOf: null, text: 'Quiet today.' })
     const away = rec({ year: 2025, term: 2, source: 'attendance', family: null, marks: null, outOf: null, present: 8, total: 10 })
@@ -623,19 +634,13 @@ describe('subjects', () => {
     expect(subjectsOf([], [result({ id: 'r1' })])).toEqual(['Mathematics'])
   })
 
-  test('this year\'s marked answers carry the subject, grade and year of the class they were written in', () => {
-    const answer = (id: string, correct: boolean) => ({ ...result({ id, correct, isoDate: '2026-02-10' }), family: 'reading', subject: 'English', grade: 7, year: 2026 })
+  test('this year\'s marked answers carry the subject and grade of the class they were written in, and the term of their date', () => {
+    const answer = (id: string, correct: boolean) => ({ ...result({ id, correct, isoDate: '2026-02-10' }), family: 'reading', subject: 'English', grade: 7 })
     const { table } = buildTable([], [answer('a', false), answer('b', false), answer('c', true)])
     expect(table).toHaveLength(1)
     expect(table[0]).toMatchObject({ subject: 'English', family: 'reading' })
     expect(table[0]!.slots[0]).toMatchObject({ grade: 7, year: 2026, term: 1, percent: 33, points: 3 })
     expect(resultsForSubject([answer('a', true), { ...answer('b', true), subject: 'Mathematics' }], 'English').map((r) => r.id)).toEqual(['a'])
-  })
-
-  test('a class year that differs from the date puts the answer in the class year', () => {
-    const early = { ...result({ id: 'a', isoDate: '2026-01-05', correct: false }), year: 2025 }
-    const { table } = buildTable([], [early, { ...early, id: 'b' }, { ...early, id: 'c' }])
-    expect(table[0]!.slots[0]).toMatchObject({ year: 2025, term: 1 })
   })
 
   test('two subjects keep their own grade for the same term', () => {
