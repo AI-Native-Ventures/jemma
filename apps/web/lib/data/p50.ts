@@ -73,6 +73,8 @@ const TOOL_LABELS: Record<string, string> = {
   plan_next_session: 'Planned the next lesson',
   save_lesson: 'Saved a lesson',
   log_external_calls: 'Saved what an agent did on other servers',
+  get_learner_history: "Read a learner's history",
+  save_long_view: 'Saved the Long view',
 }
 
 /** A plain label for a tool call. A Jemma tool without a label keeps its raw name; a call to another server says which. */
