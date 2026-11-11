@@ -13,8 +13,11 @@ import {
   missingSlots,
   patternKey,
   plainDate,
+  recordsForSubject,
+  resultsForSubject,
   slotKey,
   slotOf,
+  subjectsOf,
   termOf,
   type LongViewRecord,
   type LongViewResult,
@@ -145,7 +148,7 @@ describe('buildTable', () => {
     const { table, notCounted } = buildTable([unclear, quiz(2025, 2, 90)], [])
     expect(table[0]!.slots[0]).toMatchObject({ percent: 90, points: 10 })
     expect(table[0]!.slots[0]!.sources).toHaveLength(1)
-    expect(notCounted).toEqual([{ id: unclear.id, label: 'Quiz on halves, Mrs Naidoo, 14 May 2025' }])
+    expect(notCounted).toEqual([{ id: unclear.id, label: 'Quiz on halves, Mrs Naidoo, 14 May 2025', subject: 'Mathematics' }])
   })
 
   test('an unclear note is not a mark, so it is not listed as not counted', () => {
@@ -536,5 +539,146 @@ describe('bannedWords', () => {
 
   test('a word is reported once', () => {
     expect(bannedWords('lazy, so lazy, lazy')).toEqual(['lazy'])
+  })
+})
+
+
+describe('subjects', () => {
+  const inSubject = (subject: string | null, over: Parameters<typeof rec>[0]) => rec({ ...over, subject })
+  /** Three terms of one strand in one subject, one quiz of 10 each, at the given percent. */
+  const strand = (subject: string | null, family: string, percents: number[], year = 2025) =>
+    percents.map((p, i) => inSubject(subject, { year: year + Math.floor(i / 4), term: (i % 4) + 1, family, marks: p / 10, outOf: 10 }))
+
+  test('two subjects of one child give two tables, and the same strand name in two subjects stays apart', () => {
+    const records = [...strand('Mathematics', 'data', [40, 40, 40]), ...strand('Natural Sciences', 'data', [90, 90, 90])]
+    const { table } = buildTable(records, [])
+    expect(table.map((f) => [f.subject, f.family])).toEqual([
+      ['Mathematics', 'data'],
+      ['Natural Sciences', 'data'],
+    ])
+    expect(table[0]!.slots.map((s) => s.percent)).toEqual([40, 40, 40])
+    expect(table[1]!.slots.map((s) => s.percent)).toEqual([90, 90, 90])
+  })
+
+  test('the same family in two subjects gives two patterns, each with its own kind, terms and evidence', () => {
+    const records = [...strand('Mathematics', 'data', [40, 40, 40]), ...strand('Natural Sciences', 'data', [90, 90, 90])]
+    const found = only(records)
+    expect(found.map((c) => [c.subject, c.key, c.kind])).toEqual([
+      ['Mathematics', 'struggle:data', 'struggle'],
+      ['Natural Sciences', 'strength:data', 'strength'],
+    ])
+    const ids = (c: (typeof found)[number]) => c.evidence.map((e) => e.id)
+    for (const id of ids(found[0]!)) expect(ids(found[1]!)).not.toContain(id)
+  })
+
+  test('the same kind and family in two subjects gives two candidates with the same key and a different subject', () => {
+    const found = only([...strand('Mathematics', 'data', [40, 40, 40]), ...strand('English', 'data', [30, 30, 30])])
+    expect(found.map((c) => [c.subject, c.key])).toEqual([
+      ['Mathematics', 'struggle:data'],
+      ['English', 'struggle:data'],
+    ])
+  })
+
+  test('there is no pattern across subjects: two weak terms in one subject and one in another are not three in a row', () => {
+    const records = [
+      inSubject('Mathematics', { year: 2025, term: 1, family: 'data', marks: 4, outOf: 10 }),
+      inSubject('Mathematics', { year: 2025, term: 2, family: 'data', marks: 4, outOf: 10 }),
+      inSubject('Natural Sciences', { year: 2025, term: 3, family: 'data', marks: 4, outOf: 10 }),
+    ]
+    expect(only(records)).toEqual([])
+  })
+
+  test('the rule of 3 terms in a row holds inside one subject', () => {
+    expect(only(strand('English', 'reading', [40, 40, 40])).map((c) => [c.subject, c.key])).toEqual([['English', 'struggle:reading']])
+    expect(only(strand('English', 'reading', [40, 40]))).toEqual([])
+  })
+
+  test('a record with a family and no subject counts as Mathematics, beside records that say so', () => {
+    const records = [
+      inSubject(null, { year: 2025, term: 1, family: 'fractions', marks: 4, outOf: 10 }),
+      inSubject('Mathematics', { year: 2025, term: 2, family: 'fractions', marks: 4, outOf: 10 }),
+      rec({ year: 2025, term: 3, family: 'fractions', marks: 4, outOf: 10 }), // no subject key at all
+    ]
+    const { table } = buildTable(records, [])
+    expect(table).toHaveLength(1)
+    expect(table[0]).toMatchObject({ subject: 'Mathematics', family: 'fractions' })
+    expect(table[0]!.slots).toHaveLength(3)
+    expect(only(records).map((c) => c.subject)).toEqual(['Mathematics'])
+  })
+
+  test('notes and attendance have no subject: they never make one, and they belong to every subject', () => {
+    const note = rec({ year: 2025, term: 1, source: 'note', family: null, marks: null, outOf: null, text: 'Quiet today.' })
+    const away = rec({ year: 2025, term: 2, source: 'attendance', family: null, marks: null, outOf: null, present: 8, total: 10 })
+    expect(subjectsOf([note, away], [])).toEqual([])
+    const both = [...strand('Mathematics', 'data', [40, 40, 40]), ...strand('English', 'reading', [40, 40, 40]), note, away]
+    expect(recordsForSubject(both, 'English').filter((r) => r.source === 'note' || r.source === 'attendance')).toHaveLength(2)
+    expect(recordsForSubject(both, 'English').filter((r) => r.family === 'data')).toEqual([])
+    expect(recordsForSubject(both, 'Mathematics').filter((r) => r.family === 'reading')).toEqual([])
+  })
+
+  test('subjectsOf lists the subjects with marked work or answers, Mathematics first', () => {
+    const records = [...strand('Natural Sciences', 'life_living', [40, 40, 40]), ...strand(null, 'fractions', [40, 40, 40]), ...strand('English', 'reading', [40])]
+    expect(subjectsOf(records, [])).toEqual(['Mathematics', 'English', 'Natural Sciences'])
+    expect(subjectsOf([], [{ ...result({ id: 'r1' }), subject: 'Social Sciences' }])).toEqual(['Social Sciences'])
+    expect(subjectsOf([], [result({ id: 'r1' })])).toEqual(['Mathematics'])
+  })
+
+  test('this year\'s marked answers carry the subject, grade and year of the class they were written in', () => {
+    const answer = (id: string, correct: boolean) => ({ ...result({ id, correct, isoDate: '2026-02-10' }), family: 'reading', subject: 'English', grade: 7, year: 2026 })
+    const { table } = buildTable([], [answer('a', false), answer('b', false), answer('c', true)])
+    expect(table).toHaveLength(1)
+    expect(table[0]).toMatchObject({ subject: 'English', family: 'reading' })
+    expect(table[0]!.slots[0]).toMatchObject({ grade: 7, year: 2026, term: 1, percent: 33, points: 3 })
+    expect(resultsForSubject([answer('a', true), { ...answer('b', true), subject: 'Mathematics' }], 'English').map((r) => r.id)).toEqual(['a'])
+  })
+
+  test('a class year that differs from the date puts the answer in the class year', () => {
+    const early = { ...result({ id: 'a', isoDate: '2026-01-05', correct: false }), year: 2025 }
+    const { table } = buildTable([], [early, { ...early, id: 'b' }, { ...early, id: 'c' }])
+    expect(table[0]!.slots[0]).toMatchObject({ year: 2025, term: 1 })
+  })
+
+  test('two subjects keep their own grade for the same term', () => {
+    const records = [
+      inSubject('Mathematics', { year: 2025, term: 1, grade: 5, family: 'fractions', marks: 5, outOf: 10 }),
+      inSubject('English', { year: 2025, term: 1, grade: 7, family: 'reading', marks: 5, outOf: 10 }),
+    ]
+    const { table } = buildTable(
+      records.map((r) => ({ ...r, outOf: 30, marks: 15 })),
+      [],
+    )
+    expect(table.find((f) => f.subject === 'Mathematics')!.slots[0]!.grade).toBe(5)
+    expect(table.find((f) => f.subject === 'English')!.slots[0]!.grade).toBe(7)
+  })
+
+  test('an unclear marked piece with no subject is counted as not counted under Mathematics', () => {
+    const { notCounted } = buildTable([inSubject(null, { year: 2025, term: 2, family: 'fractions', quality: 'unclear' })], [])
+    expect(notCounted).toMatchObject([{ subject: 'Mathematics' }])
+  })
+})
+
+describe('bannedWords with names that come from the data', () => {
+  test('a subject, a strand or a title that holds a banned word is taken out of the text before the check', () => {
+    expect(bannedWords('Marks in Rank and file stayed high.')).toEqual(['rank'])
+    expect(bannedWords('Marks in Rank and file stayed high.', ['Rank and file'])).toEqual([])
+    expect(bannedWords('Marks in the Track and field quiz stayed high.', ['Track and field'])).toEqual([])
+    expect(bannedWords('Streams of the Nile: marks stayed low.', ['Streams of the Nile'])).toEqual([])
+    expect(bannedWords('Quiz: Stream study, Mrs Naidoo, 14 May 2025 was low', ['Quiz: Stream study, Mrs Naidoo, 14 May 2025'])).toEqual([])
+  })
+
+  test('only the whole name is taken out, in any case, and the rest of the text is still checked', () => {
+    expect(bannedWords('The rank and file topic was slow.', ['Rank and file'])).toEqual(['slow'])
+    expect(bannedWords('RANK AND FILE was fine, then a lazy term.', ['Rank and file'])).toEqual(['lazy'])
+    expect(bannedWords('The rankings in rank and filed work', ['rank and file'])).toEqual(['rank'])
+  })
+
+  test('a name that is itself a banned word hides nothing: "on track" is still caught', () => {
+    expect(bannedWords('She is on track.', ['Track'])).toEqual(['track'])
+    expect(bannedWords('A gifted learner.', ['gifted'])).toEqual(['gifted'])
+  })
+
+  test('names with punctuation are matched as written and a blank name changes nothing', () => {
+    expect(bannedWords('Quiz (Stream) results were low', ['Quiz (Stream) results'])).toEqual([])
+    expect(bannedWords('A lazy term', ['', '   '])).toEqual(['lazy'])
   })
 })
