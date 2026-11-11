@@ -487,6 +487,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          kind: string
           logins: NonNullable<Json>
           school_id: string
           stage: string
@@ -495,6 +496,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          kind?: string
           logins?: NonNullable<Json>
           school_id: string
           stage?: string
@@ -502,6 +504,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          kind?: string
           logins?: NonNullable<Json>
           school_id?: string
           stage?: string
