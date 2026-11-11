@@ -113,6 +113,17 @@ describe('the local stack files', () => {
     expect(local).toEqual(rest)
   })
 
+  test('both agent configs run the same two crons: every minute for the checks, minute 17 of every hour for the demo sweep', () => {
+    const main = json('apps/agent/wrangler.jsonc')
+    const local = json('apps/agent/wrangler.local.jsonc')
+    expect((main.triggers as { crons: string[] }).crons).toEqual(['* * * * *', '17 * * * *'])
+    expect(local.triggers).toEqual(main.triggers)
+    // The code names the same two, so the sweep runs for the cron wrangler has.
+    const code = read('apps/agent/src/scheduled.ts')
+    expect(code).toContain("export const MINUTE_CRON = '* * * * *'")
+    expect(code).toContain("export const SWEEP_CRON = '17 * * * *'")
+  })
+
   test('the agent has a dev:local script that uses it on port 8787', () => {
     const scripts = json('apps/agent/package.json').scripts as Record<string, string>
     expect(scripts['dev:local']).toBe('wrangler dev --port 8787 --config wrangler.local.jsonc')

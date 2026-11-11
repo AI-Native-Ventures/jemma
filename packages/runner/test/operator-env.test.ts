@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
-import { OPERATOR_SCRUBBED_KEYS, operatorScrubKeys, prepareOperatorEnv } from '../src/operator-env'
+import { DEFAULT_OPEN_FALLBACKS, DEFAULT_OPEN_MODEL } from '../src/goose'
+import { OPERATOR_SCRUBBED_KEYS, operatorModels, operatorScrubKeys, prepareOperatorEnv } from '../src/operator-env'
 
 // The operator script starts an agent with this process's environment. No database, no network, no agent: plain objects
 // stand in for the process environment, and no value here is a real key.
@@ -77,4 +78,15 @@ test('claude and codex remove the key from the process environment, even when it
 
 test('claude and codex need no OpenRouter key at all', () => {
   for (const agent of ['claude', 'codex'] as const) expect(() => prepareOperatorEnv({}, processLike(), agent)).not.toThrow()
+})
+
+test('operatorModels: goose takes its models from the merged env, so a name that is only in .env.local counts', () => {
+  expect(operatorModels({ JEMMA_OPEN_MODEL: 'acme/only-in-the-file:free' }, 'goose')?.[0]).toBe('acme/only-in-the-file:free')
+  expect(operatorModels({ JEMMA_OPEN_MODEL: 'a/first:free', JEMMA_OPEN_MODEL_FALLBACKS: 'b/second:free, c/third:free' }, 'goose')).toEqual(['a/first:free', 'b/second:free', 'c/third:free'])
+  // nothing set: the default list, never the real process environment
+  expect(operatorModels({}, 'goose')).toEqual([DEFAULT_OPEN_MODEL, ...DEFAULT_OPEN_FALLBACKS.split(',')])
+})
+
+test('operatorModels: claude and codex hand over no list', () => {
+  for (const agent of ['claude', 'codex'] as const) expect(operatorModels({ JEMMA_OPEN_MODEL: 'acme/only-in-the-file:free' }, agent)).toBeUndefined()
 })

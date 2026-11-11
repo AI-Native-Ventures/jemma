@@ -28,6 +28,7 @@ Copy `.env.example` to `.env.local` at the repo root. `apps/web` reads it, and `
 | `AI_MODE` | `live` (call the model), `record` (call it and store the answer in `ai_replays`), `replay` (use the stored answer, never call a model, a miss is an error), `cache` (use the stored answer when the key exists, else call the model and store it). |
 | `AI_ROUTE` | `cloud` (default): the agent does the AI work as above. `operator`: each job tries recorded answers first, then the owner's laptop (the operator runner below), and only when no laptop is online the agent's own model. |
 | `AI_ROUTE_TAG` | Routing tag of this stack, default `default`. A hand-off carries it and only an operator runner with the same `OPERATOR_TAG` takes the event, so two stacks that share one database never take each other's events. |
+| `DEMO_SANDBOX_DAYS` | Agent only. An unused demo copy older than this many days is removed by the agent's hourly cron. Default 7, `0` switches the sweep off. |
 | `OPENROUTER_API_KEY` | Key for the free models. |
 | `AGENT_URL` | Where the web app posts events, `http://localhost:8787` locally. |
 | `EVENTS_SECRET` | Shared secret between web and agent for `POST /events`. |
@@ -115,7 +116,7 @@ What it needs:
 
 - The repo with `pnpm install` done, and `.env.local` at the repo root with `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and `AGENT_URL` (the public URL of the agent worker the hosted app uses).
 - `claude` installed and signed in (`claude auth status`). Set `JEMMA_RUNNER_AGENT=codex` to use Codex instead. No API key is used: provider keys and the Supabase keys are removed from the environment before the agent starts, so the subscription is what gets used.
-- The goose variant: `JEMMA_RUNNER_AGENT=goose pnpm operator`. It needs `goose` installed and `OPENROUTER_API_KEY` in `.env.local` (a free OpenRouter key is enough; without it the command stops and says so). That key is the only provider key kept, for goose alone. The models come from `JEMMA_OPEN_MODEL` and `JEMMA_OPEN_MODEL_FALLBACKS` in the shell, as in the evals, and the first one is named in the "operator starting" line. This variant is unit-tested and has not been run live.
+- The goose variant: `JEMMA_RUNNER_AGENT=goose pnpm operator`. It needs `goose` installed and `OPENROUTER_API_KEY` in `.env.local` (a free OpenRouter key is enough; without it the command stops and says so). That key is the only provider key kept, for goose alone. The models come from `JEMMA_OPEN_MODEL` and `JEMMA_OPEN_MODEL_FALLBACKS` in `.env.local` or the shell (the shell wins), and the first one is named in the "operator starting" line. This variant was run live on 11 November on a local agent worker: 12 agent runs, all done, seven of the eight AI job kinds (not `draft_map`), with the default free models. The runs and what was not shown are in [docs/proof/operator-goose-2026-11-11.md](proof/operator-goose-2026-11-11.md).
 - The agent worker running with `AI_ROUTE=operator`. Without it the cloud does all AI work itself and the operator has nothing to do.
 - Optional: `OPERATOR_CONCURRENCY` (jobs at a time, default 2), `OPERATOR_MAX_JOBS` (stop after that many agent runs) and `OPERATOR_TAG` (default `default`, must equal the agent's `AI_ROUTE_TAG`; give a test stack its own tag so it cannot touch anyone else's events on a shared database).
 
@@ -135,8 +136,9 @@ Try it on one machine: put `AI_ROUTE=operator` and your own `AI_ROUTE_TAG` (for 
 
 - A judge or you: open `/demo/reset` in the app (it rebuilds the sandbox in about 10 seconds).
 - In code: `resetSandbox(admin, sandboxId)` from `supabase/seed`.
-- Housekeeping: `deleteSandbox(admin, sandboxId)`.
+- Housekeeping: `deleteSandbox(admin, sandboxId)`. Old copies go by themselves: the agent's hourly cron (minute 17) runs `sweepOldSandboxes`, which removes up to 5 copies a run that are older than `DEMO_SANDBOX_DAYS` days with no sign-in and no activity since (their school, three users and files). A browser whose copy is gone lands on `/demo` and starts a new one.
 - Smoke sandboxes are left in jemma-dev; delete them with `deleteSandbox` using the school id from `scripts/.smoke-state.json`.
+- The sample test sheets (the memo and the 5 papers of Class Test 1) are `fixtures/papers/*.png`: `ensureSampleFiles` puts them in the `sample-papers` bucket on a new database, replaces a sheet whose size is not the real file's (a stand-in from an older version) and stops with "sample sheet <name>.png is not available in this runtime" rather than upload a stand-in, and the web app's Worker, which has no files on disk, reads them from its static assets (`apps/web/scripts/copy-sample-sheets.mjs` copies them into `public/sample-papers` before `next dev` and `next build`).
 
 ## Deploy a preview
 

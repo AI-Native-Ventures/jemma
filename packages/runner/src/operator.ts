@@ -25,6 +25,8 @@ export type OperatorOptions = {
   /** Independent claim loops, so two jobs run at once. Default 2. */
   concurrency?: number
   timeoutMs?: number
+  /** Goose only: the models to try, in order, handed to every agent run. Default: the process environment (`JEMMA_OPEN_MODEL`, `JEMMA_OPEN_MODEL_FALLBACKS`). */
+  models?: string[]
   /** One plain line per job, and a few lines for start, stop and problems. */
   onLog?: (line: string) => void
   /** The same job with its detail (school, agent tool calls in order). For traces and proofs. */
@@ -52,6 +54,18 @@ export type Operator = {
 
 const text = (err: unknown) => (err instanceof Error ? err.message : String(err))
 const sha256 = (value: string) => createHash('sha256').update(value).digest('hex')
+
+/**
+ * Whether a line of an agent's stream can name a tool call, so the operator keeps it for the trace (a vision job's stream
+ * is large). Claude and Codex: the first 80 characters hold `"assistant"` or `item.completed`. Goose puts its role after
+ * the message id (about character 72), so its rule looks at the first 200 characters for `"role":"assistant"`; a tool
+ * request is a message of the assistant, an answer (role user) is not needed.
+ */
+export function keepsToolLine(agent: AgentName, line: string): boolean {
+  if (agent === 'goose') return line.slice(0, 200).includes('"role":"assistant"')
+  const head = line.slice(0, 80)
+  return head.includes('"assistant"') || head.includes('item.completed')
+}
 
 /** `14:03:22  paper.snapped  read_paper  41s  done`, and for a failure the start of its note. */
 export function formatJobLine(report: Pick<JobReport, 'event' | 'step' | 'seconds' | 'status' | 'note'>, at: Date = new Date()): string {
@@ -154,9 +168,9 @@ export function startOperator(o: OperatorOptions): Operator {
     const onStdout = (chunk: string) => {
       const lines = (partial + chunk).split('\n')
       partial = lines.pop() ?? ''
-      for (const line of lines) if (line.slice(0, 80).includes('"assistant"') || line.slice(0, 80).includes('item.completed')) kept.push(line)
+      for (const line of lines) if (keepsToolLine(o.agent, line)) kept.push(line)
     }
-    const res = await run({ eventId: event.id, prompt }, o.agent, mcp, { timeoutMs, onStdout })
+    const res = await run({ eventId: event.id, prompt }, o.agent, mcp, { timeoutMs, onStdout, models: o.models })
     return { ...res, toolCalls: parseTranscript(o.agent, kept.join('\n')).toolCalls }
   }
 

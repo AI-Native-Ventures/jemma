@@ -2,7 +2,7 @@
  * P49 proof: one full `class_report` job on Goose with a free open-weights model, through the desktop runner path.
  *
  * Needs the local agent worker on port 8749 (see docs/proof/open-runner-2026-11-10.md), Goose installed, and
- * OPENROUTER_API_KEY in .env.local. Synthetic data only, jemma-dev only. Live AI exception: free OpenRouter
+ * OPENROUTER_API_KEY in .env.local. Synthetic data only, and only on the project the shared guard allows (packages/profiling/scripts/env.ts). Live AI exception: free OpenRouter
  * open-weights models only, at most 12 live goose runs in total (`--live-used N` says how many are already spent).
  *
  *   pnpm --filter @jemma/runner open-job --runs 3 --live-used 0
@@ -17,6 +17,7 @@ import { fileURLToPath } from 'node:url'
 import { parseEnv } from 'node:util'
 import type { JemmaDb } from '../../packages/profiling/src/db/client'
 import { jobPlan } from '../../packages/profiling/src/plans'
+import { assertDevProject } from '../../packages/profiling/scripts/env'
 import {
   detectAgents,
   detectGoose,
@@ -96,11 +97,6 @@ function required(env: Env, key: string): string {
   const value = env[key]
   if (!value) throw new Error(`required environment value is missing: ${key}`)
   return value
-}
-
-function assertDevProject(env: Env): void {
-  const ref = new URL(required(env, 'SUPABASE_URL')).hostname.split('.')[0]
-  if (ref !== 'ayxgctbemuvozwktstaa') throw new Error('configured Supabase project is not jemma-dev')
 }
 
 async function withTemporaryEnv<T>(values: Record<string, string>, work: () => Promise<T>): Promise<T> {

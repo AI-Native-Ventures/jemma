@@ -12,6 +12,9 @@ next-env.d.ts
 *.tsbuildinfo
 apps/web/AGENTS.md
 
+# Copied from fixtures/papers before every web build and dev start (apps/web/scripts/copy-sample-sheets.mjs)
+apps/web/public/sample-papers/
+
 # Playwright output
 test-results/
 playwright-report/
