@@ -15,6 +15,7 @@ import {
   SESSION_DONE, SESSION_LOG, SESSION_TRY, SESSION_WARMUP, TEST_TITLE, TERMS, answerKeyItems, guidanceCard, topicMapDraft,
 } from './fixtures/marked-state'
 import { SAMPLE_FILES, answerCrop, ensureSampleFiles, type LoadSheet } from './fixtures/sample-papers'
+import { readSandbox, teardown } from './teardown'
 
 export type SandboxStage = 'start' | 'marked' | 'session_done'
 
@@ -604,38 +605,6 @@ async function seedLongView(c: MarkedCtx): Promise<void> {
   }
 }
 
-const STORAGE_BUCKETS = ['papers', 'curriculum', 'lesson-audio']
-
-async function removeFolder(admin: JemmaDb, bucket: string, prefix: string): Promise<void> {
-  const listed = await admin.storage.from(bucket).list(prefix, { limit: 1000 })
-  if (listed.error || !listed.data?.length) return
-  const files: string[] = []
-  const folders: string[] = []
-  for (const entry of listed.data) (entry.id ? files : folders).push(`${prefix}/${entry.name}`)
-  await Promise.all([
-    files.length ? admin.storage.from(bucket).remove(files) : Promise.resolve(),
-    ...folders.map((f) => removeFolder(admin, bucket, f)),
-  ])
-}
-
-/** Cancels running events, deletes the school (cascade), then its auth users and stored files. */
-async function teardown(admin: JemmaDb, schoolId: string | null, userIds: string[]): Promise<void> {
-  if (schoolId) {
-    await admin.from('events').update({ status: 'cancelled', finished_at: new Date().toISOString() }).eq('school_id', schoolId).in('status', ['queued', 'running'])
-    await admin.from('schools').delete().eq('id', schoolId)
-    await Promise.all(STORAGE_BUCKETS.map((b) => removeFolder(admin, b, schoolId).catch(() => undefined)))
-  }
-  await Promise.all(userIds.map((id) => admin.auth.admin.deleteUser(id)))
-}
-
-async function readSandbox(admin: JemmaDb, sandboxId: string) {
-  const row = await okMaybe(admin.from('demo_sandboxes').select('school_id, logins, stage').eq('id', sandboxId).maybeSingle(), 'read sandbox')
-  if (!row) throw new Error(`demo seed: no sandbox ${sandboxId}`)
-  const logins = row.logins as Partial<Logins>
-  const userIds = [logins.teacher?.userId, logins.parent?.userId, logins.learner?.userId].filter((v): v is string => !!v)
-  return { schoolId: row.school_id, userIds, stage: (row.stage as SandboxStage) ?? 'start' }
-}
-
 /**
  * Makes a new sandbox at `opts.stage` (default `start`). `opts.loadSheet` gives the sample test sheets to a runtime that has
  * no files on disk (a Worker): see `ensureSampleFiles`.
@@ -648,11 +617,8 @@ export async function createSandbox(admin: JemmaDb, opts: { stage?: SandboxStage
 export async function resetSandbox(admin: JemmaDb, sandboxId: string, opts: { loadSheet?: LoadSheet } = {}): Promise<void> {
   const old = await readSandbox(admin, sandboxId)
   await teardown(admin, old.schoolId, old.userIds)
-  await build(admin, sandboxId, old.stage, opts.loadSheet)
+  await build(admin, sandboxId, (old.stage as SandboxStage) ?? 'start', opts.loadSheet)
 }
 
-/** Removes a sandbox for good (tests and housekeeping). */
-export async function deleteSandbox(admin: JemmaDb, sandboxId: string): Promise<void> {
-  const old = await readSandbox(admin, sandboxId)
-  await teardown(admin, old.schoolId, old.userIds)
-}
+// Taking a sandbox away, and the sweep of old ones, live in teardown.ts so the agent worker can use them without the fixtures.
+export { deleteSandbox, sweepOldSandboxes } from './teardown'
