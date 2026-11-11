@@ -21,10 +21,9 @@ import { fileURLToPath } from 'node:url'
 import { parseEnv } from 'node:util'
 import { createServiceClient } from '@jemma/profiling/db'
 import type { AgentName } from '../src/agents'
-import { gooseModels } from '../src/goose'
 import type { JobReport } from '../src/loop'
 import { startOperator } from '../src/operator'
-import { prepareOperatorEnv } from '../src/operator-env'
+import { operatorModels, prepareOperatorEnv } from '../src/operator-env'
 
 const file = fileURLToPath(new URL('../../../.env.local', import.meta.url))
 const env = { ...(existsSync(file) ? parseEnv(readFileSync(file, 'utf8')) : {}), ...process.env } as Record<string, string | undefined>
@@ -64,7 +63,8 @@ if (platform() === 'darwin') {
 }
 
 const db = createServiceClient({ SUPABASE_URL: supabaseUrl, SUPABASE_SERVICE_ROLE_KEY: serviceKey })
-const engine = agent === 'goose' ? `goose (${gooseModels()[0]})` : agent
+const models = operatorModels(env, agent) // goose only: the list of the merged env (file and shell), also handed to every agent run
+const engine = models ? `goose (${models[0]})` : agent
 out(`${new Date().toISOString().slice(0, 10)}  operator starting: ${engine}, ${concurrency} at a time, tag ${tag}, log ${logFile}`)
 const trace = (report: JobReport) => {
   if (!traceFile) return
@@ -76,7 +76,7 @@ const trace = (report: JobReport) => {
     // the screen line is enough
   }
 }
-const operator = startOperator({ db, runnerId: randomUUID(), agent, agentUrl, concurrency, maxJobs, tag, onLog: out, onJob: trace })
+const operator = startOperator({ db, runnerId: randomUUID(), agent, agentUrl, concurrency, maxJobs, tag, models, onLog: out, onJob: trace })
 
 let leaving = false
 const leave = async () => {

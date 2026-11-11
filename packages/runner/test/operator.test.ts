@@ -328,9 +328,9 @@ function fakeAgent(opts: { writes?: Partial<typeof writes>; hold?: (call: Call) 
   const calls: Call[] = []
   const engines: unknown[] = []
   const options: ({ models?: string[] } | undefined)[] = []
-  const run = async (job: RunnerJob, engine: unknown, mcp: { url: string; token: string }, opts?: { models?: string[] }): Promise<RunResult> => {
+  const run = async (job: RunnerJob, engine: unknown, mcp: { url: string; token: string }, runOpts?: { models?: string[] }): Promise<RunResult> => {
     engines.push(engine)
-    options.push(opts)
+    options.push(runOpts)
     const name = /^Job: (\w+)$/m.exec(job.prompt)![1]!
     const ids = JSON.parse(/^Ids: (.*)$/m.exec(job.prompt)![1]!) as Record<string, string>
     const call: Call = { job: name, ids, eventId: job.eventId, token: mcp.token, url: mcp.url, tokenRow: (await tokenRows(mcp.token))[0] ?? null }

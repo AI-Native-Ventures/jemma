@@ -61,7 +61,8 @@ describe('the scripts that reach a database use the one shared guard', () => {
     const files = [...globSync('scripts/**/*.{ts,mjs,js}', { cwd: root }), ...globSync('packages/*/scripts/**/*.{ts,mjs,js}', { cwd: root })].filter((file) => file !== 'packages/profiling/scripts/env.ts')
     expect(files.length).toBeGreaterThan(8)
     const ref = /(?<![A-Za-z0-9])[a-z]{20}(?![A-Za-z0-9])/
-    expect(files.filter((file) => ref.test(read(file)))).toEqual([])
+    const withoutPackageName = (text: string) => text.replaceAll('modelcontextprotocol', '') // the one 20-letter word that is no ref: @modelcontextprotocol/sdk
+    expect(files.filter((file) => ref.test(withoutPackageName(read(file))))).toEqual([])
     expect(ref.test(read('packages/profiling/scripts/env.ts'))).toBe(true) // the test would see a ref if there were one
   })
 })

@@ -1,4 +1,5 @@
 import type { AgentName } from './agents'
+import { gooseModels } from './goose'
 
 /**
  * The environment names the operator script removes before it starts an agent. The agent CLI inherits this process's
@@ -30,4 +31,12 @@ export function prepareOperatorEnv(env: Record<string, string | undefined>, proc
   const key = env.OPENROUTER_API_KEY
   if (!key || !key.trim()) throw new Error('set OPENROUTER_API_KEY in .env.local: goose needs a (free) OpenRouter key')
   processEnv.OPENROUTER_API_KEY = key
+}
+
+/**
+ * The models goose tries, in order, read from the merged env (the repo `.env.local` under the shell environment), so
+ * `JEMMA_OPEN_MODEL` counts when it is only in the file. Claude Code and Codex take no list.
+ */
+export function operatorModels(env: Record<string, string | undefined>, agent: AgentName): string[] | undefined {
+  return agent === 'goose' ? gooseModels(env) : undefined
 }
