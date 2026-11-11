@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import { brief, median } from './checks'
@@ -6,6 +6,8 @@ import { readLedger } from './ledger'
 import { baseName, parseResult, RESULTS_ROOT, type ResultFile } from './result'
 import { refusalOf } from './provider'
 import { listRunFolders, loadSecondRun } from './second'
+import { DOCUMENT_IDS, UNSEEN_FOLDER, finalTries, loadTruth, medianSeconds, parseUnseenResult, whatWentWrong, type UnseenResult } from './unseen'
+import { countryName } from '../../packages/profiling/src/ai/subject-profile'
 import { RUNS_PER_TASK, TASKS } from '../tasks'
 
 /**
@@ -30,6 +32,18 @@ export type PricingInfo = { fetchedAt: string; source: string; models: Record<st
 export type Analysis = { taskId: string; why: string; tryNext: string[] }
 /** A change made to the test set while the runs were going (written by the author in `changes.json`, shown as it is). */
 export type Change = { taskId: string; what: string; why: string; evidence: string }
+/** The live runs of the curriculum reader on the three documents it has not seen (`evals/results/unseen-curriculum/<run id>/`). */
+export type UnseenRun = {
+  runId: string
+  /** Every try of every run, repeats included. */
+  tries: UnseenResult[]
+  /** What the script wrote in `run.json`: why it stopped, the models. */
+  stopped: string | null
+  models: { vision: string; text: string } | null
+  /** A short name for each document, from its ground truth. */
+  labels: Record<string, string>
+}
+
 /** Another run folder: a different model, usually one task. Shown in its own section, never mixed into the main run. */
 export type SecondRun = { runId: string; results: ResultFile[]; pricing: PricingInfo | null }
 export type ReportInput = {
@@ -45,6 +59,8 @@ export type ReportInput = {
   changes?: Change[] | null
   /** Other run folders, in name order. The section is written only when there is at least one. */
   others?: SecondRun[]
+  /** The newest run of the curriculum reader on unseen documents. The section is written only when there is one. */
+  unseen?: UnseenRun | null
   /** Goose runs spent for the whole packet, from the ledger (harness tuning included). Null when unknown. */
   packetLiveRuns: number | null
 }
@@ -296,6 +312,43 @@ function secondSection(others: SecondRun[]): string[] {
   return out
 }
 
+/** Which way the runs read their documents, in words: "vision", or "vision 2, text 1". */
+const readBy = (runs: UnseenResult[]): string => {
+  const counts = new Map<string, number>()
+  for (const r of runs) if (r.way) counts.set(r.way, (counts.get(r.way) ?? 0) + 1)
+  if (counts.size === 0) return 'nothing (no run got that far)'
+  if (counts.size === 1) return [...counts.keys()][0]!
+  return [...counts].map(([way, n]) => `${way} ${n}`).join(', ')
+}
+
+/** "A curriculum Jemma had never seen": one row per document, from the saved results of the live runs. */
+function unseenSection(u: UnseenRun): string[] {
+  const finals = finalTries(u.tries)
+  const out: string[] = ['## A curriculum Jemma had never seen', '']
+  out.push(
+    `Three invented curriculum documents of different shapes (\`fixtures/curriculum/unseen/\`) were given to the curriculum reader (\`draft_map\`), three runs each, on the free models${u.models ? ` (vision: \`${u.models.vision}\`; text: \`${u.models.text}\`)` : ''}. Plain code scored every draft against the ground truth saved next to each document: at least 80 percent of the topics found, at most 15 percent of the draft made up, the right term for at least 80 percent of the found topics, the topic listed in two terms and the topic of another grade each flagged with a question, the right grade, family keys from the allowed list, and the right number of terms. A run where the provider gave no answer is shown as "no answer", not as a fail. The files are in \`evals/results/unseen-curriculum/${u.runId}/\`.`,
+    '',
+  )
+  out.push('| Document | Runs | Passes | No answer | Median seconds | Read by | What went wrong |', '| --- | ---: | ---: | ---: | ---: | --- | --- |')
+  for (const id of [...DOCUMENT_IDS, ...new Set(finals.map((r) => r.docId))].filter((v, i, all) => all.indexOf(v) === i)) {
+    const runs = finals.filter((r) => r.docId === id)
+    if (runs.length === 0) continue
+    const answered = runs.filter((r) => r.verdict !== 'no_answer')
+    out.push(
+      `| ${cell(u.labels[id] ?? id)} | ${runs.length} | ${runs.filter((r) => r.verdict === 'pass').length} | ${runs.filter((r) => r.verdict === 'no_answer').length} | ${answered.length ? num(medianSeconds(answered)) : 'none'} | ${readBy(answered)} | ${cell(whatWentWrong(runs))} |`,
+    )
+  }
+  out.push('')
+  const repeats = u.tries.filter((t) => t.attempt > 1).length
+  const lines: string[] = []
+  lines.push(`${u.tries.length} live runs of the curriculum reader were made in all${repeats ? `, ${repeats} of them repeats of a run where the provider gave no answer` : ''}. Median seconds count the runs that got an answer.`)
+  const text = u.tries.filter((t) => t.way === 'text').length
+  if (text) lines.push(`${text === 1 ? '1 run was' : `${text} runs were`} read from the text of the document because the first way, the vision model looking at the pages, gave nothing.`)
+  if (u.stopped) lines.push(`The script stopped early: ${u.stopped}.`)
+  out.push(lines.join(' '), '')
+  return out
+}
+
 export function renderReport(input: ReportInput): string {
   const { results, tasks, runs, runId } = input
   const sums = summarize(input)
@@ -359,6 +412,7 @@ export function renderReport(input: ReportInput): string {
   }
 
   if (input.others?.length) push(...secondSection(input.others))
+  if (input.unseen && input.unseen.tries.length > 0) push(...unseenSection(input.unseen))
 
   // cost
   const cost = costOf(results, input.pricing)
@@ -432,7 +486,31 @@ export function renderReport(input: ReportInput): string {
   return `${text.trimEnd()}\n`
 }
 
-export type WriteOptions = { runId: string; resultsRoot?: string; outFile?: string; refreshPrice?: boolean; fetchFn?: typeof fetch; ledgerFile?: string }
+export type WriteOptions = { runId: string; resultsRoot?: string; outFile?: string; refreshPrice?: boolean; fetchFn?: typeof fetch; ledgerFile?: string; unseenRoot?: string }
+
+/** The newest run of the curriculum reader on unseen documents in `root`, or null when there is none. */
+export function loadUnseen(root: string): UnseenRun | null {
+  if (!existsSync(root)) return null
+  const runs = readdirSync(root).filter((f) => !f.startsWith('.') && statSync(join(root, f)).isDirectory()).sort()
+  const runId = runs.at(-1)
+  if (!runId) return null
+  const dir = join(root, runId)
+  const tries = readdirSync(dir)
+    .filter((f) => f.endsWith('.json') && f !== 'run.json')
+    .sort()
+    .map((f) => parseUnseenResult(readFileSync(join(dir, f), 'utf8'), join(dir, f)))
+  const meta = existsSync(join(dir, 'run.json')) ? (JSON.parse(readFileSync(join(dir, 'run.json'), 'utf8')) as { stopped?: string | null; models?: { VISION_MODEL?: string; LLM_MODEL?: string } }) : {}
+  const labels: Record<string, string> = {}
+  for (const id of new Set(tries.map((t) => t.docId))) {
+    try {
+      const t = loadTruth(id)
+      labels[id] = `Grade ${t.grade} ${t.subject}, ${countryName(t.country)}`
+    } catch {
+      labels[id] = id
+    }
+  }
+  return { runId, tries, stopped: meta.stopped ?? null, models: meta.models?.VISION_MODEL && meta.models.LLM_MODEL ? { vision: meta.models.VISION_MODEL, text: meta.models.LLM_MODEL } : null, labels }
+}
 
 /** The paid price of the models of a folder: the saved `pricing.json`, else OpenRouter's public models endpoint (then saved). */
 async function pricingFor(dir: string, results: ResultFile[], opts: WriteOptions): Promise<{ pricing: PricingInfo | null; pricingError: string | null }> {
@@ -476,7 +554,7 @@ export async function writeReport(opts: WriteOptions): Promise<string> {
     others.push({ runId: folder.name, results: otherResults, pricing: (await pricingFor(otherDir, otherResults, opts)).pricing })
   }
   const ledger = readLedger(opts.ledgerFile)
-  const text = renderReport({ runId: opts.runId, results, tasks, runs: RUNS_PER_TASK, pricing, pricingError, analysis, changes, others, packetLiveRuns: ledger.length ? ledger.filter((l) => !l.rehearsal).reduce((n, l) => n + l.attempts, 0) : null })
+  const text = renderReport({ runId: opts.runId, results, tasks, runs: RUNS_PER_TASK, pricing, pricingError, analysis, changes, others, unseen: loadUnseen(opts.unseenRoot ?? join(opts.resultsRoot ?? RESULTS_ROOT, UNSEEN_FOLDER)), packetLiveRuns: ledger.length ? ledger.filter((l) => !l.rehearsal && (l.kind ?? 'goose') === 'goose').reduce((n, l) => n + l.attempts, 0) : null })
   writeFileSync(opts.outFile ?? EVALS_FILE, text)
   return text
 }

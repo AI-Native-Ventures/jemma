@@ -90,6 +90,15 @@ pnpm --filter @jemma/runner exec node --import tsx --import ../profiling/scripts
   --run-id <run id> --task <task id> --keep-as <folder name> --why "what the check got wrong"
 ```
 
+## A curriculum Jemma had never seen
+
+`pnpm evals:unseen --cap 12` runs the curriculum reader (`draft_map`) live on the three invented documents in `fixtures/curriculum/unseen/`, three runs each, on the free models (`evals/lib/unseen-models.ts`; any model that is not `:free` is refused). Each run makes a small school and a class of the document's grade, subject and country, puts the document in storage, runs the real job in this process, reads the draft it saved and the tool log row that says how the document was read (`read_documents`: `vision`, or `text` when vision gave nothing and the PDF has a text layer), scores the draft in code against the ground truth file next to the document (`evals/lib/unseen.ts`), and deletes everything it made.
+
+- **Score.** At least 80 percent of the topics found, at most 15 percent of the draft made up, the right term for at least 80 percent of the found topics, the topic listed in two terms flagged with a question, the topic of another grade flagged or left out with a reason, the right grade, family keys from the subject's list (any short lowercase word for Science and Technology), and the right number of terms. A topic is found when its name has the words of the `match` lists in the ground truth. A fail stays a fail.
+- **No answer.** When the provider gave no answer (a rate limit, a capacity or server error, a 429 or a 5xx) the run is repeated, at most `--repeats` times in all (default 3). It is shown as "no answer", not as a fail. Three in a row stop the script.
+- **Ledger.** Each try is one line in `ledger.jsonl` with `kind: draft_map`, counted apart from the goose runs. `--cap` is required and is the most live tries of that kind. Never run it beside another live run: free models take one runner at a time.
+- **Results.** `evals/results/unseen-curriculum/<run id>/<document>-<n>-<try>.json` and `run.json`. `pnpm evals:report` writes the section "A curriculum Jemma had never seen" in EVALS.md from the newest run folder, and writes none when there is no run.
+
 ## Unit tests
 
 `packages/runner/test/evals-*.test.ts` (picked up by the runner's vitest project, so by `pnpm test`): the checks of every task against prepared rows and transcripts (a good run and bad runs), the report generator (it refuses missing results, pass and fail both render, variation, cost, the weakest task), and the harness pieces (nothing secret saved, the environment goose sees, the live-cap ledger, a real `runJob` with the fake goose feeding the checks). They call no model and no database.

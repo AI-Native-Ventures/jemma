@@ -8,7 +8,12 @@ import { RESULTS_ROOT } from './result'
  */
 export const LEDGER_FILE = join(RESULTS_ROOT, 'ledger.jsonl')
 
-export type LedgerLine = { at: string; runId: string; taskId: string; n: number; attempts: number; rehearsal: boolean }
+/**
+ * `kind` says what was counted: a goose run (`goose`, and the default for lines written before the field existed) or a live
+ * call of the curriculum reader (`draft_map`). Each kind has its own total and its own cap.
+ */
+export type LedgerKind = 'goose' | 'draft_map'
+export type LedgerLine = { at: string; runId: string; taskId: string; n: number; attempts: number; rehearsal: boolean; kind?: LedgerKind }
 
 export function readLedger(file = LEDGER_FILE): LedgerLine[] {
   if (!existsSync(file)) return []
@@ -18,9 +23,11 @@ export function readLedger(file = LEDGER_FILE): LedgerLine[] {
     .map((l) => JSON.parse(l) as LedgerLine)
 }
 
-/** Goose attempts spent so far on live runs (rehearsals with a fake goose are not counted). */
-export function liveSpent(file = LEDGER_FILE): number {
-  return readLedger(file).filter((l) => !l.rehearsal).reduce((n, l) => n + l.attempts, 0)
+/** Live attempts spent so far on one kind (goose by default). Rehearsals with a fake are not counted. */
+export function liveSpent(file = LEDGER_FILE, kind: LedgerKind = 'goose'): number {
+  return readLedger(file)
+    .filter((l) => !l.rehearsal && (l.kind ?? 'goose') === kind)
+    .reduce((n, l) => n + l.attempts, 0)
 }
 
 export function appendLedger(line: LedgerLine, file = LEDGER_FILE): void {
