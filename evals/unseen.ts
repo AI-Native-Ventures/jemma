@@ -61,6 +61,9 @@ async function main(): Promise<void> {
   let spent = spentAtStart
   let repeatsLeft = a.repeats
   let inARow = 0
+  // A failure of this Mac's own network is not the provider's answer: the try is repeated and no repeat is used up (the result file says so).
+  let networkInARow = 0
+  let networkTries = 0
   let stopped: string | null = null
   const tries: UnseenResult[] = []
   runs: for (const id of a.docs) {
@@ -76,8 +79,8 @@ async function main(): Promise<void> {
         await waitForMemory({ read: readFreePercent, sleep, log: (l) => console.log(l) })
         console.log(`RUN ${id} ${n}/${a.runs} try ${attempt} ...`)
         const result = await runOnce({ db, aiEnv, getModel, truth, bytes, pages, runId: a.runId, n, attempt })
-        // A try that could not even make its school (no model was asked) is not a live run and is not counted.
-        if (result.calls > 0) {
+        // A try that could not even make its school (no model was asked), or that never left this Mac's network, is not a live run and is not counted.
+        if (result.calls > 0 && !result.machineNetwork) {
           spent++
           appendLedger({ at: new Date().toISOString(), runId: a.runId, taskId: `draft_map:${id}`, n, attempts: 1, rehearsal: false, kind: 'draft_map' })
         }
@@ -86,6 +89,18 @@ async function main(): Promise<void> {
         tries.push(result)
         const failed = result.checks.filter((c) => !c.pass).map((c) => c.name)
         console.log(`  ${result.verdict.toUpperCase()} ${id} ${n} try ${attempt}: ${result.seconds}s, read by ${result.way ?? 'nothing'}, ${result.calls} model call(s)${result.noAnswer ? `; provider said: ${result.noAnswer}` : ''}${failed.length ? `; failed: ${failed.join(' | ')}` : ''}${result.error ? `; error: ${result.error.slice(0, 160)}` : ''}`)
+        if (result.machineNetwork) {
+          networkTries++
+          networkInARow++
+          console.log(`  this Mac's network failed (${result.machineNetwork}): not the provider, so not counted. Repeating (${networkTries} such try so far)`)
+          if (networkInARow >= 3 || networkTries >= 8) {
+            stopped = "this Mac's network failed three times in a row (or eight times in all): not a provider answer, so nothing was judged"
+            break runs
+          }
+          await sleep(30_000)
+          continue
+        }
+        networkInARow = 0
         inARow = result.verdict === 'no_answer' ? inARow + 1 : 0
         if (inARow >= 3) {
           stopped = 'three runs in a row got no answer from the provider'
@@ -100,7 +115,7 @@ async function main(): Promise<void> {
 
   writeFileSync(
     join(outDir, 'run.json'),
-    `${clean(JSON.stringify({ runId: a.runId, finishedAt: new Date().toISOString(), cap: a.cap, spentAtStart, spentAtEnd: spent, repeatsAllowed: a.repeats, repeatsUsed: a.repeats - repeatsLeft, stopped, models: m }, null, 2), secrets).text}\n`,
+    `${clean(JSON.stringify({ runId: a.runId, finishedAt: new Date().toISOString(), cap: a.cap, spentAtStart, spentAtEnd: spent, repeatsAllowed: a.repeats, repeatsUsed: a.repeats - repeatsLeft, machineNetworkTries: networkTries, stopped, models: m }, null, 2), secrets).text}\n`,
   )
   const last = new Map(tries.map((t) => [`${t.docId}|${t.n}`, t]))
   const verdicts = [...last.values()].map((t) => t.verdict)

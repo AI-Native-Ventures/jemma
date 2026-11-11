@@ -174,7 +174,8 @@ test.describe('a curriculum Jemma has never seen', () => {
     await page.goto(`/t/${m.classId}/curriculum`)
     const nine = Buffer.concat([Buffer.from('%PDF-1.4\n'), Buffer.alloc(9 * MB, 0x20)])
     await addFile(page, { name: 'nine-megabytes.pdf', mimeType: 'application/pdf', buffer: nine })
-    await check(page.getByRole('heading', { name: 'Jemma is reading your curriculum.' })).toBeVisible()
+    // 9 MB goes from the browser through the app to storage: minutes on a busy machine and a shared database, so a long wait
+    await expect(page.getByRole('heading', { name: 'Jemma is reading your curriculum.' })).toBeVisible({ timeout: 240_000 })
     const docs = await docsOf(m.classId)
     expect(docs).toHaveLength(1)
     expect(docs[0]).toMatchObject({ title: 'nine-megabytes', pages: 1 })

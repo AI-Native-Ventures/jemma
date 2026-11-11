@@ -5,7 +5,7 @@ import { describe, expect, test } from 'vitest'
 import { readPdfText } from '../src/ai/pdf-text'
 import { memoryDb, type MemoryDb } from './helpers/memory-db'
 import { loadTruth, perfectDraft, type Truth } from '../../../evals/lib/unseen'
-import { noAnswerReason, runOnce } from '../../../evals/lib/unseen-run'
+import { networkProblem, noAnswerReason, runOnce } from '../../../evals/lib/unseen-run'
 
 
 // The live script of "A curriculum Jemma had never seen", with a fake model and a database in memory: the real school, class,
@@ -73,6 +73,18 @@ describe('one live run, with a fake model', () => {
     nothingLeft()
   })
 
+  test('a fetch that never got an answer is a failure of this Mac\'s network: marked as such, not judged, not a provider no answer', async () => {
+    const down = new MockLanguageModelV4({
+      doGenerate: async () => {
+        throw new TypeError('fetch failed')
+      },
+    })
+    const got = await run(kenya, models(down, down))
+    expect(got).toMatchObject({ verdict: 'no_answer', noAnswer: null, error: null, draft: null })
+    expect(got.machineNetwork).toBe('fetch failed')
+    nothingLeft()
+  })
+
   test('a model that answers for the wrong number of terms fails the check, and the job drops an empty fourth term first', async () => {
     const good = perfectDraft(kenya)
     const four = { ...good, terms: [...good.terms, { term: 4, topics: [{ name: 'Weather and seasons', family: 'weather', prerequisites: [], misconceptions: [] }] }] }
@@ -119,5 +131,23 @@ describe('what counts as the provider giving no answer', () => {
     expect(noAnswerReason(e('draft has no topics'))).toBeNull()
     expect(noAnswerReason(null)).toBeNull()
     expect(noAnswerReason('text')).toBeNull()
+  })
+})
+
+describe('what counts as a failure of this machine\'s network', () => {
+  const e = (message: string, extra: object = {}) => Object.assign(new Error(message), extra)
+  test('a dropped connection, a lookup that failed and a fetch that never got an answer are the network, and a provider answer is not', () => {
+    expect(networkProblem(e('Cannot connect to API: fetch failed'))).toBe('Cannot connect to API: fetch failed')
+    expect(networkProblem(e('wrapper', { cause: e('fetch failed', { cause: Object.assign(new Error('getaddrinfo ENOTFOUND openrouter.ai'), { code: 'ENOTFOUND' }) }) }))).toContain('ENOTFOUND')
+    expect(networkProblem(e('Failed after 3 attempts. Last error: read ECONNRESET'))).toBe('read ECONNRESET')
+    expect(networkProblem(e('wrapper', { lastError: e('The network connection was lost') }))).toBe('The network connection was lost')
+    expect(networkProblem(e('Rate limit exceeded', { statusCode: 429 }))).toBeNull()
+    expect(networkProblem(e('fetch failed', { statusCode: 503 }))).toBeNull()
+    expect(networkProblem(e('Provider returned error'))).toBeNull()
+    expect(networkProblem(e('draft has no topics'))).toBeNull()
+    expect(networkProblem(null)).toBeNull()
+  })
+  test('a fetch that failed is no longer a provider no-answer', () => {
+    expect(noAnswerReason(e('fetch failed'))).toBeNull()
   })
 })

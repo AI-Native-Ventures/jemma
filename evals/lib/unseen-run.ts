@@ -15,9 +15,30 @@ type ModelGetter = typeof import('../../packages/profiling/src/ai').getModel
  * job saved, scored in code. Everything it makes is deleted at the end, also when the run fails.
  */
 
-const MESSAGE_AT_LEAST = /rate.?limit|overloaded|high demand|provider returned error|internal (server )?error|upstream|too many requests|temporarily|capacity|no endpoints found|timed? ?out|fetch failed/i
+const MESSAGE_AT_LEAST = /rate.?limit|overloaded|high demand|provider returned error|internal (server )?error|upstream|too many requests|temporarily|capacity|no endpoints found|timed? ?out/i
 
 type Errorish = { statusCode?: number; status?: number; message?: string; cause?: unknown; lastError?: unknown; errors?: unknown[] }
+
+/** A failure of this machine's own connection: the request never got an answer, from the provider or from anyone. */
+const NETWORK_AT_LEAST = /fetch failed|cannot connect to api|ENOTFOUND|EAI_AGAIN|ECONNRESET|ECONNREFUSED|ENETUNREACH|ENETDOWN|EHOSTUNREACH|EPIPE|UND_ERR_CONNECT_TIMEOUT|UND_ERR_SOCKET|socket hang up|network (connection )?(was )?lost|network is unreachable|getaddrinfo/i
+
+/**
+ * The words of a failure of this machine's network (no connection, no name lookup, a dropped socket), else null. It is not a
+ * provider answer: the script repeats such a try without using one of its repeats and says so in the result. A try that got an
+ * HTTP answer of any kind (a 429, a 5xx) is the provider's and is not this.
+ */
+export function networkProblem(err: unknown, depth = 0): string | null {
+  const e = err as (Errorish & { code?: string }) | null
+  if (!e || typeof e !== 'object' || depth > 4) return null
+  const code = e.statusCode ?? e.status
+  if (code !== undefined) return null
+  for (const inner of [e.lastError, e.cause, ...(e.errors ?? [])]) {
+    const found = networkProblem(inner, depth + 1)
+    if (found) return found
+  }
+  const text = `${typeof e.code === 'string' ? `${e.code} ` : ''}${typeof e.message === 'string' ? e.message : ''}`
+  return NETWORK_AT_LEAST.test(text) ? brief(text.replace(/^Failed after \d+ attempts?\. Last error:\s*/i, ''), 200) : null
+}
 
 /** The words of the provider when it gave no answer (a rate limit, a capacity or server error, a 429 or a 5xx), else null. */
 export function noAnswerReason(err: unknown, depth = 0): string | null {
@@ -108,6 +129,7 @@ export async function runOnce(a: RunArgs): Promise<UnseenResult> {
   let calls = 0
   let error: string | null = null
   let noAnswer: string | null = null
+  let machineNetwork: string | null = null
   let fixture: RunFixture | null = null
   let way: UnseenResult['way'] = null
   let visionProblem: string | null = null
@@ -130,7 +152,8 @@ export async function runOnce(a: RunArgs): Promise<UnseenResult> {
         },
       })
     } catch (err) {
-      noAnswer = noAnswerReason(err)
+      machineNetwork = networkProblem(err)
+      noAnswer = machineNetwork ? null : noAnswerReason(err)
       error = err instanceof Error ? err.message : String(err)
     }
     const log = await a.db.from('tool_calls').select('input, model').eq('school_id', fixture.schoolId).eq('tool', 'read_documents').order('started_at', { ascending: false }).limit(1)
@@ -145,6 +168,8 @@ export async function runOnce(a: RunArgs): Promise<UnseenResult> {
     const parsed = TopicMapDraftSchema.safeParse(saved.data?.draft)
     draft = parsed.success ? parsed.data : null
   } catch (err) {
+    // the database is reached over the same network: a try that could not even make its school for want of a connection is not a fail
+    machineNetwork = networkProblem(err)
     error = `could not run: ${err instanceof Error ? err.message : String(err)}`
   } finally {
     await fixture?.cleanup().catch((err) => {
@@ -155,6 +180,7 @@ export async function runOnce(a: RunArgs): Promise<UnseenResult> {
   const seconds = Number(((Date.now() - began) / 1000).toFixed(1))
   const base = { version: RESULT_VERSION, runId: a.runId, docId: a.truth.id, n: a.n, attempt: a.attempt, startedAt, seconds, calls, way, visionProblem, model } as const
   if (error && !draft) {
+    if (machineNetwork) return { ...base, verdict: 'no_answer', error: null, noAnswer: null, machineNetwork, checks: [], figures: null, draft: null }
     return { ...base, verdict: noAnswer ? 'no_answer' : 'fail', error: noAnswer ? null : error, noAnswer, checks: [], figures: null, draft: null }
   }
   if (!draft) return { ...base, verdict: 'fail', error: 'the job saved no draft', noAnswer: null, checks: [], figures: null, draft: null }

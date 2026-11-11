@@ -161,6 +161,8 @@ export type UnseenResult = {
   error: string | null
   /** The provider's words, when the verdict is no_answer. */
   noAnswer: string | null
+  /** The words of this machine's network failing, when the try never got an answer (it is repeated and is not a provider's no answer). */
+  machineNetwork?: string | null
   checks: Check[]
   figures: Score['figures'] | null
   /** The draft the model made, as saved. Null when there was none. */
