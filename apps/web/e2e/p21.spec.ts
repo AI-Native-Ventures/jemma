@@ -61,7 +61,8 @@ test.describe('teacher-classes', () => {
     const sixA = await addSixA(sb)
     await page.goto('/t')
     await expect(page.getByText(/^Good (morning|afternoon|evening), Ms Banda$/)).toBeVisible()
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('6B needs you for one paper. 6A is waiting to be set up.')
+    // The marked sandbox has one paper to check and two Long view patterns to look at (since P52b), so "three things", not "one paper".
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('6B needs you for three things. 6A is waiting to be set up.')
     await expect(page.getByRole('heading', { name: 'Your classes' })).toBeVisible()
     const six = page.getByRole('link', { name: /6B Mathematics/ })
     await expect(six).toContainText('Grade 6 · Hillview Primary')
@@ -220,7 +221,8 @@ test.describe('teacher-class-settings', () => {
   test('has a marked slot for where the AI runs', async ({ page }) => {
     sb = await openSandbox(page, { stage: 'start', role: 'teacher' })
     await page.goto(`/t/${sb.classId}/settings`)
-    await expect(page.locator('[data-slot="ai-runner"]')).toHaveCount(1)
+    // The AI runner choice is its own screen now, reached from this row.
+    await expect(page.getByRole('link', { name: /Jemma cloud or my Jemma Desktop/ })).toHaveAttribute('href', `/t/${sb.classId}/settings/ai-runner`)
   })
 })
 
@@ -284,7 +286,8 @@ test.describe('teacher-link-request', () => {
     await expect(page.getByText('6B Mathematics · Needs you')).toBeVisible()
     await expect(page.getByText('New parent', { exact: true })).toBeVisible()
     await expect(page.getByRole('heading', { level: 1 })).toHaveText("Thandi M wants to see Amina's work. Is she Amina's parent?")
-    await expect(page.getByText(/^thandi\..+@demo\.jemma\.invalid$/)).toBeVisible()
+    // The sandbox address carries a tag; the screen shows the seeded parent's own address.
+    await expect(page.getByText('thandi@example.com', { exact: true })).toBeVisible()
     await expect(page.getByText(new RegExp(`^Entered code ${sb.joinCode} and the name Amina at \\d\\d:\\d\\d$`))).toBeVisible()
     await expect(page.getByText('No other parent is linked to Amina.')).toBeVisible()
     await expect(page.getByRole('heading', { name: "She'll see" })).toBeVisible()

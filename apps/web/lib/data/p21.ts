@@ -118,16 +118,12 @@ export async function getTeacherClasses(): Promise<ClassesView> {
   const classOfChild = new Map<string, string[]>()
   for (const e of enrol.data ?? []) classOfChild.set(e.child_id, [...(classOfChild.get(e.child_id) ?? []), e.class_id])
   const classOfTest = new Map((tests.data ?? []).map((t) => [t.id, t.class_id]))
-  // An item about a paper belongs to the class of the paper's test (a learner may be in several of the teacher's classes).
-  const refs = [...new Set((needs.data ?? []).map((n) => n.ref_id))]
-  const { data: refPapers } = refs.length ? await supabase.from('papers').select('id, test_id').in('id', refs) : { data: [] }
-  const classOfPaper = new Map((refPapers ?? []).flatMap((p) => (p.test_id && classOfTest.get(p.test_id) ? [[p.id, classOfTest.get(p.test_id)!] as const] : [])))
 
   const needsBy = new Map<string, { n: number; papers: number }>()
   for (const item of needs.data ?? []) {
     const target = needClass(ids, {
       childClasses: (item.child_id && classOfChild.get(item.child_id)) || [],
-      itemClass: classOfTest.get(item.ref_id) ?? classOfPaper.get(item.ref_id) ?? null,
+      itemClass: classOfTest.get(item.ref_id) ?? null,
     })
     if (!target) continue
     const cur = needsBy.get(target) ?? { n: 0, papers: 0 }
