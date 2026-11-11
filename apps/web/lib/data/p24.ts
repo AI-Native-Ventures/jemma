@@ -37,8 +37,26 @@ export type ChildBasics = {
   firstName: string
   grade: number
   schoolName: string
+  /** The subject of the child's class, or the subjects of their classes joined with "and". A paper or a topic carries the subject of its own class. */
   subject: string
+  /** Every subject the child has a class in, oldest class first. */
+  subjects: string[]
   teacherName: string
+}
+
+export type ClassFacts = { classId: string; createdAt: string; subject: string; teacherId: string }
+
+/** What the child's classes say: the subjects (oldest class first, each once), and the oldest class's teacher. One class gives its own subject and teacher. */
+export function summariseClasses(rows: ClassFacts[]): { subjects: string[]; subject: string; teacherId: string | null; oldestClassId: string | null } {
+  const sorted = [...rows].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+  const subjects = [...new Set(sorted.map((r) => r.subject))]
+  return { subjects, subject: subjects.join(' and '), teacherId: sorted[0]?.teacherId ?? null, oldestClassId: sorted[0]?.classId ?? null }
+}
+
+/** A test row names the subject of its own class when the child has more than one subject. With one subject the lines stay as they were. */
+export function testRowLines(lines: string[], subject: string | null, subjectCount: number): string[] {
+  if (!subject || subjectCount < 2 || lines.length === 0) return lines
+  return [`${subject} · ${lines[0]}`, ...lines.slice(1)]
 }
 
 /** The child, the school and the class teacher. The teacher's name needs the service client: parents cannot read profiles. */
@@ -50,16 +68,13 @@ export const getChildBasics = cache(async (childId: string): Promise<ChildBasics
     .eq('id', childId)
     .maybeSingle()
   if (!child) return null
-  const { data: enrol } = await supabase
-    .from('enrolments')
-    .select('classes(subject, teacher_id)')
-    .eq('child_id', childId)
-    .limit(1)
-    .maybeSingle()
-  const klass = enrol?.classes ?? null
+  const { data: enrol } = await supabase.from('enrolments').select('class_id, classes(subject, teacher_id, created_at)').eq('child_id', childId)
+  const mine = summariseClasses(
+    (enrol ?? []).flatMap((e) => (e.classes ? [{ classId: e.class_id, createdAt: e.classes.created_at, subject: e.classes.subject, teacherId: e.classes.teacher_id }] : [])),
+  )
   let teacherName = 'your teacher'
-  if (klass?.teacher_id) {
-    const { data: teacher } = await createSupabaseAdmin().from('profiles').select('display_name').eq('user_id', klass.teacher_id).maybeSingle()
+  if (mine.teacherId) {
+    const { data: teacher } = await createSupabaseAdmin().from('profiles').select('display_name').eq('user_id', mine.teacherId).maybeSingle()
     if (teacher) teacherName = teacher.display_name
   }
   return {
@@ -67,7 +82,8 @@ export const getChildBasics = cache(async (childId: string): Promise<ChildBasics
     firstName: child.first_name,
     grade: child.grade,
     schoolName: child.schools?.name ?? '',
-    subject: klass?.subject ?? 'Mathematics',
+    subject: mine.subject,
+    subjects: mine.subjects,
     teacherName,
   }
 })
@@ -96,14 +112,14 @@ async function answerKey(testId: string | null): Promise<Map<number, string>> {
   return out
 }
 
-type TestMeta = { title: string; outOf: number; topicIds: string[] }
+type TestMeta = { title: string; outOf: number; topicIds: string[]; /** The subject of the class the test was written in. */ subject: string | null }
 
-/** Test title and size, read through RLS (parents see their child's class tests). */
+/** Test title, size and subject, read through RLS (parents see their child's class tests). */
 async function testMeta(testId: string | null): Promise<TestMeta | null> {
   if (!testId) return null
   const supabase = await createSupabaseServer()
-  const { data } = await supabase.from('tests').select('title, out_of, topic_ids').eq('id', testId).maybeSingle()
-  return data ? { title: data.title, outOf: data.out_of, topicIds: data.topic_ids } : null
+  const { data } = await supabase.from('tests').select('title, out_of, topic_ids, classes(subject)').eq('id', testId).maybeSingle()
+  return data ? { title: data.title, outOf: data.out_of, topicIds: data.topic_ids, subject: data.classes?.subject ?? null } : null
 }
 
 function toResult(r: Tables<'question_results'>, key: Map<number, string>): ResultRow {
@@ -239,7 +255,7 @@ export async function getTopicDetail(childId: string, gapId: string): Promise<To
     .sort((a, b) => (b.h.status === 'measured' ? b.h.average : 0) - (a.h.status === 'measured' ? a.h.average : 0))[0]
 
   return {
-    child,
+    child: { ...child, subject: meta?.subject ?? child.subject },
     topicName: gap.topic_name,
     stage: gap.stage,
     slip,
@@ -342,7 +358,7 @@ export async function getPaperDetail(childId: string, paperId: string): Promise<
 
   const title = meta?.title ?? 'Test'
   return {
-    child,
+    child: { ...child, subject: meta?.subject ?? child.subject },
     paperId,
     title,
     shortTitle: shortTitle(title),
@@ -413,7 +429,7 @@ export async function getTestsList(childId: string, userId: string): Promise<Tes
         key: p.id,
         tile: `${right}/${meta.outOf}`,
         title: meta.title,
-        lines: [`${fmtDay(p.created_at)} · marked by Jemma`, ...(wrong.length ? [`Missed questions ${listNumbers(wrong)}`] : [])],
+        lines: testRowLines([`${fmtDay(p.created_at)} · marked by Jemma`, ...(wrong.length ? [`Missed questions ${listNumbers(wrong)}`] : [])], meta.subject, child.subjects.length),
         href: `/p/${childId}/papers/${p.id}`,
         term,
       })

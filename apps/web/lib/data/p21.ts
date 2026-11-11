@@ -1,11 +1,31 @@
 import { notFound } from 'next/navigation'
+import { newJoinCode } from '../class-writes'
 import { createSupabaseAdmin } from '../supabase/admin'
 import { createSupabaseServer } from '../supabase/server'
 
 const TZ = 'Africa/Johannesburg'
 
-/** "6B Mathematics" -> "6B". */
-export const shortName = (className: string): string => className.split(/\s+/)[0] ?? className
+/**
+ * How a class is called in a sentence: "6B Mathematics" is "6B", "Grade 9 Natural Sciences" is "Grade 9". A name with no code in
+ * front stays whole when it is short ("Natural Sciences") and is cut at its first word when it is long.
+ */
+export function shortName(className: string): string {
+  const name = className.trim().replace(/\s+/g, ' ')
+  const [first = '', second = ''] = name.split(' ')
+  if (/^(grade|gr)$/i.test(first) && /^\d+[A-Za-z]?$/.test(second)) return `${first} ${second}`
+  if (/\d/.test(first)) return first
+  return name.length <= 18 ? name : first
+}
+
+/**
+ * Which class a Needs you item counts for. `order` is the teacher's classes, oldest first. A learner in one class: that class.
+ * A learner in more: the class the item is about when it is known, else the teacher's oldest of the learner's classes.
+ */
+export function needClass(order: string[], item: { childClasses: string[]; itemClass: string | null }): string | undefined {
+  const mine = order.filter((id) => item.childClasses.includes(id))
+  if (item.itemClass && order.includes(item.itemClass) && (mine.length === 0 || mine.includes(item.itemClass))) return item.itemClass
+  return mine[0]
+}
 
 export const initialsOf = (name: string): string =>
   name
@@ -92,11 +112,17 @@ export async function getTeacherClasses(): Promise<ClassesView> {
   const classOfChild = new Map<string, string[]>()
   for (const e of enrol.data ?? []) classOfChild.set(e.child_id, [...(classOfChild.get(e.child_id) ?? []), e.class_id])
   const classOfTest = new Map((tests.data ?? []).map((t) => [t.id, t.class_id]))
+  // An item about a paper belongs to the class of the paper's test (a learner may be in several of the teacher's classes).
+  const refs = [...new Set((needs.data ?? []).map((n) => n.ref_id))]
+  const { data: refPapers } = refs.length ? await supabase.from('papers').select('id, test_id').in('id', refs) : { data: [] }
+  const classOfPaper = new Map((refPapers ?? []).flatMap((p) => (p.test_id && classOfTest.get(p.test_id) ? [[p.id, classOfTest.get(p.test_id)!] as const] : [])))
 
   const needsBy = new Map<string, { n: number; papers: number }>()
   for (const item of needs.data ?? []) {
-    const target =
-      (item.child_id && classOfChild.get(item.child_id)?.[0]) || classOfTest.get(item.ref_id) || undefined
+    const target = needClass(ids, {
+      childClasses: (item.child_id && classOfChild.get(item.child_id)) || [],
+      itemClass: classOfTest.get(item.ref_id) ?? classOfPaper.get(item.ref_id) ?? null,
+    })
     if (!target) continue
     const cur = needsBy.get(target) ?? { n: 0, papers: 0 }
     cur.n += 1
@@ -172,11 +198,27 @@ export async function getClassInfo(classId: string): Promise<ClassInfo> {
   return { id: data.id, name: data.name, grade: data.grade, subject: data.subject, joinCode: data.join_code, schoolName: data.schools?.name ?? '', teacherId: data.teacher_id }
 }
 
-export async function learnerNames(classId: string): Promise<string[]> {
+/** The learners of a class with their ids, by first name. */
+export async function learnerList(classId: string): Promise<{ id: string; name: string }[]> {
   const supabase = await createSupabaseServer()
   const { data: enrol } = await supabase.from('enrolments').select('child_id').eq('class_id', classId)
-  const { data: kids } = await supabase.from('children').select('first_name').in('id', (enrol ?? []).map((e) => e.child_id))
-  return (kids ?? []).map((k) => k.first_name).sort((a, b) => a.localeCompare(b))
+  const { data: kids } = await supabase.from('children').select('id, first_name').in('id', (enrol ?? []).map((e) => e.child_id))
+  return (kids ?? []).map((k) => ({ id: k.id, name: k.first_name })).sort((a, b) => a.name.localeCompare(b.name))
+}
+
+export async function learnerNames(classId: string): Promise<string[]> {
+  return (await learnerList(classId)).map((l) => l.name)
+}
+
+export type CopyOption = { id: string; name: string; learners: number }
+
+/** The classes of the teacher's school that the teacher may see (row level security decides), for "Copy learners from another class". */
+export async function getCopyOptions(schoolId: string): Promise<CopyOption[]> {
+  const supabase = await createSupabaseServer()
+  const { data: classes } = await supabase.from('classes').select('id, name').eq('school_id', schoolId).order('created_at')
+  const ids = (classes ?? []).map((c) => c.id)
+  const { data: enrol } = ids.length ? await supabase.from('enrolments').select('class_id').in('class_id', ids) : { data: [] }
+  return (classes ?? []).map((c) => ({ id: c.id, name: c.name, learners: (enrol ?? []).filter((e) => e.class_id === c.id).length }))
 }
 
 // ---------- state-empty-class ----------
@@ -210,11 +252,11 @@ export const schoolBlurb = (s: { region: string | null; grades: string | null })
 
 export type OnboardingView = { name: string; school: { id: string; name: string; blurb: string | null } | null }
 
-export async function getOnboarding(): Promise<OnboardingView> {
+export async function getOnboarding(): Promise<OnboardingView & { schoolId: string | null }> {
   const { supabase, name, schoolId } = await me()
-  if (!schoolId) return { name, school: null }
+  if (!schoolId) return { name, school: null, schoolId: null }
   const { data } = await supabase.from('schools').select('id, name, region, grades').eq('id', schoolId).maybeSingle()
-  return { name, school: data ? { id: data.id, name: data.name, blurb: schoolBlurb(data) } : null }
+  return { name, school: data ? { id: data.id, name: data.name, blurb: schoolBlurb(data) } : null, schoolId }
 }
 
 // ---------- teacher-class-settings ----------
@@ -222,6 +264,8 @@ export async function getOnboarding(): Promise<OnboardingView> {
 export type SettingsView = {
   cls: ClassInfo
   learners: string[]
+  /** The same learners with their ids, in the same order, for the row of each one. */
+  learnerRows: { id: string; name: string }[]
   parents: { parentId: string; childId: string; name: string; initials: string; relationLine: string; linkedOn: string }[]
 }
 
@@ -230,7 +274,8 @@ const RELATION: Record<string, string> = { mum: 'mother', mom: 'mother', mother:
 export async function getSettings(classId: string): Promise<SettingsView> {
   const cls = await getClassInfo(classId)
   const supabase = await createSupabaseServer()
-  const learners = await learnerNames(classId)
+  const learnerRows = await learnerList(classId)
+  const learners = learnerRows.map((l) => l.name)
   const { data: links } = await supabase
     .from('parent_links')
     .select('parent_id, child_id, decided_at, created_at')
@@ -256,7 +301,7 @@ export async function getSettings(classId: string): Promise<SettingsView> {
       linkedOn: `Linked ${shortDate(l.decided_at ?? l.created_at)}`,
     }
   })
-  return { cls, learners, parents }
+  return { cls, learners, learnerRows, parents }
 }
 
 // ---------- teacher-account ----------
@@ -362,12 +407,7 @@ export async function marksCsv(classId: string): Promise<string> {
 
 // ---------- writes: guards and codes ----------
 
-const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-
-export function newJoinCode(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(6))
-  return [...bytes].map((b) => CODE_ALPHABET[b % CODE_ALPHABET.length]).join('')
-}
+export { newJoinCode }
 
 /** For server actions: the signed-in teacher must teach `classId`. Returns the service client to write with (classes have no write policy). */
 export async function requireTeaches(classId: string) {

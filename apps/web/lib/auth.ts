@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import type { Tables } from '@jemma/profiling/db'
 import { HOMES, type Role } from '@/components/blocks/nav'
 import { attemptChildSignIn, type ChildSignInResult } from './child-login'
+import { displayNameFor } from './display-name'
 import { createSupabaseAdmin } from './supabase/admin'
 import { createSupabaseServer } from './supabase/server'
 
@@ -61,7 +62,7 @@ export async function chooseRole(role: 'teacher' | 'parent'): Promise<void> {
   const admin = createSupabaseAdmin()
   const existing = await admin.from('profiles').select('role').eq('user_id', data.user.id).maybeSingle()
   if (existing.data) redirect(HOMES[existing.data.role])
-  const name = (data.user.email ?? '').split('@')[0] || 'New user'
+  const name = displayNameFor(data.user)
   const { error } = await admin.from('profiles').insert({ user_id: data.user.id, role, display_name: name })
   if (error) throw new Error(`could not save role: ${error.message}`)
   redirect(HOMES[role])

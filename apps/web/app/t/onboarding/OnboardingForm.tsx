@@ -2,22 +2,105 @@
 
 import { PendingButton } from '@/components/ui/Button'
 import { useEffect, useState, useTransition } from 'react'
+import { Sheet } from '@/components/ui'
 import { CheckIcon } from '@/components/ui/icons'
-import { ComingButton } from '../_p21-client'
-import { saveOnboarding, searchSchools, type SchoolHit } from './actions'
+import { COUNTRIES, GRADES, OTHER_SUBJECT, SUBJECTS, validateSchool, validateSubject } from '@/lib/subjects'
+import { SelectBox } from '../new/SelectBox'
+import { createSchool, saveOnboarding, searchSchools, type SchoolHit } from './actions'
 
-const GRADES = [4, 5, 6, 7]
-
-const chipOff = 'min-h-11 rounded-pill border border-muted-2 bg-card px-4 text-[15px] font-medium text-ink'
-const chipOn = 'inline-flex min-h-11 items-center gap-1.5 rounded-pill bg-ink pr-4 pl-3 text-[15px] font-semibold text-white'
 const sectionCls = 'flex flex-col rounded-20 border border-line bg-card p-4'
+const field = 'h-[52px] rounded-14 border bg-card px-3.5 text-[17px] text-ink'
+const save = 'flex h-[52px] items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white disabled:opacity-50'
+
+type Choice = { grade: number | null; subject: string; other: string }
+
+/** "My school isn't listed": a short form that makes the school, links the teacher to it and goes on to the class form. */
+function SchoolSheet({ pick, onClose }: { pick: Choice; onClose: () => void }) {
+  const [name, setName] = useState('')
+  const [country, setCountry] = useState('ZA')
+  const [region, setRegion] = useState('')
+  const [error, setError] = useState('')
+  const [offer, setOffer] = useState<SchoolHit | null>(null)
+  const [pending, start] = useTransition()
+
+  function submit() {
+    const checked = validateSchool({ name, country, region })
+    if (!checked.ok) return setError(checked.error)
+    setError('')
+    setOffer(null)
+    start(async () => {
+      const res = await createSchool({ name, country, region, ...pick })
+      if (res?.error) {
+        setError(res.error)
+        if (res.existing) {
+          const found = res.existing
+          setOffer({ id: found.id, name: found.name, blurb: [found.region, COUNTRIES.find((c) => c.code === found.country)?.name].filter(Boolean).join(' · ') || null })
+        }
+      }
+    })
+  }
+
+  return (
+    <Sheet open onClose={onClose} title="Add your school" description="Tell us the name and where it is. You can start your first class right after.">
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="school-name" className="text-[15px] font-medium">
+          School name
+        </label>
+        <input id="school-name" type="text" value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" className={`${field} border-muted-2`} />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="school-country" className="text-[15px] font-medium">
+          Country
+        </label>
+        <SelectBox id="school-country" value={country} onChange={setCountry}>
+          {COUNTRIES.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.name}
+            </option>
+          ))}
+        </SelectBox>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="school-region" className="text-[15px] font-medium">
+          Region (optional)
+        </label>
+        <input id="school-region" type="text" value={region} onChange={(e) => setRegion(e.target.value)} autoComplete="off" className={`${field} border-muted-2`} />
+      </div>
+      {error ? (
+        <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-coral-text">
+          {error}
+        </p>
+      ) : null}
+      {offer ? (
+        <div className="flex flex-col gap-2 rounded-14 bg-soft-2 p-3">
+          <span className="flex flex-col leading-[1.3]">
+            <span className="text-[16px] font-semibold">{offer.name}</span>
+            {offer.blurb ? <span className="text-[14px] text-body">{offer.blurb}</span> : null}
+          </span>
+          <PendingButton pending={pending} type="button" disabled={pending} className={save} onClick={() => start(() => saveOnboarding(offer.id, pick.grade, pick.subject, pick.other))}>
+            Yes, use this school
+          </PendingButton>
+        </div>
+      ) : (
+        <PendingButton pending={pending} type="button" disabled={pending} className={save} onClick={submit}>
+          Create school
+        </PendingButton>
+      )}
+    </Sheet>
+  )
+}
 
 export function OnboardingForm({ initial }: { initial: SchoolHit | null }) {
   const [query, setQuery] = useState(initial ? (initial.name.split(' ')[0] ?? '') : '')
   const [hits, setHits] = useState<SchoolHit[]>(initial ? [initial] : [])
   const [school, setSchool] = useState<SchoolHit | null>(initial)
-  const [grades, setGrades] = useState<number[]>([])
+  const [grade, setGrade] = useState('')
+  const [subject, setSubject] = useState<string>(SUBJECTS[0])
+  const [other, setOther] = useState('')
+  const [schoolForm, setSchoolForm] = useState(false)
   const [pending, start] = useTransition()
+  const pick: Choice = { grade: grade ? Number(grade) : null, subject, other }
+  const otherError = subject === OTHER_SUBJECT && other.trim() !== '' && !validateSubject(OTHER_SUBJECT, other).ok
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -83,55 +166,64 @@ export function OnboardingForm({ initial }: { initial: SchoolHit | null }) {
             </button>
           )
         })}
-        <ComingButton className="min-h-11 self-start px-0.5 text-[15px] font-semibold text-ink underline underline-offset-[3px]">My school isn&apos;t listed</ComingButton>
+        <button type="button" onClick={() => setSchoolForm(true)} className="min-h-11 self-start px-0.5 text-[15px] font-semibold text-ink underline underline-offset-[3px]">
+          My school isn&apos;t listed
+        </button>
+        {schoolForm ? <SchoolSheet pick={pick} onClose={() => setSchoolForm(false)} /> : null}
       </section>
 
       <section aria-labelledby="teach" className={`${sectionCls} gap-3.5`}>
         <h2 id="teach" className="m-0 text-[17px] font-semibold">
           What you teach
         </h2>
-        <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
-          <legend className="mb-2 p-0 text-[15px] font-medium">Subject</legend>
-          <span className="flex flex-wrap gap-2">
-            <button type="button" aria-pressed="true" className={chipOn}>
-              <CheckIcon size={16} stroke="#FFFFFF" />
-              Mathematics
-            </button>
-            <button type="button" disabled className="min-h-11 rounded-pill border border-dashed border-edge bg-card px-4 text-[15px] font-medium text-muted">
-              English
-            </button>
-            <button type="button" disabled className="min-h-11 rounded-pill border border-dashed border-edge bg-card px-4 text-[15px] font-medium text-muted">
-              Natural Sciences
-            </button>
-          </span>
-          <span className="text-[13px] text-body">More subjects soon</span>
-        </fieldset>
-        <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
-          <legend className="mb-2 p-0 text-[15px] font-medium">Grades</legend>
-          <span className="flex flex-wrap gap-2">
-            {GRADES.map((g) => {
-              const on = grades.includes(g)
-              return (
-                <button
-                  key={g}
-                  type="button"
-                  aria-pressed={on}
-                  onClick={() => setGrades(on ? grades.filter((x) => x !== g) : [...grades, g])}
-                  className={on ? `${chipOn} px-4` : chipOff}
-                >
-                  {on ? <CheckIcon size={16} stroke="#FFFFFF" /> : null}
-                  Grade {g}
-                </button>
-              )
-            })}
-          </span>
-        </fieldset>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="teach-subject" className="text-[15px] font-medium">
+            Subject
+          </label>
+          <SelectBox id="teach-subject" value={subject} onChange={setSubject}>
+            {SUBJECTS.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+            <option value={OTHER_SUBJECT}>{OTHER_SUBJECT}</option>
+          </SelectBox>
+          {subject === OTHER_SUBJECT ? (
+            <>
+              <label htmlFor="teach-other" className="mt-1.5 text-[15px] font-medium">
+                Subject name
+              </label>
+              <input
+                id="teach-other"
+                type="text"
+                value={other}
+                onChange={(e) => setOther(e.target.value)}
+                aria-invalid={otherError ? true : undefined}
+                className={`${field} ${otherError ? 'border-coral-text' : 'border-muted-2'}`}
+              />
+              <span className={`text-[13px] ${otherError ? 'text-coral-text' : 'text-body'}`}>2 to 40 letters, numbers, spaces, & or -</span>
+            </>
+          ) : null}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="teach-grade" className="text-[15px] font-medium">
+            Grade of your first class
+          </label>
+          <SelectBox id="teach-grade" value={grade} onChange={setGrade}>
+            <option value="">Pick a grade</option>
+            {GRADES.map((g) => (
+              <option key={g} value={g}>
+                Grade {g}
+              </option>
+            ))}
+          </SelectBox>
+        </div>
       </section>
 
       <PendingButton pending={pending}
         type="button"
-        disabled={!school || pending}
-        onClick={() => school && start(() => saveOnboarding(school.id, grades))}
+        disabled={!school || pending || otherError}
+        onClick={() => school && start(() => saveOnboarding(school.id, pick.grade, subject, other))}
         className="flex h-[52px] items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white disabled:opacity-50"
       >
         Next: set up your class

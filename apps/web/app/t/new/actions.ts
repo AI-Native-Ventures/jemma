@@ -1,41 +1,47 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { newJoinCode, requireTeacher } from '@/lib/data/p21'
+import type { JemmaDb } from '@jemma/profiling/db'
+import { canCopyFrom, ClassWriteError, createClassRecord } from '@/lib/class-writes'
+import { requireTeacher } from '@/lib/data/p21'
+import { createSupabaseServer } from '@/lib/supabase/server'
+import { validateClass } from '@/lib/subjects'
 
 export type CreateClassResult = { error: string }
 
+export type CreateClassInput = {
+  name: string
+  grade: number
+  /** The subject select's value: a subject of the list, or `Other` with the typed name in `otherSubject`. */
+  subject: string
+  otherSubject?: string
+  code: string
+  /** First names of learners who are new to the school. */
+  learners: string[]
+  /** A class of this school the teacher can see: all its learners are enrolled here too. */
+  copyFromClassId?: string | null
+}
+
 /** Makes the class, its learners and their enrolments, then opens the empty-class screen. */
-export async function createClass(input: { name: string; grade: number; code: string; learners: string[] }): Promise<CreateClassResult> {
+export async function createClass(input: CreateClassInput): Promise<CreateClassResult> {
   const { admin, userId, schoolId } = await requireTeacher()
-  const name = input.name.trim()
-  if (!name) return { error: 'Give the class a name' }
   if (!schoolId) redirect('/t/onboarding')
-  if (![4, 5, 6, 7].includes(input.grade)) return { error: 'Pick a grade' }
+  const checked = validateClass(input)
+  if (!checked.ok) return { error: checked.error }
 
-  let code = /^[A-Z0-9]{6}$/.test(input.code) ? input.code : newJoinCode()
-  let classId: string | null = null
-  for (let attempt = 0; attempt < 5 && !classId; attempt++) {
-    const { data, error } = await admin
-      .from('classes')
-      .insert({ school_id: schoolId, teacher_id: userId, name, grade: input.grade, year: new Date().getUTCFullYear(), subject: 'Mathematics', join_code: code })
-      .select('id')
-      .single()
-    if (data) classId = data.id
-    else if (error?.code === '23505') code = newJoinCode()
-    else throw new Error(`could not create class: ${error?.message}`)
+  let copyFromClassId: string | null = null
+  if (input.copyFromClassId) {
+    const teacher = (await createSupabaseServer()) as unknown as JemmaDb
+    if (!(await canCopyFrom(teacher, schoolId, input.copyFromClassId))) return { error: 'Pick one of your own classes to copy the learners from' }
+    copyFromClassId = input.copyFromClassId
   }
-  if (!classId) throw new Error('could not create class: no free code')
 
-  const names = [...new Set(input.learners.map((n) => n.trim()).filter(Boolean))]
-  if (names.length) {
-    const { data: kids, error } = await admin
-      .from('children')
-      .insert(names.map((first_name) => ({ school_id: schoolId, first_name, grade: input.grade })))
-      .select('id')
-    if (error) throw new Error(`could not add learners: ${error.message}`)
-    const { error: enrolError } = await admin.from('enrolments').insert(kids.map((k) => ({ class_id: classId, child_id: k.id })))
-    if (enrolError) throw new Error(`could not add learners: ${enrolError.message}`)
+  let classId: string
+  try {
+    classId = (await createClassRecord(admin, { userId, schoolId, ...checked.value, code: input.code, learners: input.learners, copyFromClassId })).classId
+  } catch (e) {
+    if (e instanceof ClassWriteError) return { error: e.message }
+    throw e
   }
   redirect(`/t/new/${classId}`)
 }

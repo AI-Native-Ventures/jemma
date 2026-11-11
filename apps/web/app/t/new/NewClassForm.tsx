@@ -2,10 +2,12 @@
 
 import { PendingButton } from '@/components/ui/Button'
 import { useState, useTransition } from 'react'
+import type { CopyOption } from '@/lib/data/p21'
+import { GRADES, OTHER_SUBJECT, SUBJECTS, validateClass } from '@/lib/subjects'
 import { ComingButton, ShareButton } from '../_p21-client'
 import { createClass } from './actions'
+import { SelectBox } from './SelectBox'
 
-const GRADES = [4, 5, 6, 7]
 const card = 'flex flex-col rounded-20 border border-line bg-card p-4'
 const shareIcon = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -14,13 +16,21 @@ const shareIcon = (
   </svg>
 )
 
-export function NewClassForm({ code, initialGrade }: { code: string; initialGrade: number }) {
+const NAME_ERRORS = ['Give the class a name', 'Keep the class name under 60 letters']
+
+export function NewClassForm({ code, initialGrade, initialSubject, initialOther, copyOptions }: { code: string; initialGrade: number; initialSubject: string; initialOther: string; copyOptions: CopyOption[] }) {
   const [name, setName] = useState('')
   const [grade, setGrade] = useState(initialGrade)
+  const [subject, setSubject] = useState(initialSubject)
+  const [other, setOther] = useState(initialOther)
+  const [copyFrom, setCopyFrom] = useState('')
   const [learners, setLearners] = useState<string[]>([])
   const [draft, setDraft] = useState('')
   const [error, setError] = useState('')
   const [pending, start] = useTransition()
+  const nameError = NAME_ERRORS.includes(error) ? error : ''
+  const otherError = error && !nameError ? error : ''
+  const copying = copyOptions.find((c) => c.id === copyFrom)
 
   function add() {
     const n = draft.trim()
@@ -29,10 +39,11 @@ export function NewClassForm({ code, initialGrade }: { code: string; initialGrad
   }
 
   function submit() {
-    if (!name.trim()) return setError('Give the class a name')
+    const checked = validateClass({ name, grade, subject, otherSubject: other })
+    if (!checked.ok) return setError(checked.error)
     setError('')
     start(async () => {
-      const res = await createClass({ name, grade, code, learners })
+      const res = await createClass({ name, grade, subject, otherSubject: other, code, learners, copyFromClassId: copyFrom || null })
       if (res?.error) setError(res.error)
     })
   }
@@ -53,44 +64,56 @@ export function NewClassForm({ code, initialGrade }: { code: string; initialGrad
             value={name}
             onChange={(e) => setName(e.target.value)}
             aria-describedby="cname-hint"
-            aria-invalid={error ? true : undefined}
-            className={`h-[52px] rounded-14 border bg-card px-3.5 text-[17px] text-ink ${error ? 'border-coral-text' : 'border-muted-2'}`}
+            aria-invalid={nameError ? true : undefined}
+            className={`h-[52px] rounded-14 border bg-card px-3.5 text-[17px] text-ink ${nameError ? 'border-coral-text' : 'border-muted-2'}`}
           />
-          <span id="cname-hint" className={`text-[13px] ${error ? 'text-coral-text' : 'text-body'}`}>
-            {error || 'What you and parents see'}
+          <span id="cname-hint" className={`text-[13px] ${nameError ? 'text-coral-text' : 'text-body'}`}>
+            {nameError || 'What you and parents see'}
           </span>
         </div>
-        <fieldset className="m-0 flex flex-col gap-1.5 border-0 p-0">
-          <legend className="mb-1.5 p-0 text-[15px] font-medium">Grade</legend>
-          <span className="grid grid-cols-4 gap-1.5">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="grade" className="text-[15px] font-medium">
+            Grade
+          </label>
+          <SelectBox id="grade" value={String(grade)} onChange={(v) => setGrade(Number(v))}>
             {GRADES.map((g) => (
-              <button
-                key={g}
-                type="button"
-                aria-pressed={grade === g}
-                onClick={() => setGrade(g)}
-                className={`h-11 rounded-12 text-[15px] ${grade === g ? 'bg-ink font-semibold text-white' : 'border border-edge bg-card font-medium text-ink'}`}
-              >
+              <option key={g} value={g}>
                 Grade {g}
-              </button>
+              </option>
             ))}
-          </span>
-        </fieldset>
+          </SelectBox>
+        </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="subj" className="text-[15px] font-medium">
             Subject
           </label>
-          <span className="relative block">
-            <select id="subj" className="h-[52px] w-full appearance-none rounded-14 border border-muted-2 bg-card pr-11 pl-3.5 text-[17px] text-ink">
-              <option>Mathematics</option>
-            </select>
-            <span className="pointer-events-none absolute top-4 right-3.5 text-ink">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </span>
-          </span>
-          <span className="text-[13px] text-body">More subjects are coming</span>
+          <SelectBox id="subj" value={subject} onChange={setSubject}>
+            {SUBJECTS.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+            <option value={OTHER_SUBJECT}>{OTHER_SUBJECT}</option>
+          </SelectBox>
+          {subject === OTHER_SUBJECT ? (
+            <>
+              <label htmlFor="subj-other" className="mt-1.5 text-[15px] font-medium">
+                Subject name
+              </label>
+              <input
+                id="subj-other"
+                type="text"
+                value={other}
+                onChange={(e) => setOther(e.target.value)}
+                aria-describedby="subj-other-hint"
+                aria-invalid={otherError ? true : undefined}
+                className={`h-[52px] rounded-14 border bg-card px-3.5 text-[17px] text-ink ${otherError ? 'border-coral-text' : 'border-muted-2'}`}
+              />
+              <span id="subj-other-hint" className={`text-[13px] ${otherError ? 'text-coral-text' : 'text-body'}`}>
+                {otherError || '2 to 40 letters, numbers, spaces, & or -'}
+              </span>
+            </>
+          ) : null}
         </div>
       </section>
 
@@ -101,6 +124,26 @@ export function NewClassForm({ code, initialGrade }: { code: string; initialGrad
           </h2>
           <p className="m-0 text-[14px] text-body">{learners.length} added</p>
         </div>
+        {copyOptions.length > 0 ? (
+          <div className="flex flex-col gap-1.5 pb-1">
+            <label htmlFor="copy" className="text-[15px] font-medium">
+              Copy learners from another class
+            </label>
+            <SelectBox id="copy" value={copyFrom} onChange={setCopyFrom}>
+              <option value="">No, I will add them myself</option>
+              {copyOptions.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} ({c.learners} {c.learners === 1 ? 'learner' : 'learners'})
+                </option>
+              ))}
+            </SelectBox>
+            {copying ? (
+              <span className="text-[13px] text-body">
+                {copying.learners === 1 ? 'Its learner is' : `All ${copying.learners} learners are`} in the new class too. They are not made again.
+              </span>
+            ) : null}
+          </div>
+        ) : null}
         <ul className="m-0 list-none p-0">
           {learners.map((l, i) => (
             <li key={`${l}-${i}`} className="flex min-h-[52px] items-center gap-3 border-t border-soft">
