@@ -73,7 +73,7 @@ export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
     { find: '- Use plain words, decimal comma for decimals, rand for money.', when: numberFormat, replace: () => '- Use plain words.' },
   ],
   class_report: [
-    { find: 'for a primary school teacher', when: outsidePrimary, replace: (c) => `for a Grade ${c.grade} teacher` },
+    { find: 'for a primary school teacher', when: outsidePrimary, replace: (c) => `for a teacher of a Grade ${c.grade} class` },
     { find: '- Plain words, decimal comma for decimals, rand for money. No judgement of any child.', when: numberFormat, replace: () => '- Plain words. No judgement of any child.' },
   ],
   write_lesson: [
