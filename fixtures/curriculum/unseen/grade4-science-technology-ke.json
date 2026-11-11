@@ -1,0 +1,29 @@
+{
+  "id": "grade4-science-technology-ke",
+  "file": "grade4-science-technology-ke.pdf",
+  "mimeType": "application/pdf",
+  "grade": 4,
+  "subject": "Science and Technology",
+  "country": "KE",
+  "termCount": 3,
+  "textLayer": false,
+  "families": null,
+  "topics": [
+    { "name": "Parts of a flowering plant", "terms": [1], "family": "plants", "match": [["part", "plant"], ["flower", "plant"]] },
+    { "name": "Animals and where they live", "terms": [1], "family": "animals", "match": [["animal"]] },
+    { "name": "Properties of materials", "terms": [1], "family": "materials", "match": [["material"]] },
+    { "name": "Sources of light", "terms": [1, 3], "family": "light", "match": [["light"]] },
+    { "name": "Types of soil", "terms": [2], "family": "soil", "match": [["soil"]] },
+    { "name": "Water: uses and sources", "terms": [2], "family": "water", "match": [["water"]] },
+    { "name": "Sound and how it travels", "terms": [2], "family": "sound", "match": [["sound"]] },
+    { "name": "Simple machines", "terms": [2], "family": "machines", "match": [["machine"]] },
+    { "name": "The Sun, Moon and stars", "terms": [3], "family": "sky", "match": [["sun"], ["moon"], ["star"]] },
+    { "name": "Weather and seasons", "terms": [3], "family": "weather", "match": [["weather"], ["season"]] },
+    { "name": "Caring for our environment", "terms": [3], "family": "environment", "match": [["environment"]] },
+    { "name": "Pollution and waste", "terms": [3], "family": "environment", "match": [["pollution"], ["waste"]] }
+  ],
+  "traps": {
+    "twoTerms": { "name": "Sources of light", "terms": [1, 3] },
+    "otherGrade": { "name": "Electric circuits", "grade": 6, "match": [["electric"], ["circuit"]] }
+  }
+}
