@@ -107,11 +107,12 @@ export function RemoveParentButton({ classId, parentId, childId, name }: { class
   )
 }
 
-const learnerLine = (l: SchoolLearner) => [l.firstName, `Grade ${l.grade}`, l.classes.length ? `in ${l.classes.join(' and ')}` : null].filter(Boolean).join(', ')
+const learnerLine = (l: SchoolLearner) => [[l.firstName, l.lastName].filter(Boolean).join(' '), `Grade ${l.grade}`, l.classes.length ? `in ${l.classes.join(' and ')}` : null].filter(Boolean).join(', ')
 
 export function AddLearnerRow({ classId }: { classId: string }) {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
+  const [surname, setSurname] = useState('')
   const [found, setFound] = useState<SchoolLearner[]>([])
   const [error, setError] = useState('')
   const [pending, start] = useTransition()
@@ -134,6 +135,7 @@ export function AddLearnerRow({ classId }: { classId: string }) {
   const close = () => {
     setOpen(false)
     setName('')
+    setSurname('')
     setFound([])
     setError('')
   }
@@ -151,6 +153,11 @@ export function AddLearnerRow({ classId }: { classId: string }) {
           Learner&apos;s first name
         </label>
         <input id="new-learner" value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" className="h-[52px] rounded-14 border border-muted-2 bg-card px-3.5 text-[17px] text-ink" />
+        <label htmlFor="new-learner-surname" className="text-[15px] font-medium">
+          Surname (optional)
+        </label>
+        <input id="new-learner-surname" value={surname} onChange={(e) => setSurname(e.target.value)} autoComplete="off" className="h-[52px] rounded-14 border border-muted-2 bg-card px-3.5 text-[17px] text-ink" />
+        <p className="m-0 -mt-1 text-[13px] leading-[1.4] text-body">Add it when two learners in the class share a first name, so parents can tell them apart.</p>
         {found.length > 0 ? (
           <section aria-label="Already at your school" className="flex flex-col gap-2">
             <h3 className="m-0 text-[13px] font-semibold text-body">Already at your school</h3>
@@ -180,7 +187,14 @@ export function AddLearnerRow({ classId }: { classId: string }) {
             {error}
           </p>
         ) : null}
-        <PendingButton pending={pending} type="button" disabled={pending || !name.trim()} className={save} onClick={() => start(async () => { await addLearner(classId, name); close() })}>
+        <PendingButton pending={pending} type="button" disabled={pending || !name.trim()} className={save} onClick={() =>
+            start(async () => {
+              const done = await addLearner(classId, name, surname)
+              if (done.ok) close()
+              else setError(done.error)
+            })
+          }
+        >
           {found.length > 0 ? 'New learner' : 'Add'}
         </PendingButton>
       </Sheet>

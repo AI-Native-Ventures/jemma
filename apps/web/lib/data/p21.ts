@@ -17,6 +17,12 @@ export function shortName(className: string): string {
   return name.length <= 18 ? name : first
 }
 
+/** The short names of a teacher's classes, each in full when two classes would share one ("6B Mathematics" and "6B English" are not both "6B"). */
+export function classLabels(names: string[]): string[] {
+  const shorts = names.map(shortName)
+  return names.map((name, i) => (shorts.filter((s) => s === shorts[i]).length > 1 ? name : shorts[i]!))
+}
+
 /**
  * Which class a Needs you item counts for. `order` is the teacher's classes, oldest first. A learner in one class: that class.
  * A learner in more: the class the item is about when it is known, else the teacher's oldest of the learner's classes.
@@ -161,13 +167,14 @@ export async function getTeacherClasses(): Promise<ClassesView> {
     }
   })
 
-  const sentences = cards.flatMap((c) => {
+  const labels = classLabels(cards.map((c) => c.name))
+  const sentences = cards.flatMap((c, i) => {
     const n = needsBy.get(c.id)
     if (n && n.n > 0) {
       const noun = n.papers === n.n ? plural(n.n, 'paper') : plural(n.n, 'thing')
-      return [`${shortName(c.name)} needs you for ${numberWord(n.n)} ${noun}.`]
+      return [`${labels[i]} needs you for ${numberWord(n.n)} ${noun}.`]
     }
-    return c.tests === 0 ? [`${shortName(c.name)} is waiting to be set up.`] : []
+    return c.tests === 0 ? [`${labels[i]} is waiting to be set up.`] : []
   })
   const headline = cards.length === 0 ? 'Create your first class to get started.' : sentences.join(' ') || 'Everything is up to date.'
 
@@ -202,8 +209,8 @@ export async function getClassInfo(classId: string): Promise<ClassInfo> {
 export async function learnerList(classId: string): Promise<{ id: string; name: string }[]> {
   const supabase = await createSupabaseServer()
   const { data: enrol } = await supabase.from('enrolments').select('child_id').eq('class_id', classId)
-  const { data: kids } = await supabase.from('children').select('id, first_name').in('id', (enrol ?? []).map((e) => e.child_id))
-  return (kids ?? []).map((k) => ({ id: k.id, name: k.first_name })).sort((a, b) => a.name.localeCompare(b.name))
+  const { data: kids } = await supabase.from('children').select('id, first_name, last_name').in('id', (enrol ?? []).map((e) => e.child_id))
+  return (kids ?? []).map((k) => ({ id: k.id, name: [k.first_name, k.last_name].filter(Boolean).join(' ') })).sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export async function learnerNames(classId: string): Promise<string[]> {

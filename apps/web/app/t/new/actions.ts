@@ -16,8 +16,8 @@ export type CreateClassInput = {
   subject: string
   otherSubject?: string
   code: string
-  /** First names of learners who are new to the school. */
-  learners: string[]
+  /** Learners who are new to the school. The surname is optional. */
+  learners: { firstName: string; lastName?: string }[]
   /** A class of this school the teacher can see: all its learners are enrolled here too. */
   copyFromClassId?: string | null
 }

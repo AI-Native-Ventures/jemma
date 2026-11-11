@@ -15,16 +15,18 @@ export async function requestLink(form: FormData): Promise<void> {
   const { userId, profile } = await requireRole('parent')
   const code = cleanCode(String(form.get('code') ?? ''))
   const childName = String(form.get('child') ?? '')
+  const surname = String(form.get('surname') ?? '')
   const result = await createLinkRequest(
     { userId, displayName: profile.display_name },
     {
       code,
       childName,
+      surname,
       consent: { guardian: form.get('guardian') === 'on', teach: form.get('teach') === 'on', improve: form.get('improve') === 'on' },
     },
   )
   if (!result.ok) {
-    const q = new URLSearchParams({ code, child: childName, error: result.reason })
+    const q = new URLSearchParams({ code, child: childName, surname, error: result.reason, ...(result.needsSurname ? { needsSurname: '1' } : {}) })
     redirect(`/p/add/consent?${q}`)
   }
   redirect('/p/add/pending')

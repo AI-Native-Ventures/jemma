@@ -11,7 +11,7 @@ vi.mock('next/headers', () => ({ cookies: vi.fn() }))
 
 import { oldestClass } from '../lib/demo'
 import { marksTitle, sinceTermOf, subjectsLabel, termOfDate } from '../lib/data/p23'
-import { needClass, shortName } from '../lib/data/p21'
+import { classLabels, needClass, shortName } from '../lib/data/p21'
 import { summariseClasses, testRowLines } from '../lib/data/p24'
 import { helpsFamily } from '../lib/data/p25'
 
@@ -36,6 +36,17 @@ describe('shortName (p21)', () => {
   test('an empty name stays empty and spaces are ignored', () => {
     expect(shortName('')).toBe('')
     expect(shortName('  6B   Mathematics ')).toBe('6B')
+  })
+})
+
+describe('classLabels (p21): short names that stay different', () => {
+  test('one class, or classes with different codes: the short names, as before', () => {
+    expect(classLabels(['6B Mathematics'])).toEqual(['6B'])
+    expect(classLabels(['6B Mathematics', '6A Mathematics'])).toEqual(['6B', '6A'])
+  })
+
+  test('two classes that would both be "6B" keep their full names, and the others stay short', () => {
+    expect(classLabels(['6B Mathematics', '9A Natural Sciences', '6B English'])).toEqual(['6B Mathematics', '9A', '6B English'])
   })
 })
 

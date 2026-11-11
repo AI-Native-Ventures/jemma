@@ -6,6 +6,7 @@ import {
   ClassWriteError,
   createClassRecord,
   createSchoolForTeacher,
+  addNewLearner,
   enrolExistingLearner,
   findLearnersAtSchool,
   makeSignInCode,
@@ -308,5 +309,62 @@ describe("a learner's sign-in code made by the teacher", () => {
     expect(await makeSignInCode(service, { teacherId: ids.colleague!, classId: ids.sixB!, childId: ids.thabo!, pin: '1234' })).toEqual({ ok: false, error: 'You do not teach this class.' })
     expect(await makeSignInCode(service, { teacherId: ids.teacher!, classId: ids.sixB!, childId: ids.amina7!, pin: '1234' })).toEqual({ ok: false, error: 'That learner is not in this class.' })
     expect(await makeSignInCode(service, { teacherId: ids.other!, classId: ids.sixC!, childId: ids.thabo!, pin: '1234' })).toEqual({ ok: false, error: 'That learner is not in this class.' })
+  })
+})
+
+describe('two learners with the same first name', () => {
+  const lastNames = async (classId: string) =>
+    (await ok(service.from('children').select('first_name, last_name').in('id', await classIn(classId)))).map((k) => `${k.first_name} ${k.last_name ?? '-'}`).sort()
+
+  test('a new class keeps the surnames it was given', async () => {
+    const made = await createClassRecord(service, {
+      userId: ids.teacher!, schoolId: ids.sA!, name: '5A Twins', grade: 5, subject: 'English', code: newJoinCode(),
+      learners: [{ firstName: 'Neo', lastName: 'Dlamini' }, { firstName: 'Neo', lastName: 'Nkosi' }, 'Kabelo'],
+    })
+    expect(made).toMatchObject({ added: 3 })
+    expect(await lastNames(made.classId)).toEqual(['Kabelo -', 'Neo Dlamini', 'Neo Nkosi'])
+  })
+
+  test('one of two with the same first name may have no surname, and a plain name typed twice is still one learner', async () => {
+    const made = await createClassRecord(service, {
+      userId: ids.teacher!, schoolId: ids.sA!, name: '5B Twins', grade: 5, subject: 'English', code: newJoinCode(),
+      learners: ['Neo', { firstName: 'Neo', lastName: 'Nkosi' }, 'Lwazi', 'Lwazi'],
+    })
+    expect(made).toMatchObject({ added: 3 })
+    expect(await lastNames(made.classId)).toEqual(['Lwazi -', 'Neo -', 'Neo Nkosi'])
+  })
+
+  test('a new learner with the same first name as a copied learner needs a surname, and nothing is made without it', async () => {
+    const classesBefore = (await ok(service.from('classes').select('id').eq('school_id', ids.sA!))).length
+    await expect(
+      createClassRecord(service, { userId: ids.teacher!, schoolId: ids.sA!, name: '6B Twins', grade: 6, subject: 'English', code: newJoinCode(), learners: ['Amina'], copyFromClassId: ids.sixB }),
+    ).rejects.toThrow('Two learners are called Amina. Add a surname to one of them so parents can tell them apart.')
+    expect((await ok(service.from('classes').select('id').eq('school_id', ids.sA!))).length).toBe(classesBefore)
+    const made = await createClassRecord(service, {
+      userId: ids.teacher!, schoolId: ids.sA!, name: '6B Twins', grade: 6, subject: 'English', code: newJoinCode(), learners: [{ firstName: 'Amina', lastName: 'Nkosi' }], copyFromClassId: ids.sixB,
+    })
+    expect(made).toMatchObject({ added: 1, copied: 3 })
+  })
+
+  test('adding a learner to a class: the same first name needs a surname for one of the two', async () => {
+    const first = await addNewLearner(service, { classId: ids.nine!, firstName: 'Zed' })
+    expect(first.ok).toBe(true)
+    const again = await addNewLearner(service, { classId: ids.nine!, firstName: ' zed ' })
+    expect(again).toEqual({ ok: false, error: 'Two learners are called Zed. Add a surname to one of them so parents can tell them apart.' })
+    const withSurname = await addNewLearner(service, { classId: ids.nine!, firstName: 'Zed', lastName: ' Okafor ' })
+    expect(withSurname.ok).toBe(true)
+    if (!withSurname.ok) return
+    const row = await ok(service.from('children').select('first_name, last_name, grade, school_id').eq('id', withSurname.childId).single())
+    expect(row).toEqual({ first_name: 'Zed', last_name: 'Okafor', grade: 9, school_id: ids.sA })
+    expect((await ok(service.from('enrolments').select('child_id').eq('class_id', ids.nine!).eq('child_id', withSurname.childId))).length).toBe(1)
+    const third = await addNewLearner(service, { classId: ids.nine!, firstName: 'Zed', lastName: 'Okafor' })
+    expect(third).toEqual({ ok: false, error: 'Two learners are called Zed Okafor. Change one of the names so parents can tell them apart.' })
+    const fourth = await addNewLearner(service, { classId: ids.nine!, firstName: 'Zed', lastName: 'Bello' })
+    expect(fourth.ok).toBe(true)
+  })
+
+  test('an empty name or a class that does not exist is refused', async () => {
+    expect(await addNewLearner(service, { classId: ids.nine!, firstName: '  ' })).toEqual({ ok: false, error: 'Type the learner\'s first name' })
+    expect(await addNewLearner(service, { classId: '00000000-0000-4000-8000-000000000000', firstName: 'Who' })).toEqual({ ok: false, error: 'That class was not found' })
   })
 })

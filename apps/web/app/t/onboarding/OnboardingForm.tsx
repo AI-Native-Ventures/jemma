@@ -46,13 +46,13 @@ function SchoolSheet({ pick, onClose }: { pick: Choice; onClose: () => void }) {
         <label htmlFor="school-name" className="text-[15px] font-medium">
           School name
         </label>
-        <input id="school-name" type="text" value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" className={`${field} border-muted-2`} />
+        <input id="school-name" type="text" value={name} onChange={(e) => { setName(e.target.value); setError('') }} autoComplete="off" className={`${field} border-muted-2`} />
       </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor="school-country" className="text-[15px] font-medium">
           Country
         </label>
-        <SelectBox id="school-country" value={country} onChange={setCountry}>
+        <SelectBox id="school-country" value={country} onChange={(v) => { setCountry(v); setError('') }}>
           {COUNTRIES.map((c) => (
             <option key={c.code} value={c.code}>
               {c.name}
@@ -64,7 +64,7 @@ function SchoolSheet({ pick, onClose }: { pick: Choice; onClose: () => void }) {
         <label htmlFor="school-region" className="text-[15px] font-medium">
           Region (optional)
         </label>
-        <input id="school-region" type="text" value={region} onChange={(e) => setRegion(e.target.value)} autoComplete="off" className={`${field} border-muted-2`} />
+        <input id="school-region" type="text" value={region} onChange={(e) => { setRegion(e.target.value); setError('') }} autoComplete="off" className={`${field} border-muted-2`} />
       </div>
       {error ? (
         <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-coral-text">

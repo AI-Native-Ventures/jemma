@@ -1,6 +1,8 @@
 import type { JemmaDb } from '@jemma/profiling/db'
 import { replaceChildLogin } from './child-login'
-import { validateSchool, type SchoolInput } from './subjects'
+import { sameNameProblem, validateSchool, type SchoolInput } from './subjects'
+
+export { sameNameProblem }
 
 // What the teacher's forms write: a class (with new learners and learners copied from another class), a learner who is already
 // at the school put into a class, a school that is not in the list, and a learner's sign-in code. Every function takes the service
@@ -20,6 +22,11 @@ const literal = (text: string) => text.replace(/[\\%_]/g, (c) => `\\${c}`)
 
 // ---------- a new class ----------
 
+/** A learner who is new to the school. The surname is optional, and needed when it is what tells two learners apart. */
+export type NewLearner = { firstName: string; lastName?: string | null }
+
+const plain = (text: string | null | undefined) => (text ?? '').trim().replace(/\s+/g, ' ')
+
 export type NewClass = {
   userId: string
   schoolId: string
@@ -28,8 +35,8 @@ export type NewClass = {
   subject: string
   /** The code the form showed. A bad or taken code is replaced. */
   code: string
-  /** First names of learners who are new to the school. */
-  learners: string[]
+  /** Learners who are new to the school (a plain string is a first name). */
+  learners: (string | NewLearner)[]
   /** Every learner of this class is enrolled in the new one too. No child row is made for them. */
   copyFromClassId?: string | null
 }
@@ -45,6 +52,7 @@ export class ClassWriteError extends Error {}
 export async function createClassRecord(admin: JemmaDb, input: NewClass): Promise<NewClassResult> {
   const { schoolId } = input
   let source: string[] = []
+  let copied: NewLearner[] = []
   if (input.copyFromClassId) {
     const { data: from, error } = await admin.from('classes').select('school_id').eq('id', input.copyFromClassId).maybeSingle()
     if (error) throw new Error(`could not read the class to copy: ${error.message}`)
@@ -52,7 +60,25 @@ export async function createClassRecord(admin: JemmaDb, input: NewClass): Promis
     const { data: enrolled, error: enrolError } = await admin.from('enrolments').select('child_id').eq('class_id', input.copyFromClassId)
     if (enrolError) throw new Error(`could not read the learners to copy: ${enrolError.message}`)
     source = (enrolled ?? []).map((e) => e.child_id)
+    if (source.length) {
+      const { data: kids } = await admin.from('children').select('first_name, last_name').in('id', source)
+      copied = (kids ?? []).map((k) => ({ firstName: k.first_name, lastName: k.last_name }))
+    }
   }
+
+  // The same person typed twice is one learner. Learners with the same first name need a surname to tell them apart.
+  const seen = new Set<string>()
+  const fresh = input.learners
+    .map((l) => (typeof l === 'string' ? { firstName: l } : l))
+    .map((l) => ({ firstName: plain(l.firstName), lastName: plain(l.lastName) || null }))
+    .filter((l) => {
+      const key = `${l.firstName.toLowerCase()}|${(l.lastName ?? '').toLowerCase()}`
+      if (!l.firstName || seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  const problem = fresh.length > 0 ? sameNameProblem([...copied, ...fresh]) : null
+  if (problem && !sameNameProblem(copied)) throw new ClassWriteError(problem)
 
   let code = /^[A-Z0-9]{6}$/.test(input.code) ? input.code : newJoinCode()
   let classId: string | null = null
@@ -73,11 +99,11 @@ export async function createClassRecord(admin: JemmaDb, input: NewClass): Promis
     if (error) throw new Error(`could not copy the learners: ${error.message}`)
   }
 
-  const names = [...new Set(input.learners.map((n) => n.trim()).filter(Boolean))]
+  const names = fresh
   if (names.length) {
     const { data: kids, error } = await admin
       .from('children')
-      .insert(names.map((first_name) => ({ school_id: schoolId, first_name, grade: input.grade })))
+      .insert(names.map((l) => ({ school_id: schoolId, first_name: l.firstName, last_name: l.lastName, grade: input.grade })))
       .select('id')
     if (error) throw new Error(`could not add learners: ${error.message}`)
     const { error: enrolError } = await admin.from('enrolments').insert(kids.map((k) => ({ class_id: classId!, child_id: k.id })))
@@ -92,9 +118,29 @@ export async function canCopyFrom(teacher: JemmaDb, schoolId: string, classId: s
   return Boolean(data)
 }
 
+export type AddLearnerResult = { ok: true; childId: string } | { ok: false; error: string }
+
+/** A learner who is new to the school, added to the class. The same first name as someone in the class needs a surname for one of the two. */
+export async function addNewLearner(admin: JemmaDb, input: { classId: string; firstName: string; lastName?: string | null }): Promise<AddLearnerResult> {
+  const firstName = plain(input.firstName)
+  if (!firstName) return { ok: false, error: "Type the learner's first name" }
+  const { data: cls } = await admin.from('classes').select('school_id, grade').eq('id', input.classId).maybeSingle()
+  if (!cls) return { ok: false, error: 'That class was not found' }
+  const { data: enrolled } = await admin.from('enrolments').select('children(first_name, last_name)').eq('class_id', input.classId)
+  const people = (enrolled ?? []).flatMap((e) => (e.children ? [{ firstName: e.children.first_name, lastName: e.children.last_name }] : []))
+  const lastName = plain(input.lastName) || null
+  const problem = sameNameProblem([...people, { firstName, lastName }])
+  if (problem && !sameNameProblem(people)) return { ok: false, error: problem }
+  const { data: kid, error } = await admin.from('children').insert({ school_id: cls.school_id, first_name: firstName, last_name: lastName, grade: cls.grade }).select('id').single()
+  if (error || !kid) return { ok: false, error: 'Could not add the learner. Try again.' }
+  const { error: enrolError } = await admin.from('enrolments').insert({ class_id: input.classId, child_id: kid.id })
+  if (enrolError) return { ok: false, error: 'Could not add the learner. Try again.' }
+  return { ok: true, childId: kid.id }
+}
+
 // ---------- a learner who is already at the school ----------
 
-export type SchoolLearner = { childId: string; firstName: string; grade: number; classes: string[] }
+export type SchoolLearner = { childId: string; firstName: string; lastName: string | null; grade: number; classes: string[] }
 
 /**
  * Children of the same school with this first name (any case) who are not in the class yet, each with the classes they are in.
@@ -105,7 +151,7 @@ export async function findLearnersAtSchool(admin: JemmaDb, input: { classId: str
   if (name.length < 1) return []
   const { data: cls } = await admin.from('classes').select('school_id').eq('id', input.classId).maybeSingle()
   if (!cls) return []
-  const { data: kids } = await admin.from('children').select('id, first_name, grade').eq('school_id', cls.school_id).ilike('first_name', literal(name)).order('created_at').limit(12)
+  const { data: kids } = await admin.from('children').select('id, first_name, last_name, grade').eq('school_id', cls.school_id).ilike('first_name', literal(name)).order('created_at').limit(12)
   if (!kids?.length) return []
   const { data: enrolments } = await admin.from('enrolments').select('child_id, class_id, classes(name)').in('child_id', kids.map((k) => k.id))
   const inThisClass = new Set((enrolments ?? []).filter((e) => e.class_id === input.classId).map((e) => e.child_id))
@@ -115,6 +161,7 @@ export async function findLearnersAtSchool(admin: JemmaDb, input: { classId: str
     .map((k) => ({
       childId: k.id,
       firstName: k.first_name,
+      lastName: k.last_name,
       grade: k.grade,
       classes: (enrolments ?? []).filter((e) => e.child_id === k.id && e.classes).map((e) => e.classes!.name),
     }))

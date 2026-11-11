@@ -16,13 +16,13 @@ const admin = () =>
   })
 
 const proofDir = resolve(import.meta.dirname, '../../../design/proof/p63')
-async function proof(page: Page, name: string) {
+async function proof(page: Page, name: string, fullPage = true) {
   if (!process.env.P63_PROOF) return
   mkdirSync(proofDir, { recursive: true })
   const width = page.viewportSize()!.width >= 1024 ? 1440 : 390
   await page.evaluate(() => document.fonts.ready)
   await page.addStyleTag({ content: 'nextjs-portal{display:none} *{transition:none !important;animation:none !important}' })
-  await page.screenshot({ path: resolve(proofDir, `${name}-${width}.png`), fullPage: true })
+  await page.screenshot({ path: resolve(proofDir, `${name}-${width}.png`), fullPage })
 }
 
 async function noHorizontalScroll(page: Page) {
@@ -123,7 +123,7 @@ test.describe('a teacher in the demo school', () => {
     const code = (await page.getByLabel('Sign-in code', { exact: true }).textContent())!.trim()
     expect(code).toMatch(/^[A-HJ-NP-Z2-9]{6}$/)
     await check(page.getByText('PIN 4821')).toBeVisible()
-    await proof(page, 'sign-in-code')
+    await proof(page, 'sign-in-code', false)
     const login = (await db.from('child_logins').select('child_id, pin_set_by').eq('code', code).single()).data!
     const teacherId = (await db.from('classes').select('teacher_id').eq('id', english).single()).data!.teacher_id
     expect(login).toEqual({ child_id: zola.id, pin_set_by: teacherId })
@@ -152,7 +152,7 @@ test.describe('a teacher in the demo school', () => {
     await check(match).toContainText('6B Mathematics')
     await check(match).toContainText('6B English')
     await check(page.getByRole('button', { name: 'New learner' })).toBeVisible()
-    await proof(page, 'add-learner')
+    await proof(page, 'add-learner', false)
     await match.click()
     await check(page.getByRole('dialog')).toHaveCount(0)
     const amina = (await db.from('children').select('id').eq('school_id', school).eq('first_name', 'Amina')).data!
@@ -167,7 +167,8 @@ test.describe('a teacher in the demo school', () => {
 
     // 6B Mathematics opens as before, the class list shows three classes, and the demo's role switch works with three classes.
     await page.goto(`/t/${sb.classId}`)
-    await check(page.getByText('6B Mathematics').first()).toBeVisible()
+    await check(page).toHaveURL(new RegExp(`/t/${sb.classId}$`))
+    await expect.poll(async () => (await page.locator('body').textContent()) ?? '', { timeout: 30_000 }).toContain('6B Mathematics')
     await page.goto('/t')
     await check(page.getByRole('link', { name: /6B Mathematics/ })).toBeVisible()
     await check(page.getByRole('link', { name: /9A Natural Sciences/ })).toContainText('Grade 9')
@@ -197,6 +198,39 @@ test.describe('a teacher in the demo school', () => {
     await expect.poll(async () => (await admin().from('classes').select('grade').eq('id', sb!.classId).single()).data!.grade, { timeout: 30_000 }).toBe(12)
     await check(page.getByText('Subject', { exact: true })).toBeVisible()
     await check(page.getByRole('button', { name: 'Edit subject' })).toHaveCount(0)
+  })
+})
+
+test.describe('two learners with the same first name', () => {
+  test('the teacher gives one a surname, and the parent is asked for it', async ({ page }) => {
+    test.setTimeout(240_000)
+    sb = await openSandbox(page, { stage: 'start', role: 'parent' })
+    const db = admin()
+    const school = (await db.from('demo_sandboxes').select('school_id').eq('id', sb.sandboxId).single()).data!.school_id
+    // Amina (Dlamini) is in 6B already. A second Amina joins with another surname.
+    await db.from('children').update({ last_name: 'Dlamini' }).eq('id', sb.childId)
+    const second = (await db.from('children').insert({ school_id: school, first_name: 'Amina', last_name: 'Nkosi', grade: 6 }).select('id').single()).data!
+    await db.from('enrolments').insert({ class_id: sb.classId, child_id: second.id })
+
+    // First name alone does not say which child: the form asks for the surname.
+    await page.goto(`/p/add/consent?code=${sb.joinCode}&child=Amina`)
+    await check(page).toHaveURL(/\/p\/add\?.*needsSurname=1/)
+    const alert = page.locator('p[role="alert"]')
+    await check(alert).toContainText('More than one child in')
+    await check(alert).toContainText('Type the surname.')
+    await check(page.getByLabel("Your child's surname")).toBeVisible()
+    await noHorizontalScroll(page)
+    await proof(page, 'parent-surname')
+    await page.getByLabel("Your child's surname").fill('nkosi')
+    await page.getByRole('button', { name: 'Link Amina' }).click()
+    await check(page.getByRole('heading', { level: 1 })).toContainText("Jemma keeps Amina's schoolwork")
+    await page.getByRole('button', { name: /^Agree and ask/ }).click()
+    await check(page).toHaveURL(/\/p\/add\/pending$/)
+    const parent = (await db.from('parent_links').select('child_id, status').eq('child_id', second.id)).data!
+    expect(parent).toEqual([{ child_id: second.id, status: 'pending' }])
+    const need = (await db.from('needs_you_items').select('title, child_id').eq('child_id', second.id).eq('kind', 'approve_link')).data!
+    expect(need).toHaveLength(1)
+    expect(need[0]!.title).toBe("Thandi M wants to see Amina Nkosi's work")
   })
 })
 
@@ -279,5 +313,5 @@ test.describe('a new teacher with a school that is not in the list', () => {
 
 /** The school form, open and filled in. */
 async function proofOpen(page: Page) {
-  await proof(page, 'school-form')
+  await proof(page, 'school-form', false)
 }

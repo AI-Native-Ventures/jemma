@@ -79,3 +79,35 @@ export function validateSchool(input: SchoolInput): Checked<{ value: SchoolValue
 
 /** How a subject is written in short lines: "Mathematics" is "Maths". Every other subject keeps its name. */
 export const shortSubject = (subject: string): string => (subject === 'Mathematics' ? 'Maths' : subject)
+
+// ---------- two learners with the same first name ----------
+
+export type Person = { firstName: string; lastName?: string | null }
+
+const plain = (text: string | null | undefined) => (text ?? '').trim().replace(/\s+/g, ' ')
+
+/**
+ * The rule that lets a parent say which child they mean: of the learners of a class who share a first name, at most one has no
+ * surname, and no two have the same surname. Returns what to tell the teacher when the rule is broken, else null.
+ */
+export function sameNameProblem(people: Person[]): string | null {
+  const groups = new Map<string, Person[]>()
+  for (const p of people) {
+    const key = plain(p.firstName).toLowerCase()
+    if (key) groups.set(key, [...(groups.get(key) ?? []), p])
+  }
+  for (const members of groups.values()) {
+    if (members.length < 2) continue
+    const first = plain(members[0]!.firstName)
+    if (members.filter((m) => !plain(m.lastName)).length > 1) return `Two learners are called ${first}. Add a surname to one of them so parents can tell them apart.`
+    const seen = new Map<string, string>()
+    for (const m of members) {
+      const last = plain(m.lastName)
+      if (!last) continue
+      const earlier = seen.get(last.toLowerCase())
+      if (earlier) return `Two learners are called ${first} ${earlier}. Change one of the names so parents can tell them apart.`
+      seen.set(last.toLowerCase(), last)
+    }
+  }
+  return null
+}

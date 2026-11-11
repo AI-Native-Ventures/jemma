@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { enrolExistingLearner, findLearnersAtSchool, makeSignInCode, type EnrolResult, type SchoolLearner, type SignInCodeResult } from '@/lib/class-writes'
+import { addNewLearner, enrolExistingLearner, findLearnersAtSchool, makeSignInCode, type AddLearnerResult, type EnrolResult, type SchoolLearner, type SignInCodeResult } from '@/lib/class-writes'
 import { newJoinCode, requireTeaches } from '@/lib/data/p21'
 import { validateGrade } from '@/lib/subjects'
 
@@ -42,16 +42,12 @@ export async function removeParent(classId: string, parentId: string, childId: s
   refresh(classId)
 }
 
-export async function addLearner(classId: string, name: string): Promise<void> {
-  const { admin, schoolId } = await requireTeaches(classId)
-  const clean = name.trim()
-  if (!clean) return
-  const { data: cls } = await admin.from('classes').select('grade').eq('id', classId).single()
-  const { data: kid, error } = await admin.from('children').insert({ school_id: schoolId, first_name: clean, grade: cls!.grade }).select('id').single()
-  if (error) throw new Error(`could not add learner: ${error.message}`)
-  const { error: enrolError } = await admin.from('enrolments').insert({ class_id: classId, child_id: kid.id })
-  if (enrolError) throw new Error(`could not add learner: ${enrolError.message}`)
-  refresh(classId)
+/** A learner who is new to the school. The same first name as someone in the class needs a surname for one of the two. */
+export async function addLearner(classId: string, name: string, surname = ''): Promise<AddLearnerResult> {
+  const { admin } = await requireTeaches(classId)
+  const done = await addNewLearner(admin, { classId, firstName: name, lastName: surname })
+  if (done.ok) refresh(classId)
+  return done
 }
 
 /** Children of the same school with this first name who are not in the class yet, for the "Add a learner" sheet. */
