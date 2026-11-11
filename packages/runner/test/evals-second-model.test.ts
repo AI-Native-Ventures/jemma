@@ -130,8 +130,26 @@ describe('the second open-weights model section', () => {
   test('a failed run is named with the reason from its own result file, in one generated sentence', async () => {
     const text = renderReport(input([await secondFrom()]))
     const section = text.split('## A second open-weights model on one task')[1]!.split('## Cost')[0]!
-    expect(section).toContain('In `2026-11-11-gemma`, 1 of 3 runs failed: run 2 (the event ended done; the event said: class_report: Ran into this error: Request failed: Too many requests (429)).')
+    expect(section).toContain('In `2026-11-11-gemma`, 1 of 3 runs failed: run 2 (the model run on google/gemma-4-31b-it:free said: Ran into this error: Request failed: Too many requests (429); 1 of 2 checks failed).')
     expect(section.match(/runs? failed/g)).toHaveLength(1)
+  })
+
+  test('with no model message the event error is named, and with neither the failed checks are', () => {
+    const dir = writeFolder('2026-11-11-reason', ['class-report'], (_id, n) => {
+      const ok = { finalModel: GEMMA, attempts: [gemmaAttempt(70)] }
+      if (n === 1) return { ...ok, ...failing('the event ended done', 'x'), event: { status: 'failed', error: 'class_report: the runner gave up' } }
+      if (n === 2) return { ...ok, ...failing('the report copy exists in the reports folder', 'no file') }
+      return ok
+    })
+    const text = renderReport(input([{ runId: '2026-11-11-reason', results: loadSecondRun(dir, '2026-11-11-reason'), pricing: null }]))
+    expect(text).toContain('run 1 (the event said: class_report: the runner gave up; 1 of 2 checks failed); run 2 (1 of 2 checks failed: the report copy exists in the reports folder).')
+  })
+
+  test('a long message is cut at a word with three dots, not in the middle of a word', async () => {
+    const long = 'Ran into this error: Server error: This model is currently experiencing high demand. '.repeat(6)
+    const dir = writeFolder('2026-11-11-long', ['class-report'], (_id, n) => (n === 1 ? { ...failing('the event ended done'), finalModel: GEMMA, attempts: [gemmaAttempt(10, 'failed', long)] } : { finalModel: GEMMA, attempts: [gemmaAttempt(70)] }))
+    const text = renderReport(input([{ runId: '2026-11-11-long', results: loadSecondRun(dir, '2026-11-11-long'), pricing: null }]))
+    expect(text).toMatch(/said: Ran into this error: .*\.\.\.; 1 of 2 checks failed\)/)
   })
 
   test('with no failed run there is no failure sentence', () => {

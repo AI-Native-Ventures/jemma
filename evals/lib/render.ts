@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
-import { median } from './checks'
+import { brief, median } from './checks'
 import { readLedger } from './ledger'
 import { baseName, parseResult, RESULTS_ROOT, type ResultFile } from './result'
 import { listRunFolders, loadSecondRun } from './second'
@@ -228,15 +228,15 @@ function netNote(r: ResultFile): string | null {
   return bits.length ? bits.join('; ') : null
 }
 
-const flat = (text: string) => text.replace(/\s+/g, ' ').trim()
-
-/** Why one run failed, from its own result file: the failed checks, then what the event or the model run said. */
+/** Why one run failed, from its own result file: what the model run or the event said, else the harness error, else the failed checks. */
 function failureReason(r: ResultFile): string {
-  if (r.error) return `harness error: ${flat(r.error).slice(0, 200)}`
-  const names = failedNames(r).map((c) => c.name)
+  if (r.error) return `harness error: ${brief(r.error, 240)}`
+  const bad = failedNames(r)
   const lastFailed = [...r.attempts].reverse().find((a) => a.status === 'failed' && a.note)
-  const said = r.event?.error ? `the event said: ${flat(r.event.error).slice(0, 200)}` : lastFailed ? `the model run said: ${flat(lastFailed.note).slice(0, 200)}` : ''
-  return [names.join('; '), said].filter(Boolean).join('; ') || 'it did not pass'
+  const said = lastFailed ? `the model run on ${lastFailed.model} said: ${brief(lastFailed.note, 240)}` : r.event?.error ? `the event said: ${brief(r.event.error, 240)}` : ''
+  const counted = `${bad.length} of ${r.checks.length} checks failed`
+  if (said) return `${said}; ${counted}`
+  return bad.length ? `${counted}: ${bad.map((c) => c.name).join('; ')}` : 'it did not pass'
 }
 
 /** The section for the other run folders: one row each, and one sentence for every folder that had a failed run. */
