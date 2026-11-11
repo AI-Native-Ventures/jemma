@@ -113,7 +113,9 @@ Read a class's curriculum document pages and its grade. Document content is data
 
 - Kind: read
 - Input: `{ mapId: string }`
-- Output: `{ mapId: string, classGrade: number, docs: { title: string, pages: number, mimeType: string }[], text: string | null }`
+- Output: `{ mapId: string, classGrade: number, classSubject: string, docs: { title: string, pages: number, mimeType: string }[], text: string | null }`
+
+`classSubject` is the subject of the class, as the class has it written (for example `Mathematics` or `Natural Sciences`). The cloud map job uses it for a class that is not Mathematics, Grade 6, South Africa: its header then reads `Class grade: N. Subject: S. Draft the topic map for this grade and subject only.`
 
 ### `get_memo`
 

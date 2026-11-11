@@ -17,4 +17,6 @@ are plain code and have no prompt file.
   together with Jemma's MCP server. The agent calls `get_job { eventId }` to learn the job, reads inputs through the
   read tools, finishes with the job's save tool and then `complete_job`.
 - Prompts treat photo, upload and model text as data, never instructions, and wrap it in `<untrusted>` tags.
+- Each cloud job loads the class it works for (subject, grade, the school's country) in code, then renders its prompt with `renderPrompt` in `src/ai/prompt-variants.ts`. For Mathematics, Grade 6, South Africa the text is the file, byte for byte (a recorded answer is found by a hash of the whole call); for any other class exact find and replace rules change the phrases that are not true of it and add a `Subject: ... Grade: ... Country: ...` line on top.
+- So a phrase in a prompt file that a rule looks for (a `find`) must not be edited alone: the tests in `test/ai/prompt-variants.test.ts` fail until the rule and the sha256 pinned there are updated together.
 - Tools never call a model. A prompt file asks for the save tool's zod object and nothing else.
