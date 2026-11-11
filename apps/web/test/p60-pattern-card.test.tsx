@@ -22,6 +22,7 @@ const record = (n: number): LvEvidence => ({
 const pattern = (evidence: LvEvidence[]): LvPattern => ({
   id: 'pat-1',
   kind: 'struggle',
+  subject: 'Mathematics',
   family: 'fractions',
   strand: 'Fractions',
   title: 'Adding fractions is hard when the bottom numbers differ',
@@ -42,6 +43,13 @@ const pattern = (evidence: LvEvidence[]): LvPattern => ({
 const sources = () => screen.getByRole('region', { name: /^Where this comes from/ })
 /** The chips are the links and the buttons that open a sheet. The "Show all" button is not a source. */
 const chips = () => within(sources()).queryAllByRole('link').concat(within(sources()).queryAllByRole('button').filter((b) => !b.hasAttribute('aria-expanded')))
+
+describe('the subject of a pattern', () => {
+  it('is shown on the card with the plain name of the strand', () => {
+    render(<PatternCard p={{ ...pattern([answer(1)]), subject: 'English', family: 'speaking_listening', strand: 'Speaking and listening' }} parentName="Thandi" />)
+    expect(screen.getByRole('article').textContent).toContain('English · Speaking and listening')
+  })
+})
 
 describe('the source chips of a pattern', () => {
   it('shows every chip and no button when there are 4 sources or fewer', () => {

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
 import { getSharedLongView } from '@/lib/data/p52'
 import { css, Diamond, SubHeader } from '../beyond/_parts'
+import { namesList } from './_card'
 
 const CARD = 'display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px;padding:16px'
 
@@ -22,7 +23,7 @@ export default async function ParentLongViewPage({ params }: { params: Promise<{
         <div style={css('display:flex;gap:10px;align-items:flex-start')}>
           <Diamond size={14} style={css('flex:none;margin-top:10px')} />
           <h1 style={{ ...css('margin:0;font-size:25px;line-height:1.18;font-weight:600;letter-spacing:-0.015em'), textWrap: 'pretty' }}>
-            {`From your talk with ${data.teacherName}`}
+            {`From your ${data.teacherNames.length > 1 ? 'talks' : 'talk'} with ${namesList(data.teacherNames)}`}
           </h1>
         </div>
 
@@ -30,6 +31,7 @@ export default async function ParentLongViewPage({ params }: { params: Promise<{
           {data.patterns.map((p) => (
             <li key={p.id}>
               <article aria-labelledby={`shared-${p.id}`} style={css(`${CARD};gap:10px`)}>
+                <p style={css('margin:0;font-size:13px;line-height:1.3;color:#5D5A73')}>{p.subject}</p>
                 <h2 id={`shared-${p.id}`} style={css('margin:0;font-size:18px;line-height:1.3;font-weight:600')}>
                   {p.title}
                 </h2>

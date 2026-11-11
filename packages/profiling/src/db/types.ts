@@ -788,6 +788,7 @@ export type Database = {
           quality: string
           school_id: string
           source: string
+          subject: string | null
           teacher_name: string
           term: number
           text: string | null
@@ -811,6 +812,7 @@ export type Database = {
           quality?: string
           school_id: string
           source: string
+          subject?: string | null
           teacher_name: string
           term: number
           text?: string | null
@@ -833,6 +835,7 @@ export type Database = {
           quality?: string
           school_id?: string
           source?: string
+          subject?: string | null
           teacher_name?: string
           term?: number
           text?: string | null
@@ -926,6 +929,7 @@ export type Database = {
           kind: string
           statement: string
           status: string
+          subject: string
           terms: NonNullable<Json>
           title: string
           updated_at: string
@@ -949,6 +953,7 @@ export type Database = {
           kind: string
           statement: string
           status?: string
+          subject?: string
           terms: NonNullable<Json>
           title: string
           updated_at?: string
@@ -971,6 +976,7 @@ export type Database = {
           kind?: string
           statement?: string
           status?: string
+          subject?: string
           terms?: NonNullable<Json>
           title?: string
           updated_at?: string

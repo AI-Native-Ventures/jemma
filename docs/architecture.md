@@ -51,7 +51,7 @@ flowchart LR
 | Agent worker | `apps/agent` | A Cloudflare Worker. `/events` takes an event from the web app and puts it on a Queue. The Queue consumer runs the event. `/mcp` serves the MCP server. `/health` answers `{ ok: true }`. A cron every minute checks for a Jemma Desktop runner that has gone quiet, and sends work that was handed to the owner's laptop back to the cloud when that laptop is away. |
 | Profiling package | `packages/profiling` | The tools, zod schemas, job prompts, pure learning logic, the model layer and the orchestrator. Both the agent worker and the web app import it. |
 | Runner package | `packages/runner` | The core of the Jemma Desktop runner: finds Claude Code or Codex on the machine, claims queued events, runs the agent with the Jemma MCP server, sends heartbeats. The Electron app in `apps/desktop` runs jobs on the user's Claude Code or Codex subscription; pair it by entering the six-character code shown in the signed-in Jemma web app, and build the unsigned Mac app with `CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter desktop dist`. |
-| Database | `supabase/migrations` | Postgres with row-level security. 19 migration files. |
+| Database | `supabase/migrations` | Postgres with row-level security. 21 migration files. |
 | Storage | Supabase Storage | Four private buckets: `papers`, `curriculum`, `lesson-audio`, `sample-papers`. No public access and no storage policies: files are reached with signed URLs or the service role. |
 | MCP server | `packages/profiling/src/server.ts`, served by `apps/agent` | 22 tools. See [mcp-server.md](mcp-server.md). |
 | Cloud runner | `apps/agent` + `packages/profiling/src/jobs/cloud` | Runs the 8 AI jobs on free models. |
@@ -164,7 +164,7 @@ The schema is `supabase/migrations/0001_schema.sql` plus later migrations. Main 
 | People and school | `schools`, `profiles` (role: teacher, parent or learner), `classes`, `children`, `enrolments`, `parent_links` (pending, approved or declined), `child_logins`, `child_login_attempts` |
 | Curriculum and tests | `curriculum_docs`, `curriculum_maps` (draft or approved), `topics`, `tests`, `answer_keys`, `papers`, `paper_pages`, `question_results` |
 | The learner profile | `gaps` (stage new, practising or fixed, with evidence), `lessons`, `sessions`, `session_items`, `format_trials`, `reteach_plans`, `guidance_cards`, `observations`, `attendance`, `activities` |
-| The Long view | `learner_records` (past years: quizzes, assignments, projects, notes, attendance by term), `long_view_patterns` (what Jemma found, with its status: draft, approved, dismissed or discussed) |
+| The Long view | `learner_records` (past years: quizzes, assignments, projects, notes, attendance by term; each marked piece has a subject), `long_view_patterns` (what Jemma found, in one subject, with its status: draft, approved, dismissed or discussed) |
 | Work and messages | `events`, `needs_you_items`, `activity_log` ("What Jemma did"), `notifications`, `runner_presence`, `operator_presence` |
 | The log | `tool_calls` (every tool call), `approvals` (every human decision, with the person's name) |
 | Infrastructure | `ai_replays`, `demo_sandboxes`, `mcp_tokens` |
@@ -220,9 +220,9 @@ Two more decisions are logged as approvals but are confirmations, not gates: mar
 
 A pattern is a strength or a struggle that held for 3 terms or more. Code finds it, in `packages/profiling/src/logic/long-view.ts`. The model only words it.
 
-1. Past years sit in `learner_records`, this year's marked answers in `question_results`, both grouped by the topic's `family`. Terms are calendar quarters. A family needs 3 marks in a term for the term to count.
+1. Past years sit in `learner_records`, this year's marked answers in `question_results`, both grouped by subject and then by the topic's `family` (this year's answers take their subject and grade from the class of the test). Terms are calendar quarters. A family needs 3 marks in a term for the term to count.
 2. A strength is 80% or more, a struggle is below 50%, and a pattern needs 3 terms in a row. It may be followed by up to 2 newer terms that did not continue it. They are kept next to it, with their sources. Terms with no data are skipped and named, never guessed. Marks that were unclear never count.
-3. `long_view.requested` runs the `long_view` job. The model reads `get_learner_history` and sends `save_long_view` a key, a title and a statement for each pattern code found, and for nothing else. The tool attaches the terms and the evidence itself, and drops a pattern that matches no record, uses a banned word (a label, a ranking or comparison, career talk) or is too long. On the cloud runner, a learner with no pattern gets an empty list without a model call.
+3. `long_view.requested` runs the `long_view` job. The model reads `get_learner_history` and sends `save_long_view` a key, a subject, a title and a statement for each pattern code found, and for nothing else. The tool attaches the terms and the evidence itself, and drops a pattern that matches no record, uses a banned word (a label, a ranking or comparison, career talk) or is too long. On the cloud runner, a learner with no pattern gets an empty list without a model call.
 4. A saved pattern is a draft and the teacher gets one Needs you item (`review_long_view`). The teacher can open each source, taps Looks right (or Not yet), and after talking to the guardian taps We have talked. Only then is it shared, the approved guardians are told, and `long_view_patterns.status` is `discussed`. The learner never sees the Long view.
 5. A new note, the Update button, or opening a Long view that is empty asks for a new update. A pattern the records stop showing is deleted if it is a draft, and switched off (`active = false`) if the teacher had touched it.
 

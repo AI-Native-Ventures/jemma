@@ -393,14 +393,26 @@ describe('the grid is the tool grid', () => {
         rec(4, 5, 2025, 'shapes', 16, 'Quiz 5'),
       ]),
     )
-    const view = await loadLongView(users.teacher!.client, ids.cA!, ids.a2!)
+    // Two subjects: three terms of English reading as well. The screen shows one subject at a time, the tool groups by subject: they must agree for each.
+    await ok(
+      service.from('learner_records').insert(
+        [1, 2, 3].map((term) => ({ ...rec(term, 6, 2026, 'reading', 7, `Reading ${term}`), subject: 'English', teacher_name: 'Mrs Zulu' })),
+      ),
+    )
     const ctx = { db: service, schoolId: ids.sA!, eventId: null, env: { replayStore: new MemoryStore() }, now: () => new Date() }
     const { history } = await loadHistory(ctx as never, ids.a2!)
-    expect(view).not.toBeNull()
-    const fromScreen = view!.rows.map((r) => ({ family: r.family, cells: r.cells.flatMap((c, i) => (c.percent === null ? [] : [{ year: view!.columns[i]!.year, term: view!.columns[i]!.term, percent: c.percent, points: c.points }])) }))
-    const fromTool = history.families.map((f) => ({ family: f.family, cells: f.bySlot.map(({ year, term, percent, points }) => ({ year, term, percent, points })) }))
-    expect(fromScreen.sort((a, b) => a.family.localeCompare(b.family))).toEqual(fromTool.sort((a, b) => a.family.localeCompare(b.family)))
-    expect(view!.missing.length > 0).toBe(history.missingTerms.length > 0)
+    expect(history.subjects.map((x) => x.subject)).toEqual(['Mathematics', 'English'])
+    for (const subject of ['Mathematics', 'English']) {
+      const view = await loadLongView(users.teacher!.client, ids.cA!, ids.a2!, new Date(), subject)
+      expect(view).not.toBeNull()
+      expect(view!.subject).toBe(subject)
+      const fromScreen = view!.rows.map((r) => ({ family: r.family, cells: r.cells.flatMap((c, i) => (c.percent === null ? [] : [{ year: view!.columns[i]!.year, term: view!.columns[i]!.term, percent: c.percent, points: c.points }])) }))
+      const mine = history.subjects.find((x) => x.subject === subject)!
+      const fromTool = mine.families.map((f) => ({ family: f.family, cells: f.bySlot.map(({ year, term, percent, points }) => ({ year, term, percent, points })) }))
+      expect(fromScreen.sort((a, b) => a.family.localeCompare(b.family))).toEqual(fromTool.sort((a, b) => a.family.localeCompare(b.family)))
+      expect(view!.missing.length > 0).toBe(mine.missingTerms.length > 0)
+      expect(view!.columns.map((c) => [c.year, c.term])).toEqual(mine.slots.concat(mine.missingTerms.map((m) => ({ grade: m.grade ?? 0, year: m.year, term: m.term }))).sort((x, y) => x.year - y.year || x.term - y.term).map((x) => [x.year, x.term]))
+    }
   })
 
   test('a person who is not the class teacher gets no screen', async () => {
