@@ -280,8 +280,12 @@ function secondSection(others: SecondRun[]): string[] {
   for (const { o, refusals, judged } of rows) {
     if (refusals.length > 0) {
       const messages = [...new Set(refusals.map((x) => x.message))].map((m) => `"${m}"`).join(' and ')
-      const what = `${refusals.length} of ${o.results.length} runs got no answer from the free endpoint on ${dateOf(refusals.map((x) => x.r))} (${messages})`
-      out.push(`\`${o.runId}\`: ${what}${judged.length === 0 ? ', so this model was not judged.' : `; the other ${judged.length} ${judged.length === 1 ? 'was' : 'were'} judged.`}`, '')
+      const refusedRuns = refusals.map((x) => x.r)
+      const models = [...new Set(refusedRuns.map((r) => r.finalModel ?? r.attempts.at(-1)?.model).filter((m): m is string => !!m))].sort()
+      const tasksHit = [...new Set(refusedRuns.map((r) => r.taskId))].sort()
+      const who = `${tasksHit.map((t) => `\`${t}\``).join(', ')} on ${models.length ? models.map((m) => `\`${m}\``).join(', ') : 'no model'}`
+      const what = `${refusals.length} of ${o.results.length} runs got no answer from the free endpoint on ${dateOf(refusedRuns)} (${messages})`
+      out.push(`\`${o.runId}\`, ${who}: ${what}${judged.length === 0 ? ', so this model was not judged.' : `; the other ${judged.length} ${judged.length === 1 ? 'was' : 'were'} judged.`}`, '')
     }
     const failed = judged.filter((r) => !r.pass)
     if (failed.length > 0) {

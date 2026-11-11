@@ -75,7 +75,7 @@ This runs the whole flow (sandbox, worker, event, runner loop, cleanup) with the
 
 ## The live cap
 
-This work is allowed a limited number of live goose runs (45), free OpenRouter models only, synthetic data only. Every goose attempt is counted in `evals/results/ledger.jsonl` and `pnpm evals` stops at the cap. A task whose first model fails and falls back counts each attempt.
+This work was allowed 45 live goose runs, free OpenRouter models only, synthetic data only. The cap was raised to 51 for the two retries on Gemma, and all 51 are spent (the default of `--cap` is still 45). Every goose attempt is counted in `evals/results/ledger.jsonl` and `pnpm evals` stops at the cap. A task whose first model fails and falls back counts each attempt.
 
 ## The report
 

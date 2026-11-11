@@ -133,7 +133,7 @@ describe('the section for other run folders: refused runs are told apart from ju
     expect(section).not.toContain(HEADER)
     expect(section).not.toContain('| --- |')
     expect(section).not.toContain('| `2026-11-11-gemma`')
-    expect(section).toContain(`\`2026-11-11-gemma\`: 3 of 3 runs got no answer from the free endpoint on 2026-11-11 ("${HIGH_DEMAND_QUOTED}"), so this model was not judged.`)
+    expect(section).toContain(`\`2026-11-11-gemma\`, \`class-report\` on \`google/gemma-4-31b-it:free\`: 3 of 3 runs got no answer from the free endpoint on 2026-11-11 ("${HIGH_DEMAND_QUOTED}"), so this model was not judged.`)
     expect(section.match(/Server error: This model/g)).toHaveLength(1)
     expect(section).not.toMatch(/\| 0 \|/)
   })
@@ -144,7 +144,7 @@ describe('the section for other run folders: refused runs are told apart from ju
     expect(section).toContain(HEADER)
     // judged runs 1 and 3: seconds 100 and 120 (median 110), tool calls 5 and 7 (median 6). The refused run 2 (47 s, 0 calls) is left out.
     expect(section).toMatch(/^\| `2026-11-11-mixed` \| `google\/gemma-4-31b-it:free` \| `class-report` \| 2 \| 1 \| 110 \| 6 \| \$0 on the free tier; about \$0\.\d+ at the listed paid price \|$/m)
-    expect(section).toContain(`\`2026-11-11-mixed\`: 1 of 3 runs got no answer from the free endpoint on 2026-11-11 ("${HIGH_DEMAND_QUOTED}"); the other 2 were judged.`)
+    expect(section).toContain(`\`2026-11-11-mixed\`, \`class-report\` on \`google/gemma-4-31b-it:free\`: 1 of 3 runs got no answer from the free endpoint on 2026-11-11 ("${HIGH_DEMAND_QUOTED}"); the other 2 were judged.`)
     expect(section).not.toContain('so this model was not judged')
   })
 
@@ -167,7 +167,7 @@ describe('the section for other run folders: refused runs are told apart from ju
     const section = sectionOf(text)
     expect(section).toContain('| `2026-11-11-qwen` |')
     expect(section).not.toContain('| `2026-11-11-gemma` |')
-    expect(section).toContain('`2026-11-11-gemma`: 3 of 3 runs got no answer')
+    expect(section).toContain('`2026-11-11-gemma`, `class-report` on `google/gemma-4-31b-it:free`: 3 of 3 runs got no answer')
   })
 
   test('the section comes after the main results and before the cost paragraph', () => {

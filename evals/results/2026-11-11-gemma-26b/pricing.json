@@ -1,0 +1,12 @@
+{
+  "fetchedAt": "2026-11-11",
+  "source": "https://openrouter.ai/api/v1/models",
+  "models": {
+    "google/gemma-4-26b-a4b-it:free": {
+      "paidId": "google/gemma-4-26b-a4b-it",
+      "promptPerM": 0.08,
+      "completionPerM": 0.1,
+      "freeListed": true
+    }
+  }
+}
