@@ -44,6 +44,8 @@ describe('the school a live run starts from, in the real database', () => {
     fixture = null
     expect((await db.from('schools').select('id').eq('id', schoolId)).data).toEqual([])
     expect((await db.from('classes').select('id').eq('id', classId)).data).toEqual([])
-    expect((await db.storage.from('curriculum').download(docs.data![0]!.storage_path)).error).not.toBeNull()
+    // the folder is listed from the database of the bucket (a download may still be answered from a cache for a while)
+    const folder = docs.data![0]!.storage_path.split('/').slice(0, -1).join('/')
+    expect((await db.storage.from('curriculum').list(folder)).data).toEqual([])
   })
 })
