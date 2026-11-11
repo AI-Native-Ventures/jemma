@@ -42,6 +42,8 @@ vi.mock('@/lib/supabase/admin', () => ({
         },
         single: async () => (table === 'classes' ? { data: { id: 'class-1' }, error: null } : { data: boxes[id] ?? null, error: boxes[id] ? null : { message: 'no rows' } }),
         maybeSingle: async () => ({ data: table === 'demo_sandboxes' ? (boxes[id] ?? null) : null, error: null }),
+        // The classes of the sandbox school are read as a list: the home class is the oldest.
+        then: (resolve: (v: { data: unknown; error: null }) => unknown) => resolve({ data: table === 'classes' ? [{ id: 'class-1', created_at: '2026-01-01T00:00:00Z' }] : null, error: null }),
       }
       return q
     },

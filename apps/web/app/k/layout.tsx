@@ -5,6 +5,7 @@ import { Sidebar, TabBar } from '@/components/blocks'
 import { requireRole } from '@/lib/auth'
 import { initialsOf } from '@/lib/initials'
 import { HANDOVER_COOKIE, handoverAllows } from '@/lib/handover'
+import { isPublicPath } from '@/lib/public-paths'
 import { activeTab } from '@/lib/space'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
@@ -20,7 +21,11 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
   const pathname = (await headers()).get('x-pathname') ?? '/k'
   const supabase = await createSupabaseServer()
   const { data: auth } = await supabase.auth.getUser()
-  if (!auth.user) redirect('/sign-in')
+  if (!auth.user) {
+    // The learner sign-in screen is the one page of the space a signed-out child can open.
+    if (isPublicPath(pathname)) return <>{children}</>
+    redirect('/sign-in')
+  }
   const { data: me } = await supabase.from('profiles').select('role').eq('user_id', auth.user.id).maybeSingle()
 
   if (me?.role === 'parent') {

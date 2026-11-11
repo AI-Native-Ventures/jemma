@@ -10,8 +10,8 @@ export default async function CurriculumMapPage({ params }: { params: Promise<{ 
   if (!map || !read) redirect(`/t/${classId}/curriculum`)
 
   const supabase = await createSupabaseServer()
-  const { data: cls } = await supabase.from('classes').select('name').eq('id', classId).maybeSingle()
-  const subject = cls?.name.replace(/^\S+\s+/, '') || 'Mathematics'
+  const { data: cls } = await supabase.from('classes').select('subject').eq('id', classId).maybeSingle()
+  const subject = cls?.subject ?? ''
   const open = unresolved(read, currentTerm())
   const openChecks = new Set(open.filter((o) => o.kind === 'check').map((o) => o.name))
   const terms: MapView['terms'] = ([1, 2, 3, 4] as const).map((term) => {

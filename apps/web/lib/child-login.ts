@@ -64,6 +64,27 @@ export async function createChildLogin(admin: JemmaDb, childId: string, pin: str
   throw new Error('could not find a free sign-in code')
 }
 
+export type ReplaceLoginResult = { ok: true; code: string } | { ok: false; error: string }
+
+/**
+ * Makes the child's sign-in code and PIN, and the person who set it (`pin_set_by`: a parent or the class teacher). An earlier
+ * code is removed with its child user, so the old code stops working. The caller has already checked that this person may do it.
+ */
+export async function replaceChildLogin(admin: JemmaDb, input: { childId: string; pin: string; setBy: string }): Promise<ReplaceLoginResult> {
+  const { data: old } = await admin.from('child_logins').select('user_id').eq('child_id', input.childId).maybeSingle()
+  if (old) {
+    const gone = await admin.auth.admin.deleteUser(old.user_id)
+    if (gone.error) return { ok: false, error: 'Could not remove the old code. Try again.' }
+  }
+  try {
+    const { code } = await createChildLogin(admin, input.childId, input.pin)
+    await admin.from('child_logins').update({ pin_set_by: input.setBy }).eq('code', code)
+    return { ok: true, code }
+  } catch {
+    return { ok: false, error: 'Could not make a new code. Try again.' }
+  }
+}
+
 /**
  * Checks the lock, then the PIN. `signIn` does the real Supabase password sign-in
  * (and sets the session cookies in the app). Five wrong tries in 15 minutes lock the code.

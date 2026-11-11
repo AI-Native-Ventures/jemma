@@ -10,9 +10,10 @@ export type FoundCard = { className: string; teacherName: string; grade: number;
 const input = { fontFamily: 'inherit', background: '#FFFFFF', color: ink, borderRadius: 14, padding: '0 16px' } as const
 
 /** Code, class card and the child's name. Leaving the code box looks the class up again. */
-export function AddChildForm({ code, child, found, error }: { code: string; child: string; found: FoundCard | null; error: string | null }) {
+export function AddChildForm({ code, child, surname, needsSurname, found, error }: { code: string; child: string; surname: string; needsSurname: boolean; found: FoundCard | null; error: string | null }) {
   const router = useRouter()
   const [name, setName] = useState(child)
+  const [last, setLast] = useState(surname)
   const [typed, setTyped] = useState(code)
   const kid = name.trim() || 'your child'
   const possessive = name.trim() ? `${name.trim()}'s` : 'Your child’s'
@@ -56,6 +57,17 @@ export function AddChildForm({ code, child, found, error }: { code: string; chil
             style={{ ...input, height: 52, border: '1px solid #8C89A3', fontSize: 17 }}
           />
         </div>
+        {needsSurname || surname ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label htmlFor="surname" style={{ fontSize: 15, fontWeight: 500 }}>Your child&apos;s surname</label>
+            <input
+              id="surname" name="surname" type="text" autoComplete="off" value={last} required={needsSurname}
+              onChange={(e) => setLast(e.target.value)}
+              style={{ ...input, height: 52, border: '1px solid #8C89A3', fontSize: 17 }}
+            />
+            <span style={{ fontSize: 13, color: body }}>More than one child in this class has this first name, so the school needs the surname too.</span>
+          </div>
+        ) : null}
         {error ? <p role="alert" style={{ margin: 0, fontSize: 15, color: '#B8381F' }}>{error}</p> : null}
       </form>
 

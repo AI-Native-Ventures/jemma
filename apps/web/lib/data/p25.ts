@@ -23,6 +23,11 @@ export const dayLabel = (iso: string) => `${weekdayShort(iso)} ${dayNumber(iso)}
 /** "Decimal comma": 4.2 is "4,2". */
 export const decimalComma = (n: number) => n.toFixed(1).replace('.', ',')
 
+/** The topic family the "what helps" numbers are about: tonight's topic, else the child's latest trial, else nothing to name ("these"). */
+export function helpsFamily(opts: { topicFamily?: string | null; latestTrialFamily?: string | null }): string {
+  return opts.topicFamily || opts.latestTrialFamily || 'these'
+}
+
 export type PlannedSession = {
   id: string
   plannedFor: string
@@ -127,17 +132,21 @@ export async function loadLearn(childId: string): Promise<LearnData> {
   const first = sessions[0] ?? null
 
   let tonight: LearnData['tonight'] = null
-  let family = 'fractions'
+  let topicFamily: string | null = null
   if (first) {
     const [lesson, topic, why] = await Promise.all([
       first.lessonId ? db.from('lessons').select('content').eq('id', first.lessonId).single() : Promise.resolve({ data: null }),
       first.topicId ? db.from('topics').select('family').eq('id', first.topicId).maybeSingle() : Promise.resolve({ data: null }),
       whyTonight(db, childId, first.topicId, first.topicName, `/p/${childId}`),
     ])
-    if (topic.data?.family) family = topic.data.family
+    topicFamily = topic.data?.family ?? null
     tonight = { ...first, withPhrase: withPhrase(first.format, lesson.data?.content ?? null), whyTonight: why }
   }
 
+  const { data: latest } = topicFamily
+    ? { data: null }
+    : await db.from('format_trials').select('topic_family').eq('child_id', childId).order('created_at', { ascending: false }).limit(1).maybeSingle()
+  const family = helpsFamily({ topicFamily, latestTrialFamily: latest?.topic_family })
   const { data: trials } = await db.from('format_trials').select('format, score').eq('child_id', childId).eq('topic_family', family)
   const helps = whatHelps((trials ?? []).map((t) => ({ format: t.format as Format, score: t.score })))
   const rows = (['diagram', 'reading', 'audio'] as const).map((format) => {

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ChevronRightIcon, ClockIcon, GemIcon } from '@/components/ui/icons'
 import { getGapDetail, joinNames, numberWord, type GapLearner } from '@/lib/data/p18'
+import { getClassInfo } from '@/lib/data/p21'
 import { markReteachDone } from '../actions'
 import { PrintButton } from './PrintButton'
 
@@ -19,6 +20,7 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
   const { classId, topicKey } = await params
   const detail = await getGapDetail(classId, topicKey)
   if (!detail) notFound()
+  const { name: className } = await getClassInfo(classId)
   const { gap, reteach } = detail
   const base = `/t/${classId}`
   const done = Boolean(reteach?.doneAt)
@@ -34,7 +36,7 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
           </svg>
         </Link>
         <span className="flex min-w-0 flex-1 flex-col leading-[1.2]">
-          <span className="text-[13px] text-body">6B Mathematics</span>
+          <span className="text-[13px] text-body">{className}</span>
           <span className="text-[17px] font-bold">
             Class gap {detail.index + 1} of {detail.of}
           </span>

@@ -40,17 +40,45 @@ export async function findClass(code: string): Promise<FoundClass | null> {
   }
 }
 
-/** The one child in the class with this first name (any case), or null when none or more than one. */
-export async function findChildInClass(classId: string, childName: string): Promise<{ id: string; firstName: string } | null> {
-  const name = childName.trim().toLowerCase()
-  if (!name) return null
-  const db = createSupabaseAdmin()
-  const { data } = await db.from('enrolments').select('children(id, first_name)').eq('class_id', classId)
-  const hits = (data ?? []).flatMap((e) => (e.children && e.children.first_name.toLowerCase() === name ? [e.children] : []))
-  return hits.length === 1 ? { id: hits[0]!.id, firstName: hits[0]!.first_name } : null
+export type ChildRow = { id: string; firstName: string; lastName: string | null }
+/** `many`: more than one child fits and the parent has to type the surname. */
+export type ChildMatch = { kind: 'one'; child: ChildRow } | { kind: 'none' } | { kind: 'many' }
+
+const plain = (text: string | null | undefined) => (text ?? '').trim().replace(/\s+/g, ' ').toLowerCase()
+
+/**
+ * Which child the parent means. The first name (any case) finds the child. When two children share it, the surname picks one;
+ * with no surname typed, the one child who has none is meant, and otherwise the form must ask. A surname typed for the only
+ * child with that name must agree with theirs when they have one.
+ */
+export function matchChild(rows: ChildRow[], firstName: string, surname?: string): ChildMatch {
+  const first = plain(firstName)
+  if (!first) return { kind: 'none' }
+  const hits = rows.filter((r) => plain(r.firstName) === first)
+  const last = plain(surname)
+  if (hits.length === 0) return { kind: 'none' }
+  if (hits.length === 1) {
+    const only = hits[0]!
+    return last && plain(only.lastName) && plain(only.lastName) !== last ? { kind: 'none' } : { kind: 'one', child: only }
+  }
+  if (last) {
+    const named = hits.filter((h) => plain(h.lastName) === last)
+    return named.length === 1 ? { kind: 'one', child: named[0]! } : named.length === 0 ? { kind: 'none' } : { kind: 'many' }
+  }
+  const nameless = hits.filter((h) => !plain(h.lastName))
+  return nameless.length === 1 ? { kind: 'one', child: nameless[0]! } : { kind: 'many' }
 }
 
-export type RequestResult = { ok: true; linkId: string } | { ok: false; reason: string }
+/** The child of the class the parent means, from the first name and, when two children share it, the surname. */
+export async function findChildInClass(classId: string, childName: string, surname?: string): Promise<ChildMatch> {
+  if (!childName.trim()) return { kind: 'none' }
+  const db = createSupabaseAdmin()
+  const { data } = await db.from('enrolments').select('children(id, first_name, last_name)').eq('class_id', classId)
+  const rows = (data ?? []).flatMap((e) => (e.children ? [{ id: e.children.id, firstName: e.children.first_name, lastName: e.children.last_name }] : []))
+  return matchChild(rows, childName, surname)
+}
+
+export type RequestResult = { ok: true; linkId: string } | { ok: false; reason: string; needsSurname?: boolean }
 
 /**
  * Records the parent's request (pending, with the ticks) and puts an "approve link" item in the teacher's Needs you.
@@ -58,13 +86,15 @@ export type RequestResult = { ok: true; linkId: string } | { ok: false; reason: 
  */
 export async function createLinkRequest(
   parent: { userId: string; displayName: string },
-  input: { code: string; childName: string; consent: Consent },
+  input: { code: string; childName: string; surname?: string; consent: Consent },
 ): Promise<RequestResult> {
   if (!input.consent.guardian || !input.consent.teach) return { ok: false, reason: 'Tick the two boxes marked Needed.' }
   const cls = await findClass(input.code)
   if (!cls) return { ok: false, reason: 'No class has that code. Check it with the teacher.' }
-  const child = await findChildInClass(cls.classId, input.childName)
-  if (!child) return { ok: false, reason: `${cls.teacherName}'s class has no one called ${input.childName.trim() || 'that'}. Check the spelling.` }
+  const match = await findChildInClass(cls.classId, input.childName, input.surname)
+  if (match.kind === 'none') return { ok: false, reason: `${cls.teacherName}'s class has no one called ${input.childName.trim() || 'that'}. Check the spelling.` }
+  if (match.kind === 'many') return { ok: false, needsSurname: true, reason: `More than one child in ${cls.teacherName}'s class is called ${input.childName.trim()}. Type the surname.` }
+  const child = match.child
 
   const db = createSupabaseAdmin()
   const { data: existing } = await db
@@ -98,7 +128,7 @@ export async function createLinkRequest(
       child_id: child.id,
       kind: 'approve_link',
       ref_id: linkId,
-      title: `${parent.displayName} wants to see ${child.firstName}'s work`,
+      title: `${parent.displayName} wants to see ${[child.firstName, child.lastName].filter(Boolean).join(' ')}'s work`,
       detail: `New parent · code ${cleanCode(input.code)}`,
     })
   }

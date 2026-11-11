@@ -78,7 +78,7 @@ test('sign-up matches the board and needs the agreement before sending a code', 
   await page.goto('/sign-up')
   await expect(page.getByRole('heading', { name: "Make your Jemma account. It's free for families." })).toBeVisible()
   await expect(
-    page.getByText('For teachers, parents, and learners in Grade 8 and up. Younger children get their sign-in from a grown-up.'),
+    page.getByText('For teachers and parents. Learners sign in with a code from a parent or teacher.'),
   ).toBeVisible()
   await expect(page.getByLabel('Your name')).toBeVisible()
   await expect(page.getByLabel('Email')).toBeVisible()
@@ -145,7 +145,7 @@ test.describe('first sign-in with an emailed code', () => {
         await expect(page.getByText("I support my child at home and want to know they're okay.")).toBeVisible()
         await expect(page.getByText('Learner · Grade 8 to 12')).toBeVisible()
         await expect(page.getByText('I fix my own gaps with my Jemma.')).toBeVisible()
-        await expect(page.getByText('Grade 7 or younger? A grown-up adds you.')).toBeVisible()
+        await expect(page.getByText('Learners sign in with a code from a parent or teacher.')).toBeVisible()
         await expect(page.getByRole('link', { name: 'Sign in with your code' })).toHaveAttribute('href', '/k/sign-in')
         await noHorizontalScroll(page)
         if (role === 'teacher') await shot(page, testInfo, 'shared-role')
