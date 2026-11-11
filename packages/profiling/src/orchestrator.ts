@@ -1,4 +1,5 @@
 import type { AiEnv } from './ai'
+import { classIdFor, classIdOfRef } from './ai/subject-profile'
 import type { JemmaDb } from './db'
 import { notify, notifyLessonReady } from './notify'
 import { jobPlan, postconditions, type JobName, type JobStep } from './plans'
@@ -127,10 +128,10 @@ export async function lessonSaved(db: JemmaDb, childId: string): Promise<boolean
  * Shared by the cloud run and the operator runner.
  */
 export async function announceNeedsYou(db: JemmaDb, schoolId: string, since: string, told: Set<string>): Promise<void> {
-  const items = await ok(db.from('needs_you_items').select('id, owner_id, title, detail').eq('school_id', schoolId).eq('status', 'open').gte('created_at', since))
+  const items = await ok(db.from('needs_you_items').select('id, owner_id, title, detail, ref_id').eq('school_id', schoolId).eq('status', 'open').gte('created_at', since))
   for (const item of items.filter((i) => !told.has(i.id))) {
     told.add(item.id)
-    await notify(db, [item.owner_id], { title: item.title, body: item.detail || 'Jemma needs you.', href: (await ownerOf(db, schoolId))?.href ?? '/' })
+    await notify(db, [item.owner_id], { title: item.title, body: item.detail || 'Jemma needs you.', href: (await ownerOf(db, schoolId, await classIdOfRef(db, item.ref_id)))?.href ?? '/' })
   }
 }
 
@@ -143,8 +144,15 @@ export async function afterJob(db: JemmaDb, schoolId: string, step: JobStep, sin
   await announceNeedsYou(db, schoolId, since, told)
 }
 
-/** Where a Needs you item or a notification for this school's owner should lead. */
-export async function ownerOf(db: JemmaDb, schoolId: string): Promise<{ userId: string; href: string } | null> {
+/**
+ * Where a Needs you item or a notification for this school's owner should lead. With the class of the event (a class of this
+ * school) it is that class and its teacher; without one, the oldest class of the school.
+ */
+export async function ownerOf(db: JemmaDb, schoolId: string, classId?: string | null): Promise<{ userId: string; href: string } | null> {
+  if (classId) {
+    const own = await ok(db.from('classes').select('id, teacher_id').eq('id', classId).eq('school_id', schoolId))
+    if (own[0]) return { userId: own[0].teacher_id, href: `/t/${own[0].id}` }
+  }
   const classes = await ok(db.from('classes').select('id, teacher_id').eq('school_id', schoolId).order('created_at').limit(1))
   if (classes[0]) return { userId: classes[0].teacher_id, href: `/t/${classes[0].id}` }
   const teacher = await ok(db.from('profiles').select('user_id').eq('school_id', schoolId).eq('role', 'teacher').limit(1))
@@ -332,7 +340,7 @@ export async function checkDesktopTimeouts(db: JemmaDb, now: Date = new Date(), 
   for (const e of waiting) bySchool.set(e.school_id, [...(bySchool.get(e.school_id) ?? []), e])
   let created = 0
   for (const [schoolId, events] of bySchool) {
-    const owner = await ownerOf(db, schoolId)
+    const owner = await ownerOf(db, schoolId, await classIdFor(db, { eventId: events[0]!.id }))
     if (!owner) continue
     const beat = await ok(db.from('runner_presence').select('runner_id').eq('user_id', owner.userId).gte('last_seen', cutoff).limit(1))
     if (beat.length) continue
