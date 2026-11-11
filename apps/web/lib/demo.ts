@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { JemmaDb } from '@jemma/profiling/db'
 import { createSandbox, resetSandbox } from '../../../supabase/seed/demo'
+import { loadSheet } from './sample-sheets'
 import { createSupabaseAdmin } from './supabase/admin'
 import { createSupabaseServer } from './supabase/server'
 
@@ -137,7 +138,7 @@ export async function signInAs(sandboxId: string, role: DemoRole): Promise<strin
 /** "Try the demo": makes a fresh sandbox unless the judge already has one, then signs in as `role`. */
 export async function tryDemo(role: DemoRole = 'teacher'): Promise<never> {
   let sandboxId = (await getDemoState())?.sandboxId ?? null
-  if (!sandboxId) sandboxId = (await createSandbox(createSupabaseAdmin(), { stage: 'start' })).sandboxId
+  if (!sandboxId) sandboxId = (await createSandbox(createSupabaseAdmin(), { stage: 'start', loadSheet })).sandboxId
   redirect(await signInAs(sandboxId, role))
 }
 
@@ -152,7 +153,7 @@ export async function switchRole(role: DemoRole): Promise<never> {
 export async function resetDemo(): Promise<never> {
   const sandboxId = await demoCookie()
   if (!sandboxId) redirect('/demo')
-  await resetSandbox(createSupabaseAdmin(), sandboxId)
+  await resetSandbox(createSupabaseAdmin(), sandboxId, { loadSheet })
   const supabase = await createSupabaseServer()
   await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined)
   redirect('/demo')
