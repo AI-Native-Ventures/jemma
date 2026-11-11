@@ -146,19 +146,19 @@ test.describe('a curriculum Jemma has never seen', () => {
 
     // wrong kind: the name says PDF, the first bytes say a program
     await addFile(page, { name: 'plan.pdf', mimeType: 'application/pdf', buffer: Buffer.from('MZ\u0090\u0000 this is a program, not a PDF') })
-    await check(page.getByRole('alert')).toHaveText('"plan.pdf" is not a PDF, JPG or PNG file. Jemma can only read those three kinds.')
+    await check(page.getByRole('alert').filter({ hasText: 'is not a PDF, JPG or PNG file' })).toHaveText('"plan.pdf" is not a PDF, JPG or PNG file. Jemma can only read those three kinds.')
     await proof(page, 'upload-wrong-kind')
 
     // over 10 MB: said before anything is sent
     const big = Buffer.concat([Buffer.from('%PDF-1.4\n'), Buffer.alloc(11 * MB)])
     await addFile(page, { name: 'whole-book.pdf', mimeType: 'application/pdf', buffer: big })
-    await check(page.getByRole('alert')).toHaveText('"whole-book.pdf" is 11.0 MB. The limit is 10 MB for one document. Make it smaller, or send only the pages for your grade.')
+    await check(page.getByRole('alert').filter({ hasText: 'The limit is 10 MB' })).toHaveText('"whole-book.pdf" is 11.0 MB. The limit is 10 MB for one document. Make it smaller, or send only the pages for your grade.')
     await proof(page, 'upload-too-big')
 
     // over 40 pages: only the server can count them, and it says so in the same box
     const pages = Array.from({ length: 41 }, (_, i) => `${i + 3} 0 obj\n<< /Type /Page /Parent 2 0 R >>\nendobj`).join('\n')
     await addFile(page, { name: 'long-plan.pdf', mimeType: 'application/pdf', buffer: Buffer.from(`%PDF-1.4\n2 0 obj\n<< /Type /Pages /Count 41 /Kids [] >>\nendobj\n${pages}\n%%EOF`) })
-    await check(page.getByRole('alert')).toHaveText('"long-plan.pdf" has 41 pages. The limit is 40 pages for one document. Send only the pages for your grade.')
+    await check(page.getByRole('alert').filter({ hasText: 'The limit is 40 pages' })).toHaveText('"long-plan.pdf" has 41 pages. The limit is 40 pages for one document. Send only the pages for your grade.')
     await proof(page, 'upload-too-many-pages')
 
     // nothing was stored and no job was started
@@ -213,10 +213,11 @@ test.describe('a curriculum Jemma has never seen', () => {
     await expect(page.getByRole('heading', { name: 'Term 2 · April to June' })).toBeVisible()
     await check(page.getByText('Listed in Terms 2 and 3')).toBeVisible()
     await proof(page, 'review-grade9')
-    await page.getByRole('button', { name: 'Keep in Term 2' }).click()
-    await check(page.getByText('Listed in Terms 2 and 3')).toHaveCount(0)
+    // the left out topic sits in the term of the first open check, so it is settled first
     await page.getByRole('button', { name: 'Leave it out' }).click()
     await check(page.getByText('A Grade 8 topic. Add it?')).toHaveCount(0)
+    await page.getByRole('button', { name: 'Keep in Term 2' }).click()
+    await check(page.getByText('Listed in Terms 2 and 3')).toHaveCount(0)
 
     await page.getByRole('button', { name: 'Approve map' }).click()
     await page.waitForURL(`**/t/${m.classId}/curriculum`)
@@ -249,10 +250,10 @@ test.describe('a curriculum Jemma has never seen', () => {
       // the change-term list offers three terms, not four
       await page.getByRole('button', { name: 'Edit Parts of a flowering plant' }).click()
       await expect(page.getByRole('combobox').locator('option')).toHaveText(['Term 1', 'Term 2', 'Term 3'])
-      await page.keyboard.press('Escape')
     } else {
-      await check(page.getByRole('heading', { name: /^Term \d$/ })).toHaveCount(3)
-      await expect(page.getByRole('heading', { name: 'Term 4' })).toHaveCount(0)
+      // a term heading may carry the count of things to check after its name
+      await check(page.getByRole('heading', { name: /^Term [1-4]( \d+)?$/ })).toHaveCount(3)
+      await expect(page.getByRole('heading', { name: /^Term 4/ })).toHaveCount(0)
       await expect(page.getByText(/Jan to Mar|Apr to Jun|Jul to Sep|Oct to Dec/)).toHaveCount(0)
     }
     await proof(page, 'review-kenya-three-terms')
