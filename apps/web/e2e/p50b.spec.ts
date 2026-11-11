@@ -78,6 +78,42 @@ async function holdSeededTest(classId: string): Promise<string> {
   return testId
 }
 
+const HELD_TITLE = 'Held Test Two'
+const HELD_TOPIC = 'Held only topic'
+const HELD_LINE = 'Marked Held Test Two against your key: 3 out of 10'
+
+/**
+ * A second test of the class, as a real one is while the teacher has not shared it: held, with a marked paper for Amina,
+ * the wrong answers, a gap whose only evidence is that paper, and the log line of the job that marked it (tied to its event).
+ * Everything that names it uses its own words, so a page that carries any of them has leaked it.
+ */
+async function addHeldTest(classId: string, schoolId: string, childId: string): Promise<string> {
+  const db = admin()
+  type Done = PromiseLike<{ data: unknown; error: { message: string } | null }>
+  const rows = async (q: Done) => {
+    const { data, error } = await q
+    expect(error).toBeNull()
+    return data as { id: string }[]
+  }
+  const one = async (q: Done) => {
+    const { data, error } = await q
+    expect(error).toBeNull()
+    return data as { id: string }
+  }
+  const test = await one(db.from('tests').insert({ class_id: classId, title: HELD_TITLE, out_of: 10, held: true }).select('id').single())
+  const paper = await one(db.from('papers').insert({ test_id: test.id, child_id: childId, owner: 'teacher', kind: 'test', status: 'marked', total: 3, name_read: 'Amina' }).select('id').single())
+  const results = await rows(
+    db
+      .from('question_results')
+      .insert([1, 2].map((n) => ({ paper_id: paper.id, child_id: childId, n, prompt: `Held question ${n}`, answer_read: '1', read_confidence: 1, correct: false, mark: 0, topic_name: HELD_TOPIC })))
+      .select('id'),
+  )
+  await one(db.from('gaps').insert({ child_id: childId, topic_name: HELD_TOPIC, stage: 'new', evidence: results.map((r) => r.id) }).select('id').single())
+  const event = await one(db.from('events').insert({ school_id: schoolId, type: 'paper.snapped', payload: { paperId: paper.id }, status: 'done' }).select('id').single())
+  await one(db.from('activity_log').insert({ school_id: schoolId, class_id: classId, child_id: childId, text: HELD_LINE, tool: 'mark_paper', event_id: event.id }).select('id').single())
+  return test.id
+}
+
 const y = async (locator: Locator) => (await locator.boundingBox())!.y
 
 test.use({ screenshot: 'only-on-failure' })
@@ -164,45 +200,42 @@ test.describe('Share with parents', () => {
     }
   })
 
-  test('while a test is held a parent and the learner see their earlier state, never an error, and no mark of that test', async ({ page }) => {
+  test('while a test is held a parent and the learner see their earlier state, never an error, and nothing of that test', async ({ page }) => {
     const sb = await openSandbox(page, { stage: 'marked', role: 'teacher' })
     try {
-      const { logins: who } = await peopleOf(sb.sandboxId)
-      const testId = await holdSeededTest(sb.classId)
-      expect(testId).toBeTruthy()
-      const TITLE = 'Class Test 1'
+      const { schoolId, logins: who } = await peopleOf(sb.sandboxId)
+      const heldId = await addHeldTest(sb.classId, schoolId, sb.childId)
+      const leaks = [HELD_TITLE, HELD_TOPIC, HELD_LINE, 'Held question']
 
-      /** The page loads with no error page and shows nothing of the held test, not even in the data the page carries. */
+      /** The page loads with no error page and carries nothing of the held test, not even in the data inside the page. */
       const calm = async (path: string, heading: RegExp) => {
         const res = await page.goto(path)
         expect(res?.status(), `${path} answers`).toBeLessThan(400)
         await check(page.getByRole('heading', { level: 1 })).toContainText(heading)
         await expect(page.getByText(/Application error|Internal Server Error|This page couldn.t load|Something went wrong/i)).toHaveCount(0)
-        expect(await page.content(), `${path} must not carry the held test`).not.toContain(TITLE)
+        const html = await page.content()
+        for (const word of leaks) expect(html, `${path} must not carry "${word}"`).not.toContain(word)
         await noHorizontalScroll(page)
       }
 
-      // The parent (linked and approved): profile and tests page.
+      // The parent (linked and approved): profile and tests page show what they showed before, with the shared Class Test 1.
       await signInWithPassword(page, who.parent.email, who.parent.password)
       await calm(`/p/${sb.childId}`, /Amina/)
       await proof(page, 'parent-profile-held')
       await calm(`/p/${sb.childId}/tests`, /./)
+      await expect(page.getByText(/Class Test 1/).first()).toBeVisible()
       await proof(page, 'parent-tests-held')
 
       // The learner's own home.
       await signInWithPassword(page, who.learner.email, who.learner.password)
-      const res = await page.goto('/k')
-      expect(res?.status()).toBeLessThan(400)
-      await check(page.getByRole('heading', { level: 1 })).toBeVisible()
-      await expect(page.getByText(/Application error|Internal Server Error|This page couldn.t load|Something went wrong/i)).toHaveCount(0)
-      expect(await page.content()).not.toContain(TITLE)
+      await calm('/k', /./)
       await proof(page, 'learner-home-held')
 
-      // After the share the parent sees the test on both pages.
-      await admin().from('tests').update({ held: false, shared_at: new Date().toISOString(), shared_by: who.teacher.userId }).eq('id', testId)
+      // After the share the parent sees the new test on the tests page.
+      await admin().from('tests').update({ held: false, shared_at: new Date().toISOString(), shared_by: who.teacher.userId }).eq('id', heldId)
       await signInWithPassword(page, who.parent.email, who.parent.password)
       await page.goto(`/p/${sb.childId}/tests`)
-      await check(page.getByText(new RegExp(TITLE)).first()).toBeVisible()
+      await check(page.getByText(HELD_TITLE).first()).toBeVisible()
     } finally {
       await sb.cleanup().catch(() => undefined)
     }
