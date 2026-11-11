@@ -322,10 +322,12 @@ const writes: Record<string, (ids: Record<string, string>, eventId: string) => P
   },
 }
 
-/** A fake agent run: it records the call and the token it was given, then does what the real job would write. */
+/** A fake agent run: it records the call, the engine and the token it was given, then does what the real job would write. */
 function fakeAgent(opts: { writes?: Partial<typeof writes>; hold?: (call: Call) => Promise<void>; fail?: (call: Call) => RunResult | undefined } = {}) {
   const calls: Call[] = []
-  const run = async (job: RunnerJob, _agent: unknown, mcp: { url: string; token: string }): Promise<RunResult> => {
+  const engines: unknown[] = []
+  const run = async (job: RunnerJob, engine: unknown, mcp: { url: string; token: string }): Promise<RunResult> => {
+    engines.push(engine)
     const name = /^Job: (\w+)$/m.exec(job.prompt)![1]!
     const ids = JSON.parse(/^Ids: (.*)$/m.exec(job.prompt)![1]!) as Record<string, string>
     const call: Call = { job: name, ids, eventId: job.eventId, token: mcp.token, url: mcp.url, tokenRow: (await tokenRows(mcp.token))[0] ?? null }
@@ -336,7 +338,7 @@ function fakeAgent(opts: { writes?: Partial<typeof writes>; hold?: (call: Call) 
     await (opts.writes?.[name] ?? writes[name])?.(ids, job.eventId)
     return { status: 'done', note: 'fake done' }
   }
-  return { calls, run: run as unknown as NonNullable<OperatorOptions['run']> }
+  return { calls, engines, run: run as unknown as NonNullable<OperatorOptions['run']> }
 }
 
 const fakeDetect = async () => ({
@@ -369,6 +371,21 @@ test('operator loop: one-time token for the school, one agent run, settled done,
     await tokenGone(call.token) // deleted once the event ended
     expect(lines.some((l) => /^\d\d:\d\d:\d\d {2}observation\.added {2}guidance {2}\d+s {2}done$/.test(l))).toBe(true)
     expect(await presenceRow(runnerId)).toMatchObject({ agent: 'claude', version: '1.2.3' })
+  } finally {
+    await op.stop()
+  }
+  expect(await presenceRow(runnerId)).toBeNull()
+})
+
+test('operator loop: with agent goose the run gets the engine goose and the presence row says goose', async () => {
+  const id = await queueOp(loopS, 'observation.added', { childId: loopS.aminaId })
+  const agent = fakeAgent()
+  const { op, runnerId } = operate({ run: agent.run, agent: 'goose' })
+  try {
+    expect(await settled(id)).toMatchObject({ status: 'done', error: null })
+    expect(agent.engines).toEqual(['goose'])
+    expect(await presenceRow(runnerId)).toMatchObject({ agent: 'goose' })
+    await tokenGone(agent.calls[0]!.token)
   } finally {
     await op.stop()
   }

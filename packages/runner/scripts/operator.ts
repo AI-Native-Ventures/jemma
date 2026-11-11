@@ -1,10 +1,12 @@
 /**
- * The operator runner: this Mac does the AI work for the hosted Jemma app, with the Claude Code (or Codex) signed in here.
+ * The operator runner: this Mac does the AI work for the hosted Jemma app, with the Claude Code (or Codex) signed in here,
+ * or with goose and an open-weights model on OpenRouter.
  *
  *   pnpm operator
  *
  * Reads SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and AGENT_URL from the repo root .env.local (or the environment),
- * JEMMA_RUNNER_AGENT (claude, codex or goose, default claude; only claude has been proven) and OPERATOR_CONCURRENCY (default 2).
+ * JEMMA_RUNNER_AGENT (claude, codex or goose, default claude) and OPERATOR_CONCURRENCY (default 2). Claude was proven
+ * live; goose in the operator runner is unit-tested and not yet run live.
  * OPERATOR_MAX_JOBS stops it after that many agent runs. OPERATOR_TAG (default `default`) must match the
  * agent's AI_ROUTE_TAG: only events handed over with that tag are served.  OPERATOR_TRACE=<file> also appends one JSON line per job
  * (school, event, job, seconds, outcome, the agent's tool calls in order). Prints one line per job and appends the same lines to
@@ -19,8 +21,10 @@ import { fileURLToPath } from 'node:url'
 import { parseEnv } from 'node:util'
 import { createServiceClient } from '@jemma/profiling/db'
 import type { AgentName } from '../src/agents'
+import { gooseModels } from '../src/goose'
 import type { JobReport } from '../src/loop'
 import { startOperator } from '../src/operator'
+import { prepareOperatorEnv } from '../src/operator-env'
 
 const file = fileURLToPath(new URL('../../../.env.local', import.meta.url))
 const env = { ...(existsSync(file) ? parseEnv(readFileSync(file, 'utf8')) : {}), ...process.env } as Record<string, string | undefined>
@@ -36,17 +40,10 @@ const maxJobs = env.OPERATOR_MAX_JOBS ? Number(env.OPERATOR_MAX_JOBS) : undefine
 const traceFile = env.OPERATOR_TRACE
 const tag = env.OPERATOR_TAG || 'default'
 
-// The agent CLI starts with this process's environment. It must see none of the keys here, and it must use the
-// signed-in subscription: a provider key in the environment would be billed instead.
-for (const key of [
-  'SUPABASE_PROJECT_ID', 'SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_DB_PASSWORD', 'SUPABASE_DB_URL',
-  'NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'EVENTS_SECRET', 'CHILD_PIN_PEPPER', 'JEMMA_MCP_TOKEN',
-  'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_BASE_URL', 'OPENAI_API_KEY', 'GOOGLE_GENERATIVE_AI_API_KEY', 'GOOGLE_API_KEY',
-  'OPENROUTER_API_KEY', 'DEEPSEEK_API_KEY', 'OPENCODE_API_KEY', 'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY',
-  'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_BEARER_TOKEN_BEDROCK', 'GOOGLE_APPLICATION_CREDENTIALS',
-]) {
-  delete process.env[key]
-}
+// The agent CLI starts with this process's environment. It must see none of the Supabase names or secrets here. For claude
+// and codex it must also see no provider key and use the signed-in subscription: a provider key in the environment would be
+// billed instead. Goose is the one engine that needs its OpenRouter key, so that key (and only that key) is kept for it.
+prepareOperatorEnv(env, process.env, agent)
 
 const logFile = join(homedir(), 'Jemma', 'operator.log')
 mkdirSync(dirname(logFile), { recursive: true })
@@ -67,7 +64,8 @@ if (platform() === 'darwin') {
 }
 
 const db = createServiceClient({ SUPABASE_URL: supabaseUrl, SUPABASE_SERVICE_ROLE_KEY: serviceKey })
-out(`${new Date().toISOString().slice(0, 10)}  operator starting: ${agent}, ${concurrency} at a time, tag ${tag}, log ${logFile}`)
+const engine = agent === 'goose' ? `goose (${gooseModels()[0]})` : agent
+out(`${new Date().toISOString().slice(0, 10)}  operator starting: ${engine}, ${concurrency} at a time, tag ${tag}, log ${logFile}`)
 const trace = (report: JobReport) => {
   if (!traceFile) return
   const { event, step, seconds, status, note, toolCalls } = report
