@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-// Placeholder sample files. The real photos of the 5 papers and the memo arrive later: upload them to
-// the same paths in the `sample-papers` bucket (or change the paths here). Placeholders are only
-// written when the path is empty, so real files are never overwritten.
+// The sample files of the demo: the 5 test papers and the memo (real renderings in fixtures/papers) and a made-up
+// teaching plan. They live in the `sample-papers` bucket and every sandbox copies them. The sheets are never replaced
+// by a stand-in: a runtime that cannot read them stops with a clear message instead.
 import type { JemmaDb } from '../../../packages/profiling/src/db'
 
 export const SAMPLE_FILES = {
@@ -19,6 +19,20 @@ export const SAMPLE_FILES = {
   curriculum: 'curriculum/grade-6-teaching-plan.pdf',
 } as const
 
+/** The 5 papers and the memo, by the name of their file in fixtures/papers and in the bucket (`<name>.png`). */
+export type SheetName = keyof typeof SAMPLE_FILES.papers | 'memo'
+export const SHEET_NAMES: readonly SheetName[] = [...(Object.keys(SAMPLE_FILES.papers) as (keyof typeof SAMPLE_FILES.papers)[]), 'memo']
+
+/** Gives the bytes of a sheet, or null when this runtime has none. A Worker has no files on disk, so the web app passes one that reads its static assets. */
+export type LoadSheet = (who: SheetName) => Promise<Uint8Array | null>
+
+export type EnsureSampleFilesOptions = {
+  /** Asked first for each sheet. When it gives no bytes (or throws), the disk file is used. */
+  loadSheet?: LoadSheet
+  /** Reads fixtures/papers/<who>.png from disk, or null when the file is not there. Tests replace it. */
+  readDisk?: (who: SheetName) => Uint8Array | null
+}
+
 const W = 600
 const H = 800
 const ROW_TOP = 100
@@ -27,166 +41,9 @@ const BOX_X = 300
 const BOX_W = 270
 const BOX_H = 52
 
-/** Where question `n`'s answer sits on a placeholder sheet, as fractions of the page (0 to 1). */
+/** Where question `n`'s answer sits on a sample sheet, as fractions of the page (0 to 1). */
 export function answerCrop(n: number): { x: number; y: number; w: number; h: number } {
   return { x: BOX_X / W, y: (ROW_TOP + (n - 1) * ROW_STEP) / H, w: BOX_W / W, h: BOX_H / H }
-}
-
-const GLYPHS: Record<string, string> = {
-  '0': '111101101101111',
-  '1': '010110010010111',
-  '2': '111001111100111',
-  '3': '111001111001111',
-  '4': '101101111001001',
-  '5': '111100111001111',
-  '6': '111100111101111',
-  '7': '111001001001001',
-  '8': '111101111101111',
-  '9': '111101111001111',
-}
-
-function rng(seed: number) {
-  let a = seed >>> 0
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0
-    let t = a
-    t = Math.imul(t ^ (t >>> 15), t | 1)
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
-
-class Sheet {
-  px = new Uint8Array(W * H) // 1 = ink
-  set(x: number, y: number) {
-    if (x >= 0 && y >= 0 && x < W && y < H) this.px[y * W + x] = 1
-  }
-  rect(x: number, y: number, w: number, h: number, fill = false, t = 2) {
-    for (let j = 0; j < h; j++)
-      for (let i = 0; i < w; i++) if (fill || i < t || j < t || i >= w - t || j >= h - t) this.set(x + i, y + j)
-  }
-  digits(text: string, x: number, y: number, scale: number) {
-    let cx = x
-    for (const ch of text) {
-      const g = GLYPHS[ch]
-      if (g)
-        for (let r = 0; r < 5; r++)
-          for (let c = 0; c < 3; c++) if (g[r * 3 + c] === '1') this.rect(cx + c * scale, y + r * scale, scale, scale, true)
-      cx += 4 * scale
-    }
-  }
-  scribble(x: number, y: number, w: number, h: number, rand: () => number) {
-    let px = x
-    let py = y + h / 2
-    while (px < x + w) {
-      const nx = Math.min(x + w, px + 6 + rand() * 10)
-      const ny = y + 6 + rand() * (h - 12)
-      const steps = Math.ceil(nx - px)
-      for (let s = 0; s <= steps; s++) {
-        const px2 = Math.round(px + ((nx - px) * s) / steps)
-        const py2 = Math.round(py + ((ny - py) * s) / steps)
-        this.set(px2, py2)
-        this.set(px2 + 1, py2)
-        this.set(px2, py2 + 1)
-      }
-      px = nx
-      py = ny
-    }
-  }
-}
-
-function crc32(bytes: Uint8Array): number {
-  let c = ~0
-  for (const b of bytes) {
-    c ^= b
-    for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1))
-  }
-  return ~c >>> 0
-}
-
-function chunk(type: string, data: Uint8Array): Uint8Array {
-  const out = new Uint8Array(12 + data.length)
-  const view = new DataView(out.buffer)
-  view.setUint32(0, data.length)
-  for (let i = 0; i < 4; i++) out[4 + i] = type.charCodeAt(i)
-  out.set(data, 8)
-  view.setUint32(8 + data.length, crc32(out.subarray(4, 8 + data.length)))
-  return out
-}
-
-/** zlib stream made of stored (uncompressed) blocks: no dependency, works on Node and Workers. */
-function zlibStored(raw: Uint8Array): Uint8Array {
-  const blocks = Math.max(1, Math.ceil(raw.length / 65535))
-  const out = new Uint8Array(2 + raw.length + blocks * 5 + 4)
-  out[0] = 0x78
-  out[1] = 0x01
-  let o = 2
-  for (let b = 0; b < blocks; b++) {
-    const part = raw.subarray(b * 65535, (b + 1) * 65535)
-    out[o++] = b === blocks - 1 ? 1 : 0
-    out[o++] = part.length & 255
-    out[o++] = part.length >> 8
-    out[o++] = ~part.length & 255
-    out[o++] = (~part.length >> 8) & 255
-    out.set(part, o)
-    o += part.length
-  }
-  let a = 1
-  let s2 = 0
-  for (const v of raw) {
-    a = (a + v) % 65521
-    s2 = (s2 + a) % 65521
-  }
-  new DataView(out.buffer).setUint32(o, ((s2 << 16) | a) >>> 0)
-  return out
-}
-
-function encodePng1Bit(px: Uint8Array): Uint8Array {
-  const stride = Math.ceil(W / 8)
-  const raw = new Uint8Array((stride + 1) * H)
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      // 1-bit grayscale: 1 = white, so ink is 0.
-      if (!px[y * W + x]) raw[y * (stride + 1) + 1 + (x >> 3)]! |= 0x80 >> (x & 7)
-    }
-  }
-  const head = new Uint8Array(13)
-  const hv = new DataView(head.buffer)
-  hv.setUint32(0, W)
-  hv.setUint32(4, H)
-  head[8] = 1 // bit depth
-  head[9] = 0 // grayscale
-  const parts = [
-    Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10]),
-    chunk('IHDR', head),
-    chunk('IDAT', zlibStored(raw)),
-    chunk('IEND', new Uint8Array(0)),
-  ]
-  const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0))
-  let o = 0
-  for (const p of parts) {
-    out.set(p, o)
-    o += p.length
-  }
-  return out
-}
-
-/** A synthetic test sheet: header bar, name box, 10 numbered rows with scribbled answers. No real data. */
-export function renderTestSheet(seed: number): Uint8Array {
-  const sheet = new Sheet()
-  const rand = rng(seed)
-  sheet.rect(0, 0, W, H, false, 4)
-  sheet.rect(30, 24, W - 60, 14, true)
-  sheet.rect(30, 52, 300, 34)
-  sheet.scribble(38, 56, 280, 26, rand)
-  for (let n = 1; n <= 10; n++) {
-    const top = ROW_TOP + (n - 1) * ROW_STEP
-    sheet.digits(String(n), 30, top + 14, 5)
-    sheet.scribble(100, top + 6, 170, 40, rand)
-    sheet.rect(BOX_X, top, BOX_W, BOX_H)
-    sheet.scribble(BOX_X + 10, top + 6, 90 + rand() * 120, BOX_H - 12, rand)
-  }
-  return encodePng1Bit(sheet.px)
 }
 
 /** One page PDF of plain text, hand assembled. */
@@ -221,31 +78,74 @@ export function renderTeachingPlanPdf(): Uint8Array {
 
 let ensured: Promise<void> | null = null
 
+const sheetPath = (who: SheetName): string => (who === 'memo' ? SAMPLE_FILES.memo : SAMPLE_FILES.papers[who])
+const SHEET_FOLDER = 'class-test-1'
+
 /**
  * Synthetic Class Test 1 sheets rendered from fixtures/papers/*.html (printed questions, answers in a handwriting
- * font, mistakes as in class-test-1.ts; Sipho's Q7 is drawn ambiguous on purpose). Falls back to the plain placeholder.
+ * font, mistakes as in class-test-1.ts; Sipho's Q7 is drawn ambiguous on purpose). Null when the file is not on disk,
+ * as in a Worker.
  */
-function paperImage(who: string): Uint8Array {
-  const file = join(dirname(fileURLToPath(import.meta.url)), '../../../fixtures/papers', `${who}.png`)
-  return existsSync(file) ? new Uint8Array(readFileSync(file)) : renderTestSheet(who === 'memo' ? 99 : 11)
+function readSheetFromDisk(who: SheetName): Uint8Array | null {
+  try {
+    const file = join(dirname(fileURLToPath(import.meta.url)), '../../../fixtures/papers', `${who}.png`)
+    return existsSync(file) ? new Uint8Array(readFileSync(file)) : null
+  } catch {
+    return null
+  }
 }
 
-/** Writes the sample files that are missing. Safe to call on every sandbox: runs once per process. */
-export function ensureSampleFiles(admin: JemmaDb): Promise<void> {
+/** The real bytes of a sheet: from the loader if there is one and it has them, else from disk, else null. */
+async function sheetBytes(who: SheetName, opts: EnsureSampleFilesOptions): Promise<Uint8Array | null> {
+  let bytes: Uint8Array | null = null
+  if (opts.loadSheet) {
+    try {
+      bytes = await opts.loadSheet(who)
+    } catch {
+      bytes = null
+    }
+  }
+  if (!bytes?.length) bytes = (opts.readDisk ?? readSheetFromDisk)(who)
+  return bytes?.length ? bytes : null
+}
+
+/**
+ * Makes sure the sample files are in the bucket, and are the right ones. Safe to call on every sandbox: runs once per process.
+ * First every sheet is found (loader, then disk). If one cannot be found it throws and uploads nothing at all: a stand-in
+ * sheet would be read by a model as a blank paper. Then the sheet folder is listed once. A sheet that is missing is uploaded.
+ * A sheet that is there with another size than the real file (a stand-in from an earlier version) is replaced. A sheet of
+ * the right size is left alone.
+ */
+export function ensureSampleFiles(admin: JemmaDb, opts: EnsureSampleFilesOptions = {}): Promise<void> {
   ensured ??= (async () => {
-    const files: [string, Uint8Array, string][] = [
-      ...Object.entries(SAMPLE_FILES.papers).map(([who, p]): [string, Uint8Array, string] => [p, paperImage(who), 'image/png']),
-      [SAMPLE_FILES.memo, paperImage('memo'), 'image/png'],
-      [SAMPLE_FILES.curriculum, renderTeachingPlanPdf(), 'application/pdf'],
-    ]
-    await Promise.all(
-      files.map(async ([path, bytes, contentType]) => {
-        const { error } = await admin.storage.from(SAMPLE_FILES.bucket).upload(path, bytes, { contentType, upsert: false })
-        if (error && !/already exists|Duplicate/i.test(error.message)) {
-          throw new Error(`sample file ${path}: ${error.message}`)
-        }
+    const found = await Promise.all(SHEET_NAMES.map(async (who) => [who, await sheetBytes(who, opts)] as const))
+    const sheets: (readonly [SheetName, Uint8Array])[] = []
+    for (const [who, bytes] of found) {
+      if (!bytes) throw new Error(`sample sheet ${who}.png is not available in this runtime`)
+      sheets.push([who, bytes])
+    }
+
+    const bucket = admin.storage.from(SAMPLE_FILES.bucket)
+    const listed = await bucket.list(SHEET_FOLDER, { limit: 100 })
+    if (listed.error) throw new Error(`sample sheets: could not list ${SHEET_FOLDER}: ${listed.error.message}`)
+    // A listing without a size counts as the wrong size: uploading again is safe and happens once per process.
+    const sizes = new Map((listed.data ?? []).map((o) => [o.name, (o.metadata as { size?: number } | null)?.size]))
+
+    const put = async (path: string, bytes: Uint8Array, contentType: string, upsert: boolean) => {
+      const { error } = await bucket.upload(path, bytes, { contentType, upsert })
+      if (error && !(upsert === false && /already exists|Duplicate/i.test(error.message))) {
+        throw new Error(`sample file ${path}: ${error.message}`)
+      }
+    }
+
+    await Promise.all([
+      ...sheets.map(async ([who, bytes]) => {
+        const name = `${who}.png`
+        if (!sizes.has(name)) return put(sheetPath(who), bytes, 'image/png', false)
+        if (sizes.get(name) !== bytes.length) return put(sheetPath(who), bytes, 'image/png', true)
       }),
-    )
+      put(SAMPLE_FILES.curriculum, renderTeachingPlanPdf(), 'application/pdf', false),
+    ])
   })().catch((e) => {
     ensured = null
     throw e

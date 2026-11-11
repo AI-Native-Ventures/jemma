@@ -14,7 +14,7 @@ import {
   AMINA_LESSON, AMINA_LOG, CLASS_LOG, CURRICULUM_DOCS, HOMEWORK_NEEDS, SIPHO_NEEDS, WEEK_PLAN, PARENT_NOTES, TEACHER_NOTES, HOMEWORK_ROWS, LESSON_TOPIC, RETEACH, RETEACH_EXPLANATION, RETEACH_MISSING_BASIC, RETEACH_TOPIC, RETEACH_WHY,
   SESSION_DONE, SESSION_LOG, SESSION_TRY, SESSION_WARMUP, TEST_TITLE, TERMS, answerKeyItems, guidanceCard, topicMapDraft,
 } from './fixtures/marked-state'
-import { SAMPLE_FILES, answerCrop, ensureSampleFiles } from './fixtures/sample-papers'
+import { SAMPLE_FILES, answerCrop, ensureSampleFiles, type LoadSheet } from './fixtures/sample-papers'
 
 export type SandboxStage = 'start' | 'marked' | 'session_done'
 
@@ -75,7 +75,7 @@ type Logins = Record<'teacher' | 'parent' | 'learner', { userId: string; email: 
 }
 
 /** Builds one sandbox. Throws after cleaning up what it made. */
-async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage): Promise<Sandbox> {
+async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage, loadSheet?: LoadSheet): Promise<Sandbox> {
   const now = new Date()
   const at = (minutesAgo: number) => new Date(now.getTime() - minutesAgo * MIN).toISOString()
   const dayIso = (daysAgo: number) => new Date(now.getTime() - daysAgo * DAY).toISOString()
@@ -235,7 +235,7 @@ async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage): Pr
         ),
         'learner_records',
       ),
-      ensureSampleFiles(admin),
+      ensureSampleFiles(admin, { loadSheet }),
     ]
     await Promise.all(startWork)
 
@@ -636,16 +636,19 @@ async function readSandbox(admin: JemmaDb, sandboxId: string) {
   return { schoolId: row.school_id, userIds, stage: (row.stage as SandboxStage) ?? 'start' }
 }
 
-/** Makes a new sandbox at `opts.stage` (default `start`). */
-export async function createSandbox(admin: JemmaDb, opts: { stage?: SandboxStage } = {}): Promise<Sandbox> {
-  return build(admin, crypto.randomUUID(), opts.stage ?? 'start')
+/**
+ * Makes a new sandbox at `opts.stage` (default `start`). `opts.loadSheet` gives the sample test sheets to a runtime that has
+ * no files on disk (a Worker): see `ensureSampleFiles`.
+ */
+export async function createSandbox(admin: JemmaDb, opts: { stage?: SandboxStage; loadSheet?: LoadSheet } = {}): Promise<Sandbox> {
+  return build(admin, crypto.randomUUID(), opts.stage ?? 'start', opts.loadSheet)
 }
 
 /** Throws the sandbox's school and users away and builds it again, same sandbox id, at the stage it was made with. */
-export async function resetSandbox(admin: JemmaDb, sandboxId: string): Promise<void> {
+export async function resetSandbox(admin: JemmaDb, sandboxId: string, opts: { loadSheet?: LoadSheet } = {}): Promise<void> {
   const old = await readSandbox(admin, sandboxId)
   await teardown(admin, old.schoolId, old.userIds)
-  await build(admin, sandboxId, old.stage)
+  await build(admin, sandboxId, old.stage, opts.loadSheet)
 }
 
 /** Removes a sandbox for good (tests and housekeeping). */

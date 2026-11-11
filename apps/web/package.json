@@ -5,8 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "next dev --port 3000",
-    "build": "next build",
+    "dev": "node scripts/copy-sample-sheets.mjs && next dev --port 3000",
+    "build": "node scripts/copy-sample-sheets.mjs && next build",
     "build:cf": "opennextjs-cloudflare build",
     "typecheck": "tsc -p tsconfig.json"
   },
