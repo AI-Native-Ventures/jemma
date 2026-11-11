@@ -16,6 +16,8 @@ export type MapView = {
   headline: string
   draft: boolean
   initialTerm: number
+  /** Show the months of each term (the South African calendar quarters). False for a year that does not have four terms. */
+  months: boolean
   terms: {
     term: 1 | 2 | 3 | 4
     badge: number
@@ -94,7 +96,7 @@ function MapPhone({ view }: { view: MapView }) {
         <p style={{ margin: '0 0 0 24px', fontSize: 14, lineHeight: 1.45, color: '#5D5A73' }}>Drag to reorder. Tap a topic to rename it, change its term or what it needs.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 4, padding: 4, background: '#EEEDF5', borderRadius: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${view.terms.length}, minmax(0, 1fr))`, gap: 4, padding: 4, background: '#EEEDF5', borderRadius: 14 }}>
         {view.terms.map((t) => {
           const on = t.term === term
           return (
@@ -118,7 +120,7 @@ function MapPhone({ view }: { view: MapView }) {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-        <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>{`Term ${term} · ${TERM_RANGE[term]}`}</h2>
+        <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>{view.months ? `Term ${term} · ${TERM_RANGE[term]}` : `Term ${term}`}</h2>
         <span style={{ fontSize: 14, color: '#5D5A73' }}>{plural(current.topics.length, 'topic')}</span>
       </div>
 
@@ -221,7 +223,7 @@ function MapPhone({ view }: { view: MapView }) {
           <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14, fontWeight: 600 }}>
             Term
             <select value={editTerm} onChange={(e) => setEditTerm(Number(e.target.value))} style={input}>
-              {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{`Term ${n}`}</option>)}
+              {view.terms.map((t) => <option key={t.term} value={t.term}>{`Term ${t.term}`}</option>)}
             </select>
           </label>
         ) : null}

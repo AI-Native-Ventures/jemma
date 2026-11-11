@@ -64,6 +64,17 @@ export function unresolved({ draft, resolutions }: ReadDraft, fallbackTerm: numb
   return out
 }
 
+/** The terms of a draft that have topics, in order: three for a Kenyan scheme, four for most others. All four when there are none. */
+export function termNumbers(draft: TopicMapDraft): (1 | 2 | 3 | 4)[] {
+  const shown = [...new Set(draft.terms.filter((t) => t.topics.length > 0).map((t) => t.term))].sort((a, b) => a - b)
+  return shown.length > 0 ? shown : [1, 2, 3, 4]
+}
+
+/** A term number that is not one of the terms shown (the calendar says term 4 in a three term year) is read as the next one shown, or the last. */
+export function termInView(shown: readonly number[], term: number): number {
+  return shown.includes(term) ? term : (shown.find((n) => n > term) ?? shown[shown.length - 1]!)
+}
+
 export const topicCount = (d: TopicMapDraft) => d.terms.reduce((n, t) => n + t.topics.length, 0)
 
 export function mapHeadline(r: ReadDraft, fallbackTerm: number): string {

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import { ErrorRetry } from '@/components/blocks'
 import { Button, Sheet } from '@/components/ui'
 import { retryDraft, uploadCurriculum, useSampleCurriculum } from './actions'
+import { notAllowedMessage, sizeProblem, sniffKind } from './upload-checks'
 
 const outlined = {
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 12,
@@ -34,8 +35,15 @@ export function UploadButtons({ classId }: { classId: string }) {
     if (files.length === 0) return
     setError(null)
     start(async () => {
+      // Say no here when the size or the kind is wrong, before anything is sent. The server checks again, and counts the pages.
+      const big = sizeProblem(files)
+      if (big) return setError(big)
+      for (const f of files) {
+        if (!sniffKind(new Uint8Array(await f.slice(0, 16).arrayBuffer()))) return setError(notAllowedMessage(f.name))
+      }
       try {
-        await uploadCurriculum(classId, files)
+        const done = await uploadCurriculum(classId, files)
+        if (!done.ok) return setError(done.message)
         router.refresh()
       } catch {
         setError('That did not upload. Check your connection and try again.')
@@ -45,8 +53,8 @@ export function UploadButtons({ classId }: { classId: string }) {
   return (
     <>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
-        <input ref={photos} type="file" accept="image/*" capture="environment" multiple hidden onChange={(e) => send(e.target.files)} />
-        <input ref={file} type="file" accept="application/pdf,image/*" multiple hidden onChange={(e) => send(e.target.files)} />
+        <input ref={photos} type="file" accept="image/jpeg,image/png" capture="environment" multiple hidden onChange={(e) => { send(e.target.files); e.target.value = '' }} />
+        <input ref={file} type="file" accept="application/pdf,image/jpeg,image/png" multiple hidden onChange={(e) => { send(e.target.files); e.target.value = '' }} />
         <PendingButton pending={pending} type="button" disabled={pending} onClick={() => photos.current?.click()} style={outlined}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
           Take photos

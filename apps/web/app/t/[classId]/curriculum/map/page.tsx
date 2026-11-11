@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getCurriculum } from '@/lib/data/p30'
 import { createSupabaseServer } from '@/lib/supabase/server'
-import { currentTerm, mapHeadline, needsLabel, unresolved } from '../format'
+import { currentTerm, mapHeadline, needsLabel, termInView, termNumbers, unresolved } from '../format'
 import { MapEditor, type MapView } from './MapEditor'
 
 export default async function CurriculumMapPage({ params }: { params: Promise<{ classId: string }> }) {
@@ -12,9 +12,12 @@ export default async function CurriculumMapPage({ params }: { params: Promise<{ 
   const supabase = await createSupabaseServer()
   const { data: cls } = await supabase.from('classes').select('name').eq('id', classId).maybeSingle()
   const subject = cls?.name.replace(/^\S+\s+/, '') || 'Mathematics'
-  const open = unresolved(read, currentTerm())
+  // The terms of the document: three for a Kenyan scheme, four for most others. A term with no topic is not shown.
+  const termList = termNumbers(read.draft)
+  const inView = (t: number) => termInView(termList, t)
+  const open = unresolved(read, inView(currentTerm())).map((o) => ({ ...o, term: inView(o.term) }))
   const openChecks = new Set(open.filter((o) => o.kind === 'check').map((o) => o.name))
-  const terms: MapView['terms'] = ([1, 2, 3, 4] as const).map((term) => {
+  const terms: MapView['terms'] = termList.map((term) => {
     const list = read.draft.terms.find((t) => t.term === term)?.topics ?? []
     return {
       term,
@@ -31,7 +34,7 @@ export default async function CurriculumMapPage({ params }: { params: Promise<{ 
   const leftOut = open
     .filter((o) => o.kind === 'leftOut')
     .map((o) => ({ name: o.name, term: o.term, reason: read.draft.leftOut.find((l) => l.name === o.name)!.reason }))
-  const initialTerm = open[0]?.term ?? currentTerm()
+  const initialTerm = open[0]?.term ?? inView(currentTerm())
 
   return (
     <MapEditor
@@ -41,9 +44,11 @@ export default async function CurriculumMapPage({ params }: { params: Promise<{ 
         grade: read.draft.grade,
         subject,
         docs: docs.map((d) => d.title),
-        headline: mapHeadline(read, currentTerm()),
+        headline: mapHeadline(read, inView(currentTerm())),
         draft: map.status === 'draft',
         terms,
+        // The months of each term are the South African calendar quarters: shown for a four term year only.
+        months: terms.length === 4,
         leftOut,
         initialTerm,
       }}
