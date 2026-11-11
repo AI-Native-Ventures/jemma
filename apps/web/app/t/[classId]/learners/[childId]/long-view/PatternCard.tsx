@@ -1,12 +1,20 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Button, Card, Chip, ChevronRightIcon, NoteIcon, Pill, ReportIcon, Sheet } from '@/components/ui'
+import { Button, Card, Chip, ChevronDownIcon, ChevronRightIcon, NoteIcon, Pill, ReportIcon, Sheet } from '@/components/ui'
 import type { LvEvidence, LvPattern, LvSheet } from '@/lib/data/p52'
 import { approvePattern, dismissPattern, markDiscussed, restorePattern, type ActionResult } from './actions'
 
 const chipButton =
   'inline-flex leading-[normal] min-h-11 max-w-full cursor-pointer items-center gap-1.5 rounded-12 border-0 bg-soft-2 px-3 py-1.5 text-left text-[14px] font-semibold text-ink [overflow-wrap:anywhere]'
+
+/** A pattern with more sources than this shows only its first `SOURCES_SHOWN` until the teacher asks for the rest. */
+const SOURCES_FEW = 4
+const SOURCES_SHOWN = 3
+
+/** Not a source: an outline button with a chevron, as tall as a chip row's tap target. */
+const showMoreButton =
+  'inline-flex leading-[normal] min-h-11 cursor-pointer items-center gap-1.5 rounded-12 border-[1.5px] border-ink bg-card px-3 py-1.5 text-[14px] font-semibold text-ink'
 
 function EvidenceChip({ e, onOpen }: { e: LvEvidence; onOpen: (s: LvSheet) => void }) {
   const icon = e.kind === 'note' ? <NoteIcon size={15} /> : <ReportIcon size={15} />
@@ -88,7 +96,11 @@ function useDecision() {
 /** One pattern: what was seen, where it comes from, and what the teacher can do with it now. */
 export function PatternCard({ p, parentName }: { p: LvPattern; parentName: string | null }) {
   const [open, setOpen] = useState<LvSheet | null>(null)
+  const [allSources, setAllSources] = useState(false)
   const d = useDecision()
+  const total = p.evidence.length
+  const folded = total > SOURCES_FEW
+  const shown = folded && !allSources ? p.evidence.slice(0, SOURCES_SHOWN) : p.evidence
   return (
     <Card as="article" aria-labelledby={`pattern-${p.id}`} radius={20} className="gap-3">
       <div className="flex">
@@ -102,10 +114,16 @@ export function PatternCard({ p, parentName }: { p: LvPattern; parentName: strin
 
       <section aria-label={`Where this comes from, ${p.title}`} className="flex flex-col gap-1.5">
         <h4 className="m-0 text-[13px] font-semibold text-body">Where this comes from</h4>
-        <div className="flex flex-wrap gap-1.5">
-          {p.evidence.map((e, i) => (
+        <div id={`sources-${p.id}`} className="flex flex-wrap gap-1.5">
+          {shown.map((e, i) => (
             <EvidenceChip key={`${e.kind}-${e.id}-${i}`} e={e} onOpen={setOpen} />
           ))}
+          {folded ? (
+            <button type="button" aria-expanded={allSources} aria-controls={`sources-${p.id}`} onClick={() => setAllSources((v) => !v)} className={showMoreButton}>
+              {allSources ? 'Show fewer' : `Show all ${total}`}
+              <ChevronDownIcon size={15} className={`flex-none ${allSources ? 'rotate-180' : ''}`} />
+            </button>
+          ) : null}
         </div>
       </section>
 
