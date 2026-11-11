@@ -53,7 +53,7 @@ export default async function ParentProfilePage({ params }: { params: Promise<{ 
   await requireRole('parent')
   const [data, extras, shared] = await Promise.all([getProfile(childId), getProfileExtras(childId), getSharedLongView(childId)])
   if (!data) notFound()
-  const longView = shared ? <LongViewCard base={`/p/${childId}`} teacherName={shared.teacherName} count={shared.patterns.length} /> : null
+  const longView = shared ? <LongViewCard base={`/p/${childId}`} teacherNames={shared.teacherNames} subjects={shared.subjects} count={shared.patterns.length} /> : null
   const { child } = data
   const base = `/p/${childId}`
 

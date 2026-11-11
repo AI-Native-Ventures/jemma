@@ -103,8 +103,9 @@ export function PatternCard({ p, parentName }: { p: LvPattern; parentName: strin
   const shown = folded && !allSources ? p.evidence.slice(0, SOURCES_SHOWN) : p.evidence
   return (
     <Card as="article" aria-labelledby={`pattern-${p.id}`} radius={20} className="gap-3">
-      <div className="flex">
+      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
         <Pill tone={p.kind === 'struggle' ? 'coral' : 'soft'}>{p.pill}</Pill>
+        <span className="text-[13px] leading-[1.3] text-body">{`${p.subject} · ${p.strand}`}</span>
       </div>
       <h3 id={`pattern-${p.id}`} className="m-0 text-[17px] leading-[1.3] font-semibold text-pretty">
         {p.title}
@@ -175,7 +176,7 @@ export function PatternCard({ p, parentName }: { p: LvPattern; parentName: strin
 }
 
 /** The closed group at the bottom: patterns the teacher set aside, and ones the records no longer show. */
-export function SetAside({ patterns, parentName }: { patterns: LvPattern[]; parentName: string | null }) {
+export function SetAside({ patterns, parentName, withSubject = false }: { patterns: LvPattern[]; parentName: string | null; withSubject?: boolean }) {
   const d = useDecision()
   return (
     <details className="group rounded-18 border border-line bg-card">
@@ -189,6 +190,7 @@ export function SetAside({ patterns, parentName }: { patterns: LvPattern[]; pare
       <ul className="m-0 flex list-none flex-col px-4 pb-1">
         {patterns.map((p) => (
           <li key={p.id} className="flex flex-col gap-1 border-t border-soft py-3">
+            {withSubject ? <span className="text-[13px] leading-[1.3] text-body">{`${p.subject} · ${p.strand}`}</span> : null}
             <span className="text-[16px] leading-[1.3] font-semibold">{p.title}</span>
             {p.noLongerShows ? (
               <>
