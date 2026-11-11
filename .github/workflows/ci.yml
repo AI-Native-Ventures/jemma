@@ -49,9 +49,14 @@ jobs:
           set +a
           pnpm test
 
+      # The Ubuntu package servers can be unreachable from the runner, and apt then retries until the step times out.
+      # The runner image already has the libraries Chromium needs; only extra fonts are fetched. So the browser comes first,
+      # and the system packages are tried for a short time and may fail.
       - name: Install the browser
         timeout-minutes: 10
-        run: pnpm --filter web exec playwright install --with-deps chromium
+        run: |
+          pnpm --filter web exec playwright install chromium
+          timeout --kill-after=10 150 pnpm --filter web exec playwright install-deps chromium || echo "::warning::Extra system packages could not be installed (package servers unreachable). Going on with the libraries the runner image has."
 
       # start.sh already runs the web app on port 3000 and a second dev server cannot share its folder,
       # so the spec uses that running app (PREVIEW_URL) instead of starting its own.
