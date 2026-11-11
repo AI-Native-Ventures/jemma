@@ -24,6 +24,16 @@ The demo page says the full path takes about 10 minutes. The 5 minutes above is 
 
 Use **Reset demo** (`/demo/reset`) at any time. It puts your copy back to step 1 with fresh sample papers in about 10 seconds.
 
+## Try a curriculum Jemma has not seen
+
+Three invented curriculum documents of different shapes are in the repository. They are not copied from any ministry document:
+
+- `fixtures/curriculum/unseen/grade9-natural-sciences-za.pdf`: Grade 9 Natural Sciences, South Africa, a table for each of four terms.
+- `fixtures/curriculum/unseen/grade5-english-za.pdf`: Grade 5 English, South Africa, a paragraph for each week, no tables.
+- `fixtures/curriculum/unseen/grade4-science-technology-ke.pdf`: Grade 4 Science and Technology, Kenya, three terms, page pictures like a scan, no text.
+
+To try one, make a class in that grade and subject, open Curriculum and upload the file. If the live link only offers the demo's Grade 6 class, use a local copy (README, "Run it"). Jemma takes a PDF, a JPG or a PNG of at most 10 MB and 40 pages for each document, and says so when a file is too big or the wrong kind. What the curriculum reader did with each document, measured and scored by code, is in "A curriculum Jemma had never seen" in [EVALS.md](../EVALS.md).
+
 ## Demo accounts
 
 There is nothing to type. The demo page signs you in as one of three people in your own copy of the school. You do not need an email address.
