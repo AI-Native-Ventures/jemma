@@ -6,7 +6,7 @@
  *
  * Reads SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and AGENT_URL from the repo root .env.local (or the environment),
  * JEMMA_RUNNER_AGENT (claude, codex or goose, default claude) and OPERATOR_CONCURRENCY (default 2). Claude was proven
- * live; goose in the operator runner is unit-tested and not yet run live.
+ * live (docs/proof/operator-path-2026-11-10.md), and so was goose (docs/proof/operator-goose-2026-11-11.md).
  * OPERATOR_MAX_JOBS stops it after that many agent runs. OPERATOR_TAG (default `default`) must match the
  * agent's AI_ROUTE_TAG: only events handed over with that tag are served.  OPERATOR_TRACE=<file> also appends one JSON line per job
  * (school, event, job, seconds, outcome, the agent's tool calls in order). Prints one line per job and appends the same lines to
@@ -21,10 +21,9 @@ import { fileURLToPath } from 'node:url'
 import { parseEnv } from 'node:util'
 import { createServiceClient } from '@jemma/profiling/db'
 import type { AgentName } from '../src/agents'
-import { gooseModels } from '../src/goose'
 import type { JobReport } from '../src/loop'
 import { startOperator } from '../src/operator'
-import { prepareOperatorEnv } from '../src/operator-env'
+import { operatorModels, prepareOperatorEnv } from '../src/operator-env'
 
 const file = fileURLToPath(new URL('../../../.env.local', import.meta.url))
 const env = { ...(existsSync(file) ? parseEnv(readFileSync(file, 'utf8')) : {}), ...process.env } as Record<string, string | undefined>
@@ -64,7 +63,8 @@ if (platform() === 'darwin') {
 }
 
 const db = createServiceClient({ SUPABASE_URL: supabaseUrl, SUPABASE_SERVICE_ROLE_KEY: serviceKey })
-const engine = agent === 'goose' ? `goose (${gooseModels()[0]})` : agent
+const models = operatorModels(env, agent) // goose only: the list of the merged env (file and shell), also handed to every agent run
+const engine = models ? `goose (${models[0]})` : agent
 out(`${new Date().toISOString().slice(0, 10)}  operator starting: ${engine}, ${concurrency} at a time, tag ${tag}, log ${logFile}`)
 const trace = (report: JobReport) => {
   if (!traceFile) return
@@ -76,7 +76,7 @@ const trace = (report: JobReport) => {
     // the screen line is enough
   }
 }
-const operator = startOperator({ db, runnerId: randomUUID(), agent, agentUrl, concurrency, maxJobs, tag, onLog: out, onJob: trace })
+const operator = startOperator({ db, runnerId: randomUUID(), agent, agentUrl, concurrency, maxJobs, tag, models, onLog: out, onJob: trace })
 
 let leaving = false
 const leave = async () => {

@@ -6,6 +6,7 @@ import { createServiceClient, type Database, type JemmaDb } from '@jemma/profili
 import { completeJob } from '../../profiling/src/tools/complete-job'
 import { createSandbox, type Sandbox } from '../../profiling/test/helpers/sandbox'
 import { formatJobLine, startOperator, type OperatorOptions, type RunnerJob, type RunResult } from '../src'
+import { operatorModels } from '../src/operator-env'
 import { loadEnv } from './helpers'
 
 // Operator runner. Part 1: the SQL rules of migration 0017 (operator_presence, operator_heartbeat, claim_operator_event,
@@ -326,8 +327,10 @@ const writes: Record<string, (ids: Record<string, string>, eventId: string) => P
 function fakeAgent(opts: { writes?: Partial<typeof writes>; hold?: (call: Call) => Promise<void>; fail?: (call: Call) => RunResult | undefined } = {}) {
   const calls: Call[] = []
   const engines: unknown[] = []
-  const run = async (job: RunnerJob, engine: unknown, mcp: { url: string; token: string }): Promise<RunResult> => {
+  const options: ({ models?: string[] } | undefined)[] = []
+  const run = async (job: RunnerJob, engine: unknown, mcp: { url: string; token: string }, runOpts?: { models?: string[] }): Promise<RunResult> => {
     engines.push(engine)
+    options.push(runOpts)
     const name = /^Job: (\w+)$/m.exec(job.prompt)![1]!
     const ids = JSON.parse(/^Ids: (.*)$/m.exec(job.prompt)![1]!) as Record<string, string>
     const call: Call = { job: name, ids, eventId: job.eventId, token: mcp.token, url: mcp.url, tokenRow: (await tokenRows(mcp.token))[0] ?? null }
@@ -338,7 +341,7 @@ function fakeAgent(opts: { writes?: Partial<typeof writes>; hold?: (call: Call) 
     await (opts.writes?.[name] ?? writes[name])?.(ids, job.eventId)
     return { status: 'done', note: 'fake done' }
   }
-  return { calls, engines, run: run as unknown as NonNullable<OperatorOptions['run']> }
+  return { calls, engines, options, run: run as unknown as NonNullable<OperatorOptions['run']> }
 }
 
 const fakeDetect = async () => ({
@@ -390,6 +393,32 @@ test('operator loop: with agent goose the run gets the engine goose and the pres
     await op.stop()
   }
   expect(await presenceRow(runnerId)).toBeNull()
+})
+
+test('operator loop: the goose model list of the merged env goes to the agent run, first model first', async () => {
+  const id = await queueOp(loopS, 'observation.added', { childId: loopS.aminaId })
+  const merged = { JEMMA_OPEN_MODEL: 'acme/only-in-the-file:free', JEMMA_OPEN_MODEL_FALLBACKS: 'acme/backup:free' } // as if they were only in .env.local
+  const agent = fakeAgent()
+  const { op } = operate({ run: agent.run, agent: 'goose', models: operatorModels(merged, 'goose') })
+  try {
+    expect((await settled(id)).status).toBe('done')
+    expect(agent.options).toHaveLength(1)
+    expect(agent.options[0]?.models).toEqual(['acme/only-in-the-file:free', 'acme/backup:free'])
+  } finally {
+    await op.stop()
+  }
+})
+
+test('operator loop: with no model list the run gets none, so claude and codex are unchanged', async () => {
+  const id = await queueOp(loopS, 'observation.added', { childId: loopS.aminaId })
+  const agent = fakeAgent()
+  const { op } = operate({ run: agent.run })
+  try {
+    expect((await settled(id)).status).toBe('done')
+    expect(agent.options.map((opts) => opts?.models)).toEqual([undefined])
+  } finally {
+    await op.stop()
+  }
 })
 
 test('operator loop: every event gets its own token, and a job that throws fails the event and still deletes the token', async () => {
