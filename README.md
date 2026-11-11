@@ -172,7 +172,7 @@ The agent serves MCP at `/mcp` and needs a bearer token. See [docs/mcp-server.md
 
 ## What is not finished
 
-- **No real teacher and no real learner has used Jemma.** The school, the people and the records are made up, and no teacher was consulted.
+- **No real teacher and no real learner has used Jemma.** The school, the people and the records are made up.
 - **English and Maths only.** The demo has one class, Grade 6 Mathematics. Only Grade 6 data is seeded.
 - **Not built yet:** Grade 8 to 12 question types, teen invites, chat, billing, offline mode and messages between teacher and parent. Screens that link to them say "Coming after the challenge".
 - **No live in-browser camera for teachers.** Teachers snap with the phone's own camera, one photo per page.

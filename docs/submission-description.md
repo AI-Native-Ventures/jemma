@@ -10,4 +10,4 @@ Jemma follows one learner across years, not one term, so a pattern that is invis
 
 **How it is built.** Jemma has its own MCP server with 22 tools, most of them saving results: a profile update, a lesson, a Long view draft. It borrows the official MCP filesystem server: sandboxed, allow-listed file access with path-escape protection is security code we should not write and audit ourselves. One full task runs on an open-weights model: goose, an open-source agent, drives Nemotron 3.5 Super VL, and all 11 eval tasks passed 3 of 3 live runs, judged by code. Claude Code runs alongside. Every tool call is logged with input and output, and every approval carries a name.
 
-**Limits.** Synthetic data only, one Grade 6 maths class, English only. No teacher was consulted and no real learner has used it. Curriculum PDFs are read by the cloud model only.
+**Limits.** Synthetic data only, one Grade 6 maths class, English only. No teacher and no real learner has used it. Curriculum PDFs are read by the cloud model only.
