@@ -137,6 +137,7 @@ Try it on one machine: put `AI_ROUTE=operator` and your own `AI_ROUTE_TAG` (for 
 - In code: `resetSandbox(admin, sandboxId)` from `supabase/seed`.
 - Housekeeping: `deleteSandbox(admin, sandboxId)`.
 - Smoke sandboxes are left in jemma-dev; delete them with `deleteSandbox` using the school id from `scripts/.smoke-state.json`.
+- The sample test sheets (the memo and the 5 papers of Class Test 1) are `fixtures/papers/*.png`: `ensureSampleFiles` puts them in the `sample-papers` bucket on a new database, replaces a sheet whose size is not the real file's (a stand-in from an older version) and stops with "sample sheet <name>.png is not available in this runtime" rather than upload a stand-in, and the web app's Worker, which has no files on disk, reads them from its static assets (`apps/web/scripts/copy-sample-sheets.mjs` copies them into `public/sample-papers` before `next dev` and `next build`).
 
 ## Deploy a preview
 
