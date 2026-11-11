@@ -46,6 +46,20 @@ async function setDemoCookie(sandboxId: string): Promise<void> {
   })
 }
 
+/** Forgets the demo cookie of a browser whose sandbox is gone. Only works where cookies can be written (a server action). */
+async function clearDemoCookie(): Promise<void> {
+  ;(await cookies()).delete(DEMO_COOKIE)
+}
+
+/**
+ * The cookie names a sandbox that is gone (the hourly sweep removed an old copy, or it was reset elsewhere): forget it and send
+ * the browser to /demo for a fresh start, never to an error page.
+ */
+async function startOver(): Promise<never> {
+  await clearDemoCookie()
+  redirect('/demo')
+}
+
 async function count(q: PromiseLike<{ count: number | null; error: { message: string } | null }>): Promise<number> {
   const { count: n, error } = await q
   if (error) throw new Error(`demo: ${error.message}`)
@@ -124,8 +138,9 @@ export function demoHome(role: DemoRole, classId: string): string {
 export async function signInAs(sandboxId: string, role: DemoRole): Promise<string> {
   if (!isDemoRole(role)) throw new Error('demo: unknown role')
   const db = createSupabaseAdmin()
-  const { data: box, error } = await db.from('demo_sandboxes').select('school_id, logins').eq('id', sandboxId).single()
-  if (error) throw new Error(`demo: no sandbox: ${error.message}`)
+  const { data: box, error } = await db.from('demo_sandboxes').select('school_id, logins').eq('id', sandboxId).maybeSingle()
+  if (error) throw new Error(`demo: ${error.message}`)
+  if (!box) return startOver()
   const login = (box.logins as StoredLogins)[role]
   const supabase = await createSupabaseServer()
   const { error: authError } = await supabase.auth.signInWithPassword({ email: login.email, password: login.password })
@@ -153,7 +168,10 @@ export async function switchRole(role: DemoRole): Promise<never> {
 export async function resetDemo(): Promise<never> {
   const sandboxId = await demoCookie()
   if (!sandboxId) redirect('/demo')
-  await resetSandbox(createSupabaseAdmin(), sandboxId, { loadSheet })
+  const admin = createSupabaseAdmin()
+  const { data: box } = await admin.from('demo_sandboxes').select('id').eq('id', sandboxId).maybeSingle()
+  if (!box) return startOver()
+  await resetSandbox(admin, sandboxId, { loadSheet })
   const supabase = await createSupabaseServer()
   await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined)
   redirect('/demo')
