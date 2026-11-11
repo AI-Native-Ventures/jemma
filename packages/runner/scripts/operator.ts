@@ -6,7 +6,7 @@
  *
  * Reads SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and AGENT_URL from the repo root .env.local (or the environment),
  * JEMMA_RUNNER_AGENT (claude, codex or goose, default claude) and OPERATOR_CONCURRENCY (default 2). Claude was proven
- * live; goose in the operator runner is unit-tested and not yet run live.
+ * live (docs/proof/operator-path-2026-11-10.md), and so was goose (docs/proof/operator-goose-2026-11-11.md).
  * OPERATOR_MAX_JOBS stops it after that many agent runs. OPERATOR_TAG (default `default`) must match the
  * agent's AI_ROUTE_TAG: only events handed over with that tag are served.  OPERATOR_TRACE=<file> also appends one JSON line per job
  * (school, event, job, seconds, outcome, the agent's tool calls in order). Prints one line per job and appends the same lines to
