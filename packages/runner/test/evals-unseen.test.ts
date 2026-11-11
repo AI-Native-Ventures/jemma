@@ -28,7 +28,7 @@ type DraftTopic = TopicMapDraft['terms'][number]['topics'][number]
 const perfect = perfectDraft
 
 const withoutTopics = (d: TopicMapDraft, names: string[]): TopicMapDraft => ({ ...d, terms: d.terms.map((t) => ({ ...t, topics: t.topics.filter((x) => !names.includes(x.name)) })) })
-const named = (checks: { name: string; pass: boolean }[], part: string) => {
+const named = (checks: { name: string; pass: boolean; detail: string }[], part: string) => {
   const hit = checks.find((c) => c.name.includes(part))
   if (!hit) throw new Error(`no check like "${part}" in ${checks.map((c) => c.name).join(' | ')}`)
   return hit

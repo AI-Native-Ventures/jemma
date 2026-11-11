@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { MemoryStore, type AiEnv } from '../../packages/profiling/src/ai'
 import type { JemmaDb } from '../../packages/profiling/src/db'
 import { runDraftMap } from '../../packages/profiling/src/jobs/cloud/draft-map'
+import { ok } from '../../packages/profiling/src/tools/context'
 import { TopicMapDraftSchema, type TopicMapDraft } from '../../packages/profiling/src/schemas'
 import { brief } from './checks'
 import { RESULT_VERSION, scoreDraft, type Truth, type UnseenResult } from './unseen'
@@ -43,10 +44,13 @@ export type RunFixture = {
   cleanup(): Promise<void>
 }
 
-const must = async <T>(q: PromiseLike<{ data: T | null; error: { message: string } | null }>, what: string): Promise<T> => {
-  const { data, error } = await q
-  if (error || data === null) throw new Error(`${what}: ${error?.message ?? 'no row'}`)
-  return data
+/** The row of a query, or an error that says which step failed. */
+async function must<T>(q: Parameters<typeof ok<T>>[0], what: string): Promise<NonNullable<T>> {
+  try {
+    return await ok(q)
+  } catch (err) {
+    throw new Error(`${what}: ${err instanceof Error ? err.message : String(err)}`)
+  }
 }
 
 /** A school, a teacher, a class of the document's grade and subject, an empty draft map and the document itself. */

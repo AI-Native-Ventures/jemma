@@ -79,7 +79,7 @@ export function memoryDb(seed: Record<string, Row[]> = {}, files: Record<string,
     from: (bucket: string) => ({
       download: async (path: string) => {
         const bytes = files[bucket]?.[path]
-        return bytes ? { data: new Blob([bytes as BlobPart]), error: null } : { data: null, error: { message: `not found: ${bucket}/${path}` } }
+        return bytes ? { data: new Blob([bytes]), error: null } : { data: null, error: { message: `not found: ${bucket}/${path}` } }
       },
     }),
   }
