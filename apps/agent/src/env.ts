@@ -24,4 +24,6 @@ export interface Env {
   OPENAI_API_KEY?: string
   OPENCODE_API_KEY?: string
   OPENCODE_BASE_URL?: string
+  /** Demo sandboxes older than this many days, with no sign-in and no activity since, are removed by the hourly cron. Default 7. `0` switches the sweep off. */
+  DEMO_SANDBOX_DAYS?: string | number
 }
