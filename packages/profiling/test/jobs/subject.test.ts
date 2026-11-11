@@ -214,7 +214,8 @@ test('Kenya Grade 9 Natural Sciences: write_lesson is told the class, the countr
   const plan = (await planNextSession.run(ctxFor(kenya, kenyaEvent), { childId: kenya.aminaId })) as { format: Lesson['format'] }
   const model = mockReturning(lesson(plan.format))
   await runJobWriteLesson(ctxFor(kenya, kenyaEvent), kenyaEvent, { childId: kenya.aminaId }, { model: model as never, prompt: mdOf('write_lesson') })
-  const system = systemOf(model)
+  // The lesson job adds the lesson schema after the prompt (that schema is maths-shaped; a later packet changes it), so look at the prompt.
+  const system = systemOf(model).split('\n\nReply with one JSON object only')[0]!
   expect(system.startsWith(`${LINE}\n\n`)).toBe(true)
   expect(system).toContain('for a school in Kenya')
   expect(system).toContain('for a Grade 9 child')

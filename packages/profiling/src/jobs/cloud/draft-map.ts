@@ -1,6 +1,8 @@
 import { generateText, Output } from 'ai'
 import { z } from 'zod'
 import { getModel } from '../../ai'
+import { renderPrompt } from '../../ai/prompt-variants'
+import { classContext, isBaselineClass } from '../../ai/subject-profile'
 import { contextFor, isWithImages, type ToolContext } from '../../tools/context'
 import { getCurriculumDoc } from '../../tools/read/get-curriculum-doc'
 import { saveTopicMapDraft } from '../../tools/save/save-topic-map-draft'
@@ -30,11 +32,16 @@ export async function runDraftMap(
   const o = isWithImages(read) ? read.output : read
   const images = isWithImages(read) ? read.images : []
 
-  const header = `Class grade: ${o.classGrade}. Draft the topic map for this grade only.`
+  // The class is loaded here, not through a model tool. For Mathematics, Grade 6, South Africa nothing below changes: the system
+  // text is the file and the header is the one a recorded answer was made with.
+  const klass = await classContext(ctx.db, { mapId })
+  const header = isBaselineClass(klass)
+    ? `Class grade: ${o.classGrade}. Draft the topic map for this grade only.`
+    : `Class grade: ${o.classGrade}. Subject: ${o.classSubject ?? klass!.subject}. Draft the topic map for this grade and subject only.`
   const files = images.map((f) => ({ type: 'file' as const, data: f.data, mediaType: f.mimeType }))
   const result = await generateText({
     model: model(o.text ? 'text' : 'vision', ctx.env),
-    system: prompt,
+    system: renderPrompt('draft_map', prompt, klass),
     output: Output.object({ schema: OutputSchema }),
     messages: [
       {

@@ -9,6 +9,7 @@ export const getCurriculumDoc = defineTool({
   output: z.object({
     mapId: z.string(),
     classGrade: z.number(),
+    classSubject: z.string(),
     docs: z.array(z.object({ title: z.string(), pages: z.number(), mimeType: z.string() })),
     text: z.string().nullable(),
   }),
@@ -17,7 +18,7 @@ export const getCurriculumDoc = defineTool({
     const db = ctx.db
     const map = await db.from('curriculum_maps').select('class_id').eq('id', mapId).single()
     if (map.error) throw new Error(map.error.message)
-    const cls = await db.from('classes').select('grade').eq('id', map.data.class_id).single()
+    const cls = await db.from('classes').select('grade, subject').eq('id', map.data.class_id).single()
     if (cls.error) throw new Error(cls.error.message)
     const docs = await db.from('curriculum_docs').select('title, pages, storage_path').eq('class_id', map.data.class_id).order('created_at')
     if (docs.error) throw new Error(docs.error.message)
@@ -26,6 +27,7 @@ export const getCurriculumDoc = defineTool({
       {
         mapId,
         classGrade: cls.data.grade,
+        classSubject: cls.data.subject,
         docs: docs.data.map((d, i) => ({ title: d.title, pages: d.pages, mimeType: files[i]!.mimeType })),
         // Text extraction is not stored yet; models read the page images (PDFs come back as embedded resources).
         text: null,

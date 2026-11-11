@@ -1,6 +1,8 @@
 import { generateText, Output } from 'ai'
 import { z } from 'zod'
 import { getModel } from '../../ai'
+import { renderPrompt } from '../../ai/prompt-variants'
+import { classContext } from '../../ai/subject-profile'
 import { contextFor, isWithImages, type ToolContext } from '../../tools/context'
 import { getMemo } from '../../tools/read/get-memo'
 import { saveAnswerKey } from '../../tools/save/save-answer-key'
@@ -30,10 +32,11 @@ export async function runReadKey(
   const memo = isWithImages(read) ? read.output : read
   const images = isWithImages(read) ? read.images : []
   if (images.length === 0) throw new Error('no memo photo to read for this test')
+  const klass = await classContext(ctx.db, { testId })
 
   const result = await generateText({
     model: model('vision', ctx.env),
-    system: prompt,
+    system: renderPrompt('read_key', prompt, klass),
     output: Output.object({ schema: OutputSchema }),
     messages: [
       {
