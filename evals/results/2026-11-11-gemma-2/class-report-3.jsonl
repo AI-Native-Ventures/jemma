@@ -1,0 +1,3 @@
+{"type":"jemma_attempt","model":"google/gemma-4-31b-it:free","seconds":15.2,"status":"failed","timedOut":false,"saved":false}
+{"type":"message","message":{"id":"msg_f5a40a43-954f-4fd9-a300-35a5f4cf254f","role":"assistant","created":1794390849,"content":[{"type":"text","text":"Ran into this error: Rate limit exceeded: Provider returned error.\n\nPlease retry if you think this is a transient or recoverable error."}],"metadata":{"userVisible":true,"agentVisible":true}}}
+{"type":"complete","total_tokens":0,"input_tokens":0,"output_tokens":0,"cache_read_input_tokens":0,"cache_write_input_tokens":0}
