@@ -28,6 +28,7 @@ Copy `.env.example` to `.env.local` at the repo root. `apps/web` reads it, and `
 | `AI_MODE` | `live` (call the model), `record` (call it and store the answer in `ai_replays`), `replay` (use the stored answer, never call a model, a miss is an error), `cache` (use the stored answer when the key exists, else call the model and store it). |
 | `AI_ROUTE` | `cloud` (default): the agent does the AI work as above. `operator`: each job tries recorded answers first, then the owner's laptop (the operator runner below), and only when no laptop is online the agent's own model. |
 | `AI_ROUTE_TAG` | Routing tag of this stack, default `default`. A hand-off carries it and only an operator runner with the same `OPERATOR_TAG` takes the event, so two stacks that share one database never take each other's events. |
+| `DEMO_SANDBOX_DAYS` | Agent only. An unused demo copy older than this many days is removed by the agent's hourly cron. Default 7, `0` switches the sweep off. |
 | `OPENROUTER_API_KEY` | Key for the free models. |
 | `AGENT_URL` | Where the web app posts events, `http://localhost:8787` locally. |
 | `EVENTS_SECRET` | Shared secret between web and agent for `POST /events`. |
@@ -135,7 +136,7 @@ Try it on one machine: put `AI_ROUTE=operator` and your own `AI_ROUTE_TAG` (for 
 
 - A judge or you: open `/demo/reset` in the app (it rebuilds the sandbox in about 10 seconds).
 - In code: `resetSandbox(admin, sandboxId)` from `supabase/seed`.
-- Housekeeping: `deleteSandbox(admin, sandboxId)`.
+- Housekeeping: `deleteSandbox(admin, sandboxId)`. Old copies go by themselves: the agent's hourly cron (minute 17) runs `sweepOldSandboxes`, which removes up to 5 copies a run that are older than `DEMO_SANDBOX_DAYS` days with no sign-in and no activity since (their school, three users and files). A browser whose copy is gone lands on `/demo` and starts a new one.
 - Smoke sandboxes are left in jemma-dev; delete them with `deleteSandbox` using the school id from `scripts/.smoke-state.json`.
 - The sample test sheets (the memo and the 5 papers of Class Test 1) are `fixtures/papers/*.png`: `ensureSampleFiles` puts them in the `sample-papers` bucket on a new database, replaces a sheet whose size is not the real file's (a stand-in from an older version) and stops with "sample sheet <name>.png is not available in this runtime" rather than upload a stand-in, and the web app's Worker, which has no files on disk, reads them from its static assets (`apps/web/scripts/copy-sample-sheets.mjs` copies them into `public/sample-papers` before `next dev` and `next build`).
 
