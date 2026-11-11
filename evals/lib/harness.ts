@@ -22,6 +22,7 @@ import { sendEvent } from '../../apps/web/lib/agent'
 import { appendLedger } from './ledger'
 import { hookFinish, settledEvent } from './hook'
 import { measureRoundTrip, readOneSchool } from './line'
+import { providerErrorOf } from './provider'
 import { baseName, RESULT_VERSION, type ResultFile } from './result'
 import { saveResult } from './save'
 import { answerContentTypes } from './stream'
@@ -227,6 +228,7 @@ export async function runOnce(task: Task, n: number, shared: Shared): Promise<Re
       seconds: round1(a.seconds),
       status: a.status,
       note: a.note.slice(0, 300),
+      providerError: a.status === 'failed' ? providerErrorOf(a.note) : null,
       saved: a.saved,
       timedOut: a.timedOut,
       tokens: tokensOf(parsed[i]!.usage),
@@ -271,7 +273,7 @@ export async function runOnce(task: Task, n: number, shared: Shared): Promise<Re
 
   const wallSeconds = round1((Date.now() - wallStart) / 1000)
   if (error) checks = [{ name: 'the run reached its checks', pass: false, detail: error.slice(0, 400) }, ...checks]
-  const attemptList = outcome?.attempts ?? attemptsRaw.map((a) => ({ model: a.model, seconds: round1(a.seconds), status: a.status, note: a.note.slice(0, 300), saved: a.saved, timedOut: a.timedOut, tokens: tokensOf(parseTranscript('goose', a.stdout).usage) }))
+  const attemptList = outcome?.attempts ?? attemptsRaw.map((a) => ({ model: a.model, seconds: round1(a.seconds), status: a.status, note: a.note.slice(0, 300), providerError: a.status === 'failed' ? providerErrorOf(a.note) : null, saved: a.saved, timedOut: a.timedOut, tokens: tokensOf(parseTranscript('goose', a.stdout).usage) }))
   const result: ResultFile = {
     version: RESULT_VERSION,
     runId: shared.runId,

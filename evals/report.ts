@@ -1,25 +1,21 @@
 /**
- * Writes EVALS.md from the saved results of one run and nothing else. Fails when an expected result file is missing.
+ * Writes EVALS.md from the saved results and nothing else. Fails when an expected result file of the main run is missing.
  *
- *   pnpm evals:report                          the newest run folder in evals/results
- *   pnpm evals:report --run 2026-11-10-1432    a named run folder
- *   pnpm evals:report --refresh-price          read the model's price from OpenRouter again
+ *   pnpm evals:report                          the main run is the newest folder in evals/results that covers every task
+ *   pnpm evals:report --run 2026-11-10-1432    a named run folder as the main run
+ *   pnpm evals:report --refresh-price          read the models' prices from OpenRouter again
+ *
+ * Every other run folder (a different model, usually one task) gets a row in "A second open-weights model on one task".
+ * A folder that covers only some tasks never becomes the main run.
  */
-import { readdirSync, statSync } from 'node:fs'
-import { join } from 'node:path'
 import { writeReport } from './lib/render'
 import { RESULTS_ROOT } from './lib/result'
-
-function newestRun(): string {
-  const runs = readdirSync(RESULTS_ROOT).filter((f) => !f.startsWith('rehearsal-') && statSync(join(RESULTS_ROOT, f)).isDirectory()).sort()
-  const last = runs.at(-1)
-  if (!last) throw new Error('there is no run folder in evals/results')
-  return last
-}
+import { chooseMainRun, listRunFolders } from './lib/second'
+import { TASK_IDS } from './tasks'
 
 async function main(): Promise<void> {
   const argv = process.argv.slice(2)
-  const runId = argv.includes('--run') ? argv[argv.indexOf('--run') + 1]! : newestRun()
+  const runId = chooseMainRun(listRunFolders(RESULTS_ROOT), TASK_IDS, argv.includes('--run') ? argv[argv.indexOf('--run') + 1] : undefined)
   await writeReport({ runId, refreshPrice: argv.includes('--refresh-price') })
   console.log(`EVALS.md written from evals/results/${runId}`)
 }

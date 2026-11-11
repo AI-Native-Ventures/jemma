@@ -1,0 +1,3 @@
+{"type":"jemma_attempt","model":"google/gemma-4-31b-it:free","seconds":41.6,"status":"failed","timedOut":false,"saved":false}
+{"type":"message","message":{"id":"msg_100daf54-48bc-43b1-b225-23afc5d21f76","role":"assistant","created":1794385319,"content":[{"type":"text","text":"Ran into this error: Server error: This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later..\n\nPlease retry if you think this is a transient or recoverable error."}],"metadata":{"userVisible":true,"agentVisible":true}}}
+{"type":"complete","total_tokens":0,"input_tokens":0,"output_tokens":0,"cache_read_input_tokens":0,"cache_write_input_tokens":0}

@@ -1,9 +1,11 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
-import { median } from './checks'
+import { brief, median } from './checks'
 import { readLedger } from './ledger'
 import { baseName, parseResult, RESULTS_ROOT, type ResultFile } from './result'
+import { refusalOf } from './provider'
+import { listRunFolders, loadSecondRun } from './second'
 import { RUNS_PER_TASK, TASKS } from '../tasks'
 
 /**
@@ -28,6 +30,8 @@ export type PricingInfo = { fetchedAt: string; source: string; models: Record<st
 export type Analysis = { taskId: string; why: string; tryNext: string[] }
 /** A change made to the test set while the runs were going (written by the author in `changes.json`, shown as it is). */
 export type Change = { taskId: string; what: string; why: string; evidence: string }
+/** Another run folder: a different model, usually one task. Shown in its own section, never mixed into the main run. */
+export type SecondRun = { runId: string; results: ResultFile[]; pricing: PricingInfo | null }
 export type ReportInput = {
   runId: string
   results: ResultFile[]
@@ -39,6 +43,8 @@ export type ReportInput = {
   analysis: Analysis | null
   /** Changes made while the runs were going. Null or empty when there were none. */
   changes?: Change[] | null
+  /** Other run folders, in name order. The section is written only when there is at least one. */
+  others?: SecondRun[]
   /** Goose runs spent for the whole packet, from the ledger (harness tuning included). Null when unknown. */
   packetLiveRuns: number | null
 }
@@ -223,6 +229,73 @@ function netNote(r: ResultFile): string | null {
   return bits.length ? bits.join('; ') : null
 }
 
+/** Why one run failed, from its own result file: what the model run or the event said, else the harness error, else the failed checks. */
+function failureReason(r: ResultFile): string {
+  if (r.error) return `harness error: ${brief(r.error, 240)}`
+  const bad = failedNames(r)
+  const lastFailed = [...r.attempts].reverse().find((a) => a.status === 'failed' && a.note)
+  const said = lastFailed ? `the model run on ${lastFailed.model} said: ${brief(lastFailed.note, 240)}` : r.event?.error ? `the event said: ${brief(r.event.error, 240)}` : ''
+  const counted = `${bad.length} of ${r.checks.length} checks failed`
+  if (said) return `${said}; ${counted}`
+  return bad.length ? `${counted}: ${bad.map((c) => c.name).join('; ')}` : 'it did not pass'
+}
+
+/** The date (UTC) the first of these runs started, from the result files. */
+const dateOf = (runs: ResultFile[]): string => runs.map((r) => r.startedAt).sort()[0]!.slice(0, 10)
+
+/**
+ * The section for the other run folders. A run is refused when the provider gave no answer (the last attempt ended on a
+ * provider error): that says nothing about the model, so it is not counted as a pass or a fail. Every other run is
+ * judged by the checks. A folder with a judged run gets a table row (judged runs only); a folder with a refused run gets
+ * one sentence; a folder with a judged failure gets one sentence with the reasons.
+ */
+function secondSection(others: SecondRun[]): string[] {
+  const rows = others.map((o) => {
+    const refusals = o.results.flatMap((r) => {
+      const message = refusalOf(r)
+      return message === null ? [] : [{ r, message }]
+    })
+    const refusedRuns = new Set(refusals.map((x) => x.r))
+    return { o, refusals, judged: o.results.filter((r) => !refusedRuns.has(r)) }
+  })
+  const out: string[] = ['## A second open-weights model on one task', '']
+  out.push(
+    'The tables above are the main set. Each run folder below was made later with the same harness and is not counted in the main set. Every number comes from the result files of that folder. A run is judged by the checks unless the provider gave it no answer (a rate limit, or a capacity or server error, as goose recorded it for the attempt). A run with no answer says nothing about the model, so it is not counted as a pass or a fail, and a folder with no judged run has no row.',
+    '',
+  )
+  const withRow = rows.filter((x) => x.judged.length > 0)
+  if (withRow.length > 0) {
+    out.push('| Run id | Model that answered | Task | Runs judged | Passes | Median seconds | Median tool calls | Cost |', '| --- | --- | --- | ---: | ---: | ---: | ---: | --- |')
+    for (const { o, judged } of withRow) {
+      const answered = [...new Set(judged.map((r) => r.finalModel).filter((m): m is string => !!m))].sort()
+      const taskList = [...new Set(judged.map((r) => r.taskId))].sort()
+      const cost = costOf(judged, o.pricing)
+      const paid = !o.pricing ? 'no paid price was read' : cost.unpriced.length ? 'the model has no listed paid price' : `about ${money(cost.paidTotal)} at the listed paid price`
+      out.push(
+        `| \`${o.runId}\` | ${answered.length ? answered.map((m) => `\`${m}\``).join(', ') : 'none'} | ${taskList.map((t) => `\`${t}\``).join(', ')} | ${judged.length} | ${judged.filter((r) => r.pass).length} | ${num(median(judged.map((r) => r.seconds)))} | ${num(median(judged.map((r) => r.toolCalls.length)))} | ${money(cost.freeReported)} on the free tier; ${paid} |`,
+      )
+    }
+    out.push('', 'Seconds, tool calls and cost count the judged runs only.', '')
+  }
+  for (const { o, refusals, judged } of rows) {
+    if (refusals.length > 0) {
+      const messages = [...new Set(refusals.map((x) => x.message))].map((m) => `"${m}"`).join(' and ')
+      const refusedRuns = refusals.map((x) => x.r)
+      const models = [...new Set(refusedRuns.map((r) => r.finalModel ?? r.attempts.at(-1)?.model).filter((m): m is string => !!m))].sort()
+      const tasksHit = [...new Set(refusedRuns.map((r) => r.taskId))].sort()
+      const who = `${tasksHit.map((t) => `\`${t}\``).join(', ')} on ${models.length ? models.map((m) => `\`${m}\``).join(', ') : 'no model'}`
+      const what = `${refusals.length} of ${o.results.length} runs got no answer from the free endpoint on ${dateOf(refusedRuns)} (${messages})`
+      out.push(`\`${o.runId}\`, ${who}: ${what}${judged.length === 0 ? ', so this model was not judged.' : `; the other ${judged.length} ${judged.length === 1 ? 'was' : 'were'} judged.`}`, '')
+    }
+    const failed = judged.filter((r) => !r.pass)
+    if (failed.length > 0) {
+      const many = new Set(o.results.map((r) => r.taskId)).size > 1
+      out.push(`In \`${o.runId}\`, ${failed.length} of ${judged.length} judged runs failed: ${failed.map((r) => `${many ? `${r.taskId} ` : ''}run ${r.n} (${failureReason(r)})`).join('; ')}.`, '')
+    }
+  }
+  return out
+}
+
 export function renderReport(input: ReportInput): string {
   const { results, tasks, runs, runId } = input
   const sums = summarize(input)
@@ -244,7 +317,7 @@ export function renderReport(input: ReportInput): string {
     `${tasks.length} test tasks run the real agent path: each run opens its own fresh sandbox (a made-up school) on the database, sends the real event through the agent worker, and runs the job through Jemma's runner with Goose and a free open-weights model on OpenRouter (${models.length ? models.map((m) => `\`${m}\``).join(', ') : 'no model ran'}; the runner's own fallback to the next model stays on). Then plain code checks the outcome with SELECTs and the saved transcript. No model ever judges another model. Every check is a named yes or no with a reason, saved in the result file. Each task ran ${runs} times, in ${runs} fresh sandboxes, one after another, so run-to-run variation shows. A run that hits a provider error counts as a failed run with the error text kept. ${changes.length ? 'Apart from the changes listed in "Changes made while the runs were going", nothing was retried, dropped or hand-edited.' : 'Nothing was retried, dropped or hand-edited.'} The data is synthetic.`,
     '',
   )
-  push(`**${passed} of ${total} runs passed** (${total - passed} failed). ${attempts} goose attempts were made for these ${total} runs${input.packetLiveRuns !== null ? `; ${input.packetLiveRuns} live goose runs were spent in all for this work, harness testing included (cap 45)` : ''}.`, '')
+  push(`**${passed} of ${total} runs passed** (${total - passed} failed). ${attempts} goose attempts were made for these ${total} runs${input.packetLiveRuns !== null ? `; ${input.packetLiveRuns} live goose runs were spent in all for this work, ${input.others?.length ? 'harness testing and the runs in other folders included (the cap of 45 was for the main set)' : 'harness testing included (cap 45)'}` : ''}.`, '')
 
   push('## Results', '')
   push('| Task | What it proves | Run 1 | Run 2 | Run 3 | Median seconds | Tokens in / out (median) |', '| --- | --- | --- | --- | --- | ---: | ---: |')
@@ -284,6 +357,8 @@ export function renderReport(input: ReportInput): string {
     for (const { s, r, note } of notes) push(`| \`${s.id}\` | ${r.n} | ${cell(note!)} |`)
     push('')
   }
+
+  if (input.others?.length) push(...secondSection(input.others))
 
   // cost
   const cost = costOf(results, input.pricing)
@@ -357,13 +432,10 @@ export function renderReport(input: ReportInput): string {
   return `${text.trimEnd()}\n`
 }
 
-export type WriteOptions = { runId: string; resultsRoot?: string; outFile?: string; refreshPrice?: boolean; fetchFn?: typeof fetch }
+export type WriteOptions = { runId: string; resultsRoot?: string; outFile?: string; refreshPrice?: boolean; fetchFn?: typeof fetch; ledgerFile?: string }
 
-/** Loads the run, reads or fetches the price, and writes EVALS.md. Fails when an expected result file is missing. */
-export async function writeReport(opts: WriteOptions): Promise<string> {
-  const dir = join(opts.resultsRoot ?? RESULTS_ROOT, opts.runId)
-  const tasks = TASKS.map((t) => ({ id: t.id, proves: t.proves }))
-  const results = loadResults(dir, tasks, RUNS_PER_TASK)
+/** The paid price of the models of a folder: the saved `pricing.json`, else OpenRouter's public models endpoint (then saved). */
+async function pricingFor(dir: string, results: ResultFile[], opts: WriteOptions): Promise<{ pricing: PricingInfo | null; pricingError: string | null }> {
   const models = [...new Set(results.flatMap((r) => r.attempts.map((a) => a.model)))]
   const priceFile = join(dir, 'pricing.json')
   let pricing: PricingInfo | null = null
@@ -377,6 +449,15 @@ export async function writeReport(opts: WriteOptions): Promise<string> {
       pricingError = err instanceof Error ? err.message : String(err)
     }
   }
+  return { pricing, pricingError }
+}
+
+/** Loads the run, reads or fetches the price, and writes EVALS.md. Fails when an expected result file is missing. */
+export async function writeReport(opts: WriteOptions): Promise<string> {
+  const dir = join(opts.resultsRoot ?? RESULTS_ROOT, opts.runId)
+  const tasks = TASKS.map((t) => ({ id: t.id, proves: t.proves }))
+  const results = loadResults(dir, tasks, RUNS_PER_TASK)
+  const { pricing, pricingError } = await pricingFor(dir, results, opts)
   const analysisFile = join(dir, 'analysis.json')
   const analysis = existsSync(analysisFile) ? (JSON.parse(readFileSync(analysisFile, 'utf8')) as Analysis) : null
   const sums = summarize({ results, tasks })
@@ -386,8 +467,16 @@ export async function writeReport(opts: WriteOptions): Promise<string> {
   }
   const changesFile = join(dir, 'changes.json')
   const changes = existsSync(changesFile) ? (JSON.parse(readFileSync(changesFile, 'utf8')) as Change[]) : null
-  const ledger = readLedger()
-  const text = renderReport({ runId: opts.runId, results, tasks, runs: RUNS_PER_TASK, pricing, pricingError, analysis, changes, packetLiveRuns: ledger.length ? ledger.filter((l) => !l.rehearsal).reduce((n, l) => n + l.attempts, 0) : null })
+  const root = opts.resultsRoot ?? RESULTS_ROOT
+  const others: SecondRun[] = []
+  for (const folder of listRunFolders(root)) {
+    if (folder.name === opts.runId || folder.taskIds.length === 0) continue
+    const otherDir = join(root, folder.name)
+    const otherResults = loadSecondRun(otherDir, folder.name)
+    others.push({ runId: folder.name, results: otherResults, pricing: (await pricingFor(otherDir, otherResults, opts)).pricing })
+  }
+  const ledger = readLedger(opts.ledgerFile)
+  const text = renderReport({ runId: opts.runId, results, tasks, runs: RUNS_PER_TASK, pricing, pricingError, analysis, changes, others, packetLiveRuns: ledger.length ? ledger.filter((l) => !l.rehearsal).reduce((n, l) => n + l.attempts, 0) : null })
   writeFileSync(opts.outFile ?? EVALS_FILE, text)
   return text
 }

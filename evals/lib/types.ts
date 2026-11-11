@@ -18,6 +18,12 @@ export type AttemptRecord = {
   saved: boolean
   timedOut: boolean
   tokens: Tokens | null
+  /**
+   * When the provider answered this attempt with an error (a rate limit, a capacity or server error), its message, as
+   * goose reported it. Null when it did not. Missing in results saved before the field existed: the report then reads
+   * it from `note` with the same function (`providerErrorOf`).
+   */
+  providerError?: string | null
 }
 
 export type EventSummary = { status: string; error: string | null; runner: string; attempts: number }
