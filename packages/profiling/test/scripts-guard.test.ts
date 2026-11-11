@@ -1,7 +1,11 @@
+import { globSync, readFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { describe, expect, test } from 'vitest'
 import { assertDevProject, isAllowedSupabaseUrl } from '../scripts/env'
 
 const DEV_REF = 'ayxgctbemuvozwktstaa'
+const root = resolve(import.meta.dirname, '../../..')
+const read = (file: string) => readFileSync(join(root, file), 'utf8')
 
 describe('the Supabase guard for scripts', () => {
   test('allows the local stack on localhost and 127.0.0.1', () => {
@@ -40,5 +44,24 @@ describe('the Supabase guard for scripts', () => {
     expect(isAllowedSupabaseUrl('')).toBe(false)
     expect(isAllowedSupabaseUrl('not a url')).toBe(false)
     expect(() => assertDevProject({})).toThrow(/SUPABASE_URL/)
+  })
+})
+
+describe('the scripts that reach a database use the one shared guard', () => {
+  const mustUse = ['scripts/proof/run-real-job.ts', 'scripts/proof/run-open-job.ts', 'scripts/export-replays.ts']
+
+  test.each(mustUse)('%s imports assertDevProject from packages/profiling/scripts/env, calls it and has no copy of its own', (file) => {
+    const text = read(file)
+    expect(text).toMatch(/import\s*\{[^}]*\bassertDevProject\b[^}]*\}\s*from\s*'(?:\.\.\/)+packages\/profiling\/scripts\/env'/)
+    expect(text).toMatch(/\bassertDevProject\(\w+\)/)
+    expect(text).not.toMatch(/(?:function|const|let)\s+assertDevProject\b/)
+  })
+
+  test('no other script holds a project ref: a 20-letter ref is written only in packages/profiling/scripts/env.ts', () => {
+    const files = [...globSync('scripts/**/*.{ts,mjs,js}', { cwd: root }), ...globSync('packages/*/scripts/**/*.{ts,mjs,js}', { cwd: root })].filter((file) => file !== 'packages/profiling/scripts/env.ts')
+    expect(files.length).toBeGreaterThan(8)
+    const ref = /(?<![A-Za-z0-9])[a-z]{20}(?![A-Za-z0-9])/
+    expect(files.filter((file) => ref.test(read(file)))).toEqual([])
+    expect(ref.test(read('packages/profiling/scripts/env.ts'))).toBe(true) // the test would see a ref if there were one
   })
 })
