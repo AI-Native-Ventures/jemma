@@ -67,7 +67,7 @@ test('read tools return images as MCP image content', async () => {
 
   const doc = await call('get_curriculum_doc', { mapId: s.mapId })
   expect((doc.content as Part[]).some((p) => p.type === 'image')).toBe(true)
-  expect(doc.structuredContent).toMatchObject({ classGrade: 6 })
+  expect(doc.structuredContent).toMatchObject({ classGrade: 6, classSubject: 'Maths' })
 })
 
 test('get_class_results groups marked results by learner', async () => {

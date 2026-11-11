@@ -1,6 +1,8 @@
 import { generateText, Output, type LanguageModel } from 'ai'
 import { z } from 'zod'
 import { getModel } from '../../ai'
+import { renderPrompt } from '../../ai/prompt-variants'
+import { classContext } from '../../ai/subject-profile'
 import { DiagnosisSchema } from '../../schemas/diagnosis'
 import { contextFor, type ToolContext } from '../../tools/context'
 import { loadDiagnoseInputs, updateLearnerProfile } from '../../tools/save/update-learner-profile'
@@ -21,10 +23,11 @@ export function makeDiagnoseJob(prompt: string, deps: JobDeps = {}) {
     const scope = ids.testId ? { testId: ids.testId } : { paperId: ids.paperId }
     const inputs = await loadDiagnoseInputs(here, { childId, ...scope })
     if (inputs.wrong.length === 0) return
+    const klass = await classContext(here.db, { ...scope, childId, eventId: ctx.eventId })
     const { output: object } = await generateText({
       model: deps.model ?? getModel('text', ctx.env),
       output: Output.object({ schema: OutputSchema }),
-      system: prompt,
+      system: renderPrompt('diagnose', prompt, klass),
       prompt: [
         `Topics you may name as the gap topic: ${JSON.stringify(inputs.topicNames)}`,
         '<untrusted>',

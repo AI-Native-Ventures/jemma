@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { classIdFor } from '../../ai/subject-profile'
 import type { Json } from '../../db'
 import { FormatSchema, type Format } from '../../schemas/lesson'
 import { assertInSchool, contextFor, defineTool, ok, type ToolContext } from '../context'
@@ -72,8 +73,13 @@ export const planNextSession = defineTool({
     }
 
     const enrolments = await ok(db.from('enrolments').select('class_id').eq('child_id', childId))
+    // A child in several classes is planned from the class whose event started the planning, when it can be told: that class's
+    // map and gaps only. A child in one class, or an event that names no class, is planned from every class the child is in, as before.
+    const classIds = enrolments.map((e) => e.class_id)
+    const only = new Set(classIds).size > 1 ? await classIdFor(db, { childId, eventId: ctx.eventId }) : null
+    const mapClasses = only ? [only] : classIds
     const maps = enrolments.length
-      ? await ok(db.from('curriculum_maps').select('id').eq('status', 'approved').in('class_id', enrolments.map((e) => e.class_id)))
+      ? await ok(db.from('curriculum_maps').select('id').eq('status', 'approved').in('class_id', mapClasses))
       : []
     const topics = maps.length
       ? await ok(db.from('topics').select('id, name, family, term, position, prerequisite_ids').in('map_id', maps.map((m) => m.id)))
@@ -84,8 +90,16 @@ export const planNextSession = defineTool({
 
     // Open gaps: lowest stage first, then oldest. Basics before what needs them.
     const rank = { new: 0, practising: 1, fixed: 2 } as const
-    const gaps = (await ok(db.from('gaps').select('topic_id, topic_name, stage, created_at').eq('child_id', childId)))
-      .filter((g) => g.stage !== 'fixed')
+    let openGaps = (await ok(db.from('gaps').select('topic_id, topic_name, stage, created_at').eq('child_id', childId))).filter((g) => g.stage !== 'fixed')
+    if (only) {
+      // The topics of any map of that class (an earlier draft too), so a gap found on them still counts.
+      const ownMaps = await ok(db.from('curriculum_maps').select('id').eq('class_id', only))
+      const own = ownMaps.length ? await ok(db.from('topics').select('id, name').in('map_id', ownMaps.map((m) => m.id))) : []
+      const ownIds = new Set(own.map((t) => t.id))
+      const ownNames = new Set(own.map((t) => t.name))
+      openGaps = openGaps.filter((g) => (g.topic_id ? ownIds.has(g.topic_id) : ownNames.has(g.topic_name)))
+    }
+    const gaps = openGaps
       .sort((a, b) => rank[a.stage] - rank[b.stage] || a.created_at.localeCompare(b.created_at))
     const gapAt = (id: string | null) => (id ? gaps.find((g) => g.topic_id === id) : undefined)
     let first = gaps[0]

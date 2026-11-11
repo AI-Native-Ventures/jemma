@@ -1,5 +1,7 @@
 import type { LanguageModel } from 'ai'
 import { generateJson, getModel } from '../../ai'
+import { renderPrompt } from '../../ai/prompt-variants'
+import { classContext } from '../../ai/subject-profile'
 import { LessonSchema, type Lesson } from '../../schemas/lesson'
 import { contextFor, ok, type ToolContext } from '../../tools/context'
 import { getChildContext } from '../../tools/read/get-child-context'
@@ -38,6 +40,8 @@ export async function runJobWriteLesson(
   }
 
   const model = opts.model ?? getModel('text', ctx.env)
+  const klass = await classContext(ctx.db, { childId, sessionId: session.id, eventId: ctx.eventId })
+  const system = renderPrompt('write_lesson', opts.prompt ?? FALLBACK_PROMPT, klass)
   const data = JSON.stringify({ profile: info.profile, openGaps: info.gaps, formatTrials: info.formatTrials, plannedSession: session })
   const base_prompt = `Planned session: ${session.topicName}, format ${session.format}.\n<untrusted>${data}</untrusted>`
 
@@ -48,7 +52,7 @@ export async function runJobWriteLesson(
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
     try {
       // Prompt-side JSON: free models fail provider-side structured output on a schema this big.
-      const output = await generateJson({ model, schema: LessonSchema, system: opts.prompt ?? FALLBACK_PROMPT, prompt: base_prompt + feedback })
+      const output = await generateJson({ model, schema: LessonSchema, system, prompt: base_prompt + feedback })
       best = output
       const bad = badQuestions(output)
       if (!bad.warmup.length && !bad.questions.length) break

@@ -1,5 +1,7 @@
 import { generateText, Output, type LanguageModel } from 'ai'
 import { getModel } from '../../ai'
+import { renderPrompt } from '../../ai/prompt-variants'
+import { classContext } from '../../ai/subject-profile'
 import { PaperReadSchema } from '../../schemas/papers'
 import { contextFor, ok, type ToolContext } from '../../tools/context'
 import { getPaper } from '../../tools/read/get-paper'
@@ -22,11 +24,12 @@ export async function runJobReadPaper(
   const got = await getPaper.run(ctx, { paperId })
   const { output: paper, images } = 'output' in got ? got : { output: got, images: [] }
   const questions = paper.key.map((k) => `${k.n}. ${k.prompt}`).join('\n')
+  const klass = await classContext(ctx.db, { paperId, eventId: ctx.eventId })
 
   const result = await generateText({
     model: deps.model ?? getModel('vision', ctx.env),
     // The Worker bundles the .md as text (wrangler rule); tests and the desktop runner pass the text in.
-    system: deps.prompt ?? ((await import('../read_paper.md' as string)) as { default: string }).default,
+    system: renderPrompt('read_paper', deps.prompt ?? ((await import('../read_paper.md' as string)) as { default: string }).default, klass),
     output: Output.object({ schema: PaperReadSchema }),
     messages: [
       {

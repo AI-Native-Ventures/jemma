@@ -10,12 +10,21 @@ type Topic = { id: string; name: string; family: string; misconceptions: string[
 
 const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
 
-/** The class a test or a homework paper belongs to. */
-async function classOf(ctx: ToolContext, childId: string, scope: { testId?: string; paperId?: string }): Promise<string> {
-  if (scope.testId) return (await ok(ctx.db.from('tests').select('class_id').eq('id', scope.testId).single())).class_id
-  const enrolled = await ok(ctx.db.from('enrolments').select('class_id').eq('child_id', childId).limit(1))
+/**
+ * The class a test or a paper belongs to: the class of the test (a test, or a teacher's paper that has one). Homework has no test and
+ * no class: a learner in one class is placed in it, and a learner in several gets all of them, the older class first, so that no
+ * class's topics are dropped by picking one.
+ */
+async function classesOf(ctx: ToolContext, childId: string, scope: { testId?: string; paperId?: string }): Promise<string[]> {
+  if (scope.testId) return [(await ok(ctx.db.from('tests').select('class_id').eq('id', scope.testId).single())).class_id]
+  const paper = scope.paperId ? await maybe(ctx.db.from('papers').select('test_id').eq('id', scope.paperId).maybeSingle()) : null
+  if (paper?.test_id) return [(await ok(ctx.db.from('tests').select('class_id').eq('id', paper.test_id).single())).class_id]
+  const enrolled = await ok(ctx.db.from('enrolments').select('class_id').eq('child_id', childId))
   if (!enrolled[0]) throw new Error('child is not in a class')
-  return enrolled[0].class_id
+  const ids = [...new Set(enrolled.map((e) => e.class_id))]
+  if (ids.length === 1) return ids
+  const ordered = await ok(ctx.db.from('classes').select('id').in('id', ids).order('created_at'))
+  return ordered.map((c) => c.id)
 }
 
 async function topicsOfClass(ctx: ToolContext, classId: string): Promise<Topic[]> {
@@ -23,6 +32,12 @@ async function topicsOfClass(ctx: ToolContext, classId: string): Promise<Topic[]
   if (maps.length === 0) return []
   // Ordered like the map, so the prompt is the same for every sandbox with the same map.
   return ok(ctx.db.from('topics').select('id, name, family, misconceptions').in('map_id', maps.map((m) => m.id)).order('term').order('position').order('name'))
+}
+
+async function topicsOfClasses(ctx: ToolContext, classIds: string[]): Promise<Topic[]> {
+  const lists: Topic[][] = []
+  for (const id of classIds) lists.push(await topicsOfClass(ctx, id))
+  return lists.flat()
 }
 
 export type DiagnoseInputs = {
@@ -48,8 +63,8 @@ export async function loadDiagnoseInputs(
       : ctx.db.from('papers').select('id').eq('id', input.paperId!).eq('child_id', input.childId),
   )
   const child = await ok(ctx.db.from('children').select('first_name').eq('id', input.childId).single())
-  const classId = await classOf(ctx, input.childId, input)
-  const topics = await topicsOfClass(ctx, classId)
+  const classIds = await classesOf(ctx, input.childId, input)
+  const topics = await topicsOfClasses(ctx, classIds)
   const rows = papers.length
     ? await ok(
         ctx.db
@@ -85,8 +100,9 @@ async function diagnose(
   if (input.testId) await assertInSchool(ctx, 'tests', [input.testId])
   if (input.paperId) await assertInSchool(ctx, 'papers', [input.paperId])
   const child = await ok(db.from('children').select('first_name').eq('id', input.childId).single())
-  const classId = await classOf(ctx, input.childId, input)
-  const topics = await topicsOfClass(ctx, classId)
+  const classIds = await classesOf(ctx, input.childId, input)
+  const classId = classIds.length === 1 ? classIds[0] : undefined
+  const topics = await topicsOfClasses(ctx, classIds)
 
   const ids = [...new Set(input.diagnoses.map((d) => d.resultId))]
   const papers = await ok(
