@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import type { Database } from '@jemma/profiling/db'
 import { HANDOVER_COOKIE, handoverAllows } from '@/lib/handover'
+import { isPublicPath } from '@/lib/public-paths'
 import { supabaseEnv } from '@/lib/supabase/env'
 
 const HOMES = { teacher: '/t', parent: '/p', learner: '/k' } as const
@@ -42,7 +43,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const { data } = await supabase.auth.getUser()
-  if (!data.user) return redirectTo('/sign-in')
+  if (!data.user) return isPublicPath(pathname) ? response : redirectTo('/sign-in')
   const { data: profile } = await supabase.from('profiles').select('role').eq('user_id', data.user.id).maybeSingle()
   if (!profile) return redirectTo('/role')
   const home = HOMES[profile.role]
