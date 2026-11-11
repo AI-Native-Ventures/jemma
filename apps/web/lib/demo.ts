@@ -102,6 +102,11 @@ async function stepOf(db: JemmaDb, classId: string, childId: string | null): Pro
   return stepFrom({ mapApproved: true, markedPapers, markedPapersHeld, hasChild: Boolean(childId), linked: linked > 0, sessionsDone })
 }
 
+/** The sandbox's home class: its oldest. A teacher may add more classes to the sandbox school, and the demo must not lose its way. */
+export function oldestClass<T extends { created_at: string }>(classes: T[]): T | null {
+  return [...classes].sort((a, b) => a.created_at.localeCompare(b.created_at))[0] ?? null
+}
+
 /** The judge's sandbox, read with the service role (the page may be open while signed out). Null when there is none. */
 export async function getDemoState(): Promise<DemoState | null> {
   const sandboxId = await demoCookie()
@@ -109,13 +114,17 @@ export async function getDemoState(): Promise<DemoState | null> {
   const db = createSupabaseAdmin()
   const { data: box } = await db.from('demo_sandboxes').select('school_id, created_at').eq('id', sandboxId).maybeSingle()
   if (!box) return null
-  const { data: cls } = await db
-    .from('classes')
-    .select('id, name, grade, join_code, schools(name)')
-    .eq('school_id', box.school_id)
-    .maybeSingle()
+  const { data: classes } = await db.from('classes').select('id, name, grade, join_code, created_at, schools(name)').eq('school_id', box.school_id)
+  const cls = oldestClass(classes ?? [])
   if (!cls) return null
-  const { data: amina } = await db.from('children').select('id').eq('school_id', box.school_id).eq('first_name', 'Amina').maybeSingle()
+  const { data: amina } = await db
+    .from('children')
+    .select('id')
+    .eq('school_id', box.school_id)
+    .eq('first_name', 'Amina')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
   return {
     sandboxId,
     schoolId: box.school_id,
@@ -145,7 +154,8 @@ export async function signInAs(sandboxId: string, role: DemoRole): Promise<strin
   const supabase = await createSupabaseServer()
   const { error: authError } = await supabase.auth.signInWithPassword({ email: login.email, password: login.password })
   if (authError) throw new Error(`demo: sign in failed: ${authError.message}`)
-  const { data: cls } = await db.from('classes').select('id').eq('school_id', box.school_id).single()
+  const { data: classes } = await db.from('classes').select('id, created_at').eq('school_id', box.school_id)
+  const cls = oldestClass(classes ?? [])
   await setDemoCookie(sandboxId)
   return demoHome(role, cls?.id ?? '')
 }

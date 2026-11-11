@@ -112,7 +112,7 @@ export default async function ParentProfilePage({ params }: { params: Promise<{ 
         <section aria-labelledby="marks" style={css(`${CARD};gap:2px;padding:16px`)}>
           <div style={css('display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px')}>
             <h2 id="marks" style={css('margin:0;font-size:17px;font-weight:600')}>Marks by topic</h2>
-            <span style={css('font-size:13px;color:#5D5A73')}>Maths · change since Term 3</span>
+            <span style={css('font-size:13px;color:#5D5A73')}>{data.marksTitle}</span>
           </div>
           {data.marks.map((m, i) => (
             <Link

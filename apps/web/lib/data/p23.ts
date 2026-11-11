@@ -1,4 +1,6 @@
+import { createSupabaseAdmin } from '../supabase/admin'
 import { createSupabaseServer } from '../supabase/server'
+import { shortSubject } from '../subjects'
 import { loadShortLabels } from '../topics'
 
 /** Parent profile, report, beyond the tests and add activity. Everything is read through RLS. */
@@ -57,14 +59,14 @@ type ResultRow = {
 const RESULT_SELECT =
   'id, paper_id, n, prompt, answer_read, correct, misconception, topic_id, topic_name, created_at, papers!inner(kind, test_id, created_at)'
 
-type TestInfo = { title: string; out_of: number }
+type TestInfo = { title: string; out_of: number; subject: string | null }
 
 /** Test titles for the papers the RLS-scoped query above returned (tests are readable via the child's class). */
 async function testInfo(testIds: (string | null | undefined)[]): Promise<Map<string, TestInfo>> {
   const ids = [...new Set(testIds.filter((id): id is string => Boolean(id)))]
   if (ids.length === 0) return new Map()
-  const { data } = await (await createSupabaseServer()).from('tests').select('id, title, out_of').in('id', ids)
-  return new Map((data ?? []).map((t) => [t.id, { title: t.title.split(':')[0]!.trim(), out_of: t.out_of }]))
+  const { data } = await (await createSupabaseServer()).from('tests').select('id, title, out_of, classes(subject)').in('id', ids)
+  return new Map((data ?? []).map((t) => [t.id, { title: t.title.split(':')[0]!.trim(), out_of: t.out_of, subject: t.classes?.subject ?? null }]))
 }
 
 async function withTests(rows: ResultRow[]): Promise<ResultRow[]> {
@@ -89,6 +91,25 @@ function chipsFor(childId: string, rows: ResultRow[]): Chip[] {
     href: `/p/${childId}/papers/${paperId}`,
     kind: rs[0]!.papers?.kind === 'homework' ? 'camera' : 'paper',
   }))
+}
+
+/** "Maths", or "Maths and English": the subjects the marks come from, as a short line writes them. */
+export const subjectsLabel = (subjects: string[]): string => subjects.map(shortSubject).join(' and ')
+
+/** The heading over "Marks by topic": the subject of the class the numbers come from, and the term the change is measured from. */
+export function marksTitle(subjects: string[], sinceTerm: number | null): string {
+  const subject = subjectsLabel(subjects)
+  if (sinceTerm === null) return subject
+  return subject ? `${subject} · change since Term ${sinceTerm}` : `Change since Term ${sinceTerm}`
+}
+
+/** South African school terms by month. */
+export const termOfDate = (iso: string): number => termOf(new Date(iso))
+
+/** The term of the newest of these dates, or null when there are none. */
+export function sinceTermOf(dates: string[]): number | null {
+  const newest = [...dates].sort((a, b) => b.localeCompare(a))[0]
+  return newest ? termOfDate(newest) : null
 }
 
 const isCurrent = (r: ResultRow) => Date.now() - new Date(r.papers?.created_at ?? r.created_at).getTime() < CURRENT_DAYS * DAY
@@ -125,7 +146,7 @@ const GOOD_VERB: Record<string, string> = { 'Comparing fractions': 'Compares fra
 
 export type Notice = { text: string; chips: Chip[] }
 
-function notices(childId: string, rows: ResultRow[], marks: MarkRow[], helpHref: string | null): Notice[] {
+function notices(childId: string, rows: ResultRow[], marks: MarkRow[], helpHref: string | null, sinceTerm: number | null): Notice[] {
   const current = rows.filter(isCurrent)
   const wrong = current.filter((r) => !r.correct && r.misconception)
   const order: string[] = []
@@ -145,7 +166,7 @@ function notices(childId: string, rows: ResultRow[], marks: MarkRow[], helpHref:
   if (gain) {
     const rs = current.filter((r) => r.papers?.kind === 'test' && r.correct && r.topic_name === gain.topicName)
     out.push({
-      text: `${GOOD_VERB[gain.topicName] ?? `${gain.topicName}: going well now`}. Right every time since Term 3.`,
+      text: `${GOOD_VERB[gain.topicName] ?? `${gain.topicName}: going well now`}. Right every time${sinceTerm === null ? '' : ` since Term ${sinceTerm}`}.`,
       chips: chipsFor(childId, rs),
     })
   }
@@ -159,6 +180,8 @@ export type ProfileData = {
   afterTest: string | null
   needs: { id: string; title: string; detail: string; href: string }[]
   marks: MarkRow[]
+  /** The line over the marks: "Maths · change since Term 3". */
+  marksTitle: string
   notices: Notice[]
   focus: { title: string; why: string; chips: Chip[] }[]
   lookingAhead: string | null
@@ -183,7 +206,7 @@ export async function getProfile(childId: string): Promise<ProfileData | null> {
     supabase.from('guidance_cards').select('content, updated_at').eq('child_id', childId).maybeSingle(),
     supabase.from('question_results').select(RESULT_SELECT).eq('child_id', childId).order('created_at', { ascending: false }),
     supabase.from('needs_you_items').select('id, title, detail, ref_id').eq('child_id', childId).eq('status', 'open').order('created_at', { ascending: false }),
-    supabase.from('observations').select('kind, text, created_at').eq('child_id', childId).order('created_at', { ascending: false }).limit(1),
+    supabase.from('observations').select('kind, text, created_at, author_id').eq('child_id', childId).order('created_at', { ascending: false }).limit(1),
     supabase.from('attendance').select('day, status').eq('child_id', childId),
     supabase.from('activities').select('name, created_at').eq('child_id', childId).order('created_at'),
     supabase.from('activity_log').select('at, text').eq('child_id', childId).order('at', { ascending: false }).limit(4),
@@ -199,10 +222,15 @@ export async function getProfile(childId: string): Promise<ProfileData | null> {
     | { headline: string; focus: { title: string; why: string; evidence: { label: string; resultIds: string[] }[] }[]; lookingAhead: string }
     | undefined
   const marks = marksByTopic(rows, short)
+  const testRows = rows.filter((r) => r.papers?.kind === 'test')
+  const marksSubjects = [...new Set(testRows.filter(isCurrent).flatMap((r) => (r.papers?.tests?.subject ? [r.papers.tests.subject] : [])))]
+  const sinceTerm = sinceTermOf(testRows.filter((r) => !isCurrent(r)).map((r) => r.papers?.created_at ?? r.created_at))
   const firstGap = gaps.data?.[0]
   const helpHref = firstGap ? `/p/${childId}/topics/${topicKey(firstGap.topic_id, firstGap.topic_name)}` : null
 
   const note = notes.data?.[0]
+  // A parent cannot read the teacher's profile; the name comes from the service client, as the child's teacher does on the other screens.
+  const author = note ? (await createSupabaseAdmin().from('profiles').select('display_name').eq('user_id', note.author_id).maybeSingle()).data?.display_name : null
   const days = attendance.data ?? []
   const names = (activities.data ?? []).map((a) => a.name)
 
@@ -213,7 +241,8 @@ export async function getProfile(childId: string): Promise<ProfileData | null> {
     afterTest: latestTestInfo.get(latestTest.data?.[0]?.test_id ?? '')?.title ?? null,
     needs: (needs.data ?? []).map((n) => ({ id: n.id, title: n.title, detail: n.detail, href: `/p/${childId}/snap/${n.ref_id}` })),
     marks,
-    notices: notices(childId, rows, marks, helpHref),
+    marksTitle: marksTitle(marksSubjects, marks.some((m) => m.change !== null) ? sinceTerm : null),
+    notices: notices(childId, rows, marks, helpHref, sinceTerm),
     focus: (guidance?.focus ?? []).map((f) => ({
       title: f.title,
       why: f.why,
@@ -223,8 +252,8 @@ export async function getProfile(childId: string): Promise<ProfileData | null> {
     beyond: {
       note: note
         ? isToday(note.created_at)
-          ? { label: 'New note from', strong: 'Ms Banda', rest: ', today' }
-          : { label: 'Note from', strong: 'Ms Banda', rest: `, ${dayLabel(note.created_at)}` }
+          ? { label: 'New note from', strong: author ?? 'your teacher', rest: ', today' }
+          : { label: 'Note from', strong: author ?? 'your teacher', rest: `, ${dayLabel(note.created_at)}` }
         : null,
       attendance: days.length ? { present: days.filter((d) => d.status !== 'away').length, total: days.length } : null,
       activities: names.length ? names.map((n, i) => (i === 0 ? n : lowerFirst(n))).join(' and ') : null,
@@ -285,7 +314,7 @@ export async function getBeyond(childId: string): Promise<BeyondData | null> {
   const name = child.data.first_name
   const authors = [...new Set((notes.data ?? []).map((n) => n.author_id))]
   const { data: teachers } = authors.length ? await supabase.from('profiles').select('user_id, display_name').in('user_id', authors) : { data: [] }
-  const teacher = teachers?.[0]?.display_name ?? 'Ms Banda'
+  const teacher = (authors[0] ? (await createSupabaseAdmin().from('profiles').select('display_name').eq('user_id', authors[0]).maybeSingle()).data?.display_name : null) ?? teachers?.[0]?.display_name ?? 'your teacher'
 
   const att = attendance.data ?? []
   const away = att.filter((a) => a.status === 'away').map((a) => dayLabel(a.day))
@@ -360,7 +389,7 @@ export async function getReport(childId: string): Promise<ReportData | null> {
     supabase.from('gaps').select('id, topic_id, topic_name, stage, first_practised_at, fixed_at').eq('child_id', childId).order('created_at'),
     supabase.from('sessions').select('id, topic_name, right, minutes, finished_at, question_count').eq('child_id', childId).eq('status', 'done').order('finished_at'),
     supabase.from('sessions').select('topic_name, planned_for').eq('child_id', childId).eq('status', 'planned').order('planned_for'),
-    supabase.from('observations').select('id, kind, text, created_at').eq('child_id', childId).order('created_at'),
+    supabase.from('observations').select('id, kind, text, created_at, author_id').eq('child_id', childId).order('created_at'),
     supabase.from('attendance').select('day, status').eq('child_id', childId).order('day'),
     supabase.from('activities').select('id, kind, name, days').eq('child_id', childId).order('created_at'),
     supabase.from('guidance_cards').select('content').eq('child_id', childId).maybeSingle(),
@@ -372,6 +401,10 @@ export async function getReport(childId: string): Promise<ReportData | null> {
   const testMap = await testInfo((papers.data ?? []).map((p) => p.test_id))
   const paperTests = (papers.data ?? []).map((p) => ({ ...p, tests: p.test_id ? (testMap.get(p.test_id) ?? null) : null }))
   const guidance = card.data?.content as { focus: { title: string }[]; lookingAhead: string } | undefined
+  // A parent cannot read the teacher's profile, so the names of the people who wrote the notes come from the service client.
+  const noteAuthors = [...new Set((notes.data ?? []).map((n) => n.author_id))]
+  const { data: authorRows } = noteAuthors.length ? await createSupabaseAdmin().from('profiles').select('user_id, display_name').in('user_id', noteAuthors) : { data: [] }
+  const authorName = (id: string) => authorRows?.find((a) => a.user_id === id)?.display_name ?? 'Your teacher'
 
   const att = attendance.data ?? []
   const first = att[0]?.day
@@ -420,7 +453,7 @@ export async function getReport(childId: string): Promise<ReportData | null> {
   for (const n of notes.data ?? []) {
     if (!inPeriod(n.created_at)) continue
     push(n.created_at, {
-      key: n.id, icon: 'note', title: `Ms Banda: ${lowerFirst(stripDot(n.text))}`,
+      key: n.id, icon: 'note', title: `${authorName(n.author_id)}: ${lowerFirst(stripDot(n.text))}`,
       sub: `${dayLabel(n.created_at)} · ${kindName(n.kind)}`, href: beyond,
     })
   }

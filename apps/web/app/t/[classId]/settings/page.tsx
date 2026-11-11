@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import { getSettings } from '@/lib/data/p21'
+import { getSettings, shortName } from '@/lib/data/p21'
 import { BackHeader, Column, Section, Title } from '../../_p21'
 import { ShareButton } from '../../_p21-client'
-import { AddLearnerRow, GradeRow, NameRow, NewCodeButton, ParentToggle, RemoveParentButton, SubjectRow } from './SettingsClient'
+import { AddLearnerRow, GradeRow, LearnerCodeRow, NameRow, NewCodeButton, ParentToggle, RemoveParentButton, SubjectRow } from './SettingsClient'
 import { ChevronRightIcon } from '@/components/ui/icons'
 
 export const dynamic = 'force-dynamic'
@@ -11,8 +11,8 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 
 export default async function TeacherClassSettingsPage({ params }: { params: Promise<{ classId: string }> }) {
   const { classId } = await params
-  const { cls, learners, parents } = await getSettings(classId)
-  const short = cls.name.split(/\s+/)[0]
+  const { cls, learners, learnerRows, parents } = await getSettings(classId)
+  const short = shortName(cls.name)
   return (
     <Column bare>
       <BackHeader href={`/t/${classId}`} label="Back to class" sub={cls.name} title="Class settings" />
@@ -67,6 +67,9 @@ export default async function TeacherClassSettingsPage({ params }: { params: Pro
             </span>
             <ChevronRightIcon className="flex-none" />
           </Link>
+          {learnerRows.map((l) => (
+            <LearnerCodeRow key={l.id} classId={classId} childId={l.id} name={l.name} />
+          ))}
           <AddLearnerRow classId={classId} />
         </Section>
 

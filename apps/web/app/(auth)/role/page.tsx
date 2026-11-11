@@ -105,7 +105,7 @@ export default async function RolePage() {
           </ComingButton>
         </nav>
         <p style={{ margin: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2px 8px', fontSize: 15, color: colors.body }}>
-          Grade 7 or younger? A grown-up adds you.
+          Learners sign in with a code from a parent or teacher.
           <Link href="/k/sign-in" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, fontWeight: 600, color: colors.ink, textDecoration: 'underline', textUnderlineOffset: 3 }}>
             Sign in with your code
           </Link>

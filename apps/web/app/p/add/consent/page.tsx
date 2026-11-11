@@ -21,17 +21,20 @@ function Tick({ name, title, note, checked, required }: { name: string; title: s
   )
 }
 
-export default async function ConsentPage({ searchParams }: { searchParams: Promise<{ code?: string; child?: string; error?: string }> }) {
+export default async function ConsentPage({ searchParams }: { searchParams: Promise<{ code?: string; child?: string; surname?: string; error?: string }> }) {
   await requireRole('parent')
   const q = await searchParams
   const code = cleanCode(q.code)
   const typed = (q.child ?? '').trim()
-  const back = (error?: string) => `/p/add?${new URLSearchParams({ code, child: typed, ...(error ? { error } : {}) })}`
+  const surname = (q.surname ?? '').trim()
+  const back = (error?: string, needsSurname = false) =>
+    `/p/add?${new URLSearchParams({ code, child: typed, ...(surname ? { surname } : {}), ...(error ? { error } : {}), ...(needsSurname ? { needsSurname: '1' } : {}) })}`
   const cls = code ? await findClass(code) : null
   if (!cls) redirect(back())
-  const kid = await findChildInClass(cls.classId, typed)
-  if (!kid) redirect(back(`${cls.teacherName}'s class has no one called ${typed || 'that'}. Check the spelling.`))
-  const name = kid.firstName
+  const found = await findChildInClass(cls.classId, typed, surname)
+  if (found.kind === 'none') redirect(back(`${cls.teacherName}'s class has no one called ${typed || 'that'}. Check the spelling.`))
+  if (found.kind === 'many') redirect(back(`More than one child in ${cls.teacherName}'s class is called ${typed}. Type the surname.`, true))
+  const name = found.child.firstName
 
   return (
     <Page>
@@ -69,6 +72,7 @@ export default async function ConsentPage({ searchParams }: { searchParams: Prom
         <form id="consent" action={requestLink} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <input type="hidden" name="code" value={code} />
           <input type="hidden" name="child" value={name} />
+          <input type="hidden" name="surname" value={surname} />
           <fieldset style={{ border: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
             <legend style={{ padding: 0, marginBottom: 8, fontSize: 16, fontWeight: 600 }}>Your OK</legend>
             <Tick name="guardian" title={`I'm ${name}'s parent or legal guardian`} note="Needed" checked required />

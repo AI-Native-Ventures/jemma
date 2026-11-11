@@ -10,8 +10,8 @@ export default async function CurriculumMapPage({ params }: { params: Promise<{ 
   if (!map || !read) redirect(`/t/${classId}/curriculum`)
 
   const supabase = await createSupabaseServer()
-  const { data: cls } = await supabase.from('classes').select('name').eq('id', classId).maybeSingle()
-  const subject = cls?.name.replace(/^\S+\s+/, '') || 'Mathematics'
+  const { data: cls } = await supabase.from('classes').select('subject').eq('id', classId).maybeSingle()
+  const subject = cls?.subject ?? ''
   // The terms of the document: three for a Kenyan scheme, four for most others. A term with no topic is not shown.
   const termList = termNumbers(read.draft)
   const inView = (t: number) => termInView(termList, t)

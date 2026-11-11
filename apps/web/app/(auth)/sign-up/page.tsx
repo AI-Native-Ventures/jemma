@@ -22,7 +22,7 @@ export default function SignUpPage() {
             </h1>
           </div>
           <p style={{ margin: '0 0 0 24px', fontSize: 15, lineHeight: 1.45, color: colors.body, textWrap: 'pretty' }}>
-            For teachers, parents, and learners in Grade 8 and up. Younger children get their sign-in from a grown-up.
+            For teachers and parents. Learners sign in with a code from a parent or teacher.
           </p>
         </div>
 

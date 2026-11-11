@@ -1,11 +1,12 @@
 'use client'
 
 import { PendingButton } from '@/components/ui/Button'
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { Sheet } from '@/components/ui'
 import { ChevronRightIcon } from '@/components/ui/icons'
-import { ComingSheet } from '../../_p21-client'
-import { addLearner, newClassCode, removeParent, renameClass, setClassGrade } from './actions'
+import type { SchoolLearner } from '@/lib/class-writes'
+import { GRADES } from '@/lib/subjects'
+import { addLearner, enrolSchoolLearner, findSchoolLearners, makeLearnerCode, newClassCode, removeParent, renameClass, setClassGrade } from './actions'
 
 const editBtn = 'min-h-11 flex-none rounded-12 border border-muted-2 bg-card px-3.5 text-[14px] font-semibold text-ink'
 const save = 'flex h-[52px] items-center justify-center rounded-14 bg-ink text-[17px] font-semibold text-white disabled:opacity-50'
@@ -48,7 +49,7 @@ export function GradeSheet({ classId, grade, onClose }: { classId: string; grade
   return (
     <Sheet open onClose={onClose} title="Grade">
       <span className="grid grid-cols-4 gap-1.5">
-        {[4, 5, 6, 7].map((g) => (
+        {GRADES.map((g) => (
           <button key={g} type="button" aria-pressed={value === g} onClick={() => setValue(g)} className={`h-11 rounded-12 text-[15px] ${value === g ? 'bg-ink font-semibold text-white' : 'border border-edge bg-card font-medium text-ink'}`}>
             Grade {g}
           </button>
@@ -59,10 +60,6 @@ export function GradeSheet({ classId, grade, onClose }: { classId: string; grade
       </PendingButton>
     </Sheet>
   )
-}
-
-export function SubjectSheet({ onClose }: { onClose: () => void }) {
-  return <ComingSheet open onClose={onClose} />
 }
 
 export function NewCodeButton({ classId }: { classId: string }) {
@@ -110,10 +107,39 @@ export function RemoveParentButton({ classId, parentId, childId, name }: { class
   )
 }
 
+const learnerLine = (l: SchoolLearner) => [[l.firstName, l.lastName].filter(Boolean).join(' '), `Grade ${l.grade}`, l.classes.length ? `in ${l.classes.join(' and ')}` : null].filter(Boolean).join(', ')
+
 export function AddLearnerRow({ classId }: { classId: string }) {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
+  const [surname, setSurname] = useState('')
+  const [found, setFound] = useState<SchoolLearner[]>([])
+  const [error, setError] = useState('')
   const [pending, start] = useTransition()
+
+  // Children of this school with the same first name, so a learner who is already here is not made twice.
+  useEffect(() => {
+    if (!open) return
+    const wanted = name.trim()
+    if (!wanted) return setFound([])
+    let current = true
+    const t = setTimeout(() => {
+      findSchoolLearners(classId, wanted).then((hits) => current && setFound(hits))
+    }, 250)
+    return () => {
+      current = false
+      clearTimeout(t)
+    }
+  }, [open, name, classId])
+
+  const close = () => {
+    setOpen(false)
+    setName('')
+    setSurname('')
+    setFound([])
+    setError('')
+  }
+
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="flex min-h-14 w-full items-center gap-3 border-0 border-t border-soft bg-transparent py-1.5 text-left text-ink">
@@ -122,16 +148,133 @@ export function AddLearnerRow({ classId }: { classId: string }) {
         </span>
         <ChevronRightIcon className="flex-none" />
       </button>
-      <Sheet open={open} onClose={() => setOpen(false)} title="Add a learner">
+      <Sheet open={open} onClose={close} title="Add a learner">
         <label htmlFor="new-learner" className="text-[15px] font-medium">
           Learner&apos;s first name
         </label>
-        <input id="new-learner" value={name} onChange={(e) => setName(e.target.value)} className="h-[52px] rounded-14 border border-muted-2 bg-card px-3.5 text-[17px] text-ink" />
-        <PendingButton pending={pending} type="button" disabled={pending || !name.trim()} className={save} onClick={() => start(async () => { await addLearner(classId, name); setName(''); setOpen(false) })}>
-          Add
+        <input id="new-learner" value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" className="h-[52px] rounded-14 border border-muted-2 bg-card px-3.5 text-[17px] text-ink" />
+        <label htmlFor="new-learner-surname" className="text-[15px] font-medium">
+          Surname (optional)
+        </label>
+        <input id="new-learner-surname" value={surname} onChange={(e) => setSurname(e.target.value)} autoComplete="off" className="h-[52px] rounded-14 border border-muted-2 bg-card px-3.5 text-[17px] text-ink" />
+        <p className="m-0 -mt-1 text-[13px] leading-[1.4] text-body">Add it when two learners in the class share a first name, so parents can tell them apart.</p>
+        {found.length > 0 ? (
+          <section aria-label="Already at your school" className="flex flex-col gap-2">
+            <h3 className="m-0 text-[13px] font-semibold text-body">Already at your school</h3>
+            {found.map((l) => (
+              <PendingButton
+                key={l.childId}
+                pending={pending}
+                type="button"
+                disabled={pending}
+                aria-label={`Add ${learnerLine(l)}`}
+                className="flex min-h-14 items-center rounded-14 border border-muted-2 bg-card px-3.5 py-2 text-left text-[16px] font-medium text-ink"
+                onClick={() =>
+                  start(async () => {
+                    const done = await enrolSchoolLearner(classId, l.childId)
+                    if (done.ok) close()
+                    else setError(done.error)
+                  })
+                }
+              >
+                {learnerLine(l)}
+              </PendingButton>
+            ))}
+          </section>
+        ) : null}
+        {error ? (
+          <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-coral-text">
+            {error}
+          </p>
+        ) : null}
+        <PendingButton pending={pending} type="button" disabled={pending || !name.trim()} className={save} onClick={() =>
+            start(async () => {
+              const done = await addLearner(classId, name, surname)
+              if (done.ok) close()
+              else setError(done.error)
+            })
+          }
+        >
+          {found.length > 0 ? 'New learner' : 'Add'}
         </PendingButton>
       </Sheet>
     </>
+  )
+}
+
+/** One learner of the class, with "Make a sign-in code": the teacher sets a 4 digit PIN and reads out the 6 character code. */
+export function LearnerCodeRow({ classId, childId, name }: { classId: string; childId: string; name: string }) {
+  const [open, setOpen] = useState(false)
+  const [pin, setPin] = useState('')
+  const [code, setCode] = useState<{ code: string; pin: string } | null>(null)
+  const [error, setError] = useState('')
+  const [pending, start] = useTransition()
+  const close = () => {
+    setOpen(false)
+    setPin('')
+    setCode(null)
+    setError('')
+  }
+  return (
+    <div className="flex min-h-14 items-center gap-3 border-t border-soft py-1.5">
+      <span className="min-w-0 flex-1 text-[16px] font-medium">{name}</span>
+      <button type="button" aria-label={`Make a sign-in code for ${name}`} onClick={() => setOpen(true)} className={editBtn}>
+        Make a sign-in code
+      </button>
+      <Sheet open={open} onClose={close} title={`Sign-in code for ${name}`} description="The learner types the code and the PIN at Sign in with your code. Making a new one stops the old one.">
+        {code ? (
+          <>
+            <div className="flex flex-col gap-1 rounded-14 bg-soft-2 p-3.5">
+              <span className="text-[13px] text-body">Sign-in code</span>
+              <span aria-label="Sign-in code" className="text-[28px] font-bold tracking-[0.14em]">
+                {code.code}
+              </span>
+              <span className="text-[13px] text-body">PIN {code.pin}</span>
+            </div>
+            <p className="m-0 text-[14px] leading-[1.45] text-body">Write both down for {name}. Jemma does not keep the PIN where you can read it again.</p>
+            <button type="button" onClick={close} className={save}>
+              Done
+            </button>
+          </>
+        ) : (
+          <>
+            <label htmlFor={`pin-${childId}`} className="text-[15px] font-medium">
+              4 digit PIN
+            </label>
+            <input
+              id={`pin-${childId}`}
+              value={pin}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={4}
+              autoComplete="off"
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+              className="h-[52px] rounded-14 border border-muted-2 bg-card px-3.5 text-[22px] tracking-[0.3em] text-ink"
+            />
+            {error ? (
+              <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-coral-text">
+                {error}
+              </p>
+            ) : null}
+            <PendingButton
+              pending={pending}
+              type="button"
+              disabled={pending || pin.length !== 4}
+              className={save}
+              onClick={() =>
+                start(async () => {
+                  const made = await makeLearnerCode(classId, childId, pin)
+                  if (made.ok) setCode({ code: made.code, pin })
+                  else setError(made.error)
+                })
+              }
+            >
+              Make the code
+            </PendingButton>
+          </>
+        )}
+      </Sheet>
+    </div>
   )
 }
 
@@ -151,10 +294,14 @@ export function GradeRow({ classId, grade }: { classId: string; grade: number })
   )
 }
 
+/** The subject is shown, not changed: a class is made for one subject. */
 export function SubjectRow({ subject }: { subject: string }) {
   return (
-    <SettingRow label="Subject" value={subject} editLabel="Edit subject">
-      {(close) => <SubjectSheet onClose={close} />}
-    </SettingRow>
+    <div className="flex min-h-[60px] items-center gap-3 border-t border-soft py-1.5">
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-[13px] text-body">Subject</span>
+        <span className="text-[16px] font-medium">{subject}</span>
+      </span>
+    </div>
   )
 }
