@@ -10,7 +10,8 @@ import { createSandbox, type Sandbox } from '../../../packages/profiling/test/he
 // The text reader of the curriculum job (`unpdf`) in the Worker runtime itself: these tests run in workerd, not in Node.
 // A small PDF with a text layer is made in code (no file system here), the job asks a fake vision model that gives no answer,
 // and the text model reads what `unpdf` took out of the PDF.
-vi.setConfig({ testTimeout: 90_000, hookTimeout: 120_000 })
+// The database is shared with other workers and answers in seconds, not milliseconds, when they run their suites.
+vi.setConfig({ testTimeout: 300_000, hookTimeout: 300_000 })
 const testEnv = rawEnv as unknown as Env
 const env = { ...testEnv, AI_MODE: 'live', EVENTS_QUEUE: { send: vi.fn(async () => {}) } } as never as Parameters<typeof processEvent>[0]
 const db = createServiceClient({ SUPABASE_URL: testEnv.SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY: testEnv.SUPABASE_SERVICE_ROLE_KEY })

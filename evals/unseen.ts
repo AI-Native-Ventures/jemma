@@ -76,8 +76,11 @@ async function main(): Promise<void> {
         await waitForMemory({ read: readFreePercent, sleep, log: (l) => console.log(l) })
         console.log(`RUN ${id} ${n}/${a.runs} try ${attempt} ...`)
         const result = await runOnce({ db, aiEnv, getModel, truth, bytes, pages, runId: a.runId, n, attempt })
-        spent++
-        appendLedger({ at: new Date().toISOString(), runId: a.runId, taskId: `draft_map:${id}`, n, attempts: 1, rehearsal: false, kind: 'draft_map' })
+        // A try that could not even make its school (no model was asked) is not a live run and is not counted.
+        if (result.calls > 0) {
+          spent++
+          appendLedger({ at: new Date().toISOString(), runId: a.runId, taskId: `draft_map:${id}`, n, attempts: 1, rehearsal: false, kind: 'draft_map' })
+        }
         const text = clean(JSON.stringify(result, null, 2), secrets).text
         writeFileSync(join(outDir, `${id}-${n}-${attempt}.json`), `${text}\n`)
         tries.push(result)

@@ -9,7 +9,7 @@ type Result = { data: unknown; error: { message: string } | null }
  * and awaiting the query. Every column of a row comes back whatever the select list says. No network: a test of the job does not
  * wait for a shared database.
  */
-export type MemoryDb = JemmaDb & { tables: Record<string, Row[]>; files: Record<string, Record<string, Uint8Array>> }
+export type MemoryDb = JemmaDb & { tables: Record<string, Row[]>; files: Record<string, Record<string, Uint8Array>>; users: Set<string> }
 
 export function memoryDb(seed: Record<string, Row[]> = {}, files: Record<string, Record<string, Uint8Array>> = {}): MemoryDb {
   const tables: Record<string, Row[]> = Object.fromEntries(Object.entries(seed).map(([name, rows]) => [name, rows.map((r) => ({ ...r }))]))
@@ -81,8 +81,31 @@ export function memoryDb(seed: Record<string, Row[]> = {}, files: Record<string,
         const bytes = files[bucket]?.[path]
         return bytes ? { data: new Blob([bytes]), error: null } : { data: null, error: { message: `not found: ${bucket}/${path}` } }
       },
+      upload: async (path: string, bytes: Uint8Array) => {
+        ;(files[bucket] ??= {})[path] = bytes
+        return { data: { path }, error: null }
+      },
+      remove: async (paths: string[]) => {
+        for (const path of paths) delete files[bucket]?.[path]
+        return { data: [], error: null }
+      },
     }),
   }
 
-  return { from, storage, tables, files } as unknown as MemoryDb
+  const users = new Set<string>()
+  const auth = {
+    admin: {
+      createUser: async () => {
+        const id = crypto.randomUUID()
+        users.add(id)
+        return { data: { user: { id } }, error: null }
+      },
+      deleteUser: async (id: string) => {
+        users.delete(id)
+        return { data: null, error: null }
+      },
+    },
+  }
+
+  return { from, storage, auth, tables, files, users } as unknown as MemoryDb
 }

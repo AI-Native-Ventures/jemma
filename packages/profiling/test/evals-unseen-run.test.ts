@@ -1,22 +1,18 @@
 import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { MockLanguageModelV4 } from 'ai/test'
-import { beforeAll, describe, expect, test, vi } from 'vitest'
-import { createServiceClient, type JemmaDb } from '../src/db'
+import { describe, expect, test } from 'vitest'
 import { readPdfText } from '../src/ai/pdf-text'
-import { loadEnv } from './helpers/env'
+import { memoryDb, type MemoryDb } from './helpers/memory-db'
 import { loadTruth, perfectDraft, type Truth } from '../../../evals/lib/unseen'
 import { noAnswerReason, runOnce } from '../../../evals/lib/unseen-run'
 
-// The database is shared with other workers and answers in seconds, not milliseconds, when they run their suites.
-vi.setConfig({ testTimeout: 300_000, hookTimeout: 300_000 })
 
-// The live script of "A curriculum Jemma had never seen", with a fake model: the real school, class, upload, job, tool log, scoring
-// and clean-up, no live call. It shows that a live run fails only for reasons about the model.
+// The live script of "A curriculum Jemma had never seen", with a fake model and a database in memory: the real school, class,
+// upload, job, tool log, scoring and clean-up, no live call and no network. It shows that a live run fails only for reasons about
+// the model. (The real database is tried in evals-unseen-fixture.test.ts.)
 
 const root = resolve(import.meta.dirname, '../../..')
-const env = loadEnv()
-const db: JemmaDb = createServiceClient({ SUPABASE_URL: env.SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY! })
 
 const science = loadTruth('grade9-natural-sciences-za')
 const kenya = loadTruth('grade4-science-technology-ke')
@@ -34,16 +30,18 @@ const failing = (message: string, statusCode: number) =>
   })
 const models = (vision: MockLanguageModelV4, text: MockLanguageModelV4) => ((kind: string) => (kind === 'vision' ? vision : text)) as never
 
+let db: MemoryDb
 async function run(truth: Truth, getModel: never, n = 1) {
+  db = memoryDb()
   const pages = (await readPdfText(fileOf(truth))).pages
   return runOnce({ db, aiEnv, getModel, truth, bytes: fileOf(truth), pages, runId: 'test-run', n, attempt: 1 })
 }
-
-const schoolsLeft = async () => (await db.from('schools').select('id', { count: 'exact', head: true }).like('name', 'unseen%')).count ?? 0
-let before = 0
-beforeAll(async () => {
-  before = await schoolsLeft()
-})
+/** Nothing the run made is left: no school, no class, no teacher, no file. */
+const nothingLeft = () => {
+  expect(db.tables.schools ?? []).toEqual([])
+  expect(db.users.size).toBe(0)
+  expect(Object.values(db.files.curriculum ?? {})).toEqual([])
+}
 
 describe('one live run, with a fake model', () => {
   test('a perfect draft from the vision model passes, is read by vision, makes one call, and leaves nothing behind', async () => {
@@ -54,7 +52,7 @@ describe('one live run, with a fake model', () => {
     expect(got.checks.every((c) => c.pass)).toBe(true)
     expect(got.figures).toMatchObject({ found: 15, of: 15, invented: 0 })
     expect(text.doGenerateCalls).toHaveLength(0)
-    expect(await schoolsLeft()).toBe(before)
+    nothingLeft()
   })
 
   test('when vision gives nothing the text model reads the typed PDF: two calls, read by text, and the reason is kept', async () => {
@@ -62,7 +60,7 @@ describe('one live run, with a fake model', () => {
     const text = answering({ draft: perfectDraft(science) })
     const got = await run(science, models(vision, text))
     expect(got).toMatchObject({ verdict: 'pass', way: 'text', calls: 2, visionProblem: 'Provider returned error' })
-    expect(await schoolsLeft()).toBe(before)
+    nothingLeft()
   })
 
   test('a scan that the provider would not answer is "no answer", not a fail, and the error is not kept as a failure', async () => {
@@ -72,7 +70,7 @@ describe('one live run, with a fake model', () => {
     expect(got).toMatchObject({ verdict: 'no_answer', calls: 1, way: null, error: null, draft: null })
     expect(got.noAnswer).toContain('Rate limit exceeded')
     expect(text.doGenerateCalls).toHaveLength(0)
-    expect(await schoolsLeft()).toBe(before)
+    nothingLeft()
   })
 
   test('a model that answers for the wrong number of terms fails the check, and the job drops an empty fourth term first', async () => {
@@ -92,7 +90,7 @@ describe('one live run, with a fake model', () => {
     expect(got.noAnswer).toBeNull()
     expect(got.error).toBeTruthy()
     expect(got.calls).toBe(2)
-    expect(await schoolsLeft()).toBe(before)
+    nothingLeft()
   })
 
   test('a draft for the wrong grade is refused by the save tool, which is a fail of the model, not of the harness', async () => {

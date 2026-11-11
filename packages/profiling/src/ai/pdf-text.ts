@@ -11,7 +11,8 @@ export type PdfText = { pages: number; text: string }
 const MIN_LETTERS = 200
 
 export async function readPdfText(bytes: Uint8Array): Promise<PdfText> {
-  const pdf = await getDocumentProxy(bytes)
+  // PDF.js takes over the memory of the array it is given, so it gets a copy and the caller keeps theirs.
+  const pdf = await getDocumentProxy(new Uint8Array(bytes))
   const { totalPages, text } = await extractText(pdf, { mergePages: true })
   return { pages: totalPages, text }
 }
