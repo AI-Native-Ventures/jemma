@@ -1,15 +1,13 @@
 # Jemma: text description
 
-Track: learner profiling. Live link: to be announced. Code repository: to be announced. Licence: to be announced.
+Sub-theme: Longitudinal strength tracking. Repository: https://github.com/AI-Native-Ventures/jemma. Live demo: https://jemma-web.horizonsystems.workers.dev/demo. Licence: MIT.
 
-Teachers mark a lot of tests. They rarely have time to find out why each child got an answer wrong, and parents are left to guess how to help at home. Jemma tries to close that gap.
+Jemma follows one learner across years, not one term, so a pattern that is invisible one term at a time can reach the family early.
 
-The teacher uploads the curriculum and photographs a class test. Jemma reads each paper, marks it, and works out why each wrong answer is wrong. It builds a learner profile for every child: marks by topic, gaps and their stage, teacher notes, attendance, activities and a guidance card. It tells the teacher what to reteach to the class. For each child it plans a short home lesson on their biggest gap, in reading cards, a diagram or an audio memo. The parent hands the phone over, the child works through the lesson and never sees a score, and Jemma updates the gap afterwards. It also records which format works for each child, and says "Too early to tell" until it has three sessions to go on.
+**School and workflow.** The school is made up: Hillview Primary, a Grade 6 mathematics class modelled on a South African public primary school. The teacher photographs a class test. Jemma marks it and updates each learner's record. The teacher checks and shares the results. Over the years the Long view shows what held for three terms or more, so the teacher can raise it with the family. The past years are synthetic and messy on purpose.
 
-Jemma has its own MCP server with 20 tools. Seven read tools hand over the inputs, and the rest save results. These tools read or change the profile: `get_learner_profile`, `update_learner_profile`, `class_gap_report`, `plan_next_session`, `subject_guidance` and `mark_paper`. The tools never call a model. A model reads a photo or writes a lesson, then passes its answer to a save tool. The save tool checks the shape, applies the rules in code and writes. Code decides every mark and every gap.
+**Rules it keeps.** A profile, not a label. Every claim cites the quiz, test or note it came from. The teacher goes first: a pattern reaches a parent only after the teacher checks it, talks to the guardian and taps "We have talked". A learner is never ranked, and never sees the Long view. Code finds the patterns and decides every mark. The model only words them.
 
-The AI work runs in two ways. The cloud runner uses free models. Jemma Desktop uses the teacher's or parent's own Claude Code or Codex through the same MCP server.
+**How it is built.** Jemma has its own MCP server with 22 tools, most of them saving results: a profile update, a lesson, a Long view draft. It borrows the official MCP filesystem server: sandboxed, allow-listed file access with path-escape protection is security code we should not write and audit ourselves. One full task runs on an open-weights model: goose, an open-source agent, drives Nemotron 3.5 Super VL, and all 11 eval tasks passed 3 of 3 live runs, judged by code. Claude Code runs alongside. Every tool call is logged with input and output, and every approval carries a name.
 
-Safety rules: photo and upload text is treated as data, never as instructions. Anything Jemma is unsure about goes to the teacher. Parents see a child only after the teacher agrees. All data in the demo is made up.
-
-Limits: English and Maths only, Grade 6 data, free models are slow when an answer is not stored yet.
+**Limits.** Synthetic data only, one Grade 6 maths class, English only. No teacher and no real learner has used it. Curriculum PDFs are read by the cloud model only.

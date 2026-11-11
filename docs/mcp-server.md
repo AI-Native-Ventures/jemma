@@ -1,6 +1,6 @@
 # Jemma MCP server
 
-Jemma ships its own MCP server. It has 20 tools. The agent worker serves it at `/mcp`. Two kinds of client use it:
+Jemma ships its own MCP server. It has 22 tools. The agent worker serves it at `/mcp`. Two kinds of client use it:
 
 - The cloud runner calls the same tool functions in the same process (no network hop).
 - Any outside MCP client, such as Claude Code, Codex or the Jemma Desktop runner, connects over HTTP with a bearer token.
@@ -11,7 +11,7 @@ The tool list below is generated from the zod schemas in `packages/profiling/src
 
 | What | File |
 | --- | --- |
-| Tool registry (the list of 20) | `packages/profiling/src/tools/registry.ts` |
+| Tool registry (all 22 tools) | `packages/profiling/src/tools/registry.ts` |
 | Server builder (`createJemmaMcpServer`) | `packages/profiling/src/server.ts` |
 | Tool context, school scoping (`assertInSchool`) and the tool log (`defineTool`) | `packages/profiling/src/tools/context.ts` |
 | Read tools | `packages/profiling/src/tools/read/*.ts` |
@@ -23,12 +23,12 @@ The tool list below is generated from the zod schemas in `packages/profiling/src
 
 ## How to connect
 
-- URL: `https://<agent-worker-host>/mcp`. Locally it is `http://localhost:8787/mcp` (see the README). The public host is to be announced with the submission.
+- URL: `https://<agent-worker-host>/mcp`. Locally it is `http://localhost:8787/mcp` (see the README). Every call needs a token and the team creates the tokens, so to try the server without asking, run it yourself with `./start.sh`.
 - Transport: MCP streamable HTTP, served by `createMcpHandler` from the `agents` package.
 - Auth: `Authorization: Bearer <token>`. A request with no token, or a token the server does not know, gets `401 Unauthorized`. The server stores only the SHA-256 hash of a token, in the `mcp_tokens` table.
 - A token belongs to one school (`school_id`) or to one user (`user_id`). A school token covers that school. A user token covers the schools of that user's profile, of the classes they teach, and of the children linked to them with status `approved`.
 - Every tool that takes an id checks that the record belongs to a covered school (`assertInSchool`). A record outside the token's schools returns a tool error such as `children <id> not in this school`. An id that is not a uuid is treated the same way.
-- There is no screen yet to create tokens. An operator inserts a row. Do this only on the jemma-dev project, with synthetic data:
+- There is no screen yet to create tokens. An operator inserts a row. Do this only on the local database that `./start.sh` starts, or on a project of your own, with synthetic data:
 
 ```bash
 TOKEN=$(openssl rand -hex 24)
