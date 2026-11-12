@@ -32,7 +32,7 @@ async function mapFamilies(admin: JemmaDb, classId: string): Promise<string[]> {
 
 /**
  * Adds six made-up learners to the class: children of the school, enrolled in the class, with attendance for the last ten school days
- * and records back up to two years before the class year, in the class's subject and two others. The strand families are the approved
+ * and records back up to two years before the class year, in the class's subject. The strand families are the approved
  * map's, else the subject's usual ones, else the ones the jobs suggest, else three neutral ones. Works for any grade from 1 to 12.
  * Refuses a class that is not in a demo sandbox school, so a real school can never get made-up children.
  */
