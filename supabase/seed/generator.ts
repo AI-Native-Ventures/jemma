@@ -67,7 +67,22 @@ export type MakeLearnersInput = {
   teacherNames: readonly string[]
   /** First names to leave out (learners already in the class). */
   avoidNames?: readonly string[]
+  /** Exact first names to use, in order (the five learners of 6B). Without it the names come from the list. `count` is then the length of this list. */
+  names?: readonly string[]
+  /** The subjects to make records for. Without it: the class's subject and up to two others. */
+  subjects?: readonly string[]
+  /**
+   * Marked work only: no notes, no attendance, none of the messy extras. For learners who already have those from somewhere else
+   * (the five learners of 6B, whose notes and attendance are in their Mathematics history).
+   */
+  marksOnly?: boolean
+  /** A planted pattern asked for by position (null: none). Without an entry the usual rule decides (about half the learners). */
+  plant?: readonly (PlantRequest | null | undefined)[]
+  /** Terms (positions in the list `slotsFor` gives) with nothing at all, by position: a learner who was at another school. */
+  away?: readonly (readonly number[] | undefined)[]
 }
+
+export type PlantRequest = { subject?: string; family: string; kind: 'strength' | 'struggle'; since?: 0 | 1 }
 
 /** The strands of a subject nothing else is known about. */
 export const NEUTRAL_FAMILIES = ['knowledge', 'skills', 'application'] as const
@@ -228,48 +243,65 @@ function oneLearner(input: {
   index: number
   firstName: string
   subject: string
+  subjects: readonly string[]
   families: readonly string[]
   slots: SlotRef[]
   classYear: number
   teacherNames: readonly string[]
   seed: string
+  marksOnly: boolean
+  plant: PlantRequest | null | undefined
+  away: readonly number[]
 }): MadeLearner {
-  const { index, subject, families, slots, classYear, teacherNames } = input
+  const { index, subject, subjects, families, slots, classYear, teacherNames, marksOnly } = input
   const r = rng(`${input.seed}|learner|${index}`)
   const mess: MessKind[] = []
   const kinds = ['missing_terms', 'late_result', 'thin_term', 'attendance_gaps', 'unclear', 'duplicate'] as const
-  const carries = kinds[index % kinds.length]!
-  const subjects = [subject, ...OTHER_SUBJECTS.filter((s) => s !== subject).slice(0, 2)]
+  const carries: (typeof kinds)[number] | null = marksOnly ? null : kinds[index % kinds.length]!
   const familiesOf = (s: string) => (s === subject ? [...families] : familiesFor(s))
   const last = slots.length - 1
 
-  // Terms with nothing at all: a learner who was at another school for two terms.
-  const gone = new Set<number>()
-  if (carries === 'missing_terms' && slots.length >= 10) {
+  // Terms with nothing at all: a learner who was at another school for two terms (or the terms the caller names).
+  const gone = new Set<number>(input.away.filter((i) => i >= 0 && i <= last))
+  if (carries === 'missing_terms' && slots.length >= 6) {
     gone.add(2)
     gone.add(3)
     mess.push('missing_terms')
   }
+  const available = slots.map((_, i) => i).filter((i) => !gone.has(i))
 
-  // The planted pattern: half the learners, in one strand of the class's subject, in the newest terms.
+  // The planted pattern: half the learners (or the ones the caller names), in one strand, in the newest terms that have records.
   let planted: PlantedPattern | null = null
-  const plantFamily = families[(Math.floor(index / 2) + int(r, 0, 1)) % families.length]!
-  if (index % 2 === 0 && slots.length >= 6) {
-    const kind: 'strength' | 'struggle' = Math.floor(index / 2) % 2 === 0 ? 'struggle' : 'strength'
-    const since = slots.length >= 8 && r() < 0.35 ? 1 : 0
-    const length = int(r, 3, 4)
-    const end = last - since
-    planted = { subject, family: plantFamily, kind, run: slots.slice(end - length + 1, end + 1), since }
+  let plantSubject = subject
+  let plantFamily = ''
+  let runSlots = new Set<number>()
+  let runEnd = last
+  const wanted: PlantRequest | null =
+    input.plant !== undefined
+      ? input.plant
+      : index % 2 === 0
+        ? { family: families[(Math.floor(index / 2) + int(r, 0, 1)) % families.length]!, kind: Math.floor(index / 2) % 2 === 0 ? 'struggle' : 'strength' }
+        : null
+  if (wanted && available.length >= 3) {
+    plantSubject = wanted.subject ? canonicalSubject(wanted.subject) : subject
+    plantFamily = wanted.family
+    const since = wanted.since ?? (available.length >= 8 && r() < 0.35 ? 1 : 0)
+    const length = Math.min(int(r, 3, 4), available.length - since)
+    const endAt = available.length - 1 - since
+    const run = available.slice(endAt - length + 1, endAt + 1)
+    runSlots = new Set(run)
+    runEnd = endAt >= 0 ? available[endAt]! : last
+    planted = { subject: plantSubject, family: plantFamily, kind: wanted.kind, run: run.map((i) => slots[i]!), since }
   }
-  const inRun = (slot: number) => planted !== null && slot >= last - planted.since - planted.run.length + 1 && slot <= last - planted.since
+  const inRun = (slot: number) => runSlots.has(slot)
 
   // Which strands have data in which terms, and their percents.
   const pieces: Piece[] = []
   for (const s of subjects) {
     for (const family of familiesOf(s)) {
-      const isPlanted = planted !== null && s === subject && family === plantFamily
+      const isPlanted = planted !== null && s === plantSubject && family === plantFamily
       const chance = isPlanted ? 1 : s === subject ? 0.65 : 0.4
-      const present = slots.map((_, i) => i).filter((i) => !gone.has(i) && (isPlanted || r() < chance))
+      const present = available.filter((i) => isPlanted || r() < chance)
       const noise = noiseSequence(r, present.length)
       present.forEach((slot, k) => {
         const percent = isPlanted && inRun(slot) ? pick(r, planted!.kind === 'struggle' ? STRUGGLES : STRENGTHS) : isPlanted ? pick(r, NEUTRAL) : noise[k]!
@@ -280,8 +312,7 @@ function oneLearner(input: {
   }
 
   // Mess that adds a piece: it must not change what the counted marks say.
-  const counted = (p: Piece) => !p.unclear && !p.tiny
-  const isPlantedStrand = (p: Pick<Piece, 'subject' | 'family'>) => planted !== null && p.subject === subject && p.family === plantFamily
+  const isPlantedStrand = (p: Pick<Piece, 'subject' | 'family'>) => planted !== null && p.subject === plantSubject && p.family === plantFamily
   const noisy = pieces.filter((p) => !isPlantedStrand(p))
   let lateIndex = -1
   let duplicate: Piece | null = null
@@ -294,7 +325,7 @@ function oneLearner(input: {
     const open: { subject: string; family: string; slot: number }[] = []
     for (const s of subjects) {
       for (const family of familiesOf(s)) {
-        if (planted !== null && s === subject && family === plantFamily) continue
+        if (planted !== null && s === plantSubject && family === plantFamily) continue
         for (let slot = 0; slot < slots.length; slot++) {
           if (!gone.has(slot) && !pieces.some((p) => p.subject === s && p.family === family && p.slot === slot)) open.push({ subject: s, family, slot })
         }
@@ -354,7 +385,7 @@ function oneLearner(input: {
     mess.push('attendance_gaps')
   }
   slots.forEach((slot, i) => {
-    if (gone.has(i) || dropAttendance.has(i)) return
+    if (marksOnly || gone.has(i) || dropAttendance.has(i)) return
     const total = int(r, 55, 60)
     const present = i === lowTerm ? int(r, 28, 36) : total - int(r, 0, 5)
     const day = `${slot.year}-${pad(slot.term * 3)}-${pad(int(r, 10, 19))}`
@@ -376,17 +407,17 @@ function oneLearner(input: {
     }
   }
   slots.forEach((_, i) => {
-    if (gone.has(i) || (i + index) % 3 !== 0) return
+    if (marksOnly || gone.has(i) || (i + index) % 3 !== 0) return
     records.push(note(i, pick(r, NOTES)))
   })
-  if (planted !== null) {
-    const at = last - planted.since
-    const label = strandLabel(subject, planted.family).toLowerCase()
+  if (planted !== null && !marksOnly) {
+    const at = runEnd
+    const label = strandLabel(plantSubject, planted.family).toLowerCase()
     records.push(
       note(at, planted.kind === 'struggle' ? `Finds ${label} hard and asks to see a worked example first.` : `Does well in ${label} and likes to explain it to others.`),
     )
   }
-  if (index % kinds.length === 3) {
+  if (!marksOnly && index % kinds.length === 3) {
     const slotIndex = Math.max(0, last - 2)
     const family = noisy.length > 0 ? noisy[0]!.family : families[0]!
     const label = strandLabel(subject, family).toLowerCase()
@@ -404,19 +435,29 @@ export function makeLearners(input: MakeLearnersInput): MadeBatch {
   const slots = slotsFor(input.grade, input.year)
   const seed = `${input.seed}|${subject}|${input.grade}|${input.year}`
   const teacherNames = input.teacherNames.length > 0 ? input.teacherNames : ['Teacher']
-  const taken = new Set((input.avoidNames ?? []).map((n) => n.trim().toLowerCase()))
-  // The names, in an order that depends only on the seed.
-  const order = [...FIRST_NAMES]
-  const nameRand = rng(`${seed}|names`)
-  for (let i = order.length - 1; i > 0; i--) {
-    const j = Math.floor(nameRand() * (i + 1))
-    ;[order[i], order[j]] = [order[j]!, order[i]!]
+  const subjects = (input.subjects?.length ? input.subjects : [subject, ...OTHER_SUBJECTS.filter((s) => s !== subject).slice(0, 2)]).map(canonicalSubject)
+  let names: string[]
+  if (input.names) {
+    names = [...input.names]
+  } else {
+    const taken = new Set((input.avoidNames ?? []).map((n) => n.trim().toLowerCase()))
+    // The names, in an order that depends only on the seed.
+    const order = [...FIRST_NAMES]
+    const nameRand = rng(`${seed}|names`)
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(nameRand() * (i + 1))
+      ;[order[i], order[j]] = [order[j]!, order[i]!]
+    }
+    names = order.filter((n) => !taken.has(n.toLowerCase()))
+    if (names.length < input.count) throw new Error(`generator: only ${names.length} first names left for ${input.count} learners`)
   }
-  const names = order.filter((n) => !taken.has(n.toLowerCase()))
-  if (names.length < input.count) throw new Error(`generator: only ${names.length} first names left for ${input.count} learners`)
+  const count = input.names ? input.names.length : input.count
 
-  const learners = Array.from({ length: input.count }, (_, index) =>
-    oneLearner({ index, firstName: names[index]!, subject, families, slots, classYear: input.year, teacherNames, seed }),
+  const learners = Array.from({ length: count }, (_, index) =>
+    oneLearner({
+      index, firstName: names[index]!, subject, subjects, families, slots, classYear: input.year, teacherNames, seed,
+      marksOnly: input.marksOnly ?? false, plant: input.plant ? input.plant[index] : undefined, away: input.away?.[index] ?? [],
+    }),
   )
   return { learners, planted: learners.flatMap((l) => (l.planted ? [{ ...l.planted, firstName: l.firstName }] : [])) }
 }
