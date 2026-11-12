@@ -51,7 +51,7 @@ flowchart LR
 | Agent worker | `apps/agent` | A Cloudflare Worker. `/events` takes an event from the web app and puts it on a Queue. The Queue consumer runs the event. `/mcp` serves the MCP server. `/health` answers `{ ok: true }`. A cron every minute checks for a Jemma Desktop runner that has gone quiet, and sends work that was handed to the owner's laptop back to the cloud when that laptop is away. |
 | Profiling package | `packages/profiling` | The tools, zod schemas, job prompts, pure learning logic, the model layer and the orchestrator. Both the agent worker and the web app import it. |
 | Runner package | `packages/runner` | The core of the Jemma Desktop runner: finds Claude Code or Codex on the machine, claims queued events, runs the agent with the Jemma MCP server, sends heartbeats. The Electron app in `apps/desktop` runs jobs on the user's Claude Code or Codex subscription; pair it by entering the six-character code shown in the signed-in Jemma web app, and build the unsigned Mac app with `CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter desktop dist`. |
-| Database | `supabase/migrations` | Postgres with row-level security. 21 migration files. |
+| Database | `supabase/migrations` | Postgres with row-level security. 22 migration files. |
 | Storage | Supabase Storage | Four private buckets: `papers`, `curriculum`, `lesson-audio`, `sample-papers`. No public access and no storage policies: files are reached with signed URLs or the service role. |
 | MCP server | `packages/profiling/src/server.ts`, served by `apps/agent` | 22 tools. See [mcp-server.md](mcp-server.md). |
 | Cloud runner | `apps/agent` + `packages/profiling/src/jobs/cloud` | Runs the 8 AI jobs on free models. |

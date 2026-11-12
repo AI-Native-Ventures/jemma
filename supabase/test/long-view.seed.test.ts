@@ -183,7 +183,8 @@ describe('the start sandbox', () => {
   test('has the long history in learner_records, and findPatterns on those rows gives the designed outcomes', async () => {
     const s = await createSandbox(admin)
     sandboxIds.push(s.sandboxId)
-    const kids = await ok(admin.from('children').select('id, first_name').eq('school_id', s.schoolId))
+    // The five learners of 6B: the school has made-up learners in other classes too, with records of their own.
+    const kids = await ok(admin.from('children').select('id, first_name').eq('school_id', s.schoolId).in('first_name', [...CAST.children]))
     const stored = await ok(admin.from('learner_records').select('*').in('child_id', kids.map((k) => k.id)))
     const year = new Date().getUTCFullYear()
     expect(stored).toHaveLength(longHistory(year, TEACHER).length)
