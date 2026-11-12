@@ -9,6 +9,7 @@ import {
   linesFor,
   pillText,
   strandName,
+  subjectLinkOf,
   summaryLine,
   whenLabel,
   type LongViewInput,
@@ -43,6 +44,7 @@ const pattern = (over: Partial<PatternRow> = {}): PatternRow => ({
   id: `pat-${++n}`,
   child_id: 'child-1',
   kind: 'struggle',
+  subject: 'Mathematics',
   family: 'fractions',
   title: 'Fractions marks stayed low',
   statement: 'Fractions marks stayed low from Grade 5 Term 3 to Grade 6 Term 2.',
@@ -439,5 +441,157 @@ describe('the card on the profile page', () => {
     expect(summaryLine([])).toBe('Too early to tell')
     expect(summaryLine([row('draft', false)])).toBe('Too early to tell')
     expect(summaryLine([row('dismissed')])).toBe('You set aside 1 pattern')
+  })
+})
+
+
+describe('subjects', () => {
+  const english = (over: Partial<LongViewRecord> & { year: number; term: number }) =>
+    record({ subject: 'English', family: 'reading', title: 'Reading quiz', teacherName: 'Mrs Zulu', marks: 6, outOf: 20, ...over })
+  /** Amina's Mathematics from `input()` (fractions and shapes, Grade 5 Term 3 to Grade 6 Term 1) and three terms of English reading. */
+  const both = (over: Partial<LongViewInput> = {}) =>
+    input({
+      records: [
+        ...input().records,
+        english({ id: 'e1', grade: 6, year: 2025, term: 4, happenedOn: '2025-11-03' }),
+        english({ id: 'e2', grade: 6, year: 2026, term: 1, happenedOn: '2026-02-03' }),
+        english({ id: 'e3', grade: 6, year: 2026, term: 2, happenedOn: '2026-05-03' }),
+      ],
+      ...over,
+    })
+
+  it('a learner with one subject has one subject, shown as a heading and no chips', () => {
+    const v = buildLongView(input())
+    expect(v.subject).toBe('Mathematics')
+    expect(v.subjects).toEqual([{ name: 'Mathematics', selected: true }])
+  })
+
+  it('a learner with two subjects has both, the subject of the class first, and the grid is the one asked for', () => {
+    const v = buildLongView(both())
+    expect(v.subjects).toEqual([
+      { name: 'Mathematics', selected: true },
+      { name: 'English', selected: false },
+    ])
+    expect(v.rows.map((r) => r.name)).toEqual(['Fractions', 'Shapes and space'])
+    expect(v.columns.map((c) => `${c.grade}.${c.term}`)).toEqual(['5.3', '5.4', '6.1'])
+
+    const en = buildLongView(both({ askedSubject: 'English' }))
+    expect(en.subject).toBe('English')
+    expect(en.subjects.map((s) => [s.name, s.selected])).toEqual([['Mathematics', false], ['English', true]])
+    expect(en.rows.map((r) => r.name)).toEqual(['Reading'])
+    expect(en.columns.map((c) => `${c.grade}.${c.term}`)).toEqual(['6.4', '6.1', '6.2'])
+  })
+
+  it('the class\'s subject comes first, and a subject that was not asked for falls back to it', () => {
+    const v = buildLongView(both({ classSubject: 'English' }))
+    expect(v.subjects.map((s) => s.name)).toEqual(['English', 'Mathematics'])
+    expect(v.subject).toBe('English')
+    expect(buildLongView(both({ askedSubject: 'Technology' })).subject).toBe('Mathematics')
+    expect(buildLongView(both({ classSubject: 'English', askedSubject: 'maths' })).subject).toBe('Mathematics')
+  })
+
+  it('the class is in a subject the learner has no marks in: the other subject is shown, and with no marks at all the class\'s subject is named over an empty grid', () => {
+    expect(buildLongView(input({ classSubject: 'English' })).subject).toBe('Mathematics')
+    const none = buildLongView(input({ records: [], results: [], classSubject: 'English' }))
+    expect(none.subject).toBe('English')
+    expect(none.rows).toEqual([])
+    expect(none.subjects).toEqual([{ name: 'English', selected: true }])
+  })
+
+  it('the same strand name in two subjects is two rows in two grids', () => {
+    const data = (subject: string, percent: number, id: string) =>
+      record({ id, subject, family: 'data', title: `${subject} data`, marks: percent / 5, outOf: 20, grade: 6, year: 2026, term: 1, happenedOn: '2026-02-03' })
+    const v = buildLongView(input({ records: [data('Mathematics', 90, 'm'), data('Natural Sciences', 30, 'n')] }))
+    expect(v.rows.map((r) => [r.name, r.cells[0]!.percent])).toEqual([['Data handling', 90]])
+    const ns = buildLongView(input({ records: [data('Mathematics', 90, 'm'), data('Natural Sciences', 30, 'n')], askedSubject: 'Natural Sciences' }))
+    expect(ns.rows.map((r) => [r.name, r.cells[0]!.percent])).toEqual([['Data', 30]])
+  })
+
+  it('a record with a family and no subject, and an answer with no subject, are Mathematics', () => {
+    const v = buildLongView(input({ records: [record({ id: 'x', subject: null, grade: 6, year: 2026, term: 1, happenedOn: '2026-02-03' })], results: [{ id: 'r', correct: true, family: 'fractions', isoDate: '2026-03-03', label: 'Class Test 1, question 1', grade: 6, paperId: 'p', n: 1 }] }))
+    expect(v.subjects).toEqual([{ name: 'Mathematics', selected: true }])
+    expect(v.rows.map((r) => r.name)).toEqual(['Fractions'])
+  })
+
+  it('what Jemma could not use, and the span, are for the subject on the screen', () => {
+    const v = buildLongView(
+      both({
+        records: [
+          ...both().records,
+          record({ id: 'unclear-maths', quality: 'unclear', title: 'Quiz: Fractions', happenedOn: '2025-08-12', term: 3 }),
+          english({ id: 'unclear-english', quality: 'unclear', title: 'Reading: Poem', grade: 6, year: 2026, term: 3, happenedOn: '2026-08-12' }),
+        ],
+      }),
+    )
+    expect(v.unclear).toEqual(['Quiz: Fractions, Mrs Naidoo, 12 Aug 2025'])
+    const en = buildLongView(both({ askedSubject: 'English', records: [...both().records, english({ id: 'unclear-english', quality: 'unclear', title: 'Reading: Poem', grade: 6, year: 2026, term: 3, happenedOn: '2026-08-12' })] }))
+    expect(en.unclear).toEqual(['Reading: Poem, Mrs Zulu, 12 Aug 2026'])
+    expect(en.spanLine).toMatch(/^Grade 6 · \d+ terms? · \d+ teachers?$/)
+  })
+
+  it('the patterns of every subject are listed, each with its subject and the strand\'s plain name, under the subjects in order', () => {
+    const v = buildLongView(
+      both({
+        patterns: [
+          pattern({ id: 'm1', subject: 'Mathematics', family: 'fractions', status: 'draft' }),
+          pattern({ id: 'e1', subject: 'English', family: 'reading', title: 'Reading marks stayed low', status: 'approved', approved_at: '2026-11-08T09:00:00Z' }),
+          pattern({ id: 'e2', subject: 'English', kind: 'strength', family: 'speaking_listening', status: 'draft' }),
+        ],
+      }),
+    )
+    expect(v.groups.drafts.map((p) => [p.subject, p.strand])).toEqual([['Mathematics', 'Fractions'], ['English', 'Speaking and listening']])
+    expect(v.bySubject.map((g) => [g.subject, g.open.map((p) => p.id)])).toEqual([
+      ['Mathematics', ['m1']],
+      ['English', ['e2', 'e1']],
+    ])
+    expect(v.patternCount).toBe(3)
+    expect(v.subjectPatternCount).toBe(1)
+    expect(buildLongView(both({ askedSubject: 'English', patterns: [pattern({ id: 'e1', subject: 'English', family: 'reading' })] })).subjectPatternCount).toBe(1)
+  })
+
+  it('a pattern row an older version wrote has the default subject, and a subject that only has a pattern is still listed', () => {
+    const v = buildLongView(input({ patterns: [pattern({ id: 'old', subject: undefined as unknown as string }), pattern({ id: 'ns', subject: 'Natural Sciences', family: 'life_living' })] }))
+    expect(v.subjects.map((s) => s.name)).toEqual(['Mathematics', 'Natural Sciences'])
+    expect(v.groups.drafts.map((p) => p.subject)).toEqual(['Mathematics', 'Natural Sciences'])
+    expect(v.rows).not.toEqual([])
+  })
+
+  it('an answer links to its paper under the class the test belongs to, not the class in the address', () => {
+    const v = buildLongView(
+      both({
+        classSubject: 'Mathematics',
+        results: [
+          { id: 'res-m', correct: false, family: 'fractions', isoDate: '2026-03-03', label: 'Class Test 1, question 2', grade: 6, subject: 'Mathematics', classId: 'class-1', paperId: 'paper-m', n: 2 },
+          { id: 'res-e', correct: false, family: 'reading', isoDate: '2026-03-03', label: 'English Test 1, question 4', grade: 7, subject: 'English', classId: 'class-english', paperId: 'paper-e', n: 4 },
+          { id: 'res-x', correct: false, family: 'fractions', isoDate: '2026-03-04', label: 'Homework, question 1', grade: 6, paperId: 'paper-h', n: 1 },
+        ],
+        patterns: [
+          pattern({
+            id: 'm1',
+            evidence: [
+              { kind: 'result', id: 'res-m', label: 'Class Test 1, question 2' },
+              { kind: 'result', id: 'res-x', label: 'Homework, question 1' },
+            ],
+          }),
+          pattern({ id: 'e1', subject: 'English', family: 'reading', evidence: [{ kind: 'result', id: 'res-e', label: 'English Test 1, question 4' }] }),
+        ],
+      }),
+    )
+    const hrefs = Object.fromEntries(v.groups.drafts.map((p) => [p.id, p.evidence.map((e) => (e.kind === 'result' ? e.href : null))]))
+    expect(hrefs).toEqual({
+      m1: ['/t/class-1/papers/paper-m?q=2', '/t/class-1/papers/paper-h?q=1'],
+      e1: ['/t/class-english/papers/paper-e?q=4'],
+    })
+  })
+
+  it('names a link by its subject, so the chips can address the grid', () => {
+    expect(subjectLinkOf('/t/c/learners/k/long-view', 'English')).toBe('/t/c/learners/k/long-view?subject=English')
+    expect(subjectLinkOf('/t/c/learners/k/long-view', 'Natural Sciences')).toBe('/t/c/learners/k/long-view?subject=Natural%20Sciences')
+  })
+
+  it('the strand name is by subject: the usual strand names, the subject\'s own, and a tidied fallback', () => {
+    expect(strandName('data')).toBe('Data handling')
+    expect(strandName('data', 'English')).toBe('Data')
+    expect(strandName('life_living', 'Natural Sciences')).toBe('Life and living')
   })
 })

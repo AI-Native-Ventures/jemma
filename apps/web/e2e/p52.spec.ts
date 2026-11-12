@@ -9,14 +9,14 @@ import { signInWithPassword } from './helpers/session'
 // The Long view screens on a `marked` sandbox: the teacher checks each pattern, talks to the parent, and only then does the parent see it.
 // The learner never does. Headless, no model: nothing here needs the agent, so a small stand-in answers the web app's posts
 // on the agent's port (8753) and the update jobs are never run. (The real agent is used by demo-path.spec.ts.)
-// Screenshots for the reviewer are written only when P52_PROOF is set, to design/proof/p52, named by width (390 or 1440).
+// Screenshots for the reviewer are written only when P52_PROOF is set, to design/proof/p62, named by width (390 or 1440).
 
 // Every step of a decision is a few round trips to the database, so the waits are patient.
 const check = expect.configure({ timeout: 45_000 })
 
 const admin = () => createServiceClient({ SUPABASE_URL: process.env.SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY! })
 
-const proofDir = resolve(import.meta.dirname, '../../../design/proof/p52')
+const proofDir = resolve(import.meta.dirname, '../../../design/proof/p62')
 async function proof(page: Page, name: string, fullPage = true) {
   if (!process.env.P52_PROOF) return
   mkdirSync(proofDir, { recursive: true })
@@ -27,6 +27,9 @@ async function proof(page: Page, name: string, fullPage = true) {
   await page.addStyleTag({ content: `nextjs-portal{display:none} *{transition:none !important;animation:none !important} ${bar}` })
   await page.screenshot({ path: resolve(proofDir, `${name}-${width}.png`), fullPage })
 }
+
+/** The subject line on Amina's fractions card. */
+const fractionsCardSubject = (page: Page) => page.getByRole('article').filter({ hasText: 'Adding fractions is hard when the bottom numbers differ' }).getByText('Mathematics · Fractions')
 
 /** The page itself never scrolls sideways (the grid scrolls inside its own card). When it does, the failure names what sticks out. */
 async function noHorizontalScroll(page: Page) {
@@ -42,6 +45,9 @@ async function noHorizontalScroll(page: Page) {
 }
 
 type Logins = Record<'teacher' | 'parent' | 'learner', { userId: string; email: string; password: string }>
+
+/** The port the web app posts events to (AGENT_URL). Another worker may have 8753, so a run can say `P52_AGENT_PORT=8762`. */
+const AGENT_PORT = Number(process.env.P52_AGENT_PORT ?? 8753)
 
 /** The agent's stand-in: accepts every post to /events, so the web app believes the agent took the event. It runs no job. */
 let agent: Server
@@ -63,7 +69,7 @@ test.beforeAll(async () => {
       res.writeHead(202, { 'content-type': 'application/json' }).end('{"queued":true}')
     })
   })
-  await new Promise<void>((done) => agent.listen(8753, done))
+  await new Promise<void>((done) => agent.listen(AGENT_PORT, done))
 })
 test.afterAll(async () => {
   await new Promise((done) => agent.close(done))
@@ -123,6 +129,10 @@ test.describe('the Long view', () => {
       await check(page.getByText(/^Grade 4 to Grade 6 · \d+ terms · 3 teachers$/)).toBeVisible()
       const table = page.getByRole('table')
       await check(table).toBeVisible()
+      // One subject: its name is a small heading over the grid, and there are no subject chips.
+      await expect(page.getByRole('heading', { level: 2, name: 'Mathematics' })).toBeVisible()
+      await expect(page.getByRole('navigation', { name: 'Subjects' })).toHaveCount(0)
+      await expect(fractionsCardSubject(page)).toBeVisible()
       await expect(table.getByRole('rowheader', { name: 'Fractions' })).toBeVisible()
       await expect(table.getByRole('rowheader', { name: 'Shapes and space' })).toBeVisible()
       await expect(table.getByRole('img', { name: /^Fractions, Grade 5 Term 3: 40 percent, \d+ marks$/ })).toBeVisible()
@@ -378,6 +388,139 @@ test.describe('the Long view', () => {
       await check(page.getByText('No results for Grade 5, Terms 2 and 3')).toBeVisible()
       await page.goto(`${base}/learners/${await kid('Lerato')}/long-view`)
       await check(page.getByText('Logged late, still counted')).toBeVisible()
+    } finally {
+      await sb.cleanup().catch(() => undefined)
+    }
+  })
+
+  test('a learner with two subjects: chips switch the grid, every term shows on a phone, each card names its subject, evidence opens under its own class, and the parent sees the subject', async ({ page }, testInfo) => {
+    const phone = testInfo.project.name === 'phone'
+    const sb = await openSandbox(page, { stage: 'marked', role: 'teacher' })
+    try {
+      const db = admin()
+      const { schoolId, logins: who } = await logins(sb.sandboxId)
+      const year = new Date().getUTCFullYear()
+      const base = `/t/${sb.classId}`
+      const long = `${base}/learners/${sb.childId}/long-view`
+      const onDate = (iso: string) => new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
+
+      // English: a second class of the same teacher with a test whose four answers are all wrong, and two earlier terms of reading quizzes.
+      // Reading is then low in three terms in a row. The pattern row is what the long_view job would have saved (no model runs here).
+      const english = (await db.from('classes').insert({ school_id: schoolId, teacher_id: who.teacher.userId, name: '6B English', grade: 6, year, subject: 'English', join_code: Math.random().toString(36).slice(2, 8).toUpperCase() }).select('id').single()).data!
+      await db.from('enrolments').insert({ class_id: english.id, child_id: sb.childId })
+      const map = (await db.from('curriculum_maps').insert({ class_id: english.id, status: 'approved' }).select('id').single()).data!
+      const topic = (await db.from('topics').insert({ map_id: map.id, term: 1, position: 1, name: 'Reading comprehension', family: 'reading' }).select('id').single()).data!
+      const test = (await db.from('tests').insert({ class_id: english.id, title: 'English Test 1', written_on: `${year}-02-20`, out_of: 4, topic_ids: [topic.id] }).select('id').single()).data!
+      const paper = (await db.from('papers').insert({ test_id: test.id, child_id: sb.childId, owner: 'teacher', kind: 'test', status: 'marked', name_read: 'Amina', total: 0 }).select('id').single()).data!
+      const answers = (
+        await db
+          .from('question_results')
+          .insert([1, 2, 3, 4].map((n) => ({ paper_id: paper.id, child_id: sb.childId, n, prompt: `Question ${n}`, answer_read: 'x', read_confidence: 0.95, correct: false, mark: 0, topic_id: topic.id, topic_name: 'Reading comprehension' })))
+          .select('id, n')
+          .order('n')
+      ).data!
+      const quiz = (y: number, term: number, month: string, n: number) => ({ school_id: schoolId, child_id: sb.childId, source: 'quiz', grade: y < year ? 5 : 6, year: y, term, happened_on: `${y}-${month}-10`, logged_at: `${y}-${month}-12T09:00:00Z`, teacher_name: 'Mrs Zulu', title: `Reading quiz ${n}`, family: 'reading', topic_name: 'Reading comprehension', marks: 8, out_of: 20, subject: 'English' })
+      const quizzes = (await db.from('learner_records').insert([quiz(year - 1, 3, '08', 1), quiz(year - 1, 4, '11', 2)]).select('id, title, happened_on').order('happened_on')).data!
+      await db.from('long_view_patterns').insert({
+        child_id: sb.childId, kind: 'struggle', subject: 'English', family: 'reading', title: 'Reading marks stay low',
+        statement: 'In English, marks in reading stayed low from Grade 5 Term 3 to Grade 6 Term 1.',
+        terms: [{ grade: 5, year: year - 1, term: 3, percent: 40, points: 20 }, { grade: 5, year: year - 1, term: 4, percent: 40, points: 20 }, { grade: 6, year, term: 1, percent: 0, points: 4 }],
+        evidence: [
+          ...answers.map((a) => ({ kind: 'result', id: a.id, label: `English Test 1, question ${a.n}` })),
+          ...quizzes.reverse().map((r) => ({ kind: 'record', id: r.id, label: `${r.title}, Mrs Zulu, ${onDate(r.happened_on)}` })),
+        ],
+        status: 'draft', active: true,
+      })
+
+      const chips = page.getByRole('navigation', { name: 'Subjects' })
+      const table = page.getByRole('table')
+      const grid = page.getByRole('region', { name: /scrolls sideways/ })
+      const insideWindow = async (first: string, last: string, width: number) => {
+        expect(await grid.evaluate((el) => el.scrollWidth <= el.clientWidth), `the grid scrolls at ${width}`).toBe(true)
+        for (const name of [first, last]) {
+          const box = (await table.getByRole('columnheader', { name }).boundingBox())!
+          expect(box.x, `${name} starts outside the window at ${width}`).toBeGreaterThanOrEqual(0)
+          expect(box.x + box.width, `${name} ends outside the window at ${width}`).toBeLessThanOrEqual(width)
+        }
+      }
+
+      // The class's subject first. Mathematics is on the screen: its strands only, and a heading over the patterns of each subject.
+      await page.goto(long)
+      await check(chips).toBeVisible()
+      await expect(chips.getByRole('link')).toHaveText(['Mathematics', 'English'])
+      await expect(chips.getByRole('link', { name: 'Mathematics' })).toHaveAttribute('aria-current', 'page')
+      await expect(chips.getByRole('link', { name: 'English' })).not.toHaveAttribute('aria-current', 'page')
+      await expect(table.getByRole('rowheader', { name: 'Fractions' })).toBeVisible()
+      await expect(table.getByRole('rowheader', { name: 'Reading' })).toHaveCount(0)
+      await expect(page.getByRole('heading', { level: 3, name: 'Mathematics' })).toBeVisible()
+      await expect(page.getByRole('heading', { level: 3, name: 'English' })).toBeVisible()
+      await expect(page.getByRole('article')).toHaveCount(3)
+      const reading = page.getByRole('article').filter({ hasText: 'Reading marks stay low' })
+      await expect(reading).toContainText('English · Reading')
+      await expect(page.getByRole('article').filter({ hasText: 'Adding fractions is hard when the bottom numbers differ' })).toContainText('Mathematics · Fractions')
+      // The English test belongs to the English class, so its answers open under that class, not under the class in the address.
+      await expect(reading.locator('a[href*="/papers/"]').first()).toHaveAttribute('href', new RegExp(`^/t/${english.id}/papers/[0-9a-f-]+\\?q=\\d+$`))
+      await noHorizontalScroll(page)
+      await proof(page, 'teacher-two-subjects')
+
+      // A phone shows every term of the subject, at 390 and at 360 (Mathematics has 12 terms, English 10).
+      if (phone) {
+        for (const width of [390, 360]) {
+          await page.setViewportSize({ width, height: 844 })
+          await insideWindow('Grade 4 Term 1', 'Grade 6 Term 4', width)
+          await noHorizontalScroll(page)
+        }
+        await page.setViewportSize({ width: 390, height: 844 })
+      } else {
+        await insideWindow('Grade 4 Term 1', 'Grade 6 Term 4', 1440)
+      }
+
+      // The English chip shows English: its strands only.
+      await chips.getByRole('link', { name: 'English' }).click()
+      await page.waitForURL('**/long-view?subject=English')
+      await expect(chips.getByRole('link', { name: 'English' })).toHaveAttribute('aria-current', 'page')
+      await expect(table.getByRole('rowheader')).toHaveText(['Reading'])
+      // The terms are the learner's whole record (a note or a term of attendance belongs to every subject), so a term with no English is a dashed dot.
+      await expect(table.getByRole('img', { name: 'Reading, Grade 5 Term 3: 40 percent, 20 marks' })).toBeVisible()
+      await expect(table.getByRole('img', { name: 'Reading, Grade 6 Term 1: 0 percent, 4 marks' })).toBeVisible()
+      await expect(table.getByRole('img', { name: 'Reading, Grade 4 Term 1: no results' })).toBeVisible()
+      await expect(page.getByRole('article')).toHaveCount(3)
+      if (phone) {
+        for (const width of [390, 360]) {
+          await page.setViewportSize({ width, height: 844 })
+          await insideWindow('Grade 4 Term 1', 'Grade 6 Term 2', width)
+          await noHorizontalScroll(page)
+        }
+        await proof(page, 'teacher-two-subjects-english', false)
+        await page.setViewportSize({ width: 390, height: 844 })
+      }
+      await proof(page, 'teacher-two-subjects-english')
+
+      // An address with a subject the learner does not have shows the class's subject. From the English class, English comes first.
+      await page.goto(`${long}?subject=Technology`)
+      await expect(chips.getByRole('link', { name: 'Mathematics' })).toHaveAttribute('aria-current', 'page')
+      await page.goto(`/t/${english.id}/learners/${sb.childId}/long-view`)
+      await expect(chips.getByRole('link')).toHaveText(['English', 'Mathematics'])
+      await expect(chips.getByRole('link', { name: 'English' })).toHaveAttribute('aria-current', 'page')
+
+      // The teacher checks the English pattern and talks to the parent: the parent sees the subject on the card and on the page.
+      await page.goto(long)
+      await reading.getByRole('button', { name: 'Looks right' }).click()
+      await check(reading.getByRole('button', { name: 'We have talked' })).toBeVisible()
+      await reading.getByRole('button', { name: 'We have talked' }).click()
+      await check(reading.getByText(/^Shared with Thandi after your talk on /)).toBeVisible()
+      await signInWithPassword(page, who.parent.email, who.parent.password)
+      await page.goto(`/p/${sb.childId}`)
+      const talk = page.getByRole('link', { name: /From your talk with Ms Banda/ })
+      await check(talk).toContainText('1 thing your teacher shared with you · English')
+      await talk.click()
+      await page.waitForURL(`**/p/${sb.childId}/long-view`)
+      const shared = page.getByRole('article')
+      await expect(shared).toHaveCount(1)
+      await expect(shared).toContainText('English')
+      await expect(shared.getByRole('heading', { name: 'Reading marks stay low' })).toBeVisible()
+      await expect(page.locator('main')).not.toContainText('Adding fractions is hard')
+      await proof(page, 'parent-view-english')
     } finally {
       await sb.cleanup().catch(() => undefined)
     }

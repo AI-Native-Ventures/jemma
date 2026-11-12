@@ -1,16 +1,25 @@
 import type { JemmaDb, Tables } from '@jemma/profiling/db'
 import {
+  DEFAULT_SUBJECT,
   STRENGTH_FROM,
   STRUGGLE_BELOW,
+  answersToResults,
   buildTable,
+  canonicalSubject,
   compareSlots,
+  compareSubjects,
   historySlots,
   missingSlots,
   plainDate,
   recordLabel,
+  recordsForSubject,
+  resultsForSubject,
   slotKey,
+  strandLabel,
+  strandOrder,
+  subjectsOf,
+  type AnswerResult,
   type LongViewRecord,
-  type LongViewResult,
   type SlotRef,
 } from '@jemma/profiling/logic'
 import { LongViewEvidenceListSchema, LongViewStoredTermsSchema, type LongViewEvidence, type LongViewKind, type LongViewStatus, type LongViewStoredTerm, type LongViewTerm } from '@jemma/profiling/schemas'
@@ -31,22 +40,9 @@ export type PatternRow = Tables<'long_view_patterns'>
 
 // ---------- words ----------
 
-const STRANDS: Record<string, string> = {
-  whole_numbers: 'Whole numbers',
-  fractions: 'Fractions',
-  decimals: 'Decimals',
-  shapes: 'Shapes and space',
-  measurement: 'Measurement',
-  data: 'Data handling',
-}
-const STRAND_ORDER = Object.keys(STRANDS)
-
-/** Plain strand name. A family the six names do not cover is tidied (`patterns_and_algebra` becomes `Patterns and algebra`). */
-export function strandName(family: string): string {
-  const known = STRANDS[family]
-  if (known) return known
-  const words = family.replace(/[_-]+/g, ' ').trim()
-  return words ? words.charAt(0).toUpperCase() + words.slice(1) : 'Other'
+/** Plain strand name. A family a subject's table does not cover is tidied (`patterns_and_algebra` becomes `Patterns and algebra`). */
+export function strandName(family: string, subject: string = DEFAULT_SUBJECT): string {
+  return strandLabel(subject, family)
 }
 
 const plural = (n: number, one: string, many = `${one}s`) => (n === 1 ? one : many)
@@ -134,6 +130,11 @@ export function summaryLine(rows: SummaryRow[]): string {
   return 'Too early to tell'
 }
 
+/** The address of the Long view for one subject: the grid is chosen by `?subject=`, so the page is server rendered for it. */
+export function subjectLinkOf(path: string, subject: string): string {
+  return `${path}?subject=${encodeURIComponent(subject)}`
+}
+
 // ---------- the view ----------
 
 export type LvSheet = {
@@ -155,6 +156,8 @@ export type LvEvidence =
 export type LvPattern = {
   id: string
   kind: LongViewKind
+  /** The subject the pattern belongs to. */
+  subject: string
   family: string
   strand: string
   title: string
@@ -185,18 +188,29 @@ export type LvUpdate = {
   askOnOpen: boolean
 }
 
+export type LvSubject = { name: string; selected: boolean }
+
 export type LongView = {
   classId: string
   className: string
   childId: string
   name: string
   grade: number
+  /** The subject whose grid is on the screen. */
+  subject: string
+  /** Every subject the learner has, the class's subject first. More than one means the screen shows subject chips. */
+  subjects: LvSubject[]
   spanLine: string | null
   columns: LvColumn[]
   gradeGroups: { grade: number; span: number }[]
   rows: { family: string; name: string; cells: LvCell[] }[]
   groups: { drafts: LvPattern[]; approved: LvPattern[]; shared: LvPattern[]; setAside: LvPattern[] }
+  /** The patterns that wait, are approved or are shared, by subject in the order of `subjects`: drafts first, then approved, then shared. */
+  bySubject: { subject: string; open: LvPattern[] }[]
+  /** Every pattern row of the learner, in every subject. */
   patternCount: number
+  /** The pattern rows of the subject on the screen. With none, the screen says it is too early to tell for that subject. */
+  subjectPatternCount: number
   missing: string[]
   unclear: string[]
   late: string[]
@@ -209,12 +223,16 @@ export type LongViewInput = {
   now: Date
   classId: string
   className: string
+  /** The subject of the class in the address. It comes first, and its grid is the one shown when none is asked for. Default Mathematics. */
+  classSubject?: string
+  /** The subject asked for with `?subject=`. Ignored when the learner has no such subject. */
+  askedSubject?: string | null
   child: { id: string; firstName: string; grade: number; parentFirstName: string | null }
   /** True when an approved parent link exists. */
   hasParent: boolean
   records: LongViewRecord[]
-  /** This year's marked answers, each with the paper and question it came from. */
-  results: (LongViewResult & { paperId: string; n: number })[]
+  /** This year's marked answers, each with the paper and question it came from and the class its test belongs to. */
+  results: AnswerResult[]
   observations: { id: string; authorName: string | null; text: string; createdAt: string }[]
   patterns: PatternRow[]
   events: { status: string; created_at: string; finished_at: string | null; error: string | null }[]
@@ -257,7 +275,7 @@ export function inQuestionOrder<T extends { kind: string; label: string }>(chips
   return out
 }
 
-const byKindThenFamily =(a: LvPattern, b: LvPattern) => (a.kind === b.kind ? 0 : a.kind === 'struggle' ? -1 : 1) || a.family.localeCompare(b.family)
+const byKindThenFamily = (a: LvPattern, b: LvPattern) => (a.kind === b.kind ? 0 : a.kind === 'struggle' ? -1 : 1) || a.family.localeCompare(b.family)
 
 function updateOf(events: LongViewInput['events'], patterns: PatternRow[], now: Date): LvUpdate {
   const sorted = [...events].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
@@ -274,11 +292,25 @@ function updateOf(events: LongViewInput['events'], patterns: PatternRow[], now: 
   }
 }
 
+const patternSubject = (p: Pick<PatternRow, 'subject'>) => (p.subject?.trim() ? canonicalSubject(p.subject) : DEFAULT_SUBJECT)
+
 /** Builds everything the screen shows from rows already read. No database, no clock but `now`. */
 export function buildLongView(input: LongViewInput): LongView {
   const { now, child, records, results } = input
   const { table, notCounted } = buildTable(records, results)
-  const slots = historySlots(records, results, child.grade)
+
+  // The learner's subjects: the ones with marks, and any a pattern row names. The subject of the class in the address is first.
+  const classSubject = canonicalSubject(input.classSubject?.trim() ? input.classSubject : DEFAULT_SUBJECT)
+  const known = [...new Set([...subjectsOf(records, results), ...input.patterns.map(patternSubject)])].sort(compareSubjects)
+  const ordered = known.includes(classSubject) ? [classSubject, ...known.filter((x) => x !== classSubject)] : known
+  const asked = input.askedSubject?.trim() ? canonicalSubject(input.askedSubject) : null
+  const subject = asked && ordered.includes(asked) ? asked : (ordered[0] ?? classSubject)
+  const subjects: LvSubject[] = (ordered.length > 0 ? ordered : [subject]).map((name) => ({ name, selected: name === subject }))
+
+  // The grid of the subject on the screen. Notes and attendance have no subject, so they count in every subject's terms.
+  const mine = recordsForSubject(records, subject)
+  const answered = resultsForSubject(results, subject)
+  const slots = historySlots(mine, answered, child.grade)
   const everyTerm: (SlotRef & { grade?: number })[] = [...slots, ...missingSlots(slots)].sort(compareSlots)
   const columns: LvColumn[] = everyTerm.map((s) => ({ key: slotKey(s), grade: s.grade ?? 0, year: s.year, term: s.term }))
   const gradeGroups = columns.reduce<{ grade: number; span: number }[]>((groups, c) => {
@@ -288,14 +320,13 @@ export function buildLongView(input: LongViewInput): LongView {
     return groups
   }, [])
 
-  const rows = [...table]
-    .sort((a, b) => {
-      const ai = STRAND_ORDER.indexOf(a.family)
-      const bi = STRAND_ORDER.indexOf(b.family)
-      return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi) || a.family.localeCompare(b.family)
-    })
+  const order = strandOrder(subject)
+  const rank = (family: string) => (order.indexOf(family) < 0 ? order.length : order.indexOf(family))
+  const rows = table
+    .filter((f) => f.subject === subject)
+    .sort((a, b) => rank(a.family) - rank(b.family) || a.family.localeCompare(b.family))
     .map((f) => {
-      const name = strandName(f.family)
+      const name = strandLabel(subject, f.family)
       const bySlot = new Map(f.slots.map((s) => [slotKey(s), s]))
       return {
         family: f.family,
@@ -309,21 +340,21 @@ export function buildLongView(input: LongViewInput): LongView {
       }
     })
 
-  const teachers = new Set([...records.map((r) => r.teacherName), ...input.observations.flatMap((o) => (o.authorName ? [o.authorName] : []))])
+  const teachers = new Set([...mine.map((r) => r.teacherName), ...input.observations.flatMap((o) => (o.authorName ? [o.authorName] : []))])
   const first = slots[0]
   const last = slots[slots.length - 1]
   const spanLine = !first || !last
     ? null
     : `${first.grade === last.grade ? `Grade ${first.grade}` : `Grade ${first.grade} to Grade ${last.grade}`} · ${columns.length} ${plural(columns.length, 'term')} · ${teachers.size} ${plural(teachers.size, 'teacher')}`
 
-  // Evidence: a marked answer links to its paper, a record or a note opens a sheet.
+  // Evidence: a marked answer links to its paper (under the class its test belongs to), a record or a note opens a sheet.
   const recordById = new Map(records.map((r) => [r.id, r]))
   const resultById = new Map(results.map((r) => [r.id, r]))
   const noteById = new Map(input.observations.map((o) => [o.id, o]))
   const chipOf = (e: LongViewEvidence): LvEvidence => {
     if (e.kind === 'result') {
       const hit = resultById.get(e.id)
-      return { kind: 'result', id: e.id, label: answerLabel(e.label), href: hit ? `/t/${input.classId}/papers/${hit.paperId}?q=${hit.n}` : null }
+      return { kind: 'result', id: e.id, label: answerLabel(e.label), href: hit ? `/t/${hit.classId ?? input.classId}/papers/${hit.paperId}?q=${hit.n}` : null }
     }
     const rec = recordById.get(e.id)
     if (rec) return { kind: e.kind, id: e.id, label: e.label, sheet: sheetOfRecord(rec) }
@@ -347,14 +378,16 @@ export function buildLongView(input: LongViewInput): LongView {
 
   const views: LvPattern[] = input.patterns.map((p) => {
     const kind: LongViewKind = p.kind === 'strength' ? 'strength' : 'struggle'
+    const own = patternSubject(p)
     const terms = LongViewStoredTermsSchema.safeParse(p.terms)
     const { run, since } = groupTerms(terms.success ? terms.data : [])
     const evidence = LongViewEvidenceListSchema.safeParse(p.evidence)
     return {
       id: p.id,
       kind,
+      subject: own,
       family: p.family,
-      strand: strandName(p.family),
+      strand: strandLabel(own, p.family),
       title: p.title,
       statement: p.statement,
       runTerms: run.length,
@@ -371,12 +404,16 @@ export function buildLongView(input: LongViewInput): LongView {
     }
   })
   const live = views.filter((p) => p.active)
+  const bySubjectThenKind = (a: LvPattern, b: LvPattern) => compareSubjects(a.subject, b.subject) || byKindThenFamily(a, b)
   const groups = {
-    drafts: live.filter((p) => p.status === 'draft').sort(byKindThenFamily),
-    approved: live.filter((p) => p.status === 'approved').sort(byKindThenFamily),
-    shared: live.filter((p) => p.status === 'discussed').sort(byKindThenFamily),
-    setAside: [...live.filter((p) => p.status === 'dismissed').sort(byKindThenFamily), ...views.filter((p) => !p.active).sort(byKindThenFamily)],
+    drafts: live.filter((p) => p.status === 'draft').sort(bySubjectThenKind),
+    approved: live.filter((p) => p.status === 'approved').sort(bySubjectThenKind),
+    shared: live.filter((p) => p.status === 'discussed').sort(bySubjectThenKind),
+    setAside: [...live.filter((p) => p.status === 'dismissed').sort(bySubjectThenKind), ...views.filter((p) => !p.active).sort(bySubjectThenKind)],
   }
+  const bySubject = subjects
+    .map((x) => ({ subject: x.name, open: [...groups.drafts, ...groups.approved, ...groups.shared].filter((p) => p.subject === x.name) }))
+    .filter((g) => g.open.length > 0)
 
   return {
     classId: input.classId,
@@ -384,15 +421,19 @@ export function buildLongView(input: LongViewInput): LongView {
     childId: child.id,
     name: child.firstName,
     grade: child.grade,
+    subject,
+    subjects,
     spanLine,
     columns,
     gradeGroups,
     rows,
     groups,
+    bySubject,
     patternCount: views.length,
+    subjectPatternCount: views.filter((p) => p.subject === subject).length,
     missing: linesFor(missingSlots(slots)),
-    unclear: notCounted.map((n) => n.label),
-    late: records
+    unclear: notCounted.filter((n) => n.subject === subject).map((n) => n.label),
+    late: mine
       .filter(isLate)
       .sort((a, b) => a.happenedOn.localeCompare(b.happenedOn) || recordLabel(a).localeCompare(recordLabel(b)))
       .map(recordLabel),
@@ -415,10 +456,10 @@ async function all<T>(q: Rows<T>, what: string): Promise<T[]> {
  * Reads one learner's Long view with the client it is given (the teacher's own session) and builds it.
  * Null when the learner is not in the class or the teacher cannot see them.
  */
-export async function loadLongView(db: JemmaDb, classId: string, childId: string, now = new Date()): Promise<LongView | null> {
+export async function loadLongView(db: JemmaDb, classId: string, childId: string, now = new Date(), askedSubject: string | null = null): Promise<LongView | null> {
   const { data: enrolled } = await db
     .from('enrolments')
-    .select('classes(name), children(id, first_name, grade, parent_first_name)')
+    .select('classes(name, subject), children(id, first_name, grade, parent_first_name)')
     .eq('class_id', classId)
     .eq('child_id', childId)
     .maybeSingle()
@@ -461,29 +502,22 @@ export async function loadLongView(db: JemmaDb, classId: string, childId: string
     text: r.text,
     present: r.present,
     total: r.total,
+    subject: r.subject,
   }))
 
-  // This year's marked answers: the family comes from the topic, the date from the test (or the paper), as `get_learner_history` does it.
+  // This year's marked answers, built by the same `answersToResults` the tool uses: the strand comes from the topic, the date from the test
+  // (or the paper), and the subject and grade from the class of the test. What the teacher's session cannot read (another teacher's tests and topics) is left out.
   const topicIds = [...new Set(answers.map((a) => a.topic_id!))]
   const paperIds = [...new Set(answers.map((a) => a.paper_id))]
   const [topics, papers] = await Promise.all([
-    topicIds.length ? all(db.from('topics').select('id, family').in('id', topicIds), 'topics') : Promise.resolve([]),
+    topicIds.length ? all(db.from('topics').select('id, family, name').in('id', topicIds), 'topics') : Promise.resolve([]),
     paperIds.length ? all(db.from('papers').select('id, test_id, created_at').in('id', paperIds), 'papers') : Promise.resolve([]),
   ])
   const testIds = [...new Set(papers.map((p) => p.test_id).filter((t): t is string => !!t))]
-  const tests = testIds.length ? await all(db.from('tests').select('id, title, written_on').in('id', testIds), 'tests') : []
-  const familyOf = new Map(topics.map((t) => [t.id, t.family]))
-  const paperOf = new Map(papers.map((p) => [p.id, p]))
-  const testOf = new Map(tests.map((t) => [t.id, t]))
-  const results = answers.flatMap((a) => {
-    const family = familyOf.get(a.topic_id!)
-    const paper = paperOf.get(a.paper_id)
-    if (!family || !paper) return []
-    const test = paper.test_id ? testOf.get(paper.test_id) : undefined
-    return [
-      { id: a.id, correct: a.correct, family, isoDate: test?.written_on ?? paper.created_at, label: `${test?.title ?? 'Homework'}, question ${a.n}`, grade: child.grade, paperId: a.paper_id, n: a.n },
-    ]
-  })
+  const tests = testIds.length ? await all(db.from('tests').select('id, title, written_on, class_id').in('id', testIds), 'tests') : []
+  const classIds = [...new Set(tests.map((t) => t.class_id))]
+  const classes = classIds.length ? await all(db.from('classes').select('id, subject, grade').in('id', classIds), 'classes') : []
+  const results = answersToResults({ answers, topics, papers, tests, classes, homeworkGrade: child.grade })
 
   const authorIds = [...new Set(observations.map((o) => o.author_id))]
   const authors = authorIds.length ? await all(db.from('profiles').select('user_id, display_name').in('user_id', authorIds), 'authors') : []
@@ -493,6 +527,8 @@ export async function loadLongView(db: JemmaDb, classId: string, childId: string
     now,
     classId,
     className: enrolled.classes?.name ?? '',
+    classSubject: enrolled.classes?.subject,
+    askedSubject,
     child: { id: child.id, firstName: child.first_name, grade: child.grade, parentFirstName: child.parent_first_name },
     hasParent: links.length > 0,
     records,
@@ -512,10 +548,10 @@ async function roleOf(db: JemmaDb): Promise<string | null> {
 }
 
 /** The teacher's Long view of one learner. Null for anyone who is not a teacher of the class. */
-export async function getLongView(classId: string, childId: string): Promise<LongView | null> {
+export async function getLongView(classId: string, childId: string, askedSubject: string | null = null): Promise<LongView | null> {
   const supabase = (await createSupabaseServer()) as unknown as JemmaDb
   if ((await roleOf(supabase)) !== 'teacher') return null
-  return loadLongView(supabase, classId, childId)
+  return loadLongView(supabase, classId, childId, new Date(), askedSubject)
 }
 
 /** The one line on the teacher's profile card. */
@@ -525,8 +561,9 @@ export async function getLongViewSummary(childId: string): Promise<string> {
   return summaryLine(data ?? [])
 }
 
-export type SharedPattern = { id: string; title: string; statement: string; labels: string[]; sharedOn: string }
-export type SharedLongView = { childName: string; teacherName: string; patterns: SharedPattern[] }
+export type SharedPattern = { id: string; subject: string; title: string; statement: string; labels: string[]; sharedOn: string; teacherName: string }
+/** `teacherName` is the teacher of the first pattern; `teacherNames` lists every teacher who talked to the parent, and `subjects` the subjects, in the usual order. */
+export type SharedLongView = { childName: string; teacherName: string; teacherNames: string[]; subjects: string[]; patterns: SharedPattern[] }
 
 /**
  * What a parent may read: the patterns the teacher has talked through with them. The row policy returns only status `discussed`;
@@ -539,26 +576,33 @@ export async function loadSharedLongView(db: JemmaDb, childId: string): Promise<
     db.from('children').select('first_name').eq('id', childId).maybeSingle(),
     db
       .from('long_view_patterns')
-      .select('id, title, statement, evidence, discussed_at, discussed_by_name')
+      .select('id, subject, title, statement, evidence, discussed_at, discussed_by_name')
       .eq('child_id', childId)
       .eq('status', 'discussed')
       .eq('active', true)
       .order('discussed_at', { ascending: false }),
   ])
   if (!child.data || rows.error || !rows.data?.length) return null
-  return {
-    childName: child.data.first_name,
-    teacherName: rows.data[0]!.discussed_by_name ?? 'the teacher',
-    patterns: rows.data.map((p) => {
+  const patterns: SharedPattern[] = [...rows.data]
+    .sort((a, b) => compareSubjects(patternSubject(a), patternSubject(b)) || (b.discussed_at ?? '').localeCompare(a.discussed_at ?? ''))
+    .map((p) => {
       const evidence = LongViewEvidenceListSchema.safeParse(p.evidence)
       return {
         id: p.id,
+        subject: patternSubject(p),
         title: p.title,
         statement: p.statement,
         labels: inQuestionOrder((evidence.success ? evidence.data : []).map((e) => ({ kind: e.kind as string, label: answerLabel(e.label) }))).map((e) => e.label),
         sharedOn: p.discussed_at ? dateLabel(p.discussed_at) : '',
+        teacherName: p.discussed_by_name ?? 'the teacher',
       }
-    }),
+    })
+  return {
+    childName: child.data.first_name,
+    teacherName: patterns[0]!.teacherName,
+    teacherNames: [...new Set(patterns.map((p) => p.teacherName))],
+    subjects: [...new Set(patterns.map((p) => p.subject))],
+    patterns,
   }
 }
 

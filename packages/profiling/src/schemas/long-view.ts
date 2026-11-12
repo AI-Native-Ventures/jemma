@@ -50,9 +50,11 @@ export type SinceSlot = z.infer<typeof SinceSlotSchema>
 
 /** A pattern code found in the records. The model never writes one: it only words it. */
 export const PatternCandidateSchema = z.object({
-  /** `<kind>:<family>`, stable across runs. */
+  /** `<kind>:<family>`, stable across runs. It does not name the subject: two subjects can both have `struggle:data`, so a pattern is the pair (subject, key). */
   key: z.string(),
   kind: LongViewKindSchema,
+  /** The subject whose strand this is: Mathematics, English, Natural Sciences, ... */
+  subject: z.string(),
   family: z.string(),
   terms: LongViewTermsSchema,
   /** Newest first, at most 12. */
@@ -72,6 +74,8 @@ export type PatternCandidate = z.infer<typeof PatternCandidateSchema>
 export const HistoryNoteSchema = z.object({
   id: z.string(),
   kind: z.enum(['record', 'observation']),
+  /** Null: a note belongs to the learner, not to a subject. */
+  subject: z.string().nullable(),
   teacher: z.string().nullable(),
   /** YYYY-MM-DD */
   date: z.string(),
@@ -79,28 +83,39 @@ export const HistoryNoteSchema = z.object({
 })
 export type HistoryNote = z.infer<typeof HistoryNoteSchema>
 
-export const LearnerHistorySchema = z.object({
-  child: z.object({ firstName: z.string(), grade: z.number().int() }),
-  /** Every term with any record or marked answer, oldest first. */
+/** One subject of the learner: its terms, its strands with their marks by term, the terms with nothing in them and the marks left out. */
+export const SubjectHistorySchema = z.object({
+  subject: z.string(),
+  /** Every term with any record or marked answer of this subject (or a note or attendance, which have no subject), oldest first. */
   slots: z.array(z.object({ grade: z.number().int(), year: z.number().int(), term: z.number().int() })),
-  /** Marks by family and term. A term with too few marks for a family is left out for that family. */
+  /** Marks by strand and term. A term with too few marks for a strand is left out for that strand. */
   families: z.array(
     z.object({
       family: z.string(),
+      /** The plain name of the strand. */
+      label: z.string(),
       bySlot: z.array(LongViewTermSchema),
     }),
   ),
+  /** Terms between the first and the last one in this subject that have nothing at all. */
+  missingTerms: z.array(MissingTermSchema),
+  /** Marked pieces of this subject left out because the marks could not be read clearly. */
+  notCounted: z.array(z.object({ id: z.string(), label: z.string() })),
+})
+export type SubjectHistory = z.infer<typeof SubjectHistorySchema>
+
+export const LearnerHistorySchema = z.object({
+  child: z.object({ firstName: z.string(), grade: z.number().int() }),
+  /** One entry for each subject the learner has marks in, Mathematics first. The strands of two subjects are never put together. */
+  subjects: z.array(SubjectHistorySchema),
+  /** Every pattern code found, in every subject. A pattern is the pair (subject, key). */
   candidates: z.array(PatternCandidateSchema),
   notes: z.array(HistoryNoteSchema),
   attendanceByTerm: z.array(
     z.object({ grade: z.number().int(), year: z.number().int(), term: z.number().int(), present: z.number(), total: z.number(), percent: z.number() }),
   ),
-  /** Terms between the first and the last one with records that have nothing at all. */
-  missingTerms: z.array(MissingTermSchema),
-  /** Marked pieces left out because the marks could not be read clearly. */
-  notCounted: z.array(z.object({ id: z.string(), label: z.string() })),
   /** Pieces written into the records more than 60 days after they happened. They still count. */
-  loggedLate: z.array(z.object({ id: z.string(), label: z.string(), happenedOn: z.string(), loggedAt: z.string() })),
+  loggedLate: z.array(z.object({ id: z.string(), subject: z.string().nullable(), label: z.string(), happenedOn: z.string(), loggedAt: z.string() })),
 })
 export type LearnerHistory = z.infer<typeof LearnerHistorySchema>
 
@@ -108,6 +123,11 @@ export type LearnerHistory = z.infer<typeof LearnerHistorySchema>
 export const LongViewDraftPatternSchema = z.object({
   /** The candidate's `key`. */
   key: z.string(),
+  /**
+   * The candidate's `subject`. Always give it: the same key can exist in two subjects. When it is left out and only one candidate has
+   * that key, the tool takes that one; when two do, the pattern is dropped and the reason says to name the subject.
+   */
+  subject: z.string().optional(),
   /** What was seen, in words a parent would use. At most 70 characters. */
   title: z.string(),
   /** At most two short sentences: what was seen and over which terms. At most 320 characters. */
@@ -128,6 +148,7 @@ export const LongViewPatternSchema = z.object({
   id: z.string(),
   childId: z.string(),
   kind: LongViewKindSchema,
+  subject: z.string(),
   family: z.string(),
   title: z.string(),
   statement: z.string(),

@@ -25,6 +25,8 @@ export type LongHistoryRow = {
   logged_at: string
   teacher_name: string
   title: string
+  /** Mathematics on every marked piece. Notes and attendance belong to the learner, not to a subject, so they have none. */
+  subject: string | null
   family: string | null
   topic_name: string | null
   marks: number | null
@@ -224,7 +226,7 @@ export function longHistory(classYear: number, currentTeacher: string): LongHist
         const outOf = OUT_OF[kind]
         rows.push({
           ...base, source: SOURCE[kind], happened_on: day, logged_at: loggedAfter(day, seed, flag === 'late' ? LATE_DAYS : undefined),
-          title: `${SOURCE_TITLE[kind]}: ${topic}`, family, topic_name: topic,
+          title: `${SOURCE_TITLE[kind]}: ${topic}`, subject: 'Mathematics', family, topic_name: topic,
           marks: Math.round((percent * outOf) / 100), out_of: outOf, quality: flag === 'unclear' ? 'unclear' : 'clear',
           text: flag === 'unclear' ? 'Marks hard to read on the page.' : null, present: null, total: null,
         })
@@ -234,7 +236,7 @@ export function longHistory(classYear: number, currentTeacher: string): LongHist
         const day = `${year}-${pad(slot.term * 3)}-${pad(10 + (hash(`${child}|${s}|att`) % 10))}`
         rows.push({
           ...base, source: 'attendance', happened_on: day, logged_at: loggedAfter(day, `${child}|${s}|att`), title: `Attendance, term ${slot.term}`,
-          family: null, topic_name: null, marks: null, out_of: null, quality: 'clear', text: null, present: attendance[0], total: attendance[1],
+          subject: null, family: null, topic_name: null, marks: null, out_of: null, quality: 'clear', text: null, present: attendance[0], total: attendance[1],
         })
       }
       for (const [n, note] of plan.notes.filter((x) => x.slot === s).entries()) {
@@ -242,7 +244,7 @@ export function longHistory(classYear: number, currentTeacher: string): LongHist
         const day = dayInTerm(year, slot.term, n + 1, seed)
         rows.push({
           ...base, source: 'note', happened_on: day, logged_at: loggedAfter(day, seed), title: `Teacher note, term ${slot.term}`,
-          family: null, topic_name: null, marks: null, out_of: null, quality: 'clear', text: note.text, present: null, total: null,
+          subject: null, family: null, topic_name: null, marks: null, out_of: null, quality: 'clear', text: note.text, present: null, total: null,
         })
       }
     })

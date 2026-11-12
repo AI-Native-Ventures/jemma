@@ -1,9 +1,10 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { CSSProperties } from 'react'
 import { EmptyState } from '@/components/blocks'
 import { Card } from '@/components/ui'
 import { requireRole } from '@/lib/auth'
-import { getLongView, type DotLevel, type LongView } from '@/lib/data/p52'
+import { getLongView, subjectLinkOf, type DotLevel, type LongView, type LvPattern } from '@/lib/data/p52'
 import { BackHeader } from '../../../tests/back-header'
 import { PatternCard, SetAside } from './PatternCard'
 import { OpenUpdate, UpdateBar } from './UpdateBar'
@@ -183,19 +184,65 @@ function CouldNotUse({ v }: { v: LongView }) {
   )
 }
 
+/** One subject: its name over the grid. With more than one subject the names are chips, and the one on the screen is dark. */
+function SubjectBar({ v, path }: { v: LongView; path: string }) {
+  if (v.subjects.length < 2) {
+    return (
+      <h2 className="m-0 text-[15px] leading-[1.3] font-semibold" data-subject-heading>
+        {v.subject}
+      </h2>
+    )
+  }
+  return (
+    <nav aria-label="Subjects">
+      <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
+        {v.subjects.map((s) => (
+          <li key={s.name}>
+            <Link
+              href={subjectLinkOf(path, s.name)}
+              scroll={false}
+              aria-current={s.selected ? 'page' : undefined}
+              className={`inline-flex min-h-11 items-center rounded-pill px-4 text-[15px] font-semibold no-underline ${s.selected ? 'bg-ink text-white' : 'bg-soft-2 text-ink'}`}
+            >
+              {s.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+function Cards({ patterns, parentName }: { patterns: LvPattern[]; parentName: string | null }) {
+  return (
+    <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start">
+      {patterns.map((p) => (
+        <PatternCard key={p.id} p={p} parentName={parentName} />
+      ))}
+    </div>
+  )
+}
+
 /**
  * The teacher's Long view of one learner: the marks across the years, then each pattern Jemma found with where it comes from.
  * The teacher checks a pattern, talks to the parent, and only then does the parent see it. The learner never does.
  * One layout for phone and laptop: the grid scrolls inside its card on a phone, and the cards sit in two columns on a laptop.
  */
-export default async function LongViewPage({ params }: { params: Promise<{ classId: string; childId: string }> }) {
+export default async function LongViewPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ classId: string; childId: string }>
+  searchParams: Promise<{ subject?: string | string[] }>
+}) {
   const { classId, childId } = await params
+  const { subject: asked } = await searchParams
   await requireRole('teacher')
-  const v = await getLongView(classId, childId)
+  const v = await getLongView(classId, childId, typeof asked === 'string' ? asked : (asked?.[0] ?? null))
   if (!v) notFound()
-  const { drafts, approved, shared, setAside } = v.groups
-  const open = [...drafts, ...approved, ...shared]
+  const { setAside } = v.groups
   const base = `/t/${classId}`
+  const many = v.subjects.length > 1
 
   return (
     <div className="leading-[normal] lg:max-w-[1100px]">
@@ -204,24 +251,31 @@ export default async function LongViewPage({ params }: { params: Promise<{ class
         <h1 className="sr-only">{`${v.name}'s Long view`}</h1>
         {v.spanLine ? <p className="m-0 text-[14px] leading-[1.4] text-body">{v.spanLine}</p> : null}
 
+        <SubjectBar v={v} path={`${base}/learners/${childId}/long-view`} />
+
         <Grid v={v} />
 
-        {v.patternCount === 0 ? <EmptyState title="Too early to tell" body="A pattern needs 3 terms of clear results." /> : null}
+        {v.subjectPatternCount === 0 ? <EmptyState title="Too early to tell" body="A pattern needs 3 terms of clear results." /> : null}
 
-        {open.length > 0 ? (
+        {v.bySubject.length > 0 ? (
           <section aria-labelledby="lv-patterns" className="flex flex-col gap-3">
             <h2 id="lv-patterns" className="m-0 text-[17px] font-semibold">
               What Jemma found
             </h2>
-            <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start">
-              {open.map((p) => (
-                <PatternCard key={p.id} p={p} parentName={v.parentName} />
-              ))}
-            </div>
+            {many ? (
+              v.bySubject.map((g) => (
+                <div key={g.subject} className="flex flex-col gap-3">
+                  <h3 className="m-0 text-[15px] leading-[1.3] font-semibold text-body">{g.subject}</h3>
+                  <Cards patterns={g.open} parentName={v.parentName} />
+                </div>
+              ))
+            ) : (
+              <Cards patterns={v.bySubject[0]!.open} parentName={v.parentName} />
+            )}
           </section>
         ) : null}
 
-        {setAside.length > 0 ? <SetAside patterns={setAside} parentName={v.parentName} /> : null}
+        {setAside.length > 0 ? <SetAside patterns={setAside} parentName={v.parentName} withSubject={many} /> : null}
 
         <CouldNotUse v={v} />
         <UpdateBar childId={childId} state={v.update.state} lastUpdated={v.update.lastUpdated} />

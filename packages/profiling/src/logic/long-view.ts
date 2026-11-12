@@ -1,4 +1,5 @@
 import type { LongViewEvidence, LongViewKind, LongViewTerm, PatternCandidate } from '../schemas/long-view'
+import { DEFAULT_SUBJECT, canonicalSubject, compareSubjects } from './strands'
 
 // The Long view: code finds the strengths and struggles that hold for 3 terms or more. A model only puts them in words.
 // Pure functions, no database. Terms are calendar quarters: Jan to Mar is 1, Apr to Jun 2, Jul to Sep 3, Oct to Dec 4.
@@ -67,6 +68,7 @@ export function plainDate(isoDate: string): string {
   return `${day} ${MONTHS[month - 1]} ${year}`
 }
 
+/** `struggle:fractions`. The key does not name the subject: a pattern is (subject, key), because the same family can exist in two subjects. */
 export const patternKey = (kind: LongViewKind, family: string) => `${kind}:${family}`
 
 /** A row of `learner_records`, in the shape the logic reads. */
@@ -89,9 +91,17 @@ export type LongViewRecord = {
   text: string | null
   present: number | null
   total: number | null
+  /**
+   * The subject. Null or missing for notes and attendance (they belong to the learner, not to a subject), and for a marked piece an older
+   * seed wrote, which counts as Mathematics.
+   */
+  subject?: string | null
 }
 
-/** One marked answer of this year (from `question_results`). `grade` is the learner's grade now. */
+/**
+ * One marked answer of this year (from `question_results`). It takes its subject and grade from the class of the test it was written in
+ * (not from the learner's current grade). Without a `subject` an answer counts as Mathematics. Its term is the calendar quarter of its date.
+ */
 export type LongViewResult = {
   id: string
   correct: boolean
@@ -99,14 +109,106 @@ export type LongViewResult = {
   isoDate: string
   label: string
   grade?: number
+  subject?: string
+  /** The class the test belongs to, so a link to the paper opens under the right class. */
+  classId?: string | null
+  /** Names that come from the data, kept so the word check can leave them alone: the test's title and the topic. */
+  testTitle?: string | null
+  topicName?: string | null
+}
+
+/** The rows `answersToResults` reads: this learner's marked answers, and what they hang from. */
+export type AnswerSources = {
+  answers: { id: string; paper_id: string; n: number; correct: boolean; topic_id: string | null }[]
+  topics: { id: string; family: string; name: string }[]
+  papers: { id: string; test_id: string | null; created_at: string }[]
+  tests: { id: string; title: string; written_on: string | null; class_id: string }[]
+  classes: { id: string; subject: string; grade: number }[]
+  /** Homework has no test and so no class. It counts as Mathematics (the only subject a homework scan can be today) in this grade. */
+  homeworkGrade: number
+}
+export type AnswerResult = LongViewResult & { paperId: string; n: number }
+
+/**
+ * This year's marked answers as results. An answer takes its strand from its topic and its date from its test (or its paper), and its
+ * subject and grade from the CLASS of the test, not from the learner's current grade: a learner in two classes has answers in two subjects.
+ * The tool and the screen both build their results here, so the two can never read an answer differently.
+ */
+export function answersToResults(src: AnswerSources): AnswerResult[] {
+  const topic = new Map(src.topics.map((t) => [t.id, t]))
+  const paper = new Map(src.papers.map((p) => [p.id, p]))
+  const test = new Map(src.tests.map((t) => [t.id, t]))
+  const klass = new Map(src.classes.map((c) => [c.id, c]))
+  return src.answers.flatMap((a) => {
+    const t = a.topic_id ? topic.get(a.topic_id) : undefined
+    const p = paper.get(a.paper_id)
+    if (!t?.family || !p) return []
+    const made = p.test_id ? test.get(p.test_id) : undefined
+    // A paper of a test the reader cannot see (another teacher's class) is left out: calling it homework would give it the wrong subject.
+    if (p.test_id && !made) return []
+    const c = made ? klass.get(made.class_id) : undefined
+    return [
+      {
+        id: a.id,
+        correct: a.correct,
+        family: t.family,
+        isoDate: made?.written_on ?? p.created_at,
+        label: `${made?.title ?? 'Homework'}, question ${a.n}`,
+        grade: c?.grade ?? src.homeworkGrade,
+        subject: c?.subject?.trim() ? canonicalSubject(c.subject) : DEFAULT_SUBJECT,
+        classId: c?.id ?? null,
+        testTitle: made?.title ?? null,
+        topicName: t.name,
+        paperId: a.paper_id,
+        n: a.n,
+      },
+    ]
+  })
 }
 
 export type TableSource = { kind: 'record' | 'result'; id: string; label: string }
 export type TableSlot = LongViewTerm & { sources: TableSource[] }
-export type FamilyTable = { family: string; slots: TableSlot[] }
+/** One strand of one subject. */
+export type FamilyTable = { subject: string; family: string; slots: TableSlot[] }
+export type NotCounted = { id: string; label: string; subject: string }
 
 /** Marked pieces count. Notes and attendance never do. */
 const MARKED = new Set<LongViewRecord['source']>(['quiz', 'assignment', 'project'])
+
+/**
+ * The subject of a record. A marked piece with no subject counts as Mathematics. A note or a term of attendance with none has no subject at all (null),
+ * and belongs to every subject the learner has.
+ */
+export function recordSubject(r: Pick<LongViewRecord, 'source' | 'subject'>): string | null {
+  const named = r.subject?.trim()
+  return named ? canonicalSubject(named) : MARKED.has(r.source) ? DEFAULT_SUBJECT : null
+}
+
+/** The subject of an answer: its class's, or Mathematics when it has none. */
+export const resultSubject = (r: Pick<LongViewResult, 'subject'>): string => (r.subject?.trim() ? canonicalSubject(r.subject) : DEFAULT_SUBJECT)
+
+/** The subjects a learner has: every subject with marked work or answers, or a record that names one. Mathematics first, then the usual order. */
+export function subjectsOf(records: LongViewRecord[], results: LongViewResult[]): string[] {
+  const found = new Set<string>()
+  for (const r of records) {
+    const subject = recordSubject(r)
+    if (subject) found.add(subject)
+  }
+  for (const r of results) found.add(resultSubject(r))
+  return [...found].sort(compareSubjects)
+}
+
+/** The records that count for one subject: its own, and the notes and attendance, which have no subject and so belong to all of them. */
+export function recordsForSubject(records: LongViewRecord[], subject: string): LongViewRecord[] {
+  return records.filter((r) => {
+    const own = recordSubject(r)
+    return own === null || own === subject
+  })
+}
+
+export function resultsForSubject(results: LongViewResult[], subject: string): LongViewResult[] {
+  return results.filter((r) => resultSubject(r) === subject)
+}
 
 export function recordLabel(r: Pick<LongViewRecord, 'title' | 'teacherName' | 'happenedOn'>): string {
   return `${r.title}, ${r.teacherName}, ${plainDate(r.happenedOn)}`
@@ -138,7 +240,22 @@ function latestGrade(grades: Map<string, number>): number {
 }
 
 /**
- * Marks by family and term.
+ * Marks by subject, family and term: the table of each subject (see `buildSubjectTable`), subjects in the usual order.
+ * Two subjects never mix, even when they use the same strand name. A record with a family and no subject counts as Mathematics.
+ */
+export function buildTable(records: LongViewRecord[], results: LongViewResult[]): { table: FamilyTable[]; notCounted: NotCounted[] } {
+  const table: FamilyTable[] = []
+  const notCounted: NotCounted[] = []
+  for (const subject of subjectsOf(records, results)) {
+    const one = buildSubjectTable(recordsForSubject(records, subject), resultsForSubject(results, subject))
+    table.push(...one.table.map((f) => ({ subject, ...f })))
+    notCounted.push(...one.notCounted.map((n) => ({ ...n, subject })))
+  }
+  return { table, notCounted }
+}
+
+/**
+ * Marks by family and term, for the records and answers of ONE subject.
  * - From records: only quizzes, assignments and projects with a family, marks and out of, and a clear quality.
  *   Percent is summed marks over summed out of (rounded), points is summed out of.
  * - From current results: percent is the share of right answers, points is the number of answers.
@@ -146,10 +263,10 @@ function latestGrade(grades: Map<string, number>): number {
  * - A term where a family has fewer than MIN_POINTS is left out for that family: "no data".
  * Families come back in alphabetical order and terms oldest first.
  */
-export function buildTable(
+export function buildSubjectTable(
   records: LongViewRecord[],
   results: LongViewResult[],
-): { table: FamilyTable[]; notCounted: { id: string; label: string }[] } {
+): { table: Omit<FamilyTable, 'subject'>[]; notCounted: { id: string; label: string }[] } {
   const items: Item[] = []
   const notCounted: { id: string; label: string }[] = []
   for (const r of records) {
@@ -179,7 +296,7 @@ export function buildTable(
     byFamily.set(item.family, slots)
   }
 
-  const table: FamilyTable[] = [...byFamily]
+  const table = [...byFamily]
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([family, slots]) => ({
       family,
@@ -253,11 +370,12 @@ function runEndingAt(slots: TableSlot[], end: number, kind: LongViewKind): Table
  * followed by something better, a strength by something weaker, or a better term was followed by another weak one): they come back
  * oldest first as `since`, so the pattern is still shown with the newer results beside it. The run that ends nearest the latest
  * term wins. With 3 or more newer terms with data, the pattern is not a candidate.
+ * A pattern belongs to one subject. The strands of two subjects are never put together, so the same family name in two subjects gives two patterns.
  * Terms with no data inside the run's span are skipped, never guessed, and are listed in `missingTerms`.
  */
 export function findPatterns(table: FamilyTable[]): PatternCandidate[] {
   const out: PatternCandidate[] = []
-  for (const { family, slots } of [...table].sort((a, b) => a.family.localeCompare(b.family))) {
+  for (const { subject, family, slots } of [...table].sort((a, b) => compareSubjects(a.subject, b.subject) || a.family.localeCompare(b.family))) {
     const ordered = [...slots].sort(compareSlots)
     const latest = ordered.length - 1
 
@@ -284,6 +402,7 @@ export function findPatterns(table: FamilyTable[]): PatternCandidate[] {
     const candidate: PatternCandidate = {
       key: patternKey(kind, family),
       kind,
+      subject,
       family,
       terms: run.map(({ grade, year, term, percent, points }) => ({ grade, year, term, percent, points })),
       evidence,
@@ -332,10 +451,19 @@ export const BANNED_WORDS = [
 
 const BANNED_PATTERNS = BANNED_WORDS.map((w) => ({ word: w, re: new RegExp(`\\b${w.split(' ').join('\\s+')}\\b`, 'i') }))
 
-/** The banned words found in `text`, each once, in the order they first appear. Case-insensitive. */
-export function bannedWords(text: string): string[] {
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/**
+ * The banned words found in `text`, each once, in the order they first appear. Case-insensitive.
+ * `exempt` are names that come from the data (the subject, a strand, a topic, the title of a piece of work). Each is taken out of the
+ * text, whole and in any case, before the check, so a topic called "Rank and file" or a quiz called "Track and field" never drops a pattern.
+ * A name that is itself a banned word is not exempt: "Track" as a topic would otherwise hide "on track".
+ */
+export function bannedWords(text: string, exempt: readonly string[] = []): string[] {
+  const names = [...new Set(exempt.map((n) => n.trim()).filter((n) => n && !BANNED_WORDS.some((w) => w === n.toLowerCase())))].sort((a, b) => b.length - a.length)
+  const clean = names.reduce((out, name) => out.replace(new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(name)}(?![\\p{L}\\p{N}])`, 'giu'), ' '), text)
   return BANNED_PATTERNS.flatMap(({ word, re }) => {
-    const hit = re.exec(text)
+    const hit = re.exec(clean)
     return hit ? [{ word, at: hit.index }] : []
   })
     .sort((a, b) => a.at - b.at)
