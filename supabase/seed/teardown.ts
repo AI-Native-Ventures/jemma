@@ -4,7 +4,7 @@
 import type { JemmaDb } from '../../packages/profiling/src/db'
 
 const DAY = 24 * 60 * 60_000
-const STORAGE_BUCKETS = ['papers', 'curriculum', 'lesson-audio']
+const STORAGE_BUCKETS = ['papers', 'curriculum', 'lesson-audio', 'records']
 
 /** How many old sandboxes one sweep looks at, and how many it removes at most (the hourly cron makes up for the rest). */
 const LOOK_AT = 20

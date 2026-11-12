@@ -197,6 +197,9 @@ export async function classIdOfRef(db: JemmaDb, refId: string | null | undefined
     const found = await classIdFor(db, ref)
     if (found) return found
   }
+  // A file of past records a teacher brought in names the class it was brought in for.
+  const imported = await maybe(db.from('record_imports').select('class_id').eq('id', refId).maybeSingle())
+  if (imported) return imported.class_id
   const cls = await maybe(db.from('classes').select('id').eq('id', refId).maybeSingle())
   return cls?.id ?? null
 }

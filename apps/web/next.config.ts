@@ -12,7 +12,8 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@jemma/profiling'],
   experimental: {
     // The default is 1 MB: a PDF over that is refused by the framework with no message a teacher can read. The proxy buffers
-    // request bodies too (and cuts them at 10 MB), so both limits move together.
+    // request bodies too (and cuts them at 10 MB), so both limits move together. "Add past records" sends a file of up to 1 MB
+    // to a server action as text: it fits under this limit too.
     serverActions: { bodySizeLimit: UPLOAD_BODY_LIMIT },
     proxyClientMaxBodySize: UPLOAD_BODY_LIMIT,
   },

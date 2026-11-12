@@ -1,6 +1,6 @@
 # Job prompts
 
-Jemma has 8 AI jobs: `draft_map`, `read_key`, `read_paper`, `diagnose`, `class_report`, `write_lesson`, `guidance`, `long_view`.
+Jemma has 9 AI jobs: `draft_map`, `read_key`, `read_paper`, `diagnose`, `class_report`, `write_lesson`, `guidance`, `long_view`, `map_records`.
 
 ## Naming
 
