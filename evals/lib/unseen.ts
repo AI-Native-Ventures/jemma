@@ -173,6 +173,21 @@ export function whoAsked(draft: TopicMapDraft, truth: Truth, codeQuestions: numb
   return codeQuestions > 0 && questions.every((q) => CODE_QUESTION.test(q)) ? 'code' : 'model'
 }
 
+/**
+ * The entries of the topic that the document lists in two terms, when the draft has it in two or more terms under names that
+ * differ (without case and extra spaces) and none of them has a question: code, which compares names that way, does not see one
+ * topic listed twice and asks nothing. Null in every other case.
+ */
+export function repeatedUnderOtherNames(draft: TopicMapDraft, truth: Truth): { name: string; term: number }[] | null {
+  const two = truth.topics.find((g) => g.name === truth.traps.twoTerms.name)
+  if (!two) return null
+  const hits = topicsOf(draft).filter((t) => nameMatches(t.name, two.match))
+  if (new Set(hits.map((h) => h.term)).size < 2 || hits.some((h) => h.hasCheck)) return null
+  const plain = (name: string) => name.trim().toLowerCase().replace(/\s+/g, ' ')
+  if (new Set(hits.map((h) => plain(h.name))).size < 2) return null
+  return hits.map((h) => ({ name: h.name, term: h.term }))
+}
+
 // ---------- the result of one live run ----------
 
 export const RESULT_VERSION = 1

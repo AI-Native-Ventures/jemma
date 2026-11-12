@@ -6,7 +6,7 @@ import { readLedger } from './ledger'
 import { baseName, parseResult, RESULTS_ROOT, type ResultFile } from './result'
 import { refusalOf } from './provider'
 import { listRunFolders, loadSecondRun } from './second'
-import { DOCUMENT_IDS, OTHER_SUBJECT_IDS, UNSEEN_FOLDER, countRepeats, finalTries, isLiveRun, loadTruth, medianSeconds, parseUnseenResult, whatWentWrong, type UnseenResult } from './unseen'
+import { DOCUMENT_IDS, OTHER_SUBJECT_IDS, UNSEEN_FOLDER, countRepeats, finalTries, isLiveRun, loadTruth, medianSeconds, parseUnseenResult, repeatedUnderOtherNames, whatWentWrong, type UnseenResult } from './unseen'
 import { countryName } from '../../packages/profiling/src/ai/subject-profile'
 import { strandOrder } from '../../packages/profiling/src/logic/strands'
 import { RUNS_PER_TASK, TASKS } from '../tasks'
@@ -359,6 +359,21 @@ function outsideParagraph(o: UnseenOutside): string {
   return `These documents are about other subjects (Natural Sciences, English, Science and Technology). The first version of Jemma covers Mathematics only, so they are not part of what Jemma claims today, and their results from run \`${o.runId}\` are kept as they were. Passes among the judged runs: ${pieces.join('; ')}.${errorSentence}`
 }
 
+/** For a failed run whose draft lists the topic of two terms twice under two names: why code did not ask, in plain words. Empty when it does not apply. */
+function renamedRepeats(runs: UnseenResult[]): string {
+  const out: string[] = []
+  for (const r of runs) {
+    if (r.verdict !== 'fail' || !r.draft) continue
+    try {
+      const found = repeatedUnderOtherNames(r.draft, loadTruth(r.docId))
+      if (found) out.push(`run ${r.n}: the draft has the topic as ${found.map((f) => `"${f.name}" in Term ${f.term}`).join(' and ')}; the names differ, so code did not see one topic listed twice and asked nothing`)
+    } catch {
+      // a document without a ground truth: nothing to say
+    }
+  }
+  return out.join('. ')
+}
+
 /** For each run of a document: who asked the teacher about the topic that the document lists in two terms. */
 const whoAskedCell = (runs: UnseenResult[]): string =>
   runs
@@ -382,7 +397,7 @@ function unseenSection(u: UnseenRun): string[] {
       if (runs.length === 0) continue
       const answered = runs.filter((r) => r.verdict !== 'no_answer')
       out.push(
-        `| ${cell(u.labels[id] ?? id)} | ${runs.length} | ${runs.filter((r) => r.verdict === 'pass').length} | ${runs.filter((r) => r.verdict === 'no_answer').length} | ${answered.length ? num(medianSeconds(answered)) : 'none'} | ${readBy(answered)} | ${cell(whoAskedCell(runs))} | ${cell(whatWentWrong(runs))} |`,
+        `| ${cell(u.labels[id] ?? id)} | ${runs.length} | ${runs.filter((r) => r.verdict === 'pass').length} | ${runs.filter((r) => r.verdict === 'no_answer').length} | ${answered.length ? num(medianSeconds(answered)) : 'none'} | ${readBy(answered)} | ${cell(whoAskedCell(runs))} | ${cell([whatWentWrong(runs), renamedRepeats(runs)].filter(Boolean).join('. '))} |`,
       )
     }
     out.push('')

@@ -101,6 +101,14 @@ describe('the section "A curriculum Jemma had never seen"', () => {
     expect(old).toContain('| run 1: not recorded |')
   })
 
+  test('a failed run whose draft lists the topic twice under two names says so, with both names and terms', () => {
+    const entry = (name: string) => ({ name, family: 'measurement', prerequisites: [], misconceptions: [] })
+    const draft = { grade: 5, terms: [{ term: 2 as const, topics: [entry('Perimeter and area')] }, { term: 3 as const, topics: [entry('Perimeter and area again')] }], leftOut: [] }
+    const failed = tryOf(GRADE5, 1, { verdict: 'fail', draft, twoTermsAskedBy: 'none' as const, codeQuestions: 0, checks: [{ name: 'the topic listed in two terms is flagged with a question', pass: false, detail: '"Perimeter and area" is in the draft with no question for the teacher' }] })
+    const text = section(renderReport({ ...baseInput, unseen: unseen({ tries: [failed] }) }))
+    expect(text).toContain('run 1: the draft has the topic as "Perimeter and area" in Term 2 and "Perimeter and area again" in Term 3; the names differ, so code did not see one topic listed twice and asked nothing')
+  })
+
   test('the family words that were not in the Mathematics list are named, with the number of runs that used them', () => {
     const figures = (extraFamilies: string[]) => ({ found: 14, of: 14, invented: 0, drafted: 14, rightTerm: 14, termsInDraft: [1, 2, 3, 4], extraFamilies })
     const text = section(renderReport({ ...baseInput, unseen: unseen({ tries: [tryOf(GRADE9, 1, { figures: figures(['algebra', 'geometry']) }), tryOf(GRADE9, 2, { figures: figures(['algebra']) }), tryOf(GRADE9, 3, { figures: figures([]) })] }) }))

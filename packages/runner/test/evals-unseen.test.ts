@@ -20,6 +20,7 @@ import {
   parseUnseenResult,
   planResume,
   whoAsked,
+  repeatedUnderOtherNames,
   countRepeats,
   isLiveRun,
   scoreDraft,
@@ -34,6 +35,7 @@ const maths = DOCUMENT_IDS.map((id) => loadTruth(id))
 const others = OTHER_SUBJECT_IDS.map((id) => loadTruth(id))
 const truths = [...maths, ...others]
 const grade9 = maths[0] as Truth
+const grade5 = maths[1] as Truth
 // The three earlier documents, outside Mathematics: still scored by the same code, and the scorer tests below use them for the lists of families.
 const [science, english, kenya] = others as [Truth, Truth, Truth]
 
@@ -385,6 +387,25 @@ describe('who asked about the topic that the document lists in two terms', () =>
 
   test('the perfect draft of the ground truth has a question from the model', () => {
     expect(whoAsked(perfectDraft(grade9), grade9, 0)).toBe('model')
+  })
+})
+
+describe('a topic listed in two terms that the draft names differently the second time', () => {
+  const entry = (name: string, check?: { reason: string; options: string[] }) => ({ name, family: 'measurement', prerequisites: [], misconceptions: [], ...(check ? { check } : {}) })
+  const two = grade5.traps.twoTerms.name
+  const draftWith = (a: ReturnType<typeof entry>, b: ReturnType<typeof entry>): TopicMapDraft => ({ grade: 5, terms: [{ term: 2, topics: [a] }, { term: 3, topics: [b] }], leftOut: [] })
+
+  test('two names for the same topic in two terms, with no question, are named with their terms', () => {
+    const got = repeatedUnderOtherNames(draftWith(entry('Perimeter and area'), entry('Perimeter and area again')), grade5)
+    expect(got).toEqual([{ name: 'Perimeter and area', term: 2 }, { name: 'Perimeter and area again', term: 3 }])
+    expect(two).toBe('Perimeter and area')
+  })
+
+  test('the same name is code\'s to ask about, a question from the model settles it, and one term is not a repeat', () => {
+    expect(repeatedUnderOtherNames(draftWith(entry('Perimeter and area'), entry('perimeter  and AREA')), grade5)).toBeNull()
+    expect(repeatedUnderOtherNames(draftWith(entry('Perimeter and area'), entry('Perimeter and area again', { reason: 'Same topic?', options: ['Keep', 'Merge'] })), grade5)).toBeNull()
+    expect(repeatedUnderOtherNames({ grade: 5, terms: [{ term: 2, topics: [entry('Perimeter and area'), entry('Perimeter and area of squares')] }], leftOut: [] }, grade5)).toBeNull()
+    expect(repeatedUnderOtherNames({ grade: 5, terms: [], leftOut: [] }, grade5)).toBeNull()
   })
 })
 

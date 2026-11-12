@@ -1,38 +1,39 @@
-# P67: a curriculum Jemma has never seen
+# P67: a curriculum Jemma has never seen (Mathematics documents)
 
-What was built, what was run, and what was not proven. Numbers are from the files named here.
+What was built, what was run, and what was not proven. Numbers are from the files named here. The first version of Jemma covers Mathematics only, so the documents a judge is pointed at are Mathematics documents (the brief P67-maths.md replaced the first three documents).
 
 ## What was built
 
-- Three invented documents with ground truth: `fixtures/curriculum/unseen/` (Grade 9 Natural Sciences ZA, Grade 5 English ZA, Grade 4 Science and Technology Kenya, three terms, page images only).
-- Upload checks (first bytes, 10 MB, 40 pages, plain messages) and the server action body limit (`apps/web/next.config.ts`).
+- Three invented Mathematics documents with ground truth, two traps each (a topic in two terms, a topic of another grade): `fixtures/curriculum/unseen/` Grade 9 South Africa (table per term, 6 pages), Grade 5 South Africa (paragraphs, 5 pages), Grade 4 Kenya (three terms, a scan with no text layer, 4 pages). The three earlier documents (Natural Sciences, English, Science and Technology) are kept, with their bytes, in `other-subjects/`.
+- Upload checks (first bytes, 10 MB, 40 pages, plain messages) and the server action body limit (`apps/web/next.config.ts`, 32 MB).
 - Reading: vision first as before; only when it fails or gives no topic, and the PDF has a text layer, the text model reads the text (`unpdf` 2.1.0, exact pin). The tool log row `read_documents` says which way.
 - Three term maps: a draft has only the terms that have topics.
-- Live script `pnpm evals:unseen --cap 12`, scorer in `evals/lib/unseen.ts`, EVALS.md section from the saved results.
+- Decision 9: in the save tool for the map draft, code adds "Listed in Term X and Term Y. Which term is it taught in?" to every entry of a topic whose name (without case and extra spaces) sits in two or more terms when no entry has a question (`packages/profiling/src/logic/topic-questions.ts`). The tool answers and logs `codeQuestions`. "Keep in Term X" in the review screen now leaves one entry instead of two (`format.ts`).
+- Live script `pnpm evals:unseen --cap 12 --run-id <id>` (the cap counts one run id; goes on from a stopped run id; waits 60 seconds after a provider no answer), scorer `evals/lib/unseen.ts` (Mathematics: the six Mathematics strands or one or two short lowercase words, the words outside the list are reported), EVALS.md section from the saved results.
+
+## The live run (decision 5), run id 2026-11-12-maths-unseen
+
+Free models: vision `nvidia/nemotron-3.5-super-vl:free` (fallback `google/gemma-4-31b-it:free`), text `nvidia/nemotron-3.5-super-vl:free` (fallback `nvidia/nemotron-3-ultra-550b-a55b:free`). 9 live calls, 0 repeats, 0 no answers, 0 network failures, cap 12 for this run id (3 left, unused). Run after decision 9 was built, so it measures the product as it ships. Files: `evals/results/unseen-curriculum/2026-11-12-maths-unseen/`.
+
+| Document | Runs | Passes | No answer | Median seconds | Read by | Who asked about the topic listed in two terms |
+| --- | ---: | ---: | ---: | ---: | --- | --- |
+| Grade 9 Mathematics, ZA | 3 | 3 | 0 | 91.7 | vision | the model, the model, the model |
+| Grade 5 Mathematics, ZA | 3 | 1 | 0 | 81.6 | vision | nobody, nobody, the model |
+| Grade 4 Mathematics, Kenya | 3 | 3 | 0 | 82.2 | vision | the model, the model, the model |
+
+- Every run found every topic of its document (14 of 14, 15 of 15, 12 of 12), none invented, all in the right terms, with the right grade and the right number of terms (the Kenya scan gave three terms in all 3 runs).
+- The two fails (Grade 5 runs 1 and 2) failed one check: the topic "Perimeter and area" (Terms 2 and 3) was kept in both terms with no question. The model gave the later entry another name ("Perimeter and area of compound shapes" in run 1, "Perimeter and area again" in run 2), so code, which compares names only without case and extra spaces, did not see one topic listed twice and asked nothing. Code asked in none of the 9 runs; the model asked in 7. Not changed after the run: a fail stays a fail. A fuzzier match (one name inside the other, or "again", "continued") would catch these two but was not part of decision 9.
+- Family words outside the Mathematics list that the scorer accepted: shape (9 runs), numbers (7), algebra (3), money (1), number (1), whole numbers (1).
+- The text-reading fallback was not used by any live run (vision answered every run): proven by tests only.
+
+## The earlier run, outside Mathematics (run 2026-11-11-18-26-unseen, kept as it was)
+
+Grade 9 Natural Sciences 3 of 3; Grade 5 English 0 of 3; Grade 4 Science and Technology (Kenya) 0 of 2 judged runs: run 1 failed the same check, run 2 ended on the error "Failed to process successful response" (the body of that answer was not kept, so the model cannot be told from the provider; counted as a fail, not repeated), run 3 never reached a model (this Mac's network failed three times, 8 ledger lines in all, the missing call was dropped). EVALS.md shows this in the paragraph "Outside Mathematics (not part of what Jemma claims today)".
 
 ## What was proven, and how
 
-- Browser spec `apps/web/e2e/p67.spec.ts`, run against a production build (`next build`, `next start` on 3267, stand-in agent on 8767): 7 passed, 1 skipped by design (the Grade 9 walk is on the phone only; the laptop screens are in the Kenya test). Screenshots in this folder, 390 and 1440 (`P67_PROOF=1`).
-- Replay check: `demo-path.spec.ts` on the phone project against a local agent (`wrangler dev`, port 8767, `AI_MODE=replay`): 1 passed in 7.7 minutes.
+- Browser spec `apps/web/e2e/p67.spec.ts`, run against a production build (`next start` on 3267, stand-in agent on 8767), phone and laptop: 7 passed, 1 skipped by design (the Grade 9 walk is on the phone only). It walks a model answer that keeps the topic of two terms in both terms: code's question shows on both entries and one answer leaves the topic in one term; the 9 MB PDF goes through; the three refusals; three terms for the Kenya scheme. Screenshots here, 390 and 1440 (`P67_PROOF=1`).
+- Replay check: `demo-path.spec.ts` on the phone project against a local agent in `AI_MODE=replay`: passed (10.7 min), on the tree before decision 9 and after the first merge of develop. The recorded Grade 6 maps are tested to save unchanged (no topic in two terms, `codeQuestions` 0, same Needs you line): `packages/profiling/test/jobs/save-topic-map-questions.test.ts`. CI runs the demo path again.
 - Agent Worker bundle (`wrangler deploy --dry-run`, nothing deployed): before 6265.57 KiB (gzip 1181.00 KiB), after 8718.22 KiB (gzip 1765.69 KiB). The agent test `apps/agent/test/unseen-curriculum.test.ts` runs unpdf inside workerd.
-- CI found a fault the local run did not: the first CI runs (8ddc2fd and ca43886) passed 1404 tests but ended with 3 unhandled errors, "Worker exited unexpectedly ... WebSocket protocol error 1009, Message is too large" in `events.test.ts`, `mcp-http.test.ts` and `health.test.ts` of the agent project. Cause (found by reading the pool source and reproducing it locally with `CI=true vitest run --project agent --no-file-parallelism --maxWorkers=1`, 4 to 5 crashes): once PDF.js (`unpdf`, 1.7 MB) has been loaded by one test file, Vitest sends it inside the one message that starts the next Worker, and workerd refuses the message. Fix: the one test that really loads PDF.js in workerd (`apps/agent/test/unseen-curriculum.test.ts`) is its own project (`apps/agent/vitest.pdf.config.ts`, listed in the root `vitest.config.ts`), and in the other agent tests `unpdf` is a stand-in (`apps/agent/test/stubs/unpdf.ts`, an alias in `apps/agent/vitest.config.ts`). After it, the same sequential command passes 3 times (7 files, 31 tests). The deployed Worker still bundles the real `unpdf`. A lazy `import('unpdf')` did not help (Vite counts dynamic imports in the graph) and made the bundle larger (10417.97 KiB), so it was dropped.
-- Whole repo: `pnpm test` first pass 105 files passed, 12 failed (all on jemma-demo: statement timeouts, a hook timeout, one duplicate `classes_join_code_key` after a retried insert); those 12 files rerun once, one at a time: 12 passed, 168 tests. `pnpm typecheck`: all five packages green.
-
-## The live run (decision 5), run id 2026-11-11-18-26-unseen
-
-Models: vision `nvidia/nemotron-3.5-super-vl:free` (fallback `google/gemma-4-31b-it:free`), text `nvidia/nemotron-3.5-super-vl:free` (fallback `nvidia/nemotron-3-ultra-550b-a55b:free`). Ledger: 8 of 12 live calls spent. Files: `evals/results/unseen-curriculum/2026-11-11-18-26-unseen/`.
-
-| Document | Runs judged | Passes | Provider no answer | Median seconds | Read by |
-| --- | ---: | ---: | ---: | ---: | --- |
-| Grade 9 Natural Sciences, ZA | 3 | 3 | 0 | 321.8 | vision |
-| Grade 5 English, ZA | 3 | 0 | 0 | 144.6 | vision |
-| Grade 4 Science and Technology, Kenya | 2 of 3 | 0 | 0 | 245.0 | vision |
-
-- Grade 9: run 1 found 14 of 15 topics (missed "Series and parallel circuits"), still a pass. All three flagged "Electric circuits" with a question and left out the Grade 7 topic.
-- Grade 5 English: every run found 15 of 15 topics in the right terms with no invented topic, and failed one check: "Writing a paragraph" (listed in Terms 2 and 3) was kept in both terms, or renamed in the second, with no question for the teacher.
-- Kenya: run 1 found 12 of 12 with three terms (no empty fourth term), and failed the same check ("Sources of light", Terms 1 and 3). Run 2 ended after 254.8 s on the job error "Failed to process successful response" with no draft (an HTTP answer the SDK could not read; the saved result has no cause or body, so it cannot be told apart from a provider fault). It is scored as a fail, as the earlier worker's rule had it, and was not repeated (repeats are for provider no-answers only). Run 3: three tries died on this Mac's own network ("teacher: fetch failed") before any model was asked; they are not on the ledger and were not judged.
-- The text-reading fallback was not used by any live run (vision answered every judged run), so it is proven by tests only.
-- Not done: Kenya run 3. No live call was made in this session: the coordinator's yes did not arrive (asked three times between about 16:45 and 18:00 on 12 Nov, waited until 18:31).
-- To finish it: `pnpm evals:unseen --cap 12 --run-id 2026-11-11-18-26-unseen` goes on from the saved folder (it keeps every run that has a result, never writes over a file, and makes 1 live call, plus up to 3 repeats for a provider no-answer), then `pnpm evals:report`, then change the numbers in the two sentences of docs/judges.md and README.md.
-
-- Scoring was frozen before any live call: the ground truth and `scoreDraft` were last changed in commit 81544bb (11 Nov 18:55 local), the first live call was at 20:26 local. Later changes to `evals/lib/unseen.ts` only add the resume plan and the counting helpers.
+- CI found a fault the local run did not (runs 43259811910 and 43074864751): PDF.js (1.7 MB), once loaded by one test file, is sent inside the one message that starts the next Worker, and workerd refuses it ("WebSocket protocol error 1009"). Fixed by an own test project for the real-PDF.js test and a stand-in for `unpdf` in the other agent tests (`apps/agent/vitest.pdf.config.ts`, alias in `apps/agent/vitest.config.ts`). CI run 43292095544 (decision 9 and the Mathematics documents) failed on one stale line of my own agent test (it still looked for the words of the earlier plan), fixed in 35113db.
+- Scoring was frozen before any live call of the first run (ground truth and scorer last changed 11 Nov 18:55 local, first call 20:26); the Mathematics ground truth and the family rule were written before the Mathematics run, and nothing in the scorer was changed after its results. Added after the run, explanation only: the report says when a failed run named the repeated topic differently (`repeatedUnderOtherNames`).
