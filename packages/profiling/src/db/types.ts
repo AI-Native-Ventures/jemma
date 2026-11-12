@@ -778,12 +778,15 @@ export type Database = {
       }
       learner_records: {
         Row: {
+          added_by: string | null
+          added_by_name: string | null
           child_id: string
           created_at: string
           family: string | null
           grade: number
           happened_on: string
           id: string
+          import_id: string | null
           logged_at: string
           marks: number | null
           out_of: number | null
@@ -791,6 +794,7 @@ export type Database = {
           quality: string
           school_id: string
           source: string
+          source_row: number | null
           subject: string | null
           teacher_name: string
           term: number
@@ -802,12 +806,15 @@ export type Database = {
         }
         ComputedFields: never
         Insert: {
+          added_by?: string | null
+          added_by_name?: string | null
           child_id: string
           created_at?: string
           family?: string | null
           grade: number
           happened_on: string
           id?: string
+          import_id?: string | null
           logged_at: string
           marks?: number | null
           out_of?: number | null
@@ -815,6 +822,7 @@ export type Database = {
           quality?: string
           school_id: string
           source: string
+          source_row?: number | null
           subject?: string | null
           teacher_name: string
           term: number
@@ -825,12 +833,15 @@ export type Database = {
           year: number
         }
         Update: {
+          added_by?: string | null
+          added_by_name?: string | null
           child_id?: string
           created_at?: string
           family?: string | null
           grade?: number
           happened_on?: string
           id?: string
+          import_id?: string | null
           logged_at?: string
           marks?: number | null
           out_of?: number | null
@@ -838,6 +849,7 @@ export type Database = {
           quality?: string
           school_id?: string
           source?: string
+          source_row?: number | null
           subject?: string | null
           teacher_name?: string
           term?: number
@@ -853,6 +865,13 @@ export type Database = {
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learner_records_import_id_fkey"
+            columns: ["import_id"]
+            isOneToOne: false
+            referencedRelation: "record_imports"
             referencedColumns: ["id"]
           },
           {
@@ -1434,6 +1453,73 @@ export type Database = {
           },
         ]
       }
+      record_imports: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          approved_by_name: string | null
+          class_id: string
+          created_at: string
+          created_by: string
+          file_name: string
+          file_path: string | null
+          id: string
+          mapping: Json | null
+          problems: Json | null
+          rows: Json | null
+          school_id: string
+          status: string
+        }
+        ComputedFields: never
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_by_name?: string | null
+          class_id: string
+          created_at?: string
+          created_by: string
+          file_name: string
+          file_path?: string | null
+          id?: string
+          mapping?: Json | null
+          problems?: Json | null
+          rows?: Json | null
+          school_id: string
+          status?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_by_name?: string | null
+          class_id?: string
+          created_at?: string
+          created_by?: string
+          file_name?: string
+          file_path?: string | null
+          id?: string
+          mapping?: Json | null
+          problems?: Json | null
+          rows?: Json | null
+          school_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "record_imports_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "record_imports_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reteach_plans: {
         Row: {
           class_id: string
@@ -1937,6 +2023,7 @@ export type Database = {
         | "confirm_scan"
         | "desktop_off"
         | "review_long_view"
+        | "check_records"
       need_status: "open" | "done"
       obs_kind: "participation" | "confidence" | "effort" | "behaviour"
       paper_kind: "test" | "homework" | "textbook" | "report"
@@ -2090,6 +2177,7 @@ export const Constants = {
         "confirm_scan",
         "desktop_off",
         "review_long_view",
+        "check_records",
       ],
       need_status: ["open", "done"],
       obs_kind: ["participation", "confidence", "effort", "behaviour"],

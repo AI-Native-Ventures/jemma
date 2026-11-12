@@ -39,6 +39,11 @@ async function schoolOf(db: JemmaDb, payload: Record<string, string>): Promise<s
     if (data.test_id) return schoolOf(db, { testId: data.test_id })
     if (data.child_id) return schoolOfChild(db, data.child_id)
   }
+  if (payload.importId) {
+    const { data, error } = await db.from('record_imports').select('school_id').eq('id', payload.importId).single()
+    if (error) throw new Error(`sendEvent: ${error.message}`)
+    return data.school_id
+  }
   if (payload.sessionId) {
     const { data, error } = await db.from('sessions').select('child_id').eq('id', payload.sessionId).single()
     if (error) throw new Error(`sendEvent: ${error.message}`)

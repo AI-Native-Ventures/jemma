@@ -3,10 +3,11 @@
 import { PendingButton } from '@/components/ui/Button'
 import { useState, useTransition } from 'react'
 import type { CopyOption } from '@/lib/data/p21'
-import { GRADES, OTHER_SUBJECT, SUBJECTS, sameNameProblem, validateClass } from '@/lib/subjects'
+import { GRADES, sameNameProblem, validateClass } from '@/lib/subjects'
 import { ComingButton, ShareButton } from '../_p21-client'
 import { createClass } from './actions'
 import { SelectBox } from './SelectBox'
+import { CLASS_SUBJECT, SubjectLine } from './SubjectLine'
 
 const card = 'flex flex-col rounded-20 border border-line bg-card p-4'
 const shareIcon = (
@@ -18,11 +19,9 @@ const shareIcon = (
 
 const NAME_ERRORS = ['Give the class a name', 'Keep the class name under 60 letters']
 
-export function NewClassForm({ code, initialGrade, initialSubject, initialOther, copyOptions }: { code: string; initialGrade: number; initialSubject: string; initialOther: string; copyOptions: CopyOption[] }) {
+export function NewClassForm({ code, initialGrade, copyOptions }: { code: string; initialGrade: number; copyOptions: CopyOption[] }) {
   const [name, setName] = useState('')
   const [grade, setGrade] = useState(initialGrade)
-  const [subject, setSubject] = useState(initialSubject)
-  const [other, setOther] = useState(initialOther)
   const [copyFrom, setCopyFrom] = useState('')
   const [learners, setLearners] = useState<{ first: string; last: string }[]>([])
   const [draft, setDraft] = useState('')
@@ -31,7 +30,7 @@ export function NewClassForm({ code, initialGrade, initialSubject, initialOther,
   const [error, setError] = useState('')
   const [pending, start] = useTransition()
   const nameError = NAME_ERRORS.includes(error) ? error : ''
-  const otherError = error && !nameError ? error : ''
+  const formError = error && !nameError ? error : ''
   const copying = copyOptions.find((c) => c.id === copyFrom)
 
   function add() {
@@ -48,11 +47,11 @@ export function NewClassForm({ code, initialGrade, initialSubject, initialOther,
   }
 
   function submit() {
-    const checked = validateClass({ name, grade, subject, otherSubject: other })
+    const checked = validateClass({ name, grade, subject: CLASS_SUBJECT })
     if (!checked.ok) return setError(checked.error)
     setError('')
     start(async () => {
-      const res = await createClass({ name, grade, subject, otherSubject: other, code, learners: learners.map((l) => ({ firstName: l.first, lastName: l.last })), copyFromClassId: copyFrom || null })
+      const res = await createClass({ name, grade, subject: CLASS_SUBJECT, code, learners: learners.map((l) => ({ firstName: l.first, lastName: l.last })), copyFromClassId: copyFrom || null })
       if (res?.error) setError(res.error)
     })
   }
@@ -92,38 +91,7 @@ export function NewClassForm({ code, initialGrade, initialSubject, initialOther,
             ))}
           </SelectBox>
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="subj" className="text-[15px] font-medium">
-            Subject
-          </label>
-          <SelectBox id="subj" value={subject} onChange={setSubject}>
-            {SUBJECTS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-            <option value={OTHER_SUBJECT}>{OTHER_SUBJECT}</option>
-          </SelectBox>
-          {subject === OTHER_SUBJECT ? (
-            <>
-              <label htmlFor="subj-other" className="mt-1.5 text-[15px] font-medium">
-                Subject name
-              </label>
-              <input
-                id="subj-other"
-                type="text"
-                value={other}
-                onChange={(e) => setOther(e.target.value)}
-                aria-describedby="subj-other-hint"
-                aria-invalid={otherError ? true : undefined}
-                className={`h-[52px] rounded-14 border bg-card px-3.5 text-[17px] text-ink ${otherError ? 'border-coral-text' : 'border-muted-2'}`}
-              />
-              <span id="subj-other-hint" className={`text-[13px] ${otherError ? 'text-coral-text' : 'text-body'}`}>
-                {otherError || '2 to 40 letters, numbers, spaces, & or -'}
-              </span>
-            </>
-          ) : null}
-        </div>
+        <SubjectLine />
       </section>
 
       <section aria-labelledby="lrn" className={`${card} gap-2`}>
@@ -241,6 +209,11 @@ export function NewClassForm({ code, initialGrade, initialSubject, initialOther,
         </div>
       </section>
 
+      {formError ? (
+        <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-coral-text">
+          {formError}
+        </p>
+      ) : null}
       <PendingButton pending={pending} type="button" onClick={submit} disabled={pending} className="flex h-[52px] items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white disabled:opacity-50">
         Create class
       </PendingButton>

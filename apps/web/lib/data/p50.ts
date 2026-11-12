@@ -75,6 +75,10 @@ const TOOL_LABELS: Record<string, string> = {
   log_external_calls: 'Saved what an agent did on other servers',
   get_learner_history: "Read a learner's history",
   save_long_view: 'Saved the Long view',
+  get_record_import: 'Read a file of past records',
+  save_record_mapping: 'Worked out the columns of a past records file',
+  import_learner_records: 'Added past records to the Long view',
+  add_learner_record: 'Saved one past result',
 }
 
 /** A plain label for a tool call. A Jemma tool without a label keeps its raw name; a call to another server says which. */
@@ -107,6 +111,7 @@ const APPROVAL_WORDS: Record<string, Partial<Record<string, string | ((note: str
   long_view_pattern: { approved: 'said a Long view pattern looks right', declined: 'set a Long view pattern aside' },
   long_view_talk: { confirmed: 'talked to a parent about a Long view pattern' },
   share_results: { shared: (note) => `shared the results of ${note?.trim() || 'a test'} with parents` },
+  record_import: { approved: (note) => `approved adding the past records in ${note?.trim() || 'a file'}` },
 }
 
 /** "Ms Banda approved the topic map". */

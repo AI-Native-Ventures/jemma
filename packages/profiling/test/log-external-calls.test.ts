@@ -65,7 +65,7 @@ afterAll(async () => {
 
 describe('log_external_calls', () => {
   test('is in the registry with the contract the runner calls', () => {
-    expect(registry).toHaveLength(22)
+    expect(registry).toHaveLength(25)
     expect(registry.map((t) => t.name)).toContain('log_external_calls')
     expect(logExternalCalls.input.parse({ eventId: eventA, engine: 'goose', model: null, usage: null, calls: [] })).toBeTruthy()
   })
@@ -166,7 +166,7 @@ describe('log_external_calls', () => {
     const { client, close } = await connectInMemory(ctxFor(a, { via: 'mcp' }))
     try {
       const listed = await client.listTools()
-      expect(listed.tools).toHaveLength(22)
+      expect(listed.tools).toHaveLength(25)
       expect(JSON.stringify(listed.tools.find((t) => t.name === 'log_external_calls')!.inputSchema)).toContain('calls')
       const res = await client.callTool({
         name: 'log_external_calls',

@@ -146,6 +146,10 @@ export type LvSheet = {
   marks: string | null
   text: string | null
   late: boolean
+  /** The year of the term, shown with it. */
+  year?: number | null
+  /** Where a record that was brought in came from: `From <file>, row N. Added by <teacher> on <date>.` or `Added by <teacher> on <date>.` Null for the demo seed. */
+  origin?: string | null
 }
 
 export type LvEvidence =
@@ -236,20 +240,35 @@ export type LongViewInput = {
   observations: { id: string; authorName: string | null; text: string; createdAt: string }[]
   patterns: PatternRow[]
   events: { status: string; created_at: string; finished_at: string | null; error: string | null }[]
+  /** The names of the files of past records that records came from, by import id. */
+  importFiles?: Record<string, string>
 }
 
 const isLate = (r: Pick<LongViewRecord, 'happenedOn' | 'loggedAt'>) => Date.parse(r.loggedAt) - Date.parse(r.happenedOn) > LATE_AFTER_DAYS * DAY_MS
 
-function sheetOfRecord(r: LongViewRecord): LvSheet {
+/**
+ * Where a record that was brought in came from, in one sentence: a file (with its row) or one result a teacher typed. The demo seed has neither.
+ * The name of the person is the one saved when they added it, and the date is when it was added, not when it happened.
+ */
+export function originOf(r: Pick<LongViewRecord, 'importId' | 'sourceRow' | 'addedByName' | 'loggedAt'>, files: Record<string, string> = {}): string | null {
+  if (!r.addedByName) return null
+  const added = `Added by ${r.addedByName} on ${dateLabel(r.loggedAt)}.`
+  if (!r.importId) return added
+  return `From ${files[r.importId] ?? 'a file'}${r.sourceRow ? `, row ${r.sourceRow}` : ''}. ${added}`
+}
+
+function sheetOfRecord(r: LongViewRecord, files: Record<string, string> = {}): LvSheet {
   return {
     title: r.title,
     teacher: r.teacherName,
     grade: r.grade,
     term: r.term,
+    year: r.year,
     date: plainDate(r.happenedOn),
     marks: r.marks !== null && r.outOf !== null ? `${r.marks} out of ${r.outOf}` : null,
     text: r.text,
     late: isLate(r),
+    origin: originOf(r, files),
   }
 }
 
@@ -357,7 +376,7 @@ export function buildLongView(input: LongViewInput): LongView {
       return { kind: 'result', id: e.id, label: answerLabel(e.label), href: hit ? `/t/${hit.classId ?? input.classId}/papers/${hit.paperId}?q=${hit.n}` : null }
     }
     const rec = recordById.get(e.id)
-    if (rec) return { kind: e.kind, id: e.id, label: e.label, sheet: sheetOfRecord(rec) }
+    if (rec) return { kind: e.kind, id: e.id, label: e.label, sheet: sheetOfRecord(rec, input.importFiles) }
     const obs = noteById.get(e.id)
     if (obs) {
       const when = local(obs.createdAt)
@@ -503,7 +522,14 @@ export async function loadLongView(db: JemmaDb, classId: string, childId: string
     present: r.present,
     total: r.total,
     subject: r.subject,
+    importId: r.import_id,
+    sourceRow: r.source_row,
+    addedByName: r.added_by_name,
   }))
+  // The names of the files that records came from (the teacher's own session reads their class's imports).
+  const importIds = [...new Set(records.flatMap((r) => (r.importId ? [r.importId] : [])))]
+  const imports = importIds.length ? await all(db.from('record_imports').select('id, file_name').in('id', importIds), 'imports') : []
+  const importFiles = Object.fromEntries(imports.map((i) => [i.id, i.file_name]))
 
   // This year's marked answers, built by the same `answersToResults` the tool uses: the strand comes from the topic, the date from the test
   // (or the paper), and the subject and grade from the class of the test. What the teacher's session cannot read (another teacher's tests and topics) is left out.
@@ -536,6 +562,7 @@ export async function loadLongView(db: JemmaDb, classId: string, childId: string
     observations: observations.map((o) => ({ id: o.id, authorName: authorName.get(o.author_id) ?? null, text: o.text, createdAt: o.created_at })),
     patterns,
     events,
+    importFiles,
   })
 }
 

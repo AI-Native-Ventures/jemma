@@ -268,9 +268,14 @@ export function LaptopLearners({
               <h1 className="m-0 text-[36px] leading-[1.15] font-semibold tracking-[-0.02em] text-pretty">{v.headline}</h1>
             </div>
           </div>
-          <Link href={`${base}/register`} className="flex h-[46px] flex-none items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-[18px] text-[15px] font-semibold text-ink no-underline">
-            {v.registerTaken ? "Change today's register" : "Take today's register"}
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href={`${base}/learners/records`} className="flex h-[46px] flex-none items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-[18px] text-[15px] font-semibold text-ink no-underline">
+              Add past records
+            </Link>
+            <Link href={`${base}/register`} className="flex h-[46px] flex-none items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-[18px] text-[15px] font-semibold text-ink no-underline">
+              {v.registerTaken ? "Change today's register" : "Take today's register"}
+            </Link>
+          </div>
         </div>
 
         {madeUp}
