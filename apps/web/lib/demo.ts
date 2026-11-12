@@ -1,8 +1,10 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { JemmaDb } from '@jemma/profiling/db'
-import { createSandbox, resetSandbox } from '../../../supabase/seed/demo'
+import { createSandbox, resetSandbox, type Logins, type SandboxKind } from '../../../supabase/seed/demo'
+import { CHILD_PIN } from '../../../supabase/seed/fixtures/cast'
 import { loadSheet } from './sample-sheets'
+import { childEmail, childPassword, createChildLogin } from './child-login'
 import { createSupabaseAdmin } from './supabase/admin'
 import { createSupabaseServer } from './supabase/server'
 
@@ -16,10 +18,20 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 export const isDemoRole = (v: unknown): v is DemoRole => ROLES.includes(v as DemoRole)
 
-type StoredLogins = Record<DemoRole, { email: string; password: string }>
+/** A person on the demo page that is not one of the first three: a teacher, a parent (by key) or a learner (by first name). Written `teacher:dlamini`. */
+export type DemoPerson = { kind: DemoRole; key: string }
+
+const PERSON = /^(teacher|parent|learner):([A-Za-z][A-Za-z .'-]{0,30})$/
+
+export function parsePerson(value: unknown): DemoPerson | null {
+  const m = typeof value === 'string' ? PERSON.exec(value) : null
+  return m ? { kind: m[1] as DemoRole, key: m[2]! } : null
+}
 
 export type DemoState = {
   sandboxId: string
+  /** `hillview`, or `empty`: a school with no class that the visitor fills. */
+  kind: SandboxKind
   schoolId: string
   schoolName: string
   classId: string
@@ -112,11 +124,17 @@ export async function getDemoState(): Promise<DemoState | null> {
   const sandboxId = await demoCookie()
   if (!sandboxId) return null
   const db = createSupabaseAdmin()
-  const { data: box } = await db.from('demo_sandboxes').select('school_id, created_at').eq('id', sandboxId).maybeSingle()
+  const { data: box } = await db.from('demo_sandboxes').select('school_id, created_at, kind').eq('id', sandboxId).maybeSingle()
   if (!box) return null
+  const kind: SandboxKind = box.kind === 'empty' ? 'empty' : 'hillview'
   const { data: classes } = await db.from('classes').select('id, name, grade, join_code, created_at, schools(name)').eq('school_id', box.school_id)
   const cls = oldestClass(classes ?? [])
-  if (!cls) return null
+  if (!cls) {
+    // An empty school before its first class: there is a school and a teacher, and nothing else yet.
+    if (kind !== 'empty') return null
+    const { data: school } = await db.from('schools').select('name').eq('id', box.school_id).maybeSingle()
+    return { sandboxId, kind, schoolId: box.school_id, schoolName: school?.name ?? '', classId: '', className: 'Your school', grade: 0, joinCode: '', startedAt: box.created_at, step: 1 }
+  }
   const { data: amina } = await db
     .from('children')
     .select('id')
@@ -127,6 +145,7 @@ export async function getDemoState(): Promise<DemoState | null> {
     .maybeSingle()
   return {
     sandboxId,
+    kind,
     schoolId: box.school_id,
     schoolName: cls.schools?.name ?? '',
     classId: cls.id,
@@ -138,40 +157,103 @@ export async function getDemoState(): Promise<DemoState | null> {
   }
 }
 
-/** Where each role lands after signing in. The teacher starts on the curriculum step. */
+/** Where each role lands after signing in. The teacher starts on the curriculum step. A teacher with no class yet makes the first one. */
 export function demoHome(role: DemoRole, classId: string): string {
-  return role === 'teacher' ? `/t/${classId}/curriculum` : role === 'parent' ? '/p' : '/k'
+  if (role === 'teacher') return classId ? `/t/${classId}/curriculum` : '/demo/first-class'
+  return role === 'parent' ? '/p' : '/k'
+}
+
+type Box = { school_id: string; logins: Logins; kind: string | null }
+
+async function readBox(db: JemmaDb, sandboxId: string): Promise<Box | null> {
+  const { data: box, error } = await db.from('demo_sandboxes').select('school_id, logins, kind').eq('id', sandboxId).maybeSingle()
+  if (error) throw new Error(`demo: ${error.message}`)
+  return box ? { school_id: box.school_id, logins: box.logins as unknown as Logins, kind: box.kind } : null
+}
+
+async function signInWith(login: { email: string; password: string }): Promise<void> {
+  const supabase = await createSupabaseServer()
+  const { error } = await supabase.auth.signInWithPassword({ email: login.email, password: login.password })
+  if (error) throw new Error(`demo: sign in failed: ${error.message}`)
 }
 
 /** Signs the browser in as `role` in sandbox `sandboxId` and returns where they should land. */
 export async function signInAs(sandboxId: string, role: DemoRole): Promise<string> {
   if (!isDemoRole(role)) throw new Error('demo: unknown role')
   const db = createSupabaseAdmin()
-  const { data: box, error } = await db.from('demo_sandboxes').select('school_id, logins').eq('id', sandboxId).maybeSingle()
-  if (error) throw new Error(`demo: ${error.message}`)
+  const box = await readBox(db, sandboxId)
   if (!box) return startOver()
-  const login = (box.logins as StoredLogins)[role]
-  const supabase = await createSupabaseServer()
-  const { error: authError } = await supabase.auth.signInWithPassword({ email: login.email, password: login.password })
-  if (authError) throw new Error(`demo: sign in failed: ${authError.message}`)
+  // An empty school has one login, the teacher's: a parent or a learner cannot be picked there.
+  const login = box.logins[role] ?? (box.kind === 'empty' ? box.logins.teacher : undefined)
+  if (!login) throw new Error(`demo: no ${role} login in this copy`)
+  await signInWith(login)
   const { data: classes } = await db.from('classes').select('id, created_at').eq('school_id', box.school_id)
   const cls = oldestClass(classes ?? [])
   await setDemoCookie(sandboxId)
-  return demoHome(role, cls?.id ?? '')
+  return demoHome(box.kind === 'empty' ? 'teacher' : role, cls?.id ?? '')
 }
 
-/** "Try the demo": makes a fresh sandbox unless the judge already has one, then signs in as `role`. */
-export async function tryDemo(role: DemoRole = 'teacher'): Promise<never> {
-  let sandboxId = (await getDemoState())?.sandboxId ?? null
-  if (!sandboxId) sandboxId = (await createSandbox(createSupabaseAdmin(), { stage: 'start', loadSheet })).sandboxId
-  redirect(await signInAs(sandboxId, role))
+/**
+ * Makes the learner's login the first time someone picks them (Amina has hers from the start). Keeps the sign-in in the sandbox row,
+ * so a second tap signs in again. Teardown finds the user through the school, so nothing is left behind.
+ */
+async function learnerLogin(db: JemmaDb, sandboxId: string, box: Box, firstName: string): Promise<{ email: string; password: string } | null> {
+  if (firstName === 'Amina' && box.logins.learner) return box.logins.learner
+  const known = box.logins.learners?.[firstName]
+  if (known) return known
+  const { data: child } = await db.from('children').select('id, user_id').eq('school_id', box.school_id).eq('first_name', firstName).order('created_at', { ascending: true }).limit(1).maybeSingle()
+  if (!child || child.user_id) return null
+  const { code } = await createChildLogin(db, child.id, CHILD_PIN)
+  const { data: after } = await db.from('children').select('user_id').eq('id', child.id).single()
+  const made = { userId: after!.user_id!, email: childEmail(code), password: await childPassword(code, CHILD_PIN), code, pin: CHILD_PIN }
+  const { data: fresh } = await db.from('demo_sandboxes').select('logins').eq('id', sandboxId).maybeSingle()
+  const logins = (fresh?.logins ?? box.logins) as unknown as Logins
+  await db.from('demo_sandboxes').update({ logins: { ...logins, learners: { ...(logins.learners ?? {}), [firstName]: made } } as never }).eq('id', sandboxId)
+  return made
+}
+
+/** Signs in as any made-up person of the school (a teacher, a parent or a learner) and returns where they land. */
+export async function signInAsPerson(sandboxId: string, person: DemoPerson): Promise<string> {
+  const db = createSupabaseAdmin()
+  const box = await readBox(db, sandboxId)
+  if (!box) return startOver()
+  const { data: classes } = await db.from('classes').select('id, teacher_id, created_at').eq('school_id', box.school_id)
+  let login: { email: string; password: string } | null | undefined
+  let userId: string | null = null
+  if (person.kind === 'teacher') {
+    login = person.key === 'banda' ? box.logins.teacher : box.logins.teachers?.[person.key]
+    userId = (login as { userId?: string } | undefined)?.userId ?? null
+  } else if (person.kind === 'parent') {
+    login = person.key === 'thandi' ? box.logins.parent : box.logins.parents?.[person.key]
+  } else {
+    login = await learnerLogin(db, sandboxId, box, person.key)
+  }
+  if (!login) throw new Error(`demo: ${person.key} is not in this copy`)
+  await signInWith(login)
+  await setDemoCookie(sandboxId)
+  if (person.kind === 'teacher') {
+    // Ms Banda starts on the curriculum step as ever. Another teacher lands on the learners of their oldest class.
+    if (person.key === 'banda') return demoHome('teacher', oldestClass(classes ?? [])?.id ?? '')
+    const mine = oldestClass((classes ?? []).filter((c) => c.teacher_id === userId))
+    return mine ? `/t/${mine.id}/learners` : '/t'
+  }
+  return person.kind === 'parent' ? '/p' : '/k'
+}
+
+/** "Try the demo": makes a fresh sandbox unless the judge already has one of this kind, then signs in as `role` (or as `opts.person`). */
+export async function tryDemo(role: DemoRole = 'teacher', opts: { kind?: SandboxKind; person?: DemoPerson | null } = {}): Promise<never> {
+  const kind = opts.kind ?? 'hillview'
+  const existing = await getDemoState()
+  let sandboxId = existing && existing.kind === kind ? existing.sandboxId : null
+  if (!sandboxId) sandboxId = (await createSandbox(createSupabaseAdmin(), { stage: 'start', kind, loadSheet })).sandboxId
+  redirect(opts.person && kind === 'hillview' ? await signInAsPerson(sandboxId, opts.person) : await signInAs(sandboxId, role))
 }
 
 /** Signs in as another demo person in the same sandbox. */
-export async function switchRole(role: DemoRole): Promise<never> {
+export async function switchRole(role: DemoRole, person?: DemoPerson | null): Promise<never> {
   const sandboxId = await demoCookie()
   if (!sandboxId) redirect('/demo')
-  redirect(await signInAs(sandboxId, role))
+  redirect(person ? await signInAsPerson(sandboxId, person) : await signInAs(sandboxId, role))
 }
 
 /** Throws the judge's copy away and builds it again, then leaves them on /demo signed out (their old users are gone). */

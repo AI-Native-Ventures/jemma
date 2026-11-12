@@ -26,6 +26,13 @@ async function removeFolder(admin: JemmaDb, bucket: string, prefix: string): Pro
 /** Cancels running events, deletes the school (cascade), then its auth users and stored files. */
 export async function teardown(admin: JemmaDb, schoolId: string | null, userIds: string[]): Promise<void> {
   if (schoolId) {
+    // A learner's login is made when someone picks that learner, long after the sandbox was made. The school knows them: read them
+    // before the school goes, so no auth user is left behind.
+    const [learners, staff] = await Promise.all([
+      admin.from('children').select('user_id').eq('school_id', schoolId).not('user_id', 'is', null),
+      admin.from('profiles').select('user_id').eq('school_id', schoolId),
+    ])
+    userIds = [...new Set([...userIds, ...(learners.data ?? []).map((r) => r.user_id!), ...(staff.data ?? []).map((r) => r.user_id)])]
     await admin.from('events').update({ status: 'cancelled', finished_at: new Date().toISOString() }).eq('school_id', schoolId).in('status', ['queued', 'running'])
     await admin.from('schools').delete().eq('id', schoolId)
     await Promise.all(STORAGE_BUCKETS.map((b) => removeFolder(admin, b, schoolId).catch(() => undefined)))
@@ -33,20 +40,25 @@ export async function teardown(admin: JemmaDb, schoolId: string | null, userIds:
   await Promise.all(userIds.map((id) => admin.auth.admin.deleteUser(id)))
 }
 
-type LoginUsers = { teacher?: { userId?: string }; parent?: { userId?: string }; learner?: { userId?: string } }
-
-/** The users named in a sandbox's `logins` (teacher, parent, learner). */
+/** Every user id a sandbox's `logins` names: the three first logins, the other teachers and parents, and the learners made so far. */
 function usersOf(logins: unknown): string[] {
-  const l = (logins ?? {}) as LoginUsers
-  return [l.teacher?.userId, l.parent?.userId, l.learner?.userId].filter((v): v is string => !!v)
+  const found: string[] = []
+  const walk = (value: unknown) => {
+    if (!value || typeof value !== 'object') return
+    const v = value as Record<string, unknown>
+    if (typeof v.userId === 'string') found.push(v.userId)
+    else for (const inner of Object.values(v)) walk(inner)
+  }
+  walk(logins)
+  return [...new Set(found)]
 }
 
-/** A sandbox row: its school, the users made for it and the stage it was made with. */
+/** A sandbox row: its school, the users made for it, the stage it was made with and its kind (Hillview, or an empty school). */
 export async function readSandbox(admin: JemmaDb, sandboxId: string) {
-  const { data, error } = await admin.from('demo_sandboxes').select('school_id, logins, stage').eq('id', sandboxId).maybeSingle()
+  const { data, error } = await admin.from('demo_sandboxes').select('school_id, logins, stage, kind').eq('id', sandboxId).maybeSingle()
   if (error) throw new Error(`demo seed: read sandbox: ${error.message}`)
   if (!data) throw new Error(`demo seed: no sandbox ${sandboxId}`)
-  return { schoolId: data.school_id, userIds: usersOf(data.logins), stage: data.stage as string }
+  return { schoolId: data.school_id, userIds: usersOf(data.logins), stage: data.stage as string, kind: (data.kind === 'empty' ? 'empty' : 'hillview') as 'hillview' | 'empty' }
 }
 
 /** Removes a sandbox for good (tests and housekeeping). The school it removes is the one named in the sandbox's own row. */
