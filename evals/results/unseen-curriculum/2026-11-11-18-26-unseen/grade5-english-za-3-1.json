@@ -1,0 +1,293 @@
+{
+  "version": 1,
+  "runId": "2026-11-11-18-26-unseen",
+  "docId": "grade5-english-za",
+  "n": 3,
+  "attempt": 1,
+  "startedAt": "2026-11-11T18:46:10.819Z",
+  "seconds": 160,
+  "calls": 1,
+  "way": "vision",
+  "visionProblem": null,
+  "model": "nvidia/nemotron-3.5-super-vl:free",
+  "verdict": "fail",
+  "error": null,
+  "noAnswer": null,
+  "checks": [
+    {
+      "name": "the draft is for the right grade",
+      "pass": true,
+      "detail": "draft grade 5, document grade 5"
+    },
+    {
+      "name": "at least 80 percent of the topics were found",
+      "pass": true,
+      "detail": "found 15 of 15"
+    },
+    {
+      "name": "at most 15 percent of the draft is made up",
+      "pass": true,
+      "detail": "0 of 16 drafted topics are not in the document"
+    },
+    {
+      "name": "at least 80 percent of the found topics are in the right term",
+      "pass": true,
+      "detail": "15 of 15 found topics in the right term"
+    },
+    {
+      "name": "the topic listed in two terms is flagged with a question",
+      "pass": false,
+      "detail": "\"Writing a paragraph\" is in the draft with no question for the teacher"
+    },
+    {
+      "name": "the topic of another grade is flagged with a question or left out with a reason",
+      "pass": true,
+      "detail": "\"Writing a formal essay\" is under leftOut"
+    },
+    {
+      "name": "every family key is one of the subject's keys",
+      "pass": true,
+      "detail": "all 16 are among reading, writing, language, speaking_listening"
+    },
+    {
+      "name": "the map has the number of terms the document has",
+      "pass": true,
+      "detail": "the document has 4 terms, the draft has terms 1, 2, 3, 4"
+    }
+  ],
+  "figures": {
+    "found": 15,
+    "of": 15,
+    "invented": 0,
+    "drafted": 16,
+    "rightTerm": 15,
+    "termsInDraft": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "draft": {
+    "grade": 5,
+    "terms": [
+      {
+        "term": 1,
+        "topics": [
+          {
+            "name": "Story elements: characters, setting and plot",
+            "shortName": "Story elements",
+            "family": "reading",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking the setting is only the time, not the place",
+              "Believing characters must be people, not animals",
+              "Mixing up what happens first, next and last"
+            ]
+          },
+          {
+            "name": "Nouns, verbs and adjectives",
+            "shortName": "Nouns verbs adjectives",
+            "family": "language",
+            "prerequisites": [],
+            "misconceptions": [
+              "Calling every describing word an adjective",
+              "Thinking verbs are only actions like running, not states like being",
+              "Mixing up nouns and adjectives"
+            ]
+          },
+          {
+            "name": "Writing a recount",
+            "shortName": "Writing a recount",
+            "family": "writing",
+            "prerequisites": [],
+            "misconceptions": [
+              "Writing in the present tense instead of the past",
+              "Listing events instead of writing them in order",
+              "Forgetting to say who, where and when"
+            ]
+          },
+          {
+            "name": "Show and tell talks",
+            "shortName": "Show and tell",
+            "family": "speaking_listening",
+            "prerequisites": [],
+            "misconceptions": [
+              "Reading from a paper instead of speaking to the class",
+              "Speaking too fast or too quietly",
+              "Not listening to other speakers or asking questions"
+            ]
+          }
+        ]
+      },
+      {
+        "term": 2,
+        "topics": [
+          {
+            "name": "Poems and rhyme",
+            "shortName": "Poems and rhyme",
+            "family": "reading",
+            "prerequisites": [],
+            "misconceptions": [
+              "Believing every poem must rhyme",
+              "Clapping syllables instead of the rhythm",
+              "Reading without expression or pause"
+            ]
+          },
+          {
+            "name": "Capital letters and punctuation",
+            "shortName": "Capital letters punctuation",
+            "family": "language",
+            "prerequisites": [],
+            "misconceptions": [
+              "Putting capital letters in the middle of words",
+              "Forgetting full stops at the end of sentences",
+              "Using commas instead of full stops"
+            ]
+          },
+          {
+            "name": "Writing a paragraph",
+            "shortName": "Writing a paragraph",
+            "family": "writing",
+            "prerequisites": [
+              "Capital letters and punctuation"
+            ],
+            "misconceptions": [
+              "Writing one long sentence instead of several sentences",
+              "Missing a topic sentence",
+              "Starting a new line for every sentence instead of a new paragraph"
+            ]
+          },
+          {
+            "name": "Listening to instructions",
+            "shortName": "Listening to instructions",
+            "family": "speaking_listening",
+            "prerequisites": [],
+            "misconceptions": [
+              "Doing the steps in the wrong order",
+              "Missing a step and not asking for help",
+              "Giving instructions that are not clear or in order"
+            ]
+          }
+        ]
+      },
+      {
+        "term": 3,
+        "topics": [
+          {
+            "name": "Writing two linked paragraphs",
+            "shortName": "Two linked paragraphs",
+            "family": "writing",
+            "prerequisites": [
+              "Writing a paragraph"
+            ],
+            "misconceptions": [
+              "Writing two separate paragraphs that do not connect",
+              "Forgetting joining words such as first, then and finally",
+              "Repeating the same idea in both paragraphs"
+            ]
+          },
+          {
+            "name": "Reading for information from non-fiction texts",
+            "shortName": "Reading non-fiction texts",
+            "family": "reading",
+            "prerequisites": [],
+            "misconceptions": [
+              "Answering from memory instead of using the text",
+              "Ignoring headings and captions",
+              "Copying whole sentences instead of answering the question"
+            ]
+          },
+          {
+            "name": "Tenses: past, present and future",
+            "shortName": "Past present future",
+            "family": "language",
+            "prerequisites": [
+              "Nouns, verbs and adjectives"
+            ],
+            "misconceptions": [
+              "Adding -ed to irregular verbs",
+              "Using the present tense for past events",
+              "Confusing future tense with present tense"
+            ]
+          },
+          {
+            "name": "Writing a letter to a friend",
+            "shortName": "Friendly letter",
+            "family": "writing",
+            "prerequisites": [],
+            "misconceptions": [
+              "Forgetting the address and date",
+              "Not starting with Dear",
+              "Writing like a text message instead of a letter"
+            ]
+          }
+        ]
+      },
+      {
+        "term": 4,
+        "topics": [
+          {
+            "name": "Reading a longer story",
+            "shortName": "Class novel",
+            "family": "reading",
+            "prerequisites": [
+              "Story elements: characters, setting and plot"
+            ],
+            "misconceptions": [
+              "Reading ahead without discussing chapters",
+              "Not writing favourite parts or new words in the journal",
+              "Mixing up characters and events in the longer story"
+            ]
+          },
+          {
+            "name": "Prepositions and conjunctions",
+            "shortName": "Prepositions and conjunctions",
+            "family": "language",
+            "prerequisites": [
+              "Nouns, verbs and adjectives"
+            ],
+            "misconceptions": [
+              "Mixing up prepositions such as in, on and under",
+              "Using and to join too many ideas",
+              "Using because to join ideas that do not fit"
+            ]
+          },
+          {
+            "name": "Writing a story",
+            "shortName": "Writing a story",
+            "family": "writing",
+            "prerequisites": [
+              "Story elements: characters, setting and plot",
+              "Writing a paragraph"
+            ],
+            "misconceptions": [
+              "Forgetting a problem or an ending",
+              "Writing only the beginning",
+              "Not using paragraphs or dialogue"
+            ]
+          },
+          {
+            "name": "Class debate",
+            "shortName": "Class debate",
+            "family": "speaking_listening",
+            "prerequisites": [
+              "Show and tell talks"
+            ],
+            "misconceptions": [
+              "Speaking only for one's own team and not listening to the other side",
+              "Repeating the same point",
+              "Not giving every learner a chance to speak"
+            ]
+          }
+        ]
+      }
+    ],
+    "leftOut": [
+      {
+        "name": "Writing a formal essay",
+        "reason": "It is a Grade 7 skill and is not taught in Grade 5."
+      }
+    ]
+  }
+}

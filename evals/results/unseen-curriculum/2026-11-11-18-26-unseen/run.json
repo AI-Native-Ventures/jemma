@@ -1,0 +1,17 @@
+{
+  "runId": "2026-11-11-18-26-unseen",
+  "finishedAt": "2026-11-11T18:58:00.752Z",
+  "cap": 12,
+  "spentAtStart": 0,
+  "spentAtEnd": 8,
+  "repeatsAllowed": 3,
+  "repeatsUsed": 0,
+  "machineNetworkTries": 3,
+  "stopped": "this Mac's network failed three times in a row (or eight times in all): not a provider answer, so nothing was judged",
+  "models": {
+    "LLM_MODEL": "nvidia/nemotron-3.5-super-vl:free",
+    "LLM_MODEL_FALLBACKS": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "VISION_MODEL": "nvidia/nemotron-3.5-super-vl:free",
+    "VISION_MODEL_FALLBACKS": "google/gemma-4-31b-it:free"
+  }
+}
