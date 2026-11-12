@@ -8,7 +8,7 @@ import { LessonSchema, ReteachSchema, GuidanceSchema, TopicMapDraftSchema, Answe
 import { classTest1Results, classTest1Roster, classTest1Scores, classTest1ScoresBeforeFix, classTest1Wrong, siphoQ7BeforeFix } from './fixtures/class-test-1'
 import { AMINA_ACTIVITIES, AWAY_DAY_INDEX, CAST, CHILD_PIN, EMPTY_SCHOOL, EMPTY_TEACHER, NOTES, SCHOOL, lastSchoolDays } from './fixtures/cast'
 import { FIXED_GAPS, FORMAT_FAMILY, FORMAT_TRIALS, TERM3_ROWS } from './fixtures/history'
-import { HILLVIEW_CLASSES, HILLVIEW_LINKS, HILLVIEW_PARENTS, HILLVIEW_TEACHERS, madeUpClasses, madeUpLearner, sixBOtherSubjects } from './fixtures/hillview'
+import { HILLVIEW_CLASSES, HILLVIEW_LINKS, awayOnDay, HILLVIEW_PARENTS, HILLVIEW_TEACHERS, madeUpClasses, madeUpLearner, sixBOtherSubjects } from './fixtures/hillview'
 import { longHistory } from './fixtures/long-history'
 import { PATTERN_LEARNERS, wordPatterns } from './fixtures/long-view-wording'
 import {
@@ -255,7 +255,6 @@ async function buildHillview(admin: JemmaDb, sandboxId: string, stage: SandboxSt
       ...madeUp.flatMap((m) => m.batch.learners.flatMap((l) => l.records.map((r) => ({ ...r, school_id: schoolId, child_id: idOfName[l.firstName]! })))),
     ]
     // A made-up learner is away on a few of the ten days, in a different place for each.
-    const awayDay = (name: string, i: number) => ((name.charCodeAt(0) + name.length + i) % 8 === 0)
     const startWork = [
       ok(admin.from('child_logins').insert({ code: childLoginCode, child_id: aminaId, user_id: learnerId, pin_set_by: parentId }), 'child_logins'),
       ok(admin.from('enrolments').insert(enrolments), 'enrolments'),
@@ -265,7 +264,7 @@ async function buildHillview(admin: JemmaDb, sandboxId: string, stage: SandboxSt
             child_id: k.id, day,
             status: (CAST.children as readonly string[]).includes(k.first_name)
               ? (AWAY_DAY_INDEX[k.first_name] ?? []).includes(i) ? ('away' as const) : ('here' as const)
-              : awayDay(k.first_name, i) ? ('away' as const) : ('here' as const),
+              : awayOnDay(k.first_name, i) ? ('away' as const) : ('here' as const),
           })),
         ),
         500,

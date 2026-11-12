@@ -137,3 +137,6 @@ export function hillviewPeople(year: number) {
     })),
   }
 }
+
+/** A made-up learner is away on a few of the last ten school days, in a different place for each. `i` is the day, 0 the oldest of ten. */
+export const awayOnDay = (firstName: string, i: number): boolean => (firstName.charCodeAt(0) + firstName.length + i) % 8 === 0

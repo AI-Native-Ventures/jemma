@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { JemmaDb } from '@jemma/profiling/db'
 import { createSandbox, resetSandbox, type Logins, type SandboxKind } from '../../../supabase/seed/demo'
+import { isSandboxClass } from '../../../supabase/seed/demo-learners'
 import { CHILD_PIN } from '../../../supabase/seed/fixtures/cast'
 import { loadSheet } from './sample-sheets'
 import { childEmail, childPassword, createChildLogin } from './child-login'
@@ -155,6 +156,11 @@ export async function getDemoState(): Promise<DemoState | null> {
     startedAt: box.created_at,
     step: await stepOf(db, cls.id, amina?.id ?? null),
   }
+}
+
+/** True when the class is in a demo sandbox school (never true for a real school). */
+export async function isDemoClass(classId: string): Promise<boolean> {
+  return isSandboxClass(createSupabaseAdmin(), classId)
 }
 
 /** Where each role lands after signing in. The teacher starts on the curriculum step. A teacher with no class yet makes the first one. */

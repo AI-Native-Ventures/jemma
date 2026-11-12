@@ -10,13 +10,16 @@ export const dynamic = 'force-dynamic'
 
 const WHAT = [
   'Clears what you snapped, marked and wrote',
-  'Ms Banda, Thandi and Amina start again',
+  'Ms Banda, Thandi, Amina and everyone else start again',
   'Only your copy changes. Takes about 10 seconds',
 ]
+
+const WHAT_EMPTY = ['Clears the classes and learners you made', 'You start again with no class', 'Only your copy changes. Takes a few seconds']
 
 export default async function DemoResetPage() {
   const demo = await getDemoState()
   if (!demo) redirect('/demo')
+  const empty = demo.kind === 'empty'
   return (
     <DimmedClass className={demo.className} grade={demo.grade} schoolName={demo.schoolName}>
       <section
@@ -31,9 +34,11 @@ export default async function DemoResetPage() {
         </span>
         <h2 id="reset" className="m-0 text-[25px] leading-[1.2] font-semibold tracking-[-0.01em]">Reset your demo?</h2>
         <div id="reset-what" className="flex flex-col gap-2.5">
-          <p className="m-0 text-[16px] leading-[1.5] text-ink">Your copy of Hillview Primary goes back to step 1 with fresh sample papers.</p>
+          <p className="m-0 text-[16px] leading-[1.5] text-ink">
+            {empty ? 'Your empty school goes back to having no class.' : 'Your copy of Hillview Primary goes back to step 1 with fresh sample papers.'}
+          </p>
           <ul className="m-0 flex list-none flex-col gap-2 p-0 text-[15px] leading-[1.4] text-body">
-            {WHAT.map((line) => (
+            {(empty ? WHAT_EMPTY : WHAT).map((line) => (
               <li key={line} className="flex gap-2.5">
                 <svg width="10" height="10" viewBox="0 0 16 16" aria-hidden="true" className="mt-[5px] flex-none">
                   <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />

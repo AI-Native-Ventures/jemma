@@ -1,9 +1,12 @@
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 import { getChildProfileView, getLearnerView, getLearnersView } from '@/lib/data/p19'
 import { getLearnerDetailExtras } from '@/lib/data/p33'
+import { isDemoClass } from '@/lib/demo'
 import { Only } from '../Only'
 import { Avatar, Chevron, Diamond, Page, card, font } from './_parts'
 import { LaptopLearners } from './LaptopLearners'
+import { MadeUpLearners } from './MadeUpLearners'
 import { ShareCode } from './ShareCode'
 
 export default async function LearnersPage({
@@ -16,6 +19,8 @@ export default async function LearnersPage({
   const { classId } = await params
   const { child } = await searchParams
   const v = await getLearnersView(classId)
+  // "Add made-up learners" is offered in a demo sandbox school only. The server action checks the sandbox again.
+  const madeUp = (await isDemoClass(classId)) ? <MadeUpLearners classId={classId} /> : null
   const selected = v.learners.find((l) => l.id === child)?.id ?? v.learners[0]?.id ?? ''
   const [view, profile, extras] = selected
     ? await Promise.all([getLearnerView(classId, selected), getChildProfileView(classId, selected), getLearnerDetailExtras(selected)])
@@ -23,16 +28,16 @@ export default async function LearnersPage({
   return (
     <>
       <Only on="phone">
-        <Phone classId={classId} v={v} />
+        <Phone classId={classId} v={v} madeUp={madeUp} />
       </Only>
       <Only on="laptop">
-        <LaptopLearners v={v} classId={classId} selected={selected} detail={view && profile && extras ? { view, profile, extras } : null} />
+        <LaptopLearners v={v} classId={classId} selected={selected} madeUp={madeUp} detail={view && profile && extras ? { view, profile, extras } : null} />
       </Only>
     </>
   )
 }
 
-function Phone({ classId, v }: { classId: string; v: Awaited<ReturnType<typeof getLearnersView>> }) {
+function Phone({ classId, v, madeUp }: { classId: string; v: Awaited<ReturnType<typeof getLearnersView>>; madeUp: ReactNode }) {
   return (
     <Page>
       <div style={{ fontFamily: font, display: 'flex', flexDirection: 'column', gap: 18, padding: '14px 20px 20px' }}>
@@ -86,6 +91,8 @@ function Phone({ classId, v }: { classId: string; v: Awaited<ReturnType<typeof g
             ))}
           </ul>
         </section>
+
+        {madeUp}
 
         <ShareCode code={v.joinCode} />
       </div>
