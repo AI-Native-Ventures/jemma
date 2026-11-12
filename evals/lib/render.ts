@@ -359,6 +359,12 @@ function outsideParagraph(o: UnseenOutside): string {
   return `These documents are about other subjects (Natural Sciences, English, Science and Technology). The first version of Jemma covers Mathematics only, so they are not part of what Jemma claims today, and their results from run \`${o.runId}\` are kept as they were. Passes among the judged runs: ${pieces.join('; ')}.${errorSentence}`
 }
 
+/** For each run of a document: who asked the teacher about the topic that the document lists in two terms. */
+const whoAskedCell = (runs: UnseenResult[]): string =>
+  runs
+    .map((r) => `run ${r.n}: ${r.twoTermsAskedBy === 'code' ? 'code' : r.twoTermsAskedBy === 'model' ? 'the model' : r.twoTermsAskedBy === 'none' ? 'nobody' : r.draft ? 'not recorded' : 'no draft'}`)
+    .join(', ')
+
 /** "A curriculum Jemma had never seen": one row per Mathematics document, from the saved results of the live run, and a short paragraph about the earlier documents outside Mathematics. */
 function unseenSection(u: UnseenRun): string[] {
   const finals = finalTries(u.tries)
@@ -370,19 +376,20 @@ function unseenSection(u: UnseenRun): string[] {
       `Three invented Mathematics documents of different shapes (\`fixtures/curriculum/unseen/\`: a Grade 9 plan with a table for each term in South Africa, a Grade 5 plan written as paragraphs in South Africa, and a Grade 4 scheme of work for three terms in Kenya that is a scan with no text) were given to the curriculum reader (\`draft_map\`), three runs each, on the free models${u.models ? ` (vision: \`${u.models.vision}\`; text: \`${u.models.text}\`)` : ''}. Plain code scored every draft against the ground truth saved next to each document: at least 80 percent of the topics found, at most 15 percent of the draft made up, the right term for at least 80 percent of the found topics, the topic listed in two terms and the topic of another grade each flagged with a question, the right grade, family keys from the Mathematics list or one or two short lowercase words, and the right number of terms. A run where the provider gave no answer is shown as "no answer", not as a fail. The files are in \`evals/results/unseen-curriculum/${u.runId}/\`.`,
       '',
     )
-    out.push('| Document | Runs | Passes | No answer | Median seconds | Read by | What went wrong |', '| --- | ---: | ---: | ---: | ---: | --- | --- |')
+    out.push('| Document | Runs | Passes | No answer | Median seconds | Read by | Who asked about the topic listed in two terms | What went wrong |', '| --- | ---: | ---: | ---: | ---: | --- | --- | --- |')
     for (const id of [...DOCUMENT_IDS, ...new Set(finals.map((r) => r.docId))].filter((v, i, all) => all.indexOf(v) === i)) {
       const runs = finals.filter((r) => r.docId === id)
       if (runs.length === 0) continue
       const answered = runs.filter((r) => r.verdict !== 'no_answer')
       out.push(
-        `| ${cell(u.labels[id] ?? id)} | ${runs.length} | ${runs.filter((r) => r.verdict === 'pass').length} | ${runs.filter((r) => r.verdict === 'no_answer').length} | ${answered.length ? num(medianSeconds(answered)) : 'none'} | ${readBy(answered)} | ${cell(whatWentWrong(runs))} |`,
+        `| ${cell(u.labels[id] ?? id)} | ${runs.length} | ${runs.filter((r) => r.verdict === 'pass').length} | ${runs.filter((r) => r.verdict === 'no_answer').length} | ${answered.length ? num(medianSeconds(answered)) : 'none'} | ${readBy(answered)} | ${cell(whoAskedCell(runs))} | ${cell(whatWentWrong(runs))} |`,
       )
     }
     out.push('')
     const repeats = countRepeats(u.tries)
     const lost = u.tries.filter((t) => t.machineNetwork).length
     const lines: string[] = []
+    lines.push('The question about a topic that the plan lists in two terms can come from code: when the model keeps such a topic in both terms and asks nothing, the step that saves the map adds the question "Listed in Term X and Term Y. Which term is it taught in?" and writes in the tool log how many it added. The table says for each run who asked.')
     lines.push(`${u.tries.filter(isLiveRun).length} live runs of the curriculum reader were made in all${repeats ? `, ${repeats} of them repeats of a run where the provider gave no answer` : ''}. Median seconds count the runs that got an answer.`)
     if (lost) lines.push(`${lost} more ${lost === 1 ? 'try' : 'tries'} never got past this Mac's own network (not the provider), so ${lost === 1 ? 'it was' : 'they were'} not counted and no model was asked.`)
     const text = u.tries.filter((t) => t.way === 'text').length

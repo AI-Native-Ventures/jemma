@@ -168,12 +168,22 @@ export function removeTopicIn(src: TopicMapDraft, name: string): TopicMapDraft {
   return d
 }
 
+/** A topic listed in more than one term, kept in one of them: the entries in the other terms go. Nothing else changes. */
+function keepInTermIn(src: TopicMapDraft, name: string, term: number): TopicMapDraft {
+  const inTerms = src.terms.filter((t) => t.topics.some((x) => x.name === name))
+  if (inTerms.length < 2 || !inTerms.some((t) => t.term === term)) return src
+  const d = clone(src)
+  for (const t of d.terms) if (t.term !== term) t.topics = t.topics.filter((x) => x.name !== name)
+  return d
+}
+
 /** Applies a choice on a check ("Move to Term 4") or on a left-out topic ("Add to Term 3"). */
 export function resolveIn(r: ReadDraft, name: string, option: string): ReadDraft {
   let draft = r.draft
   const m = /Term ([1-4])/.exec(option)
   if (termOf(draft, name) !== null) {
     if (/^Move/.test(option) && m) draft = moveTopicIn(draft, name, Number(m[1]), Number.MAX_SAFE_INTEGER)
+    else if (/^Keep/.test(option) && m) draft = keepInTermIn(draft, name, Number(m[1]))
   } else if (/^Add/.test(option) && m) {
     draft = addTopicIn(draft, Number(m[1]), name)
   }

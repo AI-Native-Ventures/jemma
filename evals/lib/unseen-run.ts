@@ -5,7 +5,7 @@ import { runDraftMap } from '../../packages/profiling/src/jobs/cloud/draft-map'
 import { ok } from '../../packages/profiling/src/tools/context'
 import { TopicMapDraftSchema, type TopicMapDraft } from '../../packages/profiling/src/schemas'
 import { brief } from './checks'
-import { RESULT_VERSION, scoreDraft, type Truth, type UnseenResult } from './unseen'
+import { RESULT_VERSION, scoreDraft, whoAsked, type Truth, type UnseenResult } from './unseen'
 
 type ModelGetter = typeof import('../../packages/profiling/src/ai').getModel
 
@@ -166,6 +166,7 @@ export async function runOnce(a: RunArgs): Promise<UnseenResult> {
   let visionProblem: string | null = null
   let model: string | null = null
   let draft: TopicMapDraft | null = null
+  let codeQuestions: number | null = null
   try {
     fixture = await makeFixture(a.db, a.truth, a.bytes, a.pages)
     const ctx = {
@@ -195,6 +196,9 @@ export async function runOnce(a: RunArgs): Promise<UnseenResult> {
       visionProblem = input.visionProblem ?? null
       model = row.model
     }
+    const saveLog = await a.db.from('tool_calls').select('output').eq('school_id', fixture.schoolId).eq('tool', 'save_topic_map_draft').order('started_at', { ascending: false }).limit(1)
+    const counted = (saveLog.data?.[0]?.output as { codeQuestions?: unknown } | undefined)?.codeQuestions
+    codeQuestions = typeof counted === 'number' ? counted : null
     const saved = await a.db.from('curriculum_maps').select('draft').eq('id', fixture.mapId).single()
     const parsed = TopicMapDraftSchema.safeParse(saved.data?.draft)
     draft = parsed.success ? parsed.data : null
@@ -216,5 +220,15 @@ export async function runOnce(a: RunArgs): Promise<UnseenResult> {
   }
   if (!draft) return { ...base, verdict: 'fail', error: 'the job saved no draft', noAnswer: null, checks: [], figures: null, draft: null }
   const score = scoreDraft(draft, a.truth)
-  return { ...base, verdict: score.pass ? 'pass' : 'fail', error: error, noAnswer: null, checks: score.checks, figures: score.figures, draft }
+  return {
+    ...base,
+    verdict: score.pass ? 'pass' : 'fail',
+    error: error,
+    noAnswer: null,
+    codeQuestions: codeQuestions ?? 0,
+    twoTermsAskedBy: whoAsked(draft, a.truth, codeQuestions ?? 0),
+    checks: score.checks,
+    figures: score.figures,
+    draft,
+  }
 }

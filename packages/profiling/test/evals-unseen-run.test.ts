@@ -113,6 +113,42 @@ describe('one live run, with a fake model', () => {
   })
 })
 
+describe('who asked about the topic that the plan lists in two terms', () => {
+  /** What a model does: the topic in both terms, no question. */
+  const keptInBoth = (truth: Truth) => {
+    const d = perfectDraft(truth)
+    const two = truth.traps.twoTerms
+    const entry = d.terms.flatMap((t) => t.topics).find((x) => x.name === two.name)!
+    const { check: _check, ...bare } = entry
+    return { ...d, terms: d.terms.map((t) => ({ ...t, topics: [...t.topics.filter((x) => x.name !== two.name), ...(two.terms.includes(t.term) ? [bare] : [])] })) }
+  }
+
+  test('a model that keeps the topic in both terms and asks nothing: code asks, the run passes, and the result says code asked', async () => {
+    const got = await run(grade9, models(answering({ draft: keptInBoth(grade9) }), answering({ draft: keptInBoth(grade9) })))
+    expect(got).toMatchObject({ verdict: 'pass', codeQuestions: 2, twoTermsAskedBy: 'code' })
+    expect(got.checks.find((c) => c.name.includes('two terms'))).toMatchObject({ pass: true })
+    nothingLeft()
+  })
+
+  test('a model that asks itself: the result says the model asked and code added none', async () => {
+    const got = await run(grade9, models(answering({ draft: perfectDraft(grade9) }), answering({ draft: perfectDraft(grade9) })))
+    expect(got).toMatchObject({ verdict: 'pass', codeQuestions: 0, twoTermsAskedBy: 'model' })
+  })
+
+  test('a model that lists the topic once and asks nothing: nobody asked, and that is a fail', async () => {
+    const d = perfectDraft(grade9)
+    const once = { ...d, terms: d.terms.map((t) => ({ ...t, topics: t.topics.map((x) => (x.name === grade9.traps.twoTerms.name ? { ...x, check: undefined } : x)) })) }
+    const got = await run(grade9, models(answering({ draft: once }), answering({ draft: once })))
+    expect(got).toMatchObject({ verdict: 'fail', codeQuestions: 0, twoTermsAskedBy: 'none' })
+  })
+
+  test('a run that never got a draft has neither figure', async () => {
+    const got = await run(grade9, models(failing('Rate limit exceeded', 429), failing('Rate limit exceeded', 429)))
+    expect(got.codeQuestions ?? null).toBeNull()
+    expect(got.twoTermsAskedBy ?? null).toBeNull()
+  })
+})
+
 describe('what counts as the provider giving no answer', () => {
   const e = (message: string, extra: object = {}) => Object.assign(new Error(message), extra)
   test('a 429, a 5xx, a rate limit and a capacity message are no answer, and the retry wrapper words are cut', () => {

@@ -19,6 +19,7 @@ import {
   perfectDraft,
   parseUnseenResult,
   planResume,
+  whoAsked,
   countRepeats,
   isLiveRun,
   scoreDraft,
@@ -357,6 +358,33 @@ describe('the results of live runs', () => {
     expect(() => parseUnseenResult('nope', 'f')).toThrow(/not valid JSON/)
     expect(() => parseUnseenResult(JSON.stringify({ ...result({}), version: 9 }), 'f')).toThrow(/version/)
     expect(() => parseUnseenResult(JSON.stringify({ ...result({}), verdict: 'maybe' }), 'f')).toThrow(/verdict/)
+  })
+})
+
+describe('who asked about the topic that the document lists in two terms', () => {
+  const ratio = (check?: { reason: string; options: string[] }) => ({ name: 'Ratio, rate and proportion', family: 'ratio', prerequisites: [], misconceptions: [], ...(check ? { check } : {}) })
+  const withRatio = (...entries: [1 | 2 | 3 | 4, ReturnType<typeof ratio>][]): TopicMapDraft => ({ grade: 9, terms: entries.map(([term, x]) => ({ term, topics: [x] })), leftOut: [] })
+  const fromCode = { reason: 'Listed in Term 2 and Term 3. Which term is it taught in?', options: ['Keep in Term 2', 'Move to Term 3'] }
+  const fromModel = { reason: 'Listed in Terms 2 and 3', options: ['Keep in Term 2', 'Move to Term 3'] }
+
+  test('code, when the question is the one the save step adds and it says it added some', () => {
+    expect(whoAsked(withRatio([2, ratio(fromCode)], [3, ratio({ ...fromCode, options: ['Keep in Term 3', 'Move to Term 2'] })]), grade9, 2)).toBe('code')
+  })
+
+  test('the model, when the question is its own, also when the save step added nothing', () => {
+    expect(whoAsked(withRatio([2, ratio(fromModel)], [3, ratio()]), grade9, 0)).toBe('model')
+    // a question that looks like the one from code but code says it added none: the model wrote it
+    expect(whoAsked(withRatio([2, ratio(fromCode)], [3, ratio()]), grade9, 0)).toBe('model')
+  })
+
+  test('nobody, when no entry of the topic has a question or the topic is not in the draft at all', () => {
+    expect(whoAsked(withRatio([2, ratio()]), grade9, 0)).toBe('none')
+    expect(whoAsked(withRatio([2, ratio({ reason: '  ', options: [] })]), grade9, 0)).toBe('none')
+    expect(whoAsked({ grade: 9, terms: [], leftOut: [] }, grade9, 0)).toBe('none')
+  })
+
+  test('the perfect draft of the ground truth has a question from the model', () => {
+    expect(whoAsked(perfectDraft(grade9), grade9, 0)).toBe('model')
   })
 })
 

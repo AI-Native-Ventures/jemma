@@ -151,6 +151,28 @@ export function scoreDraft(draft: TopicMapDraft, truth: Truth): Score {
   }
 }
 
+// ---------- who asked about the topic listed in two terms ----------
+
+/** Who asked the teacher about the topic that the document lists in two terms: the model, code (the step that saves the map), or nobody. */
+export type AskedBy = 'model' | 'code' | 'none'
+
+/** The words code uses for that question (`repeatedTopicQuestion` in packages/profiling/src/logic/topic-questions.ts). */
+const CODE_QUESTION = /^Listed in Term \d(, Term \d)* and Term \d\. Which term is it taught in\?$/
+
+/**
+ * Tells who asked, from the saved draft and from the count the save step wrote in the tool log. Code asked when the question on
+ * every entry of the topic is the one code writes and the count says code added some. Any other question is the model's.
+ */
+export function whoAsked(draft: TopicMapDraft, truth: Truth, codeQuestions: number): AskedBy {
+  const two = truth.topics.find((g) => g.name === truth.traps.twoTerms.name)
+  if (!two) return 'none'
+  const questions = topicsOf(draft)
+    .filter((t) => nameMatches(t.name, two.match) && t.hasCheck)
+    .map((t) => draft.terms.find((x) => x.term === t.term)!.topics.find((x) => x.name === t.name)!.check!.reason.trim())
+  if (questions.length === 0) return 'none'
+  return codeQuestions > 0 && questions.every((q) => CODE_QUESTION.test(q)) ? 'code' : 'model'
+}
+
 // ---------- the result of one live run ----------
 
 export const RESULT_VERSION = 1
@@ -182,6 +204,10 @@ export type UnseenResult = {
   noAnswer: string | null
   /** The words of this machine's network failing, when the try never got an answer (it is repeated and is not a provider's no answer). */
   machineNetwork?: string | null
+  /** How many questions the step that saves the map added by code (the tool log of `save_topic_map_draft`). Null when no draft was saved; missing in results from before the field. */
+  codeQuestions?: number | null
+  /** Who asked about the topic that the document lists in two terms: the model, code, or nobody. Null when no draft was saved; missing in results from before the field. */
+  twoTermsAskedBy?: AskedBy | null
   checks: Check[]
   figures: Score['figures'] | null
   /** The draft the model made, as saved. Null when there was none. */

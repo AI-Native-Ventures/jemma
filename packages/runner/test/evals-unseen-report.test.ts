@@ -60,9 +60,9 @@ describe('the section "A curriculum Jemma had never seen"', () => {
   test('one row per document: runs, passes, no answers, median seconds, which way read it, what went wrong', () => {
     const rows = section(renderReport({ ...baseInput, unseen: unseen() })).split('\n').filter((l) => l.startsWith('| ') && !l.startsWith('| Document') && !l.startsWith('| ---'))
     expect(rows).toHaveLength(3)
-    expect(rows[0]).toBe('| Grade 9 Mathematics, South Africa | 3 | 3 | 0 | 80 | vision | nothing: every run passed every check |')
+    expect(rows[0]).toBe('| Grade 9 Mathematics, South Africa | 3 | 3 | 0 | 80 | vision | run 1: no draft, run 2: no draft, run 3: no draft | nothing: every run passed every check |')
     // English: 1 pass, 1 fail, a text read: median of 70, 80 and 200 is 80
-    expect(rows[1]).toMatch(/^\| Grade 5 Mathematics, South Africa \| 3 \| 2 \| 0 \| 80 \| vision 2, text 1 \| run 2: the map has the number of terms the document has \(the document has 3 terms, the draft has terms 1, 2, 3, 4\) \|$/)
+    expect(rows[1]).toMatch(/^\| Grade 5 Mathematics, South Africa \| 3 \| 2 \| 0 \| 80 \| vision 2, text 1 \| run 1: no draft, run 2: no draft, run 3: no draft \| run 2: the map has the number of terms the document has \(the document has 3 terms, the draft has terms 1, 2, 3, 4\) \|$/)
   })
 
   test('a run with no answer is not a fail, and a repeat replaces the try that got none', () => {
@@ -87,6 +87,18 @@ describe('the section "A curriculum Jemma had never seen"', () => {
     expect(text).toContain('4 live runs of the curriculum reader were made in all.')
     expect(text).not.toContain('repeats of a run')
     expect(text).toContain('3 more tries never got past this Mac\'s own network (not the provider), so they were not counted and no model was asked.')
+  })
+
+  test('for each run it says who asked about the topic listed in two terms: the model, code or nobody, and says that code can ask', () => {
+    const asked = (by: 'model' | 'code' | 'none') => ({ twoTermsAskedBy: by, codeQuestions: by === 'code' ? 2 : 0, draft: { grade: 9, terms: [], leftOut: [] } })
+    const text = section(renderReport({ ...baseInput, unseen: unseen({ tries: [tryOf(GRADE9, 1, asked('code')), tryOf(GRADE9, 2, asked('model')), tryOf(GRADE9, 3, { ...asked('none'), verdict: 'fail', checks: [failCheck] })] }) }))
+    const row = text.split('\n').find((l) => l.startsWith('| Grade 9'))!
+    expect(row).toContain('| run 1: code, run 2: the model, run 3: nobody |')
+    expect(text).toContain('| Who asked about the topic listed in two terms |')
+    expect(text).toContain('The question about a topic that the plan lists in two terms can come from code: when the model keeps such a topic in both terms and asks nothing, the step that saves the map adds the question "Listed in Term X and Term Y. Which term is it taught in?" and writes in the tool log how many it added.')
+    // a result from before the figure existed, with a draft, says it was not recorded
+    const old = section(renderReport({ ...baseInput, unseen: unseen({ tries: [tryOf(GRADE9, 1, { draft: { grade: 9, terms: [], leftOut: [] } })] }) }))
+    expect(old).toContain('| run 1: not recorded |')
   })
 
   test('the family words that were not in the Mathematics list are named, with the number of runs that used them', () => {

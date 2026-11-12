@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs'
 import { createServer, type Server } from 'node:http'
 import { resolve } from 'node:path'
 import { createServiceClient } from '@jemma/profiling/db'
+import { askAboutRepeatedTopics } from '@jemma/profiling/logic'
 import { expect, test, type Page } from '@playwright/test'
 import { loadTruth, perfectDraft, type Truth } from '../../../evals/lib/unseen-truth'
 import { signInWithPassword } from './helpers/session'
@@ -94,8 +95,21 @@ async function makeClass(truth: Truth): Promise<Made> {
   return m
 }
 
+/**
+ * What a model does with the topic that the plan lists in two terms: it keeps it in both terms and asks nothing. The save tool then
+ * lets code ask (the same function), so this is the draft as it is saved.
+ */
+function keptInBothThenAsked(truth: Truth) {
+  const d = perfectDraft(truth)
+  const two = truth.traps.twoTerms
+  const entry = d.terms.flatMap((t) => t.topics).find((x) => x.name === two.name)!
+  const { check: _check, ...bare } = entry
+  const model = { ...d, terms: d.terms.map((t) => ({ ...t, topics: [...t.topics.filter((x) => x.name !== two.name), ...(two.terms.includes(t.term) ? [bare] : [])] })) }
+  return askAboutRepeatedTopics(model).draft
+}
+
 /** What the draft job would have saved: the draft, a Needs you item, and a document row so the screens have something to show. */
-async function fakeModelAnswer(m: Made, truth: Truth): Promise<string> {
+async function fakeModelAnswer(m: Made, truth: Truth, how: 'model asked' | 'code asked' = 'model asked'): Promise<string> {
   const db = admin()
   const map = await db.from('curriculum_maps').select('id').eq('class_id', m.classId).eq('status', 'draft').order('created_at', { ascending: false }).limit(1)
   let mapId = map.data?.[0]?.id
@@ -106,7 +120,7 @@ async function fakeModelAnswer(m: Made, truth: Truth): Promise<string> {
   }
   const docs = await db.from('curriculum_docs').select('id').eq('class_id', m.classId)
   if (!docs.data?.length) await db.from('curriculum_docs').insert({ class_id: m.classId, storage_path: `p67/${m.classId}/${truth.file}`, title: truth.file.replace(/\.[^.]+$/, ''), pages: 4 })
-  const draft = perfectDraft(truth)
+  const draft = how === 'code asked' ? keptInBothThenAsked(truth) : perfectDraft(truth)
   const saved = await db.from('curriculum_maps').update({ draft }).eq('id', mapId)
   if (saved.error) throw saved.error
   const topics = draft.terms.reduce((n, t) => n + t.topics.length, 0)
@@ -202,23 +216,28 @@ test.describe('a curriculum Jemma has never seen', () => {
     expect(events).toHaveLength(1)
     await proof(page, 'reading')
 
-    // the model's answer, as the save tool would have written it
-    await fakeModelAnswer(m, truth)
+    // the model's answer as the save tool would have written it: the model kept the topic of two terms in both and asked nothing, so code asked
+    await fakeModelAnswer(m, truth, 'code asked')
     await page.reload()
-    await check(page.getByRole('heading', { name: 'Your draft topic map is ready. 2 things for you to check.' })).toBeVisible()
+    // the question on both entries of the topic, and the topic of another grade
+    await check(page.getByRole('heading', { name: 'Your draft topic map is ready. 3 things for you to check.' })).toBeVisible()
     await page.getByRole('link', { name: 'Check the draft map' }).click()
     await page.waitForURL('**/curriculum/map')
 
     // four terms, because the document has four
     for (const n of [1, 2, 3, 4]) await expect(page.getByRole('button', { name: new RegExp(`^Term ${n}`) })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Term 2 · April to June' })).toBeVisible()
-    await check(page.getByText('Listed in Terms 2 and 3')).toBeVisible()
+    await check(page.getByText('Listed in Term 2 and Term 3. Which term is it taught in?')).toBeVisible()
     await proof(page, 'review-grade9')
     // the left out topic sits in the term of the first open check, so it is settled first
     await page.getByRole('button', { name: 'Leave it out' }).click()
     await check(page.getByText('A Grade 10 topic. Add it?')).toHaveCount(0)
     await page.getByRole('button', { name: 'Keep in Term 2' }).click()
-    await check(page.getByText('Listed in Terms 2 and 3')).toHaveCount(0)
+    await check(page.getByText('Listed in Term 2 and Term 3. Which term is it taught in?')).toHaveCount(0)
+    // one answer settles the topic: it is in Term 2 only, not in both
+    await page.getByRole('button', { name: /^Term 3/ }).click()
+    await expect(page.getByText('Ratio, rate and proportion')).toHaveCount(0)
+    await page.getByRole('button', { name: /^Term 2/ }).click()
 
     await page.getByRole('button', { name: 'Approve map' }).click()
     await page.waitForURL(`**/t/${m.classId}/curriculum`)
