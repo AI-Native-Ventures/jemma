@@ -6,6 +6,8 @@
 // comes back with those newer results beside it.
 // Run: node --import tsx --import ./scripts/register-md.mjs scripts/long-view-proof.ts --label record --out /path/record.json [--agent http://localhost:8755] [--against /path/record.json]
 // With --against, the saved patterns are compared with an earlier run's, row by row.
+// --learners Amina,Neo runs those learners (any child of the made-up school, by first name) instead of the five, and then no sixth event
+// unless --newer is given. P65 records the five of 6B, the sixth, and two made-up learners with a planted pattern this way.
 // Env: .env.local (jemma-dev and EVENTS_SECRET). Keys are never printed. The sandbox is deleted at the end unless --keep is given.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { createServiceClient, type JemmaDb } from '../src/db'
@@ -23,7 +25,8 @@ const label = arg('--label') ?? 'run'
 const out = arg('--out')
 const against = arg('--against')
 const keep = process.argv.includes('--keep')
-const LEARNERS = ['Amina', 'Thabo', 'Lerato', 'Sipho', 'Naledi']
+const LEARNERS = arg('--learners')?.split(',').map((n) => n.trim()).filter(Boolean) ?? ['Amina', 'Thabo', 'Lerato', 'Sipho', 'Naledi']
+const WITH_NEWER = !arg('--learners') || process.argv.includes('--newer')
 const NEWER = 'Amina + Class Tests 1 and 2'
 const TIMEOUT_MS = 15 * 60 * 1000
 
@@ -134,8 +137,10 @@ async function main() {
     }
 
     for (const name of LEARNERS) await run(name, name)
-    await addClassTests(s.classId, kids.find((k) => k.first_name === 'Amina')!.id)
-    await run('Amina', NEWER)
+    if (WITH_NEWER) {
+      await addClassTests(s.classId, kids.find((k) => k.first_name === 'Amina')!.id)
+      await run('Amina', NEWER)
+    }
   } finally {
     if (!keep) await deleteSandbox(db, s.sandboxId).catch((e) => console.log(`[${label}] could not delete the sandbox: ${e}`))
   }

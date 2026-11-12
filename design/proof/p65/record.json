@@ -1,0 +1,299 @@
+{
+  "label": "record",
+  "agent": "http://localhost:8765",
+  "rows": [
+    {
+      "learner": "Amina",
+      "status": "done",
+      "seconds": 56.436,
+      "attempts": 1,
+      "error": null,
+      "candidates": [
+        "struggle:fractions",
+        "strength:shapes",
+        "struggle:writing"
+      ],
+      "saved": [
+        {
+          "kind": "struggle",
+          "family": "fractions",
+          "status": "draft",
+          "title": "Fractions are hard when the bottom numbers differ",
+          "statement": "In Mathematics, marks in fractions stayed low from Grade 5 Term 3 to Grade 6 Term 2.",
+          "newerTerms": 0
+        },
+        {
+          "kind": "strength",
+          "family": "shapes",
+          "status": "draft",
+          "title": "Shapes work stays strong across the grades",
+          "statement": "In Mathematics, marks in shapes stayed high from Grade 4 Term 4 to Grade 6 Term 2. Grade 5 Term 3 has no shapes work.",
+          "newerTerms": 0
+        },
+        {
+          "kind": "struggle",
+          "family": "writing",
+          "status": "draft",
+          "title": "Writing has been hard since Grade 5 Term 4",
+          "statement": "In English, marks in writing stayed low from Grade 5 Term 4 to Grade 6 Term 2.",
+          "newerTerms": 0
+        }
+      ],
+      "dropped": [
+        {
+          "key": "struggle:fractions",
+          "subject": "Mathematics",
+          "reason": "no pattern in the records"
+        },
+        {
+          "key": "strength:shapes",
+          "subject": "Mathematics",
+          "reason": "no pattern in the records"
+        },
+        {
+          "key": "struggle:writing",
+          "subject": "English",
+          "reason": "no pattern in the records"
+        }
+      ],
+      "modelAnswered": true
+    },
+    {
+      "learner": "Thabo",
+      "status": "done",
+      "seconds": 87.281,
+      "attempts": 1,
+      "error": null,
+      "candidates": [
+        "strength:data",
+        "strength:life_living (1 newer)"
+      ],
+      "saved": [
+        {
+          "kind": "strength",
+          "family": "data",
+          "status": "draft",
+          "title": "Data handling marks stayed high",
+          "statement": "In Mathematics, marks in data handling stayed high from Grade 4 Term 3 to Grade 6 Term 2. Grade 5 Term 2 and Grade 5 Term 3 have no data.",
+          "newerTerms": 0
+        },
+        {
+          "kind": "strength",
+          "family": "life_living",
+          "status": "draft",
+          "title": "Life and living marks stayed high",
+          "statement": "In Natural Sciences, marks in life and living stayed high from Grade 4 Term 4 to Grade 6 Term 1, though Grade 5 Term 2 and Grade 5 Term 3 have no data. The newer result, Quiz: Plants and animals in Grade 6 Term 2, was weaker.",
+          "newerTerms": 1
+        }
+      ],
+      "dropped": [
+        {
+          "key": "strength:data",
+          "subject": "Mathematics",
+          "reason": "no pattern in the records"
+        },
+        {
+          "key": "strength:life_living",
+          "subject": "Natural Sciences",
+          "reason": "no pattern in the records"
+        }
+      ],
+      "modelAnswered": true
+    },
+    {
+      "learner": "Lerato",
+      "status": "done",
+      "seconds": 171.378,
+      "attempts": 2,
+      "error": null,
+      "candidates": [
+        "strength:whole_numbers",
+        "strength:language"
+      ],
+      "saved": [
+        {
+          "kind": "strength",
+          "family": "language",
+          "status": "draft",
+          "title": "Language marks stayed high",
+          "statement": "In English, language marks stayed high from Grade 5 Term 3 to Grade 6 Term 2.",
+          "newerTerms": 0
+        },
+        {
+          "kind": "strength",
+          "family": "whole_numbers",
+          "status": "draft",
+          "title": "Whole number marks stayed high",
+          "statement": "In Mathematics, whole number marks stayed high from Grade 4 Term 2 to Grade 6 Term 2.",
+          "newerTerms": 0
+        }
+      ],
+      "dropped": [
+        {
+          "key": "strength:whole_numbers",
+          "subject": "Mathematics",
+          "reason": "no pattern in the records"
+        },
+        {
+          "key": "strength:language",
+          "subject": "English",
+          "reason": "no pattern in the records"
+        }
+      ],
+      "modelAnswered": true
+    },
+    {
+      "learner": "Sipho",
+      "status": "done",
+      "seconds": 9.49,
+      "attempts": 1,
+      "error": null,
+      "candidates": [],
+      "saved": [],
+      "dropped": [],
+      "modelAnswered": false
+    },
+    {
+      "learner": "Naledi",
+      "status": "done",
+      "seconds": 60.125,
+      "attempts": 1,
+      "error": null,
+      "candidates": [
+        "struggle:measurement"
+      ],
+      "saved": [
+        {
+          "kind": "struggle",
+          "family": "measurement",
+          "status": "draft",
+          "title": "Measurement marks stayed low",
+          "statement": "In Mathematics, measurement marks stayed low from Grade 5 Term 4 to Grade 6 Term 2.",
+          "newerTerms": 0
+        }
+      ],
+      "dropped": [
+        {
+          "key": "struggle:measurement",
+          "subject": "Mathematics",
+          "reason": "no pattern in the records"
+        }
+      ],
+      "modelAnswered": true
+    },
+    {
+      "learner": "Neo",
+      "status": "done",
+      "seconds": 40.611,
+      "attempts": 1,
+      "error": null,
+      "candidates": [
+        "struggle:fractions (1 newer)"
+      ],
+      "saved": [
+        {
+          "kind": "struggle",
+          "family": "fractions",
+          "status": "draft",
+          "title": "Fractions marks stayed low",
+          "statement": "In Mathematics, marks in fractions stayed low from Grade 4 Term 2 to Grade 5 Term 1. The newer result, Quiz: Adding fractions in Grade 5 Term 2, was better.",
+          "newerTerms": 1
+        }
+      ],
+      "dropped": [
+        {
+          "key": "struggle:fractions",
+          "subject": "Mathematics",
+          "reason": "no pattern in the records"
+        }
+      ],
+      "modelAnswered": true
+    },
+    {
+      "learner": "Yaw",
+      "status": "done",
+      "seconds": 35.645,
+      "attempts": 1,
+      "error": null,
+      "candidates": [
+        "struggle:writing"
+      ],
+      "saved": [
+        {
+          "kind": "struggle",
+          "family": "writing",
+          "status": "draft",
+          "title": "Writing marks stayed low",
+          "statement": "In English, marks in writing stayed low from Grade 6 Term 4 to Grade 7 Term 2.",
+          "newerTerms": 0
+        }
+      ],
+      "dropped": [
+        {
+          "key": "struggle:writing",
+          "subject": "English",
+          "reason": "no pattern in the records"
+        }
+      ],
+      "modelAnswered": true
+    },
+    {
+      "learner": "Amina + Class Tests 1 and 2",
+      "status": "done",
+      "seconds": 112.038,
+      "attempts": 1,
+      "error": null,
+      "candidates": [
+        "struggle:fractions (2 newer)",
+        "strength:shapes",
+        "struggle:writing"
+      ],
+      "saved": [
+        {
+          "kind": "struggle",
+          "family": "fractions",
+          "status": "draft",
+          "title": "Fractions marks stayed low",
+          "statement": "In Mathematics, marks in fractions stayed low from Grade 5 Term 3 to Grade 6 Term 2. The newer results, Class Test 1 in Grade 6 Term 3 and Class Test 2 in Grade 6 Term 4, were better.",
+          "newerTerms": 2
+        },
+        {
+          "kind": "strength",
+          "family": "shapes",
+          "status": "draft",
+          "title": "Shapes marks stayed high",
+          "statement": "In Mathematics, marks in shapes stayed high from Grade 4 Term 4 to Grade 6 Term 2. Grade 5 Term 3 has no shapes work.",
+          "newerTerms": 0
+        },
+        {
+          "kind": "struggle",
+          "family": "writing",
+          "status": "draft",
+          "title": "Writing marks stayed low",
+          "statement": "In English, marks in writing stayed low from Grade 5 Term 4 to Grade 6 Term 2.",
+          "newerTerms": 0
+        }
+      ],
+      "dropped": [
+        {
+          "key": "struggle:fractions",
+          "subject": "Mathematics",
+          "reason": "no pattern in the records"
+        },
+        {
+          "key": "strength:shapes",
+          "subject": "Mathematics",
+          "reason": "no pattern in the records"
+        },
+        {
+          "key": "struggle:writing",
+          "subject": "English",
+          "reason": "no pattern in the records"
+        }
+      ],
+      "modelAnswered": true
+    }
+  ],
+  "replayMisses": 0,
+  "sameAsEarlierRun": null
+}

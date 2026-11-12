@@ -26,15 +26,25 @@ Use **Reset demo** (`/demo/reset`) at any time. It puts your copy back to step 1
 
 ## Demo accounts
 
-There is nothing to type. The demo page signs you in as one of three people in your own copy of the school. You do not need an email address.
+There is nothing to type. The demo page signs you in as any of these people in your own copy of the school. You do not need an email address. The first three are the big buttons on the demo page. The rest are under "More people at Hillview", and on the switch page.
 
 | Person | Role | What they are |
 | --- | --- | --- |
-| Ms Banda | Teacher | Teaches class 6B Mathematics, Grade 6. |
+| Ms Banda | Teacher | Teaches 6B Mathematics (Grade 6) and 5A Mathematics (Grade 5). "Start here". |
 | Thandi M | Parent | Amina's mother. |
-| Amina | Learner | A Grade 6 learner. |
+| Amina | Learner | A Grade 6 learner, in 6B Mathematics, 6B English and 6B Natural Sciences. |
+| Mr Dlamini | Teacher | Teaches 6B English and 7A English (Grade 7). |
+| Ms Okafor | Teacher | Teaches 6B Natural Sciences and 4A Natural Sciences (Grade 4). |
+| Nomsa K | Parent | Mother of Neo (Grade 5) and Thandiwe (Grade 4): two children in different grades. |
+| Peter A and Grace A | Parents | Both guardians of Yaw (Grade 7). |
+| Thabo, Lerato, Sipho, Naledi | Learners | With Amina, the five children of 6B. Their records go back to Grade 4 in all three subjects. |
+| Neo, Busisiwe, Ayodele, Nia, Khanyi, Wanjiru | Learners | 5A Mathematics. Made up by code, with messy records back to Grade 3. |
+| Yaw, Zuri, Dumisani, Aisha, Makena, Tafara | Learners | 7A English. |
+| Thandiwe, Lindiwe, Nomvula, Naomi, Abena, Kamau | Learners | 4A Natural Sciences. |
 
-The other learners in the class are Thabo, Lerato, Sipho and Naledi.
+Only Neo, Thandiwe and Yaw (and Amina, after step 4) have a linked parent. The other learners have none. A learner's login is made when you pick that learner.
+
+Under the demo path there is also **Start from an empty school**: a second kind of copy with no class and one teacher, "You". Create a class in any grade and subject, open its learners screen, and tap **Add made-up learners**. That adds six learners with up to three years of messy history in the class's subject and asks Jemma for their Long view. The button only shows in a demo school.
 
 ## What each role sees
 
