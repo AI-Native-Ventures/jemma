@@ -26,13 +26,13 @@ Use **Reset demo** (`/demo/reset`) at any time. It puts your copy back to step 1
 
 ## Try a curriculum Jemma has not seen
 
-Three invented curriculum documents of different shapes are in the repository. They are not copied from any ministry document:
+Three invented Mathematics curriculum documents of different shapes are in the repository. They are not copied from any ministry document:
 
-- `fixtures/curriculum/unseen/grade9-natural-sciences-za.pdf`: Grade 9 Natural Sciences, South Africa, a table for each of four terms.
-- `fixtures/curriculum/unseen/grade5-english-za.pdf`: Grade 5 English, South Africa, a paragraph for each week, no tables.
-- `fixtures/curriculum/unseen/grade4-science-technology-ke.pdf`: Grade 4 Science and Technology, Kenya, three terms, page pictures like a scan, no text.
+- `fixtures/curriculum/unseen/grade9-mathematics-za.pdf`: Grade 9 Mathematics, South Africa, a table for each of four terms.
+- `fixtures/curriculum/unseen/grade5-mathematics-za.pdf`: Grade 5 Mathematics, South Africa, a paragraph for each week, no tables.
+- `fixtures/curriculum/unseen/grade4-mathematics-ke.pdf`: Grade 4 Mathematics, Kenya, three terms, page pictures like a scan, no text.
 
-To try one, make a class in that grade and subject, open Curriculum and upload the file. If the live link only offers the demo's Grade 6 class, use a local copy (README, "Run it"). Jemma takes a PDF, a JPG or a PNG of at most 10 MB and 40 pages for each document, and says so when a file is too big or the wrong kind. What the curriculum reader did with each document, measured and scored by code, is in "A curriculum Jemma had never seen" in [EVALS.md](../EVALS.md).
+To try one, make a class in that grade, open Curriculum and upload the file. If the live link only offers the demo's Grade 6 class, use a local copy (README, "Run it"). Jemma takes a PDF, a JPG or a PNG of at most 10 MB and 40 pages for each document, and says so when a file is too big or the wrong kind. What the curriculum reader did with each document, measured and scored by code, is in "A curriculum Jemma had never seen" in [EVALS.md](../EVALS.md). The first version of Jemma covers Mathematics only: three earlier documents about other subjects are kept in `fixtures/curriculum/unseen/other-subjects/`, and their results are in EVALS.md under "Outside Mathematics".
 
 ## Demo accounts
 

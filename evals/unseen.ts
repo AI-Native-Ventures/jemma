@@ -1,15 +1,16 @@
 /**
- * A curriculum Jemma has never seen: the curriculum reader (`draft_map`) run live on the three invented documents in
- * `fixtures/curriculum/unseen/`, three runs each, on the free models. Code scores every draft against the ground truth next
+ * A curriculum Jemma has never seen: the curriculum reader (`draft_map`) run live on the three invented Mathematics documents in
+ * `fixtures/curriculum/unseen/`, three runs each, on the free models. (The first version of Jemma covers Mathematics only: the
+ * three earlier documents in `other-subjects/` are not run again, and their saved results stay as they are.) Code scores every draft against the ground truth next
  * to the document (`evals/lib/unseen.ts`). No model judges a model.
  *
  *   pnpm evals:unseen --cap 12                  all three documents, three runs each (9 live runs, 3 repeats allowed)
- *   pnpm evals:unseen --cap 12 --docs grade5-english-za --runs 1
+ *   pnpm evals:unseen --cap 12 --docs grade5-mathematics-za --runs 1
  *   pnpm evals:unseen --cap 12 --run-id <id of a stopped run>     goes on with that run: a run that has a result is never run again
  *
  * A run where the provider gave no answer (a rate limit, a capacity or server error) is repeated, at most `--repeats` times in
  * all (default 3), and is shown as "no answer", never as a fail. Three no-answers in a row stop the script. Each try is one line
- * in `evals/results/ledger.jsonl` (kind `draft_map`), and the script stops at `--cap` live runs of that kind.
+ * in `evals/results/ledger.jsonl` (kind `draft_map`, with its run id), and the script stops at `--cap` live runs of that run id.
  *
  * Needs `OPENROUTER_API_KEY`, the database values in `.env.local`, and the ONE-AT-A-TIME rule: never run it beside another live run.
  * Free OpenRouter models only, synthetic data only. Results: `evals/results/unseen-curriculum/<run id>/`. `pnpm evals:report` then
@@ -24,7 +25,7 @@ import { assertAllowedDatabase, loadEnv, required } from './lib/env'
 import { appendLedger, liveSpent } from './lib/ledger'
 import { readFreePercent, waitForMemory } from './lib/memory'
 import { clean } from './lib/redact'
-import { DOCUMENT_IDS, UNSEEN_DIR, UNSEEN_RESULTS, isLiveRun, loadTruth, parseUnseenResult, planResume, runKey, type UnseenResult } from './lib/unseen'
+import { DOCUMENT_IDS, UNSEEN_RESULTS, documentPath, isLiveRun, loadTruth, parseUnseenResult, planResume, runKey, type UnseenResult } from './lib/unseen'
 import { freeModels } from './lib/unseen-models'
 import { runOnce } from './lib/unseen-run'
 
@@ -43,7 +44,7 @@ const args = () => {
 
 async function main(): Promise<void> {
   const a = args()
-  if (a.cap === null || !Number.isFinite(a.cap)) throw new Error('needs --cap N: the most live runs of the curriculum reader this command may make (the ledger is kept in evals/results/ledger.jsonl)')
+  if (a.cap === null || !Number.isFinite(a.cap)) throw new Error('needs --cap N: the most live runs of the curriculum reader this run id may make (the ledger is kept in evals/results/ledger.jsonl)')
   const env = loadEnv()
   assertAllowedDatabase(env)
   required(env, 'OPENROUTER_API_KEY')
@@ -53,9 +54,9 @@ async function main(): Promise<void> {
   const secrets = [env.OPENROUTER_API_KEY!]
 
   const resumedAt = new Date().toISOString()
-  const spentAtStart = liveSpent(undefined, 'draft_map')
-  console.log(`live draft_map runs spent so far: ${spentAtStart} of ${a.cap}`)
-  if (spentAtStart >= a.cap) throw new Error(`the cap of ${a.cap} live runs is already reached (${spentAtStart} spent)`)
+  const spentAtStart = liveSpent(undefined, 'draft_map', a.runId)
+  console.log(`live draft_map runs spent so far in run ${a.runId}: ${spentAtStart} of ${a.cap}`)
+  if (spentAtStart >= a.cap) throw new Error(`the cap of ${a.cap} live runs is already reached in run ${a.runId} (${spentAtStart} spent)`)
   const outDir = join(UNSEEN_RESULTS, a.runId)
   mkdirSync(outDir, { recursive: true })
   const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
@@ -79,7 +80,7 @@ async function main(): Promise<void> {
   const tries: UnseenResult[] = [...earlier]
   runs: for (const id of a.docs) {
     const truth = loadTruth(id)
-    const bytes = new Uint8Array(readFileSync(join(UNSEEN_DIR, truth.file)))
+    const bytes = new Uint8Array(readFileSync(documentPath(truth)))
     const pages = (await readPdfText(bytes)).pages
     for (let n = 1; n <= a.runs; n++) {
       if (plan.done.has(runKey(id, n))) {

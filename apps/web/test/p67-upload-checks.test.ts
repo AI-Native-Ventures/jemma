@@ -39,7 +39,7 @@ describe('what kind of file it is comes from its first bytes', () => {
       ok: false,
       message: '"plan.pdf" is not a PDF, JPG or PNG file. Jemma can only read those three kinds.',
     })
-    expect(await checkDocument('plan.txt', fixture(`${UNSEEN}/grade5-english-za.pdf`))).toMatchObject({ ok: true, kind: 'pdf', mimeType: 'application/pdf' })
+    expect(await checkDocument('plan.txt', fixture(`${UNSEEN}/grade5-mathematics-za.pdf`))).toMatchObject({ ok: true, kind: 'pdf', mimeType: 'application/pdf' })
   })
 
   test('text, a GIF, a Word file and an empty file are refused', async () => {
@@ -98,10 +98,16 @@ describe('the limits: 10 MB and 40 pages for a document', () => {
 })
 
 describe('counting the pages of real PDFs', () => {
-  test('the three unseen documents have 6, 5 and 4 pages', async () => {
-    expect(await pdfPageCount(fixture(`${UNSEEN}/grade9-natural-sciences-za.pdf`))).toBe(6)
-    expect(await pdfPageCount(fixture(`${UNSEEN}/grade5-english-za.pdf`))).toBe(5)
-    expect(await pdfPageCount(fixture(`${UNSEEN}/grade4-science-technology-ke.pdf`))).toBe(4)
+  test('the three unseen Mathematics documents have 6, 5 and 4 pages', async () => {
+    expect(await pdfPageCount(fixture(`${UNSEEN}/grade9-mathematics-za.pdf`))).toBe(6)
+    expect(await pdfPageCount(fixture(`${UNSEEN}/grade5-mathematics-za.pdf`))).toBe(5)
+    expect(await pdfPageCount(fixture(`${UNSEEN}/grade4-mathematics-ke.pdf`))).toBe(4)
+  })
+
+  test('the three earlier documents outside Mathematics also have 6, 5 and 4 pages', async () => {
+    expect(await pdfPageCount(fixture(`${UNSEEN}/other-subjects/grade9-natural-sciences-za.pdf`))).toBe(6)
+    expect(await pdfPageCount(fixture(`${UNSEEN}/other-subjects/grade5-english-za.pdf`))).toBe(5)
+    expect(await pdfPageCount(fixture(`${UNSEEN}/other-subjects/grade4-science-technology-ke.pdf`))).toBe(4)
   })
 
   test('the sample Grade 6 plan has 4 pages', async () => {

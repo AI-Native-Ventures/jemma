@@ -16,8 +16,8 @@ import { memoryDb, type MemoryDb } from '../helpers/memory-db'
 const root = resolve(import.meta.dirname, '../../../..')
 const pdf = (rel: string) => new Uint8Array(readFileSync(join(root, rel)))
 const SAMPLE = 'fixtures/curriculum/grade6-maths-teaching-plan.pdf'
-const SCIENCE = 'fixtures/curriculum/unseen/grade9-natural-sciences-za.pdf'
-const KENYA = 'fixtures/curriculum/unseen/grade4-science-technology-ke.pdf'
+const GRADE9 = 'fixtures/curriculum/unseen/grade9-mathematics-za.pdf'
+const KENYA = 'fixtures/curriculum/unseen/grade4-mathematics-ke.pdf'
 
 const usage = { inputTokens: { total: 1, noCache: 1, cacheRead: 0, cacheWrite: 0 }, outputTokens: { total: 1, text: 1, reasoning: 0 } }
 const answering = (value: unknown) =>
@@ -29,7 +29,7 @@ const failing = (message = 'Provider returned error', statusCode = 502) =>
     },
   })
 
-const topic = (name: string, family = 'life_living') => ({ name, family, prerequisites: [], misconceptions: [] })
+const topic = (name: string, family = 'whole_numbers') => ({ name, family, prerequisites: [], misconceptions: [] })
 const draftOf = (grade: number, terms: [1 | 2 | 3 | 4, string[]][]): TopicMapDraft => ({ grade, terms: terms.map(([term, names]) => ({ term, topics: names.map((n) => topic(n)) })), leftOut: [] })
 
 type World = { db: MemoryDb; ctx: ToolContext; mapId: string }
@@ -91,9 +91,9 @@ describe('the first call is exactly the call a recorded answer was made with', (
 
 describe('when the vision model gives nothing and the document has a text layer', () => {
   test('the text model is asked with the same prompt and header and the words of the PDF, and the log says so', async () => {
-    const w = world({ grade: 9, subject: 'Natural Sciences', country: 'ZA', file: SCIENCE })
+    const w = world({ grade: 9, subject: 'Mathematics', country: 'ZA', file: GRADE9 })
     const vision = failing('Provider returned error')
-    const text = answering({ draft: draftOf(9, [[1, ['Cells and their parts']], [2, ['Acids, bases and the pH scale']]]) })
+    const text = answering({ draft: draftOf(9, [[1, ['Integers and exponents']], [2, ['Linear equations and inequalities']]]) })
     await runDraftMap(w.ctx, null, { mapId: w.mapId }, models(vision, text))
     expect(vision.doGenerateCalls).toHaveLength(1)
     expect(text.doGenerateCalls).toHaveLength(1)
@@ -102,24 +102,24 @@ describe('when the vision model gives nothing and the document has a text layer'
     const parts = partsOf(text)
     expect(parts).toHaveLength(1)
     expect(parts[0]!.type).toBe('text')
-    expect(parts[0]!.text).toMatch(/^Class grade: 9\. Subject: Natural Sciences\. Draft the topic map for this grade and subject only\.\n\n<untrusted>\n/)
-    expect(parts[0]!.text!.replace(/\s+/g, ' ')).toContain('Acids, bases and the pH scale')
+    expect(parts[0]!.text).toMatch(/^Class grade: 9\. Subject: Mathematics\. Draft the topic map for this grade and subject only\.\n\n<untrusted>\n/)
+    expect(parts[0]!.text!.replace(/\s+/g, ' ')).toContain('Linear equations and inequalities')
     expect(parts[0]!.text).toMatch(/<\/untrusted>$/)
     expect(savedDraft(w).terms.map((t) => t.term)).toEqual([1, 2])
     expect(readLog(w)[0]).toMatchObject({ ok: true, input: { way: 'text', visionProblem: 'Provider returned error', documents: 1 } })
   })
 
   test('a vision answer with no topic also goes to the text model', async () => {
-    const w = world({ grade: 9, subject: 'Natural Sciences', country: 'ZA', file: SCIENCE })
+    const w = world({ grade: 9, subject: 'Mathematics', country: 'ZA', file: GRADE9 })
     const vision = answering({ draft: { grade: 9, terms: [], leftOut: [] } })
-    const text = answering({ draft: draftOf(9, [[1, ['Cells and their parts']]]) })
+    const text = answering({ draft: draftOf(9, [[1, ['Integers and exponents']]]) })
     await runDraftMap(w.ctx, null, { mapId: w.mapId }, models(vision, text))
     expect(text.doGenerateCalls).toHaveLength(1)
     expect(readLog(w)[0]).toMatchObject({ input: { way: 'text', visionProblem: 'the vision model returned no topic' } })
   })
 
   test('the text model gives nothing either: the job fails and no map is saved', async () => {
-    const w = world({ grade: 9, subject: 'Natural Sciences', country: 'ZA', file: SCIENCE })
+    const w = world({ grade: 9, subject: 'Mathematics', country: 'ZA', file: GRADE9 })
     await expect(runDraftMap(w.ctx, null, { mapId: w.mapId }, models(failing('Provider returned error'), failing('Rate limit exceeded', 429)))).rejects.toThrow('Rate limit exceeded')
     expect(savedDraft(w)).toEqual({})
     expect(readLog(w)).toHaveLength(0)
@@ -128,7 +128,7 @@ describe('when the vision model gives nothing and the document has a text layer'
 
 describe('a document without a text layer keeps the retry card', () => {
   test('vision fails on a scan: the error stays, the text model is never asked', async () => {
-    const w = world({ grade: 4, subject: 'Science and Technology', country: 'KE', file: KENYA })
+    const w = world({ grade: 4, subject: 'Mathematics', country: 'KE', file: KENYA })
     const vision = failing('This model is currently experiencing high demand', 503)
     const text = answering({ draft: draftOf(4, [[1, ['Never used']]]) })
     await expect(runDraftMap(w.ctx, null, { mapId: w.mapId }, models(vision, text))).rejects.toThrow('high demand')
@@ -137,7 +137,7 @@ describe('a document without a text layer keeps the retry card', () => {
   })
 
   test('a vision answer with no topic on a scan keeps the plain error "draft has no topics"', async () => {
-    const w = world({ grade: 4, subject: 'Science and Technology', country: 'KE', file: KENYA })
+    const w = world({ grade: 4, subject: 'Mathematics', country: 'KE', file: KENYA })
     const text = answering({ draft: draftOf(4, [[1, ['Never used']]]) })
     await expect(runDraftMap(w.ctx, null, { mapId: w.mapId }, models(answering({ draft: { grade: 4, terms: [], leftOut: [] } }), text))).rejects.toThrow('draft has no topics')
     expect(text.doGenerateCalls).toHaveLength(0)
@@ -145,10 +145,10 @@ describe('a document without a text layer keeps the retry card', () => {
 })
 
 describe('three terms stay three terms', () => {
-  const three = (): TopicMapDraft => draftOf(4, [[1, ['Parts of a flowering plant']], [2, ['Types of soil']], [3, ['Weather and seasons']]])
+  const three = (): TopicMapDraft => draftOf(4, [[1, ['Whole numbers up to 10 000']], [2, ['Division']], [3, ['Shapes: triangles, squares and circles']]])
 
   test('an empty fourth term from the model is dropped before the draft is saved, and the Needs you line says 3 terms', async () => {
-    const w = world({ grade: 4, subject: 'Science and Technology', country: 'KE', file: KENYA })
+    const w = world({ grade: 4, subject: 'Mathematics', country: 'KE', file: KENYA })
     const draft = three()
     const vision = answering({ draft: { ...draft, terms: [...draft.terms, { term: 4, topics: [] }] } })
     await runDraftMap(w.ctx, null, { mapId: w.mapId }, { getModel: (() => vision) as never })
@@ -158,9 +158,9 @@ describe('three terms stay three terms', () => {
   })
 
   test('the header for a class that is not the baseline names the subject and the grade', async () => {
-    const w = world({ grade: 4, subject: 'Science and Technology', country: 'KE', file: KENYA })
+    const w = world({ grade: 4, subject: 'Mathematics', country: 'KE', file: KENYA })
     const vision = answering({ draft: three() })
     await runDraftMap(w.ctx, null, { mapId: w.mapId }, { getModel: (() => vision) as never })
-    expect(partsOf(vision)[0]!.text).toMatch(/^Class grade: 4\. Subject: Science and Technology\. Draft the topic map for this grade and subject only\./)
+    expect(partsOf(vision)[0]!.text).toMatch(/^Class grade: 4\. Subject: Mathematics\. Draft the topic map for this grade and subject only\./)
   })
 })

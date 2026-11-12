@@ -1,11 +1,14 @@
-// Renders the three unseen curriculum documents from their HTML sources, headless. No network, no fonts from outside.
+// Renders the unseen curriculum documents from their HTML sources, headless. No network, no fonts from outside.
 //
-//   pnpm --filter web exec node ../../fixtures/curriculum/unseen/render.mjs [--keep <folder>]
+//   pnpm --filter web exec node ../../fixtures/curriculum/unseen/render.mjs [--other-subjects] [--keep <folder>]
 //
+// Without a flag it renders the three Mathematics documents in this folder. `--other-subjects` renders the three earlier
+// documents (Natural Sciences, English, Science and Technology) in `other-subjects/`; their PDFs were made once and the saved
+// live results were made from those exact files, so only render them again on purpose.
 // `--keep <folder>` also writes the four scanned pictures (JPEG) there, to look at them.
 //
-// (a) and (b): the HTML is printed to PDF, so the PDF has a text layer.
-// (c): each sheet is photographed with a small skew, grey paper and noise, and the pictures are put into a PDF. That PDF has
+// Plan (a) and plan (b): the HTML is printed to PDF, so the PDF has a text layer.
+// Plan (c): each sheet is photographed with a small skew, grey paper and noise, and the pictures are put into a PDF. That PDF has
 //      no text layer at all, like a scan.
 import { createRequire } from 'node:module'
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -17,24 +20,40 @@ const here = fileURLToPath(new URL('.', import.meta.url))
 const require = createRequire(new URL('../../../apps/web/package.json', import.meta.url))
 const { chromium } = require('@playwright/test')
 
-const PRINT = [
-  ['grade9-natural-sciences-za.html', 'grade9-natural-sciences-za.pdf'],
-  ['grade5-english-za.html', 'grade5-english-za.pdf'],
-]
-const SCAN = { html: 'grade4-science-technology-ke.html', pdf: 'grade4-science-technology-ke.pdf', sheets: ['p1', 'p2', 'p3', 'p4'], angles: [0.9, -0.7, 1.1, -0.5] }
+const SETS = {
+  mathematics: {
+    dir: here,
+    print: [
+      ['grade9-mathematics-za.html', 'grade9-mathematics-za.pdf'],
+      ['grade5-mathematics-za.html', 'grade5-mathematics-za.pdf'],
+    ],
+    scan: { html: 'grade4-mathematics-ke.html', pdf: 'grade4-mathematics-ke.pdf', sheets: ['p1', 'p2', 'p3', 'p4'], angles: [0.9, -0.7, 1.1, -0.5] },
+  },
+  'other-subjects': {
+    dir: join(here, 'other-subjects'),
+    print: [
+      ['grade9-natural-sciences-za.html', 'grade9-natural-sciences-za.pdf'],
+      ['grade5-english-za.html', 'grade5-english-za.pdf'],
+    ],
+    scan: { html: 'grade4-science-technology-ke.html', pdf: 'grade4-science-technology-ke.pdf', sheets: ['p1', 'p2', 'p3', 'p4'], angles: [0.9, -0.7, 1.1, -0.5] },
+  },
+}
+const set = SETS[process.argv.includes('--other-subjects') ? 'other-subjects' : 'mathematics']
+const PRINT = set.print
+const SCAN = set.scan
 
 const browser = await chromium.launch({ headless: true })
 const tmp = mkdtempSync(join(tmpdir(), 'jemma-unseen-'))
 try {
   for (const [html, pdf] of PRINT) {
     const page = await browser.newPage()
-    await page.goto(pathToFileURL(join(here, html)).href)
-    writeFileSync(join(here, pdf), await page.pdf({ format: 'A4', printBackground: true, preferCSSPageSize: true }))
+    await page.goto(pathToFileURL(join(set.dir, html)).href)
+    writeFileSync(join(set.dir, pdf), await page.pdf({ format: 'A4', printBackground: true, preferCSSPageSize: true }))
     await page.close()
     console.log(`wrote ${pdf}`)
   }
 
-  const source = readFileSync(join(here, SCAN.html), 'utf8')
+  const source = readFileSync(join(set.dir, SCAN.html), 'utf8')
   const pictures = []
   for (const [i, id] of SCAN.sheets.entries()) {
     const page = await browser.newPage({ viewport: { width: 880, height: 1200 }, deviceScaleFactor: 1.4 })
@@ -73,7 +92,7 @@ try {
   await wrap.setContent(
     `<style>@page{size:A4;margin:0}html,body{margin:0}img{display:block;width:210mm;height:297mm;object-fit:cover;page-break-after:always}</style>${imgs}`,
   )
-  writeFileSync(join(here, SCAN.pdf), await wrap.pdf({ width: '210mm', height: '297mm', printBackground: true, preferCSSPageSize: true }))
+  writeFileSync(join(set.dir, SCAN.pdf), await wrap.pdf({ width: '210mm', height: '297mm', printBackground: true, preferCSSPageSize: true }))
   console.log(`wrote ${SCAN.pdf}`)
 } finally {
   await browser.close()

@@ -1,11 +1,17 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, test } from 'vitest'
 import type { TopicMapDraft } from '../../profiling/src/schemas'
+import { strandOrder } from '../../profiling/src/logic/strands'
 import {
   DOCUMENT_IDS,
+  FAMILY_ONE_OR_TWO_WORDS,
   FAMILY_WORD,
+  OTHER_SUBJECTS_DIR,
+  OTHER_SUBJECT_IDS,
   UNSEEN_DIR,
+  documentPath,
+  folderOf,
   finalTries,
   loadTruth,
   nameMatches,
@@ -23,8 +29,12 @@ import {
   type UnseenResult,
 } from '../../../evals/lib/unseen'
 
-const truths = DOCUMENT_IDS.map((id) => loadTruth(id))
-const [science, english, kenya] = truths as [Truth, Truth, Truth]
+const maths = DOCUMENT_IDS.map((id) => loadTruth(id))
+const others = OTHER_SUBJECT_IDS.map((id) => loadTruth(id))
+const truths = [...maths, ...others]
+const grade9 = maths[0] as Truth
+// The three earlier documents, outside Mathematics: still scored by the same code, and the scorer tests below use them for the lists of families.
+const [science, english, kenya] = others as [Truth, Truth, Truth]
 
 type DraftTopic = TopicMapDraft['terms'][number]['topics'][number]
 
@@ -38,14 +48,32 @@ const named = (checks: { name: string; pass: boolean; detail: string }[], part: 
 }
 const failedNames = (checks: { name: string; pass: boolean }[]) => checks.filter((c) => !c.pass).map((c) => c.name)
 
-describe('the ground truth of the three documents', () => {
-  test('there are three, with the shapes the brief asks for', () => {
-    expect(truths.map((t) => [t.grade, t.subject, t.country, t.termCount, t.textLayer])).toEqual([
+describe('the ground truth of the documents', () => {
+  test('the three Mathematics documents have the shapes the brief asks for', () => {
+    expect(maths.map((t) => [t.grade, t.subject, t.country, t.termCount, t.textLayer])).toEqual([
+      [9, 'Mathematics', 'ZA', 4, true],
+      [5, 'Mathematics', 'ZA', 4, true],
+      [4, 'Mathematics', 'KE', 3, false],
+    ])
+    expect(maths.map((t) => t.topics.length)).toEqual([14, 15, 12])
+  })
+
+  test('the three earlier documents are kept apart, in other-subjects, with their ground truth', () => {
+    expect(others.map((t) => [t.grade, t.subject, t.country, t.termCount, t.textLayer])).toEqual([
       [9, 'Natural Sciences', 'ZA', 4, true],
       [5, 'English', 'ZA', 4, true],
       [4, 'Science and Technology', 'KE', 3, false],
     ])
-    expect(truths.map((t) => t.topics.length)).toEqual([15, 15, 12])
+    expect(others.map((t) => t.topics.length)).toEqual([15, 15, 12])
+    for (const t of others) {
+      expect(folderOf(t.id)).toBe(OTHER_SUBJECTS_DIR)
+      expect(existsSync(documentPath(t)), `${t.file} is in other-subjects`).toBe(true)
+    }
+    for (const t of maths) {
+      expect(folderOf(t.id)).toBe(UNSEEN_DIR)
+      expect(existsSync(documentPath(t)), `${t.file} is in the unseen folder`).toBe(true)
+    }
+    expect([...DOCUMENT_IDS, ...OTHER_SUBJECT_IDS]).toHaveLength(6)
   })
 
   test('each has the two traps: a topic in two terms, and a topic of another grade that is not among the topics', () => {
@@ -58,7 +86,17 @@ describe('the ground truth of the three documents', () => {
     }
   })
 
-  test('the subjects with a list of families use it, and the Science and Technology one takes any short lowercase word', () => {
+  test('the Mathematics documents use the strands of Mathematics and also take one or two short lowercase words', () => {
+    for (const t of maths) {
+      expect(t.families).toEqual(strandOrder('Mathematics'))
+      expect(t.otherFamilyWords).toBe(true)
+      for (const x of t.topics) expect(t.families!.includes(x.family) || FAMILY_ONE_OR_TWO_WORDS.test(x.family), `${t.id}: "${x.family}"`).toBe(true)
+    }
+    // a Grade 9 plan has algebra and geometry, which the Grade 6 list does not name
+    expect(grade9.topics.some((x) => !grade9.families!.includes(x.family))).toBe(true)
+  })
+
+  test('the earlier subjects with a list of families use it, and the Science and Technology one takes any short lowercase word', () => {
     expect(science.families).toEqual(['life_living', 'matter_materials', 'energy_change', 'earth_beyond'])
     expect(english.families).toEqual(['reading', 'writing', 'language', 'speaking_listening'])
     expect(kenya.families).toBeNull()
@@ -78,7 +116,7 @@ describe('the ground truth of the three documents', () => {
 
   test('every topic and both traps are in the document itself (its source text)', () => {
     for (const t of truths) {
-      const source = readFileSync(join(UNSEEN_DIR, `${t.id}.html`), 'utf8').replace(/<[^>]+>/g, ' ').replace(/&amp;|&middot;/g, ' ')
+      const source = readFileSync(join(folderOf(t.id), `${t.id}.html`), 'utf8').replace(/<[^>]+>/g, ' ').replace(/&amp;|&middot;/g, ' ')
       const flat = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ')
       for (const x of [...t.topics.map((y) => y.name), t.traps.otherGrade.name]) {
         // "Tenses" is written "tenses: past, present and future"; "Reading for information" ends "from non-fiction texts"
@@ -88,12 +126,21 @@ describe('the ground truth of the three documents', () => {
   })
 
   test('a ground truth with a topic in a term the document does not have is refused', () => {
-    const raw = JSON.parse(readFileSync(join(UNSEEN_DIR, 'grade4-science-technology-ke.json'), 'utf8'))
+    const raw = JSON.parse(readFileSync(join(UNSEEN_DIR, 'grade4-mathematics-ke.json'), 'utf8'))
     raw.topics[0].terms = [4]
     expect(() => parseTruth(raw, 'x')).toThrow(/term the document does not have/)
     raw.topics[0].terms = [1]
     delete raw.traps
     expect(() => parseTruth(raw, 'x')).toThrow(/traps/)
+  })
+
+  test('other family words need a list of families to be other than', () => {
+    const raw = JSON.parse(readFileSync(join(UNSEEN_DIR, 'grade4-mathematics-ke.json'), 'utf8'))
+    raw.families = null
+    expect(() => parseTruth(raw, 'x')).toThrow(/otherFamilyWords needs a list/)
+    raw.families = ['fractions']
+    raw.otherFamilyWords = 'yes'
+    expect(() => parseTruth(raw, 'x')).toThrow(/true or false/)
   })
 })
 
@@ -225,6 +272,29 @@ describe('scoring a draft', () => {
     expect(named(scoreDraft(free, kenya).checks, 'family key').pass).toBe(true)
     const shouting: TopicMapDraft = { ...k, terms: k.terms.map((t) => ({ ...t, topics: t.topics.map((x) => ({ ...x, family: 'Living Things And Their Environment' })) })) }
     expect(named(scoreDraft(shouting, kenya).checks, 'family key').pass).toBe(false)
+  })
+
+  test('Mathematics: the Grade 6 list or one or two short lowercase words pass, and the words that were not in the list are named', () => {
+    const d = perfect(grade9)
+    const withFamily = (family: string, name = 'Integers and exponents'): TopicMapDraft => ({ ...d, terms: d.terms.map((t) => ({ ...t, topics: t.topics.map((x) => (x.name === name ? { ...x, family } : x)) })) })
+    const plain = scoreDraft(d, grade9)
+    expect(named(plain.checks, 'family key')).toMatchObject({ pass: true })
+    expect(named(plain.checks, 'family key').name).toBe("every family key is one of the subject's keys, or one or two short lowercase words")
+    // the perfect Grade 9 draft uses algebra, functions and geometry, none of them in the Grade 6 list
+    expect(plain.figures.extraFamilies).toEqual(['algebra', 'functions', 'geometry', 'money', 'patterns', 'ratio'])
+    expect(named(plain.checks, 'family key').detail).toContain('not in the list (whole_numbers, fractions, decimals, shapes, measurement, data): algebra, functions, geometry, money, patterns, ratio')
+    // a key of the list is not an extra word
+    expect(scoreDraft(withFamily('fractions'), grade9).figures.extraFamilies).toEqual(['algebra', 'functions', 'geometry', 'money', 'patterns', 'ratio'])
+    expect(scoreDraft(withFamily('number_sense'), grade9).figures.extraFamilies).toContain('number_sense')
+    expect(named(scoreDraft(withFamily('number_sense'), grade9).checks, 'family key').pass).toBe(true)
+    // capital letters, three words, a single letter and an empty family are none of them short lowercase words
+    for (const bad of ['Algebra', 'patterns_and_algebra', 'a', '', 'algebra!', 'abcdefghijklmnop']) {
+      const s = scoreDraft(withFamily(bad), grade9)
+      expect(named(s.checks, 'family key'), `"${bad}"`).toMatchObject({ pass: false })
+      expect(named(s.checks, 'family key').detail).toContain('not allowed')
+    }
+    // a document without other words does not get the extra figure
+    expect(scoreDraft(perfect(science), science).figures.extraFamilies).toBeUndefined()
   })
 
   test('terms: a three term document must give three terms, and an invented fourth term fails', () => {

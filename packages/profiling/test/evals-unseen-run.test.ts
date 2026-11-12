@@ -4,7 +4,7 @@ import { MockLanguageModelV4 } from 'ai/test'
 import { describe, expect, test } from 'vitest'
 import { readPdfText } from '../src/ai/pdf-text'
 import { memoryDb, type MemoryDb } from './helpers/memory-db'
-import { loadTruth, perfectDraft, type Truth } from '../../../evals/lib/unseen'
+import { documentPath, loadTruth, perfectDraft, type Truth } from '../../../evals/lib/unseen'
 import { describeError, networkProblem, noAnswerReason, runOnce } from '../../../evals/lib/unseen-run'
 
 
@@ -14,9 +14,9 @@ import { describeError, networkProblem, noAnswerReason, runOnce } from '../../..
 
 const root = resolve(import.meta.dirname, '../../..')
 
-const science = loadTruth('grade9-natural-sciences-za')
-const kenya = loadTruth('grade4-science-technology-ke')
-const fileOf = (t: Truth) => new Uint8Array(readFileSync(join(root, 'fixtures/curriculum/unseen', t.file)))
+const grade9 = loadTruth('grade9-mathematics-za')
+const kenya = loadTruth('grade4-mathematics-ke')
+const fileOf = (t: Truth) => new Uint8Array(readFileSync(documentPath(t)))
 const aiEnv = { LLM_PROVIDER: 'openrouter', VISION_PROVIDER: 'openrouter', LLM_MODEL: 'text:free', VISION_MODEL: 'vision:free', OPENROUTER_API_KEY: 'not-a-key' }
 
 const usage = { inputTokens: { total: 1, noCache: 1, cacheRead: 0, cacheWrite: 0 }, outputTokens: { total: 1, text: 1, reasoning: 0 } }
@@ -45,20 +45,20 @@ const nothingLeft = () => {
 
 describe('one live run, with a fake model', () => {
   test('a perfect draft from the vision model passes, is read by vision, makes one call, and leaves nothing behind', async () => {
-    const vision = answering({ draft: perfectDraft(science) })
-    const text = answering({ draft: perfectDraft(science) })
-    const got = await run(science, models(vision, text))
-    expect(got).toMatchObject({ verdict: 'pass', way: 'vision', calls: 1, error: null, noAnswer: null, docId: science.id, n: 1, attempt: 1, visionProblem: null })
+    const vision = answering({ draft: perfectDraft(grade9) })
+    const text = answering({ draft: perfectDraft(grade9) })
+    const got = await run(grade9, models(vision, text))
+    expect(got).toMatchObject({ verdict: 'pass', way: 'vision', calls: 1, error: null, noAnswer: null, docId: grade9.id, n: 1, attempt: 1, visionProblem: null })
     expect(got.checks.every((c) => c.pass)).toBe(true)
-    expect(got.figures).toMatchObject({ found: 15, of: 15, invented: 0 })
+    expect(got.figures).toMatchObject({ found: 14, of: 14, invented: 0 })
     expect(text.doGenerateCalls).toHaveLength(0)
     nothingLeft()
   })
 
   test('when vision gives nothing the text model reads the typed PDF: two calls, read by text, and the reason is kept', async () => {
     const vision = failing('Provider returned error', 502)
-    const text = answering({ draft: perfectDraft(science) })
-    const got = await run(science, models(vision, text))
+    const text = answering({ draft: perfectDraft(grade9) })
+    const got = await run(grade9, models(vision, text))
     expect(got).toMatchObject({ verdict: 'pass', way: 'text', calls: 2, visionProblem: 'Provider returned error' })
     nothingLeft()
   })
@@ -97,7 +97,7 @@ describe('one live run, with a fake model', () => {
   })
 
   test('a model that answers in the wrong shape is a fail with the error, not a no answer', async () => {
-    const got = await run(science, models(answering('this is not json'), answering('still not json')))
+    const got = await run(grade9, models(answering('this is not json'), answering('still not json')))
     expect(got.verdict).toBe('fail')
     expect(got.noAnswer).toBeNull()
     expect(got.error).toBeTruthy()
@@ -106,8 +106,8 @@ describe('one live run, with a fake model', () => {
   })
 
   test('a draft for the wrong grade is refused by the save tool, which is a fail of the model, not of the harness', async () => {
-    const wrong = { ...perfectDraft(science), grade: 8 }
-    const got = await run(science, models(answering({ draft: wrong }), answering({ draft: wrong })))
+    const wrong = { ...perfectDraft(grade9), grade: 8 }
+    const got = await run(grade9, models(answering({ draft: wrong }), answering({ draft: wrong })))
     expect(got.verdict).toBe('fail')
     expect(got.error).toContain('does not match the class grade')
   })

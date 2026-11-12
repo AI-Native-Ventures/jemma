@@ -23,10 +23,10 @@ export function readLedger(file = LEDGER_FILE): LedgerLine[] {
     .map((l) => JSON.parse(l) as LedgerLine)
 }
 
-/** Live attempts spent so far on one kind (goose by default). Rehearsals with a fake are not counted. */
-export function liveSpent(file = LEDGER_FILE, kind: LedgerKind = 'goose'): number {
+/** Live attempts spent so far on one kind (goose by default), or on one run id of that kind. Rehearsals with a fake are not counted. */
+export function liveSpent(file = LEDGER_FILE, kind: LedgerKind = 'goose', runId?: string): number {
   return readLedger(file)
-    .filter((l) => !l.rehearsal && (l.kind ?? 'goose') === kind)
+    .filter((l) => !l.rehearsal && (l.kind ?? 'goose') === kind && (runId === undefined || l.runId === runId))
     .reduce((n, l) => n + l.attempts, 0)
 }
 

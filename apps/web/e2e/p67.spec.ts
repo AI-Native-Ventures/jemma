@@ -7,8 +7,8 @@ import { loadTruth, perfectDraft, type Truth } from '../../../evals/lib/unseen-t
 import { signInWithPassword } from './helpers/session'
 
 // A curriculum Jemma has never seen, on the screens a teacher uses: the upload says no clearly (wrong kind, too big, too many
-// pages) and takes a 9 MB PDF; the map of a Grade 9 Natural Sciences plan is checked and approved; a three term document gives a
-// three term review screen. Headless, no model: a stand-in answers the web app's posts on the agent's port (8767), and the
+// pages) and takes a 9 MB PDF; the map of a Grade 9 Mathematics plan is checked and approved; a three term document (Grade 4
+// Mathematics in Kenya) gives a three term review screen. Headless, no model: a stand-in answers the web app's posts on the agent's port (8767), and the
 // model's answer is written to the database the way the save tool writes it (the draft, from the ground truth next to the document).
 //
 // Run it against a production build (the body limit of the server action only means something there), on the ports of the packet:
@@ -139,7 +139,7 @@ test.describe('a curriculum Jemma has never seen', () => {
   test.use({ actionTimeout: 45_000 })
 
   test('the upload turns away a wrong kind, a file over 10 MB and a plan over 40 pages, in plain words, and stores nothing', async ({ page }) => {
-    const m = await makeClass(loadTruth('grade9-natural-sciences-za'))
+    const m = await makeClass(loadTruth('grade9-mathematics-za'))
     await signInWithPassword(page, m.email, m.password)
     await page.goto(`/t/${m.classId}/curriculum`)
     await check(page.getByRole('heading', { name: 'Add your curriculum and Jemma will draft your topic map.' })).toBeVisible()
@@ -169,7 +169,7 @@ test.describe('a curriculum Jemma has never seen', () => {
   })
 
   test('a 9 MB PDF goes through the upload on a build: stored whole, one document row, one job started', async ({ page }) => {
-    const m = await makeClass(loadTruth('grade5-english-za'))
+    const m = await makeClass(loadTruth('grade5-mathematics-za'))
     await signInWithPassword(page, m.email, m.password)
     await page.goto(`/t/${m.classId}/curriculum`)
     const nine = Buffer.concat([Buffer.from('%PDF-1.4\n'), Buffer.alloc(9 * MB, 0x20)])
@@ -186,9 +186,9 @@ test.describe('a curriculum Jemma has never seen', () => {
     expect(posted.length).toBeGreaterThan(0)
   })
 
-  test('Grade 9 Natural Sciences: the plan goes in through the form, the map is checked and approved', async ({ page }, testInfo) => {
+  test('Grade 9 Mathematics: the plan goes in through the form, the map is checked and approved', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'phone', 'the whole flow is walked on the phone; the laptop screens are in the next test')
-    const truth = loadTruth('grade9-natural-sciences-za')
+    const truth = loadTruth('grade9-mathematics-za')
     const m = await makeClass(truth)
     await signInWithPassword(page, m.email, m.password)
     await page.goto(`/t/${m.classId}/curriculum`)
@@ -197,7 +197,7 @@ test.describe('a curriculum Jemma has never seen', () => {
     await check(page.getByRole('heading', { name: 'Jemma is reading your curriculum.' })).toBeVisible()
     await check(page.getByText(/6 pages/)).toBeVisible()
     const docs = await docsOf(m.classId)
-    expect(docs).toMatchObject([{ title: 'grade9-natural-sciences-za', pages: 6 }])
+    expect(docs).toMatchObject([{ title: 'grade9-mathematics-za', pages: 6 }])
     const events = await eventsOf(m.classId)
     expect(events).toHaveLength(1)
     await proof(page, 'reading')
@@ -216,7 +216,7 @@ test.describe('a curriculum Jemma has never seen', () => {
     await proof(page, 'review-grade9')
     // the left out topic sits in the term of the first open check, so it is settled first
     await page.getByRole('button', { name: 'Leave it out' }).click()
-    await check(page.getByText('A Grade 8 topic. Add it?')).toHaveCount(0)
+    await check(page.getByText('A Grade 10 topic. Add it?')).toHaveCount(0)
     await page.getByRole('button', { name: 'Keep in Term 2' }).click()
     await check(page.getByText('Listed in Terms 2 and 3')).toHaveCount(0)
 
@@ -226,15 +226,15 @@ test.describe('a curriculum Jemma has never seen', () => {
       const map = await admin().from('curriculum_maps').select('id, status').eq('class_id', m.classId).order('created_at', { ascending: false }).limit(1).single()
       expect(map.data?.status).toBe('approved')
       const topics = await admin().from('topics').select('name, term').eq('map_id', map.data!.id)
-      expect(topics.data).toHaveLength(15)
-      expect(topics.data!.find((t) => t.name === 'Electric circuits')?.term).toBe(2)
-      expect(topics.data!.some((t) => t.name === 'States of matter and the particle model')).toBe(false)
+      expect(topics.data).toHaveLength(14)
+      expect(topics.data!.find((t) => t.name === 'Ratio, rate and proportion')?.term).toBe(2)
+      expect(topics.data!.some((t) => t.name === 'Trigonometry: sine, cosine and tangent')).toBe(false)
     }).toPass({ timeout: 45_000 })
     await proof(page, 'approved-grade9')
   })
 
-  test('Grade 4 Science and Technology in Kenya has three terms, and the review screen shows three', async ({ page }, testInfo) => {
-    const truth = loadTruth('grade4-science-technology-ke')
+  test('Grade 4 Mathematics in Kenya has three terms, and the review screen shows three', async ({ page }, testInfo) => {
+    const truth = loadTruth('grade4-mathematics-ke')
     const m = await makeClass(truth)
     await fakeModelAnswer(m, truth)
     await signInWithPassword(page, m.email, m.password)
@@ -250,7 +250,7 @@ test.describe('a curriculum Jemma has never seen', () => {
       await expect(page.getByText(/January to March|April to June|July to September|October to December/)).toHaveCount(0)
       await proof(page, 'review-kenya-three-terms')
       // the change-term list offers three terms, not four
-      await page.getByRole('button', { name: 'Edit Parts of a flowering plant' }).click()
+      await page.getByRole('button', { name: 'Edit Whole numbers up to 10 000' }).click()
       await expect(page.getByRole('combobox').locator('option')).toHaveText(['Term 1', 'Term 2', 'Term 3'])
       await proof(page, 'edit-term-kenya')
     } else {

@@ -10,7 +10,7 @@ const draft = (terms: [1 | 2 | 3 | 4, ReturnType<typeof topic>[]][], leftOut: To
 })
 
 describe('a three term document gives a three term review screen', () => {
-  const three = draft([[1, [topic('Parts of a flowering plant'), topic('Sources of light')]], [2, [topic('Types of soil')]], [3, [topic('Weather and seasons')]]])
+  const three = draft([[1, [topic('Whole numbers up to 10 000'), topic('Length in metres and centimetres')]], [2, [topic('Division')]], [3, [topic('Shapes: triangles, squares and circles')]]])
 
   test('three terms are shown, not four', () => {
     expect(termNumbers(three)).toEqual([1, 2, 3])
@@ -39,13 +39,13 @@ describe('a three term document gives a three term review screen', () => {
 
   test('the things to check land in a term that is shown', () => {
     const withChecks = draft(
-      [[1, [topic('Sources of light', { reason: 'Listed in Terms 1 and 3', options: ['Keep in Term 1', 'Move to Term 3'] })]], [2, []], [3, [topic('Weather and seasons')]]],
-      [{ name: 'Electric circuits', reason: 'A Grade 6 topic, shown in Term 4 of the old scheme' }],
+      [[1, [topic('Length in metres and centimetres', { reason: 'Listed in Terms 1 and 3', options: ['Keep in Term 1', 'Move to Term 3'] })]], [2, []], [3, [topic('Shapes: triangles, squares and circles')]]],
+      [{ name: 'Decimals: tenths and hundredths', reason: 'A Grade 6 topic, shown in Term 4 of the old scheme' }],
     )
     const shown = termNumbers(withChecks)
     expect(shown).toEqual([1, 3])
     const open = unresolved({ draft: withChecks, resolutions: {} }, termInView(shown, 4))
-    expect(open.map((o) => [o.name, termInView(shown, o.term)])).toEqual([['Sources of light', 1], ['Electric circuits', 3]])
+    expect(open.map((o) => [o.name, termInView(shown, o.term)])).toEqual([['Length in metres and centimetres', 1], ['Decimals: tenths and hundredths', 3]])
   })
 
   test('a saved draft with three terms is read back with three terms, and the draft schema allows it', () => {

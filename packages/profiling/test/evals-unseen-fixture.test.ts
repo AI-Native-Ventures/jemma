@@ -3,7 +3,7 @@ import { join, resolve } from 'node:path'
 import { afterAll, describe, expect, test, vi } from 'vitest'
 import { createServiceClient, type JemmaDb } from '../src/db'
 import { loadEnv } from './helpers/env'
-import { loadTruth } from '../../../evals/lib/unseen-truth'
+import { documentPath, loadTruth } from '../../../evals/lib/unseen-truth'
 import { makeFixture, type RunFixture } from '../../../evals/lib/unseen-run'
 
 // The real database, once: the school, the class of the document's grade and subject, the map and the document that a live run
@@ -22,12 +22,12 @@ afterAll(async () => {
 })
 
 describe('the school a live run starts from, in the real database', () => {
-  test('a class of Grade 4 Science and Technology in Kenya, with its document, is made, and everything is gone after clean-up', async () => {
-    const truth = loadTruth('grade4-science-technology-ke')
-    const bytes = new Uint8Array(readFileSync(join(root, 'fixtures/curriculum/unseen', truth.file)))
+  test('a class of Grade 4 Mathematics in Kenya, with its document, is made, and everything is gone after clean-up', async () => {
+    const truth = loadTruth('grade4-mathematics-ke')
+    const bytes = new Uint8Array(readFileSync(documentPath(truth)))
     fixture = await makeFixture(db, truth, bytes, 4)
     const cls = await db.from('classes').select('grade, subject, school_id').eq('id', fixture.classId).single()
-    expect(cls.data).toMatchObject({ grade: 4, subject: 'Science and Technology', school_id: fixture.schoolId })
+    expect(cls.data).toMatchObject({ grade: 4, subject: 'Mathematics', school_id: fixture.schoolId })
     const school = await db.from('schools').select('country').eq('id', fixture.schoolId).single()
     expect(school.data?.country).toBe('KE')
     const map = await db.from('curriculum_maps').select('status').eq('id', fixture.mapId).single()

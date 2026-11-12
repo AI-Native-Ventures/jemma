@@ -2,13 +2,14 @@ import { fileURLToPath } from 'node:url'
 import type { TopicMapDraft } from '../../packages/profiling/src/schemas'
 import { check, list, median } from './checks'
 import type { Check } from './types'
-import { UNSEEN_DIR, loadTruth, parseTruth, perfectDraft, DOCUMENT_IDS, type DocumentId, type Match, type Truth } from './unseen-truth'
+import { UNSEEN_DIR, OTHER_SUBJECTS_DIR, OTHER_SUBJECT_IDS, documentPath, folderOf, loadTruth, parseTruth, perfectDraft, DOCUMENT_IDS, type DocumentId, type Match, type Truth } from './unseen-truth'
 
-export { UNSEEN_DIR, loadTruth, parseTruth, perfectDraft, DOCUMENT_IDS, type DocumentId, type Match, type Truth }
+export { UNSEEN_DIR, OTHER_SUBJECTS_DIR, OTHER_SUBJECT_IDS, documentPath, folderOf, loadTruth, parseTruth, perfectDraft, DOCUMENT_IDS, type DocumentId, type Match, type Truth }
 
 /**
  * The curriculum reader on documents it has not seen. Each document has a ground truth next to it
- * (`fixtures/curriculum/unseen/*.json`), and plain code scores a saved draft against it. No model judges a model.
+ * (`fixtures/curriculum/unseen/*.json`, and `other-subjects/` for the three documents outside Mathematics), and plain code scores
+ * a saved draft against it. No model judges a model.
  */
 
 /** The folder of `evals/results` that holds the runs of the curriculum reader on these documents. */
@@ -37,6 +38,8 @@ export function nameMatches(name: string, match: string[][]): boolean {
 
 export const THRESHOLDS = { found: 0.8, invented: 0.15, rightTerm: 0.8 } as const
 export const FAMILY_WORD = /^[a-z][a-z_]{0,23}$/
+/** One or two short lowercase words ("algebra", "whole_numbers"): what a Mathematics plan may use besides the subject's list. */
+export const FAMILY_ONE_OR_TWO_WORDS = /^[a-z]{2,15}([ _][a-z]{2,15})?$/
 
 type DraftTopic = { name: string; term: number; family: string; hasCheck: boolean }
 const topicsOf = (draft: TopicMapDraft): DraftTopic[] =>
@@ -47,7 +50,16 @@ const pct = (n: number, of: number) => (of === 0 ? 0 : Math.round((n / of) * 100
 export type Score = {
   pass: boolean
   checks: Check[]
-  figures: { found: number; of: number; invented: number; drafted: number; rightTerm: number; termsInDraft: number[] }
+  figures: {
+    found: number
+    of: number
+    invented: number
+    drafted: number
+    rightTerm: number
+    termsInDraft: number[]
+    /** Only for a document that accepts other family words: the words the draft used that are not in the subject's list. */
+    extraFamilies?: string[]
+  }
 }
 
 /** Scores one saved draft against the ground truth of its document. Pure: no database, no model. */
@@ -110,14 +122,21 @@ export function scoreDraft(draft: TopicMapDraft, truth: Truth): Score {
     ),
   )
 
-  const bad = truth.families
-    ? topics.filter((t) => !truth.families!.includes(t.family)).map((t) => `${t.name}: "${t.family}"`)
-    : topics.filter((t) => !FAMILY_WORD.test(t.family)).map((t) => `${t.name}: "${t.family}"`)
+  const inList = (family: string) => !!truth.families?.includes(family)
+  const accepted = (family: string) => (truth.families ? inList(family) || (!!truth.otherFamilyWords && FAMILY_ONE_OR_TWO_WORDS.test(family)) : FAMILY_WORD.test(family))
+  const bad = topics.filter((t) => !accepted(t.family)).map((t) => `${t.name}: "${t.family}"`)
+  const extraFamilies = truth.otherFamilyWords ? [...new Set(topics.filter((t) => accepted(t.family) && !inList(t.family)).map((t) => t.family))].sort() : undefined
   out.push(
     check(
-      truth.families ? 'every family key is one of the subject\'s keys' : 'every family key is a short lowercase word',
+      truth.families ? (truth.otherFamilyWords ? "every family key is one of the subject's keys, or one or two short lowercase words" : 'every family key is one of the subject\'s keys') : 'every family key is a short lowercase word',
       topics.length > 0 && bad.length === 0,
-      bad.length ? `not allowed: ${list(bad, 4)}` : truth.families ? `all ${topics.length} are among ${truth.families.join(', ')}` : `all ${topics.length} are short lowercase words`,
+      bad.length
+        ? `not allowed: ${list(bad, 4)}`
+        : truth.families
+          ? extraFamilies?.length
+            ? `all ${topics.length} are accepted; not in the list (${truth.families.join(', ')}): ${extraFamilies.join(', ')}`
+            : `all ${topics.length} are among ${truth.families.join(', ')}`
+          : `all ${topics.length} are short lowercase words`,
     ),
   )
 
@@ -128,7 +147,7 @@ export function scoreDraft(draft: TopicMapDraft, truth: Truth): Score {
   return {
     pass: out.every((c) => c.pass),
     checks: out,
-    figures: { found: found.length, of: truth.topics.length, invented: invented.length, drafted: topics.length, rightTerm: rightTerm.length, termsInDraft },
+    figures: { found: found.length, of: truth.topics.length, invented: invented.length, drafted: topics.length, rightTerm: rightTerm.length, termsInDraft, ...(extraFamilies ? { extraFamilies } : {}) },
   }
 }
 
