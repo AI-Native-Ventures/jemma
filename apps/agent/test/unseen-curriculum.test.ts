@@ -84,7 +84,7 @@ test('unpdf reads the text layer of a PDF inside the Worker runtime', async () =
   expect(read.pages).toBe(1)
   expect(read.text.replace(/\s+/g, ' ')).toContain('Linear equations and inequalities')
   const text = await documentsText([{ data: base64(pdf), mimeType: 'application/pdf' }])
-  expect(text).toContain('Heat transfer and rocks and the rock cycle')
+  expect(text).toContain('Financial mathematics and functions and graphs')
 })
 
 test('a picture-only PDF has no text in the Worker runtime either', async () => {
