@@ -4,15 +4,16 @@ import { PendingButton } from '@/components/ui/Button'
 import { useEffect, useState, useTransition } from 'react'
 import { Sheet } from '@/components/ui'
 import { CheckIcon } from '@/components/ui/icons'
-import { COUNTRIES, GRADES, OTHER_SUBJECT, SUBJECTS, validateSchool, validateSubject } from '@/lib/subjects'
+import { COUNTRIES, GRADES, validateSchool } from '@/lib/subjects'
 import { SelectBox } from '../new/SelectBox'
+import { CLASS_SUBJECT, SubjectLine } from '../new/SubjectLine'
 import { createSchool, saveOnboarding, searchSchools, type SchoolHit } from './actions'
 
 const sectionCls = 'flex flex-col rounded-20 border border-line bg-card p-4'
 const field = 'h-[52px] rounded-14 border bg-card px-3.5 text-[17px] text-ink'
 const save = 'flex h-[52px] items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white disabled:opacity-50'
 
-type Choice = { grade: number | null; subject: string; other: string }
+type Choice = { grade: number | null; subject: string }
 
 /** "My school isn't listed": a short form that makes the school, links the teacher to it and goes on to the class form. */
 function SchoolSheet({ pick, onClose }: { pick: Choice; onClose: () => void }) {
@@ -77,7 +78,7 @@ function SchoolSheet({ pick, onClose }: { pick: Choice; onClose: () => void }) {
             <span className="text-[16px] font-semibold">{offer.name}</span>
             {offer.blurb ? <span className="text-[14px] text-body">{offer.blurb}</span> : null}
           </span>
-          <PendingButton pending={pending} type="button" disabled={pending} className={save} onClick={() => start(() => saveOnboarding(offer.id, pick.grade, pick.subject, pick.other))}>
+          <PendingButton pending={pending} type="button" disabled={pending} className={save} onClick={() => start(async () => { const res = await saveOnboarding(offer.id, pick.grade, pick.subject); if (res?.error) setError(res.error) })}>
             Yes, use this school
           </PendingButton>
         </div>
@@ -95,12 +96,10 @@ export function OnboardingForm({ initial }: { initial: SchoolHit | null }) {
   const [hits, setHits] = useState<SchoolHit[]>(initial ? [initial] : [])
   const [school, setSchool] = useState<SchoolHit | null>(initial)
   const [grade, setGrade] = useState('')
-  const [subject, setSubject] = useState<string>(SUBJECTS[0])
-  const [other, setOther] = useState('')
+  const [error, setError] = useState('')
   const [schoolForm, setSchoolForm] = useState(false)
   const [pending, start] = useTransition()
-  const pick: Choice = { grade: grade ? Number(grade) : null, subject, other }
-  const otherError = subject === OTHER_SUBJECT && other.trim() !== '' && !validateSubject(OTHER_SUBJECT, other).ok
+  const pick: Choice = { grade: grade ? Number(grade) : null, subject: CLASS_SUBJECT }
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -176,35 +175,7 @@ export function OnboardingForm({ initial }: { initial: SchoolHit | null }) {
         <h2 id="teach" className="m-0 text-[17px] font-semibold">
           What you teach
         </h2>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="teach-subject" className="text-[15px] font-medium">
-            Subject
-          </label>
-          <SelectBox id="teach-subject" value={subject} onChange={setSubject}>
-            {SUBJECTS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-            <option value={OTHER_SUBJECT}>{OTHER_SUBJECT}</option>
-          </SelectBox>
-          {subject === OTHER_SUBJECT ? (
-            <>
-              <label htmlFor="teach-other" className="mt-1.5 text-[15px] font-medium">
-                Subject name
-              </label>
-              <input
-                id="teach-other"
-                type="text"
-                value={other}
-                onChange={(e) => setOther(e.target.value)}
-                aria-invalid={otherError ? true : undefined}
-                className={`${field} ${otherError ? 'border-coral-text' : 'border-muted-2'}`}
-              />
-              <span className={`text-[13px] ${otherError ? 'text-coral-text' : 'text-body'}`}>2 to 40 letters, numbers, spaces, & or -</span>
-            </>
-          ) : null}
-        </div>
+        <SubjectLine />
         <div className="flex flex-col gap-1.5">
           <label htmlFor="teach-grade" className="text-[15px] font-medium">
             Grade of your first class
@@ -220,10 +191,15 @@ export function OnboardingForm({ initial }: { initial: SchoolHit | null }) {
         </div>
       </section>
 
+      {error ? (
+        <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-coral-text">
+          {error}
+        </p>
+      ) : null}
       <PendingButton pending={pending}
         type="button"
-        disabled={!school || pending || otherError}
-        onClick={() => school && start(() => saveOnboarding(school.id, pick.grade, subject, other))}
+        disabled={!school || pending}
+        onClick={() => school && start(async () => { setError(''); const res = await saveOnboarding(school.id, pick.grade, pick.subject); if (res?.error) setError(res.error) })}
         className="flex h-[52px] items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white disabled:opacity-50"
       >
         Next: set up your class

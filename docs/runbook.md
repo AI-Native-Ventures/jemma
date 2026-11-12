@@ -58,7 +58,14 @@ PLAYWRIGHT_PORT=3237 pnpm --filter web exec playwright test demo-path --project=
 
 `pnpm --filter agent dev` uses the local queue and the `AI` binding. Workers AI speech goes through the remote binding, so run `wrangler login` once. Without it, the audio lesson is saved with no `audio_path` and the player uses browser speech.
 
-Stop every dev server and wrangler you start (`pkill -f "wrangler dev"`).
+Stop every dev server and wrangler you start, and only those. Never use `pkill`, `killall` or `kill $(pgrep -f ...)`: on a shared machine they also stop the servers of other projects. Keep the process id when you start the agent, and stop it by that id:
+
+```bash
+pnpm --filter agent exec wrangler dev --port 8787 & echo $! > .wrangler-dev.pid    # add --config wrangler.local.jsonc for the agent without the speech binding
+kill "$(cat .wrangler-dev.pid)" && rm .wrangler-dev.pid                              # later: stops that agent and nothing else
+```
+
+`.wrangler-dev.pid` is ignored by git. A server you started in the foreground stops with Ctrl-C. If a port stays busy after the stop, `lsof -nP -iTCP:8787 -sTCP:LISTEN` names the process that holds it: stop it only when its command line holds the path of your own folder, and otherwise leave it alone. `./start.sh --stop` stops only the two servers that `./start.sh` started (their ids are in `.jemma/pids`) and then the local database. It does not stop a server you started by hand.
 
 The agent reads `apps/agent/.dev.vars` (not your shell env). Set `AI_MODE`, `LLM_MODEL`, `VISION_MODEL` and the `*_FALLBACKS` there for the run, and restart `pnpm --filter agent dev`. `wrangler dev` has to reach Cloudflare once for the `AI` binding: if it exits with `Failed to start the remote proxy session ... Connect Timeout`, start it again.
 

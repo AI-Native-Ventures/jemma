@@ -19,6 +19,15 @@ async function shot(page: Page, testInfo: TestInfo, board: string) {
   await page.screenshot({ path: actual(board), fullPage: true })
 }
 
+/** Jemma covers Mathematics only for now (P72): the subject is a read-only line, not a select. */
+async function expectMathsLine(page: Page) {
+  await expect(page.getByText('Subject', { exact: true })).toBeVisible()
+  await expect(page.getByText('Mathematics', { exact: true })).toBeVisible()
+  await expect(page.getByText('More subjects come later')).toBeVisible()
+  await expect(page.getByLabel('Subject', { exact: true })).toHaveCount(0)
+  await expect(page.locator('option', { hasText: 'English' })).toHaveCount(0)
+}
+
 async function noHorizontalScroll(page: Page) {
   const wide = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)
   expect(wide).toBe(false)
@@ -95,8 +104,7 @@ test.describe('teacher-onboarding', () => {
     await expect(page.getByRole('button', { name: /Hillview Primary/ })).toContainText('Gauteng · Grade R to 7')
     await expect(page.getByRole('button', { name: "My school isn't listed" })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'What you teach' })).toBeVisible()
-    await expect(page.getByLabel('Subject', { exact: true })).toHaveValue('Mathematics')
-    await expect(page.getByLabel('Subject', { exact: true }).locator('option')).toHaveText(['Mathematics', 'English', 'Natural Sciences', 'Social Sciences', 'Technology', 'Life Skills', 'Other'])
+    await expectMathsLine(page)
     await expect(page.getByLabel('Grade of your first class').locator('option')).toHaveCount(13)
     await page.getByLabel('Grade of your first class').selectOption('6')
     await expect(page.getByLabel('Grade of your first class')).toHaveValue('6')
@@ -106,7 +114,7 @@ test.describe('teacher-onboarding', () => {
     await expect(page.getByRole('dialog')).toContainText('Add your school')
     await page.keyboard.press('Escape')
     await page.getByRole('button', { name: 'Next: set up your class' }).click()
-    await expect(page).toHaveURL(/\/t\/new\?grade=6&subject=Mathematics$/)
+    await expect(page).toHaveURL(/\/t\/new\?grade=6$/)
   })
 })
 
@@ -119,7 +127,7 @@ test.describe('teacher-class-setup and state-empty-class', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Set up a class. Only the name is needed now.')
     await expect(page.getByText('Add learners now or later. Jemma starts marking once you snap a test.')).toBeVisible()
     await expect(page.getByLabel('Grade', { exact: true })).toHaveValue('6')
-    await expect(page.getByLabel('Subject', { exact: true })).toHaveValue('Mathematics')
+    await expectMathsLine(page)
     await expect(page.getByText('What you and parents see')).toBeVisible()
     await expect(page.getByText('Snap the register instead')).toBeVisible()
     await expect(page.getByText('Parents type it to link their child. You can share it later too.')).toBeVisible()

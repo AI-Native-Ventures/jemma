@@ -2,7 +2,12 @@
 // Plain functions, no server code: the forms (client) and the actions (server) import the same file.
 
 export const SUBJECTS = ['Mathematics', 'English', 'Natural Sciences', 'Social Sciences', 'Technology', 'Life Skills'] as const
-/** The last choice of the subject select. The teacher types the name. */
+/**
+ * The subjects a teacher can make a class in. Other subjects are built in the data and the AI jobs, and are switched on here.
+ * `validateSubject` accepts only a subject of this list, so every form and every server action follows it.
+ */
+export const ENABLED_SUBJECTS = ['Mathematics'] as const
+/** What the old subject select called its last choice, where the teacher typed the name. No form offers it now. */
 export const OTHER_SUBJECT = 'Other'
 export const GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const
 
@@ -36,17 +41,30 @@ export function validateGrade(grade: unknown): Checked<{ grade: number }> {
 const SUBJECT_NAME = /^[\p{L}\p{N} &-]+$/u
 const SUBJECT_HINT = 'Name the subject in 2 to 40 letters, numbers, spaces, & or -'
 
+/** The one answer to every subject that is not enabled: another subject, `Other` with a typed name, or nonsense. */
+const SUBJECT_NOT_ENABLED = 'Jemma covers Mathematics for now. More subjects come later.'
+
 /**
- * `subject` is the select's value: a subject from the list, or `Other` with the typed name in `other`.
+ * The subject a request names: a subject from the list, or `Other` with the typed name in `other`.
  * A typed name that is on the list (any case) becomes the list's own spelling. A name typed beside a subject from the list is ignored.
  */
-export function validateSubject(subject: unknown, other?: string): Checked<{ subject: string }> {
+function nameSubject(subject: unknown, other?: string): Checked<{ subject: string }> {
   if (typeof subject === 'string' && (SUBJECTS as readonly string[]).includes(subject)) return { ok: true, subject }
   if (subject !== OTHER_SUBJECT) return { ok: false, error: 'Pick a subject' }
   const typed = squash(other ?? '')
   if (typed.length < 2 || typed.length > 40 || !SUBJECT_NAME.test(typed)) return { ok: false, error: SUBJECT_HINT }
   const listed = SUBJECTS.find((s) => s.toLowerCase() === typed.toLowerCase())
   return { ok: true, subject: listed ?? typed }
+}
+
+/**
+ * The one check of the subject for every form and server action. It accepts only an enabled subject: any other subject
+ * (also `Other` with a typed name) gets one plain sentence. A hand-made request gets the same answer as a form.
+ */
+export function validateSubject(subject: unknown, other?: string): Checked<{ subject: string }> {
+  const named = nameSubject(subject, other)
+  if (named.ok && (ENABLED_SUBJECTS as readonly string[]).includes(named.subject)) return named
+  return { ok: false, error: SUBJECT_NOT_ENABLED }
 }
 
 export type ClassInput = { name: string; grade: unknown; subject: unknown; otherSubject?: string }

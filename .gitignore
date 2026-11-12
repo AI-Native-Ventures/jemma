@@ -22,5 +22,8 @@ playwright-report/
 # start.sh: logs, process ids and backups of the run
 .jemma/
 
+# The process id of an agent started by hand (docs/runbook.md)
+.wrangler-dev.pid
+
 # Supabase CLI scratch files
 supabase/.temp/

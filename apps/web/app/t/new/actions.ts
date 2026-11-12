@@ -12,7 +12,7 @@ export type CreateClassResult = { error: string }
 export type CreateClassInput = {
   name: string
   grade: number
-  /** The subject select's value: a subject of the list, or `Other` with the typed name in `otherSubject`. */
+  /** Mathematics for now. Any subject that is not enabled is refused, also `Other` with a typed name in `otherSubject`. */
   subject: string
   otherSubject?: string
   code: string
