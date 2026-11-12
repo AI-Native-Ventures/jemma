@@ -5,6 +5,7 @@
  *
  *   pnpm evals:unseen --cap 12                  all three documents, three runs each (9 live runs, 3 repeats allowed)
  *   pnpm evals:unseen --cap 12 --docs grade5-english-za --runs 1
+ *   pnpm evals:unseen --cap 12 --run-id <id of a stopped run>     goes on with that run: a run that has a result is never run again
  *
  * A run where the provider gave no answer (a rate limit, a capacity or server error) is repeated, at most `--repeats` times in
  * all (default 3), and is shown as "no answer", never as a fail. Three no-answers in a row stop the script. Each try is one line
@@ -14,7 +15,7 @@
  * Free OpenRouter models only, synthetic data only. Results: `evals/results/unseen-curriculum/<run id>/`. `pnpm evals:report` then
  * writes the section "A curriculum Jemma had never seen" in EVALS.md.
  */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { getModel } from '../packages/profiling/src/ai'
 import { readPdfText } from '../packages/profiling/src/ai/pdf-text'
@@ -23,7 +24,7 @@ import { assertAllowedDatabase, loadEnv, required } from './lib/env'
 import { appendLedger, liveSpent } from './lib/ledger'
 import { readFreePercent, waitForMemory } from './lib/memory'
 import { clean } from './lib/redact'
-import { DOCUMENT_IDS, UNSEEN_DIR, UNSEEN_RESULTS, loadTruth, type UnseenResult } from './lib/unseen'
+import { DOCUMENT_IDS, UNSEEN_DIR, UNSEEN_RESULTS, isLiveRun, loadTruth, parseUnseenResult, planResume, runKey, type UnseenResult } from './lib/unseen'
 import { freeModels } from './lib/unseen-models'
 import { runOnce } from './lib/unseen-run'
 
@@ -51,6 +52,7 @@ async function main(): Promise<void> {
   const aiEnv = { LLM_PROVIDER: 'openrouter', VISION_PROVIDER: 'openrouter', OPENROUTER_API_KEY: env.OPENROUTER_API_KEY, ...m }
   const secrets = [env.OPENROUTER_API_KEY!]
 
+  const resumedAt = new Date().toISOString()
   const spentAtStart = liveSpent(undefined, 'draft_map')
   console.log(`live draft_map runs spent so far: ${spentAtStart} of ${a.cap}`)
   if (spentAtStart >= a.cap) throw new Error(`the cap of ${a.cap} live runs is already reached (${spentAtStart} spent)`)
@@ -58,29 +60,43 @@ async function main(): Promise<void> {
   mkdirSync(outDir, { recursive: true })
   const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
+  // A run id that already has a folder is a stopped run that goes on: what has a result is kept and never run again.
+  const earlier: UnseenResult[] = readdirSync(outDir)
+    .filter((f) => f.endsWith('.json') && f !== 'run.json')
+    .sort()
+    .map((f) => parseUnseenResult(readFileSync(join(outDir, f), 'utf8'), join(outDir, f)))
+  const plan = planResume(earlier, a.repeats)
+  const earlierMeta = existsSync(join(outDir, 'run.json')) ? (JSON.parse(readFileSync(join(outDir, 'run.json'), 'utf8')) as { spentAtStart?: number; stopped?: string | null; resumedAt?: string[]; earlierStops?: string[] }) : null
+  if (earlier.length > 0) console.log(`going on with run ${a.runId}: ${plan.done.size} run(s) already have a result and are kept, ${plan.repeatsUsed} repeat(s) and ${plan.networkTries} network failure(s) so far`)
+
   let spent = spentAtStart
-  let repeatsLeft = a.repeats
+  let repeatsLeft = a.repeats - plan.repeatsUsed
   let inARow = 0
   // A failure of this Mac's own network is not the provider's answer: the try is repeated and no repeat is used up (the result file says so).
   let networkInARow = 0
-  let networkTries = 0
+  let networkTries = plan.networkTries
   let stopped: string | null = null
-  const tries: UnseenResult[] = []
+  const tries: UnseenResult[] = [...earlier]
   runs: for (const id of a.docs) {
     const truth = loadTruth(id)
     const bytes = new Uint8Array(readFileSync(join(UNSEEN_DIR, truth.file)))
     const pages = (await readPdfText(bytes)).pages
     for (let n = 1; n <= a.runs; n++) {
-      for (let attempt = 1; ; attempt++) {
+      if (plan.done.has(runKey(id, n))) {
+        console.log(`KEEP ${id} ${n}/${a.runs}: it already has a result`)
+        continue
+      }
+      for (let attempt = plan.nextAttempt.get(runKey(id, n)) ?? 1; ; attempt++) {
         if (spent >= a.cap) {
           stopped = `the cap of ${a.cap} live runs was reached before ${id} run ${n}`
           break runs
         }
+        if (existsSync(join(outDir, `${id}-${n}-${attempt}.json`))) throw new Error(`${id}-${n}-${attempt}.json already exists: a saved result is never written over`)
         await waitForMemory({ read: readFreePercent, sleep, log: (l) => console.log(l) })
         console.log(`RUN ${id} ${n}/${a.runs} try ${attempt} ...`)
         const result = await runOnce({ db, aiEnv, getModel, truth, bytes, pages, runId: a.runId, n, attempt })
         // A try that could not even make its school (no model was asked), or that never left this Mac's network, is not a live run and is not counted.
-        if (result.calls > 0 && !result.machineNetwork) {
+        if (isLiveRun(result)) {
           spent++
           appendLedger({ at: new Date().toISOString(), runId: a.runId, taskId: `draft_map:${id}`, n, attempts: 1, rehearsal: false, kind: 'draft_map' })
         }
@@ -115,7 +131,26 @@ async function main(): Promise<void> {
 
   writeFileSync(
     join(outDir, 'run.json'),
-    `${clean(JSON.stringify({ runId: a.runId, finishedAt: new Date().toISOString(), cap: a.cap, spentAtStart, spentAtEnd: spent, repeatsAllowed: a.repeats, repeatsUsed: a.repeats - repeatsLeft, machineNetworkTries: networkTries, stopped, models: m }, null, 2), secrets).text}\n`,
+    `${clean(
+      JSON.stringify(
+        {
+          runId: a.runId,
+          finishedAt: new Date().toISOString(),
+          cap: a.cap,
+          spentAtStart: earlierMeta?.spentAtStart ?? spentAtStart,
+          spentAtEnd: spent,
+          repeatsAllowed: a.repeats,
+          repeatsUsed: a.repeats - repeatsLeft,
+          machineNetworkTries: networkTries,
+          stopped,
+          models: m,
+          ...(earlier.length > 0 ? { resumedAt: [...(earlierMeta?.resumedAt ?? []), resumedAt], earlierStops: [...(earlierMeta?.earlierStops ?? []), ...(earlierMeta?.stopped ? [earlierMeta.stopped] : [])] } : {}),
+        },
+        null,
+        2,
+      ),
+      secrets,
+    ).text}\n`,
   )
   const last = new Map(tries.map((t) => [`${t.docId}|${t.n}`, t]))
   const verdicts = [...last.values()].map((t) => t.verdict)

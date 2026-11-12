@@ -5,7 +5,7 @@ import { describe, expect, test } from 'vitest'
 import { readPdfText } from '../src/ai/pdf-text'
 import { memoryDb, type MemoryDb } from './helpers/memory-db'
 import { loadTruth, perfectDraft, type Truth } from '../../../evals/lib/unseen'
-import { networkProblem, noAnswerReason, runOnce } from '../../../evals/lib/unseen-run'
+import { describeError, networkProblem, noAnswerReason, runOnce } from '../../../evals/lib/unseen-run'
 
 
 // The live script of "A curriculum Jemma had never seen", with a fake model and a database in memory: the real school, class,
@@ -125,6 +125,12 @@ describe('what counts as the provider giving no answer', () => {
     expect(noAnswerReason(e('wrapper', { cause: e('Provider returned error', { statusCode: 502 }) }))).toBe('Provider returned error')
     expect(noAnswerReason(e('wrapper', { lastError: e('overloaded') }))).toBe('overloaded')
   })
+  test('an answer with a good status whose body is the provider\'s own error is no answer, and one that is not an error body is not', () => {
+    const body = JSON.stringify({ error: { message: 'Provider returned error', code: 429 } })
+    expect(noAnswerReason(e('Failed to process successful response', { statusCode: 200, responseBody: body }))).toBe('Provider returned error')
+    expect(noAnswerReason(e('Failed to process successful response', { statusCode: 200, responseBody: '{"choices":[]}' }))).toBeNull()
+    expect(noAnswerReason(e('Failed to process successful response', { statusCode: 200 }))).toBeNull()
+  })
   test('a wrong shape, a bad request, a missing topic or nothing at all is not', () => {
     expect(noAnswerReason(e('No object generated: response did not match schema'))).toBeNull()
     expect(noAnswerReason(e('bad', { statusCode: 400 }))).toBeNull()
@@ -149,5 +155,22 @@ describe('what counts as a failure of this machine\'s network', () => {
   })
   test('a fetch that failed is no longer a provider no-answer', () => {
     expect(noAnswerReason(e('fetch failed'))).toBeNull()
+  })
+})
+
+describe('what a failed job says about itself', () => {
+  const e = (message: string, extra: object = {}) => Object.assign(new Error(message), extra)
+  test('the message, the cause and the first words of the body of the answer, so a result file can tell what happened', () => {
+    const err = e('Failed to process successful response', { statusCode: 200, responseBody: '{"id":"gen-1","choices":[]}', cause: e('Type validation failed') })
+    const text = describeError(err)
+    expect(text).toContain('Failed to process successful response')
+    expect(text).toContain('Type validation failed')
+    expect(text).toContain('HTTP 200')
+    expect(text).toContain('{"id":"gen-1","choices":[]}')
+  })
+  test('a plain error is its message, a long body is cut, and a non-error is told', () => {
+    expect(describeError(e('draft has no topics'))).toBe('draft has no topics')
+    expect(describeError(e('x', { responseBody: 'y'.repeat(2000) })).length).toBeLessThan(500)
+    expect(describeError('boom')).toBe('boom')
   })
 })

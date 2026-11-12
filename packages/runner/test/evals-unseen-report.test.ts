@@ -77,6 +77,14 @@ describe('the section "A curriculum Jemma had never seen"', () => {
     expect(text).toContain('`evals/results/unseen-curriculum/2026-11-12-unseen/`')
   })
 
+  test('tries lost to this Mac\'s network are not counted as live runs or as repeats, and are told apart', () => {
+    const lost = (attempt: number) => tryOf(KENYA, 3, { attempt, verdict: 'no_answer', calls: 0, way: null, model: null, seconds: 0, machineNetwork: 'teacher: fetch failed' })
+    const text = section(renderReport({ ...baseInput, unseen: unseen({ tries: [tryOf(SCIENCE, 1), tryOf(KENYA, 1), tryOf(KENYA, 2), lost(1), lost(2), lost(3), tryOf(KENYA, 3, { attempt: 4 })] }) }))
+    expect(text).toContain('4 live runs of the curriculum reader were made in all.')
+    expect(text).not.toContain('repeats of a run')
+    expect(text).toContain('3 more tries never got past this Mac\'s own network (not the provider), so they were not counted and no model was asked.')
+  })
+
   test('a script that stopped early says why', () => {
     const text = section(renderReport({ ...baseInput, unseen: unseen({ stopped: 'three runs in a row got no answer from the provider', tries: [tryOf(SCIENCE, 1)] }) }))
     expect(text).toContain('The script stopped early: three runs in a row got no answer from the provider.')

@@ -12,6 +12,9 @@ import {
   parseTruth,
   perfectDraft,
   parseUnseenResult,
+  planResume,
+  countRepeats,
+  isLiveRun,
   scoreDraft,
   stem,
   whatWentWrong,
@@ -284,5 +287,56 @@ describe('the results of live runs', () => {
     expect(() => parseUnseenResult('nope', 'f')).toThrow(/not valid JSON/)
     expect(() => parseUnseenResult(JSON.stringify({ ...result({}), version: 9 }), 'f')).toThrow(/version/)
     expect(() => parseUnseenResult(JSON.stringify({ ...result({}), verdict: 'maybe' }), 'f')).toThrow(/verdict/)
+  })
+})
+
+describe('resuming a run id that was stopped', () => {
+  const t = (docId: string, n: number, over: Partial<UnseenResult> = {}): UnseenResult => ({
+    version: 1, runId: 'r', docId, n, attempt: 1, startedAt: '2026-11-12T08:00:00.000Z', verdict: 'pass', seconds: 40, calls: 1,
+    way: 'vision', visionProblem: null, model: 'm:free', error: null, noAnswer: null, checks: [], figures: null, draft: null, ...over,
+  })
+  const lost = (n: number, attempt: number) => t('k', n, { attempt, verdict: 'no_answer', calls: 0, way: null, model: null, machineNetwork: 'teacher: fetch failed', seconds: 0 })
+
+  test('a run that has a pass or a fail is done and is never run again, a run with nothing is not', () => {
+    const plan = planResume([t('a', 1), t('a', 2, { verdict: 'fail' }), t('k', 1)], 3)
+    expect([...plan.done].sort()).toEqual(['a|1', 'a|2', 'k|1'])
+    expect(plan.nextAttempt.get('a|2')).toBe(2)
+    expect(plan.done.has('k|3')).toBe(false)
+    expect(plan.nextAttempt.get('k|3') ?? 1).toBe(1)
+  })
+
+  test('tries lost to this machine\'s network are not a result: the run is repeated from the next try, and no repeat is used up', () => {
+    const plan = planResume([t('k', 1), t('k', 2, { verdict: 'fail', error: 'Failed to process successful response' }), lost(3, 1), lost(3, 2), lost(3, 3)], 3)
+    expect(plan.done.has('k|3')).toBe(false)
+    expect(plan.nextAttempt.get('k|3')).toBe(4)
+    expect(plan.repeatsUsed).toBe(0)
+    expect(plan.networkTries).toBe(3)
+  })
+
+  test('a try where the provider gave no answer and was then repeated used one repeat', () => {
+    const none = (n: number, attempt: number) => t('a', n, { attempt, verdict: 'no_answer', noAnswer: 'Rate limit exceeded', way: null })
+    const plan = planResume([none(1, 1), t('a', 1, { attempt: 2 }), none(2, 1), none(2, 2)], 3)
+    expect(plan.repeatsUsed).toBe(2)
+    expect(plan.done.has('a|1')).toBe(true)
+    // run 2 ended on a no answer and 1 repeat is left, so it is repeated
+    expect(plan.done.has('a|2')).toBe(false)
+    expect(plan.nextAttempt.get('a|2')).toBe(3)
+    // with no repeat left the no answer stays the result of that run
+    expect(planResume([none(1, 1), t('a', 1, { attempt: 2 }), none(2, 1), none(2, 2)], 2).done.has('a|2')).toBe(true)
+  })
+
+  test('only a try that really asked a model and was not lost to the network is a live run, and only a no answer that was tried again is a repeat', () => {
+    expect(isLiveRun(t('a', 1))).toBe(true)
+    expect(isLiveRun(lost(3, 1))).toBe(false)
+    expect(isLiveRun(t('a', 1, { calls: 0, verdict: 'fail', error: 'could not run: x' }))).toBe(false)
+    const none = t('a', 1, { verdict: 'no_answer', noAnswer: 'Rate limit exceeded', way: null })
+    expect(countRepeats([none, t('a', 1, { attempt: 2 }), lost(3, 1), lost(3, 2)])).toBe(1)
+    expect(countRepeats([lost(3, 1), lost(3, 2), t('k', 3, { attempt: 3 })])).toBe(0)
+  })
+
+  test('what went wrong names the network when a run never got past it, and does not call it a provider answer', () => {
+    const text = whatWentWrong([t('k', 3, { attempt: 3, verdict: 'no_answer', calls: 0, way: null, machineNetwork: 'teacher: fetch failed', seconds: 0 })])
+    expect(text).toContain('never got past this Mac\'s own network ("teacher: fetch failed"), so it was not judged')
+    expect(text).not.toContain('free endpoint')
   })
 })

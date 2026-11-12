@@ -6,7 +6,7 @@ import { readLedger } from './ledger'
 import { baseName, parseResult, RESULTS_ROOT, type ResultFile } from './result'
 import { refusalOf } from './provider'
 import { listRunFolders, loadSecondRun } from './second'
-import { DOCUMENT_IDS, UNSEEN_FOLDER, finalTries, loadTruth, medianSeconds, parseUnseenResult, whatWentWrong, type UnseenResult } from './unseen'
+import { DOCUMENT_IDS, UNSEEN_FOLDER, countRepeats, finalTries, isLiveRun, loadTruth, medianSeconds, parseUnseenResult, whatWentWrong, type UnseenResult } from './unseen'
 import { countryName } from '../../packages/profiling/src/ai/subject-profile'
 import { RUNS_PER_TASK, TASKS } from '../tasks'
 
@@ -339,9 +339,11 @@ function unseenSection(u: UnseenRun): string[] {
     )
   }
   out.push('')
-  const repeats = u.tries.filter((t) => t.attempt > 1).length
+  const repeats = countRepeats(u.tries)
+  const lost = u.tries.filter((t) => t.machineNetwork).length
   const lines: string[] = []
-  lines.push(`${u.tries.length} live runs of the curriculum reader were made in all${repeats ? `, ${repeats} of them repeats of a run where the provider gave no answer` : ''}. Median seconds count the runs that got an answer.`)
+  lines.push(`${u.tries.filter(isLiveRun).length} live runs of the curriculum reader were made in all${repeats ? `, ${repeats} of them repeats of a run where the provider gave no answer` : ''}. Median seconds count the runs that got an answer.`)
+  if (lost) lines.push(`${lost} more ${lost === 1 ? 'try' : 'tries'} never got past this Mac's own network (not the provider), so ${lost === 1 ? 'it was' : 'they were'} not counted and no model was asked.`)
   const text = u.tries.filter((t) => t.way === 'text').length
   if (text) lines.push(`${text === 1 ? '1 run was' : `${text} runs were`} read from the text of the document because the first way, the vision model looking at the pages, gave nothing.`)
   if (u.stopped) lines.push(`The script stopped early: ${u.stopped}.`)

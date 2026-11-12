@@ -17,7 +17,7 @@ type ModelGetter = typeof import('../../packages/profiling/src/ai').getModel
 
 const MESSAGE_AT_LEAST = /rate.?limit|overloaded|high demand|provider returned error|internal (server )?error|upstream|too many requests|temporarily|capacity|no endpoints found|timed? ?out/i
 
-type Errorish = { statusCode?: number; status?: number; message?: string; cause?: unknown; lastError?: unknown; errors?: unknown[] }
+type Errorish = { statusCode?: number; status?: number; message?: string; cause?: unknown; lastError?: unknown; errors?: unknown[]; responseBody?: unknown }
 
 /** A failure of this machine's own connection: the request never got an answer, from the provider or from anyone. */
 const NETWORK_AT_LEAST = /fetch failed|cannot connect to api|ENOTFOUND|EAI_AGAIN|ECONNRESET|ECONNREFUSED|ENETUNREACH|ENETDOWN|EHOSTUNREACH|EPIPE|UND_ERR_CONNECT_TIMEOUT|UND_ERR_SOCKET|socket hang up|network (connection )?(was )?lost|network is unreachable|getaddrinfo/i
@@ -40,6 +40,19 @@ export function networkProblem(err: unknown, depth = 0): string | null {
   return NETWORK_AT_LEAST.test(text) ? brief(text.replace(/^Failed after \d+ attempts?\. Last error:\s*/i, ''), 200) : null
 }
 
+/** The error the provider wrote into the body of an answer that had a good status (it happens: "200" with `{"error": ...}` inside), else null. */
+function errorInBody(body: unknown): string | null {
+  if (typeof body !== 'string') return null
+  try {
+    const inner = (JSON.parse(body) as { error?: { message?: unknown; code?: unknown } | string } | null)?.error
+    const message = typeof inner === 'string' ? inner : typeof inner?.message === 'string' ? inner.message : ''
+    const code = typeof inner === 'object' && inner !== null && typeof inner.code === 'number' ? inner.code : undefined
+    return (code !== undefined && (code === 408 || code === 429 || code >= 500)) || MESSAGE_AT_LEAST.test(message) ? brief(message || `HTTP ${code ?? 'error'}`, 200) : null
+  } catch {
+    return null
+  }
+}
+
 /** The words of the provider when it gave no answer (a rate limit, a capacity or server error, a 429 or a 5xx), else null. */
 export function noAnswerReason(err: unknown, depth = 0): string | null {
   const e = err as Errorish | null
@@ -49,12 +62,30 @@ export function noAnswerReason(err: unknown, depth = 0): string | null {
     const found = noAnswerReason(inner, depth + 1)
     if (found) return found
   }
+  const inBody = errorInBody(e.responseBody)
+  if (inBody) return inBody
   const message = typeof e.message === 'string' ? e.message : ''
   const code = e.statusCode ?? e.status
   const own = (code !== undefined && (code === 408 || code === 429 || code >= 500)) || MESSAGE_AT_LEAST.test(message)
   if (!own) return null
   // "Failed after 3 attempts. Last error: Provider returned error" is told as the last error only
   return brief(message.replace(/^Failed after \d+ attempts?\. Last error:\s*/i, '') || `HTTP ${code ?? 'error'}`, 200)
+}
+
+/**
+ * What a failed job says about itself, for the result file: the message, the message of its cause, the status and the first words
+ * of the body of the answer. Without this a message such as "Failed to process successful response" cannot be told from a provider's own error.
+ */
+export function describeError(err: unknown): string {
+  if (!(err instanceof Error)) return String(err)
+  const e = err as Errorish
+  const parts = [err.message]
+  const cause = e.cause instanceof Error ? e.cause.message : typeof e.cause === 'string' ? e.cause : ''
+  if (cause && cause !== err.message) parts.push(`cause: ${brief(cause, 160)}`)
+  const code = e.statusCode ?? e.status
+  if (code !== undefined && typeof e.responseBody === 'string' && e.responseBody) parts.push(`HTTP ${code}, body starts: ${brief(e.responseBody, 200)}`)
+  else if (typeof e.responseBody === 'string' && e.responseBody) parts.push(`body starts: ${brief(e.responseBody, 200)}`)
+  return parts.join('; ')
 }
 
 export type RunFixture = {
@@ -154,7 +185,7 @@ export async function runOnce(a: RunArgs): Promise<UnseenResult> {
     } catch (err) {
       machineNetwork = networkProblem(err)
       noAnswer = machineNetwork ? null : noAnswerReason(err)
-      error = err instanceof Error ? err.message : String(err)
+      error = describeError(err)
     }
     const log = await a.db.from('tool_calls').select('input, model').eq('school_id', fixture.schoolId).eq('tool', 'read_documents').order('started_at', { ascending: false }).limit(1)
     const row = log.data?.[0]

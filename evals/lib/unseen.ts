@@ -188,6 +188,55 @@ export function parseUnseenResult(text: string, where: string): UnseenResult {
   return raw as unknown as UnseenResult
 }
 
+export const runKey = (docId: string, n: number) => `${docId}|${n}`
+
+/** A try that really asked a model. A try lost to this machine's own network, or one that could not even make its school, is not a live run and is not on the ledger. */
+export const isLiveRun = (r: UnseenResult): boolean => r.calls > 0 && !r.machineNetwork
+
+const byRun = (results: UnseenResult[]): Map<string, UnseenResult[]> => {
+  const map = new Map<string, UnseenResult[]>()
+  for (const r of [...results].sort((a, b) => a.attempt - b.attempt)) map.set(runKey(r.docId, r.n), [...(map.get(runKey(r.docId, r.n)) ?? []), r])
+  return map
+}
+
+/** How many tries were repeats of a run where the provider gave no answer (a try lost to this machine's network is not one). */
+export function countRepeats(results: UnseenResult[]): number {
+  let repeats = 0
+  for (const tries of byRun(results).values()) for (let i = 1; i < tries.length; i++) if (tries[i - 1]!.verdict === 'no_answer' && !tries[i - 1]!.machineNetwork) repeats++
+  return repeats
+}
+
+export type ResumePlan = {
+  /** Runs (`docId|n`) that already have a result and must not be run again. */
+  done: Set<string>
+  /** The try number to start each unfinished run at. */
+  nextAttempt: Map<string, number>
+  repeatsUsed: number
+  networkTries: number
+}
+
+/**
+ * What a script that finds a result folder of the same run id has left to do. A pass or a fail is a result and is never run
+ * again. A try lost to this machine's network is no result and uses up no repeat. A provider no answer is repeated while a
+ * repeat is left, and is the result of its run when none is.
+ */
+export function planResume(existing: UnseenResult[], repeatsAllowed: number): ResumePlan {
+  const runs = byRun(existing)
+  const nextAttempt = new Map<string, number>()
+  let networkTries = 0
+  for (const [key, tries] of runs) {
+    nextAttempt.set(key, tries[tries.length - 1]!.attempt + 1)
+    networkTries += tries.filter((t) => t.machineNetwork).length
+  }
+  const repeatsUsed = countRepeats(existing)
+  const done = new Set<string>()
+  for (const [key, tries] of runs) {
+    const last = tries[tries.length - 1]!
+    if (last.verdict !== 'no_answer' || (!last.machineNetwork && repeatsUsed >= repeatsAllowed)) done.add(key)
+  }
+  return { done, nextAttempt, repeatsUsed, networkTries }
+}
+
 /** The last try of each run (the one that counts): a repeat replaces the try that got no answer. */
 export function finalTries(results: UnseenResult[]): UnseenResult[] {
   const best = new Map<string, UnseenResult>()
@@ -202,7 +251,12 @@ export function finalTries(results: UnseenResult[]): UnseenResult[] {
 /** Words for what the checks found, for the row of a document in EVALS.md. */
 export function whatWentWrong(runs: UnseenResult[]): string {
   const parts: string[] = []
-  const noAnswer = runs.filter((r) => r.verdict === 'no_answer')
+  const lost = runs.filter((r) => r.verdict === 'no_answer' && r.machineNetwork)
+  if (lost.length) {
+    const said = [...new Set(lost.map((r) => r.machineNetwork!))]
+    parts.push(`${lost.length === 1 ? 'one run' : `${lost.length} runs`} never got past this Mac's own network (${said.map((m) => `"${m}"`).join(' and ')}), so ${lost.length === 1 ? 'it was' : 'they were'} not judged`)
+  }
+  const noAnswer = runs.filter((r) => r.verdict === 'no_answer' && !r.machineNetwork)
   if (noAnswer.length) {
     const said = [...new Set(noAnswer.map((r) => r.noAnswer ?? r.error ?? 'no message'))]
     parts.push(`${noAnswer.length === 1 ? 'one run' : `${noAnswer.length} runs`} got no answer from the free endpoint (${said.map((m) => `"${m}"`).join(' and ')}), so ${noAnswer.length === 1 ? 'it was' : 'they were'} not judged`)
