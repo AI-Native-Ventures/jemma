@@ -1,8 +1,10 @@
 // Runs the map_records job LIVE on the free text model for the two sample files of fixtures/records, in a fresh `start` demo school,
 // prints what the model mapped against what the file means, and stores each answer in `ai_replays` (so "Use a sample file" is instant).
 // Run: node --import tsx --import ./scripts/register-md.mjs scripts/map-records-live.ts [--only tidy|messy] [--mode record|cache]
+// `--dry` checks the script itself with a made-up answer instead of a model: no request leaves this machine and nothing is recorded.
 // A hard cap of 6 requests to the model host is kept in this process (retries count). Synthetic data only. Keys are never printed.
 import { readFileSync } from 'node:fs'
+import { MockLanguageModelV4 } from 'ai/test'
 import { fileURLToPath } from 'node:url'
 import { SupabaseReplayStore, type AiEnv } from '../src/ai'
 import { createServiceClient, type JemmaDb } from '../src/db'
@@ -22,6 +24,7 @@ type Which = keyof typeof SAMPLES
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url))
 const arg = (f: string) => (process.argv.includes(f) ? process.argv[process.argv.indexOf(f) + 1] : undefined)
 const only = arg('--only') as Which | undefined
+const dry = process.argv.includes('--dry')
 const mode = (arg('--mode') ?? 'record') as 'record' | 'cache'
 
 const env = loadEnv()
@@ -50,6 +53,26 @@ const ai: AiEnv = {
   replayStore: new SupabaseReplayStore(db),
 }
 
+/** What a good model says about each file (only used by --dry). */
+const none = { learner: null, mark: null, outOf: null, percent: null, date: null, term: null, year: null, grade: null, subject: null, title: null, kind: null, topic: null, note: null, teacher: null, attendance: null }
+const fixed = { kind: null, outOf: null, grade: null, year: null, term: null, subject: null, teacher: null }
+const DRY_ANSWERS: Record<Which, unknown> = {
+  tidy: { ...none, learner: 'Learner', date: 'Date', title: 'Assessment', topic: 'Topic', mark: 'Mark', outOf: 'Total', fixed, topics: [{ text: 'Place value', family: 'whole_numbers' }, { text: 'Adding fractions', family: 'fractions' }, { text: 'Reading bar graphs', family: 'data' }] },
+  messy: {
+    ...none, learner: 'Pupil', percent: 'Result', term: 'Term', year: 'Year', title: 'Work', topic: 'Work', note: 'Teacher comment', fixed,
+    topics: ['Bar graphs quiz:data', 'Tally charts test:data', 'Measurement quiz:measurement', 'Pictograms assignment:data', 'Data project:data', 'Decimals quiz:decimals', 'Adding fractions test:fractions', 'Place value quiz:whole_numbers'].map((t) => ({ text: t.split(':')[0], family: t.split(':')[1] })),
+  },
+}
+const dryModel = (which: Which) =>
+  new MockLanguageModelV4({
+    doGenerate: async () => ({
+      content: [{ type: 'text' as const, text: JSON.stringify(DRY_ANSWERS[which]) }],
+      finishReason: { unified: 'stop' as const, raw: 'stop' },
+      usage: { inputTokens: { total: 1, noCache: 1, cacheRead: 0, cacheWrite: 0 }, outputTokens: { total: 1, text: 1, reasoning: 0 } },
+      warnings: [],
+    }),
+  })
+
 const show = (label: string, value: unknown) => console.log(`${label.padEnd(26)} ${typeof value === 'string' ? value : JSON.stringify(value)}`)
 
 async function main() {
@@ -64,10 +87,10 @@ async function main() {
       const text = readFileSync(here(`../../../fixtures/records/${file}`), 'utf8')
       const made = await createImport(db, { schoolId: sandbox.schoolId, classId: sandbox.classId, userId: login.teacher.userId, fileName: file, text })
       if (!made.ok) throw new Error(made.error)
-      console.log(`\n=== ${which}: ${file} (model ${env.LLM_MODEL}, mode ${mode}, requests so far ${requests}) ===`)
+      console.log(`\n=== ${which}: ${file} (${dry ? 'DRY RUN, a made-up answer' : `model ${env.LLM_MODEL}, mode ${mode}`}, requests so far ${requests}) ===`)
       const t0 = Date.now()
       try {
-        await runMapRecords(ctx, 'live-proof', { importId: made.importId })
+        await runMapRecords(ctx, 'live-proof', { importId: made.importId }, dry ? dryModel(which) : undefined)
       } catch (e) {
         show('RESULT', `FAILED after ${((Date.now() - t0) / 1000).toFixed(1)}s: ${(e instanceof Error ? e.message : String(e)).replace(/\s+/g, ' ').slice(0, 400)}`)
         show('requests', requests)
