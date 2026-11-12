@@ -5,8 +5,9 @@ import { expect, test, type Page } from '@playwright/test'
 import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 import { signInWithPassword } from './helpers/session'
 
-// "Any class, any school": a teacher makes classes in other grades and subjects, copies the learners of a class, puts a learner who is
+// "Any class, any school": a teacher makes classes in other grades, copies the learners of a class, puts a learner who is
 // already at the school into a second class, makes a learner's sign-in code, and starts a school that is not in the list.
+// Jemma covers Mathematics only for now (P72): the forms show the subject and do not offer a choice.
 // Headless, no agent, no model. Screenshots go to design/proof/p63 only when P63_PROOF is set, named by width (390 or 1440).
 
 const admin = () =>
@@ -36,6 +37,16 @@ const check = expect.configure({ timeout: 30_000 })
 const idOf = (url: string) => url.split('/').pop()!
 const NEW_CLASS_URL = /\/t\/new\/[0-9a-f-]{36}$/
 
+/** The subject of a new class is a read-only line, not a select: Mathematics, with a note that more come later. */
+async function expectMathsLine(page: Page) {
+  await check(page.getByText('Subject', { exact: true })).toBeVisible()
+  await check(page.getByText('Mathematics', { exact: true })).toBeVisible()
+  await check(page.getByText('More subjects come later')).toBeVisible()
+  await check(page.getByLabel('Subject', { exact: true })).toHaveCount(0)
+  await check(page.getByLabel('Subject name')).toHaveCount(0)
+  await check(page.locator('option', { hasText: 'English' })).toHaveCount(0)
+}
+
 let sb: OpenedSandbox | null = null
 let schoolId: string | null = null
 const users: string[] = []
@@ -57,7 +68,7 @@ test.afterEach(async () => {
 })
 
 test.describe('a teacher in the demo school', () => {
-  test('makes classes in other grades and subjects, copies learners, adds one, makes a sign-in code, and the demo still works', async ({ page, browser }) => {
+  test('makes classes in other grades, copies learners, adds one, makes a sign-in code, and the demo still works', async ({ page, browser }) => {
     test.setTimeout(600_000)
     const t0 = Date.now()
     const lap = (what: string) => console.log(`p63 ${Math.round((Date.now() - t0) / 1000)}s ${what}`)
@@ -67,32 +78,31 @@ test.describe('a teacher in the demo school', () => {
     const school = (await db.from('demo_sandboxes').select('school_id').eq('id', sb.sandboxId).single()).data!.school_id
     const kidsBefore = (await db.from('children').select('id').eq('school_id', school)).data!.length
 
-    // 9A Natural Sciences, Grade 9.
+    // 9A Mathematics, Grade 9.
     await page.goto('/t')
     await check(page.getByRole('link', { name: /6B Mathematics/ })).toBeVisible()
     await page.getByRole('link', { name: 'Create a class' }).click()
     await check(page).toHaveURL(/\/t\/new$/)
     await check(page.getByLabel('Grade', { exact: true }).locator('option')).toHaveCount(12)
-    await check(page.getByLabel('Subject', { exact: true }).locator('option')).toHaveText(['Mathematics', 'English', 'Natural Sciences', 'Social Sciences', 'Technology', 'Life Skills', 'Other'])
+    await expectMathsLine(page)
     await check(page.getByText('More subjects are coming')).toHaveCount(0)
-    await page.getByLabel('Class name').fill('9A Natural Sciences')
+    await page.getByLabel('Class name').fill('9A Mathematics')
     await page.getByLabel('Grade', { exact: true }).selectOption('9')
-    await page.getByLabel('Subject', { exact: true }).selectOption('Natural Sciences')
     await noHorizontalScroll(page)
     await proof(page, 'new-class-form')
     await page.getByRole('button', { name: 'Create class' }).click()
     await check(page).toHaveURL(NEW_CLASS_URL)
     const nine = idOf(page.url())
     const nineRow = (await db.from('classes').select('name, grade, subject, school_id').eq('id', nine).single()).data!
-    expect(nineRow).toEqual({ name: '9A Natural Sciences', grade: 9, subject: 'Natural Sciences', school_id: school })
+    expect(nineRow).toEqual({ name: '9A Mathematics', grade: 9, subject: 'Mathematics', school_id: school })
     await check(page.getByRole('heading', { level: 1 })).toHaveText(/^9A is set up\./)
 
     lap('9A made')
-    // 6B English: the learners of 6B copied, one new learner added.
-    await page.goto('/t/new?grade=6&subject=English')
+    // 6C Mathematics: the learners of 6B copied, one new learner added. A subject in the address is ignored.
+    await page.goto('/t/new?grade=6&subject=English&other=Reading%20Club')
     await check(page.getByLabel('Grade', { exact: true })).toHaveValue('6')
-    await check(page.getByLabel('Subject', { exact: true })).toHaveValue('English')
-    await page.getByLabel('Class name').fill('6B English')
+    await expectMathsLine(page)
+    await page.getByLabel('Class name').fill('6C Mathematics')
     await page.getByLabel('Copy learners from another class').selectOption({ label: '6B Mathematics (5 learners)' })
     await check(page.getByText('All 5 learners are in the new class too. They are not made again.')).toBeVisible()
     await page.getByLabel('Add a learner').fill('Zola')
@@ -102,17 +112,18 @@ test.describe('a teacher in the demo school', () => {
     await proof(page, 'new-class-copy')
     await page.getByRole('button', { name: 'Create class' }).click()
     await check(page).toHaveURL(NEW_CLASS_URL)
-    const english = idOf(page.url())
-    expect((await db.from('enrolments').select('child_id').eq('class_id', english)).data!.length).toBe(6)
+    const copied = idOf(page.url())
+    expect((await db.from('classes').select('name, subject').eq('id', copied).single()).data).toEqual({ name: '6C Mathematics', subject: 'Mathematics' })
+    expect((await db.from('enrolments').select('child_id').eq('class_id', copied)).data!.length).toBe(6)
     expect((await db.from('children').select('id').eq('school_id', school)).data!.length).toBe(kidsBefore + 1)
     const zola = (await db.from('children').select('id, grade').eq('school_id', school).eq('first_name', 'Zola').single()).data!
     expect(zola.grade).toBe(6)
 
-    lap('6B English made')
+    lap('6C Mathematics made')
     // The teacher makes Zola's sign-in code, and Zola signs in with it.
-    await page.goto(`/t/${english}/settings`)
-    await check(page.getByRole('heading', { level: 1 })).toHaveText('6B has 6 learners and 0 linked parents.')
-    await check(page.getByText('English', { exact: true })).toBeVisible()
+    await page.goto(`/t/${copied}/settings`)
+    await check(page.getByRole('heading', { level: 1 })).toHaveText('6C has 6 learners and 0 linked parents.')
+    await check(page.getByText('Mathematics', { exact: true })).toBeVisible()
     await check(page.getByRole('button', { name: 'Edit subject' })).toHaveCount(0)
     await check(page.getByRole('button', { name: 'Edit grade' })).toBeVisible()
     await noHorizontalScroll(page)
@@ -125,7 +136,7 @@ test.describe('a teacher in the demo school', () => {
     await check(page.getByText('PIN 4821')).toBeVisible()
     await proof(page, 'sign-in-code', false)
     const login = (await db.from('child_logins').select('child_id, pin_set_by').eq('code', code).single()).data!
-    const teacherId = (await db.from('classes').select('teacher_id').eq('id', english).single()).data!.teacher_id
+    const teacherId = (await db.from('classes').select('teacher_id').eq('id', copied).single()).data!.teacher_id
     expect(login).toEqual({ child_id: zola.id, pin_set_by: teacherId })
 
     lap('code made')
@@ -150,14 +161,14 @@ test.describe('a teacher in the demo school', () => {
     const match = page.getByRole('button', { name: /^Add Amina, Grade 6, in / })
     await check(match).toBeVisible()
     await check(match).toContainText('6B Mathematics')
-    await check(match).toContainText('6B English')
+    await check(match).toContainText('6C Mathematics')
     await check(page.getByRole('button', { name: 'New learner' })).toBeVisible()
     await proof(page, 'add-learner', false)
     await match.click()
     await check(page.getByRole('dialog')).toHaveCount(0)
     const amina = (await db.from('children').select('id').eq('school_id', school).eq('first_name', 'Amina')).data!
     expect(amina).toHaveLength(1)
-    expect((await db.from('enrolments').select('class_id').eq('child_id', amina[0]!.id)).data!.map((e) => e.class_id).sort()).toEqual([sb.classId, english, nine].sort())
+    expect((await db.from('enrolments').select('class_id').eq('child_id', amina[0]!.id)).data!.map((e) => e.class_id).sort()).toEqual([sb.classId, copied, nine].sort())
     expect((await db.from('children').select('id').eq('school_id', school)).data!.length).toBe(kidsBefore + 1)
     await page.getByRole('button', { name: 'Add a learner' }).click()
     await page.getByLabel("Learner's first name").fill('Amina')
@@ -171,8 +182,8 @@ test.describe('a teacher in the demo school', () => {
     await expect.poll(async () => (await page.locator('body').textContent()) ?? '', { timeout: 30_000 }).toContain('6B Mathematics')
     await page.goto('/t')
     await check(page.getByRole('link', { name: /6B Mathematics/ })).toBeVisible()
-    await check(page.getByRole('link', { name: /9A Natural Sciences/ })).toContainText('Grade 9')
-    await check(page.getByRole('link', { name: /6B English/ })).toContainText('Grade 6')
+    await check(page.getByRole('link', { name: /9A Mathematics/ })).toContainText('Grade 9')
+    await check(page.getByRole('link', { name: /6C Mathematics/ })).toContainText('Grade 6')
     await noHorizontalScroll(page)
     await proof(page, 'class-list')
 
@@ -253,7 +264,7 @@ test.describe('a new teacher with a school that is not in the list', () => {
     await check(page.getByRole('heading', { level: 1 })).toHaveText('Welcome, Ms Nkosi. Where and what do you teach?')
     expect((await db.from('profiles').select('display_name').eq('user_id', created.data.user.id).single()).data!.display_name).toBe('Ms Nkosi')
 
-    await page.getByLabel('Subject', { exact: true }).selectOption('English')
+    await expectMathsLine(page)
     await page.getByLabel('Grade of your first class').selectOption('3')
     await page.getByRole('button', { name: "My school isn't listed" }).click()
     const dialog = page.getByRole('dialog')
@@ -268,7 +279,7 @@ test.describe('a new teacher with a school that is not in the list', () => {
     await proofOpen(page)
     await dialog.getByRole('button', { name: 'Create school' }).click()
 
-    await check(page).toHaveURL(/\/t\/new\?grade=3&subject=English$/)
+    await check(page).toHaveURL(/\/t\/new\?grade=3$/)
     const profile = (await db.from('profiles').select('school_id').eq('user_id', created.data.user.id).single()).data!
     schoolId = profile.school_id
     expect(schoolId).not.toBeNull()
@@ -276,15 +287,13 @@ test.describe('a new teacher with a school that is not in the list', () => {
     expect(school).toEqual({ name, country: 'KE', region: 'Nairobi', sandbox_id: null })
 
     await check(page.getByLabel('Grade', { exact: true })).toHaveValue('3')
-    await check(page.getByLabel('Subject', { exact: true })).toHaveValue('English')
+    await expectMathsLine(page)
     await check(page.getByLabel('Copy learners from another class')).toHaveCount(0)
-    await page.getByLabel('Class name').fill('3C Reading')
-    await page.getByLabel('Subject', { exact: true }).selectOption('Other')
-    await page.getByLabel('Subject name').fill('Reading Club')
+    await page.getByLabel('Class name').fill('3C Mathematics')
     await page.getByRole('button', { name: 'Create class' }).click()
     await check(page).toHaveURL(NEW_CLASS_URL)
     const row = (await db.from('classes').select('name, grade, subject, school_id').eq('id', idOf(page.url())).single()).data!
-    expect(row).toEqual({ name: '3C Reading', grade: 3, subject: 'Reading Club', school_id: schoolId })
+    expect(row).toEqual({ name: '3C Mathematics', grade: 3, subject: 'Mathematics', school_id: schoolId })
     await check(page.getByRole('heading', { level: 1 })).toHaveText(/^3C is set up\./)
 
     // A second teacher who types the same school gets the school that exists, not a copy.
