@@ -230,6 +230,9 @@ describe('checkMapping', () => {
     expect(() => checkMapping(mapping({ mark: 'Learner' }), header)).toThrow(/Learner/)
     expect(() => checkMapping(mapping({ topic: 'Assessment' }), header)).not.toThrow()
     expect(checkMapping(mapping({ topic: 'Assessment' }), header).mapping).toMatchObject({ title: 'Assessment', topic: 'Assessment' })
+    // The kind of piece can be read from the same words ("Data project").
+    expect(checkMapping(mapping({ kind: 'Assessment' }), header).mapping).toMatchObject({ title: 'Assessment', kind: 'Assessment' })
+    expect(() => checkMapping(mapping({ kind: 'Mark' }), header)).toThrow(/Mark/)
   })
 })
 
@@ -268,6 +271,11 @@ describe('readRows', () => {
     expect(percent[1]).toMatchObject({ marks: 55, outOf: 100 })
     const own = read('Learner,Date,Mark\nAmina,2025-05-14,"14 out of 20"\n', mapping({ outOf: null, title: null, topic: null })).rows[0]!
     expect(own).toMatchObject({ marks: 14, outOf: 20 })
+  })
+
+  test('a decimal percent is kept as a whole percent', () => {
+    const r = read('Learner,Date,Pct\nAmina,2025-05-14,"72,5%"\nThabo,2025-05-14,"60,4"\n', mapping({ mark: null, outOf: null, percent: 'Pct', title: null, topic: null })).rows
+    expect(r.map((x) => [x.marks, x.outOf])).toEqual([[73, 100], [60, 100]])
   })
 
   test('a decimal comma mark is kept in whole numbers with the same share', () => {

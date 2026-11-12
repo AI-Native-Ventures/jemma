@@ -82,7 +82,7 @@ describe('the messy sample (messy-old-marks.csv)', () => {
 
   test('reads percents, a decimal comma and the terms of 2025 as Grade 5', () => {
     expect(rows[0]).toMatchObject({ learner: 'Thabo', marks: 85, outOf: 100, term: 2, year: 2025, grade: 5, family: 'data' })
-    expect(rows.find((r) => r.learner === 'Lerato')).toMatchObject({ marks: 725, outOf: 1000, term: 3, family: 'decimals' })
+    expect(rows.find((r) => r.learner === 'Lerato')).toMatchObject({ marks: 73, outOf: 100, term: 3, family: 'decimals' })
   })
 
   test('the row that gives orders is a row like any other: its mark is the file\'s, and the order is only text', () => {

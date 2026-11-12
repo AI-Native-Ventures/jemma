@@ -96,7 +96,7 @@ export function RecordsClient({
         setWay(key)
         setError('')
       }}
-      className={`min-h-11 flex-1 cursor-pointer rounded-pill border-0 px-3 text-[15px] font-semibold ${way === key ? 'bg-ink text-white' : 'bg-soft-2 text-ink'}`}
+      className={`min-h-11 flex-1 cursor-pointer rounded-pill border-0 px-2 text-[14px] font-semibold whitespace-nowrap sm:text-[15px] ${way === key ? 'bg-ink text-white' : 'bg-soft-2 text-ink'}`}
     >
       {text}
     </button>

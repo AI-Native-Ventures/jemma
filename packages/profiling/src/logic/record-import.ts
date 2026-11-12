@@ -337,8 +337,8 @@ export function checkMapping(raw: FileMapping, header: string[]): { mapping: Fil
       continue
     }
     const other = used.get(exact)
-    // One column can be both the title of a piece of work and its topic ("Bar graphs quiz"). Nothing else can share a column.
-    const shared = other !== undefined && ((other === 'title' && field === 'topic') || (other === 'topic' && field === 'title'))
+    // One column can be the title of a piece of work, its topic and its kind ("Bar graphs quiz"). Nothing else can share a column.
+    const shared = other !== undefined && WORDS_OF_WORK.has(other) && WORDS_OF_WORK.has(field)
     if (other && !shared) throw new MappingError(`The column ${exact} cannot be both the ${FIELD_WORDS[other]} and the ${FIELD_WORDS[field]}.`)
     if (!other) used.set(exact, field)
     mapping[field] = exact
@@ -356,6 +356,9 @@ export function checkMapping(raw: FileMapping, header: string[]): { mapping: Fil
   })
   return { mapping, warnings }
 }
+
+/** The columns that can all be one column of words about a piece of work. */
+const WORDS_OF_WORK = new Set<ColumnField>(['title', 'topic', 'kind'])
 
 const FIELD_WORDS: Record<ColumnField, string> = {
   learner: 'learner',
@@ -504,6 +507,8 @@ export function readRows(table: RawTable, mapping: FileMapping, ctx: ReadContext
         const column = parseMark(cellOf(raw, mapping.outOf))
         const total = parsed.outOf ?? (fromPercentColumn ? 100 : null) ?? (column.ok ? column.marks : null) ?? mapping.fixed.outOf
         if (total === null || total <= 0) markProblem = 'no_total'
+        // A percent is kept as a whole percent (72,5% is 73 out of 100): half a percent says nothing more about a learner.
+        else if (total === 100 && (fromPercentColumn || /%\s*$/.test(markText))) ({ marks, outOf } = { marks: Math.round(parsed.marks), outOf: 100 })
         else ({ marks, outOf } = wholeMarks(parsed.marks, total))
       }
     }
