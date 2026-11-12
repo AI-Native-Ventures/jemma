@@ -8,8 +8,8 @@
  *   pnpm evals:unseen --cap 12 --docs grade5-mathematics-za --runs 1
  *   pnpm evals:unseen --cap 12 --run-id <id of a stopped run>     goes on with that run: a run that has a result is never run again
  *
- * A run where the provider gave no answer (a rate limit, a capacity or server error) is repeated, at most `--repeats` times in
- * all (default 3), and is shown as "no answer", never as a fail. Three no-answers in a row stop the script. Each try is one line
+ * A run where the provider gave no answer (a rate limit, a capacity or server error) is repeated after a pause of 60 seconds, at most
+ * `--repeats` times in all (default 3), and is shown as "no answer", never as a fail. Three no-answers in a row stop the script. Each try is one line
  * in `evals/results/ledger.jsonl` (kind `draft_map`, with its run id), and the script stops at `--cap` live runs of that run id.
  *
  * Needs `OPENROUTER_API_KEY`, the database values in `.env.local`, and the ONE-AT-A-TIME rule: never run it beside another live run.
@@ -28,6 +28,9 @@ import { clean } from './lib/redact'
 import { DOCUMENT_IDS, UNSEEN_RESULTS, documentPath, isLiveRun, loadTruth, parseUnseenResult, planResume, runKey, type UnseenResult } from './lib/unseen'
 import { freeModels } from './lib/unseen-models'
 import { runOnce } from './lib/unseen-run'
+
+/** After a try where the provider gave no answer (a rate limit says wait), the script waits this long before it repeats it. */
+const PAUSE_AFTER_NO_ANSWER_MS = 60_000
 
 const args = () => {
   const argv = process.argv.slice(2)
@@ -125,7 +128,8 @@ async function main(): Promise<void> {
         }
         if (result.verdict !== 'no_answer' || repeatsLeft <= 0) break
         repeatsLeft--
-        console.log(`  the provider gave no answer: repeating (${repeatsLeft} repeat(s) left)`)
+        console.log(`  the provider gave no answer: waiting ${PAUSE_AFTER_NO_ANSWER_MS / 1000} seconds, then repeating (${repeatsLeft} repeat(s) left)`)
+        await sleep(PAUSE_AFTER_NO_ANSWER_MS)
       }
     }
   }
