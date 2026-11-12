@@ -407,6 +407,26 @@ function unseenSection(u: UnseenRun): string[] {
     lines.push('The question about a topic that the plan lists in two terms can come from code: when the model keeps such a topic in both terms and asks nothing, the step that saves the map adds the question "Listed in Term X and Term Y. Which term is it taught in?" and writes in the tool log how many it added. The table says for each run who asked.')
     lines.push(`${u.tries.filter(isLiveRun).length} live runs of the curriculum reader were made in all${repeats ? `, ${repeats} of them repeats of a run where the provider gave no answer` : ''}. Median seconds count the runs that got an answer.`)
     if (lost) lines.push(`${lost} more ${lost === 1 ? 'try' : 'tries'} never got past this Mac's own network (not the provider), so ${lost === 1 ? 'it was' : 'they were'} not counted and no model was asked.`)
+    // In how many runs code asked about the topic listed in two terms, and why it did not in the others.
+    const withAsked = finals.filter((r) => r.twoTermsAskedBy === 'code' || r.twoTermsAskedBy === 'model' || r.twoTermsAskedBy === 'none')
+    if (withAsked.length) {
+      const by = (who: string) => withAsked.filter((r) => r.twoTermsAskedBy === who).length
+      const renamed = withAsked.filter((r) => {
+        if (r.twoTermsAskedBy !== 'none' || !r.draft) return false
+        try {
+          return repeatedUnderOtherNames(r.draft, loadTruth(r.docId)) !== null
+        } catch {
+          return false
+        }
+      }).length
+      const nobody = by('none') - renamed
+      const why = [
+        by('model') ? `the model asked itself in ${by('model')}` : '',
+        renamed ? `in ${renamed} it named the topic differently in the later term, so code saw no topic listed twice and nobody asked` : '',
+        nobody ? `in ${nobody} nobody asked` : '',
+      ].filter(Boolean)
+      lines.push(`Code asked in ${by('code')} of ${withAsked.length} runs${why.length ? `: ${why.join('; ')}` : ''}.`)
+    }
     const text = u.tries.filter((t) => t.way === 'text').length
     if (text) lines.push(`${text === 1 ? '1 run was' : `${text} runs were`} read from the text of the document because the first way, the vision model looking at the pages, gave nothing.`)
     // The family words the scorer accepted although they are not in the Mathematics list (a Grade 9 plan has algebra and geometry).

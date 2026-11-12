@@ -109,6 +109,19 @@ describe('the section "A curriculum Jemma had never seen"', () => {
     expect(text).toContain('run 1: the draft has the topic as "Perimeter and area" in Term 2 and "Perimeter and area again" in Term 3; the names differ, so code did not see one topic listed twice and asked nothing')
   })
 
+  test('one sentence says in how many runs code asked, and why it did not in the others', () => {
+    const entry = (name: string) => ({ name, family: 'measurement', prerequisites: [], misconceptions: [] })
+    const twice = (a: string, b: string) => ({ grade: 5, terms: [{ term: 2 as const, topics: [entry(a)] }, { term: 3 as const, topics: [entry(b)] }], leftOut: [] })
+    const model = tryOf(GRADE5, 1, { twoTermsAskedBy: 'model' as const, codeQuestions: 0, draft: twice('Perimeter and area', 'Other') })
+    const renamed = tryOf(GRADE5, 2, { verdict: 'fail', twoTermsAskedBy: 'none' as const, codeQuestions: 0, draft: twice('Perimeter and area', 'Perimeter and area again'), checks: [failCheck] })
+    const text = section(renderReport({ ...baseInput, unseen: unseen({ tries: [model, model, renamed] .map((t, i) => ({ ...t, n: i + 1 })) }) }))
+    expect(text).toContain('Code asked in 0 of 3 runs: the model asked itself in 2; in 1 it named the topic differently in the later term, so code saw no topic listed twice and nobody asked.')
+    const some = section(renderReport({ ...baseInput, unseen: unseen({ tries: [tryOf(GRADE9, 1, { twoTermsAskedBy: 'code' as const, codeQuestions: 2, draft: twice('A', 'A') }), tryOf(GRADE9, 2, { twoTermsAskedBy: 'model' as const, codeQuestions: 0, draft: twice('A', 'B') })] }) }))
+    expect(some).toContain('Code asked in 1 of 2 runs: the model asked itself in 1.')
+    // results from before the figure existed say nothing about it
+    expect(section(renderReport({ ...baseInput, unseen: unseen({ tries: [tryOf(GRADE9, 1)] }) }))).not.toContain('Code asked in')
+  })
+
   test('the family words that were not in the Mathematics list are named, with the number of runs that used them', () => {
     const figures = (extraFamilies: string[]) => ({ found: 14, of: 14, invented: 0, drafted: 14, rightTerm: 14, termsInDraft: [1, 2, 3, 4], extraFamilies })
     const text = section(renderReport({ ...baseInput, unseen: unseen({ tries: [tryOf(GRADE9, 1, { figures: figures(['algebra', 'geometry']) }), tryOf(GRADE9, 2, { figures: figures(['algebra']) }), tryOf(GRADE9, 3, { figures: figures([]) })] }) }))
