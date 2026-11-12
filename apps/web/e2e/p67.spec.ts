@@ -248,15 +248,17 @@ test.describe('a curriculum Jemma has never seen', () => {
       // no months: the calendar quarters of a South African year are not this year's terms
       await expect(page.getByRole('heading', { name: /^Term \d$/ })).toHaveCount(1)
       await expect(page.getByText(/January to March|April to June|July to September|October to December/)).toHaveCount(0)
+      await proof(page, 'review-kenya-three-terms')
       // the change-term list offers three terms, not four
       await page.getByRole('button', { name: 'Edit Parts of a flowering plant' }).click()
       await expect(page.getByRole('combobox').locator('option')).toHaveText(['Term 1', 'Term 2', 'Term 3'])
+      await proof(page, 'edit-term-kenya')
     } else {
       // a term heading may carry the count of things to check after its name
       await check(page.getByRole('heading', { name: /^Term [1-4]( \d+)?$/ })).toHaveCount(3)
       await expect(page.getByRole('heading', { name: /^Term 4/ })).toHaveCount(0)
       await expect(page.getByText(/Jan to Mar|Apr to Jun|Jul to Sep|Oct to Dec/)).toHaveCount(0)
+      await proof(page, 'review-kenya-three-terms')
     }
-    await proof(page, 'review-kenya-three-terms')
   })
 })
