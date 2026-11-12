@@ -10,7 +10,7 @@ Built for the African Agentic AI Design Challenge, Education track (The Long Vie
 
 - **A profile, not a label.** Jemma surfaces a pattern ("fractions stayed low from Grade 5 Term 3 to Grade 6 Term 2"). It never assigns a track, a subject path or a career.
 - **Every claim has a source.** A pattern lists the quizzes, tests and teacher notes it comes from, and a teacher can open each one. The save tool drops a pattern that matches no record.
-- **The teacher goes first.** Every gate is a tap by a named teacher: the topic map, the answer key, a mark Jemma is unsure about, a guardian link, sharing results, a Long view pattern, and the talk with the guardian. The name and the time are kept.
+- **The teacher goes first.** Every gate is a tap by a named teacher: the topic map, the answer key, a mark Jemma is unsure about, a guardian link, sharing results, adding a file of past records, a Long view pattern, and the talk with the guardian. The name and the time are kept.
 - **Never ranked.** A learner is not compared with classmates and never sees the Long view or a score.
 - **Marks are code.** A model reads a photo. Code marks it.
 - **Synthetic data only.** No real learner is in the system.

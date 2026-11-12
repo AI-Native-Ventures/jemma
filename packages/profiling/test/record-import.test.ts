@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest'
 import { MockLanguageModelV4 } from 'ai/test'
 import { MemoryStore } from '../src/ai'
+import { classIdOfRef } from '../src/ai/subject-profile'
 import { createServiceClient, type JemmaDb } from '../src/db'
 import { applyImportFix, approveImport, createImport, discardImport, loadImport, storedOf } from '../src/imports'
 import { runMapRecords } from '../src/jobs/cloud/map-records'
@@ -166,6 +167,8 @@ describe('save_record_mapping', () => {
     const item = (await db.from('needs_you_items').select('*').eq('ref_id', id)).data!
     expect(item).toHaveLength(1)
     expect(item[0]).toMatchObject({ kind: 'check_records', owner_id: a.teacherId, status: 'open', title: 'Check 6 past results for 6B Mathematics' })
+    // The notification for the item leads to the class the file was brought in for.
+    expect(await classIdOfRef(db, id)).toBe(a.classId)
     const logged = (await db.from('tool_calls').select('tool, ok, input').eq('school_id', a.schoolId).eq('tool', 'save_record_mapping')).data!
     expect(logged.some((l) => l.ok && (l.input as { importId?: string }).importId === id)).toBe(true)
   })
