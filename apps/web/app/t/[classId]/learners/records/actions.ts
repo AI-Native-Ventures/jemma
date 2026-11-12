@@ -21,11 +21,19 @@ const fail = (reason: string): { ok: false; reason: string } => ({ ok: false, re
 /** Not a model: the tools these actions call never read the replay store. */
 const noStore = { get: async () => null, put: async () => undefined }
 
+const NOT_YOURS = 'Only the teacher of this class can add past records.'
+
+/**
+ * The class, for its own teacher only. Row level security shows a teacher a colleague's class when they share a learner, so
+ * seeing the class is not enough: its `teacher_id` must be the signed-in teacher.
+ */
 async function teachingClass(classId: string) {
   const { userId } = await requireRole('teacher')
   const supabase = (await createSupabaseServer()) as unknown as JemmaDb
-  const { data } = await supabase.from('classes').select('id, school_id, name').eq('id', classId).maybeSingle()
-  return data ? { userId, cls: data, supabase } : null
+  const { data } = await supabase.from('classes').select('id, school_id, name, teacher_id').eq('id', classId).maybeSingle()
+  if (!data) return { refused: 'That class was not found.' }
+  if (data.teacher_id !== userId) return { refused: NOT_YOURS }
+  return { userId, cls: data, supabase }
 }
 
 async function ownImport(importId: string) {
@@ -38,7 +46,7 @@ async function ownImport(importId: string) {
 /** The file is saved and the import made first. Asking the agent to read it can fail, and then the screen says so and offers to try again. */
 async function start(classId: string, fileName: string, text: string): Promise<Done<{ importId: string }>> {
   const own = await teachingClass(classId)
-  if (!own) return fail('That class was not found.')
+  if (own.refused !== undefined) return fail(own.refused)
   const admin = createSupabaseAdmin()
   const made = await createImport(admin, { schoolId: own.cls.school_id, classId, userId: own.userId, fileName, text })
   if (!made.ok) return fail(made.error)
@@ -65,7 +73,7 @@ export async function pasteRecords(classId: string, text: string): Promise<Done<
 /** Demo school only: one of the two sample files of `fixtures/records`, as if it was uploaded. */
 export async function startSampleRecords(classId: string, which: SampleName): Promise<Done<{ importId: string }>> {
   const own = await teachingClass(classId)
-  if (!own) return fail('That class was not found.')
+  if (own.refused !== undefined) return fail(own.refused)
   const sample = SAMPLE_RECORDS[which]
   if (!sample) return fail('That sample file was not found.')
   const school = await createSupabaseAdmin().from('schools').select('sandbox_id').eq('id', own.cls.school_id).maybeSingle()
@@ -142,7 +150,7 @@ export async function discardRecords(importId: string): Promise<Done> {
 /** The "One result" form. The checks are the same words the form shows (`validateOneResult`). A model is not used. */
 export async function addOneResult(classId: string, childId: string, form: OneResultInput): Promise<Done<{ name: string }>> {
   const own = await teachingClass(classId)
-  if (!own) return fail('That class was not found.')
+  if (own.refused !== undefined) return fail(own.refused)
   const teaches = await own.supabase.rpc('teaches_child', { child: childId })
   if (teaches.error || teaches.data !== true) return fail('Only the class teacher can add a record.')
   const admin = createSupabaseAdmin()

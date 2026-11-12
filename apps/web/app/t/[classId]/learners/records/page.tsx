@@ -14,10 +14,11 @@ import { SAMPLE_RECORDS, type SampleName } from './samples'
  */
 export default async function AddPastRecordsPage({ params }: { params: Promise<{ classId: string }> }) {
   const { classId } = await params
-  await requireRole('teacher')
+  const { userId } = await requireRole('teacher')
   const db = (await createSupabaseServer()) as unknown as JemmaDb
-  const { data: cls } = await db.from('classes').select('name, subject, grade, year, schools(sandbox_id)').eq('id', classId).maybeSingle()
-  if (!cls) notFound()
+  const { data: cls } = await db.from('classes').select('name, subject, grade, year, teacher_id, schools(sandbox_id)').eq('id', classId).maybeSingle()
+  // A colleague who shares a learner can see the class, but only its own teacher brings records in.
+  if (!cls || cls.teacher_id !== userId) notFound()
   const { data: enrolled } = await db.from('enrolments').select('children(id, first_name, last_name, created_at)').eq('class_id', classId)
   const learners = (enrolled ?? [])
     .flatMap((e) => (e.children ? [e.children] : []))

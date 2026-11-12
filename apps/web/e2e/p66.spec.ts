@@ -285,6 +285,30 @@ test.describe('past records for a teacher', () => {
     await settleLongViewUpdates(school)
   })
 
+  test('a real file just under 1 MB with 2,000 rows goes through the server action and is kept whole', async ({ page }) => {
+    test.setTimeout(600_000)
+    sb = await openSandbox(page, { stage: 'start', role: 'teacher' })
+    const db = admin()
+    const school = (await db.from('demo_sandboxes').select('school_id').eq('id', sb.sandboxId).single()).data!.school_id
+    // 2,000 rows (the most a file may have), each with a long note, about 1,000,000 bytes in all (the most is 1,048,576).
+    const note = 'Worked steadily through the whole page and checked every answer twice before handing it in. '.repeat(5).slice(0, 430)
+    const rows = Array.from({ length: 2000 }, (_, i) => `Amina,2025-05-14,Test ${i + 1},Adding fractions,14,20,${note}`)
+    const text = `Learner,Date,Assessment,Topic,Mark,Total,Comment\n${rows.join('\n')}\n`
+    const bytes = Buffer.from(text)
+    expect(bytes.length).toBeGreaterThan(950_000)
+    expect(bytes.length).toBeLessThan(1_048_576)
+    await page.goto(`/t/${sb.classId}/learners/records`)
+    await page.getByLabel('Choose a .csv file').setInputFiles({ name: 'just-under-1mb.csv', mimeType: 'text/csv', buffer: bytes })
+    await expect(page.locator('p[role="alert"]')).toHaveCount(0)
+    await check(page).toHaveURL(/\/learners\/records\/[0-9a-f-]{36}$/)
+    const importId = page.url().split('/').pop()!
+    const row = (await db.from('record_imports').select('file_name, file_path, school_id').eq('id', importId).single()).data!
+    expect(row).toMatchObject({ file_name: 'just-under-1mb.csv', school_id: school })
+    const stored = await db.storage.from('records').download(row.file_path!)
+    expect(stored.data!.size).toBe(bytes.length)
+    expect(await stored.data!.text()).toBe(text)
+  })
+
   test('a pasted table and a file over 1 MB: the table is kept, the big file is refused in one sentence', async ({ page }) => {
     test.setTimeout(600_000)
     sb = await openSandbox(page, { stage: 'start', role: 'teacher' })
