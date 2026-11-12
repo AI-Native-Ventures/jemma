@@ -2,7 +2,7 @@
 
 ## Agent shape
 
-An event (a photo, a note, a finished lesson, shared results) starts a job plan. Code builds the plan from the database after every step. Each of the 8 AI jobs is one run: goose on an open-weights model, Claude Code on the owner's laptop, or the hosted app's own runner. The run reads through Jemma's tools and must finish through a save tool. Save tools enforce the rules in code: marks, sources, banned words, school scope. Code then checks what the event had to produce, retries, falls back to another model, or hands the item to the teacher.
+An event (a photo, a note, a finished lesson, shared results) starts a job plan. Code builds the plan from the database after every step. Each of the 9 AI jobs is one run: goose on an open-weights model, Claude Code on the owner's laptop, or the hosted app's own runner. The run reads through Jemma's tools and must finish through a save tool. Save tools enforce the rules in code: marks, sources, banned words, school scope. Code then checks what the event had to produce, retries, falls back to another model, or hands the item to the teacher.
 
 ```mermaid
 flowchart LR
@@ -18,7 +18,7 @@ flowchart LR
 
 | | Server | What it does here |
 | --- | --- | --- |
-| Built | Jemma's own, 22 tools (`packages/profiling/src/tools/registry.ts`) | Read a learner's records, mark a paper, save a profile update, class report, lesson, guidance card or Long view draft. |
+| Built | Jemma's own, 25 tools (`packages/profiling/src/tools/registry.ts`) | Read a learner's records, mark a paper, save a profile update, class report, lesson, guidance card or Long view draft. |
 | Borrowed | The official filesystem server, pinned 2.2.0 | Lets goose write a Markdown copy of a report into one folder. |
 
 Why borrowed: sandboxed, allow-listed file access with path-escape protection is security code we should not write and audit ourselves.

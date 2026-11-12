@@ -68,7 +68,7 @@ These are screenshots from the running app at 390 px, taken by the builders of e
 ## How the agent works
 
 1. An event (a photo, a note, a finished lesson, shared results) starts a job plan that code builds from the database after every step.
-2. Each AI job is one run: goose on an open-weights model, Claude Code on the owner's laptop, or the hosted app's own runner. It reads through Jemma's own MCP server (22 tools).
+2. Each AI job is one run: goose on an open-weights model, Claude Code on the owner's laptop, or the hosted app's own runner. It reads through Jemma's own MCP server (25 tools).
 3. The run must finish through a save tool. Save tools enforce the rules in code: marks, sources, banned words, school scope.
 4. Code checks that the event produced what it had to, retries, falls back to another model, or hands the item to the teacher.
 5. A person decides at every gate, and every tool call and approval is logged and readable on the full log screen.

@@ -337,8 +337,10 @@ export function checkMapping(raw: FileMapping, header: string[]): { mapping: Fil
       continue
     }
     const other = used.get(exact)
-    if (other) throw new MappingError(`The column ${exact} cannot be both the ${FIELD_WORDS[other]} and the ${FIELD_WORDS[field]}.`)
-    used.set(exact, field)
+    // One column can be both the title of a piece of work and its topic ("Bar graphs quiz"). Nothing else can share a column.
+    const shared = other !== undefined && ((other === 'title' && field === 'topic') || (other === 'topic' && field === 'title'))
+    if (other && !shared) throw new MappingError(`The column ${exact} cannot be both the ${FIELD_WORDS[other]} and the ${FIELD_WORDS[field]}.`)
+    if (!other) used.set(exact, field)
     mapping[field] = exact
   }
   if (!mapping.learner) throw new MappingError('The file needs a column that says who the learner is, and none of its columns does.')

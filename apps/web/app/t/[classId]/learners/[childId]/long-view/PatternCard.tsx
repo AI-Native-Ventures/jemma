@@ -57,11 +57,16 @@ function EvidenceSheet({ sheet, onClose }: { sheet: LvSheet | null; onClose: () 
     <Sheet open onClose={onClose} title={sheet.title}>
       <dl className="m-0 flex flex-col gap-2">
         {sheet.teacher ? <Fact label="Teacher">{sheet.teacher}</Fact> : null}
-        {sheet.grade !== null && sheet.term !== null ? <Fact label="Grade and term">{`Grade ${sheet.grade}, Term ${sheet.term}`}</Fact> : null}
+        {sheet.grade !== null && sheet.term !== null ? <Fact label="Grade and term">{`Grade ${sheet.grade}, Term ${sheet.term}${sheet.year ? `, ${sheet.year}` : ''}`}</Fact> : null}
         <Fact label="Date">{sheet.date}</Fact>
         {sheet.marks ? <Fact label="Marks">{sheet.marks}</Fact> : null}
       </dl>
       {sheet.text ? <p className="m-0 rounded-14 bg-soft-2 p-3 text-[15px] leading-[1.5] [overflow-wrap:anywhere]">{sheet.text}</p> : null}
+      {sheet.origin ? (
+        <p className="m-0 text-[14px] leading-[1.4] text-body [overflow-wrap:anywhere]" data-origin>
+          {sheet.origin}
+        </p>
+      ) : null}
       {sheet.late ? (
         <p className="m-0 flex flex-wrap items-center gap-2 text-[14px] leading-[1.4] text-body">
           <Pill tone="quiet" className="!py-1 !text-[13px]">

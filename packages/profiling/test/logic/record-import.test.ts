@@ -226,8 +226,10 @@ describe('checkMapping', () => {
     expect(() => checkMapping(mapping({ mark: null, outOf: null, percent: null, note: null, attendance: null }), header)).toThrow(/mark|note|attendance/i)
   })
 
-  test('the same column cannot be two things', () => {
+  test('the same column cannot be two things, except the title and the topic of a piece of work', () => {
     expect(() => checkMapping(mapping({ mark: 'Learner' }), header)).toThrow(/Learner/)
+    expect(() => checkMapping(mapping({ topic: 'Assessment' }), header)).not.toThrow()
+    expect(checkMapping(mapping({ topic: 'Assessment' }), header).mapping).toMatchObject({ title: 'Assessment', topic: 'Assessment' })
   })
 })
 
