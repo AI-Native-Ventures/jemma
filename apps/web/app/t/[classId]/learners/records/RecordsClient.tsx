@@ -242,7 +242,6 @@ function OneResult({ classId, subject, grade, year, learners, families }: { clas
   const [kind, setKind] = useState('quiz')
   const [title, setTitle] = useState('')
   const [strand, setStrand] = useState('')
-  const [subj, setSubj] = useState(subject)
   const [g, setG] = useState(String(Math.max(1, grade - 1)))
   const [y, setY] = useState(String(year - 1))
   const [term, setTerm] = useState('1')
@@ -256,7 +255,7 @@ function OneResult({ classId, subject, grade, year, learners, families }: { clas
   const isNote = kind === 'note'
 
   function save() {
-    const form = { kind, subject: subj, grade: g, year: y, term, title, family: strand, marks, outOf, text, teacherName: teacher }
+    const form = { kind, subject, grade: g, year: y, term, title, family: strand, marks, outOf, text, teacherName: teacher }
     const checked = validateOneResult(form, { subject, year, families })
     if (!checked.ok) return setError(checked.error)
     setError('')
@@ -324,9 +323,12 @@ function OneResult({ classId, subject, grade, year, learners, families }: { clas
           <Row id="or-title" text="Title" hint="For example Class Test 1">
             <input id="or-title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} className={input} />
           </Row>
-          <Row id="or-subject" text="Subject">
-            <input id="or-subject" type="text" value={subj} onChange={(e) => setSubj(e.target.value)} className={input} />
-          </Row>
+          <div className="flex min-w-0 flex-col gap-1.5">
+            <span className={label}>Subject</span>
+            <p className="m-0 flex h-[52px] items-center rounded-14 bg-soft-2 px-3.5 text-[17px] text-ink" data-fixed-subject>
+              {subject}
+            </p>
+          </div>
           <Row id="or-strand" text="Strand" hint="The part of the subject this piece was about.">
             {families ? (
               <SelectBox id="or-strand" value={strand} onChange={setStrand}>

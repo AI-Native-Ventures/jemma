@@ -39,6 +39,13 @@ globalThis.fetch = (async (input: Parameters<typeof fetch>[0], init?: Parameters
   if (/openrouter\.ai|opencode\.ai|api\.deepseek|anthropic|generativelanguage|api\.openai/.test(url)) {
     if (requests >= CAP) throw new Error(`live cap of ${CAP} requests reached`)
     requests++
+    const answer = await realFetch(input, init)
+    // After a rate limit answer the next request waits 60 seconds (another runner may be using the same free model).
+    if (answer.status === 429) {
+      console.log(`rate limit answer on request ${requests}: waiting 60 seconds before the next one`)
+      await new Promise((r) => setTimeout(r, 60_000))
+    }
+    return answer
   }
   return realFetch(input, init)
 }) as typeof fetch

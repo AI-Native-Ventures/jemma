@@ -240,6 +240,9 @@ test.describe('past records for a teacher', () => {
     await page.goto(`/t/${sb.classId}/learners/records`)
     await page.getByRole('tab', { name: 'One result' }).click()
     await expect(page.getByRole('heading', { name: 'One result' })).toBeVisible()
+    // The subject is the class's, shown as a fixed value, not a list.
+    await expect(page.locator('[data-fixed-subject]')).toHaveText('Mathematics')
+    await expect(page.getByLabel('Subject')).toHaveCount(0)
     await noHorizontalScroll(page)
     await proof(page, 'one-result')
 
