@@ -97,7 +97,9 @@ test.describe('past records for a teacher', () => {
     const what = page.getByRole('region', { name: 'What Jemma understood' })
     await expect(what).toContainText('The column Pupil is the learner.')
     await expect(what).toContainText(/The column Result is the mark(, as a percent)?\./)
-    await expect(what).toContainText(/January to March is term 1/)
+    // The file has a Term column, so no term calendar is needed. The grade is not in the file: it is worked out from the year, and the screen says so.
+    await expect(what).toContainText('The file does not give a grade for every row')
+    await expect(what).toContainText('For example, 2025 is Grade 5.')
     const counts = page.getByRole('region', { name: 'What is in the file' })
     await expect(counts.getByText('Rows read').locator('..')).toContainText('10')
     await expect(counts.getByText('Need a look').locator('..')).toContainText('3')
@@ -111,7 +113,7 @@ test.describe('past records for a teacher', () => {
     expect(row.file_name).toBe('messy-old-marks.csv')
     const item = (await db.from('needs_you_items').select('title, kind, status').eq('ref_id', importId).single()).data!
     expect(item).toEqual({ title: 'Check 10 past results for 6B Mathematics', kind: 'check_records', status: 'open' })
-    await proof(page, 'check-top')
+    await proof(page, 'check-top', false)
 
     // The rows with a problem come first: an unknown learner, a repeat, a topic Jemma is unsure of.
     const problems = page.getByRole('region', { name: /Rows to look at/ })
@@ -119,7 +121,7 @@ test.describe('past records for a teacher', () => {
     const cards = problems.getByRole('article')
     await expect(cards).toHaveCount(3)
     await expect(problems.getByRole('article', { name: 'Row 10' })).toContainText('Pule is not a learner in this class')
-    await expect(problems.getByRole('article', { name: 'Row 11' })).toContainText('the same as row 9 of this file')
+    await expect(problems.getByRole('article', { name: 'Row 11' })).toContainText('The same as row 9 of this file')
     await expect(problems.getByRole('article', { name: 'Row 12' })).toContainText('not sure which strand')
     await proof(page, 'check-problems')
 
@@ -146,7 +148,8 @@ test.describe('past records for a teacher', () => {
     const gate = page.getByRole('region', { name: "Add to the learners' records" })
     await expect(gate).toContainText('Jemma will add 8 records for 5 learners.')
     await expect(gate).toContainText('Nothing reaches a parent or a learner.')
-    await proof(page, 'check-gate')
+    await gate.scrollIntoViewIfNeeded()
+    await proof(page, 'check-gate', false)
 
     // Add to records: the teacher's yes is saved with their name, then the records are written.
     await page.getByRole('button', { name: 'Add to records' }).click()
@@ -221,6 +224,7 @@ test.describe('past records for a teacher', () => {
     await expect(counts.getByText('Rows read').locator('..')).toContainText('15')
     await expect(counts.getByText('Need a look').locator('..')).toContainText('0')
     await expect(page.getByRole('region', { name: /Rows to look at/ })).toHaveCount(0)
+    await expect(page.getByRole('region', { name: 'What Jemma understood' })).toContainText('January to March is term 1')
     await proof(page, 'tidy-check')
     await page.getByRole('button', { name: 'Add to records' }).click()
     await expect(page.getByText('Added 15 past records from grade5-maths-results.csv.')).toBeVisible({ timeout: 90_000 })
