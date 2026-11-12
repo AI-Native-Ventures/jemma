@@ -30,7 +30,7 @@ export default async function FirstClassPage() {
               Pick any grade and subject. Then open the learners screen and tap Add made-up learners to fill it with a few years of history.
             </p>
           </div>
-          <NewClassForm code={newJoinCode()} initialGrade={9} initialSubject="Natural Sciences" initialOther="" copyOptions={copyOptions} />
+          <NewClassForm code={newJoinCode()} initialGrade={9} initialSubject="Mathematics" initialOther="" copyOptions={copyOptions} />
         </main>
       </Column>
     </div>

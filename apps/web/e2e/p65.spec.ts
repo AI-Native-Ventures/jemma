@@ -4,10 +4,10 @@ import { createServiceClient } from '@jemma/profiling/db'
 import { expect, test, type Page } from '@playwright/test'
 import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 
-// The made-up school: a teacher with other classes (Mr Dlamini), a learner with three subjects (Amina's Long view and its subject chips),
-// a generated learner who signs in, and a school that starts empty and is filled with made-up learners in one tap.
-// Headless, no agent needed (an update the agent cannot take is marked failed and the grid still shows). Screenshots go to
-// design/proof/p65 only when P65_PROOF is set, named by width (390 or 1440).
+// The made-up school (Mathematics only): a teacher with a class of made-up learners (Mr Dlamini), a teacher with two classes (Ms Banda),
+// a generated learner with a planted pattern who signs in, and a school that starts empty and is filled with made-up learners in one tap.
+// Headless. The step that shows a generated learner's pattern needs the local agent (AI_MODE=replay) with the recorded answer.
+// Screenshots go to design/proof/p65 only when P65_PROOF is set, named by width (390 or 1440).
 
 const admin = () =>
   createServiceClient({
@@ -33,7 +33,13 @@ async function noHorizontalScroll(page: Page) {
 test.setTimeout(240_000)
 const check = expect.configure({ timeout: 60_000 })
 
-const FIVE = ['Amina', 'Thabo', 'Lerato', 'Sipho', 'Naledi']
+/** The made-up learners of the school, from the roster the seed uses (it depends only on the year). */
+async function roster() {
+  const { madeUpClasses } = await import('../../../supabase/seed/fixtures/hillview')
+  const classes = madeUpClasses(new Date().getUTCFullYear())
+  const of = (key: string) => classes.find((c) => c.classKey === key)!.batch.learners
+  return { sevenA: of('7a-maths'), fiveA: of('5a-maths') }
+}
 
 const made: string[] = []
 let opened: OpenedSandbox | null = null
@@ -54,11 +60,13 @@ test.afterEach(async () => {
 })
 
 test.describe('the made-up school', () => {
-  test('pick Mr Dlamini: his class is 6B English, with the same five children', async ({ page }) => {
+  test('pick Mr Dlamini: his class is 7A Mathematics, with its six made-up learners', async ({ page }) => {
+    const { sevenA, fiveA } = await roster()
     await page.goto('/demo')
     await check(page.getByRole('heading', { name: 'More people at Hillview' })).toBeVisible()
-    await check(page.getByRole('button', { name: /Mr Dlamini/ })).toContainText('6B English, 7A English')
-    await expect(page.getByRole('button', { name: /Nomsa K/ })).toContainText('Neo (Grade 5), Thandiwe (Grade 4)')
+    await check(page.getByRole('button', { name: /Mr Dlamini/ })).toContainText('7A Mathematics')
+    await expect(page.getByRole('button', { name: /Ms Okafor/ })).toContainText('4A Mathematics')
+    await expect(page.getByRole('button', { name: /Nomsa K/ })).toContainText(`${fiveA[0]!.firstName} (Grade 5), ${sevenA[0]!.firstName} (Grade 7)`)
     await expect(page.getByRole('button', { name: /Start from an empty school/ })).toBeVisible()
     // The three big buttons stay first and unchanged.
     await expect(page.getByRole('button', { name: /Ms Banda/ })).toContainText('Start here')
@@ -67,15 +75,12 @@ test.describe('the made-up school', () => {
 
     await page.getByRole('button', { name: /Mr Dlamini/ }).click()
     await page.waitForURL(/\/t\/[0-9a-f-]{36}\/learners$/, { timeout: 120_000 })
-    const sandboxId = await takeCookieSandbox(page)
+    await takeCookieSandbox(page)
     const classId = page.url().split('/').at(-2)!
     const db = admin()
-    expect((await db.from('classes').select('name').eq('id', classId).single()).data!.name).toBe('6B English')
-    for (const name of FIVE) await check(page.getByRole('link', { name: new RegExp(`^${name}`) }).first()).toBeVisible()
-    await expect(page.getByRole('link', { name: /^Neo/ })).toHaveCount(0) // 7A English has its own children, not these
-    // One child row each: the five are in three classes, not copied three times.
-    const school = (await db.from('demo_sandboxes').select('school_id').eq('id', sandboxId).single()).data!.school_id
-    for (const name of FIVE) expect((await db.from('children').select('id').eq('school_id', school).eq('first_name', name)).data).toHaveLength(1)
+    expect((await db.from('classes').select('name').eq('id', classId).single()).data!.name).toBe('7A Mathematics')
+    for (const l of sevenA) await check(page.getByRole('link', { name: new RegExp(`^${l.firstName}`) }).first()).toBeVisible()
+    await expect(page.getByRole('link', { name: /^Amina/ })).toHaveCount(0) // 6B has its own children, not these
     await noHorizontalScroll(page)
     await proof(page, 'mr-dlamini-learners')
 
@@ -88,57 +93,63 @@ test.describe('the made-up school', () => {
     await proof(page, 'switch-more-people')
   })
 
-  test("Ms Banda opens Amina's Long view and switches the subject chips", async ({ page }) => {
+  test("Ms Banda has two classes, 6B and 5A, and opens Amina's Long view: one subject, no chips", async ({ page }) => {
     opened = await openSandbox(page, { stage: 'start', role: 'teacher' })
+    await page.goto('/t')
+    await check(page.getByRole('link', { name: /6B Mathematics/ })).toBeVisible()
+    await expect(page.getByRole('link', { name: /5A Mathematics/ })).toBeVisible()
+    await expect(page.getByRole('link', { name: /7A Mathematics|4A Mathematics/ })).toHaveCount(0)
+    await noHorizontalScroll(page)
+    await proof(page, 'ms-banda-classes')
+
     await page.goto(`/t/${opened.classId}/learners/${opened.childId}/long-view`)
-    const chips = page.getByRole('navigation', { name: 'Subjects' })
-    await check(chips).toBeVisible()
-    await expect(chips.getByRole('link')).toHaveText(['Mathematics', 'English', 'Natural Sciences'])
-    await expect(chips.getByRole('link', { name: 'Mathematics' })).toHaveAttribute('aria-current', 'page')
     const table = page.getByRole('table')
+    await check(table).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Subjects' })).toHaveCount(0)
+    await expect(page.locator('[data-subject-heading]')).toHaveText('Mathematics')
     await expect(table.getByRole('rowheader', { name: 'Fractions' })).toBeVisible()
-    await expect(table.getByRole('rowheader', { name: 'Writing' })).toHaveCount(0)
     await noHorizontalScroll(page)
-    await proof(page, 'amina-long-view-mathematics')
-
-    await chips.getByRole('link', { name: 'English' }).click()
-    await page.waitForURL('**/long-view?subject=English')
-    await expect(chips.getByRole('link', { name: 'English' })).toHaveAttribute('aria-current', 'page')
-    await check(table.getByRole('rowheader', { name: 'Writing' })).toBeVisible()
-    await expect(table.getByRole('rowheader', { name: 'Fractions' })).toHaveCount(0)
-    await noHorizontalScroll(page)
-    await proof(page, 'amina-long-view-english')
-
-    await chips.getByRole('link', { name: 'Natural Sciences' }).click()
-    await page.waitForURL('**/long-view?subject=Natural+Sciences')
-    await expect(chips.getByRole('link', { name: 'Natural Sciences' })).toHaveAttribute('aria-current', 'page')
-    await check(table.getByRole('rowheader').first()).toBeVisible()
-    await expect(table.getByRole('rowheader', { name: 'Fractions' })).toHaveCount(0)
-    await proof(page, 'amina-long-view-natural-sciences')
+    await proof(page, 'amina-long-view')
   })
 
-  test('pick a generated learner: a login is made then, and the learner is signed in', async ({ page }) => {
+  test('pick a generated learner with a planted pattern: signed in as a learner, and the class teacher sees the pattern', async ({ page }) => {
+    const { fiveA } = await roster()
+    const neo = fiveA.find((l) => l.planted)!
     await page.goto('/demo')
-    await check(page.getByRole('button', { name: /^Neo/ })).toBeVisible()
-    await page.getByRole('button', { name: /^Neo/ }).click()
+    await check(page.getByRole('button', { name: new RegExp(`^${neo.firstName}`) })).toBeVisible()
+    await page.getByRole('button', { name: new RegExp(`^${neo.firstName}`) }).click()
     await page.waitForURL(/\/k$/, { timeout: 120_000 })
     const sandboxId = await takeCookieSandbox(page)
-    await check(page.getByText(/Neo/).first()).toBeVisible()
+    await check(page.getByText(new RegExp(neo.firstName)).first()).toBeVisible()
     await noHorizontalScroll(page)
     await proof(page, 'generated-learner-signed-in')
 
     const db = admin()
     const box = (await db.from('demo_sandboxes').select('school_id, logins').eq('id', sandboxId).single()).data!
-    const neo = (await db.from('children').select('id, user_id').eq('school_id', box.school_id).eq('first_name', 'Neo').single()).data!
-    expect(neo.user_id).toBeTruthy()
-    expect((await db.from('child_logins').select('code').eq('child_id', neo.id)).data).toHaveLength(1)
+    const child = (await db.from('children').select('id, user_id').eq('school_id', box.school_id).eq('first_name', neo.firstName).single()).data!
+    expect(child.user_id).toBeTruthy()
+    expect((await db.from('child_logins').select('code').eq('child_id', child.id)).data).toHaveLength(1)
     // Another generated learner has no login until somebody picks them.
-    const other = (await db.from('children').select('user_id').eq('school_id', box.school_id).eq('first_name', 'Busisiwe').single()).data!
-    expect(other.user_id).toBeNull()
-    expect(Object.keys((box.logins as { learners?: object }).learners ?? {})).toEqual(['Neo'])
+    const other = fiveA.find((l) => l.firstName !== neo.firstName)!
+    expect((await db.from('children').select('user_id').eq('school_id', box.school_id).eq('first_name', other.firstName).single()).data!.user_id).toBeNull()
+    expect(Object.keys((box.logins as { learners?: object }).learners ?? {})).toEqual([neo.firstName])
+
+    // Now as the class teacher, Ms Banda: the learner's Long view finds the planted pattern (the update runs on opening, from the recorded answer).
+    await page.goto('/demo/switch')
+    await check(page.getByRole('button', { name: /Ms Banda/ })).toBeVisible()
+    await page.getByRole('button', { name: /Ms Banda/ }).click()
+    await page.waitForURL(/\/t\/[0-9a-f-]{36}\/curriculum$/, { timeout: 120_000 })
+    const fiveAClass = (await db.from('classes').select('id').eq('school_id', box.school_id).eq('name', '5A Mathematics').single()).data!.id
+    await page.goto(`/t/${fiveAClass}/learners/${child.id}/long-view`)
+    await check(page.getByRole('table')).toBeVisible()
+    await check(page.getByRole('heading', { name: 'What Jemma found' })).toBeVisible({ timeout: 180_000 })
+    const { strandLabel } = await import('../../../packages/profiling/src/logic/strands')
+    await expect(page.getByRole('article').filter({ hasText: `Mathematics · ${strandLabel('Mathematics', neo.planted!.family)}` })).toHaveCount(1)
+    await noHorizontalScroll(page)
+    await proof(page, 'generated-learner-long-view')
   })
 
-  test('start an empty school, create 9A Natural Sciences, add made-up learners, open one Long view', async ({ page }) => {
+  test('start an empty school, create 9A Mathematics, add made-up learners, open one Long view', async ({ page }) => {
     await page.goto('/demo')
     await check(page.getByRole('button', { name: /Start from an empty school/ })).toBeVisible()
     await page.getByRole('button', { name: /Start from an empty school/ }).click()
@@ -150,9 +161,11 @@ test.describe('the made-up school', () => {
     await noHorizontalScroll(page)
     await proof(page, 'empty-school-first-class')
 
-    await page.getByLabel('Class name').fill('9A Natural Sciences')
+    await page.getByLabel('Class name').fill('9A Mathematics')
     await page.getByLabel('Grade', { exact: true }).selectOption('9')
-    await page.getByLabel('Subject', { exact: true }).selectOption('Natural Sciences')
+    // Another packet (P72) is changing the class form to Mathematics only: choose the subject only if the select is there.
+    const subject = page.getByLabel('Subject', { exact: true })
+    if ((await subject.count()) > 0) await subject.selectOption('Mathematics')
     await page.getByRole('button', { name: 'Create class' }).click()
     await page.waitForURL(/\/t\/new\/[0-9a-f-]{36}$/, { timeout: 120_000 })
     const classId = page.url().split('/').pop()!
@@ -176,7 +189,7 @@ test.describe('the made-up school', () => {
     await check(table).toBeVisible()
     await expect(table.getByRole('rowheader').first()).toBeVisible()
     expect(await table.getByRole('rowheader').count()).toBeGreaterThanOrEqual(2)
-    await expect(page.getByRole('navigation', { name: 'Subjects' }).getByRole('link', { name: 'Natural Sciences' })).toHaveAttribute('aria-current', 'page')
+    await expect(page.locator('[data-subject-heading]')).toHaveText('Mathematics')
     await noHorizontalScroll(page)
     await proof(page, 'made-up-learner-long-view')
   })

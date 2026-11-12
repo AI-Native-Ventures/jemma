@@ -46,7 +46,7 @@ export default async function DemoSwitchPage() {
   const more: { person: string; initials: string; name: string; detail: string; avatar: string }[] = [
     ...people.teachers.filter((t) => t.key !== 'banda').map((t) => ({ person: `teacher:${t.key}`, initials: t.displayName.split(' ').map((w) => w.charAt(0)).join(''), name: t.displayName, detail: `Teacher · ${t.classes.join(', ')}`, avatar: 'bg-soft-3' })),
     ...people.parents.filter((p) => p.key !== 'thandi').map((p) => ({ person: `parent:${p.key}`, initials: p.displayName.split(' ').map((w) => w.charAt(0)).join(''), name: p.displayName, detail: `Parent · ${p.children.map((c) => c.name).join(' and ')}`, avatar: 'bg-coral-tint' })),
-    ...people.learners.flatMap((g) => (g.classKey.startsWith('6b') && g.classKey !== '6b-maths' ? [] : g.names.filter((n) => n !== 'Amina').map((n) => ({ person: `learner:${n}`, initials: n.charAt(0), name: n, detail: `Learner · ${g.classKey.startsWith('6b') ? '6B' : g.className.split(' ')[0]}`, avatar: 'bg-coral-soft' })))),
+    ...people.learners.flatMap((g) => g.names.filter((n) => n !== 'Amina').map((n) => ({ person: `learner:${n}`, initials: n.charAt(0), name: n, detail: `Learner · ${g.className.split(' ')[0]}`, avatar: 'bg-coral-soft' }))),
   ]
 
   return (

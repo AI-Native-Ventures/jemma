@@ -138,10 +138,12 @@ describe('the records are messy on purpose', () => {
     }
   })
 
-  test('a learner has records in the class subject and up to two other subjects, for up to three years', () => {
+  test('a learner has records in the class subject only (more only when the caller asks), for up to three years', () => {
     const batch = makeLearners(base)
     const subjects = new Set(batch.learners.flatMap((l) => l.records.map((r) => r.subject).filter(Boolean)))
-    expect(subjects).toEqual(new Set(['Mathematics', 'English', 'Natural Sciences']))
+    expect(subjects).toEqual(new Set([base.subject]))
+    const more = makeLearners({ ...base, subjects: ['Mathematics', 'English'] })
+    expect(new Set(more.learners.flatMap((l) => l.records.map((r) => r.subject).filter(Boolean)))).toEqual(new Set(['Mathematics', 'English']))
     const years = new Set(batch.learners.flatMap((l) => l.records.map((r) => r.year)))
     expect(years).toEqual(new Set([2024, 2025, 2026]))
     expect(Math.min(...batch.learners.flatMap((l) => l.records.map((r) => r.grade)))).toBe(3)

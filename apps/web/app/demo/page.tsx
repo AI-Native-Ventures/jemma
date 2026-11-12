@@ -29,7 +29,7 @@ function MorePeople({ year }: { year: number }) {
       <div className="flex flex-col gap-1">
         <h2 id="more" className="m-0 text-[17px] font-semibold">More people at Hillview</h2>
         <p className="m-0 text-[15px] leading-[1.45] text-body text-pretty">
-          Three teachers, six classes and about 25 learners, across Grades 4 to 7 and three subjects. Tap anyone to sign in as them in your own copy.
+          Three teachers, four Mathematics classes and 23 learners, across Grades 4 to 7. Tap anyone to sign in as them in your own copy.
         </p>
       </div>
 
@@ -59,21 +59,17 @@ function MorePeople({ year }: { year: number }) {
           const names = g.names.filter((n) => !BIG_THREE.has(n))
           return (
             <div key={g.classKey} className="flex flex-col gap-2">
-              <p className="m-0 text-[14px] text-body">
-                {g.classKey.startsWith('6b') ? (g.classKey === '6b-maths' ? '6B: the same five children in Mathematics, English and Natural Sciences (Amina is above)' : null) : g.className}
-              </p>
-              {g.classKey.startsWith('6b') && g.classKey !== '6b-maths' ? null : (
-                <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
-                  {names.map((n) => (
-                    <li key={n}>
-                      <form action={tryDemoAction} className="contents">
-                        <input type="hidden" name="person" value={`learner:${n}`} />
-                        <PersonChip variant="chip" name={n} />
-                      </form>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <p className="m-0 text-[14px] text-body">{g.classKey === '6b-maths' ? '6B Mathematics: Amina is above, with her four classmates' : g.className}</p>
+              <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
+                {names.map((n) => (
+                  <li key={n}>
+                    <form action={tryDemoAction} className="contents">
+                      <input type="hidden" name="person" value={`learner:${n}`} />
+                      <PersonChip variant="chip" name={n} />
+                    </form>
+                  </li>
+                ))}
+              </ul>
             </div>
           )
         })}
@@ -112,7 +108,7 @@ export default async function DemoPage() {
         <div className="flex flex-col gap-2.5">
           <h1 className="m-0 text-[36px] leading-[1.08] font-bold tracking-[-0.02em]">Try the demo</h1>
           <p className="m-0 text-[17px] leading-[1.45] text-body text-pretty">
-            You get your own copy of Hillview Primary, a made-up school. It has teachers, parents and learners in several grades and subjects. Sign in as any of them. Nothing you do reaches other judges.
+            You get your own copy of Hillview Primary, a made-up school. It has teachers, parents and learners in several grades. Sign in as any of them. Nothing you do reaches other judges.
           </p>
         </div>
 

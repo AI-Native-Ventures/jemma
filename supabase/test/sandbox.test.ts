@@ -5,7 +5,7 @@ import { SAMPLE_FILES } from '../seed/fixtures/sample-papers'
 import { classTest1Scores, classTest1ScoresBeforeFix } from '../seed/fixtures/class-test-1'
 import { CAST } from '../seed/fixtures/cast'
 import { longHistory } from '../seed/fixtures/long-history'
-import { HILLVIEW_CLASSES, HILLVIEW_LINKS, madeUpClasses, sixBOtherSubjects } from '../seed/fixtures/hillview'
+import { HILLVIEW_CLASSES, HILLVIEW_LINKS, madeUpClasses } from '../seed/fixtures/hillview'
 import { classGaps } from '../../packages/profiling/src/logic'
 import {
   AnswerKeyItemSchema,
@@ -80,8 +80,7 @@ describe('sandboxes', () => {
     expect(kids.map((k) => k.first_name)).toEqual(expect.arrayContaining(['Amina', 'Lerato', 'Naledi', 'Sipho', 'Thabo']))
     expect(new Set(kids.map((k) => k.school_id))).toEqual(new Set([a.schoolId]))
     const classes = await ok(teacherA.from('classes').select('id, name'))
-    // A teacher sees the classes of learners they teach: her own two, and the two other 6B classes the same five children are in.
-    expect(classes.map((c) => c.name).sort()).toEqual(['5A Mathematics', '6B English', '6B Mathematics', '6B Natural Sciences'])
+    expect(classes.map((c) => c.name).sort()).toEqual(['5A Mathematics', '6B Mathematics'])
     expect(classes.map((c) => c.id)).toContain(a.classId)
 
     const parentB = await signIn(b.sandboxId, 'parent')
@@ -125,12 +124,10 @@ describe('sandboxes', () => {
     expect(await ok(admin.from('observations').select('id').in('child_id', childIds))).toHaveLength(2)
     expect(await ok(admin.from('attendance').select('child_id').in('child_id', five))).toHaveLength(50)
     expect(await ok(admin.from('attendance').select('child_id').in('child_id', childIds))).toHaveLength(230)
-    // The Long view records come back too, in their own table: the five learners' Mathematics history, their English and Natural Sciences
-    // history, and the made-up learners'.
+    // The Long view records come back too, in their own table: the five learners' Mathematics history and the made-up learners'.
     const year = new Date().getUTCFullYear()
     const expectedRecords =
       longHistory(year, CAST.teacher.displayName).length +
-      sixBOtherSubjects(year).reduce((n, x) => n + x.batch.learners.reduce((m, l) => m + l.records.length, 0), 0) +
       madeUpClasses(year).reduce((n, x) => n + x.batch.learners.reduce((m, l) => m + l.records.length, 0), 0)
     const counted = await admin.from('learner_records').select('id', { count: 'exact', head: true }).in('child_id', childIds)
     expect(counted.count).toBe(expectedRecords)
@@ -410,7 +407,7 @@ describe('sandboxes', () => {
     expect(log.map((l) => l.text)).toContain('Amina finished her lesson: 3 of 5. Moved her to Practising')
   })
 
-  test('Hillview: three teachers, six classes, the five learners of 6B in three classes with one row each, and the parents as designed', async () => {
+  test('Hillview: three teachers, four Mathematics classes, the five learners of 6B in one class with one row each, and the parents as designed', async () => {
     const s = await make()
     expect(s.kind).toBe('hillview')
     const row = await ok(admin.from('demo_sandboxes').select('kind, logins').eq('id', s.sandboxId).single())
@@ -428,22 +425,21 @@ describe('sandboxes', () => {
     expect(classes.map((c) => [c.name, c.grade, c.subject])).toEqual(HILLVIEW_CLASSES.map((c) => [c.name, c.grade, c.subject]))
     expect(classes[0]!.id).toBe(s.classId) // 6B Mathematics is the oldest: the home class
     const teacherName = (id: string) => profiles.find((p) => p.user_id === id)!.display_name
-    expect(classes.map((c) => teacherName(c.teacher_id))).toEqual(['Ms Banda', 'Mr Dlamini', 'Ms Okafor', 'Ms Banda', 'Mr Dlamini', 'Ms Okafor'])
+    expect(classes.map((c) => teacherName(c.teacher_id))).toEqual(['Ms Banda', 'Ms Banda', 'Mr Dlamini', 'Ms Okafor'])
 
     const children = await ok(admin.from('children').select('id, first_name, grade').eq('school_id', s.schoolId))
     expect(children).toHaveLength(23)
     expect(new Set(children.map((c) => c.first_name)).size).toBe(23)
     const enrolments = await ok(admin.from('enrolments').select('class_id, child_id').in('class_id', classes.map((c) => c.id)))
-    const sixB = classes.filter((c) => c.name.startsWith('6B')).map((c) => c.id)
+    const sixB = [classes[0]!.id]
     for (const name of CAST.children) {
       const kid = children.filter((c) => c.first_name === name)
       expect(kid, `one child row for ${name}`).toHaveLength(1)
       expect(enrolments.filter((e) => e.child_id === kid[0]!.id).map((e) => e.class_id).sort()).toEqual([...sixB].sort())
     }
-    for (const c of classes.filter((c) => !c.name.startsWith('6B'))) expect(enrolments.filter((e) => e.class_id === c.id)).toHaveLength(6)
+    for (const c of classes.slice(1)) expect(enrolments.filter((e) => e.class_id === c.id)).toHaveLength(6)
     // Each class lists the learners it should.
     expect(enrolments.filter((e) => e.class_id === classes[0]!.id)).toHaveLength(5)
-    expect(enrolments.filter((e) => e.class_id === classes[1]!.id)).toHaveLength(5)
 
     // Parents: Thandi M links to Amina in the demo path (none yet); Nomsa K has two children in different grades; Peter A and Grace A guard one child.
     const links = await ok(admin.from('parent_links').select('parent_id, child_id, class_id, status').in('class_id', classes.map((c) => c.id)))
@@ -456,7 +452,7 @@ describe('sandboxes', () => {
     expect(parentName(links[0]!.parent_id)).toBeUndefined() // parents have no school on their profile
     expect(byParent.get('Nomsa K')).toHaveLength(2)
     const nomsaGrades = byParent.get('Nomsa K')!.map((id) => children.find((c) => c.id === id)!.grade).sort()
-    expect(nomsaGrades).toEqual([4, 5])
+    expect(nomsaGrades).toEqual([5, 7])
     expect(byParent.get('Peter A')).toHaveLength(1)
     expect(byParent.get('Grace A')).toEqual(byParent.get('Peter A'))
     expect(byParent.has('Thandi M')).toBe(false)
@@ -466,28 +462,22 @@ describe('sandboxes', () => {
     // A parent sees only their children.
     const nomsa = await signInAs(s.sandboxId, 'nomsa')
     expect((await ok(nomsa.from('children').select('id'))).map((c) => c.id).sort()).toEqual([...byParent.get('Nomsa K')!].sort())
-    // Mr Dlamini teaches 6B English (the five) and 7A English (six): he sees eleven children and the five learners' Mathematics records too.
+    // Mr Dlamini teaches 7A Mathematics (six learners): he sees those six and none of the five of 6B.
     const dlamini = await signInAs(s.sandboxId, 'dlamini')
-    expect(await ok(dlamini.from('children').select('id'))).toHaveLength(11)
-    const seen = await ok(dlamini.from('learner_records').select('subject, child_id').in('child_id', children.filter((c) => c.first_name === 'Amina').map((c) => c.id)))
-    expect(new Set(seen.map((r) => r.subject))).toEqual(new Set(['Mathematics', 'English', 'Natural Sciences', null]))
+    expect(await ok(dlamini.from('children').select('id'))).toHaveLength(6)
+    const hidden = await ok(dlamini.from('learner_records').select('id').in('child_id', children.filter((c) => c.first_name === 'Amina').map((c) => c.id)))
+    expect(hidden).toEqual([])
   })
 
-  test('the five learners of 6B keep their Mathematics rows and gain English and Natural Sciences records with planted patterns', async () => {
+  test('the five learners of 6B have exactly the Mathematics records develop gives them, and no record in another subject exists anywhere', async () => {
     const s = await make()
     const kids = await ok(admin.from('children').select('id, first_name').eq('school_id', s.schoolId).in('first_name', [...CAST.children]))
-    const id = Object.fromEntries(kids.map((k) => [k.first_name, k.id])) as Record<string, string>
     const year = new Date().getUTCFullYear()
-    const maths = await ok(admin.from('learner_records').select('child_id, subject, title, source').in('child_id', kids.map((k) => k.id)).eq('subject', 'Mathematics'))
-    expect(maths).toHaveLength(longHistory(year, CAST.teacher.displayName).filter((r) => r.subject === 'Mathematics').length)
-    for (const x of sixBOtherSubjects(year)) {
-      for (const l of x.batch.learners) {
-        const rows = await ok(admin.from('learner_records').select('id').eq('child_id', id[l.firstName]!).eq('subject', x.subject))
-        expect(rows).toHaveLength(l.records.length)
-      }
-    }
-    const planted = sixBOtherSubjects(year).flatMap((x) => x.batch.planted.map((p) => `${p.firstName}:${p.subject}:${p.family}:${p.kind}`)).sort()
-    expect(planted).toEqual(['Amina:English:writing:struggle', 'Lerato:English:language:strength', 'Thabo:Natural Sciences:life_living:strength'])
+    const rows = await ok(admin.from('learner_records').select('subject').in('child_id', kids.map((k) => k.id)))
+    expect(rows).toHaveLength(longHistory(year, CAST.teacher.displayName).length)
+    const all = await ok(admin.from('learner_records').select('subject').eq('school_id', s.schoolId))
+    expect(new Set(all.map((r) => r.subject))).toEqual(new Set(['Mathematics', null]))
+    expect(await ok(admin.from('long_view_patterns').select('subject').in('child_id', kids.map((k) => k.id)).neq('subject', 'Mathematics'))).toEqual([])
   })
 
   test('an empty school has no class, no learner and one teacher; reset keeps it empty', async () => {

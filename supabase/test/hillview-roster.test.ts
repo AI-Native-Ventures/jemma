@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { CAST } from '../seed/fixtures/cast'
-import { HILLVIEW_CLASSES, HILLVIEW_LINKS, HILLVIEW_PARENTS, HILLVIEW_TEACHERS, hillviewPeople, madeUpClasses, madeUpLearner, sixBOtherSubjects } from '../seed/fixtures/hillview'
+import { HILLVIEW_CLASSES, HILLVIEW_LINKS, HILLVIEW_PARENTS, HILLVIEW_TEACHERS, hillviewPeople, madeUpClasses, madeUpLearner } from '../seed/fixtures/hillview'
 import { buildTable, findPatterns, type LongViewRecord } from '../../packages/profiling/src/logic/long-view'
 
 // The made-up school as a roster, with no database: who is in it, who is linked to whom, and what is planted in the records.
@@ -15,13 +15,13 @@ const asRecords = (rows: { source: string; grade: number; year: number; term: nu
   }))
 
 describe('the roster of Hillview Primary', () => {
-  test('three teachers, six classes in three subjects across Grades 4 to 7, 6B Mathematics first', () => {
-    expect(HILLVIEW_TEACHERS.map((t) => [t.displayName, t.subject])).toEqual([['Ms Banda', 'Mathematics'], ['Mr Dlamini', 'English'], ['Ms Okafor', 'Natural Sciences']])
+  test('three teachers, four Mathematics classes across Grades 4 to 7, 6B Mathematics first, and no other subject anywhere', () => {
+    expect(HILLVIEW_TEACHERS.map((t) => [t.displayName, t.subject])).toEqual([['Ms Banda', 'Mathematics'], ['Mr Dlamini', 'Mathematics'], ['Ms Okafor', 'Mathematics']])
     expect(HILLVIEW_CLASSES.map((c) => `${c.name}:${HILLVIEW_TEACHERS.find((t) => t.key === c.teacher)!.displayName}`)).toEqual([
-      '6B Mathematics:Ms Banda', '6B English:Mr Dlamini', '6B Natural Sciences:Ms Okafor', '5A Mathematics:Ms Banda', '7A English:Mr Dlamini', '4A Natural Sciences:Ms Okafor',
+      '6B Mathematics:Ms Banda', '5A Mathematics:Ms Banda', '7A Mathematics:Mr Dlamini', '4A Mathematics:Ms Okafor',
     ])
     expect(new Set(HILLVIEW_CLASSES.map((c) => c.grade))).toEqual(new Set([4, 5, 6, 7]))
-    expect(new Set(HILLVIEW_CLASSES.map((c) => c.subject)).size).toBe(3)
+    expect(new Set(HILLVIEW_CLASSES.map((c) => c.subject))).toEqual(new Set(['Mathematics']))
   })
 
   test('23 learners: the five of 6B and eighteen made up, none with a repeated first name', () => {
@@ -35,11 +35,11 @@ describe('the roster of Hillview Primary', () => {
   test('the same year gives the same school, the demo page can list it before any sandbox exists', () => {
     expect(hillviewPeople(YEAR)).toEqual(hillviewPeople(YEAR))
     const people = hillviewPeople(YEAR)
-    expect(people.learners.map((g) => g.names.length)).toEqual([5, 5, 5, 6, 6, 6])
-    expect(people.teachers.map((t) => t.classes)).toEqual([['6B Mathematics', '5A Mathematics'], ['6B English', '7A English'], ['6B Natural Sciences', '4A Natural Sciences']])
+    expect(people.learners.map((g) => g.names.length)).toEqual([5, 6, 6, 6])
+    expect(people.teachers.map((t) => t.classes)).toEqual([['6B Mathematics', '5A Mathematics'], ['7A Mathematics'], ['4A Mathematics']])
   })
 
-  test('parents: Thandi M and Amina; one parent with two children in different grades; one child with two guardians; five or more with none', () => {
+  test('parents: Thandi M and Amina; one parent with two children in different grades (5A and 7A); one child with two guardians; five or more with none', () => {
     expect(HILLVIEW_PARENTS.map((p) => p.displayName)).toEqual(['Thandi M', 'Nomsa K', 'Peter A', 'Grace A'])
     const made = madeUpClasses(YEAR)
     const childOf = (l: (typeof HILLVIEW_LINKS)[number]) => madeUpLearner(made, l.classKey, l.at)!.firstName
@@ -67,17 +67,23 @@ describe('the roster of Hillview Primary', () => {
     }
   })
 
-  test('Amina, Thabo and Lerato each carry one planted pattern in a subject other than Mathematics, back to Grade 4', () => {
-    const other = sixBOtherSubjects(YEAR)
-    expect(other.map((o) => o.subject)).toEqual(['English', 'Natural Sciences'])
-    const planted = other.flatMap((o) => o.batch.planted.map((p) => p.firstName))
-    expect(planted.sort()).toEqual(['Amina', 'Lerato', 'Thabo'])
-    for (const o of other) {
-      for (const l of o.batch.learners) {
-        expect(Math.min(...l.records.map((r) => r.grade))).toBe(4)
-        const found = findPatterns(buildTable(asRecords(l.records), []).table).map((p) => `${p.subject}/${p.key}`)
-        expect(found).toEqual(l.planted ? [`${l.planted.subject}/${l.planted.kind}:${l.planted.family}`] : [])
+  test('every generated record is Mathematics, with the six strand keys, up to three years back and a different teacher each year', () => {
+    const families = new Set(['whole_numbers', 'fractions', 'decimals', 'shapes', 'measurement', 'data'])
+    for (const m of madeUpClasses(YEAR)) {
+      const grade = HILLVIEW_CLASSES.find((c) => c.key === m.classKey)!.grade
+      const teachers = new Set(m.batch.learners.flatMap((l) => l.records.map((r) => r.teacher_name)))
+      expect(teachers.size, m.classKey).toBeGreaterThanOrEqual(3)
+      for (const l of m.batch.learners) {
+        expect(l.records.every((r) => (r.subject === 'Mathematics' || (r.subject === null && (r.source === 'note' || r.source === 'attendance'))) && (r.family === null || families.has(r.family)))).toBe(true)
+        expect(Math.min(...l.records.map((r) => r.grade))).toBeGreaterThanOrEqual(grade - 2)
       }
     }
+  })
+
+  test('half or so of the generated learners carry one planted pattern', () => {
+    const all = madeUpClasses(YEAR).flatMap((m) => m.batch.learners)
+    const planted = all.filter((l) => l.planted).length
+    expect(planted).toBeGreaterThanOrEqual(6)
+    expect(planted).toBeLessThanOrEqual(12)
   })
 })

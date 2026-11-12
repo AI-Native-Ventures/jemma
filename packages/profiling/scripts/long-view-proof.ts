@@ -7,7 +7,7 @@
 // Run: node --import tsx --import ./scripts/register-md.mjs scripts/long-view-proof.ts --label record --out /path/record.json [--agent http://localhost:8755] [--against /path/record.json]
 // With --against, the saved patterns are compared with an earlier run's, row by row.
 // --learners Amina,Neo runs those learners (any child of the made-up school, by first name) instead of the five, and then no sixth event
-// unless --newer is given. P65 records the five of 6B, the sixth, and two made-up learners with a planted pattern this way.
+// unless --newer is given. P65 records made-up learners with a planted pattern this way (the five of 6B keep the answers recorded on develop).
 // Env: .env.local (jemma-dev and EVENTS_SECRET). Keys are never printed. The sandbox is deleted at the end unless --keep is given.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { createServiceClient, type JemmaDb } from '../src/db'

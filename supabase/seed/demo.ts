@@ -8,7 +8,7 @@ import { LessonSchema, ReteachSchema, GuidanceSchema, TopicMapDraftSchema, Answe
 import { classTest1Results, classTest1Roster, classTest1Scores, classTest1ScoresBeforeFix, classTest1Wrong, siphoQ7BeforeFix } from './fixtures/class-test-1'
 import { AMINA_ACTIVITIES, AWAY_DAY_INDEX, CAST, CHILD_PIN, EMPTY_SCHOOL, EMPTY_TEACHER, NOTES, SCHOOL, lastSchoolDays } from './fixtures/cast'
 import { FIXED_GAPS, FORMAT_FAMILY, FORMAT_TRIALS, TERM3_ROWS } from './fixtures/history'
-import { HILLVIEW_CLASSES, HILLVIEW_LINKS, awayOnDay, HILLVIEW_PARENTS, HILLVIEW_TEACHERS, madeUpClasses, madeUpLearner, sixBOtherSubjects } from './fixtures/hillview'
+import { HILLVIEW_CLASSES, HILLVIEW_LINKS, awayOnDay, HILLVIEW_PARENTS, HILLVIEW_TEACHERS, madeUpClasses, madeUpLearner } from './fixtures/hillview'
 import { longHistory } from './fixtures/long-history'
 import { PATTERN_LEARNERS, wordPatterns } from './fixtures/long-view-wording'
 import {
@@ -20,7 +20,7 @@ import { readSandbox, teardown } from './teardown'
 
 export type SandboxStage = 'start' | 'marked' | 'session_done'
 
-/** `hillview`: the made-up school with three teachers, six classes and about 23 learners. `empty`: a school with no class and one teacher, for starting from nothing. */
+/** `hillview`: the made-up school with three teachers, four Mathematics classes and 23 learners. `empty`: a school with no class and one teacher, for starting from nothing. */
 export type SandboxKind = 'hillview' | 'empty'
 
 export type Sandbox = {
@@ -179,7 +179,7 @@ async function buildHillview(admin: JemmaDb, sandboxId: string, stage: SandboxSt
       'profiles',
     )
 
-    // Six classes. 6B Mathematics is made first and keeps the oldest timestamp: it is the sandbox's home class.
+    // Four classes. 6B Mathematics is made first and keeps the oldest timestamp: it is the sandbox's home class.
     const classRows = await ok(
       admin
         .from('classes')
@@ -243,15 +243,14 @@ async function buildHillview(admin: JemmaDb, sandboxId: string, stage: SandboxSt
     // ---- Stage start ----
     const days = lastSchoolDays(now)
     const term3PaperAt = '2026-09-25T12:00:00.000Z'
-    // The five learners of 6B are in all three 6B classes; each made-up learner is in their own class only.
+    // The five learners of 6B are in 6B Mathematics only, as they always were; each made-up learner is in their own class only.
     const enrolments = [
-      ...five.flatMap((k) => ['6b-maths', '6b-english', '6b-science'].map((key) => ({ class_id: classOf[key]!, child_id: k.id }))),
+      ...five.map((k) => ({ class_id: classId, child_id: k.id })),
       ...madeUp.flatMap((m) => m.batch.learners.map((l) => ({ class_id: classOf[m.classKey]!, child_id: idOfName[l.firstName]! }))),
     ]
-    // Records: the five learners' Mathematics history (hand-built), their English and Natural Sciences history, and the made-up learners'.
+    // Records: the five learners' Mathematics history (hand-built, unchanged) and the made-up learners' Mathematics history.
     const records = [
       ...longHistory(year, CAST.teacher.displayName).map(({ child, ...row }) => ({ ...row, school_id: schoolId, child_id: childId[child]! })),
-      ...sixBOtherSubjects(year).flatMap((s) => s.batch.learners.flatMap((l) => l.records.map((r) => ({ ...r, school_id: schoolId, child_id: idOfName[l.firstName]! })))),
       ...madeUp.flatMap((m) => m.batch.learners.flatMap((l) => l.records.map((r) => ({ ...r, school_id: schoolId, child_id: idOfName[l.firstName]! })))),
     ]
     // A made-up learner is away on a few of the ten days, in a different place for each.
@@ -666,19 +665,16 @@ async function buildMarked(c: MarkedCtx): Promise<void> {
   }
 }
 
-/** Draft Long view patterns (Mathematics) for Amina and Naledi, saved the way `save_long_view` saves them, and the teacher's Needs you items. */
+/** Draft Long view patterns for Amina and Naledi, saved the way `save_long_view` saves them, and the teacher's Needs you items. */
 async function seedLongView(c: MarkedCtx): Promise<void> {
   const { admin, schoolId, teacherId } = c
   const ctx: ToolContext = { db: admin, schoolId, eventId: null, env: {} as ToolContext['env'], now: () => c.now }
   for (const name of PATTERN_LEARNERS) {
     const id = c.childId[name]!
     const { history, noteLabels } = await loadHistory(ctx, id)
-    // Mathematics only: a learner's patterns in the other subjects (the made-up English and Natural Sciences records) are found and
-    // worded when someone updates the Long view, and go to the teacher of that subject.
-    const candidates = history.candidates.filter((cand) => cand.subject === 'Mathematics')
-    const words = wordPatterns(candidates, history.notes)
+    const words = wordPatterns(history.candidates, history.notes)
     if (words.length === 0) continue
-    const byKey = new Map(candidates.map((cand) => [cand.key, cand]))
+    const byKey = new Map(history.candidates.map((cand) => [cand.key, cand]))
     await ok(
       admin.from('long_view_patterns').insert(
         words.map((w) => {

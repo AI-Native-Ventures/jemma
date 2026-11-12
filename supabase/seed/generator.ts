@@ -69,7 +69,7 @@ export type MakeLearnersInput = {
   avoidNames?: readonly string[]
   /** Exact first names to use, in order (the five learners of 6B). Without it the names come from the list. `count` is then the length of this list. */
   names?: readonly string[]
-  /** The subjects to make records for. Without it: the class's subject and up to two others. */
+  /** The subjects to make records for. Without it: the class's subject only. */
   subjects?: readonly string[]
   /**
    * Marked work only: no notes, no attendance, none of the messy extras. For learners who already have those from somewhere else
@@ -194,9 +194,6 @@ const SOURCE = { q: 'quiz', a: 'assignment', p: 'project' } as const
 const SOURCE_TITLE = { q: 'Quiz', a: 'Assignment', p: 'Project' } as const
 /** Marks out of, by kind. Every percent used is a multiple of 5, so the marks are whole numbers. */
 const OUT_OF = { q: 20, a: 20, p: 40 } as const
-
-/** The subjects every learner may have records in, besides the class's own. */
-const OTHER_SUBJECTS = ['Mathematics', 'English', 'Natural Sciences'] as const
 
 const NEUTRAL = [55, 60, 65, 70, 75] as const
 const DIPS = [30, 35, 40, 45] as const
@@ -435,7 +432,7 @@ export function makeLearners(input: MakeLearnersInput): MadeBatch {
   const slots = slotsFor(input.grade, input.year)
   const seed = `${input.seed}|${subject}|${input.grade}|${input.year}`
   const teacherNames = input.teacherNames.length > 0 ? input.teacherNames : ['Teacher']
-  const subjects = (input.subjects?.length ? input.subjects : [subject, ...OTHER_SUBJECTS.filter((s) => s !== subject).slice(0, 2)]).map(canonicalSubject)
+  const subjects = (input.subjects?.length ? input.subjects : [subject]).map(canonicalSubject)
   let names: string[]
   if (input.names) {
     names = [...input.names]
