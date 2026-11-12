@@ -17,6 +17,9 @@ import { updateLearnerProfile } from './save/update-learner-profile'
 import { planNextSession } from './save/plan-next-session'
 import { saveLesson } from './save/save-lesson'
 import { saveLongView } from './save/save-long-view'
+import { getRecordImport } from './read/get-record-import'
+import { saveRecordMapping } from './save/save-record-mapping'
+import { importLearnerRecords } from './save/import-learner-records'
 
 export { defineTool } from './context'
 export type { ToolDef } from './context'
@@ -46,6 +49,9 @@ export const registry: ToolDef<any, any>[] = [
   logExternalCalls,
   getLearnerHistory,
   saveLongView,
+  getRecordImport,
+  saveRecordMapping,
+  importLearnerRecords,
 ]
 
 export { registerSpeech } from '../speech'

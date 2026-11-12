@@ -18,6 +18,7 @@ import {
   readRows,
   recordDrafts,
   termFromDate,
+  validateOneResult,
   type ReadContext,
 } from '../../src/logic'
 import type { ExistingRecord, FileMapping, ImportLearner } from '../../src/schemas'
@@ -521,5 +522,47 @@ describe('describeMapping', () => {
 
   test('has no em dash', () => {
     expect(describeMapping(mapping(), header).join('\n')).not.toContain(String.fromCharCode(0x2014))
+  })
+})
+
+describe('validateOneResult', () => {
+  const c = { subject: 'Maths', year: 2026, families }
+  const quiz = { kind: 'quiz', grade: '5', year: '2025', term: '2', title: 'Class Test 1', family: 'fractions', marks: '14', outOf: '20', teacherName: 'Mrs Naidoo' }
+
+  test('a quiz becomes a record with the term start as its day and the class subject', () => {
+    expect(validateOneResult(quiz, c)).toEqual({
+      ok: true,
+      value: {
+        source: 'quiz', grade: 5, year: 2025, term: 2, happened_on: '2025-04-01', teacher_name: 'Mrs Naidoo', title: 'Class Test 1',
+        subject: 'Mathematics', family: 'fractions', topic_name: null, marks: 14, out_of: 20, text: null, present: null, total: null,
+      },
+    })
+  })
+
+  test('a note needs its text and keeps no subject, strand or mark', () => {
+    const note = validateOneResult({ kind: 'note', grade: 5, year: 2025, term: 3, text: ' Guesses when the bottom numbers differ ', teacherName: 'Mrs Naidoo' }, c)
+    expect(note).toMatchObject({ ok: true, value: { source: 'note', title: 'Teacher note', subject: null, family: null, marks: null, text: 'Guesses when the bottom numbers differ', happened_on: '2025-07-01' } })
+    expect(validateOneResult({ kind: 'note', grade: 5, year: 2025, term: 3, text: '  ', teacherName: 'x' }, c)).toEqual({ ok: false, error: 'Write the note' })
+  })
+
+  test('each missing or wrong field is one short sentence, in the order of the form', () => {
+    const err = (over: Record<string, unknown>) => (validateOneResult({ ...quiz, ...over }, c) as { error: string }).error
+    expect(err({ kind: 'exam' })).toBe('Pick what kind of piece this is')
+    expect(err({ grade: '13' })).toBe('Pick a grade from 1 to 12')
+    expect(err({ year: '' })).toMatch(/Type the year/)
+    expect(err({ year: '2027' })).toBe('Past records are from 2026 or earlier')
+    expect(err({ term: '5' })).toBe('Pick a term from 1 to 4')
+    expect(err({ teacherName: ' ' })).toMatch(/teacher's name/)
+    expect(err({ title: '' })).toBe('Give the piece a title')
+    expect(err({ family: '' })).toBe('Pick the strand')
+    expect(err({ family: 'robotics' })).toBe('Pick one of the strands in the list')
+    expect(err({ marks: '' })).toMatch(/Type the marks/)
+    expect(err({ outOf: '0' })).toMatch(/out of/)
+    expect(err({ marks: '25' })).toBe('The marks cannot be more than the total')
+  })
+
+  test('a decimal comma mark is kept in whole numbers, and a named subject is kept', () => {
+    const r = validateOneResult({ ...quiz, marks: '14,5', subject: 'english' }, { ...c, families: null }) as { ok: true; value: { marks: number; out_of: number; subject: string; family: string } }
+    expect(r.value).toMatchObject({ marks: 145, out_of: 200, subject: 'English', family: 'fractions' })
   })
 })

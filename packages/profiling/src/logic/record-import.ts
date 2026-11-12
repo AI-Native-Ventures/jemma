@@ -479,8 +479,8 @@ export function readRows(table: RawTable, mapping: FileMapping, ctx: ReadContext
   })
   const cellOf = (row: RawRow, column: string | null): string => (column === null ? '' : (row.cells[index.get(column) ?? -1] ?? '').trim())
   const calendar = termCalendar(ctx.country)
-  let usedCalendar = false
-  let inferredGrade: { year: number; grade: number } | null = null
+  // Set while the rows are read, so they are kept on an object (a plain `let` is not tracked through the callback).
+  const seen: { calendar: boolean; grade: { year: number; grade: number } | null } = { calendar: false, grade: null }
 
   const rows = table.rows.map((raw): ImportRow => {
     const learner = cellOf(raw, mapping.learner)
@@ -525,13 +525,13 @@ export function readRows(table: RawTable, mapping: FileMapping, ctx: ReadContext
     const termColumn = parseTermText(cellOf(raw, mapping.term))
     const year = date ? Number(date.slice(0, 4)) : (parseYear(cellOf(raw, mapping.year)) ?? mapping.fixed.year)
     const term = termColumn ?? (date ? termFromDate(date, ctx.country) : mapping.fixed.term)
-    if (piece !== null && date && termColumn === null) usedCalendar = true
+    if (piece !== null && date && termColumn === null) seen.calendar = true
     const when = date ?? (year !== null && term !== null ? termStart(year, term) : null)
 
     let grade = parseGrade(cellOf(raw, mapping.grade)) ?? mapping.fixed.grade
     if (grade === null && piece !== null && year !== null) {
       grade = Math.min(12, Math.max(1, ctx.grade - (ctx.year - year)))
-      inferredGrade ??= { year, grade }
+      seen.grade ??= { year, grade }
     }
 
     const topic = cellOf(raw, mapping.topic) || null
@@ -571,10 +571,10 @@ export function readRows(table: RawTable, mapping: FileMapping, ctx: ReadContext
   })
 
   const assumptions: string[] = []
-  if (usedCalendar) assumptions.push(`Terms come from the dates. ${calendar.sentence}`)
-  if (inferredGrade) {
+  if (seen.calendar) assumptions.push(`Terms come from the dates. ${calendar.sentence}`)
+  if (seen.grade) {
     assumptions.push(
-      `The file does not give a grade for every row, so the grade was worked out from the year and the class (this class is Grade ${ctx.grade} in ${ctx.year}). For example, ${inferredGrade.year} is Grade ${inferredGrade.grade}.`,
+      `The file does not give a grade for every row, so the grade was worked out from the year and the class (this class is Grade ${ctx.grade} in ${ctx.year}). For example, ${seen.grade.year} is Grade ${seen.grade.grade}.`,
     )
   }
   return { rows, assumptions }
@@ -698,6 +698,79 @@ export function recordDrafts(r: ImportRow): RecordDraft[] {
     out.push({ ...base, source: 'attendance', title: 'Attendance', subject: null, family: null, topic_name: null, marks: null, out_of: null, text: null, present: r.present, total: r.total })
   }
   return out
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// One typed result
+// ---------------------------------------------------------------------------------------------------------------------
+
+/** What the "One result" form sends. Everything is as typed: the checks are here so the form and the server action say the same words. */
+export type OneResultInput = {
+  kind: unknown
+  /** Empty means the class's subject. */
+  subject?: string
+  grade: unknown
+  year: unknown
+  term: unknown
+  title?: string
+  /** The strand. */
+  family?: string
+  marks?: unknown
+  outOf?: unknown
+  /** The note, for a note. */
+  text?: string
+  /** The teacher's name at the time. */
+  teacherName?: string
+}
+
+export type OneResultContext = { subject: string; year: number; families: FamilyChoice[] | null }
+export type OneResult = Omit<RecordDraft, 'source_row'>
+
+const asInt = (value: unknown): number | null => {
+  const n = typeof value === 'number' ? value : typeof value === 'string' && value.trim() !== '' ? Number(value.trim().replace(',', '.')) : NaN
+  return Number.isFinite(n) ? n : null
+}
+
+/**
+ * Checks one typed result and returns the record to write. A note needs its text. A quiz, an assignment or a project needs a title, a
+ * strand, the marks and what they are out of. Errors are one short sentence, in the order the form shows its fields.
+ */
+export function validateOneResult(input: OneResultInput, c: OneResultContext): { ok: true; value: OneResult } | { ok: false; error: string } {
+  const kind = input.kind
+  if (kind !== 'quiz' && kind !== 'assignment' && kind !== 'project' && kind !== 'note') return { ok: false, error: 'Pick what kind of piece this is' }
+  const grade = asInt(input.grade)
+  if (grade === null || !Number.isInteger(grade) || grade < 1 || grade > 12) return { ok: false, error: 'Pick a grade from 1 to 12' }
+  const year = asInt(input.year)
+  if (year === null || !Number.isInteger(year) || year < 1990) return { ok: false, error: 'Type the year it happened, for example 2025' }
+  if (year > c.year) return { ok: false, error: `Past records are from ${c.year} or earlier` }
+  const term = asInt(input.term)
+  if (term === null || !Number.isInteger(term) || term < 1 || term > 4) return { ok: false, error: 'Pick a term from 1 to 4' }
+  const teacher = (input.teacherName ?? '').trim().replace(/\s+/g, ' ')
+  if (teacher === '') return { ok: false, error: "Type the teacher's name at the time" }
+  if (teacher.length > 60) return { ok: false, error: "Keep the teacher's name under 60 letters" }
+  const base = { grade, year, term, happened_on: termStart(year, term), teacher_name: teacher, present: null, total: null }
+
+  if (kind === 'note') {
+    const text = (input.text ?? '').trim()
+    if (text === '') return { ok: false, error: 'Write the note' }
+    if (text.length > 1000) return { ok: false, error: 'Keep the note under 1,000 letters' }
+    const title = (input.title ?? '').trim()
+    return { ok: true, value: { ...base, source: 'note', title: clip(title || 'Teacher note', 120), subject: null, family: null, topic_name: null, marks: null, out_of: null, text } }
+  }
+
+  const title = (input.title ?? '').trim().replace(/\s+/g, ' ')
+  if (title === '') return { ok: false, error: 'Give the piece a title' }
+  if (title.length > 120) return { ok: false, error: 'Keep the title under 120 letters' }
+  const subject = canonicalSubject((input.subject ?? '').trim() || c.subject || DEFAULT_SUBJECT)
+  const family = (input.family ?? '').trim() === '' ? null : pickFamily(input.family!, c.families)
+  if (family === null) return { ok: false, error: (input.family ?? '').trim() === '' ? 'Pick the strand' : 'Pick one of the strands in the list' }
+  const marks = asInt(input.marks)
+  const outOf = asInt(input.outOf)
+  if (marks === null || marks < 0) return { ok: false, error: 'Type the marks, for example 14' }
+  if (outOf === null || outOf <= 0) return { ok: false, error: 'Type what the marks are out of, for example 20' }
+  if (marks > outOf) return { ok: false, error: 'The marks cannot be more than the total' }
+  const whole = wholeMarks(marks, outOf)
+  return { ok: true, value: { ...base, source: kind, title, subject, family, topic_name: null, marks: whole.marks, out_of: whole.outOf, text: null } }
 }
 
 export type Counts = {

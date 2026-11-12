@@ -4,7 +4,7 @@ import type { JemmaEvent } from './schemas/events'
 import { maybe, ok } from './tools/context'
 
 /** The AI jobs. Each has a prompt file `jobs/<job>.md` (see jobs/README.md). */
-export const AI_JOBS = ['draft_map', 'read_key', 'read_paper', 'diagnose', 'class_report', 'write_lesson', 'guidance', 'long_view'] as const
+export const AI_JOBS = ['draft_map', 'read_key', 'read_paper', 'diagnose', 'class_report', 'write_lesson', 'guidance', 'long_view', 'map_records'] as const
 /** Plain-code steps that sit in the plans next to the AI jobs. */
 export const CODE_JOBS = ['plan_next_session', 'update_learner_profile'] as const
 export const JOB_NAMES = [...AI_JOBS, ...CODE_JOBS] as const
@@ -105,6 +105,11 @@ export async function jobPlan(event: JemmaEvent, db: JemmaDb): Promise<JobStep[]
     case 'test.shared':
       // The teacher shared the results: now each learner with a marked paper gets the next session, the lesson and the guidance.
       return (await isHeld(db, event.testId)) ? [] : perChildTail(await markedChildren(db, event.testId))
+    case 'records.uploaded': {
+      // Once the file is read (ready), or the teacher has already decided, there is nothing left to map.
+      const found = await ok(db.from('record_imports').select('status').eq('id', event.importId).single())
+      return found.status === 'drafting' || found.status === 'failed' ? [{ job: 'map_records', ids: { importId: event.importId } }] : []
+    }
   }
 }
 
@@ -176,6 +181,11 @@ export async function postconditions(event: JemmaEvent, db: JemmaDb): Promise<st
     case 'test.shared':
       if (!(await isHeld(db, event.testId))) await sessionsFor(await markedChildren(db, event.testId))
       break
+    case 'records.uploaded': {
+      const found = await ok(db.from('record_imports').select('status').eq('id', event.importId).single())
+      if (found.status === 'drafting' || found.status === 'failed') missing.push(`the file ${event.importId} was not read`)
+      break
+    }
     case 'observation.added':
     case 'activity.added':
     case 'long_view.requested':

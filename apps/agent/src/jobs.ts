@@ -1,5 +1,5 @@
 import type { JobName, ToolContext } from '@jemma/profiling/tools'
-import { registerSpeech, runJobGuidance, runJobLongView, runJobReadPaper, runJobWriteLesson } from '@jemma/profiling/tools'
+import { registerSpeech, runJobGuidance, runJobLongView, runJobMapRecords, runJobReadPaper, runJobWriteLesson } from '@jemma/profiling/tools'
 import { runJobDraftMap, runJobReadKey } from '@jemma/profiling/jobs'
 import classReportPrompt from '../../../packages/profiling/src/jobs/class_report.md'
 import diagnosePrompt from '../../../packages/profiling/src/jobs/diagnose.md'
@@ -24,4 +24,5 @@ export const cloudJobs: CloudJobs = {
   write_lesson: (ctx, eventId, ids) => runJobWriteLesson(ctx, eventId, ids, { prompt: writeLessonPrompt }),
   guidance: runJobGuidance,
   long_view: runJobLongView,
+  map_records: runJobMapRecords,
 }

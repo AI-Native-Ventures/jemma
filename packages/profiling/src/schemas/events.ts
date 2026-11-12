@@ -12,6 +12,8 @@ export const EventSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('long_view.requested'), childId: z.string() }),
   /** The teacher shared a test with parents: Jemma now plans each learner's next session, lesson and guidance for it. */
   z.object({ type: z.literal('test.shared'), testId: z.string() }),
+  /** A teacher brought in a file of past records (or pasted a table): Jemma works out what its columns mean. */
+  z.object({ type: z.literal('records.uploaded'), importId: z.string() }),
 ])
 export type JemmaEvent = z.infer<typeof EventSchema>
 export type EventType = JemmaEvent['type']
