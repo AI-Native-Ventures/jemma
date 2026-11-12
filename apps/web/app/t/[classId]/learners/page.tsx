@@ -61,6 +61,22 @@ function Phone({ classId, v }: { classId: string; v: Awaited<ReturnType<typeof g
           </Link>
         </section>
 
+        <section aria-label="Add past records" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 12px 12px 14px', background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 18 }}>
+          <span aria-hidden="true" style={{ width: 40, height: 40, flex: 'none', borderRadius: 12, background: '#EEEDF5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+              <path d="M14 3v5h5M12 17v-6M9 14l3-3 3 3" />
+            </svg>
+          </span>
+          <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <span style={{ fontSize: 16, fontWeight: 600 }}>Past records</span>
+            <span style={{ fontSize: 14, color: '#5D5A73' }}>Bring in old results for the Long view</span>
+          </span>
+          <Link href={`/t/${classId}/learners/records`} style={{ display: 'flex', alignItems: 'center', height: 44, padding: '0 16px', borderRadius: 12, background: '#1F1D36', color: '#FFFFFF', fontSize: 15, fontWeight: 600, flex: 'none', textDecoration: 'none' }}>
+            Add past records
+          </Link>
+        </section>
+
         <section aria-labelledby="list" style={{ ...card(20), padding: '6px 6px 6px 14px' }}>
           <h2 id="list" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>All learners</h2>
           <div aria-hidden="true" style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 40px 6px 46px', fontSize: 12, fontWeight: 600, color: '#5D5A73' }}>

@@ -96,6 +96,12 @@ export type LongViewRecord = {
    * seed wrote, which counts as Mathematics.
    */
   subject?: string | null
+  /** The file of past records the record came from (`learner_records.import_id`). Null or missing: not from a file. */
+  importId?: string | null
+  /** The row of that file. */
+  sourceRow?: number | null
+  /** The teacher who added the record (a file, or one result typed by hand). Missing for the demo seed. */
+  addedByName?: string | null
 }
 
 /**

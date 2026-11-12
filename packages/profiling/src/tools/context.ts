@@ -26,7 +26,7 @@ export class OutOfScopeError extends Error {
   }
 }
 
-export type ScopedTable = 'children' | 'classes' | 'tests' | 'papers' | 'sessions' | 'curriculum_maps' | 'events'
+export type ScopedTable = 'children' | 'classes' | 'tests' | 'papers' | 'sessions' | 'curriculum_maps' | 'events' | 'record_imports'
 
 type Result<T> = PromiseLike<{ data: T; error: { message: string } | null }>
 
@@ -75,6 +75,7 @@ export async function schoolsOf(ctx: ToolContext, table: ScopedTable, ids: strin
     case 'children':
     case 'classes':
     case 'events':
+    case 'record_imports':
       for (const r of await rows(db.from(table).select('id, school_id').in('id', wanted))) out.set(r.id, r.school_id)
       break
     case 'tests':

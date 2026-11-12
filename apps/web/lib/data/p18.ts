@@ -391,7 +391,7 @@ export async function getClassHome(classId: string): Promise<ClassHome | null> {
     n.kind === 'desktop_off' && desktopOff
       ? { href: `${base}/settings/ai-runner`, title: desktopOff.title, detail: desktopOff.detail, desktopOff: true }
       : {
-          href: n.kind === 'approve_link' ? `${base}/link-requests/${n.ref_id}` : n.kind === 'review_long_view' ? `${base}/learners/${n.ref_id}/long-view` : `${base}/needs-you/${n.id}`,
+          href: n.kind === 'approve_link' ? `${base}/link-requests/${n.ref_id}` : n.kind === 'review_long_view' ? `${base}/learners/${n.ref_id}/long-view` : n.kind === 'check_records' ? `${base}/learners/records/${n.ref_id}` : `${base}/needs-you/${n.id}`,
           title: n.title,
           detail: n.detail,
         },

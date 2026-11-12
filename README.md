@@ -10,7 +10,7 @@ Built for the African Agentic AI Design Challenge, Education track (The Long Vie
 
 - **A profile, not a label.** Jemma surfaces a pattern ("fractions stayed low from Grade 5 Term 3 to Grade 6 Term 2"). It never assigns a track, a subject path or a career.
 - **Every claim has a source.** A pattern lists the quizzes, tests and teacher notes it comes from, and a teacher can open each one. The save tool drops a pattern that matches no record.
-- **The teacher goes first.** Every gate is a tap by a named teacher: the topic map, the answer key, a mark Jemma is unsure about, a guardian link, sharing results, a Long view pattern, and the talk with the guardian. The name and the time are kept.
+- **The teacher goes first.** Every gate is a tap by a named teacher: the topic map, the answer key, a mark Jemma is unsure about, a guardian link, sharing results, adding a file of past records, a Long view pattern, and the talk with the guardian. The name and the time are kept.
 - **Never ranked.** A learner is not compared with classmates and never sees the Long view or a score.
 - **Marks are code.** A model reads a photo. Code marks it.
 - **Synthetic data only.** No real learner is in the system.
@@ -39,7 +39,7 @@ Jemma is running. Open http://localhost:3000/demo
 
 Open that page and follow the tour below. You get your own copy of the made-up school Hillview Primary.
 
-How it works on your machine: the local database is Supabase in Docker (`supabase/config.toml`, with the migrations in `supabase/migrations`). Jemma runs with `AI_MODE=replay`, so every model call is answered from `fixtures/ai-replays.json.gz`, 162 recorded answers made earlier with free models. The agent worker runs from `apps/agent/wrangler.local.jsonc`, which has no Cloudflare speech binding, so lessons are saved with no audio and the player uses browser speech. Jemma only knows the answers recorded for the demo path: the sample curriculum, the five sample papers, the sessions that follow and the Long view updates (one for each learner who has a pattern, and Amina's again after the teacher's note). Something new, such as your own photo, has no recorded answer and the job shows an error.
+How it works on your machine: the local database is Supabase in Docker (`supabase/config.toml`, with the migrations in `supabase/migrations`). Jemma runs with `AI_MODE=replay`, so every model call is answered from `fixtures/ai-replays.json.gz`, 164 recorded answers made earlier with free models. The agent worker runs from `apps/agent/wrangler.local.jsonc`, which has no Cloudflare speech binding, so lessons are saved with no audio and the player uses browser speech. Jemma only knows the answers recorded for the demo path: the sample curriculum, the five sample papers, the sessions that follow and the Long view updates (one for each learner who has a pattern, and Amina's again after the teacher's note). Something new, such as your own photo, has no recorded answer and the job shows an error.
 
 To stop:
 
@@ -68,7 +68,7 @@ These are screenshots from the running app at 390 px, taken by the builders of e
 ## How the agent works
 
 1. An event (a photo, a note, a finished lesson, shared results) starts a job plan that code builds from the database after every step.
-2. Each AI job is one run: goose on an open-weights model, Claude Code on the owner's laptop, or the hosted app's own runner. It reads through Jemma's own MCP server (22 tools).
+2. Each AI job is one run: goose on an open-weights model, Claude Code on the owner's laptop, or the hosted app's own runner. It reads through Jemma's own MCP server (25 tools).
 3. The run must finish through a save tool. Save tools enforce the rules in code: marks, sources, banned words, school scope.
 4. Code checks that the event produced what it had to, retries, falls back to another model, or hands the item to the teacher.
 5. A person decides at every gate, and every tool call and approval is logged and readable on the full log screen.

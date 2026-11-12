@@ -101,6 +101,15 @@ TTS_PROXY_URL=http://localhost:8799 AI_MODE=record \
 
 Answers land in the `ai_replays` table on jemma-dev (service role only).
 
+The `map_records` job (the columns of a file of past records) is recorded by its own script, for the two sample files of `fixtures/records` ("Use a sample file" on the Add past records screen):
+
+```bash
+cd packages/profiling
+node --import tsx --import ./scripts/register-md.mjs scripts/map-records-live.ts [--only tidy|messy] [--mode record|cache]
+```
+
+It makes a fresh demo school, runs the job live on the text model, prints what the model mapped and what code made of every row, and keeps the answer in `ai_replays`. It stops itself after 6 requests to the model host (retries count). Rerun it after any change to `jobs/map_records.md` or to the mapping schema.
+
 ## Evals
 
 `pnpm evals` runs the eleven eval tasks (three runs each) on the real agent path with Goose and a free open-weights model, checks every outcome in code, and writes `EVALS.md` from the saved results in `evals/results/<run id>/`. `pnpm evals:report` rewrites `EVALS.md` from those files alone and fails if any of the 33 result files is missing. Never edit `EVALS.md` by hand.
