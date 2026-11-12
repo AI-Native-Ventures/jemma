@@ -97,7 +97,7 @@ describe('the recorded map of the demo saves exactly as it did', () => {
     for (const draft of recordedDrafts()) {
       const w = world(6)
       const out = await saveTopicMapDraft.run(w.ctx, { mapId: w.mapId, draft })
-      expect(out.codeQuestions).toBe(0)
+      expect((out as { codeQuestions: number }).codeQuestions).toBe(0)
       const shape = (d: TopicMapDraft) => d.terms.map((t) => [t.term, t.topics.map((x) => [x.name, x.family, x.check ?? null])])
       expect(shape(saved(w))).toEqual(shape(draft))
       const topics = draft.terms.reduce((n, t) => n + t.topics.length, 0)

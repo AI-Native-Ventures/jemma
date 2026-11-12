@@ -62,6 +62,8 @@ test.afterAll(async () => {
 type Made = { schoolId: string; teacherId: string; classId: string; email: string; password: string; cleanup(): Promise<void> }
 const made: Made[] = []
 test.afterAll(async () => {
+  // removing the schools, and the 9 MB file with them, takes minutes on a shared database that is busy
+  test.setTimeout(240_000)
   for (const m of made) await m.cleanup().catch(() => undefined)
 })
 
