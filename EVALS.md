@@ -57,6 +57,18 @@ The tables above are the main set. Each run folder below was made later with the
 
 `2026-11-11-gemma-26b`, `class-report` on `google/gemma-4-26b-a4b-it:free`: 3 of 3 runs got no answer from the free endpoint on 2026-11-11 ("Rate limit exceeded: Provider returned error."), so this model was not judged.
 
+## A curriculum Jemma had never seen
+
+Three invented curriculum documents of different shapes (`fixtures/curriculum/unseen/`) were given to the curriculum reader (`draft_map`), three runs each, on the free models (vision: `nvidia/nemotron-3.5-super-vl:free`; text: `nvidia/nemotron-3.5-super-vl:free`). Plain code scored every draft against the ground truth saved next to each document: at least 80 percent of the topics found, at most 15 percent of the draft made up, the right term for at least 80 percent of the found topics, the topic listed in two terms and the topic of another grade each flagged with a question, the right grade, family keys from the allowed list, and the right number of terms. A run where the provider gave no answer is shown as "no answer", not as a fail. The files are in `evals/results/unseen-curriculum/2026-11-11-18-26-unseen/`.
+
+| Document | Runs | Passes | No answer | Median seconds | Read by | What went wrong |
+| --- | ---: | ---: | ---: | ---: | --- | --- |
+| Grade 9 Natural Sciences, South Africa | 3 | 3 | 0 | 322 | vision | nothing: every run passed every check |
+| Grade 5 English, South Africa | 3 | 0 | 0 | 145 | vision | runs 1, 2, 3: the topic listed in two terms is flagged with a question ("Writing a paragraph" is in the draft with no question for the teacher) |
+| Grade 4 Science and Technology, Kenya | 3 | 0 | 1 | 245 | vision | one run never got past this Mac's own network ("teacher: fetch failed"), so it was not judged. run 1: the topic listed in two terms is flagged with a question ("Sources of light" is in the draft with no question for the teacher). run 2: the job ended on an error: Failed to process successful response |
+
+8 live runs of the curriculum reader were made in all. Median seconds count the runs that got an answer. 3 more tries never got past this Mac's own network (not the provider), so they were not counted and no model was asked. The script stopped early: this Mac's network failed three times in a row (or eight times in all): not a provider answer, so nothing was judged.
+
 ## Cost
 
 On the free tier the actual cost was $0: Goose reported a cost of $0 across the 33 runs, and every model used is a free (`:free`) listing. At the listed paid price (`nvidia/nemotron-3.5-super-vl` at $0.15 per million input tokens and $0.47 per million output tokens; `nvidia/nemotron-3.5-lightning` at $0.07 per million input tokens and $0.20 per million output tokens, read from OpenRouter's public models endpoint on 2026-11-10), these 33 runs would have cost about $0.62 in all. That is about $0.02 per run, from $0.0084 to $0.07. The median run used 70,797 tokens in and 4,152 out.
