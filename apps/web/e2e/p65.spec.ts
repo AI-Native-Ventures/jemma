@@ -120,7 +120,8 @@ test.describe('the made-up school', () => {
     await page.getByRole('button', { name: new RegExp(`^${neo.firstName}`) }).click()
     await page.waitForURL(/\/k$/, { timeout: 120_000 })
     const sandboxId = await takeCookieSandbox(page)
-    await check(page.getByText(new RegExp(neo.firstName)).first()).toBeVisible()
+    // The learner's own home: the greeting names them (the first "Neo" in the page is the laptop sidebar, hidden on a phone).
+    await check(page.getByRole('heading', { level: 1, name: new RegExp(neo.firstName) })).toBeVisible()
     await noHorizontalScroll(page)
     await proof(page, 'generated-learner-signed-in')
 

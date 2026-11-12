@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: 'Demo · Switch who you are' }
 export const dynamic = 'force-dynamic'
 
 const PEOPLE: { role: DemoRole; initials: string; avatar: string; name: string; detail: string }[] = [
-  { role: 'teacher', initials: 'MB', avatar: 'bg-soft-3', name: 'Ms Banda', detail: 'Teacher · 6B' },
+  { role: 'teacher', initials: 'MB', avatar: 'bg-soft-3', name: 'Ms Banda', detail: 'Teacher · 6B and 5A' },
   { role: 'parent', initials: 'TM', avatar: 'bg-coral-tint', name: 'Thandi M', detail: "Parent · Amina's mother" },
   { role: 'learner', initials: 'A', avatar: 'bg-coral-soft', name: 'Amina', detail: 'Learner · Grade 6' },
 ]
