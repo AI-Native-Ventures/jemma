@@ -7,7 +7,8 @@ import { signInWithPassword } from './helpers/session'
 
 // "Any class, any school": a teacher makes classes in other grades, copies the learners of a class, puts a learner who is
 // already at the school into a second class, makes a learner's sign-in code, and starts a school that is not in the list.
-// Jemma covers Mathematics only for now (P72): the forms show the subject and do not offer a choice.
+// Jemma covers Mathematics only for now (P72): the forms show the subject and do not offer a choice. Screenshots of the class form and the
+// onboarding form go to design/proof/p72 only when P72_PROOF is set.
 // Headless, no agent, no model. Screenshots go to design/proof/p63 only when P63_PROOF is set, named by width (390 or 1440).
 
 const admin = () =>
@@ -24,6 +25,16 @@ async function proof(page: Page, name: string, fullPage = true) {
   await page.evaluate(() => document.fonts.ready)
   await page.addStyleTag({ content: 'nextjs-portal{display:none} *{transition:none !important;animation:none !important}' })
   await page.screenshot({ path: resolve(proofDir, `${name}-${width}.png`), fullPage })
+}
+
+const proofDir72 = resolve(import.meta.dirname, '../../../design/proof/p72')
+async function proof72(page: Page, name: string) {
+  if (!process.env.P72_PROOF) return
+  mkdirSync(proofDir72, { recursive: true })
+  const width = page.viewportSize()!.width >= 1024 ? 1440 : 390
+  await page.evaluate(() => document.fonts.ready)
+  await page.addStyleTag({ content: 'nextjs-portal{display:none} *{transition:none !important;animation:none !important}' })
+  await page.screenshot({ path: resolve(proofDir72, `${name}-${width}.png`), fullPage: true })
 }
 
 async function noHorizontalScroll(page: Page) {
@@ -85,6 +96,7 @@ test.describe('a teacher in the demo school', () => {
     await check(page).toHaveURL(/\/t\/new$/)
     await check(page.getByLabel('Grade', { exact: true }).locator('option')).toHaveCount(12)
     await expectMathsLine(page)
+    await proof72(page, 'class-form')
     await check(page.getByText('More subjects are coming')).toHaveCount(0)
     await page.getByLabel('Class name').fill('9A Mathematics')
     await page.getByLabel('Grade', { exact: true }).selectOption('9')
@@ -265,6 +277,7 @@ test.describe('a new teacher with a school that is not in the list', () => {
     expect((await db.from('profiles').select('display_name').eq('user_id', created.data.user.id).single()).data!.display_name).toBe('Ms Nkosi')
 
     await expectMathsLine(page)
+    await proof72(page, 'onboarding-form')
     await page.getByLabel('Grade of your first class').selectOption('3')
     await page.getByRole('button', { name: "My school isn't listed" }).click()
     const dialog = page.getByRole('dialog')
