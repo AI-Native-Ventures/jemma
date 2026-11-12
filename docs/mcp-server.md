@@ -176,7 +176,7 @@ Save the drafted topic map for a class curriculum and ask the teacher to approve
 
 - Kind: save
 - Input: `{ mapId: string, draft: { grade: integer, terms: { term: 1 | 2 | 3 | 4, topics: { name: string, shortName?: string, family: string, prerequisites: string[], misconceptions: string[], check?: { reason: string, options: string[] } }[] }[], leftOut: { name: string, reason: string }[] } }`
-- Output: `{ topics: number, unsure: number }`
+- Output: `{ topics: number, unsure: number, codeQuestions: number }`. When the draft keeps one topic in two or more terms and none of its entries has a question, code adds one to each ("Listed in Term X and Term Y. Which term is it taught in?") after the model's answer and before saving. `codeQuestions` is how many it added, and the tool log says so. A question from the model is kept as it is.
 
 ### `save_answer_key`
 

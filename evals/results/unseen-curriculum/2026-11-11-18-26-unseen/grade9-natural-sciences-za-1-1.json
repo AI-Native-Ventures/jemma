@@ -1,0 +1,247 @@
+{
+  "version": 1,
+  "runId": "2026-11-11-18-26-unseen",
+  "docId": "grade9-natural-sciences-za",
+  "n": 1,
+  "attempt": 1,
+  "startedAt": "2026-11-11T18:26:37.807Z",
+  "seconds": 205.3,
+  "calls": 1,
+  "way": "vision",
+  "visionProblem": null,
+  "model": "nvidia/nemotron-3.5-super-vl:free",
+  "verdict": "pass",
+  "error": null,
+  "noAnswer": null,
+  "checks": [
+    {
+      "name": "the draft is for the right grade",
+      "pass": true,
+      "detail": "draft grade 9, document grade 9"
+    },
+    {
+      "name": "at least 80 percent of the topics were found",
+      "pass": true,
+      "detail": "found 14 of 15; missing: Series and parallel circuits"
+    },
+    {
+      "name": "at most 15 percent of the draft is made up",
+      "pass": true,
+      "detail": "0 of 14 drafted topics are not in the document"
+    },
+    {
+      "name": "at least 80 percent of the found topics are in the right term",
+      "pass": true,
+      "detail": "14 of 14 found topics in the right term"
+    },
+    {
+      "name": "the topic listed in two terms is flagged with a question",
+      "pass": true,
+      "detail": "\"Electric circuits\" has a check"
+    },
+    {
+      "name": "the topic of another grade is flagged with a question or left out with a reason",
+      "pass": true,
+      "detail": "\"States of matter and the particle model\" is under leftOut"
+    },
+    {
+      "name": "every family key is one of the subject's keys",
+      "pass": true,
+      "detail": "all 14 are among life_living, matter_materials, energy_change, earth_beyond"
+    },
+    {
+      "name": "the map has the number of terms the document has",
+      "pass": true,
+      "detail": "the document has 4 terms, the draft has terms 1, 2, 3, 4"
+    }
+  ],
+  "figures": {
+    "found": 14,
+    "of": 15,
+    "invented": 0,
+    "drafted": 14,
+    "rightTerm": 14,
+    "termsInDraft": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "draft": {
+    "grade": 9,
+    "terms": [
+      {
+        "term": 1,
+        "topics": [
+          {
+            "name": "Cells and their parts",
+            "shortName": "Cell parts",
+            "family": "life_living",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think plant and animal cells are exactly the same, or that animal cells have chloroplasts."
+            ]
+          },
+          {
+            "name": "Photosynthesis and respiration",
+            "shortName": "Photosynthesis and respiration",
+            "family": "life_living",
+            "prerequisites": [
+              "Cells and their parts"
+            ],
+            "misconceptions": [
+              "Learners think plants only make food and never release energy from it, or that respiration is the same as breathing."
+            ]
+          },
+          {
+            "name": "Atoms, elements and the periodic table",
+            "shortName": "Atoms elements table",
+            "family": "matter_materials",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think atoms can be seen with the naked eye, or that an element is the same as a compound."
+            ]
+          },
+          {
+            "name": "Chemical reactions and word equations",
+            "shortName": "Chemical reactions",
+            "family": "matter_materials",
+            "prerequisites": [
+              "Atoms, elements and the periodic table"
+            ],
+            "misconceptions": [
+              "Learners think matter is lost or created during a reaction, or that every reaction needs fire or heat."
+            ]
+          }
+        ]
+      },
+      {
+        "term": 2,
+        "topics": [
+          {
+            "name": "Acids, bases and the pH scale",
+            "shortName": "Acids bases pH",
+            "family": "matter_materials",
+            "prerequisites": [
+              "Chemical reactions and word equations"
+            ],
+            "misconceptions": [
+              "Learners think every acid is deadly to touch, that bases are always safe, or that neutral means pH zero."
+            ]
+          },
+          {
+            "name": "Reproduction in flowering plants",
+            "shortName": "Plant reproduction",
+            "family": "life_living",
+            "prerequisites": [
+              "Cells and their parts"
+            ],
+            "misconceptions": [
+              "Learners think flowers cannot make seeds without help from people, or that pollination and fertilisation are the same step."
+            ]
+          },
+          {
+            "name": "Electric circuits",
+            "shortName": "Electric circuits",
+            "family": "energy_change",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think electricity gets used up as it goes around, or that a bigger battery always makes a bulb brighter."
+            ],
+            "check": {
+              "reason": "The plan teaches Electric circuits in Term 2 weeks 5-6 and again in Term 3 weeks 1-2 as continued practice.",
+              "options": [
+                "Keep as one topic in Term 2 only",
+                "List it again as a separate topic in Term 3"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "term": 3,
+        "topics": [
+          {
+            "name": "Heat transfer",
+            "shortName": "Heat transfer",
+            "family": "energy_change",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think cold is something that moves, or that metal is naturally colder than other materials."
+            ]
+          },
+          {
+            "name": "Rocks and the rock cycle",
+            "shortName": "Rock cycle",
+            "family": "earth_beyond",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think rocks stay the same forever, or that all rocks formed at the same time."
+            ]
+          },
+          {
+            "name": "Weather and climate",
+            "shortName": "Weather climate",
+            "family": "earth_beyond",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners confuse weather with climate, or think one hot day proves the climate is changing."
+            ]
+          }
+        ]
+      },
+      {
+        "term": 4,
+        "topics": [
+          {
+            "name": "Ecosystems and food webs",
+            "shortName": "Ecosystems food webs",
+            "family": "life_living",
+            "prerequisites": [
+              "Photosynthesis and respiration"
+            ],
+            "misconceptions": [
+              "Learners think top predators are outside the food web, or that decomposers do not matter."
+            ]
+          },
+          {
+            "name": "Human impact on the environment",
+            "shortName": "Human impact",
+            "family": "life_living",
+            "prerequisites": [
+              "Ecosystems and food webs"
+            ],
+            "misconceptions": [
+              "Learners think their own actions cannot harm the environment, or that pollution is only what you can see."
+            ]
+          },
+          {
+            "name": "The solar system and the seasons",
+            "shortName": "Solar system seasons",
+            "family": "earth_beyond",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think seasons happen because Earth moves closer to or farther from the Sun, or that the Sun orbits Earth."
+            ]
+          },
+          {
+            "name": "Forces and motion graphs",
+            "shortName": "Forces motion graphs",
+            "family": "energy_change",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think a downward sloping graph means moving backwards, or that no forces act on an object that is not moving."
+            ]
+          }
+        ]
+      }
+    ],
+    "leftOut": [
+      {
+        "name": "States of matter and the particle model",
+        "reason": "Grade 8 revision topic, not assessed in Grade 9."
+      }
+    ]
+  }
+}

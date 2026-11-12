@@ -1,0 +1,33 @@
+{
+  "id": "grade5-mathematics-za",
+  "file": "grade5-mathematics-za.pdf",
+  "mimeType": "application/pdf",
+  "grade": 5,
+  "subject": "Mathematics",
+  "country": "ZA",
+  "termCount": 4,
+  "textLayer": true,
+  "families": ["whole_numbers", "fractions", "decimals", "shapes", "measurement", "data"],
+  "otherFamilyWords": true,
+  "topics": [
+    { "name": "Whole numbers up to 1 000 000", "terms": [1], "family": "whole_numbers", "match": [["000"], ["million"], ["place", "value"], ["large", "number"], ["expanded"]] },
+    { "name": "Addition and subtraction of larger numbers", "terms": [1], "family": "whole_numbers", "match": [["addition"], ["subtraction"], ["add"], ["subtract"]] },
+    { "name": "Multiplication and division", "terms": [1], "family": "whole_numbers", "match": [["multiplication"], ["division"], ["multiply"], ["divide"]] },
+    { "name": "Multiples and factors", "terms": [1], "family": "whole_numbers", "match": [["multiple"], ["factor"]] },
+    { "name": "Time", "terms": [1], "family": "measurement", "match": [["time"], ["clock"], ["calendar"]] },
+    { "name": "Common fractions", "terms": [2], "family": "fractions", "match": [["common", "fraction"], ["fraction", "whole"], ["fraction", "set"]] },
+    { "name": "Equivalent fractions", "terms": [2], "family": "fractions", "match": [["equivalent"]] },
+    { "name": "Perimeter and area", "terms": [2, 3], "family": "measurement", "match": [["perimeter"], ["area"]] },
+    { "name": "Decimal fractions", "terms": [3], "family": "decimals", "match": [["decimal"]] },
+    { "name": "Two-dimensional shapes and three-dimensional objects", "terms": [3], "family": "shapes", "match": [["shape"], ["object"], ["prism"], ["2d"], ["3d"]] },
+    { "name": "Capacity and mass", "terms": [3], "family": "measurement", "match": [["capacity"], ["mass"]] },
+    { "name": "Number patterns and number sentences", "terms": [4], "family": "patterns", "match": [["pattern"], ["number", "sentence"]] },
+    { "name": "Money and simple budgets", "terms": [4], "family": "money", "match": [["money"], ["budget"]] },
+    { "name": "Data handling", "terms": [4], "family": "data", "match": [["data"], ["graph"], ["tally"]] },
+    { "name": "Position and movement", "terms": [4], "family": "shapes", "match": [["position"], ["movement"], ["map"], ["direction"]] }
+  ],
+  "traps": {
+    "twoTerms": { "name": "Perimeter and area", "terms": [2, 3] },
+    "otherGrade": { "name": "Percentages", "grade": 7, "match": [["percentage"], ["percent"]] }
+  }
+}

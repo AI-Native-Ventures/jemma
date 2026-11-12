@@ -1,0 +1,17 @@
+{
+  "runId": "2026-11-12-maths-unseen",
+  "finishedAt": "2026-11-12T19:50:42.637Z",
+  "cap": 12,
+  "spentAtStart": 0,
+  "spentAtEnd": 9,
+  "repeatsAllowed": 3,
+  "repeatsUsed": 0,
+  "machineNetworkTries": 0,
+  "stopped": null,
+  "models": {
+    "LLM_MODEL": "nvidia/nemotron-3.5-super-vl:free",
+    "LLM_MODEL_FALLBACKS": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "VISION_MODEL": "nvidia/nemotron-3.5-super-vl:free",
+    "VISION_MODEL_FALLBACKS": "google/gemma-4-31b-it:free"
+  }
+}

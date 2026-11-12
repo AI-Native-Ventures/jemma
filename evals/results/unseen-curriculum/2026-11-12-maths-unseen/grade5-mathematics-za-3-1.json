@@ -1,0 +1,278 @@
+{
+  "version": 1,
+  "runId": "2026-11-12-maths-unseen",
+  "docId": "grade5-mathematics-za",
+  "n": 3,
+  "attempt": 1,
+  "startedAt": "2026-11-12T19:45:28.430Z",
+  "seconds": 72.1,
+  "calls": 1,
+  "way": "vision",
+  "visionProblem": null,
+  "model": "nvidia/nemotron-3.5-super-vl:free",
+  "verdict": "pass",
+  "error": null,
+  "noAnswer": null,
+  "codeQuestions": 0,
+  "twoTermsAskedBy": "model",
+  "checks": [
+    {
+      "name": "the draft is for the right grade",
+      "pass": true,
+      "detail": "draft grade 5, document grade 5"
+    },
+    {
+      "name": "at least 80 percent of the topics were found",
+      "pass": true,
+      "detail": "found 15 of 15"
+    },
+    {
+      "name": "at most 15 percent of the draft is made up",
+      "pass": true,
+      "detail": "0 of 16 drafted topics are not in the document"
+    },
+    {
+      "name": "at least 80 percent of the found topics are in the right term",
+      "pass": true,
+      "detail": "15 of 15 found topics in the right term"
+    },
+    {
+      "name": "the topic listed in two terms is flagged with a question",
+      "pass": true,
+      "detail": "\"Perimeter and area\" has a check"
+    },
+    {
+      "name": "the topic of another grade is flagged with a question or left out with a reason",
+      "pass": true,
+      "detail": "\"Percentages\" is under leftOut"
+    },
+    {
+      "name": "every family key is one of the subject's keys, or one or two short lowercase words",
+      "pass": true,
+      "detail": "all 16 are accepted; not in the list (whole_numbers, fractions, decimals, shapes, measurement, data): numbers, shape"
+    },
+    {
+      "name": "the map has the number of terms the document has",
+      "pass": true,
+      "detail": "the document has 4 terms, the draft has terms 1, 2, 3, 4"
+    }
+  ],
+  "figures": {
+    "found": 15,
+    "of": 15,
+    "invented": 0,
+    "drafted": 16,
+    "rightTerm": 15,
+    "termsInDraft": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "extraFamilies": [
+      "numbers",
+      "shape"
+    ]
+  },
+  "draft": {
+    "grade": 5,
+    "terms": [
+      {
+        "term": 1,
+        "topics": [
+          {
+            "name": "Whole numbers up to 1 000 000",
+            "shortName": "Whole numbers",
+            "family": "numbers",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think a number with more digits is always bigger, or mix up the places when writing a number in expanded form."
+            ]
+          },
+          {
+            "name": "Adding and subtracting larger numbers",
+            "shortName": "Adding and subtracting",
+            "family": "numbers",
+            "prerequisites": [
+              "Whole numbers up to 1 000 000"
+            ],
+            "misconceptions": [
+              "Learners line up digits wrongly in columns, or forget to carry and borrow when moving between places."
+            ]
+          },
+          {
+            "name": "Multiplying and dividing whole numbers",
+            "shortName": "Multiplying and dividing",
+            "family": "numbers",
+            "prerequisites": [
+              "Adding and subtracting larger numbers"
+            ],
+            "misconceptions": [
+              "Learners think multiplication always makes numbers bigger and division always makes them smaller, or forget what a remainder is."
+            ]
+          },
+          {
+            "name": "Multiples and factors",
+            "shortName": "Multiples and factors",
+            "family": "numbers",
+            "prerequisites": [
+              "Multiplying and dividing whole numbers"
+            ],
+            "misconceptions": [
+              "Learners confuse multiples with factors, or think 1 is not a factor of every number."
+            ]
+          },
+          {
+            "name": "Reading time and working out duration",
+            "shortName": "Telling time",
+            "family": "measurement",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners confuse the hour and minute hands, or think 100 minutes make one hour."
+            ]
+          }
+        ]
+      },
+      {
+        "term": 2,
+        "topics": [
+          {
+            "name": "Common fractions",
+            "shortName": "Common fractions",
+            "family": "fractions",
+            "prerequisites": [
+              "Whole numbers up to 1 000 000"
+            ],
+            "misconceptions": [
+              "Learners think a larger bottom number means a larger fraction, or read the top and bottom numbers as separate whole numbers."
+            ]
+          },
+          {
+            "name": "Equivalent fractions",
+            "shortName": "Equivalent fractions",
+            "family": "fractions",
+            "prerequisites": [
+              "Common fractions"
+            ],
+            "misconceptions": [
+              "Learners change only the top number to make fractions equal, or forget to multiply or divide both top and bottom by the same number."
+            ]
+          },
+          {
+            "name": "Perimeter and area",
+            "shortName": "Perimeter and area",
+            "family": "measurement",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners add all the sides to find area, or confuse perimeter with area."
+            ]
+          }
+        ]
+      },
+      {
+        "term": 3,
+        "topics": [
+          {
+            "name": "Perimeter and area of compound shapes",
+            "shortName": "Compound perimeter area",
+            "family": "measurement",
+            "prerequisites": [
+              "Perimeter and area"
+            ],
+            "misconceptions": [
+              "Learners include inner lines when measuring the outside edge, or count the middle squares twice when finding area."
+            ],
+            "check": {
+              "reason": "Perimeter and area is taught again in Term 3 at a deeper level; it may be one repeating topic or a new one.",
+              "options": [
+                "Keep as a separate topic building on Term 2",
+                "Merge into one topic spanning Terms 2 and 3"
+              ]
+            }
+          },
+          {
+            "name": "Decimal fractions",
+            "shortName": "Decimal fractions",
+            "family": "decimals",
+            "prerequisites": [
+              "Common fractions"
+            ],
+            "misconceptions": [
+              "Learners think 0,5 is smaller than 0,25 because 25 looks bigger than 5, or line up the decimal comma wrongly."
+            ]
+          },
+          {
+            "name": "Two-dimensional shapes and three-dimensional objects",
+            "shortName": "Shapes and objects",
+            "family": "shape",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think a square is not a kind of rectangle, or miss the hidden faces, edges and corners when counting."
+            ]
+          },
+          {
+            "name": "Capacity and mass",
+            "shortName": "Capacity and mass",
+            "family": "measurement",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think a taller container always holds more, or mix up grams and kilograms when changing units."
+            ]
+          }
+        ]
+      },
+      {
+        "term": 4,
+        "topics": [
+          {
+            "name": "Number patterns and number sentences",
+            "shortName": "Number patterns",
+            "family": "numbers",
+            "prerequisites": [
+              "Adding and subtracting larger numbers",
+              "Multiplying and dividing whole numbers"
+            ],
+            "misconceptions": [
+              "Learners guess the next number without testing the rule, or think the missing number has to be at the end of the sentence."
+            ]
+          },
+          {
+            "name": "Money and simple budgets",
+            "shortName": "Money and budgets",
+            "family": "measurement",
+            "prerequisites": [
+              "Adding and subtracting larger numbers"
+            ],
+            "misconceptions": [
+              "Learners forget to change between rands and cents correctly, or think change is always a whole rand amount."
+            ]
+          },
+          {
+            "name": "Data handling",
+            "shortName": "Data handling",
+            "family": "data",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think the tallest bar means the most important choice, or misread the scale on the graph axes."
+            ]
+          },
+          {
+            "name": "Position and movement",
+            "shortName": "Position and movement",
+            "family": "shape",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners mix up left and right from someone else's point of view, or think north means up on every map."
+            ]
+          }
+        ]
+      }
+    ],
+    "leftOut": [
+      {
+        "name": "Percentages",
+        "reason": "The plan says percentages is a Grade 7 topic and is not taught in Grade 5."
+      }
+    ]
+  }
+}

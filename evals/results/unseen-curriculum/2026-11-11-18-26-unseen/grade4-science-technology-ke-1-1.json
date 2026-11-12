@@ -1,0 +1,228 @@
+{
+  "version": 1,
+  "runId": "2026-11-11-18-26-unseen",
+  "docId": "grade4-science-technology-ke",
+  "n": 1,
+  "attempt": 1,
+  "startedAt": "2026-11-11T18:48:50.838Z",
+  "seconds": 235.1,
+  "calls": 1,
+  "way": "vision",
+  "visionProblem": null,
+  "model": "nvidia/nemotron-3.5-super-vl:free",
+  "verdict": "fail",
+  "error": null,
+  "noAnswer": null,
+  "checks": [
+    {
+      "name": "the draft is for the right grade",
+      "pass": true,
+      "detail": "draft grade 4, document grade 4"
+    },
+    {
+      "name": "at least 80 percent of the topics were found",
+      "pass": true,
+      "detail": "found 12 of 12"
+    },
+    {
+      "name": "at most 15 percent of the draft is made up",
+      "pass": true,
+      "detail": "0 of 13 drafted topics are not in the document"
+    },
+    {
+      "name": "at least 80 percent of the found topics are in the right term",
+      "pass": true,
+      "detail": "12 of 12 found topics in the right term"
+    },
+    {
+      "name": "the topic listed in two terms is flagged with a question",
+      "pass": false,
+      "detail": "\"Sources of light\" is in the draft with no question for the teacher"
+    },
+    {
+      "name": "the topic of another grade is flagged with a question or left out with a reason",
+      "pass": true,
+      "detail": "\"Electric circuits\" is under leftOut"
+    },
+    {
+      "name": "every family key is a short lowercase word",
+      "pass": true,
+      "detail": "all 13 are short lowercase words"
+    },
+    {
+      "name": "the map has the number of terms the document has",
+      "pass": true,
+      "detail": "the document has 3 terms, the draft has terms 1, 2, 3"
+    }
+  ],
+  "figures": {
+    "found": 12,
+    "of": 12,
+    "invented": 0,
+    "drafted": 13,
+    "rightTerm": 12,
+    "termsInDraft": [
+      1,
+      2,
+      3
+    ]
+  },
+  "draft": {
+    "grade": 4,
+    "terms": [
+      {
+        "term": 1,
+        "topics": [
+          {
+            "name": "Parts of a flowering plant",
+            "shortName": "Plant parts",
+            "family": "plants",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking every plant has a flower",
+              "Thinking roots only hold the plant upright"
+            ]
+          },
+          {
+            "name": "Animals and where they live",
+            "shortName": "Animal homes",
+            "family": "animals",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking all animals live in the same kind of home",
+              "Confusing where insects, birds and fish live"
+            ]
+          },
+          {
+            "name": "Properties of materials",
+            "shortName": "Material properties",
+            "family": "materials",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking heavy things always sink",
+              "Thinking all metals are shiny and all plastics break easily"
+            ]
+          },
+          {
+            "name": "Sources of light",
+            "shortName": "Light sources",
+            "family": "light",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking the Moon makes its own light",
+              "Thinking we can see things in a dark room"
+            ]
+          }
+        ]
+      },
+      {
+        "term": 2,
+        "topics": [
+          {
+            "name": "Types of soil",
+            "shortName": "Soil types",
+            "family": "soil",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking all soil feels the same",
+              "Thinking sand holds the most water"
+            ]
+          },
+          {
+            "name": "Water: uses and sources",
+            "shortName": "Water sources",
+            "family": "water",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking water only comes from taps",
+              "Thinking all water is safe to drink"
+            ]
+          },
+          {
+            "name": "Sound and how it travels",
+            "shortName": "Sound travel",
+            "family": "sound",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking sound can travel through empty space",
+              "Thinking louder sounds travel faster"
+            ]
+          },
+          {
+            "name": "Simple machines",
+            "shortName": "Simple machines",
+            "family": "machines",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking machines always need electricity",
+              "Thinking a ramp makes the load lighter"
+            ]
+          }
+        ]
+      },
+      {
+        "term": 3,
+        "topics": [
+          {
+            "name": "Sources of light",
+            "shortName": "Light sources",
+            "family": "light",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking shadows stay the same size",
+              "Thinking light bends around corners"
+            ]
+          },
+          {
+            "name": "The Sun, Moon and stars",
+            "shortName": "Sky objects",
+            "family": "sky",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking the Moon is a star",
+              "Thinking the Sun moves around the Earth"
+            ]
+          },
+          {
+            "name": "Weather and seasons",
+            "shortName": "Weather seasons",
+            "family": "weather",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking weather and seasons mean the same thing",
+              "Thinking it rains in every season"
+            ]
+          },
+          {
+            "name": "Caring for our environment",
+            "shortName": "Environment care",
+            "family": "environment",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking only big trees help the environment",
+              "Thinking dropping litter does not hurt plants"
+            ]
+          },
+          {
+            "name": "Pollution and waste",
+            "shortName": "Pollution waste",
+            "family": "environment",
+            "prerequisites": [
+              "Caring for our environment"
+            ],
+            "misconceptions": [
+              "Thinking all rubbish rots in the ground",
+              "Thinking plastic waste disappears in the soil"
+            ]
+          }
+        ]
+      }
+    ],
+    "leftOut": [
+      {
+        "name": "Electric circuits",
+        "reason": "Grade 6 content, not for Grade 4."
+      }
+    ]
+  }
+}

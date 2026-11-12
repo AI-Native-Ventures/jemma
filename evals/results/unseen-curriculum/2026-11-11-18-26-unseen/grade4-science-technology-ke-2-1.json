@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "runId": "2026-11-11-18-26-unseen",
+  "docId": "grade4-science-technology-ke",
+  "n": 2,
+  "attempt": 1,
+  "startedAt": "2026-11-11T18:52:45.943Z",
+  "seconds": 254.8,
+  "calls": 1,
+  "way": null,
+  "visionProblem": null,
+  "model": null,
+  "verdict": "fail",
+  "error": "Failed to process successful response",
+  "noAnswer": null,
+  "checks": [],
+  "figures": null,
+  "draft": null
+}

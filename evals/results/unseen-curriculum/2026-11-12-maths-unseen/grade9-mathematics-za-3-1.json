@@ -1,0 +1,292 @@
+{
+  "version": 1,
+  "runId": "2026-11-12-maths-unseen",
+  "docId": "grade9-mathematics-za",
+  "n": 3,
+  "attempt": 1,
+  "startedAt": "2026-11-12T19:40:57.404Z",
+  "seconds": 106.5,
+  "calls": 1,
+  "way": "vision",
+  "visionProblem": null,
+  "model": "nvidia/nemotron-3.5-super-vl:free",
+  "verdict": "pass",
+  "error": null,
+  "noAnswer": null,
+  "codeQuestions": 0,
+  "twoTermsAskedBy": "model",
+  "checks": [
+    {
+      "name": "the draft is for the right grade",
+      "pass": true,
+      "detail": "draft grade 9, document grade 9"
+    },
+    {
+      "name": "at least 80 percent of the topics were found",
+      "pass": true,
+      "detail": "found 14 of 14"
+    },
+    {
+      "name": "at most 15 percent of the draft is made up",
+      "pass": true,
+      "detail": "0 of 14 drafted topics are not in the document"
+    },
+    {
+      "name": "at least 80 percent of the found topics are in the right term",
+      "pass": true,
+      "detail": "14 of 14 found topics in the right term"
+    },
+    {
+      "name": "the topic listed in two terms is flagged with a question",
+      "pass": true,
+      "detail": "\"Ratio, rate and proportion\" has a check"
+    },
+    {
+      "name": "the topic of another grade is flagged with a question or left out with a reason",
+      "pass": true,
+      "detail": "\"Trigonometry: sine, cosine and tangent\" is under leftOut"
+    },
+    {
+      "name": "every family key is one of the subject's keys, or one or two short lowercase words",
+      "pass": true,
+      "detail": "all 14 are accepted; not in the list (whole_numbers, fractions, decimals, shapes, measurement, data): algebra, numbers, shape"
+    },
+    {
+      "name": "the map has the number of terms the document has",
+      "pass": true,
+      "detail": "the document has 4 terms, the draft has terms 1, 2, 3, 4"
+    }
+  ],
+  "figures": {
+    "found": 14,
+    "of": 14,
+    "invented": 0,
+    "drafted": 14,
+    "rightTerm": 14,
+    "termsInDraft": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "extraFamilies": [
+      "algebra",
+      "numbers",
+      "shape"
+    ]
+  },
+  "draft": {
+    "grade": 9,
+    "terms": [
+      {
+        "term": 1,
+        "topics": [
+          {
+            "name": "Integers and exponents",
+            "shortName": "Integers and exponents",
+            "family": "numbers",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking that subtracting a negative number makes the answer more negative",
+              "Believing that a negative number squared gives a negative result",
+              "Thinking that any number to the power of zero is zero instead of one"
+            ]
+          },
+          {
+            "name": "Rational and irrational numbers",
+            "shortName": "Rational and irrational",
+            "family": "numbers",
+            "prerequisites": [
+              "Integers and exponents"
+            ],
+            "misconceptions": [
+              "Thinking that every decimal is rational",
+              "Believing that a recurring decimal has no pattern",
+              "Thinking that the square root of two can be written as a fraction"
+            ]
+          },
+          {
+            "name": "Algebraic expressions",
+            "shortName": "Algebraic expressions",
+            "family": "algebra",
+            "prerequisites": [
+              "Integers and exponents"
+            ],
+            "misconceptions": [
+              "Thinking that 2x + 3x equals 5x²",
+              "Believing that 3(x + 2) means 3x + 2",
+              "Thinking that unlike terms can be added together"
+            ]
+          },
+          {
+            "name": "Expanding and factorising",
+            "shortName": "Expanding and factorising",
+            "family": "algebra",
+            "prerequisites": [
+              "Algebraic expressions"
+            ],
+            "misconceptions": [
+              "Forgetting to multiply every term inside the second bracket",
+              "Thinking that (a + b)² equals a² + b²",
+              "Taking out only part of a common factor"
+            ]
+          }
+        ]
+      },
+      {
+        "term": 2,
+        "topics": [
+          {
+            "name": "Linear equations and inequalities",
+            "shortName": "Equations and inequalities",
+            "family": "algebra",
+            "prerequisites": [
+              "Algebraic expressions",
+              "Expanding and factorising"
+            ],
+            "misconceptions": [
+              "Changing the sign only on one side when moving a term",
+              "Forgetting to flip the inequality sign when multiplying or dividing by a negative number",
+              "Thinking that the solution to an inequality is just one number"
+            ]
+          },
+          {
+            "name": "Number patterns and sequences",
+            "shortName": "Number patterns",
+            "family": "algebra",
+            "prerequisites": [
+              "Algebraic expressions"
+            ],
+            "misconceptions": [
+              "Thinking that the difference between terms is always the rule",
+              "Using the term number instead of the position in the sequence",
+              "Writing the rule only for the first few terms"
+            ]
+          },
+          {
+            "name": "Ratio, rate and proportion",
+            "shortName": "Ratio, rate, proportion",
+            "family": "numbers",
+            "prerequisites": [
+              "Rational and irrational numbers"
+            ],
+            "misconceptions": [
+              "Thinking that a ratio of 2:3 means 2 plus 3",
+              "Adding the parts instead of using the total when sharing",
+              "Believing that direct proportion always means a straight line through the origin"
+            ],
+            "check": {
+              "reason": "Listed in both Term 2 and Term 3 of the teaching plan.",
+              "options": [
+                "Keep in Term 2 only",
+                "Repeat in Term 3 as a continuation"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "term": 3,
+        "topics": [
+          {
+            "name": "Financial mathematics",
+            "shortName": "Financial mathematics",
+            "family": "numbers",
+            "prerequisites": [
+              "Ratio, rate and proportion"
+            ],
+            "misconceptions": [
+              "Thinking that simple interest is calculated on the new total each year",
+              "Confusing compound interest with simple interest",
+              "Believing that inflation always means prices go down"
+            ]
+          },
+          {
+            "name": "Functions and graphs",
+            "shortName": "Functions and graphs",
+            "family": "algebra",
+            "prerequisites": [
+              "Number patterns and sequences",
+              "Algebraic expressions"
+            ],
+            "misconceptions": [
+              "Thinking that the gradient is always the number next to x, even when the equation is not in the form y = mx + c",
+              "Believing that a graph must start at zero",
+              "Reading the axes the wrong way around"
+            ]
+          },
+          {
+            "name": "Lines, angles and triangles",
+            "shortName": "Lines, angles, triangles",
+            "family": "shape",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking that angles on a straight line add to 360°",
+              "Believing that alternate angles are equal even when the lines are not parallel",
+              "Thinking that the angles in a triangle add to 360°"
+            ]
+          }
+        ]
+      },
+      {
+        "term": 4,
+        "topics": [
+          {
+            "name": "Theorem of Pythagoras",
+            "shortName": "Pythagoras theorem",
+            "family": "shape",
+            "prerequisites": [
+              "Lines, angles and triangles"
+            ],
+            "misconceptions": [
+              "Adding the squares of the sides instead of subtracting to find a shorter side",
+              "Thinking that the longest side is always opposite the right angle",
+              "Forgetting to take the square root at the end"
+            ]
+          },
+          {
+            "name": "Surface area and volume",
+            "shortName": "Surface area, volume",
+            "family": "measurement",
+            "prerequisites": [],
+            "misconceptions": [
+              "Confusing surface area with volume",
+              "Using square units for volume",
+              "Forgetting to change units before calculating"
+            ]
+          },
+          {
+            "name": "Mean, median and mode",
+            "shortName": "Mean, median, mode",
+            "family": "data",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking that the mean is always the middle number",
+              "Adding the middle two numbers instead of averaging them for an even set",
+              "Believing that every data set has a mode"
+            ]
+          },
+          {
+            "name": "Probability",
+            "shortName": "Probability",
+            "family": "data",
+            "prerequisites": [
+              "Rational and irrational numbers"
+            ],
+            "misconceptions": [
+              "Thinking that after many heads, tails is due",
+              "Believing that all outcomes are equally likely even when they are not",
+              "Confusing the probability of an event with the number of times it happens"
+            ]
+          }
+        ]
+      }
+    ],
+    "leftOut": [
+      {
+        "name": "Trigonometry: sine, cosine and tangent",
+        "reason": "Grade 10 topic shown for information only; not taught or assessed in Grade 9."
+      }
+    ]
+  }
+}

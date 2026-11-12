@@ -64,6 +64,17 @@ export function unresolved({ draft, resolutions }: ReadDraft, fallbackTerm: numb
   return out
 }
 
+/** The terms of a draft that have topics, in order: three for a Kenyan scheme, four for most others. All four when there are none. */
+export function termNumbers(draft: TopicMapDraft): (1 | 2 | 3 | 4)[] {
+  const shown = [...new Set(draft.terms.filter((t) => t.topics.length > 0).map((t) => t.term))].sort((a, b) => a - b)
+  return shown.length > 0 ? shown : [1, 2, 3, 4]
+}
+
+/** A term number that is not one of the terms shown (the calendar says term 4 in a three term year) is read as the next one shown, or the last. */
+export function termInView(shown: readonly number[], term: number): number {
+  return shown.includes(term) ? term : (shown.find((n) => n > term) ?? shown[shown.length - 1]!)
+}
+
 export const topicCount = (d: TopicMapDraft) => d.terms.reduce((n, t) => n + t.topics.length, 0)
 
 export function mapHeadline(r: ReadDraft, fallbackTerm: number): string {
@@ -157,12 +168,22 @@ export function removeTopicIn(src: TopicMapDraft, name: string): TopicMapDraft {
   return d
 }
 
+/** A topic listed in more than one term, kept in one of them: the entries in the other terms go. Nothing else changes. */
+function keepInTermIn(src: TopicMapDraft, name: string, term: number): TopicMapDraft {
+  const inTerms = src.terms.filter((t) => t.topics.some((x) => x.name === name))
+  if (inTerms.length < 2 || !inTerms.some((t) => t.term === term)) return src
+  const d = clone(src)
+  for (const t of d.terms) if (t.term !== term) t.topics = t.topics.filter((x) => x.name !== name)
+  return d
+}
+
 /** Applies a choice on a check ("Move to Term 4") or on a left-out topic ("Add to Term 3"). */
 export function resolveIn(r: ReadDraft, name: string, option: string): ReadDraft {
   let draft = r.draft
   const m = /Term ([1-4])/.exec(option)
   if (termOf(draft, name) !== null) {
     if (/^Move/.test(option) && m) draft = moveTopicIn(draft, name, Number(m[1]), Number.MAX_SAFE_INTEGER)
+    else if (/^Keep/.test(option) && m) draft = keepInTermIn(draft, name, Number(m[1]))
   } else if (/^Add/.test(option) && m) {
     draft = addTopicIn(draft, Number(m[1]), name)
   }
