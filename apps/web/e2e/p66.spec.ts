@@ -243,14 +243,14 @@ test.describe('past records for a teacher', () => {
     await noHorizontalScroll(page)
     await proof(page, 'one-result')
 
-    await page.getByLabel('Learner').selectOption({ label: 'Lerato' })
+    await page.getByLabel('Learner', { exact: true }).selectOption({ label: 'Lerato' })
     await page.getByLabel('Title').fill('Class Test 4')
     await page.getByLabel('Strand').selectOption('fractions')
     await page.getByLabel('Marks', { exact: true }).fill('25')
     await page.getByLabel('Out of').fill('20')
     await page.getByLabel("Teacher's name at the time").fill('Mrs Naidoo')
     await page.getByRole('button', { name: 'Save this result' }).click()
-    await expect(page.getByRole('alert')).toHaveText('The marks cannot be more than the total')
+    await expect(page.locator('p[role="alert"]')).toHaveText('The marks cannot be more than the total')
 
     await page.getByLabel('Marks', { exact: true }).fill('14')
     await page.getByRole('button', { name: 'Save this result' }).click()
@@ -286,11 +286,11 @@ test.describe('past records for a teacher', () => {
     await page.goto(`/t/${sb.classId}/learners/records`)
 
     await page.getByLabel('Choose a .csv file').setInputFiles({ name: 'big.csv', mimeType: 'text/csv', buffer: Buffer.from(`Learner,Mark\n${'Amina,1/2\n'.repeat(120_000)}`) })
-    await expect(page.getByRole('alert')).toHaveText('This file is bigger than 1 MB. Split it into smaller files.')
+    await expect(page.locator('p[role="alert"]')).toHaveText('This file is bigger than 1 MB. Split it into smaller files.')
 
     await page.getByRole('tab', { name: 'Paste a table' }).click()
     await page.getByRole('button', { name: 'Read this table' }).click()
-    await expect(page.getByRole('alert')).toHaveText('Paste the table first.')
+    await expect(page.locator('p[role="alert"]')).toHaveText('Paste the table first.')
     await page.getByLabel('The table').fill('Learner\tMark\nAmina\t14/20\nThabo\t16/20')
     await page.getByRole('button', { name: 'Read this table' }).click()
     await check(page).toHaveURL(/\/learners\/records\/[0-9a-f-]{36}$/)
