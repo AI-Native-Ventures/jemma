@@ -22,7 +22,21 @@ async function proof(page: Page, name: string, fullPage = true) {
   const width = page.viewportSize()!.width >= 1024 ? 1440 : 390
   await page.evaluate(() => document.fonts.ready)
   await page.addStyleTag({ content: 'nextjs-portal{display:none} *{transition:none !important;animation:none !important}' })
-  await page.screenshot({ path: resolve(proofDir, `${name}-${width}.png`), fullPage })
+  const size = page.viewportSize()!
+  if (fullPage) {
+    // Make the window as tall as the page, so the tab bar that sticks to the bottom of the window sits at the bottom of the picture
+    // and not across the middle of it. Measure again after the resize: the page may lay out a little differently at that height.
+    const scrollHeight = () => page.evaluate(() => Math.max(document.documentElement.scrollHeight, document.body.scrollHeight))
+    for (let i = 0; i < 2; i++) {
+      await page.setViewportSize({ width: size.width, height: Math.max(size.height, await scrollHeight()) })
+      await page.waitForTimeout(150)
+    }
+  }
+  try {
+    await page.screenshot({ path: resolve(proofDir, `${name}-${width}.png`) })
+  } finally {
+    await page.setViewportSize(size)
+  }
 }
 
 async function noHorizontalScroll(page: Page) {
