@@ -4,6 +4,7 @@ import { createServer, type Server } from 'node:http'
 import { resolve } from 'node:path'
 import { createServiceClient } from '@jemma/profiling/db'
 import { expect, test as base, type Page, type Request } from '@playwright/test'
+import { answerKeyItems } from '../../../supabase/seed/fixtures/marked-state'
 import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 
 // Files reach Jemma through a plain upload route (/t/upload, /p/upload), not through a form action. Cloudflare's edge refuses a
@@ -19,6 +20,27 @@ import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 
 const check = expect.configure({ timeout: 45_000 })
 const admin = () => createServiceClient({ SUPABASE_URL: process.env.SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY! })
+/**
+ * The bytes stored under a path. Read through a signed address, which is new each time: a replaced object (a retaken photo is written
+ * over the same path) is never read from a cache that still holds the old one.
+ */
+async function bytesOf(bucket: 'papers' | 'curriculum', path: string): Promise<Buffer> {
+  // the shared database drops a request now and then ("fetch failed"): ask again a few times before calling it a failure
+  let last: unknown
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      const signed = await admin().storage.from(bucket).createSignedUrl(path, 120)
+      if (signed.error) throw signed.error
+      const res = await fetch(signed.data.signedUrl)
+      if (res.status !== 200) throw new Error(`stored object answered ${res.status}`)
+      return Buffer.from(await res.arrayBuffer())
+    } catch (e) {
+      last = e
+      await new Promise((done) => setTimeout(done, 1500))
+    }
+  }
+  throw last
+}
 const FIXTURES = resolve(import.meta.dirname, '../../../fixtures/curriculum/unseen')
 const GRADE9 = 'grade9-mathematics-za.pdf'
 
@@ -50,7 +72,7 @@ base.afterAll(async () => {
  * A small valid PNG whose text chunk holds the four spellings the edge refuses: '$F, "$F and the same with a space after the quote.
  * Built here so the spec needs no file next to it. The chunks carry their real CRCs, so a reader that checks them is satisfied.
  */
-function trickyPng(): Buffer {
+function trickyPng(note = ''): Buffer {
   const chunk = (type: string, data: Buffer) => {
     const head = Buffer.alloc(4)
     head.writeUInt32BE(data.length)
@@ -68,19 +90,20 @@ function trickyPng(): Buffer {
   return Buffer.concat([
     Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     chunk('IHDR', ihdr),
-    chunk('tEXt', Buffer.from(`Comment\0 '$F "$F ' $F " $F`, 'latin1')),
+    chunk('tEXt', Buffer.from(`Comment\0 '$F "$F ' $F " $F${note}`, 'latin1')),
     chunk('IDAT', deflateSync(rows)),
     chunk('IEND', Buffer.alloc(0)),
   ])
 }
 
 /** What one request looked like, read when it was sent. */
-type Sent = { method: string; path: string; nextAction: boolean; contentType: string; body: Buffer | null; names: string[] }
+type Sent = { method: string; path: string; search: string; rsc: boolean; nextAction: boolean; contentType: string; body: Buffer | null; names: string[] }
 async function describeRequest(request: Request): Promise<Sent> {
   const headers = await request.allHeaders().catch(() => request.headers())
   const body = request.postDataBuffer()
   const names = body ? [...body.toString('latin1').matchAll(/filename="([^"]*)"/g)].map((m) => m[1]!) : []
-  return { method: request.method(), path: new URL(request.url()).pathname, nextAction: 'next-action' in headers, contentType: headers['content-type'] ?? '', body, names }
+  const url = new URL(request.url())
+  return { method: request.method(), path: url.pathname, search: url.search, rsc: 'rsc' in headers, nextAction: 'next-action' in headers, contentType: headers['content-type'] ?? '', body, names }
 }
 
 /**
@@ -190,9 +213,7 @@ test.describe('files go through the upload route', () => {
     const db = admin()
     const docs = (await db.from('curriculum_docs').select('title, pages, storage_path').eq('class_id', sb.classId)).data ?? []
     expect(docs).toMatchObject([{ title: 'grade9-mathematics-za', pages: 6 }])
-    const stored = await db.storage.from('curriculum').download(docs[0]!.storage_path)
-    expect(stored.error).toBeNull()
-    expect(Buffer.from(await stored.data!.arrayBuffer()).equals(readFileSync(`${FIXTURES}/${GRADE9}`))).toBe(true)
+    expect((await bytesOf('curriculum', docs[0]!.storage_path)).equals(readFileSync(`${FIXTURES}/${GRADE9}`)), 'the stored plan has the bytes of the file').toBe(true)
   })
 
   test('a paper photo that holds \'$F and "$F is added through the snap screen and is stored with the same bytes', async ({ page }, testInfo) => {
@@ -223,9 +244,7 @@ test.describe('files go through the upload route', () => {
     expect(papers).toHaveLength(1)
     const pages = (await db.from('paper_pages').select('storage_path').eq('paper_id', papers[0]!.id)).data ?? []
     expect(pages).toHaveLength(1)
-    const stored = await db.storage.from('papers').download(pages[0]!.storage_path)
-    expect(stored.error).toBeNull()
-    expect(Buffer.from(await stored.data!.arrayBuffer()).equals(png), 'the stored object has the bytes that were sent').toBe(true)
+    expect((await bytesOf('papers', pages[0]!.storage_path)).equals(png), 'the stored object has the bytes that were sent').toBe(true)
   })
 
   test('a parent\'s homework photo goes through /p/upload', async ({ page }) => {
@@ -250,9 +269,95 @@ test.describe('files go through the upload route', () => {
     const pages = (await db.from('paper_pages').select('storage_path').eq('paper_id', paperId)).data ?? []
     expect(pages).toHaveLength(1)
     // the screen shrinks a photo to a JPEG before it is sent (PhotoScreen), so the bytes differ from the PNG: it is stored, and is an image
-    const stored = await db.storage.from('papers').download(pages[0]!.storage_path)
-    expect(stored.error).toBeNull()
-    expect(stored.data!.size).toBeGreaterThan(0)
+    const stored = await bytesOf('papers', pages[0]!.storage_path)
+    expect(stored.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])), 'a JPEG').toBe(true)
+  })
+
+  /**
+   * A form action refreshed the screen by itself; a fetch does not, so a screen that relied on that calls router.refresh(). That is a
+   * GET of the page's own data (a request with the `rsc` header) after the post to the upload route.
+   */
+  const refreshedAfterUpload = async (sent: () => Promise<Sent[]>) => {
+    const all = await sent()
+    const at = all.map((s) => s.method === 'POST' && s.path === '/t/upload').lastIndexOf(true)
+    return at >= 0 && all.slice(at + 1).some((s) => s.method === 'GET' && s.rsc)
+  }
+
+  test('the memo goes in from the draft key screen (and moves on), and is retaken on the key screen (and the screen refreshes)', async ({ page, sent }, testInfo) => {
+    test.skip(testInfo.project.name !== 'phone', 'the key screens are phone screens')
+    const first = trickyPng()
+    const png2 = trickyPng(' second photo of the memo')
+    expect(png2.equals(first)).toBe(false)
+
+    const sb = await sandbox(page, 'start', 'teacher')
+    const db = admin()
+    const made = await db.from('tests').insert({ class_id: sb.classId, title: 'Class Test 1: Fractions and decimals', written_on: '2026-11-02', out_of: 10, topic_ids: [], held: true }).select('id').single()
+    expect(made.error).toBeNull()
+    const testId = made.data!.id
+    // a key Jemma worked out with no memo, as the draft key screen shows it
+    const key = await db.from('answer_keys').insert({ test_id: testId, status: 'draft', items: answerKeyItems() })
+    expect(key.error).toBeNull()
+    const memoPath = async () => (await db.from('answer_keys').select('memo_path').eq('test_id', testId).single()).data!.memo_path
+    const storedMemo = async () => bytesOf('papers', (await memoPath())!)
+
+    await page.goto(`/t/${sb.classId}/snap/${testId}/key/draft`)
+    await check(page.getByRole('heading', { name: /^I worked out the 10 answers/ })).toBeVisible()
+    const drafted = await uploadVia(page, 't', () => page.locator('label', { hasText: 'snap the memo instead' }).locator('input[type=file]').setInputFiles({ name: 'memo.png', mimeType: 'image/png', buffer: first }))
+    expect(drafted.answer.result).toEqual({ ok: true })
+    await page.waitForURL(`**/snap/${testId}/key`)
+    await check(page.getByText('Memo, 1 page')).toBeVisible()
+    expect((await storedMemo()).equals(first), 'the memo from the draft key screen is stored whole').toBe(true)
+
+    const retake = await uploadVia(page, 't', () => page.locator('label', { hasText: /^Retake/ }).locator('input[type=file]').setInputFiles({ name: 'memo-again.png', mimeType: 'image/png', buffer: png2 }))
+    expect(retake.answer.result).toEqual({ ok: true })
+    await expect.poll(() => refreshedAfterUpload(sent), { message: 'the key screen reloads its data after the retake', timeout: 30_000 }).toBe(true)
+    expect((await storedMemo()).equals(png2), 'the retaken memo replaced the first, whole').toBe(true)
+  })
+
+  /**
+   * The papers screen polls (every 2 s) while a paper is waiting to be read, and each poll is a refresh too. So each of the two buttons
+   * below is tried on a pile with nothing waiting: the only refresh after the post is the button's own.
+   */
+  async function papersScreen(page: Page) {
+    const sb = await sandbox(page, 'session_done', 'teacher')
+    const db = admin()
+    const snapTest = (await db.from('tests').select('id').eq('class_id', sb.classId).single()).data!
+    const papers = (await db.from('papers').select('id').eq('test_id', snapTest.id)).data ?? []
+    expect(papers).toHaveLength(5)
+    const pageRows = async () => (await db.from('paper_pages').select('paper_id, page_no, storage_path').in('paper_id', papers.map((p) => p.id))).data ?? []
+    await page.goto(`/t/${sb.classId}/snap/${snapTest.id}/papers`)
+    await check(page.getByRole('heading', { name: '5 papers in. Snap the next one, or add a page.' })).toBeVisible()
+    await expect(page.getByText(/· waiting/)).toHaveCount(0)
+    return { pageRows, before: await pageRows() }
+  }
+
+  test('on the papers screen a page is added to the last paper, and the screen refreshes', async ({ page, sent }, testInfo) => {
+    test.skip(testInfo.project.name !== 'phone', 'the paper buttons are phone buttons')
+    const png = trickyPng()
+    const { pageRows, before } = await papersScreen(page)
+    const added = await uploadVia(page, 't', () => page.getByTestId('snap-page').setInputFiles({ name: 'page-2.png', mimeType: 'image/png', buffer: png }))
+    expect(added.answer.result).toEqual({ ok: true })
+    const newPages = (await pageRows()).filter((r) => !before.some((b) => b.paper_id === r.paper_id && b.page_no === r.page_no))
+    expect(newPages, 'one new page row').toHaveLength(1)
+    expect((await bytesOf('papers', newPages[0]!.storage_path)).equals(png), 'the added page is stored whole').toBe(true)
+    // the paper goes back to the agent to be read again, and the screen says so by itself
+    await check(page.getByText('2 pages · waiting')).toBeVisible()
+    await expect.poll(() => refreshedAfterUpload(sent), { message: 'the papers screen reloads its data after the upload', timeout: 30_000 }).toBe(true)
+    await proof(page, 'papers-queue-after-page')
+  })
+
+  test('on the papers screen a paper is retaken, and the screen refreshes', async ({ page, sent }, testInfo) => {
+    test.skip(testInfo.project.name !== 'phone', 'the paper buttons are phone buttons')
+    const png = trickyPng()
+    const { pageRows } = await papersScreen(page)
+    const retake = await uploadVia(page, 't', () => page.locator('label[aria-label="Retake paper 2"] input[type=file]').setInputFiles({ name: 'retake.png', mimeType: 'image/png', buffer: png }))
+    expect(retake.answer.result).toEqual({ ok: true })
+    // the retaken paper goes back to the agent to be read again, and the screen says so by itself
+    await check(page.getByText('1 page · waiting')).toBeVisible()
+    await expect.poll(() => refreshedAfterUpload(sent), { message: 'the papers screen reloads its data after the retake', timeout: 30_000 }).toBe(true)
+    const same = []
+    for (const r of (await pageRows()).filter((r) => r.page_no === 1)) if ((await bytesOf('papers', r.storage_path)).equals(png)) same.push(r.paper_id)
+    expect(same, 'exactly one paper has the retaken photo as page 1, whole').toHaveLength(1)
   })
 
   test('the route refuses another site, a post with no origin, a signed-out post and the wrong role; the function still checks the class', async ({ page, request }) => {
