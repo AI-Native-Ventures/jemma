@@ -45,7 +45,7 @@ There is nothing to type. The demo page signs you in as any of these people in y
 
 Only Neo, Lindiwe and Nyokabi (and Amina, after step 3 of the demo path) have a linked parent. The other learners have none. A learner's login is made when you pick that learner.
 
-Under the demo path there is also **Start from an empty school**: a second kind of copy with no class and one teacher, "You". Create a class in any grade and subject, open its learners screen, and tap **Add made-up learners**. That adds six learners with up to three years of messy history in the class's subject (Mathematics) and asks Jemma for their Long view. The button only shows in a demo school.
+Under the demo path there is also **Start from an empty school**: a second kind of copy with no class and one teacher, "You". Create a Mathematics class in any grade, open its learners screen, and tap **Add made-up learners**. That adds six learners with up to three years of messy history in the class's subject (Mathematics) and asks Jemma for their Long view. The button only shows in a demo school.
 
 ## What each role sees
 

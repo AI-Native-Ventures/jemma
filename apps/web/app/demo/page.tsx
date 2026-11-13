@@ -136,7 +136,7 @@ export default async function DemoPage() {
           <div className="flex flex-col gap-1">
             <h2 id="empty" className="m-0 text-[17px] font-semibold">Start from an empty school</h2>
             <p className="m-0 text-[15px] leading-[1.45] text-body text-pretty">
-              A school with no class and one teacher, you. Make a class in any grade and subject, then fill it with made-up learners and their history in one tap.
+              A school with no class and one teacher, you. Make a Mathematics class in any grade, then fill it with made-up learners and their history in one tap.
             </p>
           </div>
           <form action={tryDemoAction} className="contents">
