@@ -63,7 +63,7 @@ Open `/demo` (on your machine, or on the live demo). Pick **Ms Banda** (teacher)
 | --- | --- | --- | --- |
 | <img src="design/proof/p50/class-home-390.png" width="180" alt="Teacher class home on a phone"> | <img src="design/proof/p52/teacher-drafts-390.png" width="180" alt="Amina's Long view with two patterns and their sources, on a phone"> | <img src="design/proof/p50/log-390.png" width="180" alt="The full log of tool calls and approvals, on a phone"> | <img src="design/proof/p52/parent-view-390.png" width="180" alt="What the parent sees after the talk, on a phone"> |
 
-These are screenshots from the running app at 390 px, taken by the builders of each screen. There is no screenshot of the Share with parents card yet.
+These are screenshots from the running app at 390 px, taken by the builders of each screen. The Share with parents card is in `design/proof/p50b/class-home-card-390.png`.
 
 ## How the agent works
 
@@ -90,7 +90,7 @@ pnpm evals --task class-report --runs 1 --cap 100
 
 `--cap` is needed because the repository's ledger (`evals/results/ledger.jsonl`) already counts 51 live goose runs (42 behind the main set of EVALS.md and 9 on Gemma that the provider refused) against the default cap of 45. The command makes a fresh made-up school, sends a real `class_report` event, runs the job through goose on `nvidia/nemotron-3.5-super-vl:free` (the next model in the list takes over if it fails), and checks the outcome in code. It prints `PASS` or `FAIL` with the seconds, and saves the checks and goose's full stream in `evals/results/<run id>/`. The saved runs in this repository used the team's dev database. The local one was not tried.
 
-The open-job script (`pnpm --filter @jemma/runner open-job --runs 1 --live-used 0 --out <a folder>`) does the same for one `class_report` and also copies the Markdown report the model wrote into the folder. It needs an agent worker on port 8749 (`pnpm --filter agent exec wrangler dev --port 8749 --var AI_MODE:replay --show-interactive-dev-session=false`), and it refuses every database but the team's dev project, so it is not a path for a stranger. The proof of it is [docs/proof/open-runner-2026-11-10.md](docs/proof/open-runner-2026-11-10.md).
+The open-job script (`pnpm --filter @jemma/runner open-job --runs 1 --live-used 0 --out <a folder>`) does the same for one `class_report` and also copies the Markdown report the model wrote into the folder. It needs an agent worker on port 8749 (`pnpm --filter agent exec wrangler dev --port 8749 --var AI_MODE:replay --show-interactive-dev-session=false`), and it refuses every database but the local one and the project named in `JEMMA_ALLOWED_SUPABASE_REF` (its built-in default is the team's earlier dev project, which is no longer in use), so it is not a path for a stranger. The proof of it is [docs/proof/open-runner-2026-11-10.md](docs/proof/open-runner-2026-11-10.md).
 
 ## Swap the harness or the model
 
@@ -118,6 +118,14 @@ Eleven tasks, each run three times on a free open-weights model through goose, w
 ## Run against your own Supabase project
 
 Use this if you want a hosted Supabase project instead of the local database. You need Node 22 or newer (built and tested on Node 26), pnpm 10.27.0 (the repo pins it in `package.json`), and a Supabase project of your own with the migrations in `supabase/migrations` applied.
+
+Set up a fresh project in this order:
+
+1. **The migrations.** Apply every file in `supabase/migrations` in order (0001 to 0023), for example with `psql` and the project's connection string (`SUPABASE_DB_URL` in `.env.example`) on each file in turn. The migrations also make the five private storage buckets.
+2. **The sign-in settings.** Set the site address to the address of your web app and add that address to the allowed redirect addresses. Turn email confirmation off: the demo makes its own users and signs them in with a password, and sends no email. The local values are in `supabase/config.toml` (`[auth]` and `[auth.email]`).
+3. **The settings of the app.** Fill in `.env.local` and copy it to `apps/agent/.dev.vars`, as below.
+4. **The recorded answers.** Load them with the script named below, before you use `AI_MODE=replay`.
+5. **The sample sheets.** They come from the app itself: the first demo copy puts the memo and the five papers in the `sample-papers` bucket.
 
 ```bash
 pnpm install
@@ -155,6 +163,8 @@ pnpm test         # vitest, all packages (needs the Supabase env: several tests 
 pnpm typecheck    # tsc in every package
 ```
 
+Run `pnpm test` and the browser specs against the local database only (`./start.sh`, and CI does the same), never against a small hosted project. On 13 November 2026 two days of test runs against the free project behind the live demo used up the CPU allowance of its machine, and the demo could not start for about three hours.
+
 ### AI_MODE
 
 Every model call goes through a replay layer, controlled by `AI_MODE` in `apps/agent/.dev.vars`:
@@ -173,16 +183,24 @@ The agent serves MCP at `/mcp` and needs a bearer token. See [docs/mcp-server.md
 ## What is not finished
 
 - **No real teacher and no real learner has used Jemma.** The school, the people and the records are made up.
-- **Mathematics only.** The demo school has four Mathematics classes, in Grades 4 to 7. Only 6B has hand-made history; the learners of the other classes are made up by code. Other subjects are not offered yet.
-- **Not built yet:** Grade 8 to 12 question types, teen invites, chat, billing, offline mode and messages between teacher and parent. Screens that link to them say "Coming after the challenge".
+- **Mathematics only.** The demo school has four Mathematics classes, in Grades 4 to 7, and the class form offers Grades 1 to 12. Only 6B has hand-made history; the learners of the other classes are made up by code. Other subjects are not offered yet, and the only reads of another subject by a model were three curriculum documents (EVALS.md, "Outside Mathematics": 3 of 3, 0 of 3 and 0 of 2 judged runs passed).
+- **Not built yet:** Grade 8 to 12 question types, teen invites, chat, billing, offline mode and messages between teacher and parent. Also not built: deleting or downloading a family's data, deleting an account, moving a class up or archiving it at the end of the year, starting from another teacher's map, adding a second teacher's code, and a sign-up for a Grade 8 to 12 learner. Screens that link to them say "Coming after the challenge".
 - **No live in-browser camera for teachers.** Teachers snap with the phone's own camera, one photo per page.
 - **No email, SMS or WhatsApp.** Jemma only shows notifications inside the app. Email sign-in is not part of the demo path and was not tested against a real inbox. Use the demo page.
-- **Free models are slow and fail often.** A full run of the demo path with no recorded answers took about 15 to 25 minutes when it was recorded. If you upload something new, that call goes to a free model and can take minutes or fail. `./start.sh` avoids this by using recorded answers only, so it cannot handle new input.
+- **Free models are slow and fail often.** A full run of the demo path with no recorded answers took about 15 to 25 minutes when it was recorded. If you upload something new, that call goes to a free model and can take minutes or fail. One model call gets 4 minutes, then the next model in the list is tried. A job that shows no sign of life for 16 minutes is put back on the queue, twice at most, then marked failed. A first read of something new took between 15 and 90 seconds on the days it was measured. `./start.sh` avoids this by using recorded answers only, so it cannot handle new input.
+- **The free hosted database ran out on 13 November 2026.** The hosted demo runs on a free Supabase project. It could not start for about three hours, because two days of test runs against it had used up the CPU allowance of its machine. It was moved to a fresh project the same day. The rule since then: run the tests and the browser specs on a local database only.
+- **Privacy inside one school.** A teacher can add a learner who is in another teacher's class of the same school to their own class (Class settings, "Add a learner", under "Already at your school"). Nobody is asked: not the other teacher, not the family. The learner stays in the other class too. From then on the teacher can read that learner's marks, records, notes and Long view. A class of the school that the teacher can already see can also be copied into a new class. Only learners of the same school can be added, and a teacher of another school can read nothing. This is left as it is on purpose and listed here.
+- **Laptop runners send learner data to that laptop.** When a job runs on the owner's laptop (goose, Claude Code or Jemma Desktop), the prompt and the tool results, with learner data in them, reach that machine and the model it uses.
+- **Uploads.** A photo over 1 MB is made smaller in the browser (its longest side at most 2000 px) before it is sent. A PDF is sent whole. The curriculum screen takes a PDF, a JPG or a PNG of at most 10 MB and 40 pages for each document, and 30 MB for one upload.
 - **Curriculum PDFs are read by the cloud model only.** The topic map job is never handed to the owner's laptop, because Claude Code cannot read a PDF that comes back through MCP, and it was never run on goose.
-- **The Long view was not exercised on the deployed demo.** Its screens ran on a local stack in a browser, and its logic and tools are covered by tests.
-- **The Share with parents card has no screenshot, and its own browser spec was never run** (`apps/web/e2e/p50b.spec.ts`). The card is used by the demo-path test, which passes on a clean machine in CI.
+- **The Long view was opened on the deployed demo** on 11, 12 and 13 November 2026, at 390 px and 1440 px, with patterns, their sources and the teacher's two buttons. Its logic and tools are covered by tests, and no real teacher has used it.
+- **The Share with parents card** has its own browser spec (`apps/web/e2e/p50b.spec.ts`), which ran on 11 November (4 of 4: its two tests on a phone and on a laptop), with screenshots in `design/proof/p50b`. The demo-path test also uses the card, and passes on a clean machine in CI.
+- **Three browser specs written on 13 November were never run:** `apps/web/e2e/p75.spec.ts` (big photos), `apps/web/e2e/p77.spec.ts` (failed reads) and the time zone test in `apps/web/e2e/p73.spec.ts`. The hosted database could not serve them that day.
+- **Failed reads were seen on the deployed demo in one place only:** the memo card ("Jemma could not read the memo.") and its "Try the same photo again". A failed paper on the papers screen, the Needs you item that opens that screen, the parent's screen for a photo that could not be read, and a real model call that times out and goes to the next model are covered by unit tests only.
+- **A stuck job being put back on the queue was seen once**, on the earlier hosted database, where it moved old test leftovers. It has not been seen since.
+- **No photo from a real phone camera, no rotated photo, no real teacher and no real learner.** The big photos were made on a computer from the sample sheets: a 1.5 MB memo photo was stored as 187 KB at 2000 px, and a 1.6 MB paper photo as 204 KB and was read and marked in 32 seconds.
 - **The evals ran task by task, never as the single `pnpm evals` command in one go, and never against the local database.** The photo task reads a rendered paper, not a photo from a phone. One failure was not fixed: `other-school-id` waits up to ten minutes before it gives up (see EVALS.md).
-- **A curriculum Jemma had never seen passed 7 of 9 judged runs.** On three invented Mathematics documents read live on the free models (EVALS.md, "A curriculum Jemma had never seen"), Grade 9 South Africa passed 3 of 3, the Grade 4 Kenya scan 3 of 3 and Grade 5 South Africa 1 of 3: in both fails the model named the topic that the plan lists in two terms differently in the later term, so the question that code adds for a topic with the same name in two terms did not fire. The text-reading fallback was never needed live, so only tests cover it.
+- **A curriculum Jemma had never seen passed 7 of 9 judged runs.** On three invented Mathematics documents read live on the free models (EVALS.md, "A curriculum Jemma had never seen"), Grade 9 South Africa passed 3 of 3, the Grade 4 Kenya scan 3 of 3 and Grade 5 South Africa 1 of 3: in both fails the model named the topic that the plan lists in two terms differently in the later term, so the question that code adds for a topic with the same name in two terms did not fire. The text-reading fallback was never needed live, so only tests cover it. On 13 November 2026 curriculum documents were also read on the deployed demo: the Grade 5 South Africa plan and the Grade 4 Kenya scan, then the Grade 9 South Africa plan, uploaded, read, its questions answered and approved at 08:12, and a 5 MB PDF read in 68 seconds. Those tries are not scored runs and are not in EVALS.md.
 - **The operator route is switched off on the hosted demo.** It was proven on a local agent worker, in separate runs, never as the whole demo path in one run.
 - **The Mac desktop app is unverified.** It is in `apps/desktop`, was not run for this submission, and does not offer goose.
 - **No spoken lessons in the one-command run.** Speech needs a Cloudflare connection, so the player uses browser speech.
