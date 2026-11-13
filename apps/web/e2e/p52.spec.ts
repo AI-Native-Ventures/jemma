@@ -335,16 +335,20 @@ test.describe('the Long view', () => {
       await check.poll(() => posted.length).toBe(1)
       await check(page.getByRole('button', { name: 'Update the Long view' })).toBeDisabled()
       await expect(page.getByText('Jemma is looking at the records again.')).toBeVisible()
-      // Opening it again does not ask again.
+      // Opening it again does not ask again. While the update waits, the block does not say "Too early to tell": Jemma is still looking.
       await page.reload()
-      await check(page.getByRole('heading', { name: 'Too early to tell' })).toBeVisible()
+      await check(page.getByRole('heading', { name: 'Jemma is looking across the terms.' })).toBeVisible()
+      await expect(page.getByText('Patterns show here in a minute or two.')).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Too early to tell' })).toHaveCount(0)
       await page.waitForTimeout(1500)
       expect(await longViewEvents(sipho)).toHaveLength(1)
       expect(posted).toHaveLength(1)
-      // The update finishes and says when.
+      // The update finishes and says when. With no pattern found, it is now too early to tell.
       await db.from('events').update({ status: 'done', finished_at: new Date().toISOString() }).eq('id', (await longViewEvents(sipho))[0]!.id)
       await check(page.getByText(/^Last updated today at \d\d:\d\d$/)).toBeVisible({ timeout: 60_000 })
       await expect(page.getByRole('button', { name: 'Update the Long view' })).toBeEnabled()
+      await check(page.getByRole('heading', { name: 'Too early to tell' })).toBeVisible()
+      await expect(page.getByText('A pattern needs 3 terms of clear results.')).toBeVisible()
       await noHorizontalScroll(page)
       await proof(page, 'teacher-too-early')
 
