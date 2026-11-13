@@ -1,4 +1,4 @@
-import { sameTopicName } from '@jemma/profiling/logic'
+import { sameSubject, sameTopicName } from '@jemma/profiling/logic'
 import { TopicMapDraftSchema, type TopicMapDraft } from '@jemma/profiling/schemas'
 
 /** What the teacher chose for each check: topic or left-out name to the option label. Stored beside the draft. */
@@ -39,6 +39,16 @@ const DOC_NOTES: Record<string, string> = {
   'Grade 6 Annual Teaching Plan': '4 terms',
 }
 export const docNote = (title: string, pages: number) => [plural(pages, 'page'), DOC_NOTES[title]].filter(Boolean).join(' · ')
+
+/** What the teacher reads when the sample curriculum is not for their class. */
+export const SAMPLE_ONLY_FOR = 'The sample curriculum is for a Grade 6 Mathematics class.'
+
+/**
+ * The sample documents are Grade 6 Mathematics pages. In any other class they would draft a map for the wrong grade or the wrong subject,
+ * so the button shows (and the action works) only for a Grade 6 Mathematics class. `Maths` and `mathematics ` are Mathematics.
+ * (`isBaselineClass` is not this: it also asks for the school's country, and it says yes to a class it could not read.)
+ */
+export const sampleCurriculumFits = (subject: string, grade: number): boolean => grade === 6 && sameSubject(subject, 'Mathematics')
 
 export const SAMPLE_DOCS = [
   { title: 'CAPS Intermediate Phase Mathematics', pages: 185 },

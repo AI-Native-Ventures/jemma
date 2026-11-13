@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getApprovedView, getCurriculum, getDraftLog, type ApprovedTopic } from '@/lib/data/p30'
 import { createSupabaseServer } from '@/lib/supabase/server'
-import { docNote, currentTerm, plural, TERM_SHORT, unresolved } from './format'
+import { docNote, currentTerm, plural, sampleCurriculumFits, TERM_SHORT, unresolved } from './format'
 import { AutoRefresh, ComingLink, DraftFailed, SampleButton, UploadButtons } from './parts'
 
 const GEM = (
@@ -22,8 +22,9 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
 
   if (!map || docs.length === 0) {
     const supabase = await createSupabaseServer()
-    const { data } = await supabase.from('classes').select('schools(sandbox_id)').eq('id', classId).maybeSingle()
-    const demo = Boolean(data?.schools?.sandbox_id)
+    const { data } = await supabase.from('classes').select('subject, grade, schools(sandbox_id)').eq('id', classId).maybeSingle()
+    // The sample documents are Grade 6 Mathematics pages: the button is for that class in a demo school, and for no other.
+    const sample = Boolean(data?.schools?.sandbox_id) && !!data && sampleCurriculumFits(data.subject, data.grade)
     return (
       <div style={wrap}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -38,7 +39,7 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
           <h2 id="docs" style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Your documents</h2>
           <UploadButtons classId={classId} />
         </section>
-        {demo ? <SampleButton classId={classId} /> : null}
+        {sample ? <SampleButton classId={classId} /> : null}
         <ComingLink>Or start from a map another teacher approved</ComingLink>
       </div>
     )
