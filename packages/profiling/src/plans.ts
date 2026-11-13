@@ -1,7 +1,9 @@
 import { z } from 'zod'
 import type { JemmaDb } from './db'
 import type { JemmaEvent } from './schemas/events'
+import { pickPractice } from './logic'
 import { maybe, ok } from './tools/context'
+import { loadPracticeInput } from './tools/read/practice-input'
 
 /** The AI jobs. Each has a prompt file `jobs/<job>.md` (see jobs/README.md). */
 export const AI_JOBS = ['draft_map', 'read_key', 'read_paper', 'diagnose', 'class_report', 'write_lesson', 'guidance', 'long_view', 'map_records'] as const
@@ -65,10 +67,24 @@ async function isHeld(db: JemmaDb, testId: string): Promise<boolean> {
 }
 
 /**
+ * The learner's planned session for today or earlier, the one the home starts (the latest that is due), and whether its lesson has
+ * questions yet. Null when there is none. The plan and the postcondition of `practice.requested` both ask it.
+ */
+async function dueSession(db: JemmaDb, childId: string, now: Date): Promise<{ written: boolean } | null> {
+  const today = now.toISOString().slice(0, 10)
+  const due = await ok(db.from('sessions').select('id, lesson_id, planned_for').eq('child_id', childId).eq('status', 'planned').lte('planned_for', today).order('planned_for'))
+  const latest = due[due.length - 1]
+  if (!latest) return null
+  const lesson = latest.lesson_id ? await maybe(db.from('lessons').select('content').eq('id', latest.lesson_id).maybeSingle()) : null
+  const questions = (lesson?.content as { questions?: unknown } | null)?.questions
+  return { written: Array.isArray(questions) && questions.length > 0 }
+}
+
+/**
  * The job plan for an event, from the current database state. The cloud consumer re-plans after every job,
  * so a paper that lands in "Needs you" drops the tail and a finished read_paper is not planned again.
  */
-export async function jobPlan(event: JemmaEvent, db: JemmaDb): Promise<JobStep[]> {
+export async function jobPlan(event: JemmaEvent, db: JemmaDb, now: Date = new Date()): Promise<JobStep[]> {
   switch (event.type) {
     case 'curriculum.uploaded':
       return [{ job: 'draft_map', ids: { mapId: event.mapId } }]
@@ -102,6 +118,14 @@ export async function jobPlan(event: JemmaEvent, db: JemmaDb): Promise<JobStep[]
     }
     case 'long_view.requested':
       return [{ job: 'long_view', ids: { childId: event.childId } }]
+    case 'practice.requested': {
+      // The learner asked to practise now. A session for today whose lesson has questions: nothing to do. One whose lesson is still empty:
+      // write it. None: plan one for today (code picks the topic), then write its lesson.
+      const due = await dueSession(db, event.childId, now)
+      if (due?.written) return []
+      const write: JobStep = { job: 'write_lesson', ids: { childId: event.childId } }
+      return due ? [write] : [{ job: 'plan_next_session', ids: { childId: event.childId, practice: '1' } }, write]
+    }
     case 'test.shared':
       // The teacher shared the results: now each learner with a marked paper gets the next session, the lesson and the guidance.
       return (await isHeld(db, event.testId)) ? [] : perChildTail(await markedChildren(db, event.testId))
@@ -120,7 +144,7 @@ const UNREAD = ['queued', 'reading']
  * A test's tail (reteach plan, a planned session per learner with an open gap) is due once no paper of the test is still being read; papers waiting in Needs you count as resolved.
  * The planned sessions are only due once the test is shared with parents (`held` is false): `test.shared` asks for them for the learners with a marked paper.
  */
-export async function postconditions(event: JemmaEvent, db: JemmaDb): Promise<string[]> {
+export async function postconditions(event: JemmaEvent, db: JemmaDb, now: Date = new Date()): Promise<string[]> {
   const missing: string[] = []
   /** Every learner in `childIds` with an open gap needs a planned session. */
   const sessionsFor = async (childIds: string[]) => {
@@ -190,6 +214,18 @@ export async function postconditions(event: JemmaEvent, db: JemmaDb): Promise<st
     case 'activity.added':
     case 'long_view.requested':
       break
+    case 'practice.requested': {
+      // A session for today or earlier whose lesson has questions, unless there was nothing to practise: no open gap and nothing for
+      // `pickPractice` to pick (the same loader the planner uses).
+      const due = await dueSession(db, event.childId, now)
+      if (due?.written) break
+      if (!due) {
+        const open = await ok(db.from('gaps').select('id').eq('child_id', event.childId).neq('stage', 'fixed').limit(1))
+        if (open.length === 0 && pickPractice(await loadPracticeInput(db, event.childId, now)) === null) break
+      }
+      missing.push(`no practice written for child ${event.childId}`)
+      break
+    }
   }
   return missing
 }
