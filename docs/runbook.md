@@ -1,6 +1,14 @@
 # Jemma runbook
 
-How to run Jemma locally, record AI answers once and replay them, and reset a demo. Synthetic data only. The only Supabase project used here is jemma-dev.
+How to run Jemma locally, record AI answers once and replay them, and reset a demo. Synthetic data only. Tests and browser specs run against the local database (`./start.sh`). A hosted Supabase project is for the demo, not for test runs.
+
+## Never run the tests against a small hosted project
+
+Do not run the test suite or the browser specs against a small hosted Supabase project. Every browser spec makes its own demo copy (a school, its logins, its files) and many database tests write rows. On 13 November 2026 two days of such runs against the free project behind the live demo used up the CPU allowance of its machine: creating the demo's logins timed out, and the live demo could not start for about three hours. It was moved to a fresh project the same day.
+
+- `./start.sh` and CI use a local database. Run `pnpm test` and the Playwright specs against that one.
+- Use a hosted project for the live demo, and for the one-off steps of a recording (see "Record the answers once"). The steps for a fresh project (migrations, sign-in settings, recorded answers) are in the README, "Run against your own Supabase project".
+- A run against a hosted project that already looks slow (a sign-in that does not finish) is a reason to stop and wait, not to start it again.
 
 ## One command
 
@@ -11,8 +19,8 @@ How to run Jemma locally, record AI answers once and replay them, and reset a de
 - The Supabase command line is only ever called as `start`, `stop`, `status -o env` and `db reset --local`, through one helper in `start.sh`, with `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_ID` and `SUPABASE_DB_PASSWORD` unset and `DO_NOT_TRACK=1` set (the CLI otherwise uses a stored login and reads those from dotenv files). `start.sh` stops before calling it if an env file sets one of them, if `.env.local` holds a `SUPABASE_URL` that is not localhost or 127.0.0.1, or if `supabase/.temp` links a hosted project. A test (`packages/profiling/test/one-command.test.ts`) fails if `start.sh` uses any other subcommand. Do not run other `supabase` commands in this repo on a machine that holds a Supabase login.
 - `db reset --local` rebuilds the local tables when `supabase/migrations` changed since the last run (the hash is in `.jemma/migrations.sha`). The recorded answers are loaded again after it.
 - The GitHub workflow `.github/workflows/ci.yml` runs `./start.sh --ci`, `pnpm typecheck`, `pnpm test` and the phone demo-path test on a clean Ubuntu machine, on every push.
-- To refresh the recorded answers after a new recording on jemma-dev: `pnpm --filter @jemma/profiling exec tsx ../../scripts/export-replays.ts` (read only, writes the fixture), then commit `fixtures/ai-replays.json.gz`. Check the size (under 40 MB) and that no real email or key is in it: a test does this.
-- Scripts that use the service key (`export-replays`, `live-smoke`, `proof/run-real-job`) run only against the local stack or a project whose address contains `JEMMA_ALLOWED_SUPABASE_REF` (default: jemma-dev).
+- To refresh the recorded answers after a new recording on the team's hosted project: `pnpm --filter @jemma/profiling exec tsx ../../scripts/export-replays.ts` (read only, writes the fixture), then commit `fixtures/ai-replays.json.gz`. Check the size (under 40 MB) and that no real email or key is in it: a test does this.
+- Scripts that use the service key (`export-replays`, `live-smoke`, `proof/run-real-job`) run only against the local stack or a project whose address contains `JEMMA_ALLOWED_SUPABASE_REF`. Set it to the ref of your project: the built-in default is the team's earlier dev project, which is no longer in use.
 
 ## Env vars
 
@@ -20,9 +28,9 @@ Copy `.env.example` to `.env.local` at the repo root. `apps/web` reads it, and `
 
 | Var | What it does |
 | --- | --- |
-| `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | jemma-dev. The service key is server and agent only. |
+| `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | The local stack, or your hosted project. The service key is server and agent only. |
 | `LLM_PROVIDER`, `LLM_MODEL` | Text model. Free runs use `openrouter` and an OpenRouter `:free` id. |
-| `LLM_MODEL_FALLBACKS` | Comma list of ids (same provider) tried in order when the model still fails with a 5xx or overload after its retries. |
+| `LLM_MODEL_FALLBACKS` | Comma list of ids (same provider) tried in order when the model still fails with a 5xx or overload after its retries, or does not answer in 4 minutes. |
 | `VISION_PROVIDER`, `VISION_MODEL`, `VISION_MODEL_FALLBACKS` | Same for photos (memo, papers, the curriculum PDF). |
 | `TTS_PROVIDER`, `TTS_MODEL` | Lesson audio: `workers-ai` and `@cf/deepgram/aura-2-en`. |
 | `AI_MODE` | `live` (call the model), `record` (call it and store the answer in `ai_replays`), `replay` (use the stored answer, never call a model, a miss is an error), `cache` (use the stored answer when the key exists, else call the model and store it). |
@@ -45,7 +53,7 @@ A replay is keyed by the model id and the call, so record and replay with the sa
 - `nvidia/nemotron-3.5-super-vl:free` reads the curriculum PDF, the memo and the papers correctly and also writes text.
 - `nvidia/nemotron-3-ultra-550b-a55b:free` is the text fallback. It often answers `Internal server error` on a whole lesson.
 - `google/gemma-4-31b-it:free` was down (`Internal error encountered`) and cannot do provider-side structured output reliably.
-- Free models fail often. Every model call retries a 429, 5xx or timeout with backoff (2, 5, 10, 20 s), then tries the next id in the fallback list.
+- Free models fail often. Every model call retries a 429 or 5xx with backoff (2, 5, 10, 20 s), then tries the next id in the fallback list. One call gets 4 minutes: a timeout is not tried again on the same model, the next id in the list gets the call. A job that shows no sign of life for 16 minutes is put back on the queue, twice at most, then marked failed (see "When a job stops half way" in [architecture.md](architecture.md)).
 - OpenRouter's free tier is about 20 requests a minute. Papers are read three at a time and diagnoses three at a time.
 
 ## Run the agent and the web app locally
@@ -103,7 +111,7 @@ kill "$(cat ../../.jemma/tts-proxy.pid)" && rm ../../.jemma/tts-proxy.pid    # a
 - `seed_map` stores the fixture map instead of drafting one (when the model cannot).
 - Rerun `record` after any change to a job prompt in `packages/profiling/src/jobs/*.md`, a schema, or a model id.
 
-Answers land in the `ai_replays` table on jemma-dev (service role only).
+Answers land in the `ai_replays` table of the database the env points at (service role only).
 
 The `map_records` job (the columns of a file of past records) is recorded by its own script, for the two sample files of `fixtures/records` ("Use a sample file" on the Add past records screen):
 
@@ -118,7 +126,7 @@ It makes a fresh demo school, runs the job live on the text model, prints what t
 
 `pnpm evals` runs the eleven eval tasks (three runs each) on the real agent path with Goose and a free open-weights model, checks every outcome in code, and writes `EVALS.md` from the saved results in `evals/results/<run id>/`. `pnpm evals:report` rewrites `EVALS.md` from those files alone and fails if any of the 33 result files is missing. Never edit `EVALS.md` by hand.
 
-- Needs Goose, `OPENROUTER_API_KEY` (a free key) and the database values in `.env.local` (the local stack or jemma-dev). It starts its own agent worker on port 8756 and stops it at the end.
+- Needs Goose, `OPENROUTER_API_KEY` (a free key) and the database values in `.env.local` (the local stack, or your hosted project). It starts its own agent worker on port 8756 and stops it at the end.
 - Every run makes its own sandbox and MCP token on the database and deletes both when it ends, also when it fails. The command ends with a sweep for leftovers and prints what it found.
 - `pnpm evals --rehearse done --task class-report --runs 1` tests the flow with a fake goose: no model, nothing counted. Use it after any harness change.
 - Live goose runs are counted in `evals/results/ledger.jsonl` (cap 45 for the eval packet). Free models are slow and busy at times: if the model is down, wait and run again.
@@ -157,7 +165,7 @@ Try it on one machine: put `AI_ROUTE=operator` and your own `AI_ROUTE_TAG` (for 
 - A judge or you: open `/demo/reset` in the app (it rebuilds the sandbox in about 10 seconds).
 - In code: `resetSandbox(admin, sandboxId)` from `supabase/seed`.
 - Housekeeping: `deleteSandbox(admin, sandboxId)`. Old copies go by themselves: the agent's hourly cron (minute 17) runs `sweepOldSandboxes`, which removes up to 5 copies a run that are older than `DEMO_SANDBOX_DAYS` days with no sign-in and no activity since (their school, three users and files). A browser whose copy is gone lands on `/demo` and starts a new one.
-- Smoke sandboxes are left in jemma-dev; delete them with `deleteSandbox` using the school id from `scripts/.smoke-state.json`.
+- Smoke sandboxes are left in the database they ran against; delete them with `deleteSandbox` using the school id from `scripts/.smoke-state.json`.
 - The sample test sheets (the memo and the 5 papers of Class Test 1) are `fixtures/papers/*.png`: `ensureSampleFiles` puts them in the `sample-papers` bucket on a new database, replaces a sheet whose size is not the real file's (a stand-in from an older version) and stops with "sample sheet <name>.png is not available in this runtime" rather than upload a stand-in, and the web app's Worker, which has no files on disk, reads them from its static assets (`apps/web/scripts/copy-sample-sheets.mjs` copies them into `public/sample-papers` before `next dev` and `next build`).
 
 ## Deploy a preview

@@ -10,7 +10,7 @@ Read this first, so nothing on the video is a surprise.
 
 - The open-job script (shot 2) prints nothing while goose works. At the end it prints one line, `RUN_RESULT {...}`, that holds the tool calls in order. A short command (below) lays them out one per line. While you wait, the agent worker's terminal prints a `POST /mcp` line for each request goose makes, so something moves on screen.
 - The goose run happens in its own made-up school. Its calls are saved in that school's tool log, which you cannot open in the app. So the full log in shot 3 is the log of the demo school you are signed in to, and the narration says so. It is the same kind of log, with the same fields.
-- The Long view was never exercised on the deployed demo, and the "Share with parents" card has no screenshot and no spec run of its own. Rehearse shots 3 and 4 on the exact site you will record.
+- The Long view was opened on the deployed demo on 11, 12 and 13 November 2026, and the "Share with parents" card has screenshots in `design/proof/p50b` and a spec of its own that ran on 11 November. Rehearse shots 3 and 4 on the exact site you will record.
 
 ## Timing
 
@@ -29,7 +29,7 @@ The run in shot 2 took 51 to 85 seconds from starting the runner to the end of g
 
 Use two folders, because the two runs need different settings.
 
-- Folder A, your normal checkout. Its `.env.local` holds the team's dev database, `EVENTS_SECRET` and a free OpenRouter key as `OPENROUTER_API_KEY`. The open-job script refuses every database but the team's dev project. Do not show this file on screen.
+- Folder A, your normal checkout. Its `.env.local` holds the database the live demo runs on, `EVENTS_SECRET` and a free OpenRouter key as `OPENROUTER_API_KEY`, and `JEMMA_ALLOWED_SUPABASE_REF` holds that project's ref. The open-job script refuses every database but the local one and the project named there (its built-in default is the team's earlier dev project, which is no longer in use). Do not show this file on screen.
 - Folder B, a fresh clone. It is only for `./start.sh`, which refuses to touch a `.env.local` that points anywhere but the local database.
 
 Checklist:
