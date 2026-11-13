@@ -110,6 +110,14 @@ async function makeUsers(admin: JemmaDb, created: { userIds: string[] }, wanted:
   return settled.map((s) => (s as PromiseFulfilledResult<Login>).value)
 }
 
+/** Runs three steps side by side and waits for all of them, so a failure never leaves a step still writing when the clean-up runs. */
+async function together<A, B, C>(a: PromiseLike<A>, b: PromiseLike<B>, c: PromiseLike<C>): Promise<[A, B, C]> {
+  const settled = await Promise.allSettled([a, b, c])
+  const failed = settled.find((r) => r.status === 'rejected')
+  if (failed && failed.status === 'rejected') throw failed.reason
+  return settled.map((r) => (r as PromiseFulfilledResult<unknown>).value) as [A, B, C]
+}
+
 /** Builds one sandbox. Throws after cleaning up what it made. */
 async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage, kind: SandboxKind, loadSheet?: LoadSheet): Promise<Sandbox> {
   return kind === 'empty' ? buildEmpty(admin, sandboxId) : buildHillview(admin, sandboxId, stage, loadSheet)
@@ -170,31 +178,6 @@ async function buildHillview(admin: JemmaDb, sandboxId: string, stage: SandboxSt
     const teacherId = teacherLogin.banda!.userId
     const parentId = parentLogin.thandi!.userId
     const learnerId = learnerLogin.userId
-    await ok(
-      admin.from('profiles').insert([
-        ...HILLVIEW_TEACHERS.map((t) => ({ user_id: teacherLogin[t.key]!.userId, role: 'teacher' as const, display_name: t.displayName, school_id: schoolId })),
-        ...HILLVIEW_PARENTS.map((p) => ({ user_id: parentLogin[p.key]!.userId, role: 'parent' as const, display_name: p.displayName, school_id: null })),
-        { user_id: learnerId, role: 'learner' as const, display_name: 'Amina', school_id: schoolId },
-      ]),
-      'profiles',
-    )
-
-    // Four classes. 6B Mathematics is made first and keeps the oldest timestamp: it is the sandbox's home class.
-    const classRows = await ok(
-      admin
-        .from('classes')
-        .insert(
-          HILLVIEW_CLASSES.map((c, i) => ({
-            school_id: schoolId, teacher_id: teacherLogin[c.teacher]!.userId, name: c.name, grade: c.grade, year, subject: c.subject,
-            join_code: i === 0 ? joinCode : randomCode(), created_at: new Date(now.getTime() - (HILLVIEW_CLASSES.length - i) * 1000).toISOString(),
-          })),
-        )
-        .select('id, name'),
-      'classes',
-    )
-    const classOf = Object.fromEntries(HILLVIEW_CLASSES.map((c) => [c.key, classRows.find((r) => r.name === c.name)!.id])) as Record<string, string>
-    const classId = classOf['6b-maths']!
-
     // The learners: the five of 6B first (in the cast order), then the made-up learners of the other three classes.
     const madeUp = madeUpClasses(year)
     const linkedAt = (classKey: string, position: number) => HILLVIEW_LINKS.filter((l) => l.classKey === classKey && l.at === position)
@@ -209,27 +192,6 @@ async function buildHillview(admin: JemmaDb, sandboxId: string, stage: SandboxSt
         })
       }),
     ]
-    const kids = await ok(
-      admin
-        .from('children')
-        .insert(
-          rows.map((r, i) => ({
-            school_id: schoolId, first_name: r.name, grade: r.grade,
-            // A bulk insert shares one timestamp; spread it so the class list keeps the cast order.
-            created_at: new Date(now.getTime() - (rows.length - i) * 1000).toISOString(),
-            user_id: r.name === 'Amina' ? learnerId : null,
-            parent_first_name: r.parent?.first ?? null,
-            parent_relation: r.parent?.relation ?? null,
-          })),
-        )
-        .select('id, first_name'),
-      'children',
-    )
-    const idOfName = Object.fromEntries(kids.map((k) => [k.first_name, k.id])) as Record<string, string>
-    const childId = Object.fromEntries(CAST.children.map((n) => [n.toLowerCase(), idOfName[n]!])) as Record<string, string>
-    const aminaId = childId.amina!
-    const five = CAST.children.map((n) => ({ id: idOfName[n]!, first_name: n }))
-
     const logins: Logins = {
       teacher: teacherLogin.banda!,
       parent: parentLogin.thandi!,
@@ -238,7 +200,57 @@ async function buildHillview(admin: JemmaDb, sandboxId: string, stage: SandboxSt
       parents: Object.fromEntries(HILLVIEW_PARENTS.filter((p) => p.key !== 'thandi').map((p) => [p.key, parentLogin[p.key]!])),
       learners: {},
     }
-    await ok(admin.from('demo_sandboxes').insert({ id: sandboxId, school_id: schoolId, logins: json(logins), stage, kind: 'hillview' }), 'demo_sandboxes')
+
+    // Three chains side by side, each waiting for the school and the users only: the staff profiles and then the classes, the children,
+    // and the sandbox row. Fewer round trips in a row keeps a copy quick when the database is slow.
+    const [classRows, kids] = await together(
+      (async () => {
+        await ok(
+          admin.from('profiles').insert([
+            ...HILLVIEW_TEACHERS.map((t) => ({ user_id: teacherLogin[t.key]!.userId, role: 'teacher' as const, display_name: t.displayName, school_id: schoolId })),
+            ...HILLVIEW_PARENTS.map((p) => ({ user_id: parentLogin[p.key]!.userId, role: 'parent' as const, display_name: p.displayName, school_id: null })),
+            { user_id: learnerId, role: 'learner' as const, display_name: 'Amina', school_id: schoolId },
+          ]),
+          'profiles',
+        )
+        // Four classes. 6B Mathematics is made first and keeps the oldest timestamp: it is the sandbox's home class.
+        return ok(
+          admin
+            .from('classes')
+            .insert(
+              HILLVIEW_CLASSES.map((c, i) => ({
+                school_id: schoolId, teacher_id: teacherLogin[c.teacher]!.userId, name: c.name, grade: c.grade, year, subject: c.subject,
+                join_code: i === 0 ? joinCode : randomCode(), created_at: new Date(now.getTime() - (HILLVIEW_CLASSES.length - i) * 1000).toISOString(),
+              })),
+            )
+            .select('id, name'),
+          'classes',
+        )
+      })(),
+      ok(
+        admin
+          .from('children')
+          .insert(
+            rows.map((r, i) => ({
+              school_id: schoolId, first_name: r.name, grade: r.grade,
+              // A bulk insert shares one timestamp; spread it so the class list keeps the cast order.
+              created_at: new Date(now.getTime() - (rows.length - i) * 1000).toISOString(),
+              user_id: r.name === 'Amina' ? learnerId : null,
+              parent_first_name: r.parent?.first ?? null,
+              parent_relation: r.parent?.relation ?? null,
+            })),
+          )
+          .select('id, first_name'),
+        'children',
+      ),
+      ok(admin.from('demo_sandboxes').insert({ id: sandboxId, school_id: schoolId, logins: json(logins), stage, kind: 'hillview' }), 'demo_sandboxes'),
+    )
+    const classOf = Object.fromEntries(HILLVIEW_CLASSES.map((c) => [c.key, classRows.find((r) => r.name === c.name)!.id])) as Record<string, string>
+    const classId = classOf['6b-maths']!
+    const idOfName = Object.fromEntries(kids.map((k) => [k.first_name, k.id])) as Record<string, string>
+    const childId = Object.fromEntries(CAST.children.map((n) => [n.toLowerCase(), idOfName[n]!])) as Record<string, string>
+    const aminaId = childId.amina!
+    const five = CAST.children.map((n) => ({ id: idOfName[n]!, first_name: n }))
 
     // ---- Stage start ----
     const days = lastSchoolDays(now)
