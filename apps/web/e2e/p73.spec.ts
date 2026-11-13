@@ -5,9 +5,10 @@ import { expect, test, type Page } from '@playwright/test'
 import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 
 // Small faults a judge can run into (P73), on the screens a teacher uses:
-// - a teacher with four classes still gets a SHORT heading on the class list;
+// - a teacher with four classes still gets a SHORT heading on the class list (Ms Banda has two in a fresh copy, 6B and 5A: two more make four);
 // - the "Use the sample curriculum" button is there for a Grade 6 Mathematics class and for no other;
-// - past records a teacher brought in are not listed as "Logged late" on a learner's Long view (the seeded late quiz still is).
+// - past records a teacher brought in are not listed as "Logged late" on a learner's Long view (the seeded late quiz still is);
+// - the demo page says when the copy started on the judge's own clock (the browser is put in a time zone far from the server's).
 // The first test needs only the web app. The second brings the tidy sample file in, so it needs the agent worker in AI_MODE=replay
 // (the answer for the file is a recorded one: no model is called). Headless.
 // Screenshots for the reviewer are written only when P73_PROOF is set, to design/proof/p73, named by width (390 or 1440).
@@ -81,26 +82,48 @@ async function settleLongViewUpdates(schoolId: string) {
   await db.from('events').update({ status: 'done', error: null }).eq('school_id', schoolId).eq('type', 'long_view.requested').eq('status', 'failed')
 }
 
+// The browser is put in a time zone far from wherever the server runs, so a server time cannot pass for the judge's clock.
+test.describe('the demo page start time', () => {
+  test.use({ timezoneId: 'Asia/Tokyo' })
+
+  test('"Your copy started" shows the hour of the browser\'s own clock', async ({ page }) => {
+    test.setTimeout(300_000)
+    sb = await openSandbox(page, { stage: 'start', role: 'teacher' })
+    await page.goto('/demo')
+    const line = page.getByText(/^Your copy started /)
+    await check(line).toHaveText(/^Your copy started today at \d\d:\d\d\.$/)
+    const shown = (await line.textContent())!.match(/(\d\d):(\d\d)/)!
+    // The browser's own time now, in its own zone. The copy was made a moment ago, so the hour is the same and the minute differs by a little.
+    const now = await page.evaluate(() => {
+      const d = new Date()
+      return { hour: d.getHours(), minute: d.getMinutes() }
+    })
+    const shownMinutes = Number(shown[1]) * 60 + Number(shown[2])
+    const nowMinutes = now.hour * 60 + now.minute
+    const behind = (nowMinutes - shownMinutes + 1440) % 1440
+    // Made before now, within a few minutes (a slow database can take a minute or two), and never a time zone away.
+    expect(behind).toBeLessThanOrEqual(10)
+    await noHorizontalScroll(page)
+    await proof(page, 'demo-started-at')
+  })
+})
+
 test.describe('small faults a judge can run into', () => {
   test('four classes make a short heading, and the sample curriculum is only for the Grade 6 Mathematics class', async ({ page }) => {
     test.setTimeout(600_000)
     sb = await openSandbox(page, { stage: 'marked', role: 'teacher' })
 
+    // A fresh copy already holds 6B Mathematics (with work waiting for the teacher) and 5A Mathematics (no test yet). Two more make four.
     const grade6 = await makeClass(page, '6C Mathematics', 6)
-    await makeClass(page, '7A Mathematics', 7)
     const grade9 = await makeClass(page, '9A Mathematics', 9)
 
     // The class list: one short sentence for what needs the teacher (6B, from the seed), one for the three classes with no test yet.
     await page.goto('/t')
     const heading = page.getByRole('heading', { level: 1 })
     await check(heading).toHaveText(/^6B needs you for \w+ (paper|papers|thing|things)\. Three are waiting to be set up\.$/)
-    await expect(page.getByRole('link', { name: /6C Mathematics/ })).toBeVisible()
-    await expect(page.getByRole('link', { name: /7A Mathematics/ })).toBeVisible()
-    await expect(page.getByRole('link', { name: /9A Mathematics/ })).toBeVisible()
+    for (const name of ['6B Mathematics', '5A Mathematics', '6C Mathematics', '9A Mathematics']) await expect(page.getByRole('link', { name: new RegExp(name) })).toBeVisible()
     // Not one sentence per class.
-    await expect(heading).not.toContainText('6C is waiting')
-    await expect(heading).not.toContainText('7A is waiting')
-    await expect(heading).not.toContainText('9A is waiting')
+    for (const label of ['5A', '6C', '9A']) await expect(heading).not.toContainText(`${label} is waiting`)
     await noHorizontalScroll(page)
     await proof(page, 'class-list-four-classes')
 
