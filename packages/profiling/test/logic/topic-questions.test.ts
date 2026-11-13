@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { askAboutRepeatedTopics, repeatedTopicQuestion } from '../../src/logic/topic-questions'
+import { askAboutRepeatedTopics, repeatedTopicQuestion, sameTopicName } from '../../src/logic/topic-questions'
 import type { TopicMapDraft } from '../../src/schemas'
 
 const topic = (name: string, check?: { reason: string; options: string[] }) => ({ name, family: 'algebra', prerequisites: [], misconceptions: [], ...(check ? { check } : {}) })
@@ -97,5 +97,24 @@ describe('the words of the question', () => {
   })
   test('no em dash', () => {
     expect(repeatedTopicQuestion([1, 2]).includes(String.fromCharCode(0x2014))).toBe(false)
+  })
+})
+
+describe('sameTopicName: one rule for a topic listed twice', () => {
+  test('names are the same without case and without extra spaces', () => {
+    expect(sameTopicName('Perimeter and Area', 'perimeter and area')).toBe(true)
+    expect(sameTopicName('  Perimeter   and\tArea ', 'perimeter and area')).toBe(true)
+    expect(sameTopicName('Ratio', 'Ratio')).toBe(true)
+  })
+
+  test('other differences are real differences', () => {
+    expect(sameTopicName('Perimeter and Area', 'Perimeter, area')).toBe(false)
+    expect(sameTopicName('Ratio', 'Ratios')).toBe(false)
+    expect(sameTopicName('Ratio', '')).toBe(false)
+  })
+
+  test('the question from code finds the same topics the rule does', () => {
+    const d = draftOf([[2, [topic('Perimeter and Area')]], [3, [topic('perimeter and area')]]])
+    expect(askAboutRepeatedTopics(d).added).toBe(2)
   })
 })

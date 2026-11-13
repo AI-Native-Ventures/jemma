@@ -66,6 +66,54 @@ function humanise(family: string): string {
   return words ? words.charAt(0).toUpperCase() + words.slice(1) : 'Other'
 }
 
+/** The plain form of a word: lower case, trimmed, `_` and `-` read as spaces, a run of spaces as one. */
+const plainWords = (word: string): string => word.toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim()
+
+/**
+ * The words a model or a file may use for a Mathematics strand (in their plain form), and the family each one is. A map the model
+ * drafted says `numbers` and `shape`; the demo seed and the records a teacher brings in say `whole_numbers` and `shapes`.
+ */
+const MATHS_WORDS: Record<string, string[]> = {
+  whole_numbers: [
+    'whole numbers',
+    'whole number',
+    'numbers',
+    'number',
+    'number operations',
+    'numbers and operations',
+    'numbers operations and relationships',
+    'operations',
+    'number sense',
+    'place value',
+    'counting',
+  ],
+  fractions: ['fractions', 'fraction', 'common fractions'],
+  decimals: ['decimals', 'decimal', 'decimal fractions'],
+  shapes: ['shapes', 'shape', 'shapes and space', 'shape and space', 'space and shape', 'geometry', 'space'],
+  measurement: ['measurement', 'measurements', 'measuring', 'measure'],
+  data: ['data', 'data handling', 'statistics', 'graphs'],
+}
+
+const MATHS_FAMILY_OF = new Map(Object.entries(MATHS_WORDS).flatMap(([family, words]) => words.map((w) => [w, family] as const)))
+
+/**
+ * One name for one strand, for READING only (nothing stored is changed): the family a word stands for in a subject. For Mathematics the
+ * words of `MATHS_WORDS` give their family. For every subject a word whose plain form equals that of one of the subject's strand keys or
+ * labels gives that key (`Speaking and listening` is `speaking_listening`). Any other word gives its plain form with `_` for spaces
+ * (`Patterns and Algebra` is `patterns_and_algebra`). An empty word stays empty.
+ */
+export function canonicalFamily(subject: string, family: string): string {
+  const plain = plainWords(family)
+  if (!plain) return ''
+  const key = subjectKey(subject)
+  if (key === 'mathematics') {
+    const known = MATHS_FAMILY_OF.get(plain)
+    if (known) return known
+  }
+  const own = STRANDS[key]?.find(([f, label]) => plainWords(f) === plain || plainWords(label) === plain)
+  return own ? own[0] : plain.replace(/ /g, '_')
+}
+
 /** The plain name of a strand in a subject. */
 export function strandLabel(subject: string, family: string): string {
   return STRANDS[subjectKey(subject)]?.find(([f]) => f === family)?.[1] ?? humanise(family)

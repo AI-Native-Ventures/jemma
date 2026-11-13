@@ -1,6 +1,6 @@
 import { createServiceClient, type JemmaDb } from '@jemma/profiling/db'
 import { sweepOldSandboxes } from '../../../supabase/seed/teardown'
-import { checkDesktop, checkOperator } from './consumer'
+import { checkDesktop, checkOperator, checkStuck } from './consumer'
 import type { Env } from './env'
 
 /** The two crons in wrangler.jsonc and wrangler.local.jsonc. A test keeps these names and those files the same. */
@@ -21,11 +21,12 @@ export function sandboxDays(env: Pick<Env, 'DEMO_SANDBOX_DAYS'>): number {
 export type ScheduledDeps = {
   checkDesktop: (env: Env) => Promise<unknown>
   checkOperator: (env: Env) => Promise<unknown>
+  checkStuck: (env: Env) => Promise<unknown>
   sweep: typeof sweepOldSandboxes
   admin: (env: Env) => JemmaDb
 }
 
-const defaults: ScheduledDeps = { checkDesktop, checkOperator, sweep: sweepOldSandboxes, admin: (env) => createServiceClient(env) }
+const defaults: ScheduledDeps = { checkDesktop, checkOperator, checkStuck, sweep: sweepOldSandboxes, admin: (env) => createServiceClient(env) }
 
 /**
  * The hourly sweep: removes demo sandboxes nobody has used for `DEMO_SANDBOX_DAYS` days (default 7, `0` is off). It never throws:
@@ -46,7 +47,7 @@ export async function sweepDemoSandboxes(env: Env, deps: ScheduledDeps = default
 
 /**
  * What a cron does. The hourly one only sweeps. Every other one (the every-minute cron) runs the desktop and operator checks
- * exactly as before, and never a sweep.
+ * exactly as before, and the check of jobs that stopped half way, and never a sweep.
  */
 export async function runScheduled(cron: string, env: Env, ctx: Pick<ExecutionContext, 'waitUntil'>, deps: ScheduledDeps = defaults): Promise<void> {
   if (cron === SWEEP_CRON) {
@@ -55,4 +56,5 @@ export async function runScheduled(cron: string, env: Env, ctx: Pick<ExecutionCo
   }
   ctx.waitUntil(deps.checkDesktop(env))
   ctx.waitUntil(deps.checkOperator(env))
+  ctx.waitUntil(deps.checkStuck(env))
 }

@@ -1,6 +1,6 @@
 import { SupabaseReplayStore } from '@jemma/profiling/ai'
 import { createServiceClient } from '@jemma/profiling/db'
-import { checkDesktopTimeouts, checkOperatorTimeouts, runEvent } from '@jemma/profiling/orchestrator'
+import { checkDesktopTimeouts, checkOperatorTimeouts, checkStuckEvents, runEvent } from '@jemma/profiling/orchestrator'
 import type { ToolContext } from '@jemma/profiling/tools'
 import type { Env } from './env'
 import { cloudJobs, type CloudJobs } from './jobs'
@@ -74,6 +74,15 @@ export async function checkDesktop(env: Env): Promise<number> {
  */
 export async function checkOperator(env: Env): Promise<number> {
   return checkOperatorTimeouts(createServiceClient(env), async (eventId) => void (await env.EVENTS_QUEUE.send({ eventId })), new Date(), undefined, env.AI_ROUTE_TAG || undefined)
+}
+
+/**
+ * Cron, every minute: a cloud job that has shown no sign of life for 16 minutes (its run died: the database was down at its
+ * end, or Cloudflare ended the invocation) goes back on the queue, twice at most, then it ends failed, as a job that failed for
+ * good does. Never throws: a failure is logged as one line and the next minute tries again.
+ */
+export async function checkStuck(env: Env): Promise<number> {
+  return checkStuckEvents(createServiceClient(env), async (eventId) => void (await env.EVENTS_QUEUE.send({ eventId })))
 }
 
 /** Marks an event failed after its last queue delivery blew up outside the job plan. */

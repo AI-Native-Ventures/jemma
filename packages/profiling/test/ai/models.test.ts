@@ -1,4 +1,4 @@
-import { expect, test, vi } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { getModel, getSpeechModel, MemoryStore, type AiEnv } from '../../src/ai'
 
 const env = (over: Partial<AiEnv> = {}): AiEnv => ({
@@ -118,4 +118,157 @@ test('extractJson takes the first object, ignoring fences, text and a second obj
   expect(extractJson('Here:\n```json\n{"a":{"b":"}"},"c":[1]}\n```\nthanks {x}')).toEqual({ a: { b: '}' }, c: [1] })
   expect(extractJson('{"a":1}\n{"a":2}')).toEqual({ a: 1 })
   expect(() => extractJson('{"a":')).toThrow('No object generated')
+})
+
+// One live model call has a time limit. These tests use a short limit (a few milliseconds) and doubles for the model: no network.
+describe('a model call that never answers', () => {
+  const answer = { content: [{ type: 'text', text: 'hi' }], finishReason: { unified: 'stop', raw: 'stop' }, usage: { inputTokens: { total: 1, noCache: 1, cacheRead: 0, cacheWrite: 0 }, outputTokens: { total: 1, text: 1, reasoning: 0 } }, warnings: [] } as never
+  const params = { prompt: [{ role: 'user', content: [{ type: 'text', text: 'q' }] }] } as never
+  /** Never answers: the promise ends only when the call is cancelled. */
+  const hang = (options: { abortSignal?: AbortSignal }) =>
+    new Promise<never>((_, reject) => {
+      const stop = () => reject(new Error('This operation was aborted'))
+      if (options.abortSignal?.aborted) stop()
+      else options.abortSignal?.addEventListener('abort', stop)
+    })
+
+  async function parts() {
+    const { MockLanguageModelV4 } = await import('ai/test')
+    const { wrapLanguageModel } = await import('ai')
+    const lib = await import('../../src/ai')
+    return { MockLanguageModelV4, wrapLanguageModel, ...lib }
+  }
+
+  test('the limit is 4 minutes by default, one try and not the sum of the retries', async () => {
+    const { MODEL_CALL_TIMEOUT_MS } = await parts()
+    expect(MODEL_CALL_TIMEOUT_MS).toBe(240_000)
+  })
+
+  test('ends after the limit with an error that says timeout, and the call is cancelled', async () => {
+    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry, ModelTimeoutError } = await parts()
+    const m = new MockLanguageModelV4({ doGenerate: async (options) => hang(options) })
+    const started = Date.now()
+    const err = await Promise.resolve(wrapLanguageModel({ model: m, middleware: withModelRetry(async () => {}, [], 30) }).doGenerate(params)).catch((e: unknown) => e)
+    expect(err).toBeInstanceOf(ModelTimeoutError)
+    expect((err as Error).message).toMatch(/timeout/i)
+    expect(Date.now() - started).toBeLessThan(2000)
+    expect(m.doGenerateCalls.length).toBe(1)
+    expect(m.doGenerateCalls[0]!.abortSignal?.aborted).toBe(true)
+  })
+
+  test('the retry layer then tries again, once for each wait, and a later answer is returned', async () => {
+    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry } = await parts()
+    const waits: number[] = []
+    let calls = 0
+    const m = new MockLanguageModelV4({ doGenerate: async (options) => (++calls < 3 ? hang(options) : answer) })
+    const out = await wrapLanguageModel({ model: m, middleware: withModelRetry(async (ms) => void waits.push(ms), [7, 8, 9], 20) }).doGenerate(params)
+    expect(out.content).toEqual([{ type: 'text', text: 'hi' }])
+    expect(m.doGenerateCalls.length).toBe(3)
+    expect(waits).toEqual([7, 8])
+  })
+
+  test('when every try times out, the last error is the timeout', async () => {
+    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry } = await parts()
+    const m = new MockLanguageModelV4({ doGenerate: async (options) => hang(options) })
+    await expect(wrapLanguageModel({ model: m, middleware: withModelRetry(async () => {}, [1, 2], 15) }).doGenerate(params)).rejects.toThrow(/timeout/i)
+    expect(m.doGenerateCalls.length).toBe(3)
+  })
+
+  test('a call that answers in time is untouched, and its timer is gone', async () => {
+    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry } = await parts()
+    vi.useFakeTimers()
+    try {
+      const m = new MockLanguageModelV4({ doGenerate: async () => answer })
+      const out = await wrapLanguageModel({ model: m, middleware: withModelRetry(async () => {}, [1], 240_000) }).doGenerate(params)
+      expect(out).toBe(answer)
+      expect(vi.getTimerCount()).toBe(0)
+      expect(m.doGenerateCalls.length).toBe(1)
+      // The model got the same call as before, with one more thing: the signal that cancels it.
+      const { abortSignal: signal, ...rest } = m.doGenerateCalls[0]!
+      expect(signal).toBeInstanceOf(AbortSignal)
+      expect(signal!.aborted).toBe(false)
+      expect(rest).toEqual(params)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  test('the caller\'s own cancel still works: it is not a timeout and it is not retried', async () => {
+    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry } = await parts()
+    const m = new MockLanguageModelV4({ doGenerate: async (options) => hang(options) })
+    const caller = new AbortController()
+    const call = wrapLanguageModel({ model: m, middleware: withModelRetry(async () => {}, [1, 2], 5000) }).doGenerate({ ...(params as object), abortSignal: caller.signal } as never)
+    setTimeout(() => caller.abort(), 10)
+    await expect(call).rejects.toThrow('This operation was aborted')
+    expect(m.doGenerateCalls.length).toBe(1)
+  })
+
+  test('a call that already holds a cancelled signal is not started as a live call that can hang', async () => {
+    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry } = await parts()
+    const m = new MockLanguageModelV4({ doGenerate: async (options) => hang(options) })
+    const caller = new AbortController()
+    caller.abort()
+    const call = wrapLanguageModel({ model: m, middleware: withModelRetry(async () => {}, [], 5000) }).doGenerate({ ...(params as object), abortSignal: caller.signal } as never)
+    await expect(call).rejects.toThrow('This operation was aborted')
+  })
+
+  test('in replay mode nothing is timed: a recorded answer comes back with no timer, a miss is a miss', async () => {
+    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry, withReplay, MemoryStore, ReplayMissError } = await parts()
+    const store = new MemoryStore()
+    const inner = new MockLanguageModelV4({ modelId: 'replayed', doGenerate: async () => answer })
+    await wrapLanguageModel({ model: inner, middleware: [withReplay(store, 'record'), withModelRetry(async () => {}, [], 240_000)] }).doGenerate(params)
+    expect(inner.doGenerateCalls.length).toBe(1)
+
+    vi.useFakeTimers()
+    try {
+      const replaying = new MockLanguageModelV4({ modelId: 'replayed', doGenerate: async (o) => hang(o) })
+      const chain = wrapLanguageModel({ model: replaying, middleware: [withReplay(store, 'replay'), withModelRetry(async () => {}, [], 240_000)] })
+      const hit = await chain.doGenerate(params)
+      expect(hit.content).toEqual([{ type: 'text', text: 'hi' }])
+      expect(vi.getTimerCount()).toBe(0)
+      const other = { prompt: [{ role: 'user', content: [{ type: 'text', text: 'something never recorded' }] }] } as never
+      await expect(chain.doGenerate(other)).rejects.toBeInstanceOf(ReplayMissError)
+      expect(vi.getTimerCount()).toBe(0)
+      expect(replaying.doGenerateCalls.length).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  test('the replay key does not change: the replay layer sees the call as it was, the signal is added below it', async () => {
+    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry, withReplay, replayKey } = await parts()
+    const keys = async (middleware: never[]) => {
+      const seen: string[] = []
+      const store = { get: async () => null, put: async (key: string) => void seen.push(key) }
+      const inner = new MockLanguageModelV4({ modelId: 'keyed', doGenerate: async () => answer })
+      const withStore = [withReplay(store, 'record'), ...middleware]
+      await wrapLanguageModel({ model: inner, middleware: withStore }).doGenerate(params)
+      return seen
+    }
+    const before = await keys([])
+    const after = await keys([withModelRetry(async () => {}, [], 240_000)] as never[])
+    expect(after).toEqual(before)
+    expect(after).toEqual([await replayKey('keyed', params)])
+  })
+
+  test('getModel puts the time limit on the live model, inside the replay layer', async () => {
+    const { getModel, MemoryStore } = await parts()
+    const fetchMock = vi.fn((_url: unknown, init?: RequestInit) => new Promise<Response>((_, reject) => init?.signal?.addEventListener('abort', () => reject(new Error('aborted by the limit')))))
+    vi.stubGlobal('fetch', fetchMock)
+    vi.useFakeTimers()
+    try {
+      const m = getModel('text', { AI_MODE: 'live', replayStore: new MemoryStore(), LLM_PROVIDER: 'opencode', LLM_MODEL: 'some-model-free', OPENCODE_API_KEY: 'k' })
+      const call = Promise.resolve(m.doGenerate(params)).catch((e: unknown) => e)
+      await vi.advanceTimersByTimeAsync(240_000)
+      // The first try ended with the limit: the request was cancelled and the retry layer is waiting to try again.
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect((fetchMock.mock.calls[0]![1] as RequestInit).signal?.aborted).toBe(true)
+      await vi.advanceTimersByTimeAsync(2000)
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+      void call
+    } finally {
+      vi.useRealTimers()
+      vi.unstubAllGlobals()
+    }
+  })
 })

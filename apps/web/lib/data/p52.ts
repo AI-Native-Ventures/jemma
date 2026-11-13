@@ -9,6 +9,7 @@ import {
   compareSlots,
   compareSubjects,
   historySlots,
+  isLoggedLate,
   missingSlots,
   plainDate,
   recordLabel,
@@ -29,8 +30,6 @@ import { createSupabaseServer } from '../supabase/server'
 // `buildLongView` is pure: the screen and the tool both use `buildTable`, so the grid can never disagree with what the tool found.
 
 const DAY_MS = 24 * 60 * 60 * 1000
-/** A record written into the records more than this many days after it happened is "logged late" (the same rule as `get_learner_history`). */
-export const LATE_AFTER_DAYS = 60
 /** An update that was queued or running this long ago is taken as lost: the screen shows the retry card instead of waiting for ever. */
 export const STALE_AFTER_MS = 15 * 60_000
 /** Opening the screen asks for an update only when none was asked for in this time. */
@@ -244,8 +243,6 @@ export type LongViewInput = {
   importFiles?: Record<string, string>
 }
 
-const isLate = (r: Pick<LongViewRecord, 'happenedOn' | 'loggedAt'>) => Date.parse(r.loggedAt) - Date.parse(r.happenedOn) > LATE_AFTER_DAYS * DAY_MS
-
 /**
  * Where a record that was brought in came from, in one sentence: a file (with its row) or one result a teacher typed. The demo seed has neither.
  * The name of the person is the one saved when they added it, and the date is when it was added, not when it happened.
@@ -267,7 +264,7 @@ function sheetOfRecord(r: LongViewRecord, files: Record<string, string> = {}): L
     date: plainDate(r.happenedOn),
     marks: r.marks !== null && r.outOf !== null ? `${r.marks} out of ${r.outOf}` : null,
     text: r.text,
-    late: isLate(r),
+    late: isLoggedLate(r),
     origin: originOf(r, files),
   }
 }
@@ -309,6 +306,17 @@ function updateOf(events: LongViewInput['events'], patterns: PatternRow[], now: 
     lastUpdated: lastDone ? whenLabel(lastDone.finished_at!, now) : null,
     askOnOpen: patterns.length === 0 && !sorted.some((e) => age(e) < OPEN_UPDATE_GAP_MS),
   }
+}
+
+/**
+ * The block under the grid when the learner has no pattern in the subject on the screen. While Jemma is still looking across the terms it says so,
+ * so "Too early to tell" is never shown beside a search that is running. In every other state (idle, failed) it is "Too early to tell".
+ * Null when there is a pattern to show.
+ */
+export function noPatternBlock(v: { subjectPatternCount: number; update: Pick<LvUpdate, 'state'> }): { title: string; body: string } | null {
+  if (v.subjectPatternCount > 0) return null
+  if (v.update.state === 'running') return { title: 'Jemma is looking across the terms.', body: 'Patterns show here in a minute or two.' }
+  return { title: 'Too early to tell', body: 'A pattern needs 3 terms of clear results.' }
 }
 
 const patternSubject = (p: Pick<PatternRow, 'subject'>) => (p.subject?.trim() ? canonicalSubject(p.subject) : DEFAULT_SUBJECT)
@@ -453,7 +461,8 @@ export function buildLongView(input: LongViewInput): LongView {
     missing: linesFor(missingSlots(slots)),
     unclear: notCounted.filter((n) => n.subject === subject).map((n) => n.label),
     late: mine
-      .filter(isLate)
+      // The rule is the tool's too (`isLoggedLate`): a record a teacher brought in is not late, it says where it came from.
+      .filter(isLoggedLate)
       .sort((a, b) => a.happenedOn.localeCompare(b.happenedOn) || recordLabel(a).localeCompare(recordLabel(b)))
       .map(recordLabel),
     parentName: input.hasParent ? child.parentFirstName?.trim() || 'the parent' : null,
@@ -524,6 +533,7 @@ export async function loadLongView(db: JemmaDb, classId: string, childId: string
     subject: r.subject,
     importId: r.import_id,
     sourceRow: r.source_row,
+    addedBy: r.added_by,
     addedByName: r.added_by_name,
   }))
   // The names of the files that records came from (the teacher's own session reads their class's imports).

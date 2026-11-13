@@ -13,6 +13,7 @@ const rowText = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column'
 
 export default async function ParentAccountPage() {
   const account = await getAccount()
+  const firstChild = account.children[0]
   return (
     <>
       <BoardHeader href="/p" label="Back" title="Your account" />
@@ -38,13 +39,24 @@ export default async function ParentAccountPage() {
             </span>
             <Chevron />
           </Link>
-          <ComingButton style={rowButton}>
-            <span style={rowText}>
-              <span style={{ fontSize: 16, fontWeight: 500 }}>Notifications</span>
-              <span style={{ fontSize: 13, lineHeight: 1.35, color: '#5D5A73' }}>In the app · lesson ready and lesson finished</span>
-            </span>
-            <Chevron />
-          </ComingButton>
+          {/* The notifications screen exists: the bell on the home screen opens it for the first child, and so does this row. */}
+          {firstChild ? (
+            <Link href={`/p/${firstChild.id}/notifications`} style={{ ...rowLink, borderTop: '1px solid #EFEEF4' }}>
+              <span style={rowText}>
+                <span style={{ fontSize: 16, fontWeight: 500 }}>Notifications</span>
+                <span style={{ fontSize: 13, lineHeight: 1.35, color: '#5D5A73' }}>In the app · lesson ready and lesson finished</span>
+              </span>
+              <Chevron />
+            </Link>
+          ) : (
+            <ComingButton style={rowButton}>
+              <span style={rowText}>
+                <span style={{ fontSize: 16, fontWeight: 500 }}>Notifications</span>
+                <span style={{ fontSize: 13, lineHeight: 1.35, color: '#5D5A73' }}>In the app · lesson ready and lesson finished</span>
+              </span>
+              <Chevron />
+            </ComingButton>
+          )}
           <ToggleRow title="Data saver" detail="Download audio lessons on Wi-Fi only" initial={false} divider />
           {/* SLOT: "Where Jemma's AI runs" (cloud or desktop runner, AI runners section of the plan) goes here, between Data saver and Privacy. */}
           <Link href="/p/data" style={{ ...rowLink, borderTop: '1px solid #EFEEF4' }}>

@@ -156,6 +156,13 @@ The table of jobs is `events`. A row is one unit of work.
 
 The web app can read `events` of its own school. It cannot write them. `runner_presence` holds desktop heartbeats and each user sees only their own. `operator_presence` holds the heartbeats of operator runners (service role only).
 
+## When a job stops half way
+
+A job can die in the middle: the database does not answer at the moment the run writes its end, or Cloudflare ends the invocation (a queue consumer lives 15 minutes at most). The event then stays `running` for ever, because the queue consumer only runs an event that is `queued`. Two things keep that from lasting.
+
+- **One model call is given 4 minutes.** A call that has not answered by then is cancelled and ends with a timeout error, and the model retry layer tries again (`withModelRetry` in `packages/profiling/src/ai/models.ts`). It sits below the replay layer, so a recorded answer is never timed and the replay key does not change.
+- **The every-minute check brings a dead job back.** A cloud event that is `running`, is older than 16 minutes and has logged no tool call in the last 16 minutes has shown no sign of life, so its run is dead (`checkStuckEvents` in `packages/profiling/src/orchestrator.ts`). The check puts it back on the queue with `payload.revived` one higher, and the job plan starts again from the top. It does this twice at most. A job that died a third time is marked `failed` with the text "Jemma stopped answering. Try again.", exactly as a job that failed for good, and the screens that read the event show the retry they already have (the curriculum, a file of past records, the Long view update). The memo and paper screens read the memo's or the paper's own status and not the event, so they do not change when an event ends this way. Events a laptop holds (`runner = desktop`) are left alone, they have their own checks. The hourly cron does not run this check.
+
 ## Data model summary
 
 The schema is `supabase/migrations/0001_schema.sql` plus later migrations. Main tables:

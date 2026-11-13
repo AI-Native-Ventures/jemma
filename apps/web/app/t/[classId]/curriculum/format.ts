@@ -1,3 +1,4 @@
+import { sameSubject, sameTopicName } from '@jemma/profiling/logic'
 import { TopicMapDraftSchema, type TopicMapDraft } from '@jemma/profiling/schemas'
 
 /** What the teacher chose for each check: topic or left-out name to the option label. Stored beside the draft. */
@@ -38,6 +39,16 @@ const DOC_NOTES: Record<string, string> = {
   'Grade 6 Annual Teaching Plan': '4 terms',
 }
 export const docNote = (title: string, pages: number) => [plural(pages, 'page'), DOC_NOTES[title]].filter(Boolean).join(' · ')
+
+/** What the teacher reads when the sample curriculum is not for their class. */
+export const SAMPLE_ONLY_FOR = 'The sample curriculum is for a Grade 6 Mathematics class.'
+
+/**
+ * The sample documents are Grade 6 Mathematics pages. In any other class they would draft a map for the wrong grade or the wrong subject,
+ * so the button shows (and the action works) only for a Grade 6 Mathematics class. `Maths` and `mathematics ` are Mathematics.
+ * (`isBaselineClass` is not this: it also asks for the school's country, and it says yes to a class it could not read.)
+ */
+export const sampleCurriculumFits = (subject: string, grade: number): boolean => grade === 6 && sameSubject(subject, 'Mathematics')
 
 export const SAMPLE_DOCS = [
   { title: 'CAPS Intermediate Phase Mathematics', pages: 185 },
@@ -168,12 +179,16 @@ export function removeTopicIn(src: TopicMapDraft, name: string): TopicMapDraft {
   return d
 }
 
-/** A topic listed in more than one term, kept in one of them: the entries in the other terms go. Nothing else changes. */
+/**
+ * A topic listed in more than one term, kept in one of them: the entries in the other terms go. Nothing else changes.
+ * "The same topic" is the rule the question uses (`sameTopicName`: without case and extra spaces), so "Keep in Term 2" on "Perimeter and Area"
+ * also removes "perimeter and area" in Term 3. The entry that stays keeps its own spelling.
+ */
 function keepInTermIn(src: TopicMapDraft, name: string, term: number): TopicMapDraft {
-  const inTerms = src.terms.filter((t) => t.topics.some((x) => x.name === name))
+  const inTerms = src.terms.filter((t) => t.topics.some((x) => sameTopicName(x.name, name)))
   if (inTerms.length < 2 || !inTerms.some((t) => t.term === term)) return src
   const d = clone(src)
-  for (const t of d.terms) if (t.term !== term) t.topics = t.topics.filter((x) => x.name !== name)
+  for (const t of d.terms) if (t.term !== term) t.topics = t.topics.filter((x) => !sameTopicName(x.name, name))
   return d
 }
 

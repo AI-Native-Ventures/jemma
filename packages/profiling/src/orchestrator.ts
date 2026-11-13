@@ -63,9 +63,24 @@ export const OPERATOR_ONLINE_MS = 90_000
 export const NO_HANDOFF_JOBS: ReadonlySet<string> = new Set(['draft_map'])
 export const DEFAULT_ROUTE_TAG = 'default'
 
+/**
+ * A cloud invocation (a queue consumer) lives 15 minutes at most, so a job that has shown no sign of life for 16 minutes is dead.
+ * The every-minute check (`checkStuckEvents`) then brings it back.
+ */
+export const STUCK_EVENT_MS = 16 * 60 * 1000
+/** What the teacher reads on a job that died three times (its first run and two revivals). */
+export const STUCK_EVENT_ERROR = 'Jemma stopped answering. Try again.'
+/** A stuck event is put back on the queue this many times (`payload.revived`). After that it ends failed. */
+export const MAX_REVIVALS = 2
+/** Events one run of the check moves. */
+const STUCK_PER_RUN = 20
+/** Running events one run of the check reads. It reads more than it moves: the ones that show a sign of life are dropped. */
+const STUCK_SCAN = 100
+
 const text = (err: unknown) => (err instanceof Error ? err.message : String(err))
 
-function isTransient(err: unknown): boolean {
+/** A rate limit, a timeout (a model call that never answered ends as one) or an upstream hiccup: worth another try. */
+export function isTransient(err: unknown): boolean {
   const e = err as { statusCode?: number; status?: number; name?: string; message?: string } | null
   const code = e?.statusCode ?? e?.status
   if (code === 429 || code === 408 || code === 504) return true
@@ -162,6 +177,17 @@ export async function ownerOf(db: JemmaDb, schoolId: string, classId?: string | 
 }
 
 /**
+ * Writes an event as failed. This is the one place that does it: `runEvent` calls it when a job fails for good, and the
+ * stuck-jobs check when a job died three times, so both ends look the same to every screen. A cancelled event stays cancelled.
+ * With `only` the write also needs the event to still have that status (the check passes `running`, so it never overwrites a run
+ * that finished). Answers the query, so a caller can look at the error and at the rows that changed.
+ */
+export function endEventFailed(db: JemmaDb, eventId: string, error: string, attempts: number, finishedAt: string, only?: 'running') {
+  const write = db.from('events').update({ status: 'failed', error, attempts, finished_at: finishedAt }).eq('id', eventId)
+  return (only ? write.eq('status', only) : write.neq('status', 'cancelled')).select('id')
+}
+
+/**
  * Runs one event in the cloud: walks `jobPlan` with the registered jobs, re-planning after every job,
  * checks `postconditions`, records progress in `events.payload.progress` and `events.attempts`.
  * Before each job (and each retry) it re-reads `events.status`; cancelled or a missing school stops it before any write.
@@ -195,7 +221,7 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
     if (!ev || ev.status === 'cancelled' || !school) throw new Stopped()
   }
   const fail = async (error: string): Promise<RunResult> => {
-    await db.from('events').update({ status: 'failed', error, attempts, finished_at: now().toISOString() }).eq('id', eventId).neq('status', 'cancelled')
+    await endEventFailed(db, eventId, error, attempts, now().toISOString())
     return { status: 'failed' }
   }
 
@@ -433,4 +459,71 @@ export async function checkOperatorTimeouts(
     }
   }
   return moved
+}
+
+/**
+ * Jobs that stopped half way. A cloud event that is `running` has a run behind it that lives 15 minutes at most. When the event is
+ * older than `staleMs` and its job has logged no tool call in that time (a tool call is the sign of life of a job), the run is dead:
+ * the database was down when it tried to write its end, or Cloudflare ended the invocation. Nothing else would ever move the event,
+ * because the queue consumer only runs an event that is `queued`.
+ *
+ * - First and second time: one guarded update puts it back to `queued` with `payload.revived` one higher (the rest of the payload stays),
+ *   then `requeue` puts it on the queue. The job plan starts again from the top, as a transient retry does. There is no resume.
+ * - A job that was brought back twice and died again (`revived` is 2 or more) ends the way a failed job ends: `endEventFailed`,
+ *   with `STUCK_EVENT_ERROR`, so every screen sees what it sees for a job that failed for good.
+ *
+ * Events a laptop holds (`runner = desktop`, an operator runner or a user's Desktop) are left alone: they have their own checks.
+ * At most 20 events a run, oldest first. Never throws: a failure is logged as one line and the next minute tries again.
+ * Answers how many events it moved (put back on the queue, or ended failed).
+ */
+export async function checkStuckEvents(
+  db: JemmaDb,
+  requeue: (eventId: string) => Promise<void>,
+  now: Date = new Date(),
+  staleMs: number = STUCK_EVENT_MS,
+): Promise<number> {
+  let revivedCount = 0
+  let failedCount = 0
+  try {
+    const cutoff = new Date(now.getTime() - staleMs).toISOString()
+    const running = await ok(
+      db
+        .from('events')
+        .select('id, payload, attempts')
+        .eq('status', 'running')
+        .eq('runner', 'cloud')
+        .is('claimed_by', null)
+        .lte('created_at', cutoff)
+        .order('created_at')
+        .limit(STUCK_SCAN),
+    )
+    if (running.length === 0) return 0
+    const lively = await ok(db.from('tool_calls').select('event_id').in('event_id', running.map((e) => e.id)).gte('created_at', cutoff))
+    const alive = new Set(lively.map((t) => t.event_id))
+    for (const e of running.filter((r) => !alive.has(r.id)).slice(0, STUCK_PER_RUN)) {
+      const payload = (e.payload ?? {}) as Record<string, unknown>
+      const revived = typeof payload.revived === 'number' && Number.isFinite(payload.revived) ? payload.revived : 0
+      if (revived >= MAX_REVIVALS) {
+        const ended = await ok(endEventFailed(db, e.id, STUCK_EVENT_ERROR, e.attempts, now.toISOString(), 'running'))
+        if (ended.length) failedCount++
+        continue
+      }
+      const taken = await ok(
+        db.from('events').update({ status: 'queued', payload: { ...payload, revived: revived + 1 } as never }).eq('id', e.id).eq('status', 'running').select('id'),
+      )
+      if (taken.length === 0) continue // someone else moved it
+      try {
+        await requeue(e.id)
+      } catch (err) {
+        // The queue refused it: put the event back as it was, so the next run (a minute later) tries again.
+        await db.from('events').update({ status: 'running', payload: e.payload as never }).eq('id', e.id).eq('status', 'queued')
+        throw err
+      }
+      revivedCount++
+    }
+    if (revivedCount + failedCount > 0) console.log(`stuck jobs: put ${revivedCount} back on the queue, ended ${failedCount} as failed`)
+  } catch (err) {
+    console.error(`stuck jobs check failed: ${text(err)}`)
+  }
+  return revivedCount + failedCount
 }
