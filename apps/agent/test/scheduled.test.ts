@@ -4,7 +4,7 @@ import worker from '../src/index'
 import type { Env } from '../src/env'
 import { DEFAULT_SANDBOX_DAYS, MINUTE_CRON, SWEEP_CRON, runScheduled, sandboxDays, sweepDemoSandboxes, type ScheduledDeps } from '../src/scheduled'
 
-// The two crons: every minute the desktop and operator checks, once an hour (minute 17) the sweep of old demo sandboxes.
+// The two crons: every minute the desktop, operator and stuck-jobs checks, once an hour (minute 17) the sweep of old demo sandboxes.
 // No network and no database: the checks and the sweep are doubles, or `fetch` is.
 
 afterEach(() => vi.restoreAllMocks())
@@ -17,6 +17,7 @@ function doubles(over: Partial<ScheduledDeps> = {}) {
   const deps: ScheduledDeps = {
     checkDesktop: vi.fn(async () => (calls.push('desktop'), 0)),
     checkOperator: vi.fn(async () => (calls.push('operator'), 0)),
+    checkStuck: vi.fn(async () => (calls.push('stuck'), 0)),
     sweep: vi.fn(async () => (calls.push('sweep'), ['gone'])),
     admin: () => admin,
     ...over,
@@ -35,13 +36,23 @@ describe('the crons', () => {
     expect(SWEEP_CRON).toBe('17 * * * *')
   })
 
-  test('every minute: the desktop and operator checks run and no sweep does', async () => {
+  test('every minute: the desktop, operator and stuck-jobs checks run and no sweep does', async () => {
     const { deps, calls } = doubles()
     const { ctx, done } = context()
     await runScheduled(MINUTE_CRON, env(), ctx, deps)
     await done()
-    expect(calls.sort()).toEqual(['desktop', 'operator'])
+    expect(calls.sort()).toEqual(['desktop', 'operator', 'stuck'])
+    expect(deps.checkStuck).toHaveBeenCalledTimes(1)
+    expect(deps.checkStuck).toHaveBeenCalledWith(expect.objectContaining({ SUPABASE_URL: 'http://localhost:1' }))
     expect(deps.sweep).not.toHaveBeenCalled()
+  })
+
+  test('every minute: a stuck-jobs check that fails does not stop the other checks', async () => {
+    const { deps, calls } = doubles({ checkStuck: vi.fn(async () => Promise.reject(new Error('down'))) })
+    const { ctx, done } = context()
+    await expect(runScheduled(MINUTE_CRON, env(), ctx, deps)).resolves.toBeUndefined()
+    await done()
+    expect(calls.sort()).toEqual(['desktop', 'operator'])
   })
 
   test('once an hour: the sweep runs, with the default of 7 days, and the minute checks do not run again', async () => {
@@ -50,6 +61,7 @@ describe('the crons', () => {
     await runScheduled(SWEEP_CRON, env(), ctx, deps)
     await done()
     expect(calls).toEqual(['sweep'])
+    expect(deps.checkStuck).not.toHaveBeenCalled()
     expect(deps.sweep).toHaveBeenCalledWith(admin, { olderThanDays: DEFAULT_SANDBOX_DAYS })
     expect(DEFAULT_SANDBOX_DAYS).toBe(7)
   })
@@ -69,6 +81,7 @@ describe('the crons', () => {
       await done()
       expect(calls).toEqual([])
       expect(deps.sweep).not.toHaveBeenCalled()
+      expect(deps.checkStuck).not.toHaveBeenCalled()
     }
   })
 
@@ -83,7 +96,7 @@ describe('the crons', () => {
     const { ctx, done } = context()
     await runScheduled('*/5 * * * *', env(), ctx, deps)
     await done()
-    expect(calls.sort()).toEqual(['desktop', 'operator'])
+    expect(calls.sort()).toEqual(['desktop', 'operator', 'stuck'])
   })
 })
 

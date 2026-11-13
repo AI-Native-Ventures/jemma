@@ -17,14 +17,64 @@ export function isRetryableModelError(err: unknown): boolean {
   return /overloaded|temporarily|rate.?limit|too many requests|internal (server )?error|upstream error|timed? ?out|ECONNRESET|fetch failed/i.test(e?.message ?? '') || (e?.cause ? isRetryableModelError(e.cause) : false)
 }
 
-/** Retries a failed model call with backoff. Sits inside the replay layer, so only live calls are retried. */
-export function withModelRetry(sleep: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms)), waits = MODEL_RETRY_MS): LanguageModelMiddleware {
+/** One live model call that has not answered after this long ends with a timeout error. It is one try, not the sum of the retries. */
+export const MODEL_CALL_TIMEOUT_MS = 240_000
+
+/**
+ * A model call that did not answer in time. The message holds `timeout` and the status is 408, so `isRetryableModelError` and the
+ * orchestrator's `isTransient` both treat it as worth another try.
+ */
+export class ModelTimeoutError extends Error {
+  readonly statusCode = 408
+  constructor(ms: number) {
+    super(`Model call timeout: no answer after ${Math.round(ms / 1000)} seconds`)
+    this.name = 'ModelTimeoutError'
+  }
+}
+
+/**
+ * Runs one try with a time limit. `call` gets a signal that is aborted when the limit passes or when the caller's own signal
+ * (`parent`) is aborted, so a request that hangs is cancelled and does not sit on a connection. The caller's cancel is passed on
+ * as it is: it is not a timeout. The timer is always cleared.
+ */
+async function withTimeLimit<T>(ms: number, parent: AbortSignal | undefined, call: (signal: AbortSignal) => PromiseLike<T>): Promise<T> {
+  const controller = new AbortController()
+  const relay = () => controller.abort(parent?.reason)
+  if (parent?.aborted) relay()
+  else parent?.addEventListener('abort', relay, { once: true })
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const late = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      const err = new ModelTimeoutError(ms)
+      reject(err)
+      controller.abort(err)
+    }, ms)
+  })
+  try {
+    return await Promise.race([call(controller.signal), late])
+  } finally {
+    clearTimeout(timer)
+    parent?.removeEventListener('abort', relay)
+  }
+}
+
+/**
+ * Retries a failed model call with backoff, and gives each live try `timeoutMs` to answer (a free model that never answers would
+ * hold the whole run until Cloudflare ends it). Sits inside the replay layer, so only live calls are retried and timed: a recorded
+ * answer is never timed, and the replay layer sees the call as it was (the signal is added below it, and the key leaves it out anyway).
+ * Streams are left alone: nothing in Jemma streams, and this layer has never wrapped them.
+ */
+export function withModelRetry(
+  sleep: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms)),
+  waits = MODEL_RETRY_MS,
+  timeoutMs = MODEL_CALL_TIMEOUT_MS,
+): LanguageModelMiddleware {
   return {
     specificationVersion: 'v4',
-    wrapGenerate: async ({ doGenerate }) => {
+    wrapGenerate: async ({ model, params }) => {
       for (let i = 0; ; i++) {
         try {
-          return await doGenerate()
+          return await withTimeLimit(timeoutMs, params.abortSignal, (abortSignal) => model.doGenerate({ ...params, abortSignal }))
         } catch (err) {
           if (i >= waits.length || !isRetryableModelError(err)) throw err
           await sleep(waits[i]!)
