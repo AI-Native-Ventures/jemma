@@ -44,6 +44,8 @@ function fakeAdmin(boxes: Box[], opts: { activity?: Record<string, string>; fail
       delete: () => ((op = 'delete'), q),
       eq: (k: string, v: unknown) => ((eqs[k] = v), filters.push((r) => r[k] === v), q),
       in: (k: string, vs: unknown[]) => (filters.push((r) => vs.includes(r[k])), q),
+      // The teardown also reads the learners and staff of the school (tables this double leaves empty): `.not(col, 'is', null)`.
+      not: (k: string, _op: string, v: unknown) => (filters.push((r) => r[k] !== v), q),
       lt: (k: string, v: string) => (filters.push((r) => String(r[k]) < v), q),
       gt: (k: string, v: string) => (filters.push((r) => String(r[k]) > v), q),
       order: (col: string, o: { ascending: boolean }) => ((order = { col, asc: o.ascending }), q),

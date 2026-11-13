@@ -3,6 +3,10 @@
 export const SCHOOL = { name: 'Hillview Primary', country: 'ZA', region: 'Gauteng', grades: 'Grade R to 7' }
 export const CLASS = { name: '6B Mathematics', grade: 6, subject: 'Mathematics' }
 
+/** The empty school (a visitor who starts from nothing): no class, one teacher login. */
+export const EMPTY_SCHOOL = { name: 'My made-up school', country: 'ZA', region: 'Gauteng', grades: 'Grade 1 to 12' }
+export const EMPTY_TEACHER = { displayName: 'You', emailLocal: 'you' }
+
 export const CHILD_PIN = '1234'
 
 export const CAST = {

@@ -6,8 +6,9 @@ import { loadHistory } from '../../packages/profiling/src/tools/read/get-learner
 import { storedTerms } from '../../packages/profiling/src/tools/save/save-long-view'
 import { LessonSchema, ReteachSchema, GuidanceSchema, TopicMapDraftSchema, AnswerKeyItemSchema } from '../../packages/profiling/src/schemas'
 import { classTest1Results, classTest1Roster, classTest1Scores, classTest1ScoresBeforeFix, classTest1Wrong, siphoQ7BeforeFix } from './fixtures/class-test-1'
-import { AMINA_ACTIVITIES, AWAY_DAY_INDEX, CAST, CHILD_PIN, CLASS, NOTES, SCHOOL, lastSchoolDays } from './fixtures/cast'
+import { AMINA_ACTIVITIES, AWAY_DAY_INDEX, CAST, CHILD_PIN, EMPTY_SCHOOL, EMPTY_TEACHER, NOTES, SCHOOL, lastSchoolDays } from './fixtures/cast'
 import { FIXED_GAPS, FORMAT_FAMILY, FORMAT_TRIALS, TERM3_ROWS } from './fixtures/history'
+import { HILLVIEW_CLASSES, HILLVIEW_LINKS, awayOnDay, HILLVIEW_PARENTS, HILLVIEW_TEACHERS, madeUpClasses, madeUpLearner } from './fixtures/hillview'
 import { longHistory } from './fixtures/long-history'
 import { PATTERN_LEARNERS, wordPatterns } from './fixtures/long-view-wording'
 import {
@@ -19,13 +20,18 @@ import { readSandbox, teardown } from './teardown'
 
 export type SandboxStage = 'start' | 'marked' | 'session_done'
 
+/** `hillview`: the made-up school with three teachers, four Mathematics classes and 23 learners. `empty`: a school with no class and one teacher, for starting from nothing. */
+export type SandboxKind = 'hillview' | 'empty'
+
 export type Sandbox = {
   sandboxId: string
   schoolId: string
+  /** The home class (the oldest). Empty for a school with no class yet. */
   classId: string
   joinCode: string
   childLoginCode: string
   childPin: '1234'
+  kind: SandboxKind
 }
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -71,13 +77,77 @@ async function childPassword(code: string, pin: string): Promise<string> {
 
 const extOf = (path: string) => path.slice(path.lastIndexOf('.'))
 
-type Logins = Record<'teacher' | 'parent' | 'learner', { userId: string; email: string; password: string }> & {
-  learner: { code: string; pin: string }
+export type Login = { userId: string; email: string; password: string }
+
+/**
+ * The sign-ins a sandbox stores. `teacher` is Ms Banda (or "You" in an empty school), `parent` is Thandi M and `learner` is Amina: the
+ * three the demo page has always had. The other teachers and parents are made with the sandbox (`teachers`, `parents`, by key);
+ * a learner's login is made when someone picks that learner (`learners`, by first name).
+ */
+export type Logins = {
+  teacher: Login
+  parent?: Login
+  learner?: Login & { code: string; pin: string }
+  teachers?: Record<string, Login>
+  parents?: Record<string, Login>
+  learners?: Record<string, Login & { code: string; pin: string }>
+}
+
+const chunks = <T>(rows: T[], size: number): T[][] => Array.from({ length: Math.ceil(rows.length / size) }, (_, i) => rows.slice(i * size, (i + 1) * size))
+
+/** Several auth users at once. Waits for all of them, so a failure never leaves a user that was made after the clean-up ran. */
+async function makeUsers(admin: JemmaDb, created: { userIds: string[] }, wanted: { email: string; password: string }[]): Promise<Login[]> {
+  const settled = await Promise.allSettled(
+    wanted.map(async (w) => {
+      const r = await admin.auth.admin.createUser({ email: w.email, password: w.password, email_confirm: true })
+      if (r.error || !r.data.user) throw new Error(`demo seed: create user ${w.email}: ${r.error?.message}`)
+      created.userIds.push(r.data.user.id)
+      return { userId: r.data.user.id, email: w.email, password: w.password }
+    }),
+  )
+  const failed = settled.find((s) => s.status === 'rejected')
+  if (failed && failed.status === 'rejected') throw failed.reason
+  return settled.map((s) => (s as PromiseFulfilledResult<Login>).value)
+}
+
+/** Runs three steps side by side and waits for all of them, so a failure never leaves a step still writing when the clean-up runs. */
+async function together<A, B, C>(a: PromiseLike<A>, b: PromiseLike<B>, c: PromiseLike<C>): Promise<[A, B, C]> {
+  const settled = await Promise.allSettled([a, b, c])
+  const failed = settled.find((r) => r.status === 'rejected')
+  if (failed && failed.status === 'rejected') throw failed.reason
+  return settled.map((r) => (r as PromiseFulfilledResult<unknown>).value) as [A, B, C]
 }
 
 /** Builds one sandbox. Throws after cleaning up what it made. */
-async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage, loadSheet?: LoadSheet): Promise<Sandbox> {
+async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage, kind: SandboxKind, loadSheet?: LoadSheet): Promise<Sandbox> {
+  return kind === 'empty' ? buildEmpty(admin, sandboxId) : buildHillview(admin, sandboxId, stage, loadSheet)
+}
+
+/** An empty school: no class, no learner, one teacher called "You". The teacher makes the first class. */
+async function buildEmpty(admin: JemmaDb, sandboxId: string): Promise<Sandbox> {
+  const created: { schoolId: string | null; userIds: string[] } = { schoolId: null, userIds: [] }
+  try {
+    const school = await ok(
+      admin.from('schools').insert({ name: EMPTY_SCHOOL.name, country: EMPTY_SCHOOL.country, region: EMPTY_SCHOOL.region, grades: EMPTY_SCHOOL.grades, sandbox_id: sandboxId }).select('id').single(),
+      'school',
+    )
+    created.schoolId = school.id
+    const tag = randomHex(4)
+    const [teacher] = await makeUsers(admin, created, [{ email: `${EMPTY_TEACHER.emailLocal}.${tag}@demo.jemma.invalid`, password: randomHex(16) }])
+    await ok(admin.from('profiles').insert({ user_id: teacher!.userId, role: 'teacher', display_name: EMPTY_TEACHER.displayName, school_id: school.id }), 'profiles')
+    const logins: Logins = { teacher: teacher! }
+    await ok(admin.from('demo_sandboxes').insert({ id: sandboxId, school_id: school.id, logins: json(logins), stage: 'start', kind: 'empty' }), 'demo_sandboxes')
+    return { sandboxId, schoolId: school.id, classId: '', joinCode: '', childLoginCode: '', childPin: CHILD_PIN, kind: 'empty' }
+  } catch (e) {
+    await teardown(admin, created.schoolId, created.userIds).catch(() => undefined)
+    throw e
+  }
+}
+
+/** The made-up school Hillview Primary. */
+async function buildHillview(admin: JemmaDb, sandboxId: string, stage: SandboxStage, loadSheet?: LoadSheet): Promise<Sandbox> {
   const now = new Date()
+  const year = now.getUTCFullYear()
   const at = (minutesAgo: number) => new Date(now.getTime() - minutesAgo * MIN).toISOString()
   const dayIso = (daysAgo: number) => new Date(now.getTime() - daysAgo * DAY).toISOString()
   const created: { schoolId: string | null; userIds: string[] } = { schoolId: null, userIds: [] }
@@ -90,95 +160,126 @@ async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage, loa
     const schoolId = school.id
     created.schoolId = schoolId
 
-    // Auth users: teacher, parent, learner (Amina signs in with her code and PIN).
+    // Auth users: the three teachers, the four parents and Amina (she signs in with her code and PIN). Every other learner gets a login
+    // when someone picks that learner on the demo page.
     const tag = randomHex(4)
     const joinCode = randomCode()
     const childLoginCode = randomCode()
-    const mkUser = async (email: string, password: string) => {
-      const r = await admin.auth.admin.createUser({ email, password, email_confirm: true })
-      if (r.error || !r.data.user) throw new Error(`demo seed: create user ${email}: ${r.error?.message}`)
-      created.userIds.push(r.data.user.id)
-      return r.data.user.id
-    }
-    const teacherPassword = randomHex(16)
-    const parentPassword = randomHex(16)
     const learnerEmail = `${childLoginCode.toLowerCase()}@kids.jemma.invalid`
     const learnerPassword = await childPassword(childLoginCode, CHILD_PIN)
-    const teacherEmail = `${CAST.teacher.emailLocal}.${tag}@demo.jemma.invalid`
-    const parentEmail = `${CAST.parent.emailLocal}.${tag}@demo.jemma.invalid`
-    const [teacherId, parentId, learnerId] = await Promise.all([
-      mkUser(teacherEmail, teacherPassword),
-      mkUser(parentEmail, parentPassword),
-      mkUser(learnerEmail, learnerPassword),
+    const made = await makeUsers(admin, created, [
+      ...HILLVIEW_TEACHERS.map((t) => ({ email: `${t.emailLocal}.${tag}@demo.jemma.invalid`, password: randomHex(16) })),
+      ...HILLVIEW_PARENTS.map((p) => ({ email: `${p.emailLocal}.${tag}@demo.jemma.invalid`, password: randomHex(16) })),
+      { email: learnerEmail, password: learnerPassword },
     ])
-    await ok(
-      admin.from('profiles').insert([
-        { user_id: teacherId, role: 'teacher', display_name: CAST.teacher.displayName, school_id: schoolId },
-        { user_id: parentId, role: 'parent', display_name: CAST.parent.displayName, school_id: null },
-        { user_id: learnerId, role: 'learner', display_name: 'Amina', school_id: schoolId },
-      ]),
-      'profiles',
-    )
-
-    const cls = await ok(
-      admin
-        .from('classes')
-        .insert({
-          school_id: schoolId, teacher_id: teacherId, name: CLASS.name, grade: CLASS.grade,
-          year: now.getUTCFullYear(), subject: CLASS.subject, join_code: joinCode,
+    const teacherLogin = Object.fromEntries(HILLVIEW_TEACHERS.map((t, i) => [t.key, made[i]!])) as Record<string, Login>
+    const parentLogin = Object.fromEntries(HILLVIEW_PARENTS.map((p, i) => [p.key, made[HILLVIEW_TEACHERS.length + i]!])) as Record<string, Login>
+    const learnerLogin = made[made.length - 1]!
+    const teacherId = teacherLogin.banda!.userId
+    const parentId = parentLogin.thandi!.userId
+    const learnerId = learnerLogin.userId
+    // The learners: the five of 6B first (in the cast order), then the made-up learners of the other three classes.
+    const madeUp = madeUpClasses(year)
+    const linkedAt = (classKey: string, position: number) => HILLVIEW_LINKS.filter((l) => l.classKey === classKey && l.at === position)
+    const rows = [
+      ...CAST.children.map((name) => ({ name, classKey: '6b-maths', grade: 6, parent: name === 'Amina' ? { first: CAST.parent.firstName, relation: CAST.parent.relation } : null })),
+      ...madeUp.flatMap((m) => {
+        const c = HILLVIEW_CLASSES.find((x) => x.key === m.classKey)!
+        return m.batch.learners.map((l, position) => {
+          const link = linkedAt(m.classKey, position)[0]
+          const parent = link ? HILLVIEW_PARENTS.find((p) => p.key === link.parent)! : null
+          return { name: l.firstName, classKey: m.classKey as string, grade: c.grade, parent: parent ? { first: parent.displayName.split(' ')[0]!, relation: parent.relation } : null }
         })
-        .select('id')
-        .single(),
-      'class',
-    )
-    const classId = cls.id
-
-    const kids = await ok(
-      admin
-        .from('children')
-        .insert(
-          CAST.children.map((name, i) => ({
-            school_id: schoolId, first_name: name, grade: CLASS.grade,
-            // A bulk insert shares one timestamp; spread it so the class list keeps the cast order.
-            created_at: new Date(now.getTime() - (CAST.children.length - i) * 1000).toISOString(),
-            user_id: name === 'Amina' ? learnerId : null,
-            parent_first_name: name === 'Amina' ? CAST.parent.firstName : null,
-            parent_relation: name === 'Amina' ? CAST.parent.relation : null,
-          })),
-        )
-        .select('id, first_name'),
-      'children',
-    )
-    const childId = Object.fromEntries(kids.map((k) => [k.first_name.toLowerCase(), k.id])) as Record<string, string>
-    const aminaId = childId.amina!
-
+      }),
+    ]
     const logins: Logins = {
-      teacher: { userId: teacherId, email: teacherEmail, password: teacherPassword },
-      parent: { userId: parentId, email: parentEmail, password: parentPassword },
-      learner: { userId: learnerId, email: learnerEmail, password: learnerPassword, code: childLoginCode, pin: CHILD_PIN },
+      teacher: teacherLogin.banda!,
+      parent: parentLogin.thandi!,
+      learner: { ...learnerLogin, code: childLoginCode, pin: CHILD_PIN },
+      teachers: Object.fromEntries(HILLVIEW_TEACHERS.filter((t) => t.key !== 'banda').map((t) => [t.key, teacherLogin[t.key]!])),
+      parents: Object.fromEntries(HILLVIEW_PARENTS.filter((p) => p.key !== 'thandi').map((p) => [p.key, parentLogin[p.key]!])),
+      learners: {},
     }
-    await ok(
-      admin.from('demo_sandboxes').insert({ id: sandboxId, school_id: schoolId, logins: json(logins), stage }),
-      'demo_sandboxes',
+
+    // Three chains side by side, each waiting for the school and the users only: the staff profiles and then the classes, the children,
+    // and the sandbox row. Fewer round trips in a row keeps a copy quick when the database is slow.
+    const [classRows, kids] = await together(
+      (async () => {
+        await ok(
+          admin.from('profiles').insert([
+            ...HILLVIEW_TEACHERS.map((t) => ({ user_id: teacherLogin[t.key]!.userId, role: 'teacher' as const, display_name: t.displayName, school_id: schoolId })),
+            ...HILLVIEW_PARENTS.map((p) => ({ user_id: parentLogin[p.key]!.userId, role: 'parent' as const, display_name: p.displayName, school_id: null })),
+            { user_id: learnerId, role: 'learner' as const, display_name: 'Amina', school_id: schoolId },
+          ]),
+          'profiles',
+        )
+        // Four classes. 6B Mathematics is made first and keeps the oldest timestamp: it is the sandbox's home class.
+        return ok(
+          admin
+            .from('classes')
+            .insert(
+              HILLVIEW_CLASSES.map((c, i) => ({
+                school_id: schoolId, teacher_id: teacherLogin[c.teacher]!.userId, name: c.name, grade: c.grade, year, subject: c.subject,
+                join_code: i === 0 ? joinCode : randomCode(), created_at: new Date(now.getTime() - (HILLVIEW_CLASSES.length - i) * 1000).toISOString(),
+              })),
+            )
+            .select('id, name'),
+          'classes',
+        )
+      })(),
+      ok(
+        admin
+          .from('children')
+          .insert(
+            rows.map((r, i) => ({
+              school_id: schoolId, first_name: r.name, grade: r.grade,
+              // A bulk insert shares one timestamp; spread it so the class list keeps the cast order.
+              created_at: new Date(now.getTime() - (rows.length - i) * 1000).toISOString(),
+              user_id: r.name === 'Amina' ? learnerId : null,
+              parent_first_name: r.parent?.first ?? null,
+              parent_relation: r.parent?.relation ?? null,
+            })),
+          )
+          .select('id, first_name'),
+        'children',
+      ),
+      ok(admin.from('demo_sandboxes').insert({ id: sandboxId, school_id: schoolId, logins: json(logins), stage, kind: 'hillview' }), 'demo_sandboxes'),
     )
+    const classOf = Object.fromEntries(HILLVIEW_CLASSES.map((c) => [c.key, classRows.find((r) => r.name === c.name)!.id])) as Record<string, string>
+    const classId = classOf['6b-maths']!
+    const idOfName = Object.fromEntries(kids.map((k) => [k.first_name, k.id])) as Record<string, string>
+    const childId = Object.fromEntries(CAST.children.map((n) => [n.toLowerCase(), idOfName[n]!])) as Record<string, string>
+    const aminaId = childId.amina!
+    const five = CAST.children.map((n) => ({ id: idOfName[n]!, first_name: n }))
 
     // ---- Stage start ----
     const days = lastSchoolDays(now)
     const term3PaperAt = '2026-09-25T12:00:00.000Z'
+    // The five learners of 6B are in 6B Mathematics only, as they always were; each made-up learner is in their own class only.
+    const enrolments = [
+      ...five.map((k) => ({ class_id: classId, child_id: k.id })),
+      ...madeUp.flatMap((m) => m.batch.learners.map((l) => ({ class_id: classOf[m.classKey]!, child_id: idOfName[l.firstName]! }))),
+    ]
+    // Records: the five learners' Mathematics history (hand-built, unchanged) and the made-up learners' Mathematics history.
+    const records = [
+      ...longHistory(year, CAST.teacher.displayName).map(({ child, ...row }) => ({ ...row, school_id: schoolId, child_id: childId[child]! })),
+      ...madeUp.flatMap((m) => m.batch.learners.flatMap((l) => l.records.map((r) => ({ ...r, school_id: schoolId, child_id: idOfName[l.firstName]! })))),
+    ]
+    // A made-up learner is away on a few of the ten days, in a different place for each.
     const startWork = [
       ok(admin.from('child_logins').insert({ code: childLoginCode, child_id: aminaId, user_id: learnerId, pin_set_by: parentId }), 'child_logins'),
-      ok(admin.from('enrolments').insert(kids.map((k) => ({ class_id: classId, child_id: k.id }))), 'enrolments'),
-      ok(
-        admin.from('attendance').insert(
-          kids.flatMap((k) =>
-            days.map((day, i) => ({
-              child_id: k.id, day,
-              status: (AWAY_DAY_INDEX[k.first_name] ?? []).includes(i) ? ('away' as const) : ('here' as const),
-            })),
-          ),
+      ok(admin.from('enrolments').insert(enrolments), 'enrolments'),
+      ...chunks(
+        kids.flatMap((k) =>
+          days.map((day, i) => ({
+            child_id: k.id, day,
+            status: (CAST.children as readonly string[]).includes(k.first_name)
+              ? (AWAY_DAY_INDEX[k.first_name] ?? []).includes(i) ? ('away' as const) : ('here' as const)
+              : awayOnDay(k.first_name, i) ? ('away' as const) : ('here' as const),
+          })),
         ),
-        'attendance',
-      ),
+        500,
+      ).map((part) => ok(admin.from('attendance').insert(part), 'attendance')),
       ok(
         admin.from('observations').insert(
           NOTES.map((n) => ({ child_id: aminaId, author_id: teacherId, kind: n.kind, text: n.text, created_at: dayIso(n.daysAgo) })),
@@ -229,12 +330,17 @@ async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage, loa
           'term 3 results',
         )
       })(),
-      // The Long view: three school years of made-up records, in their own table (every stage has them).
+      // The Long view: three school years of made-up records in their own table (every stage has them), a few hundred rows at a time.
+      ...chunks(records, 500).map((part) => ok(admin.from('learner_records').insert(part), 'learner_records')),
+      // The parents of made-up learners are linked from the start. Thandi M and Amina link in the demo path.
       ok(
-        admin.from('learner_records').insert(
-          longHistory(now.getUTCFullYear(), CAST.teacher.displayName).map(({ child, ...row }) => ({ ...row, school_id: schoolId, child_id: childId[child]! })),
+        admin.from('parent_links').insert(
+          HILLVIEW_LINKS.map((l) => ({
+            parent_id: parentLogin[l.parent]!.userId, child_id: idOfName[madeUpLearner(madeUp, l.classKey, l.at)!.firstName]!, class_id: classOf[l.classKey]!,
+            status: 'approved' as const, consent: { guardian: true, teach: true, improve: false }, decided_at: at(120),
+          })),
         ),
-        'learner_records',
+        'parent links',
       ),
       ensureSampleFiles(admin, { loadSheet }),
     ]
@@ -244,7 +350,7 @@ async function build(admin: JemmaDb, sandboxId: string, stage: SandboxStage, loa
       await buildMarked({ admin, now, at, schoolId, classId, teacherId, parentId, childId, aminaId, withSession: stage === 'session_done' })
     }
 
-    return { sandboxId, schoolId, classId, joinCode, childLoginCode, childPin: CHILD_PIN }
+    return { sandboxId, schoolId, classId, joinCode, childLoginCode, childPin: CHILD_PIN, kind: 'hillview' }
   } catch (e) {
     await teardown(admin, created.schoolId, created.userIds).catch(() => undefined)
     throw e
@@ -609,15 +715,15 @@ async function seedLongView(c: MarkedCtx): Promise<void> {
  * Makes a new sandbox at `opts.stage` (default `start`). `opts.loadSheet` gives the sample test sheets to a runtime that has
  * no files on disk (a Worker): see `ensureSampleFiles`.
  */
-export async function createSandbox(admin: JemmaDb, opts: { stage?: SandboxStage; loadSheet?: LoadSheet } = {}): Promise<Sandbox> {
-  return build(admin, crypto.randomUUID(), opts.stage ?? 'start', opts.loadSheet)
+export async function createSandbox(admin: JemmaDb, opts: { stage?: SandboxStage; kind?: SandboxKind; loadSheet?: LoadSheet } = {}): Promise<Sandbox> {
+  return build(admin, crypto.randomUUID(), opts.stage ?? 'start', opts.kind ?? 'hillview', opts.loadSheet)
 }
 
-/** Throws the sandbox's school and users away and builds it again, same sandbox id, at the stage it was made with. */
+/** Throws the sandbox's school and users away and builds it again, same sandbox id, at the stage and of the kind it was made with. */
 export async function resetSandbox(admin: JemmaDb, sandboxId: string, opts: { loadSheet?: LoadSheet } = {}): Promise<void> {
   const old = await readSandbox(admin, sandboxId)
   await teardown(admin, old.schoolId, old.userIds)
-  await build(admin, sandboxId, (old.stage as SandboxStage) ?? 'start', opts.loadSheet)
+  await build(admin, sandboxId, (old.stage as SandboxStage) ?? 'start', old.kind, opts.loadSheet)
 }
 
 // Taking a sandbox away, and the sweep of old ones, live in teardown.ts so the agent worker can use them without the fixtures.

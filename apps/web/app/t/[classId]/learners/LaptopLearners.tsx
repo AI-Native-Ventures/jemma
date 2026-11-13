@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 import type { ChildProfileView, LearnerView, LearnersView, TopicMark } from '@/lib/data/p19'
 import type { LearnerDetailExtras } from '@/lib/data/p33'
 
@@ -247,10 +248,12 @@ export function LaptopLearners({
   classId,
   selected,
   detail,
+  madeUp,
 }: {
   v: LearnersView
   classId: string
   selected: string
+  madeUp?: ReactNode
   detail: { view: LearnerView; profile: ChildProfileView; extras: LearnerDetailExtras } | null
 }) {
   const base = `/t/${classId}`
@@ -274,6 +277,8 @@ export function LaptopLearners({
             </Link>
           </div>
         </div>
+
+        {madeUp}
 
         <div className="flex flex-wrap items-start gap-5">
           <section aria-labelledby="list" className="flex min-w-0 flex-[0_1_340px] flex-col gap-1.5 rounded-20 border border-line bg-card px-3 py-4">
