@@ -197,6 +197,11 @@ test.describe('a read that failed says so', () => {
     await page.goto(`/t/${sb.classId}`)
     await check(page.getByText('Jemma could not read this photo').first()).toBeVisible()
     await proof(page, 'class-needs-you')
+
+    // the item opens the papers screen of the test, where the retake button is (it was a 404 before)
+    await page.getByText('Jemma could not read this photo').first().click()
+    await expect(page).toHaveURL(new RegExp(`/t/${sb.classId}/snap/${snapTest.id}/papers$`), { timeout: 45_000 })
+    await check(page.locator('label[aria-label="Retake paper 6"]')).toBeVisible()
   })
 
   test("(iii) a parent's homework photo whose read failed shows the Check the photo screen", async ({ page }, testInfo) => {
