@@ -99,8 +99,8 @@ function jpegSize(bytes: Buffer): { width: number; height: number } {
 
 /**
  * A phone photo as the camera gives it: 4000 x 3000, a paper-coloured gradient, some written text and a little sensor noise, written as
- * a JPEG at quality 0.95. Drawn in a browser page of its own (headless), because Node has no canvas. It came out at about 3.4 MB on
- * 13 Nov 2026 (the test below says so if it ever comes out under 2 MB).
+ * a JPEG at quality 0.95. Drawn in a browser page of its own (headless), because Node has no canvas. It came out at about 4.6 MB on
+ * 13 Nov 2026 (the first test says its size, and fails if it ever comes out under 2 MB).
  */
 async function buildBigPhoto(browser: Browser): Promise<Buffer> {
   const page = await browser.newPage()
