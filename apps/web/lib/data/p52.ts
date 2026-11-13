@@ -308,6 +308,17 @@ function updateOf(events: LongViewInput['events'], patterns: PatternRow[], now: 
   }
 }
 
+/**
+ * The block under the grid when the learner has no pattern in the subject on the screen. While Jemma is still looking across the terms it says so,
+ * so "Too early to tell" is never shown beside a search that is running. In every other state (idle, failed) it is "Too early to tell".
+ * Null when there is a pattern to show.
+ */
+export function noPatternBlock(v: { subjectPatternCount: number; update: Pick<LvUpdate, 'state'> }): { title: string; body: string } | null {
+  if (v.subjectPatternCount > 0) return null
+  if (v.update.state === 'running') return { title: 'Jemma is looking across the terms.', body: 'Patterns show here in a minute or two.' }
+  return { title: 'Too early to tell', body: 'A pattern needs 3 terms of clear results.' }
+}
+
 const patternSubject = (p: Pick<PatternRow, 'subject'>) => (p.subject?.trim() ? canonicalSubject(p.subject) : DEFAULT_SUBJECT)
 
 /** Builds everything the screen shows from rows already read. No database, no clock but `now`. */

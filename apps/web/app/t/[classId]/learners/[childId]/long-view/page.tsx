@@ -4,7 +4,7 @@ import type { CSSProperties } from 'react'
 import { EmptyState } from '@/components/blocks'
 import { Card } from '@/components/ui'
 import { requireRole } from '@/lib/auth'
-import { getLongView, subjectLinkOf, type DotLevel, type LongView, type LvPattern } from '@/lib/data/p52'
+import { getLongView, noPatternBlock, subjectLinkOf, type DotLevel, type LongView, type LvPattern } from '@/lib/data/p52'
 import { BackHeader } from '../../../tests/back-header'
 import { PatternCard, SetAside } from './PatternCard'
 import { OpenUpdate, UpdateBar } from './UpdateBar'
@@ -243,6 +243,7 @@ export default async function LongViewPage({
   const { setAside } = v.groups
   const base = `/t/${classId}`
   const many = v.subjects.length > 1
+  const empty = noPatternBlock(v)
 
   return (
     <div className="leading-[normal] lg:max-w-[1100px]">
@@ -255,7 +256,7 @@ export default async function LongViewPage({
 
         <Grid v={v} />
 
-        {v.subjectPatternCount === 0 ? <EmptyState title="Too early to tell" body="A pattern needs 3 terms of clear results." /> : null}
+        {empty ? <EmptyState title={empty.title} body={empty.body} /> : null}
 
         {v.bySubject.length > 0 ? (
           <section aria-labelledby="lv-patterns" className="flex flex-col gap-3">

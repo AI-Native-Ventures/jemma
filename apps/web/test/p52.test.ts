@@ -7,6 +7,7 @@ import {
   inQuestionOrder,
   levelOf,
   linesFor,
+  noPatternBlock,
   pillText,
   strandName,
   subjectLinkOf,
@@ -464,6 +465,24 @@ describe('the update line', () => {
   it('does not wait for ever on an update that nobody picked up', () => {
     expect(buildLongView(input({ events: [ev('queued', 40)] })).update.state).toBe('failed')
     expect(buildLongView(input({ events: [ev('running', 20)] })).update.state).toBe('failed')
+  })
+
+  it('with no pattern, the empty block says Jemma is still looking while an update is running, and "Too early to tell" in every other state', () => {
+    const looking = { title: 'Jemma is looking across the terms.', body: 'Patterns show here in a minute or two.' }
+    const early = { title: 'Too early to tell', body: 'A pattern needs 3 terms of clear results.' }
+    // through the real screen data: no pattern row, an update in each state
+    expect(noPatternBlock(buildLongView(input({ events: [ev('running', 1)] })))).toEqual(looking)
+    expect(noPatternBlock(buildLongView(input({ events: [ev('queued', 2)] })))).toEqual(looking)
+    expect(noPatternBlock(buildLongView(input({ events: [] })))).toEqual(early)
+    expect(noPatternBlock(buildLongView(input({ events: [ev('done', 90, true)] })))).toEqual(early)
+    expect(noPatternBlock(buildLongView(input({ events: [ev('failed', 5)] })))).toEqual(early)
+    expect(noPatternBlock(buildLongView(input({ events: [ev('queued', 40)] })))).toEqual(early)
+  })
+
+  it('with a pattern in the subject there is no empty block, whatever the update is doing', () => {
+    expect(noPatternBlock(buildLongView(input({ events: [ev('running', 1)], patterns: [pattern()] })))).toBeNull()
+    expect(noPatternBlock({ subjectPatternCount: 1, update: { state: 'idle' } })).toBeNull()
+    expect(noPatternBlock({ subjectPatternCount: 0, update: { state: 'failed' } })?.title).toBe('Too early to tell')
   })
 
   it('asks for an update on open only with no pattern rows and no update in the last 10 minutes', () => {
