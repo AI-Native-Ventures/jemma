@@ -25,7 +25,7 @@ describe('ready', () => {
     render(<PracticeCard state="ready" />)
     expect(screen.getAllByRole('button')).toHaveLength(1)
     expect(screen.getByRole('button', { name: 'Practise now' })).toBeTruthy()
-    expect(screen.getByText('Jemma writes a short practice for you. It takes about a minute.')).toBeTruthy()
+    expect(screen.getByText('Jemma writes a short practice for you. It takes a minute or two.')).toBeTruthy()
   })
 
   it('a tap asks for a practice, shows it is working, and then asks the screen to refresh', async () => {
@@ -55,7 +55,7 @@ describe('writing', () => {
     vi.useFakeTimers()
     render(<PracticeCard state="writing" />)
     expect(screen.getByRole('heading', { name: 'Jemma is writing your practice.' })).toBeTruthy()
-    expect(screen.getByText('About a minute. You can wait here.')).toBeTruthy()
+    expect(screen.getByText('A minute or two. You can wait here.')).toBeTruthy()
     expect(screen.queryAllByRole('button')).toHaveLength(0)
     expect(refresh).not.toHaveBeenCalled()
     vi.advanceTimersByTime(2900)

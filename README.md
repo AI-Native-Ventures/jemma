@@ -55,7 +55,7 @@ Open `/demo` (on your machine, or on the live demo). Pick **Ms Banda** (teacher)
 
 1. **Approve the topic map.** Jemma drafts it from the sample curriculum. The teacher approves it.
 2. **Snap the memo and five papers.** Jemma reads each photo and code marks it. Anything unsure goes to Needs you. The results stay hidden from the family until the teacher taps **Share with parents**.
-3. **Link a parent and run a lesson.** Thandi links Amina with the class code and the teacher says yes. Amina runs tonight's session and never sees a score. When nothing is planned for her, her home offers **Practise now**: Jemma writes a short practice in about a minute, and it opens like any other session.
+3. **Link a parent and run a lesson.** Thandi links Amina with the class code and the teacher says yes. Amina runs tonight's session and never sees a score. When nothing is planned for her, her home offers **Practise now**: Jemma writes a short practice in a minute or two, and it opens like any other session.
 4. **Open the Long view.** As Ms Banda, open Amina's Long view: her marks by strand across school years, and the patterns found in them. Open one source, tap **Looks right**, then **We have talked**. Thandi now sees it on Amina's profile. Amina sees nothing.
 5. **Read the full log.** On the class home, "See the full log" lists every tool call with what went in and what came out, and every approval with the name of the person who gave it.
 

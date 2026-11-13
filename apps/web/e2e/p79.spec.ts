@@ -74,14 +74,14 @@ test.describe('a learner can always practise', () => {
     await expect(page.getByText('Jemma is getting your next lesson ready.')).toHaveCount(0)
     await expect(page.getByText('Keep a fixed gap fixed')).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Practise now' })).toBeVisible()
-    await expect(page.getByText('Jemma writes a short practice for you. It takes about a minute.')).toBeVisible()
+    await expect(page.getByText('Jemma writes a short practice for you. It takes a minute or two.')).toBeVisible()
     await expect(page.getByText("You've fixed 3 gaps so far")).toBeVisible()
     await proof(page, 'practise-now')
 
     // the tap: one event, queued (the stand-in answers 202), and the home says Jemma is writing
     await page.getByRole('button', { name: 'Practise now' }).click()
     await check(page.getByText('Jemma is writing your practice.')).toBeVisible()
-    await expect(page.getByText('About a minute. You can wait here.')).toBeVisible()
+    await expect(page.getByText('A minute or two. You can wait here.')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Practise now' })).toHaveCount(0)
     const events = await practiceEvents(sb.childId)
     expect(events).toHaveLength(1)
