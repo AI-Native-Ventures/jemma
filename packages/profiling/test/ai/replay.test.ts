@@ -1,6 +1,6 @@
 import { MockLanguageModelV4 } from 'ai/test'
 import { wrapLanguageModel } from 'ai'
-import { expect, test } from 'vitest'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import { MemoryStore, ReplayMissError, SupabaseReplayStore, replayKey, withReplay } from '../../src/ai'
 
 const result = (text: string) =>
@@ -113,4 +113,192 @@ test('two sandboxes with the same inputs hit the same replay key', async () => {
   expect(await replayKey('m1', a)).toBe(await replayKey('m1', b))
   // Different content still gives a different key.
   expect(await replayKey('m1', params('Learner x wrote 3/9'))).not.toBe(await replayKey('m1', params('Learner x wrote 2/6')))
+})
+
+// ---- P75: a recorded answer never holds the request, and in cache mode the store can never fail a call ----
+
+afterEach(() => vi.restoreAllMocks())
+
+/** What a provider hands back with its answer: the raw request body, which holds the file when the call carried one. */
+const BIG_REQUEST = { body: { contents: [{ inlineData: { data: 'A'.repeat(5000) } }] } }
+const withRequest = () => ({ ...(result('hi') as object), request: BIG_REQUEST, response: { id: 'r1', headers: { a: 'b' } } }) as never
+
+/** A store that remembers what was put, and can be made to fail. */
+class SpyStore extends MemoryStore {
+  puts: unknown[] = []
+  constructor(private fail: { get?: boolean; put?: boolean } = {}) {
+    super()
+  }
+  async get(key: string) {
+    if (this.fail.get) throw new Error('ai_replays read failed: boom')
+    return super.get(key)
+  }
+  async put(key: string, model: string, value: unknown) {
+    if (this.fail.put) throw new Error('ai_replays write failed: canceling statement due to statement timeout')
+    this.puts.push(value)
+    return super.put(key, model, value)
+  }
+}
+
+const streamOf = (parts: unknown[]) =>
+  new ReadableStream({
+    start(c) {
+      for (const part of parts) c.enqueue(part)
+      c.close()
+    },
+  })
+
+const CHUNKS = [
+  { type: 'stream-start', warnings: [] },
+  { type: 'text-start', id: 't1' },
+  { type: 'text-delta', id: 't1', delta: 'hi' },
+  { type: 'text-end', id: 't1' },
+  { type: 'finish', finishReason: { unified: 'stop', raw: 'stop' }, usage: { inputTokens: { total: 1, noCache: 1, cacheRead: 0, cacheWrite: 0 }, outputTokens: { total: 1, text: 1, reasoning: 0 } } },
+]
+
+function streamSetup(mode: 'live' | 'record' | 'replay' | 'cache', store: MemoryStore) {
+  const mock = new MockLanguageModelV4({
+    modelId: 'm1',
+    doStream: async () => ({ stream: streamOf(CHUNKS), request: BIG_REQUEST, response: { id: 'r1' } }) as never,
+  })
+  return { mock, model: wrapLanguageModel({ model: mock, middleware: withReplay(store, mode) }) }
+}
+
+async function drain(stream: ReadableStream<unknown>): Promise<unknown[]> {
+  const out: unknown[] = []
+  const reader = stream.getReader()
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) return out
+    out.push(value)
+  }
+}
+
+describe('a recorded answer never holds the request', () => {
+  test('generate: the stored value has no request, the caller still gets the whole result', async () => {
+    const store = new SpyStore()
+    const mock = new MockLanguageModelV4({ modelId: 'm1', doGenerate: withRequest() })
+    const model = wrapLanguageModel({ model: mock, middleware: withReplay(store, 'record') })
+    const out = await model.doGenerate(params('q'))
+    expect(out.request).toEqual(BIG_REQUEST)
+    expect(store.puts).toHaveLength(1)
+    const stored = store.puts[0] as Record<string, unknown>
+    expect('request' in stored).toBe(false)
+    // everything else of the shape stays
+    expect(Object.keys(stored).sort()).toEqual(['content', 'finishReason', 'response', 'usage', 'warnings'])
+    expect(JSON.stringify(stored)).not.toContain('AAAAA')
+  })
+
+  test('stream: the stored rest has no request, the caller still gets the whole rest', async () => {
+    const store = new SpyStore()
+    const { model } = streamSetup('record', store)
+    const out = await model.doStream(params('q'))
+    expect(out.request).toEqual(BIG_REQUEST)
+    await drain(out.stream)
+    expect(store.puts).toHaveLength(1)
+    const stored = store.puts[0] as { chunks: unknown[]; rest: Record<string, unknown> }
+    expect(stored.chunks).toEqual(CHUNKS)
+    expect('request' in stored.rest).toBe(false)
+    expect(stored.rest.response).toEqual({ id: 'r1' })
+    expect(JSON.stringify(stored)).not.toContain('AAAAA')
+  })
+
+  test('the key does not change: an answer recorded now is found by the same call', async () => {
+    const store = new SpyStore()
+    const mock = new MockLanguageModelV4({ modelId: 'm1', doGenerate: withRequest() })
+    await wrapLanguageModel({ model: mock, middleware: withReplay(store, 'record') }).doGenerate(params('q'))
+    const rep = new MockLanguageModelV4({ modelId: 'm1', doGenerate: result('never') })
+    const out = await wrapLanguageModel({ model: rep, middleware: withReplay(store, 'replay') }).doGenerate(params('q'))
+    expect(rep.doGenerateCalls).toHaveLength(0)
+    expect(out.content).toEqual([{ type: 'text', text: 'hi' }])
+  })
+
+  test('a row recorded before, which still holds the request, replays exactly as it did (generate and stream)', async () => {
+    const store = new MemoryStore()
+    const legacy = withRequest() as Record<string, unknown>
+    await store.put(await replayKey('m1', params('q')), 'm1', legacy)
+    const rep = new MockLanguageModelV4({ modelId: 'm1', doGenerate: result('never') })
+    const out = await wrapLanguageModel({ model: rep, middleware: withReplay(store, 'replay') }).doGenerate(params('q'))
+    expect(rep.doGenerateCalls).toHaveLength(0)
+    expect(out).toEqual(legacy)
+
+    const legacyStream = { chunks: CHUNKS, rest: { request: BIG_REQUEST, response: { id: 'r1' } } }
+    await store.put(await replayKey('m1:stream', params('s')), 'm1', legacyStream)
+    const { model, mock } = streamSetup('replay', store)
+    const streamed = await model.doStream(params('s'))
+    expect(mock.doStreamCalls).toHaveLength(0)
+    expect(streamed.request).toEqual(BIG_REQUEST)
+    expect(await drain(streamed.stream)).toEqual(CHUNKS)
+  })
+})
+
+describe('in cache mode the store can never fail a call', () => {
+  test('put throws: the result comes back, the model was called once, one line says what happened', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const mock = new MockLanguageModelV4({ modelId: 'm1', doGenerate: withRequest() })
+    const model = wrapLanguageModel({ model: mock, middleware: withReplay(new SpyStore({ put: true }), 'cache') })
+    const out = await model.doGenerate(params('q'))
+    expect(out.content).toEqual([{ type: 'text', text: 'hi' }])
+    expect(out.request).toEqual(BIG_REQUEST)
+    expect(mock.doGenerateCalls).toHaveLength(1)
+    expect(log).toHaveBeenCalledTimes(1)
+    expect(log).toHaveBeenCalledWith('recorded answer not saved, the answer is used: ai_replays write failed: canceling statement due to statement timeout')
+  })
+
+  test('get throws: the model is asked, the answer comes back, one line says what happened', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const store = new SpyStore({ get: true })
+    const mock = new MockLanguageModelV4({ modelId: 'm1', doGenerate: result('fresh') })
+    const model = wrapLanguageModel({ model: mock, middleware: withReplay(store, 'cache') })
+    const out = await model.doGenerate(params('q'))
+    expect(out.content).toEqual([{ type: 'text', text: 'fresh' }])
+    expect(mock.doGenerateCalls).toHaveLength(1)
+    expect(log).toHaveBeenCalledWith('recorded answer not read, the model is asked: ai_replays read failed: boom')
+    // the answer is still stored after a failed read
+    expect(store.puts).toHaveLength(1)
+  })
+
+  test('stream: put throws in flush and the stream still ends well; get throws and the model is asked', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const a = streamSetup('cache', new SpyStore({ put: true }))
+    const out = await a.model.doStream(params('q'))
+    expect(await drain(out.stream)).toEqual(CHUNKS)
+    expect(a.mock.doStreamCalls).toHaveLength(1)
+    expect(log).toHaveBeenCalledWith('recorded answer not saved, the answer is used: ai_replays write failed: canceling statement due to statement timeout')
+
+    log.mockClear()
+    const b = streamSetup('cache', new SpyStore({ get: true }))
+    const again = await b.model.doStream(params('q'))
+    expect(await drain(again.stream)).toEqual(CHUNKS)
+    expect(b.mock.doStreamCalls).toHaveLength(1)
+    expect(log).toHaveBeenCalledWith('recorded answer not read, the model is asked: ai_replays read failed: boom')
+  })
+
+  test('record: a failed put still throws, so a recording run never loses an answer silently', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const mock = new MockLanguageModelV4({ modelId: 'm1', doGenerate: result('hi') })
+    const model = wrapLanguageModel({ model: mock, middleware: withReplay(new SpyStore({ put: true }), 'record') })
+    await expect(model.doGenerate(params('q'))).rejects.toThrow(/ai_replays write failed/)
+    expect(log).not.toHaveBeenCalled()
+    // the stream in record mode too
+    const { model: streamModel } = streamSetup('record', new SpyStore({ put: true }))
+    const out = await streamModel.doStream(params('q'))
+    await expect(drain(out.stream)).rejects.toThrow(/ai_replays write failed/)
+  })
+
+  test('replay: a failed get still throws', async () => {
+    const mock = new MockLanguageModelV4({ modelId: 'm1', doGenerate: result('hi') })
+    const model = wrapLanguageModel({ model: mock, middleware: withReplay(new SpyStore({ get: true }), 'replay') })
+    await expect(model.doGenerate(params('q'))).rejects.toThrow(/ai_replays read failed/)
+    expect(mock.doGenerateCalls).toHaveLength(0)
+    const { model: streamModel } = streamSetup('replay', new SpyStore({ get: true }))
+    await expect(streamModel.doStream(params('q'))).rejects.toThrow(/ai_replays read failed/)
+  })
+
+  test('live: the store is never used', async () => {
+    const store = new SpyStore({ get: true, put: true })
+    const mock = new MockLanguageModelV4({ modelId: 'm1', doGenerate: result('hi') })
+    const out = await wrapLanguageModel({ model: mock, middleware: withReplay(store, 'live') }).doGenerate(params('q'))
+    expect(out.content).toEqual([{ type: 'text', text: 'hi' }])
+  })
 })

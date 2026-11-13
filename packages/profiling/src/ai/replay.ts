@@ -69,6 +69,45 @@ function hintOf(model: string, params: unknown): string {
   return `${model}: ${text.slice(0, 80)} ... ${text.slice(-60)}`
 }
 
+const reason = (e: unknown) => (e instanceof Error ? e.message : String(e))
+
+/**
+ * Reads a recorded answer. In `cache` mode a store that fails is a miss, not an error: the judges' runs must never lose a
+ * model call to a database that is slow. `replay` has nothing else to answer with, so its failure stays one.
+ */
+async function readAnswer(store: ReplayStore, key: string, mode: AiMode): Promise<unknown | null> {
+  if (mode !== 'cache') return store.get(key)
+  try {
+    return await store.get(key)
+  } catch (e) {
+    console.error(`recorded answer not read, the model is asked: ${reason(e)}`)
+    return null
+  }
+}
+
+/**
+ * Stores an answer. In `cache` mode a failed save is logged and the answer is used anyway. In `record` mode it still throws:
+ * a recording run must never lose an answer silently.
+ */
+async function saveAnswer(store: ReplayStore, key: string, model: string, value: unknown, mode: AiMode): Promise<void> {
+  if (mode !== 'cache') return store.put(key, model, value)
+  try {
+    await store.put(key, model, value)
+  } catch (e) {
+    console.error(`recorded answer not saved, the answer is used: ${reason(e)}`)
+  }
+}
+
+/**
+ * A recorded answer holds the model's answer and not the request that was sent: the request carries the whole file in base64, a
+ * row of several MB that the database refuses in time. The key is made from the params, so it does not change. Rows recorded
+ * before this still hold `request`, and replay returns them as they are.
+ */
+function withoutRequest<T extends object>(value: T): Omit<T, 'request'> {
+  const { request: _request, ...answer } = value as T & { request?: unknown }
+  return answer
+}
+
 export function withReplay(store: ReplayStore, mode: AiMode): LanguageModelMiddleware {
   if (mode === 'live') return { specificationVersion: 'v4' }
   return {
@@ -76,17 +115,17 @@ export function withReplay(store: ReplayStore, mode: AiMode): LanguageModelMiddl
     wrapGenerate: async ({ doGenerate, params, model }) => {
       const { key, ids } = await prepare(model.modelId, params)
       if (mode === 'replay' || mode === 'cache') {
-        const hit = await store.get(key)
+        const hit = await readAnswer(store, key, mode)
         if (hit !== null) return detokenize(hit, ids) as Awaited<ReturnType<typeof doGenerate>>
         if (mode === 'replay') throw new ReplayMissError(key, hintOf(model.modelId, params))
       }
       const result = await doGenerate()
-      await store.put(key, model.modelId, tokenize(result, ids))
+      await saveAnswer(store, key, model.modelId, tokenize(withoutRequest(result), ids), mode)
       return result
     },
     wrapStream: async ({ doStream, params, model }) => {
       const { key, ids } = await prepare(`${model.modelId}:stream`, params)
-      const stored = mode === 'replay' || mode === 'cache' ? await store.get(key) : null
+      const stored = mode === 'replay' || mode === 'cache' ? await readAnswer(store, key, mode) : null
       if (stored === null && mode === 'replay') throw new ReplayMissError(key, hintOf(model.modelId, params))
       if (stored !== null) {
         const hit = detokenize(stored, ids) as { chunks: StreamPart[]; rest: object }
@@ -108,7 +147,7 @@ export function withReplay(store: ReplayStore, mode: AiMode): LanguageModelMiddl
           c.enqueue(chunk)
         },
         async flush() {
-          await store.put(key, model.modelId, tokenize({ chunks, rest }, ids))
+          await saveAnswer(store, key, model.modelId, tokenize({ chunks, rest: withoutRequest(rest) }, ids), mode)
         },
       })
       return { ...rest, stream: stream.pipeThrough(tee) }
