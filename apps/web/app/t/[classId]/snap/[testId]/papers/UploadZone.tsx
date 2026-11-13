@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useState, useTransition } from 'react'
+import { shrinkPhoto } from '@/lib/shrink-photo'
 import { postFiles } from '@/lib/upload-client'
 import type { ActionResult } from '../../actions'
 
@@ -31,7 +32,7 @@ export function UploadZone({ classId, testId }: { classId: string; testId: strin
     setError(null)
     start(async () => {
       const form = new FormData()
-      for (const f of files) form.append('files', f)
+      for (const f of files) form.append('files', await shrinkPhoto(f))
       try {
         const res = await postFiles<ActionResult<{ count: number }>>('t', 'uploadScans', [classId, testId], form)
         if (!res.ok) setError(res.message)

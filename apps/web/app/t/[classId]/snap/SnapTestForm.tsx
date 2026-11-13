@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { CameraIcon } from '@/components/ui/icons'
 import type { ClassTopic, TestRow } from '@/lib/data/p31'
+import { shrinkPhoto } from '@/lib/shrink-photo'
 import { postFiles } from '@/lib/upload-client'
 import { createTest, draftKey, type ActionResult } from './actions'
 import { PageTitle } from './_parts'
@@ -80,7 +81,7 @@ export function SnapTestForm({
       const testId = await make()
       if (!testId) return
       const form = new FormData()
-      form.set('file', file)
+      form.set('file', await shrinkPhoto(file))
       try {
         const up = await postFiles<ActionResult>('t', 'uploadMemo', [classId, testId], form)
         if (!up.ok) return setError(up.message)
