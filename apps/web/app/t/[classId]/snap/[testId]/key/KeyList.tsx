@@ -4,6 +4,7 @@ import { PendingButton } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import type { AnswerKeyItem } from '@jemma/profiling/schemas'
+import { shrinkPhoto } from '@/lib/shrink-photo'
 import { postFiles } from '@/lib/upload-client'
 import { approveKey, confirmKeyItem, type ActionResult } from '../../actions'
 import { Diamond, KeyFraction, PageTitle, SURE } from '../../_parts'
@@ -54,7 +55,7 @@ export function KeyList({
     if (!file) return
     start(async () => {
       const form = new FormData()
-      form.set('file', file)
+      form.set('file', await shrinkPhoto(file))
       try {
         const res = await postFiles<ActionResult>('t', 'uploadMemo', [classId, testId], form)
         if (!res.ok) return setError(res.message)
