@@ -4,7 +4,8 @@ import { PendingButton } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import type { AnswerKeyItem } from '@jemma/profiling/schemas'
-import { approveKey, confirmKeyItem, uploadMemo } from '../../actions'
+import { postFiles } from '@/lib/upload-client'
+import { approveKey, confirmKeyItem, type ActionResult } from '../../actions'
 import { Diamond, KeyFraction, PageTitle, SURE } from '../../_parts'
 
 const PENCIL = 'M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z'
@@ -54,8 +55,12 @@ export function KeyList({
     start(async () => {
       const form = new FormData()
       form.set('file', file)
-      const res = await uploadMemo(classId, testId, form)
-      if (!res.ok) return setError(res.message)
+      try {
+        const res = await postFiles<ActionResult>('t', 'uploadMemo', [classId, testId], form)
+        if (!res.ok) return setError(res.message)
+      } catch {
+        return setError('That did not upload. Check your connection and try again.')
+      }
       router.refresh()
     })
   }

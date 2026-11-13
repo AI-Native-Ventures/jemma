@@ -2,7 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useState, useTransition } from 'react'
-import { uploadScans } from '../../actions'
+import { postFiles } from '@/lib/upload-client'
+import type { ActionResult } from '../../actions'
 
 /** Refreshes the server data every 3 s on the laptop layout, so pages snapped with the phone land without a reload. */
 export function LaptopPoll() {
@@ -31,8 +32,12 @@ export function UploadZone({ classId, testId }: { classId: string; testId: strin
     start(async () => {
       const form = new FormData()
       for (const f of files) form.append('files', f)
-      const res = await uploadScans(classId, testId, form)
-      if (!res.ok) setError(res.message)
+      try {
+        const res = await postFiles<ActionResult<{ count: number }>>('t', 'uploadScans', [classId, testId], form)
+        if (!res.ok) setError(res.message)
+      } catch {
+        setError('That did not upload. Check your connection and try again.')
+      }
       router.refresh()
     })
   }

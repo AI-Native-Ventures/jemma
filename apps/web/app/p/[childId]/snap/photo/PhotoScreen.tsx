@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
-import { snapHomework } from '../actions'
+import { postFiles } from '@/lib/upload-client'
+import type { ActionResult } from '../actions'
 
 const SUBJECT = 'Mathematics'
 const MAX_PAGES = 4
@@ -72,7 +73,14 @@ export function PhotoScreen({ childId, kind, kindLabel, childName }: { childId: 
   async function done() {
     setBusy(true)
     setMessage(null)
-    const res = await snapHomework(childId, kind, SUBJECT, files)
+    const form = new FormData()
+    for (const f of files) form.append('file', f)
+    let res: ActionResult<{ paperId: string }>
+    try {
+      res = await postFiles<ActionResult<{ paperId: string }>>('p', 'snapHomework', [childId, kind, SUBJECT], form)
+    } catch {
+      res = { ok: false, message: 'That did not upload. Check your connection and try again.' }
+    }
     if (res.ok) router.push(`/p/${childId}/snap/${res.paperId}`)
     else {
       setMessage(res.message)
