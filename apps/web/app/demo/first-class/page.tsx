@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'Create your first class' }
 export const dynamic = 'force-dynamic'
 
 /**
- * Where "Start from an empty school" lands. The class form is the one every teacher uses (any grade, any subject, learners now or
+ * Where "Start from an empty school" lands. The class form is the one every teacher uses (any grade, Mathematics for now, learners now or
  * later), with a plainer heading because the school has no class yet. The made-up learners come from the class's own learners screen.
  */
 export default async function FirstClassPage() {
@@ -27,7 +27,7 @@ export default async function FirstClassPage() {
           <div className="flex flex-col gap-2">
             <Title>Create your first class</Title>
             <p className="m-0 ml-6 text-[15px] leading-[1.45] text-pretty text-body">
-              Pick a grade. The subject is Mathematics for now. Then open the learners screen and tap Add made-up learners to fill it with a few years of history.
+              Pick any grade. Then open the learners screen and tap Add made-up learners to fill it with a few years of history.
             </p>
           </div>
           <NewClassForm code={newJoinCode()} initialGrade={9} copyOptions={copyOptions} />
