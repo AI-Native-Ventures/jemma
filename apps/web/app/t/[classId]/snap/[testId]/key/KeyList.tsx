@@ -4,10 +4,9 @@ import { PendingButton } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import type { AnswerKeyItem } from '@jemma/profiling/schemas'
-import { shrinkPhoto } from '@/lib/shrink-photo'
-import { postFiles } from '@/lib/upload-client'
-import { approveKey, confirmKeyItem, type ActionResult } from '../../actions'
+import { approveKey, confirmKeyItem } from '../../actions'
 import { Diamond, KeyFraction, PageTitle, SURE } from '../../_parts'
+import { sendMemoPhoto } from './memo-photo'
 
 const PENCIL = 'M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z'
 const answerCls = 'text-[18px] font-bold'
@@ -54,14 +53,8 @@ export function KeyList({
   const retake = (file: File | undefined) => {
     if (!file) return
     start(async () => {
-      const form = new FormData()
-      form.set('file', await shrinkPhoto(file))
-      try {
-        const res = await postFiles<ActionResult>('t', 'uploadMemo', [classId, testId], form)
-        if (!res.ok) return setError(res.message)
-      } catch {
-        return setError('That did not upload. Check your connection and try again.')
-      }
+      const message = await sendMemoPhoto(classId, testId, file)
+      if (message) return setError(message)
       router.refresh()
     })
   }

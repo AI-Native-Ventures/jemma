@@ -1,10 +1,12 @@
 import type { AiEnv } from './ai'
 import { classIdFor, classIdOfRef } from './ai/subject-profile'
+import { MemoryStore } from './ai/stores'
 import type { JemmaDb } from './db'
 import { notify, notifyLessonReady } from './notify'
 import { jobPlan, postconditions, type JobName, type JobStep } from './plans'
 import { EventSchema, type JemmaEvent } from './schemas/events'
 import { maybe, ok, type ToolContext } from './tools/context'
+import { endUnreadablePaper } from './tools/save/mark-paper'
 import { planNextSession } from './tools/save/plan-next-session'
 import { updateLearnerProfile } from './tools/save/update-learner-profile'
 
@@ -180,11 +182,40 @@ export async function ownerOf(db: JemmaDb, schoolId: string, classId?: string | 
  * Writes an event as failed. This is the one place that does it: `runEvent` calls it when a job fails for good, and the
  * stuck-jobs check when a job died three times, so both ends look the same to every screen. A cancelled event stays cancelled.
  * With `only` the write also needs the event to still have that status (the check passes `running`, so it never overwrites a run
- * that finished). Answers the query, so a caller can look at the error and at the rows that changed.
+ * that finished). Answers the query, so a caller can look at the error and at the event it ended (no row: it was not ended), and
+ * then call `afterEventFailed` with it.
  */
 export function endEventFailed(db: JemmaDb, eventId: string, error: string, attempts: number, finishedAt: string, only?: 'running') {
   const write = db.from('events').update({ status: 'failed', error, attempts, finished_at: finishedAt }).eq('id', eventId)
-  return (only ? write.eq('status', only) : write.neq('status', 'cancelled')).select('id')
+  return (only ? write.eq('status', only) : write.neq('status', 'cancelled')).select('id, school_id, type, payload')
+}
+
+/** The event types whose job reads a photo of one paper. */
+const PAPER_PHOTO_EVENTS = new Set(['paper.snapped', 'homework.snapped'])
+
+/**
+ * An event ended failed for good: when it is the read of a paper's photo (`paper.snapped`, `homework.snapped`) and the paper is
+ * still `queued` or `reading`, the paper ends the way `mark_paper` ends a page that is not usable (`endUnreadablePaper`): a teacher's
+ * paper becomes `needs_you` with a Needs you item that asks for a retake or a check by hand, a parent's paper becomes `failed`.
+ * A paper that is already `marked`, `needs_you` or `failed` is never touched, and no other event type does anything. Every place that
+ * ends an event failed for good calls it after `endEventFailed` changed a row: `runEvent`, `checkStuckEvents` and the agent's `failEvent`.
+ * Never throws: a failure is logged as one line and the event's own end stays as written.
+ */
+export async function afterEventFailed(
+  db: JemmaDb,
+  event: { id: string; school_id: string; type: string; payload: unknown },
+  now: () => Date = () => new Date(),
+): Promise<void> {
+  if (!PAPER_PHOTO_EVENTS.has(event.type)) return
+  try {
+    const paperId = (event.payload as { paperId?: unknown } | null)?.paperId
+    if (typeof paperId !== 'string') return
+    const paper = await maybe(db.from('papers').select('id, test_id, child_id, status').eq('id', paperId).maybeSingle())
+    if (!paper || (paper.status !== 'queued' && paper.status !== 'reading')) return
+    await endUnreadablePaper({ db, schoolId: event.school_id, eventId: event.id, env: { replayStore: new MemoryStore() }, now }, paper)
+  } catch (err) {
+    console.error(`paper after a failed event: ${text(err)}`)
+  }
 }
 
 /**
@@ -221,7 +252,8 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
     if (!ev || ev.status === 'cancelled' || !school) throw new Stopped()
   }
   const fail = async (error: string): Promise<RunResult> => {
-    await endEventFailed(db, eventId, error, attempts, now().toISOString())
+    const ended = await endEventFailed(db, eventId, error, attempts, now().toISOString())
+    if (ended.data?.[0]) await afterEventFailed(db, ended.data[0], now) // a cancelled event (no row) leaves its paper alone
     return { status: 'failed' }
   }
 
@@ -505,7 +537,10 @@ export async function checkStuckEvents(
       const revived = typeof payload.revived === 'number' && Number.isFinite(payload.revived) ? payload.revived : 0
       if (revived >= MAX_REVIVALS) {
         const ended = await ok(endEventFailed(db, e.id, STUCK_EVENT_ERROR, e.attempts, now.toISOString(), 'running'))
-        if (ended.length) failedCount++
+        if (ended.length) {
+          failedCount++
+          await afterEventFailed(db, ended[0]!, () => now)
+        }
         continue
       }
       const taken = await ok(

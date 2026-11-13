@@ -7,6 +7,8 @@ const WHY: Record<string, { title: string; body: string }> = {
   blurry: { title: 'This photo is too blurry to read.', body: 'A steadier photo means fewer guesses.' },
   cut_off: { title: 'Part of the page is cut off.', body: 'A photo of the whole page means fewer guesses.' },
   not_a_test: { title: "This doesn't look like a school page.", body: 'A photo of the page itself means fewer guesses.' },
+  // Written by code when the job behind the photo failed (packages/profiling `afterEventFailed`), not chosen by the model.
+  read_failed: { title: 'Jemma could not read this photo.', body: 'Another photo usually fixes it.' },
 }
 const OTHER = { title: "I couldn't read this photo.", body: 'Another photo usually fixes it.' }
 

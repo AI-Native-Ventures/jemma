@@ -74,12 +74,19 @@ export async function sendEvent<T extends EventType>(type: T, payload: EventPayl
   return data.id
 }
 
-/** Re-queues a failed event and posts it to the agent again. */
+/**
+ * Re-queues a failed event and posts it to the agent again. The payload loses `revived` (how often the stuck-jobs check brought the job
+ * back), so a job the teacher asks for again gets its two revivals again. Nothing else in the payload changes.
+ */
 export async function retryEvent(eventId: string): Promise<void> {
   const db = serviceDb()
+  const found = await db.from('events').select('payload').eq('id', eventId).eq('status', 'failed').maybeSingle()
+  if (found.error) throw new Error(`retryEvent: ${found.error.message}`)
+  if (!found.data) throw new Error('retryEvent: event is not failed')
+  const { revived: _revived, ...payload } = (found.data.payload ?? {}) as Record<string, unknown>
   const { data, error } = await db
     .from('events')
-    .update({ status: 'queued', error: null, finished_at: null })
+    .update({ status: 'queued', error: null, finished_at: null, payload: payload as unknown as NonNullable<Json> })
     .eq('id', eventId)
     .eq('status', 'failed')
     .select('id')

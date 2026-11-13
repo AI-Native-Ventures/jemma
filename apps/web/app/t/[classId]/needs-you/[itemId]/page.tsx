@@ -31,6 +31,14 @@ export default async function NeedsYouItemPage({
   if (item.kind === 'review_long_view') redirect(`/t/${classId}/learners/${item.paperId}/long-view`)
   // For this kind `ref_id` is the file of past records.
   if (item.kind === 'check_records') redirect(`/t/${classId}/learners/records/${item.paperId}`)
+  // A photo Jemma could not read has no screen of its own: the retake button is on the papers screen of the test. `ref_id` is the paper.
+  if (item.kind === 'confirm_scan') {
+    const supabase = await createSupabaseServer()
+    const { data: paper } = await supabase.from('papers').select('test_id').eq('id', item.paperId).maybeSingle()
+    const { data: test } = paper?.test_id ? await supabase.from('tests').select('id').eq('id', paper.test_id).eq('class_id', classId).maybeSingle() : { data: null }
+    if (!test) notFound()
+    redirect(`/t/${classId}/snap/${test.id}/papers`)
+  }
   if (item.kind !== 'check_answer' && item.kind !== 'unreadable_name') notFound()
 
   const view = await getPaperView(classId, item.paperId)
