@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { CameraIcon } from '@/components/ui/icons'
 import type { ClassTopic, TestRow } from '@/lib/data/p31'
-import { createTest, draftKey, uploadMemo } from './actions'
+import { postFiles } from '@/lib/upload-client'
+import { createTest, draftKey, type ActionResult } from './actions'
 import { PageTitle } from './_parts'
 
 const STOP = new Set(['test', 'class', 'and', 'the', 'term', 'exam', 'quiz'])
@@ -80,8 +81,12 @@ export function SnapTestForm({
       if (!testId) return
       const form = new FormData()
       form.set('file', file)
-      const up = await uploadMemo(classId, testId, form)
-      if (!up.ok) return setError(up.message)
+      try {
+        const up = await postFiles<ActionResult>('t', 'uploadMemo', [classId, testId], form)
+        if (!up.ok) return setError(up.message)
+      } catch {
+        return setError('That did not upload. Check your connection and try again.')
+      }
       router.push(`/t/${classId}/snap/${testId}/key`)
     })
   }

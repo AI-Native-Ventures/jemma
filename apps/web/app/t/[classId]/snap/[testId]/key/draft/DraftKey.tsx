@@ -6,7 +6,8 @@ import type { ReactNode } from 'react'
 import { useState, useTransition } from 'react'
 import type { AnswerKeyItem } from '@jemma/profiling/schemas'
 import { SURE, PageTitle } from '../../../_parts'
-import { approveKey, confirmKeyItem, uploadMemo } from '../../../actions'
+import { postFiles } from '@/lib/upload-client'
+import { approveKey, confirmKeyItem, type ActionResult } from '../../../actions'
 
 export function DraftKey({ classId, testId, items, unsure, approved, children }: { classId: string; testId: string; items: AnswerKeyItem[]; unsure: number[]; approved: boolean; children: ReactNode }) {
   const router = useRouter()
@@ -34,8 +35,12 @@ export function DraftKey({ classId, testId, items, unsure, approved, children }:
     start(async () => {
       const form = new FormData()
       form.set('file', file)
-      const res = await uploadMemo(classId, testId, form)
-      if (!res.ok) return setError(res.message)
+      try {
+        const res = await postFiles<ActionResult>('t', 'uploadMemo', [classId, testId], form)
+        if (!res.ok) return setError(res.message)
+      } catch {
+        return setError('That did not upload. Check your connection and try again.')
+      }
       router.push(`/t/${classId}/snap/${testId}/key`)
     })
   }

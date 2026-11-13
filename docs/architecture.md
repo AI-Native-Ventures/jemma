@@ -260,6 +260,19 @@ The key is the model id plus the call, with uuids and dates left out. So an answ
 
 A change to a job prompt, a schema or a model id changes the key. Record again after any of those. The steps are in [runbook.md](runbook.md).
 
+## Why files go through an upload route
+
+Photos and PDFs are not sent as the argument of a form action. They are posted to a plain route: `/t/upload` for the teacher's screens and `/p/upload` for the parent's photos. The browser calls `postFiles` (`apps/web/lib/upload-client.ts`) and one handler answers (`apps/web/lib/upload-route.ts`). It checks that the post comes from this site (a form action had that check built in, a route does not), then calls one of seven named functions. Those functions are unchanged and still check the signed-in person and the class themselves.
+
+Why, as measured on the deployed preview on 13 November 2026:
+
+- Uploading the Grade 9 Mathematics plan (`fixtures/curriculum/unseen/grade9-mathematics-za.pdf`) was answered 403 by Cloudflare's edge, 3 tries of 3. The answer was Cloudflare's block page, so the app never ran. The Grade 5 and Kenya plans went through.
+- The cause was narrowed to three bytes. The edge refused any request that carried a `next-action` header (a Next.js form action) and had the bytes `'$F` or `"$F` anywhere in its body. Byte 78299 of that PDF happens to hold `'$F` inside a compressed stream. Every other string tried passed.
+- The same bytes in a plain multipart post, without the `next-action` header, passed and the app answered.
+- Which rule of Cloudflare's does this was not identified, so none is named here.
+
+A refusal is chance: about 2 in 100 for a 180 KB file, about 3 in 10 for a 3 MB phone photo, about 1 in 2 for a 5 MB PDF. A test (`packages/profiling/test/upload-guard.test.ts`) fails if a screen imports one of the seven functions again. The refusal only happens on Cloudflare, so a local run cannot show it: the local tests prove that no file travels in a form action and that the bytes are stored whole, and the edge itself is checked on the deployed app.
+
 ## What is not built
 
 - Jemma Desktop as a checked product. The Electron app is in `apps/desktop` and wraps the runner, but the Mac app was not run for this submission and is unverified. It does not offer goose.

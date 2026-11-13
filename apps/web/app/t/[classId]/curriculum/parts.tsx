@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { ErrorRetry } from '@/components/blocks'
 import { Button, Sheet } from '@/components/ui'
-import { retryDraft, uploadCurriculum, useSampleCurriculum } from './actions'
+import { postFiles } from '@/lib/upload-client'
+import { retryDraft, useSampleCurriculum, type UploadResult } from './actions'
 import { notAllowedMessage, sizeProblem, sniffKind } from './upload-checks'
 
 const outlined = {
@@ -42,7 +43,9 @@ export function UploadButtons({ classId }: { classId: string }) {
         if (!sniffKind(new Uint8Array(await f.slice(0, 16).arrayBuffer()))) return setError(notAllowedMessage(f.name))
       }
       try {
-        const done = await uploadCurriculum(classId, files)
+        const form = new FormData()
+        for (const f of files) form.append('file', f)
+        const done = await postFiles<UploadResult>('t', 'uploadCurriculum', [classId], form)
         if (!done.ok) return setError(done.message)
         router.refresh()
       } catch {

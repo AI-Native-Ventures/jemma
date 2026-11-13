@@ -4,7 +4,8 @@ import { Spinner } from '@/components/ui/Button'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition, type ReactNode } from 'react'
-import { addPage, addPaper, retakePaper, useSamplePapers } from '../../actions'
+import { postFiles } from '@/lib/upload-client'
+import { useSamplePapers, type ActionResult } from '../../actions'
 import { RETAKE_PATH } from '../../_parts'
 
 const sheet = 'absolute h-10 w-[30px] rounded-[3px] bg-[#FBFAF5] shadow-[0_1px_3px_rgba(0,0,0,0.3)] flex flex-col gap-[3px] px-1 py-[5px]'
@@ -51,7 +52,7 @@ export function RetakeButton({ classId, paperId, position }: { classId: string; 
           start(async () => {
             const form = new FormData()
             form.set('file', file)
-            await retakePaper(classId, paperId, form)
+            await postFiles<ActionResult>('t', 'retakePaper', [classId, paperId], form).catch(() => undefined)
             router.refresh()
           })
         }}
@@ -85,8 +86,15 @@ export function Queue({
     start(async () => {
       const form = new FormData()
       form.set('file', file)
-      const res = kind === 'paper' || !lastPaper ? await addPaper(classId, testId, form) : await addPage(classId, lastPaper.id, form)
-      if (!res.ok) setError(res.message)
+      try {
+        const res =
+          kind === 'paper' || !lastPaper
+            ? await postFiles<ActionResult<{ paperId: string }>>('t', 'addPaper', [classId, testId], form)
+            : await postFiles<ActionResult>('t', 'addPage', [classId, lastPaper.id], form)
+        if (!res.ok) setError(res.message)
+      } catch {
+        setError('That did not upload. Check your connection and try again.')
+      }
       router.refresh()
     })
   }
