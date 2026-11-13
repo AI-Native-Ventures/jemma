@@ -123,7 +123,8 @@ function isBadOutput(err: unknown): boolean {
 /** The plain-code steps. They need no model, so a service (the cloud, or an operator runner) runs them in process. */
 export const codeJobs: Partial<Record<JobName, CloudJob>> = {
   async plan_next_session(ctx, _eventId, ids) {
-    await planNextSession.run(ctx, { childId: ids.childId! })
+    // `practice` is '1' only in the plan of `practice.requested`: the learner asked to practise now.
+    await planNextSession.run(ctx, { childId: ids.childId!, practice: ids.practice === '1' })
   },
   async update_learner_profile(ctx, _eventId, ids) {
     await updateLearnerProfile.run(ctx, { childId: ids.childId!, sessionId: ids.sessionId })
@@ -331,7 +332,7 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
     const walk = async () => {
       for (let i = 0; i < MAX_STEPS; i++) {
         await guard()
-        const plan = await jobPlan(parsed, db)
+        const plan = await jobPlan(parsed, db, now())
         const step = plan.find((s) => !done.has(`${s.job}:${JSON.stringify(s.ids)}`))
         if (!step) break
         await db.from('events').update({ attempts, payload: { ...payload, progress: { job: step.job, step: i + 1, done: [...done].length } } as never }).eq('id', eventId)
@@ -343,7 +344,7 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
       }
     }
     await walk()
-    let unmet = await postconditions(parsed, db)
+    let unmet = await postconditions(parsed, db, now())
     // The papers of a test are read at the same time. This event can finish before a sibling marks its paper, so the
     // sibling's run owns the tail: wait for it while it runs, and plan again if nothing is left running and something is unmet.
     for (let waited = 0; unmet.length && waited < MAX_SIBLING_WAITS; waited++) {
@@ -351,11 +352,11 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
       if (others.length === 0) break
       await sleep(2000)
       await guard()
-      unmet = await postconditions(parsed, db)
+      unmet = await postconditions(parsed, db, now())
     }
     if (unmet.length) {
       await walk()
-      unmet = await postconditions(parsed, db)
+      unmet = await postconditions(parsed, db, now())
     }
     if (unmet.length) return await fail(`Jemma did not finish: ${unmet.join('; ')}`)
     await db

@@ -137,8 +137,17 @@ From `packages/profiling/src/schemas/events.ts`:
 | `long_view.requested` | `long_view` for one learner (asked for when the teacher opens an empty Long view, taps Update, or saves a note) |
 | `test.shared` | Per learner with a marked paper: `plan_next_session`, `write_lesson`, `guidance` (after the teacher taps Share with parents) |
 | `records.uploaded` | `map_records` for one file of past results (a teacher uploads a .csv file or pastes a table) |
+| `practice.requested` | `plan_next_session` with `practice`, then `write_lesson` (a learner taps **Practise now** when nothing is planned) |
 
 The test tail is: `diagnose` per marked learner, `class_report`, then per learner `plan_next_session`, `write_lesson`, `guidance`. While a test is held (every test made in the app starts held, see Gates below) the tail stops after `diagnose` and `class_report`, and `postconditions` ask for planned sessions only once the test is shared. `test.shared` does the rest and takes the same tail lock.
+
+**Practise now.** A learner whose home has nothing planned for tonight can ask to practise (`practice.requested`, from `apps/web/app/k/actions.ts`). The plan is `plan_next_session` with `practice` set, which plans a session for today, then `write_lesson`. `plan_next_session` first returns a planned session that is not finished (one that is still ahead is brought forward to today), then runs the normal plan for today (open gaps, days away). Only when that finds nothing does code pick what to practise, with `pickPractice` (`packages/profiling/src/logic/practice.ts`, a pure function), by three rules in order:
+
+1. **A fixed gap kept fixed.** The fixed gap that was practised longest ago (never practised since it was fixed counts as the oldest; ties go to the earlier `fixed_at`, then the name).
+2. **The weakest strand of the past records.** The strand with the lowest mean percent over its last three terms with marks, skipping a strand practised in a session that finished today when another qualifies. The topic is the strand's plain name, such as "Fractions".
+3. **The first topic of the term.** From the approved map of the learner's class, the first topic of the current term, else the first topic of the map.
+
+With none of the three the plan answers `planned: false` and the learner's home says practice starts after the teacher marks a test. A practice is a session like any other (queue reason `review`): same questions, same results. It never opens a gap and never reopens a fixed one, because `update_learner_profile` moves only an open gap of the session's topic. The model only writes the lesson. With recorded answers only (`AI_MODE=replay`) that answer was never recorded, so the job fails and the home shows "Jemma could not write your practice." with a retry.
 
 ## The jobs table
 

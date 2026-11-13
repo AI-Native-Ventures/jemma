@@ -5,6 +5,7 @@ import { AppHeader } from './session/_parts/AppHeader'
 import { ChevronRight, FormatChip, MinutesChip } from './session/_parts/Chips'
 import { Diamond, Gem } from './session/_parts/Gems'
 import { PreviewBars } from './session/_parts/PreviewBars'
+import { PracticeCard } from './PracticeCard'
 
 export const metadata: Metadata = { title: 'Today' }
 export const dynamic = 'force-dynamic'
@@ -46,9 +47,7 @@ export default async function ChildToday() {
           <div className="flex items-start gap-2.5">
             <Diamond size={16} className="mt-3 flex-none" />
             <h1 className="m-0 text-[30px] leading-[1.14] font-bold tracking-[-0.02em] text-pretty">
-              {next
-                ? `Nothing new tonight, ${firstName}! Your next lesson is on ${next.day}.`
-                : `Nothing new tonight, ${firstName}! Jemma is getting your next lesson ready.`}
+              {next ? `Nothing new tonight, ${firstName}! Your next lesson is on ${next.day}.` : `Nothing new tonight, ${firstName}.`}
             </h1>
           </div>
           {next ? (
@@ -61,21 +60,7 @@ export default async function ChildToday() {
               </span>
             </section>
           ) : null}
-          {today.hasFixedGap ? (
-            <Link
-              href="/k/gaps"
-              className="flex min-h-[72px] items-center gap-3.5 rounded-20 border border-[#FFC9BB] bg-coral-wash py-3.5 pr-3.5 pl-[18px] text-ink no-underline"
-            >
-              <span aria-hidden="true" className="flex size-11 flex-none items-center justify-center rounded-14 bg-coral-tint">
-                <Gem kind="full" />
-              </span>
-              <span className="flex flex-1 flex-col gap-0.5">
-                <span className="text-[17px] font-semibold">Keep a fixed gap fixed</span>
-                <span className="text-[15px] text-body">Practise one for 5 minutes</span>
-              </span>
-              <ChevronRight />
-            </Link>
-          ) : null}
+          <PracticeCard state={today.practice} />
           <GapsCard today={today} tone="rest" />
         </div>
       </div>

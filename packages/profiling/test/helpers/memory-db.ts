@@ -5,7 +5,7 @@ type Result = { data: unknown; error: { message: string } | null }
 
 /**
  * A database in memory, for tests of a job that reads and writes a few tables and one storage bucket. It understands the calls
- * the curriculum job makes: `select`, `insert`, `update`, `delete`, `eq`, `neq`, `in`, `is`, `lte`, `gte`, `order`, `limit`, `single`, `maybeSingle`,
+ * the curriculum job makes: `select`, `insert`, `update`, `delete`, `eq`, `neq`, `in`, `is`, `not`, `gt`, `lte`, `gte`, `order`, `limit`, `single`, `maybeSingle`,
  * and awaiting the query. Every column of a row comes back whatever the select list says. No network: a test of the job does not
  * wait for a shared database.
  */
@@ -63,6 +63,8 @@ export function memoryDb(seed: Record<string, Row[]> = {}, files: Record<string,
       neq: (key: string, value: unknown) => (filters.push((r) => r[key] !== value), q),
       in: (key: string, values: unknown[]) => (filters.push((r) => values.includes(r[key])), q),
       is: (key: string, value: null) => (filters.push((r) => (r[key] ?? null) === value), q),
+      gt: (key: string, value: string) => (filters.push((r) => String(r[key]) > value), q),
+      not: (key: string, op: string, value: unknown) => (filters.push((r) => (op === 'is' ? (r[key] ?? null) !== value : r[key] !== value)), q),
       lte: (key: string, value: string) => (filters.push((r) => String(r[key]) <= value), q),
       gte: (key: string, value: string) => (filters.push((r) => String(r[key]) >= value), q),
       order: (key: string, o?: { ascending?: boolean }) => ((sort = { key, ascending: o?.ascending ?? true }), q),

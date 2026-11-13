@@ -1,8 +1,10 @@
 import { z } from 'zod'
 import { classIdFor } from '../../ai/subject-profile'
-import type { Json } from '../../db'
+import type { Json, JemmaDb } from '../../db'
+import { pickPractice, type PracticePick } from '../../logic'
 import { FormatSchema, type Format } from '../../schemas/lesson'
 import { assertInSchool, contextFor, defineTool, ok, type ToolContext } from '../context'
+import { loadPracticeInput } from '../read/practice-input'
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const DAY_MS = 86_400_000
@@ -10,7 +12,7 @@ const DAY_MS = 86_400_000
 const ROTATION: Format[] = ['diagram', 'reading', 'audio']
 const MAX_AWAY_TOPICS = 3
 
-const QueueItem = z.object({ topicName: z.string(), topicId: z.string().nullable(), reason: z.enum(['gap', 'away']) })
+const QueueItem = z.object({ topicName: z.string(), topicId: z.string().nullable(), reason: z.enum(['gap', 'away', 'review']) })
 
 export const SessionPlanSchema = z.object({
   planned: z.boolean(),
@@ -42,33 +44,57 @@ export function nextFreeDay(now: Date, busyDays: Set<string>): string {
   return isoDay(now)
 }
 
+type PlannedRow = { id: string; lesson_id: string | null; planned_for: string; topic_id: string | null; topic_name: string | null; format: Format | null }
+
+/** A planned session as the plan the tool answers (reused). Null when the session has no topic or format to say. */
+async function reusedPlan(db: JemmaDb, row: PlannedRow, plannedFor: string = row.planned_for): Promise<SessionPlan | null> {
+  const lesson = row.lesson_id ? await ok(db.from('lessons').select('id, topic_id, topic_name, format').eq('id', row.lesson_id).single()) : null
+  const topicName = row.topic_name ?? lesson?.topic_name
+  const format = row.format ?? lesson?.format
+  if (!topicName || !format) return null
+  return {
+    planned: true, reused: true, sessionId: row.id, lessonId: row.lesson_id ?? '',
+    topicName, topicId: row.topic_id ?? lesson?.topic_id ?? null, format, plannedFor, queue: [],
+  }
+}
+
 export const planNextSession = defineTool({
   name: 'plan_next_session',
   description:
-    'Plan the next home session for one child (code only, no model): the open gap with the lowest stage, basics first, the format with the fewest trials on that topic family, on the next day without an activity. Returns the planned session; the lesson itself is written by save_lesson.',
-  input: z.object({ childId: z.string() }),
+    'Plan the next home session for one child (code only, no model): the open gap with the lowest stage, basics first, the format with the fewest trials on that topic family, on the next day without an activity. Returns the planned session; the lesson itself is written by save_lesson. With `practice: true` (the learner asked to practise now) the session is for today: a planned session that is not finished is returned (one still ahead is brought forward to today); otherwise the same plan runs for today, and when it finds nothing, code picks a fixed gap, the weakest strand of the past records or the first topic of the term (reason `review`).',
+  input: z.object({ childId: z.string(), practice: z.boolean().optional() }),
   output: SessionPlanSchema,
-  async run(base: ToolContext, { childId }): Promise<SessionPlan> {
+  async run(base: ToolContext, { childId, practice = false }): Promise<SessionPlan> {
     await assertInSchool(base, 'children', [childId])
     const ctx = await contextFor(base, 'children', childId)
     const db = ctx.db
     const now = ctx.now()
     const today = isoDay(now)
 
-    // A planned session that is still ahead of us is returned as is.
-    const planned = await ok(
-      db.from('sessions').select('id, lesson_id, planned_for, topic_id, topic_name, format').eq('child_id', childId).eq('status', 'planned').gte('planned_for', today).order('planned_for').limit(1),
-    )
-    if (planned[0]) {
-      const p0 = planned[0]
-      const lesson = p0.lesson_id ? await ok(db.from('lessons').select('id, topic_id, topic_name, format').eq('id', p0.lesson_id).single()) : null
-      const topicName = p0.topic_name ?? lesson?.topic_name
-      const format = p0.format ?? lesson?.format
-      if (topicName && format) {
-        return {
-          planned: true, reused: true, sessionId: p0.id, lessonId: p0.lesson_id ?? '',
-          topicName, topicId: p0.topic_id ?? lesson?.topic_id ?? null, format, plannedFor: p0.planned_for, queue: [],
+    if (practice) {
+      // The learner asked to practise now: a planned session that is not finished is the practice. The one the home starts is the latest
+      // that is due (today or earlier); with none due, the earliest one ahead is brought forward to today.
+      const waiting = await ok(
+        db.from('sessions').select('id, lesson_id, planned_for, topic_id, topic_name, format').eq('child_id', childId).eq('status', 'planned').order('planned_for'),
+      )
+      const due = waiting.filter((s) => s.planned_for <= today)
+      const asked = due[due.length - 1] ?? waiting[0]
+      if (asked) {
+        const forward = asked.planned_for > today
+        const reused = await reusedPlan(db, asked, forward ? today : asked.planned_for)
+        if (reused) {
+          if (forward) await ok(db.from('sessions').update({ planned_for: today }).eq('id', asked.id).eq('status', 'planned').select('id'))
+          return reused
         }
+      }
+    } else {
+      // A planned session that is still ahead of us is returned as is.
+      const planned = await ok(
+        db.from('sessions').select('id, lesson_id, planned_for, topic_id, topic_name, format').eq('child_id', childId).eq('status', 'planned').gte('planned_for', today).order('planned_for').limit(1),
+      )
+      if (planned[0]) {
+        const reused = await reusedPlan(db, planned[0])
+        if (reused) return reused
       }
     }
 
@@ -124,17 +150,34 @@ export const planNextSession = defineTool({
       const missed = topics.filter((t) => !covered.has(t.name)).slice(0, Math.min(away.length, MAX_AWAY_TOPICS))
       queue.push(...missed.map((t) => ({ topicName: t.name, topicId: t.id, reason: 'away' as const })))
     }
-    const pick = queue[0]
+    let pick = queue[0]
+    // Practising now and nothing is open: code picks what to practise (a fixed gap, the weakest strand, the first topic of the term).
+    let review: PracticePick | null = null
+    if (!pick && practice) {
+      review = pickPractice(await loadPracticeInput(db, childId, now))
+      if (review) {
+        pick = { topicName: review.topicName, topicId: review.topicId, reason: 'review' }
+        queue.push(pick)
+      }
+    }
     if (!pick) return none
 
-    // Format: fewest trials on this topic family, ties diagram, reading, audio.
-    const family = (pick.topicId ? byId.get(pick.topicId)?.family : byName.get(pick.topicName)?.family) ?? ''
-    const trials = await ok(db.from('format_trials').select('format').eq('child_id', childId).eq('topic_family', family))
+    // Format: fewest trials on this topic family, ties diagram, reading, audio. The trials of a strand are recorded under its label.
+    const family = review ? review.family : ((pick.topicId ? byId.get(pick.topicId)?.family : byName.get(pick.topicName)?.family) ?? '')
+    const trials = await ok(
+      review
+        ? db.from('format_trials').select('format').eq('child_id', childId).in('topic_family', [...new Set([family, pick.topicName])])
+        : db.from('format_trials').select('format').eq('child_id', childId).eq('topic_family', family),
+    )
     const count = (f: Format) => trials.filter((t) => t.format === f).length
     const format = ROTATION.reduce((best, f) => (count(f) < count(best) ? f : best))
 
-    const activities = await ok(db.from('activities').select('days').eq('child_id', childId))
-    const plannedFor = nextFreeDay(now, new Set(activities.flatMap((a) => a.days)))
+    // A practice is for today. The normal plan is for the next day without an activity.
+    let plannedFor = today
+    if (!practice) {
+      const activities = await ok(db.from('activities').select('days').eq('child_id', childId))
+      plannedFor = nextFreeDay(now, new Set(activities.flatMap((a) => a.days)))
+    }
 
     // The session needs a lesson row, so a placeholder holds the topic and format until save_lesson fills it.
     const lesson = await ok(

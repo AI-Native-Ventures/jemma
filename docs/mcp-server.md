@@ -262,11 +262,11 @@ Save the class report for one test. The gaps are computed in code; you send the 
 
 ### `plan_next_session`
 
-Plan the next home session for one child (code only, no model): the open gap with the lowest stage, basics first, the format with the fewest trials on that topic family, on the next day without an activity. Returns the planned session; the lesson itself is written by save_lesson.
+Plan the next home session for one child (code only, no model): the open gap with the lowest stage, basics first, the format with the fewest trials on that topic family, on the next day without an activity. Returns the planned session; the lesson itself is written by save_lesson. With `practice: true` (the learner asked to practise now) the session is for today: a planned session that is not finished is returned (one still ahead is brought forward to today); otherwise the same plan runs for today, and when it finds nothing, code picks a fixed gap, the weakest strand of the past records or the first topic of the term (reason `review`). Without `practice` nothing changes.
 
 - Kind: save
-- Input: `{ childId: string }`
-- Output: `{ planned: boolean, reused: boolean, sessionId: string | null, lessonId: string | null, topicName: string | null, topicId: string | null, format: "reading" | "diagram" | "audio" | null, plannedFor: string | null, queue: { topicName: string, topicId: string | null, reason: "gap" | "away" }[] }`
+- Input: `{ childId: string, practice?: boolean }`
+- Output: `{ planned: boolean, reused: boolean, sessionId: string | null, lessonId: string | null, topicName: string | null, topicId: string | null, format: "reading" | "diagram" | "audio" | null, plannedFor: string | null, queue: { topicName: string, topicId: string | null, reason: "gap" | "away" | "review" }[] }`
 
 ### `save_lesson`
 

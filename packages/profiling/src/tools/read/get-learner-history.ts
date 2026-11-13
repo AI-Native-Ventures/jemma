@@ -37,7 +37,7 @@ export type LoadedHistory = {
  * the teacher notes and attendance. The child must already be checked with `assertInSchool`.
  * Everything is ordered by what it says, never by id, so the same learner reads the same in every sandbox.
  */
-export async function loadHistory(ctx: ToolContext, childId: string): Promise<LoadedHistory> {
+export async function loadHistory(ctx: Pick<ToolContext, 'db'>, childId: string): Promise<LoadedHistory> {
   const db = ctx.db
   const child = await ok(db.from('children').select('first_name, grade').eq('id', childId).single())
   const [rows, answers, observations] = await Promise.all([
