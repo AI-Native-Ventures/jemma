@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "runId": "2026-11-11-18-26-unseen",
+  "docId": "grade4-science-technology-ke",
+  "n": 3,
+  "attempt": 1,
+  "startedAt": "2026-11-11T18:57:00.716Z",
+  "seconds": 0,
+  "calls": 0,
+  "way": null,
+  "visionProblem": null,
+  "model": null,
+  "verdict": "no_answer",
+  "error": null,
+  "noAnswer": null,
+  "machineNetwork": "teacher: fetch failed",
+  "checks": [],
+  "figures": null,
+  "draft": null
+}

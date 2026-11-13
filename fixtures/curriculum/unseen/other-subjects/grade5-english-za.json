@@ -1,0 +1,32 @@
+{
+  "id": "grade5-english-za",
+  "file": "grade5-english-za.pdf",
+  "mimeType": "application/pdf",
+  "grade": 5,
+  "subject": "English",
+  "country": "ZA",
+  "termCount": 4,
+  "textLayer": true,
+  "families": ["reading", "writing", "language", "speaking_listening"],
+  "topics": [
+    { "name": "Story elements", "terms": [1], "family": "reading", "match": [["element"]] },
+    { "name": "Nouns, verbs and adjectives", "terms": [1], "family": "language", "match": [["noun"], ["verb"], ["adjective"]] },
+    { "name": "Writing a recount", "terms": [1], "family": "writing", "match": [["recount"]] },
+    { "name": "Show and tell talks", "terms": [1], "family": "speaking_listening", "match": [["show", "tell"]] },
+    { "name": "Poems and rhyme", "terms": [2], "family": "reading", "match": [["poem"], ["rhyme"]] },
+    { "name": "Capital letters and punctuation", "terms": [2], "family": "language", "match": [["capital"], ["punctuation"]] },
+    { "name": "Writing a paragraph", "terms": [2, 3], "family": "writing", "match": [["paragraph"]] },
+    { "name": "Listening to instructions", "terms": [2], "family": "speaking_listening", "match": [["instruction"]] },
+    { "name": "Reading for information", "terms": [3], "family": "reading", "match": [["information"], ["non", "fiction"]] },
+    { "name": "Tenses", "terms": [3], "family": "language", "match": [["tense"]] },
+    { "name": "Writing a letter to a friend", "terms": [3], "family": "writing", "match": [["letter", "friend"], ["friendly", "letter"]] },
+    { "name": "Reading a longer story", "terms": [4], "family": "reading", "match": [["longer", "story"], ["novel"]] },
+    { "name": "Prepositions and conjunctions", "terms": [4], "family": "language", "match": [["preposition"], ["conjunction"]] },
+    { "name": "Writing a story", "terms": [4], "family": "writing", "match": [["writ", "story"], ["write", "story"]] },
+    { "name": "Class debate", "terms": [4], "family": "speaking_listening", "match": [["debate"]] }
+  ],
+  "traps": {
+    "twoTerms": { "name": "Writing a paragraph", "terms": [2, 3] },
+    "otherGrade": { "name": "Writing a formal essay", "grade": 7, "match": [["essay"]] }
+  }
+}

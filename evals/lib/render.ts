@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import { brief, median } from './checks'
@@ -6,6 +6,9 @@ import { readLedger } from './ledger'
 import { baseName, parseResult, RESULTS_ROOT, type ResultFile } from './result'
 import { refusalOf } from './provider'
 import { listRunFolders, loadSecondRun } from './second'
+import { DOCUMENT_IDS, OTHER_SUBJECT_IDS, UNSEEN_FOLDER, countRepeats, finalTries, isLiveRun, loadTruth, medianSeconds, parseUnseenResult, repeatedUnderOtherNames, whatWentWrong, type UnseenResult } from './unseen'
+import { countryName } from '../../packages/profiling/src/ai/subject-profile'
+import { strandOrder } from '../../packages/profiling/src/logic/strands'
 import { RUNS_PER_TASK, TASKS } from '../tasks'
 
 /**
@@ -30,6 +33,28 @@ export type PricingInfo = { fetchedAt: string; source: string; models: Record<st
 export type Analysis = { taskId: string; why: string; tryNext: string[] }
 /** A change made to the test set while the runs were going (written by the author in `changes.json`, shown as it is). */
 export type Change = { taskId: string; what: string; why: string; evidence: string }
+/** An earlier run of the curriculum reader on documents outside Mathematics: shown as one short paragraph, never as the main table. */
+export type UnseenOutside = {
+  runId: string
+  /** Every try of every run, repeats included. */
+  tries: UnseenResult[]
+  /** A short name for each document, from its ground truth. */
+  labels: Record<string, string>
+}
+/** The live runs of the curriculum reader on the three Mathematics documents it has not seen (`evals/results/unseen-curriculum/<run id>/`). */
+export type UnseenRun = {
+  runId: string
+  /** Every try of every run, repeats included. */
+  tries: UnseenResult[]
+  /** What the script wrote in `run.json`: why it stopped, the models. */
+  stopped: string | null
+  models: { vision: string; text: string } | null
+  /** A short name for each document, from its ground truth. */
+  labels: Record<string, string>
+  /** The earlier run on the three documents outside Mathematics (the first version of Jemma covers Mathematics only). */
+  outside?: UnseenOutside | null
+}
+
 /** Another run folder: a different model, usually one task. Shown in its own section, never mixed into the main run. */
 export type SecondRun = { runId: string; results: ResultFile[]; pricing: PricingInfo | null }
 export type ReportInput = {
@@ -45,6 +70,8 @@ export type ReportInput = {
   changes?: Change[] | null
   /** Other run folders, in name order. The section is written only when there is at least one. */
   others?: SecondRun[]
+  /** The newest run of the curriculum reader on unseen documents. The section is written only when there is one. */
+  unseen?: UnseenRun | null
   /** Goose runs spent for the whole packet, from the ledger (harness tuning included). Null when unknown. */
   packetLiveRuns: number | null
 }
@@ -296,6 +323,130 @@ function secondSection(others: SecondRun[]): string[] {
   return out
 }
 
+/** Which way the runs read their documents, in words: "vision", or "vision 2, text 1". */
+const readBy = (runs: UnseenResult[]): string => {
+  const counts = new Map<string, number>()
+  for (const r of runs) if (r.way) counts.set(r.way, (counts.get(r.way) ?? 0) + 1)
+  if (counts.size === 0) return 'nothing (no run got that far)'
+  if (counts.size === 1) return [...counts.keys()][0]!
+  return [...counts].map(([way, n]) => `${way} ${n}`).join(', ')
+}
+
+/** The short paragraph about the documents outside Mathematics: why they are there, and their numbers as they were. */
+function outsideParagraph(o: UnseenOutside): string {
+  const finals = finalTries(o.tries)
+  const ids = [...OTHER_SUBJECT_IDS, ...new Set(finals.map((r) => r.docId))].filter((v, i, all) => all.indexOf(v) === i)
+  const pieces: string[] = []
+  for (const id of ids) {
+    const runs = finals.filter((r) => r.docId === id)
+    if (runs.length === 0) continue
+    const judged = runs.filter((r) => r.verdict !== 'no_answer')
+    const lost = runs.filter((r) => r.verdict === 'no_answer' && r.machineNetwork).length
+    const none = runs.filter((r) => r.verdict === 'no_answer' && !r.machineNetwork).length
+    const unjudged = [
+      lost ? `${lost === 1 ? 'one run' : `${lost} runs`} never reached a model because this Mac's own network failed` : '',
+      none ? `${none === 1 ? 'one run' : `${none} runs`} got no answer from the provider` : '',
+    ].filter(Boolean)
+    pieces.push(`${o.labels[id] ?? id} ${judged.filter((r) => r.verdict === 'pass').length} of ${judged.length}${unjudged.length ? ` judged runs (${unjudged.join('; ')})` : ''}`)
+  }
+  // A job error whose answer body was not saved cannot be told from a provider fault: it is a fail, and it says so.
+  const errors = finals.filter((r) => r.verdict === 'fail' && r.error && r.checks.length === 0 && !r.error.includes('body starts:'))
+  const errorSentence = errors.length
+    ? errors.length === 1
+      ? ` One run ended on the error "${brief(errors[0]!.error!, 120)}". The body of that answer was not kept, so nobody can tell whether the model or the provider was at fault. It counts as a fail.`
+      : ` ${errors.length} runs ended on an error (${[...new Set(errors.map((r) => `"${brief(r.error!, 120)}"`))].join(', ')}). The bodies of those answers were not kept, so nobody can tell whether the model or the provider was at fault. They count as fails.`
+    : ''
+  return `These documents are about other subjects (Natural Sciences, English, Science and Technology). The first version of Jemma covers Mathematics only, so they are not part of what Jemma claims today, and their results from run \`${o.runId}\` are kept as they were. Passes among the judged runs: ${pieces.join('; ')}.${errorSentence}`
+}
+
+/** For a failed run whose draft lists the topic of two terms twice under two names: why code did not ask, in plain words. Empty when it does not apply. */
+function renamedRepeats(runs: UnseenResult[]): string {
+  const out: string[] = []
+  for (const r of runs) {
+    if (r.verdict !== 'fail' || !r.draft) continue
+    try {
+      const found = repeatedUnderOtherNames(r.draft, loadTruth(r.docId))
+      if (found) out.push(`run ${r.n}: the draft has the topic as ${found.map((f) => `"${f.name}" in Term ${f.term}`).join(' and ')}; the names differ, so code did not see one topic listed twice and asked nothing`)
+    } catch {
+      // a document without a ground truth: nothing to say
+    }
+  }
+  return out.join('. ')
+}
+
+/** For each run of a document: who asked the teacher about the topic that the document lists in two terms. */
+const whoAskedCell = (runs: UnseenResult[]): string =>
+  runs
+    .map((r) => `run ${r.n}: ${r.twoTermsAskedBy === 'code' ? 'code' : r.twoTermsAskedBy === 'model' ? 'the model' : r.twoTermsAskedBy === 'none' ? 'nobody' : r.draft ? 'not recorded' : 'no draft'}`)
+    .join(', ')
+
+/** "A curriculum Jemma had never seen": one row per Mathematics document, from the saved results of the live run, and a short paragraph about the earlier documents outside Mathematics. */
+function unseenSection(u: UnseenRun): string[] {
+  const finals = finalTries(u.tries)
+  const out: string[] = ['## A curriculum Jemma had never seen', '']
+  if (u.tries.length === 0) {
+    out.push('No run on the Mathematics documents has been made yet.', '')
+  } else {
+    out.push(
+      `Three invented Mathematics documents of different shapes (\`fixtures/curriculum/unseen/\`: a Grade 9 plan with a table for each term in South Africa, a Grade 5 plan written as paragraphs in South Africa, and a Grade 4 scheme of work for three terms in Kenya that is a scan with no text) were given to the curriculum reader (\`draft_map\`), three runs each, on the free models${u.models ? ` (vision: \`${u.models.vision}\`; text: \`${u.models.text}\`)` : ''}. Plain code scored every draft against the ground truth saved next to each document: at least 80 percent of the topics found, at most 15 percent of the draft made up, the right term for at least 80 percent of the found topics, the topic listed in two terms and the topic of another grade each flagged with a question, the right grade, family keys from the Mathematics list or one or two short lowercase words, and the right number of terms. A run where the provider gave no answer is shown as "no answer", not as a fail. The files are in \`evals/results/unseen-curriculum/${u.runId}/\`.`,
+      '',
+    )
+    out.push('| Document | Runs | Passes | No answer | Median seconds | Read by | Who asked about the topic listed in two terms | What went wrong |', '| --- | ---: | ---: | ---: | ---: | --- | --- | --- |')
+    for (const id of [...DOCUMENT_IDS, ...new Set(finals.map((r) => r.docId))].filter((v, i, all) => all.indexOf(v) === i)) {
+      const runs = finals.filter((r) => r.docId === id)
+      if (runs.length === 0) continue
+      const answered = runs.filter((r) => r.verdict !== 'no_answer')
+      out.push(
+        `| ${cell(u.labels[id] ?? id)} | ${runs.length} | ${runs.filter((r) => r.verdict === 'pass').length} | ${runs.filter((r) => r.verdict === 'no_answer').length} | ${answered.length ? num(medianSeconds(answered)) : 'none'} | ${readBy(answered)} | ${cell(whoAskedCell(runs))} | ${cell([whatWentWrong(runs), renamedRepeats(runs)].filter(Boolean).join('. '))} |`,
+      )
+    }
+    out.push('')
+    const repeats = countRepeats(u.tries)
+    const lost = u.tries.filter((t) => t.machineNetwork).length
+    const lines: string[] = []
+    lines.push('The question about a topic that the plan lists in two terms can come from code: when the model keeps such a topic in both terms and asks nothing, the step that saves the map adds the question "Listed in Term X and Term Y. Which term is it taught in?" and writes in the tool log how many it added. The table says for each run who asked.')
+    lines.push(`${u.tries.filter(isLiveRun).length} live runs of the curriculum reader were made in all${repeats ? `, ${repeats} of them repeats of a run where the provider gave no answer` : ''}. Median seconds count the runs that got an answer.`)
+    if (lost) lines.push(`${lost} more ${lost === 1 ? 'try' : 'tries'} never got past this Mac's own network (not the provider), so ${lost === 1 ? 'it was' : 'they were'} not counted and no model was asked.`)
+    // In how many runs code asked about the topic listed in two terms, and why it did not in the others.
+    const withAsked = finals.filter((r) => r.twoTermsAskedBy === 'code' || r.twoTermsAskedBy === 'model' || r.twoTermsAskedBy === 'none')
+    if (withAsked.length) {
+      const by = (who: string) => withAsked.filter((r) => r.twoTermsAskedBy === who).length
+      const renamed = withAsked.filter((r) => {
+        if (r.twoTermsAskedBy !== 'none' || !r.draft) return false
+        try {
+          return repeatedUnderOtherNames(r.draft, loadTruth(r.docId)) !== null
+        } catch {
+          return false
+        }
+      }).length
+      const nobody = by('none') - renamed
+      const why = [
+        by('model') ? `the model asked itself in ${by('model')}` : '',
+        renamed ? `in ${renamed} it named the topic differently in the later term, so code saw no topic listed twice and nobody asked` : '',
+        nobody ? `in ${nobody} nobody asked` : '',
+      ].filter(Boolean)
+      lines.push(`Code asked in ${by('code')} of ${withAsked.length} runs${why.length ? `: ${why.join('; ')}` : ''}.`)
+    }
+    const text = u.tries.filter((t) => t.way === 'text').length
+    if (text) lines.push(`${text === 1 ? '1 run was' : `${text} runs were`} read from the text of the document because the first way, the vision model looking at the pages, gave nothing.`)
+    // The family words the scorer accepted although they are not in the Mathematics list (a Grade 9 plan has algebra and geometry).
+    const withFigure = finals.filter((r) => r.figures?.extraFamilies !== undefined)
+    if (withFigure.length) {
+      const words = new Map<string, number>()
+      for (const r of withFigure) for (const w of r.figures!.extraFamilies!) words.set(w, (words.get(w) ?? 0) + 1)
+      lines.push(
+        words.size === 0
+          ? 'Every family word was in the Mathematics list.'
+          : `Family words outside the Mathematics list (${strandOrder('Mathematics').join(', ')}) that the scorer accepted as one or two short lowercase words: ${[...words].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([w, n]) => `${w} (${n} ${n === 1 ? 'run' : 'runs'})`).join(', ')}.`,
+      )
+    }
+    if (u.stopped) lines.push(`The script stopped early: ${u.stopped}.`)
+    out.push(lines.join(' '), '')
+  }
+  if (u.outside && u.outside.tries.length > 0) out.push('### Outside Mathematics (not part of what Jemma claims today)', '', outsideParagraph(u.outside), '')
+  return out
+}
+
 export function renderReport(input: ReportInput): string {
   const { results, tasks, runs, runId } = input
   const sums = summarize(input)
@@ -359,6 +510,7 @@ export function renderReport(input: ReportInput): string {
   }
 
   if (input.others?.length) push(...secondSection(input.others))
+  if (input.unseen && (input.unseen.tries.length > 0 || (input.unseen.outside?.tries.length ?? 0) > 0)) push(...unseenSection(input.unseen))
 
   // cost
   const cost = costOf(results, input.pricing)
@@ -432,7 +584,57 @@ export function renderReport(input: ReportInput): string {
   return `${text.trimEnd()}\n`
 }
 
-export type WriteOptions = { runId: string; resultsRoot?: string; outFile?: string; refreshPrice?: boolean; fetchFn?: typeof fetch; ledgerFile?: string }
+export type WriteOptions = { runId: string; resultsRoot?: string; outFile?: string; refreshPrice?: boolean; fetchFn?: typeof fetch; ledgerFile?: string; unseenRoot?: string }
+
+/** A short name for each document of the tries, from its ground truth. */
+function labelsOf(tries: UnseenResult[]): Record<string, string> {
+  const labels: Record<string, string> = {}
+  for (const id of new Set(tries.map((t) => t.docId))) {
+    try {
+      const t = loadTruth(id)
+      labels[id] = `Grade ${t.grade} ${t.subject}, ${countryName(t.country)}`
+    } catch {
+      labels[id] = id
+    }
+  }
+  return labels
+}
+
+/**
+ * The newest run of the curriculum reader on the Mathematics documents in `root` (the main section), and the newest run on
+ * the three documents outside Mathematics (one short paragraph). Null when there is neither.
+ */
+export function loadUnseen(root: string): UnseenRun | null {
+  if (!existsSync(root)) return null
+  const folders = readdirSync(root)
+    .filter((f) => !f.startsWith('.') && statSync(join(root, f)).isDirectory())
+    .sort()
+    .map((runId) => {
+      const dir = join(root, runId)
+      const tries = readdirSync(dir)
+        .filter((f) => f.endsWith('.json') && f !== 'run.json')
+        .sort()
+        .map((f) => parseUnseenResult(readFileSync(join(dir, f), 'utf8'), join(dir, f)))
+      const meta = existsSync(join(dir, 'run.json')) ? (JSON.parse(readFileSync(join(dir, 'run.json'), 'utf8')) as { stopped?: string | null; models?: { VISION_MODEL?: string; LLM_MODEL?: string } }) : {}
+      return { runId, tries, meta }
+    })
+  const mathsIds: readonly string[] = DOCUMENT_IDS
+  const otherIds: readonly string[] = OTHER_SUBJECT_IDS
+  const main = [...folders].reverse().find((f) => f.tries.some((t) => mathsIds.includes(t.docId)))
+  const outside = [...folders].reverse().find((f) => f.tries.some((t) => otherIds.includes(t.docId)))
+  if (!main && !outside) return null
+  const outsideTries = outside ? outside.tries.filter((t) => otherIds.includes(t.docId)) : []
+  const mainTries = main ? main.tries.filter((t) => mathsIds.includes(t.docId)) : []
+  const meta = main?.meta ?? {}
+  return {
+    runId: main?.runId ?? '',
+    tries: mainTries,
+    stopped: meta.stopped ?? null,
+    models: meta.models?.VISION_MODEL && meta.models.LLM_MODEL ? { vision: meta.models.VISION_MODEL, text: meta.models.LLM_MODEL } : null,
+    labels: labelsOf(mainTries),
+    outside: outside ? { runId: outside.runId, tries: outsideTries, labels: labelsOf(outsideTries) } : null,
+  }
+}
 
 /** The paid price of the models of a folder: the saved `pricing.json`, else OpenRouter's public models endpoint (then saved). */
 async function pricingFor(dir: string, results: ResultFile[], opts: WriteOptions): Promise<{ pricing: PricingInfo | null; pricingError: string | null }> {
@@ -476,7 +678,7 @@ export async function writeReport(opts: WriteOptions): Promise<string> {
     others.push({ runId: folder.name, results: otherResults, pricing: (await pricingFor(otherDir, otherResults, opts)).pricing })
   }
   const ledger = readLedger(opts.ledgerFile)
-  const text = renderReport({ runId: opts.runId, results, tasks, runs: RUNS_PER_TASK, pricing, pricingError, analysis, changes, others, packetLiveRuns: ledger.length ? ledger.filter((l) => !l.rehearsal).reduce((n, l) => n + l.attempts, 0) : null })
+  const text = renderReport({ runId: opts.runId, results, tasks, runs: RUNS_PER_TASK, pricing, pricingError, analysis, changes, others, unseen: loadUnseen(opts.unseenRoot ?? join(opts.resultsRoot ?? RESULTS_ROOT, UNSEEN_FOLDER)), packetLiveRuns: ledger.length ? ledger.filter((l) => !l.rehearsal && (l.kind ?? 'goose') === 'goose').reduce((n, l) => n + l.attempts, 0) : null })
   writeFileSync(opts.outFile ?? EVALS_FILE, text)
   return text
 }

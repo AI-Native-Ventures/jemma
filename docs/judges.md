@@ -25,6 +25,16 @@ The demo page says the full path takes about 10 minutes. The 5 minutes above is 
 
 Use **Reset demo** (`/demo/reset`) at any time. It puts your copy back to step 1 with fresh sample papers in about 10 seconds.
 
+## Try a curriculum Jemma has not seen
+
+Three invented Mathematics curriculum documents of different shapes are in the repository. They are not copied from any ministry document:
+
+- `fixtures/curriculum/unseen/grade9-mathematics-za.pdf`: Grade 9 Mathematics, South Africa, a table for each of four terms.
+- `fixtures/curriculum/unseen/grade5-mathematics-za.pdf`: Grade 5 Mathematics, South Africa, a paragraph for each week, no tables.
+- `fixtures/curriculum/unseen/grade4-mathematics-ke.pdf`: Grade 4 Mathematics, Kenya, three terms, page pictures like a scan, no text.
+
+To try one, make a class in that grade, open Curriculum and upload the file. If the live link only offers the demo's Grade 6 class, use a local copy (README, "Run it"). Jemma takes a PDF, a JPG or a PNG of at most 10 MB and 40 pages for each document, and says so when a file is too big or the wrong kind. What the curriculum reader did with each document, measured and scored by code, is in "A curriculum Jemma had never seen" in [EVALS.md](../EVALS.md). The first version of Jemma covers Mathematics only: three earlier documents about other subjects are kept in `fixtures/curriculum/unseen/other-subjects/`, and their results are in EVALS.md under "Outside Mathematics".
+
 ## Demo accounts
 
 There is nothing to type. The demo page signs you in as any of these people in your own copy of the school. You do not need an email address. The first three are the big buttons on the demo page. The rest are under "More people at Hillview", and on the switch page.
@@ -66,6 +76,7 @@ Everything the agent does goes through Jemma's own MCP server (25 tools). You ca
 - **The Long view was not exercised on the deployed demo.** It was run on a local stack: the screens by a browser spec on a phone and a laptop (`apps/web/e2e/p52.spec.ts`), the pattern finder and the tools by tests, and the model's wording on a local agent with recorded answers.
 - **The Share with parents card** is covered by the demo-path spec on a phone, on a clean machine in CI. Its own browser spec (`apps/web/e2e/p50b.spec.ts`) was never run, and there is no screenshot of the card.
 - **The evals** ran task by task, not as the single `pnpm evals` command in one go, and never against the local database. The photo task reads a rendered paper, not a photo taken with a phone.
+- **A curriculum Jemma had never seen.** Three invented Mathematics documents were read live on the free models and scored by code ([EVALS.md](../EVALS.md), "A curriculum Jemma had never seen"): Grade 9 South Africa passed 3 of 3 runs, the Grade 4 Kenya scan (three terms) 3 of 3, and Grade 5 South Africa 1 of 3. In both fails the model named the topic that the plan lists in two terms differently in the later term, so the question that code adds for a topic with the same name in two terms never fired (code asked in none of the 9 runs, the model asked in 7); the text-reading fallback was never needed live, so only tests cover it.
 - **The operator route is off on the hosted demo.** The owner's laptop doing the demo's AI work with Claude Code was proven on a local agent worker only. Curriculum PDFs are read by the cloud model only.
 - **Jemma Desktop.** The Mac app in `apps/desktop` runs jobs on your Claude Code or Codex subscription. It is unverified: it was not run for this submission. Pair it by entering the six-character code shown in the signed-in Jemma web app; build the unsigned Mac app with `CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter desktop dist`.
 - **English and Maths only.** The demo has one class: Grade 6 Mathematics. Other subjects and grades are not seeded.

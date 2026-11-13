@@ -1,0 +1,233 @@
+{
+  "version": 1,
+  "runId": "2026-11-12-maths-unseen",
+  "docId": "grade4-mathematics-ke",
+  "n": 1,
+  "attempt": 1,
+  "startedAt": "2026-11-12T19:46:40.511Z",
+  "seconds": 82.2,
+  "calls": 1,
+  "way": "vision",
+  "visionProblem": null,
+  "model": "nvidia/nemotron-3.5-super-vl:free",
+  "verdict": "pass",
+  "error": null,
+  "noAnswer": null,
+  "codeQuestions": 0,
+  "twoTermsAskedBy": "model",
+  "checks": [
+    {
+      "name": "the draft is for the right grade",
+      "pass": true,
+      "detail": "draft grade 4, document grade 4"
+    },
+    {
+      "name": "at least 80 percent of the topics were found",
+      "pass": true,
+      "detail": "found 12 of 12"
+    },
+    {
+      "name": "at most 15 percent of the draft is made up",
+      "pass": true,
+      "detail": "0 of 12 drafted topics are not in the document"
+    },
+    {
+      "name": "at least 80 percent of the found topics are in the right term",
+      "pass": true,
+      "detail": "12 of 12 found topics in the right term"
+    },
+    {
+      "name": "the topic listed in two terms is flagged with a question",
+      "pass": true,
+      "detail": "\"Length in metres and centimetres\" has a check"
+    },
+    {
+      "name": "the topic of another grade is flagged with a question or left out with a reason",
+      "pass": true,
+      "detail": "\"Decimals: tenths and hundredths\" is under leftOut"
+    },
+    {
+      "name": "every family key is one of the subject's keys, or one or two short lowercase words",
+      "pass": true,
+      "detail": "all 12 are accepted; not in the list (whole_numbers, fractions, decimals, shapes, measurement, data): numbers, shape"
+    },
+    {
+      "name": "the map has the number of terms the document has",
+      "pass": true,
+      "detail": "the document has 3 terms, the draft has terms 1, 2, 3"
+    }
+  ],
+  "figures": {
+    "found": 12,
+    "of": 12,
+    "invented": 0,
+    "drafted": 12,
+    "rightTerm": 12,
+    "termsInDraft": [
+      1,
+      2,
+      3
+    ],
+    "extraFamilies": [
+      "numbers",
+      "shape"
+    ]
+  },
+  "draft": {
+    "grade": 4,
+    "terms": [
+      {
+        "term": 1,
+        "topics": [
+          {
+            "name": "Whole numbers up to 10 000",
+            "shortName": "Whole numbers",
+            "family": "numbers",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners may mix up the order of digits, think a longer number is always larger, or round to the wrong ten or hundred."
+            ]
+          },
+          {
+            "name": "Addition and subtraction",
+            "shortName": "Addition and subtraction",
+            "family": "numbers",
+            "prerequisites": [
+              "Whole numbers up to 10 000"
+            ],
+            "misconceptions": [
+              "Learners may forget to regroup or carry, or subtract the wrong digit from the wrong column."
+            ]
+          },
+          {
+            "name": "Multiplication tables",
+            "shortName": "Multiplication tables",
+            "family": "numbers",
+            "prerequisites": [
+              "Whole numbers up to 10 000"
+            ],
+            "misconceptions": [
+              "Learners may chant the answers without understanding equal groups, or confuse multiplication with addition."
+            ]
+          },
+          {
+            "name": "Length in metres and centimetres",
+            "shortName": "Length",
+            "family": "measurement",
+            "prerequisites": [
+              "Whole numbers up to 10 000"
+            ],
+            "misconceptions": [
+              "Learners may struggle to change between metres and centimetres, or start measuring from the 1 mark instead of 0."
+            ],
+            "check": {
+              "reason": "The scheme lists Length in metres and centimetres in Term 1 and again in Term 3 with perimeter.",
+              "options": [
+                "Teach it in Term 1 only",
+                "Teach it again in Term 3 with perimeter"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "term": 2,
+        "topics": [
+          {
+            "name": "Division",
+            "shortName": "Division",
+            "family": "numbers",
+            "prerequisites": [
+              "Multiplication tables"
+            ],
+            "misconceptions": [
+              "Learners may confuse division with subtraction or multiplication, or forget that equal sharing can leave a remainder."
+            ]
+          },
+          {
+            "name": "Fractions: halves, quarters and eighths",
+            "shortName": "Fractions",
+            "family": "fractions",
+            "prerequisites": [
+              "Division"
+            ],
+            "misconceptions": [
+              "Learners may think a larger bottom number means a larger fraction, or that halves must look the same instead of being equal in size."
+            ]
+          },
+          {
+            "name": "Money",
+            "shortName": "Money",
+            "family": "measurement",
+            "prerequisites": [
+              "Addition and subtraction"
+            ],
+            "misconceptions": [
+              "Learners may add shillings and cents incorrectly or give the wrong change."
+            ]
+          },
+          {
+            "name": "Time",
+            "shortName": "Time",
+            "family": "measurement",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners may confuse the hour and minute hands, or think a quarter hour is 25 minutes."
+            ]
+          }
+        ]
+      },
+      {
+        "term": 3,
+        "topics": [
+          {
+            "name": "Shapes: triangles, squares and circles",
+            "shortName": "Shapes",
+            "family": "shape",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners may think any four-sided shape is a square, or that a circle has corners."
+            ]
+          },
+          {
+            "name": "Angles and turns",
+            "shortName": "Angles and turns",
+            "family": "shape",
+            "prerequisites": [
+              "Shapes: triangles, squares and circles"
+            ],
+            "misconceptions": [
+              "Learners may think a wider opening always means a bigger angle, or confuse a quarter turn with a half turn."
+            ]
+          },
+          {
+            "name": "Number patterns",
+            "shortName": "Number patterns",
+            "family": "numbers",
+            "prerequisites": [
+              "Addition and subtraction"
+            ],
+            "misconceptions": [
+              "Learners may continue the pattern with the wrong step, or copy the pattern without saying the rule."
+            ]
+          },
+          {
+            "name": "Data: tally charts and pictograms",
+            "shortName": "Data",
+            "family": "data",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners may draw the wrong number of tally marks or pictures, or misread the key on a pictogram."
+            ]
+          }
+        ]
+      }
+    ],
+    "leftOut": [
+      {
+        "name": "Decimals: tenths and hundredths",
+        "reason": "Grade 6 content; the document says do not teach this in Grade 4."
+      }
+    ]
+  }
+}

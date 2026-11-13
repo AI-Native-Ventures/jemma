@@ -1,0 +1,32 @@
+{
+  "id": "grade9-mathematics-za",
+  "file": "grade9-mathematics-za.pdf",
+  "mimeType": "application/pdf",
+  "grade": 9,
+  "subject": "Mathematics",
+  "country": "ZA",
+  "termCount": 4,
+  "textLayer": true,
+  "families": ["whole_numbers", "fractions", "decimals", "shapes", "measurement", "data"],
+  "otherFamilyWords": true,
+  "topics": [
+    { "name": "Integers and exponents", "terms": [1], "family": "whole_numbers", "match": [["integer"], ["exponent"]] },
+    { "name": "Rational and irrational numbers", "terms": [1], "family": "fractions", "match": [["rational"], ["irrational"]] },
+    { "name": "Algebraic expressions", "terms": [1], "family": "algebra", "match": [["algebraic"], ["expression"]] },
+    { "name": "Expanding and factorising", "terms": [1], "family": "algebra", "match": [["expanding"], ["expand"], ["factorising"], ["factorise"], ["factorizing"], ["factorize"], ["factor", "common"]] },
+    { "name": "Linear equations and inequalities", "terms": [2], "family": "algebra", "match": [["linear"], ["equation"], ["inequalities"], ["inequality"]] },
+    { "name": "Number patterns and sequences", "terms": [2], "family": "patterns", "match": [["pattern"], ["sequence"]] },
+    { "name": "Ratio, rate and proportion", "terms": [2, 3], "family": "ratio", "match": [["ratio"], ["proportion"], ["rate"]] },
+    { "name": "Financial mathematics", "terms": [3], "family": "money", "match": [["financial"], ["interest"], ["money"]] },
+    { "name": "Functions and graphs", "terms": [3], "family": "functions", "match": [["function"], ["graph"]] },
+    { "name": "Lines, angles and triangles", "terms": [3], "family": "geometry", "match": [["angle"], ["triangle"], ["parallel"], ["congruent"], ["similar"]] },
+    { "name": "Theorem of Pythagoras", "terms": [4], "family": "geometry", "match": [["pythagoras"], ["pythagorean"]] },
+    { "name": "Surface area and volume", "terms": [4], "family": "measurement", "match": [["surface"], ["volume"]] },
+    { "name": "Mean, median and mode", "terms": [4], "family": "data", "match": [["mean"], ["median"], ["mode"]] },
+    { "name": "Probability", "terms": [4], "family": "data", "match": [["probability"], ["chance"]] }
+  ],
+  "traps": {
+    "twoTerms": { "name": "Ratio, rate and proportion", "terms": [2, 3] },
+    "otherGrade": { "name": "Trigonometry: sine, cosine and tangent", "grade": 10, "match": [["trigonometry"], ["trigonometric"], ["sine"], ["cosine"], ["tangent"]] }
+  }
+}

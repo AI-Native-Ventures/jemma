@@ -1,0 +1,268 @@
+{
+  "version": 1,
+  "runId": "2026-11-12-maths-unseen",
+  "docId": "grade4-mathematics-ke",
+  "n": 3,
+  "attempt": 1,
+  "startedAt": "2026-11-12T19:49:37.002Z",
+  "seconds": 65.6,
+  "calls": 1,
+  "way": "vision",
+  "visionProblem": null,
+  "model": "nvidia/nemotron-3.5-super-vl:free",
+  "verdict": "pass",
+  "error": null,
+  "noAnswer": null,
+  "codeQuestions": 0,
+  "twoTermsAskedBy": "model",
+  "checks": [
+    {
+      "name": "the draft is for the right grade",
+      "pass": true,
+      "detail": "draft grade 4, document grade 4"
+    },
+    {
+      "name": "at least 80 percent of the topics were found",
+      "pass": true,
+      "detail": "found 12 of 12"
+    },
+    {
+      "name": "at most 15 percent of the draft is made up",
+      "pass": true,
+      "detail": "0 of 13 drafted topics are not in the document"
+    },
+    {
+      "name": "at least 80 percent of the found topics are in the right term",
+      "pass": true,
+      "detail": "12 of 12 found topics in the right term"
+    },
+    {
+      "name": "the topic listed in two terms is flagged with a question",
+      "pass": true,
+      "detail": "\"Length in metres and centimetres\" has a check"
+    },
+    {
+      "name": "the topic of another grade is flagged with a question or left out with a reason",
+      "pass": true,
+      "detail": "\"Decimals: tenths and hundredths\" is under leftOut"
+    },
+    {
+      "name": "every family key is one of the subject's keys, or one or two short lowercase words",
+      "pass": true,
+      "detail": "all 13 are accepted; not in the list (whole_numbers, fractions, decimals, shapes, measurement, data): numbers, shape"
+    },
+    {
+      "name": "the map has the number of terms the document has",
+      "pass": true,
+      "detail": "the document has 3 terms, the draft has terms 1, 2, 3"
+    }
+  ],
+  "figures": {
+    "found": 12,
+    "of": 12,
+    "invented": 0,
+    "drafted": 13,
+    "rightTerm": 12,
+    "termsInDraft": [
+      1,
+      2,
+      3
+    ],
+    "extraFamilies": [
+      "numbers",
+      "shape"
+    ]
+  },
+  "draft": {
+    "grade": 4,
+    "terms": [
+      {
+        "term": 1,
+        "topics": [
+          {
+            "name": "Whole numbers up to 10 000",
+            "shortName": "Numbers to 10 000",
+            "family": "numbers",
+            "prerequisites": [],
+            "misconceptions": [
+              "Mixing up thousands, hundreds, tens and ones",
+              "Rounding to the wrong place",
+              "Thinking a longer number is always bigger"
+            ]
+          },
+          {
+            "name": "Addition and subtraction",
+            "shortName": "Add and subtract",
+            "family": "numbers",
+            "prerequisites": [
+              "Whole numbers up to 10 000"
+            ],
+            "misconceptions": [
+              "Forgetting to regroup or carry",
+              "Subtracting the top number from the bottom number in each column",
+              "Mixing up addition and subtraction in story problems"
+            ]
+          },
+          {
+            "name": "Multiplication tables",
+            "shortName": "Multiplication tables",
+            "family": "numbers",
+            "prerequisites": [
+              "Addition and subtraction"
+            ],
+            "misconceptions": [
+              "Thinking multiplication always makes a number bigger",
+              "Chanting answers without knowing what they mean",
+              "Confusing the order of numbers in a table"
+            ]
+          },
+          {
+            "name": "Length in metres and centimetres",
+            "shortName": "Length metres centimetres",
+            "family": "measurement",
+            "prerequisites": [
+              "Whole numbers up to 10 000"
+            ],
+            "misconceptions": [
+              "Thinking centimetres are longer than metres",
+              "Not starting measurement from zero",
+              "Adding metres and centimetres directly without changing units"
+            ]
+          }
+        ]
+      },
+      {
+        "term": 2,
+        "topics": [
+          {
+            "name": "Division",
+            "shortName": "Division",
+            "family": "numbers",
+            "prerequisites": [
+              "Multiplication tables"
+            ],
+            "misconceptions": [
+              "Thinking division always makes numbers smaller",
+              "Confusing division with subtraction",
+              "Leaving out remainders or writing them wrong"
+            ]
+          },
+          {
+            "name": "Fractions: halves, quarters and eighths",
+            "shortName": "Halves quarters eighths",
+            "family": "fractions",
+            "prerequisites": [
+              "Division"
+            ],
+            "misconceptions": [
+              "Thinking a larger denominator means a larger fraction",
+              "Cutting parts that are not equal",
+              "Thinking one half is always the same size no matter the whole"
+            ]
+          },
+          {
+            "name": "Money",
+            "shortName": "Money in shillings",
+            "family": "measurement",
+            "prerequisites": [
+              "Addition and subtraction"
+            ],
+            "misconceptions": [
+              "Thinking more coins means more money",
+              "Adding shillings and cents as if they are the same unit",
+              "Giving wrong change"
+            ]
+          },
+          {
+            "name": "Time",
+            "shortName": "Time",
+            "family": "measurement",
+            "prerequisites": [],
+            "misconceptions": [
+              "Confusing the hour and minute hands",
+              "Not knowing the order of days in a week or months in a year",
+              "Mixing up quarter past and quarter to"
+            ]
+          }
+        ]
+      },
+      {
+        "term": 3,
+        "topics": [
+          {
+            "name": "Length in metres and centimetres",
+            "shortName": "Length and perimeter",
+            "family": "measurement",
+            "prerequisites": [],
+            "misconceptions": [
+              "Adding only two sides instead of all sides for perimeter",
+              "Mixing metres and centimetres when adding",
+              "Thinking perimeter and area are the same"
+            ],
+            "check": {
+              "reason": "Length is listed in Term 1 and again in Term 3; it is unclear whether the school wants a repeat of the same topic or a separate perimeter topic.",
+              "options": [
+                "Repeat Term 1 length and add perimeter",
+                "Treat Term 3 as a new perimeter topic"
+              ]
+            }
+          },
+          {
+            "name": "Shapes: triangles, squares and circles",
+            "shortName": "Triangles squares circles",
+            "family": "shape",
+            "prerequisites": [],
+            "misconceptions": [
+              "Thinking every triangle looks the same",
+              "Saying a circle has sides",
+              "Thinking a square is not a rectangle"
+            ]
+          },
+          {
+            "name": "Angles and turns",
+            "shortName": "Angles and turns",
+            "family": "shape",
+            "prerequisites": [
+              "Shapes: triangles, squares and circles"
+            ],
+            "misconceptions": [
+              "Thinking longer lines make a bigger angle",
+              "Confusing a quarter turn with a half turn",
+              "Calling every corner a square corner"
+            ]
+          },
+          {
+            "name": "Number patterns",
+            "shortName": "Number patterns",
+            "family": "numbers",
+            "prerequisites": [
+              "Addition and subtraction"
+            ],
+            "misconceptions": [
+              "Counting one by one instead of finding the rule",
+              "Thinking every pattern must go up by the same amount",
+              "Assuming the rule never changes"
+            ]
+          },
+          {
+            "name": "Data: tally charts and pictograms",
+            "shortName": "Tally charts pictograms",
+            "family": "data",
+            "prerequisites": [],
+            "misconceptions": [
+              "Drawing tally marks in groups of five wrongly",
+              "Thinking each picture always stands for one item",
+              "Mixing up 'most' and 'least'"
+            ]
+          }
+        ]
+      }
+    ],
+    "leftOut": [
+      {
+        "name": "Decimals: tenths and hundredths",
+        "reason": "Document labels this as Grade 6 content and says do not teach it in Grade 4."
+      }
+    ]
+  }
+}

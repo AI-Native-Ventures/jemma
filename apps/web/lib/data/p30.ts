@@ -6,6 +6,7 @@ import {
   dayLabel,
   plural,
   readDraft,
+  termInView,
   timeHm,
   type ReadDraft,
 } from '@/app/t/[classId]/curriculum/format'
@@ -96,7 +97,9 @@ export async function getApprovedView(classId: string, state: CurriculumState, n
     return { id: t.id, name: t.name, term: t.term, pct: s ? Math.round((s.right / s.all) * 100) : null, reteach: reteach.has(t.id) }
   })
 
-  const current = currentTerm(now)
+  // A three term year has no term 4: in the last quarter of the calendar the current term is its last term.
+  const termsInMap = [...new Set(all.map((t) => t.term))].sort((a, b) => a - b)
+  const current = termsInMap.length > 0 ? termInView(termsInMap, currentTerm(now)) : currentTerm(now)
   const currentTopics = all.filter((t) => t.term === current)
   const earlier = all.filter((t) => t.term < current && t.pct !== null)
   const weak = all.filter((t) => t.pct !== null && t.pct < 50).map((t) => ({ name: t.name, term: t.term }))

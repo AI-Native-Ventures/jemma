@@ -8,6 +8,7 @@ import { retryEvent, sendEvent } from '@/lib/agent'
 import { recordApproval } from '@/lib/approvals'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
+import { checkDocument, sizeProblem } from './upload-checks'
 import {
   SAMPLE_DOCS,
   addTopicIn,
@@ -63,27 +64,40 @@ async function draftMapFor(admin: JemmaDb, classId: string): Promise<string> {
   return made.data.id
 }
 
-const pdfPages = (bytes: Uint8Array) => Math.max(1, (new TextDecoder('latin1').decode(bytes).match(/\/Type\s*\/Page[^s]/g) ?? []).length)
+export type UploadResult = { ok: true } | { ok: false; message: string }
 
-/** Photos or files from the teacher; the agent drafts the map from them. */
-export async function uploadCurriculum(classId: string, files: File[]): Promise<void> {
+/**
+ * Photos or files from the teacher; the agent drafts the map from them. A PDF, JPG or PNG (read from the first bytes), at most
+ * 10 MB and 40 pages a document. A refusal is returned, not thrown: a thrown error reaches the browser as a blank "something
+ * went wrong", and the teacher needs to read the limit. Nothing is stored unless every document passes.
+ */
+export async function uploadCurriculum(classId: string, files: File[]): Promise<UploadResult> {
   const cls = await ownClass(classId)
-  if (files.length === 0) return
+  if (files.length === 0) return { ok: true }
+  const tooBig = sizeProblem(files)
+  if (tooBig) return { ok: false, message: tooBig }
+  const checked: { file: File; bytes: Uint8Array; mimeType: string; pages: number }[] = []
+  for (const file of files) {
+    const bytes = new Uint8Array(await file.arrayBuffer())
+    const check = await checkDocument(file.name, bytes)
+    if (!check.ok) return { ok: false, message: check.message }
+    checked.push({ file, bytes, mimeType: check.mimeType, pages: check.pages })
+  }
   const admin = createSupabaseAdmin()
   const mapId = await draftMapFor(admin, classId)
   const rows: { class_id: string; storage_path: string; title: string; pages: number }[] = []
-  for (const [i, file] of files.entries()) {
+  for (const [i, { file, bytes, mimeType, pages }] of checked.entries()) {
     const safe = file.name.replace(/[^\w.-]+/g, '_')
     const path = `${cls.school_id}/${classId}/${Date.now()}-${i}-${safe}`
-    const bytes = new Uint8Array(await file.arrayBuffer())
-    const up = await admin.storage.from('curriculum').upload(path, bytes, { contentType: file.type || 'application/octet-stream' })
+    const up = await admin.storage.from('curriculum').upload(path, bytes, { contentType: mimeType })
     if (up.error) throw new Error(up.error.message)
-    rows.push({ class_id: classId, storage_path: path, title: file.name.replace(/\.[^.]+$/, ''), pages: file.type === 'application/pdf' ? pdfPages(bytes) : 1 })
+    rows.push({ class_id: classId, storage_path: path, title: file.name.replace(/\.[^.]+$/, ''), pages })
   }
   const ins = await admin.from('curriculum_docs').insert(rows)
   if (ins.error) throw new Error(ins.error.message)
   await fire(mapId)
   revalidatePath(`/t/${classId}/curriculum`)
+  return { ok: true }
 }
 
 /** Demo only: the two documents the board shows, copied from the sample files. */

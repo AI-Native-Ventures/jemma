@@ -1,0 +1,283 @@
+{
+  "version": 1,
+  "runId": "2026-11-11-18-26-unseen",
+  "docId": "grade9-natural-sciences-za",
+  "n": 2,
+  "attempt": 1,
+  "startedAt": "2026-11-11T18:30:03.110Z",
+  "seconds": 360.4,
+  "calls": 1,
+  "way": "vision",
+  "visionProblem": null,
+  "model": "nvidia/nemotron-3.5-super-vl:free",
+  "verdict": "pass",
+  "error": null,
+  "noAnswer": null,
+  "checks": [
+    {
+      "name": "the draft is for the right grade",
+      "pass": true,
+      "detail": "draft grade 9, document grade 9"
+    },
+    {
+      "name": "at least 80 percent of the topics were found",
+      "pass": true,
+      "detail": "found 15 of 15"
+    },
+    {
+      "name": "at most 15 percent of the draft is made up",
+      "pass": true,
+      "detail": "0 of 16 drafted topics are not in the document"
+    },
+    {
+      "name": "at least 80 percent of the found topics are in the right term",
+      "pass": true,
+      "detail": "15 of 15 found topics in the right term"
+    },
+    {
+      "name": "the topic listed in two terms is flagged with a question",
+      "pass": true,
+      "detail": "\"Electric circuits\" has a check"
+    },
+    {
+      "name": "the topic of another grade is flagged with a question or left out with a reason",
+      "pass": true,
+      "detail": "\"States of matter and the particle model\" is under leftOut"
+    },
+    {
+      "name": "every family key is one of the subject's keys",
+      "pass": true,
+      "detail": "all 16 are among life_living, matter_materials, energy_change, earth_beyond"
+    },
+    {
+      "name": "the map has the number of terms the document has",
+      "pass": true,
+      "detail": "the document has 4 terms, the draft has terms 1, 2, 3, 4"
+    }
+  ],
+  "figures": {
+    "found": 15,
+    "of": 15,
+    "invented": 0,
+    "drafted": 16,
+    "rightTerm": 15,
+    "termsInDraft": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "draft": {
+    "grade": 9,
+    "terms": [
+      {
+        "term": 1,
+        "topics": [
+          {
+            "name": "Cells and their parts",
+            "shortName": "Cells",
+            "family": "life_living",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think plant and animal cells are exactly the same",
+              "Learners think every cell has chloroplasts"
+            ]
+          },
+          {
+            "name": "Photosynthesis and respiration",
+            "shortName": "Photosynthesis",
+            "family": "life_living",
+            "prerequisites": [
+              "Cells and their parts"
+            ],
+            "misconceptions": [
+              "Learners think respiration is just breathing",
+              "Learners think photosynthesis happens in all plant parts such as roots"
+            ]
+          },
+          {
+            "name": "Atoms, elements and the periodic table",
+            "shortName": "Atoms",
+            "family": "matter_materials",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners confuse atoms with elements",
+              "Learners think the periodic table lists compounds instead of elements"
+            ]
+          },
+          {
+            "name": "Chemical reactions and word equations",
+            "shortName": "Chemical reactions",
+            "family": "matter_materials",
+            "prerequisites": [
+              "Atoms, elements and the periodic table"
+            ],
+            "misconceptions": [
+              "Learners think matter disappears or appears in a reaction",
+              "Learners mix up reactants and products"
+            ]
+          }
+        ]
+      },
+      {
+        "term": 2,
+        "topics": [
+          {
+            "name": "Acids, bases and the pH scale",
+            "shortName": "Acids and bases",
+            "family": "matter_materials",
+            "prerequisites": [
+              "Chemical reactions and word equations"
+            ],
+            "misconceptions": [
+              "Learners think all acids are dangerous to touch",
+              "Learners think a pH of 7 is acidic"
+            ]
+          },
+          {
+            "name": "Reproduction in flowering plants",
+            "shortName": "Plant reproduction",
+            "family": "life_living",
+            "prerequisites": [
+              "Cells and their parts"
+            ],
+            "misconceptions": [
+              "Learners think pollination and fertilisation are the same thing",
+              "Learners think all flowers look the same inside"
+            ]
+          },
+          {
+            "name": "Electric circuits",
+            "shortName": "Electric circuits",
+            "family": "energy_change",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think current is used up by bulbs",
+              "Learners think voltage is the same at every point in a circuit"
+            ]
+          },
+          {
+            "name": "Series and parallel circuits",
+            "shortName": "Series parallel",
+            "family": "energy_change",
+            "prerequisites": [
+              "Electric circuits"
+            ],
+            "misconceptions": [
+              "Learners think bulbs in parallel are brighter because there are more paths",
+              "Learners think current is the same everywhere in a parallel circuit"
+            ]
+          }
+        ]
+      },
+      {
+        "term": 3,
+        "topics": [
+          {
+            "name": "Electric circuits",
+            "shortName": "Electric circuits",
+            "family": "energy_change",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think current is used up by bulbs",
+              "Learners think voltage is the same at every point in a circuit"
+            ],
+            "check": {
+              "reason": "The plan lists Electric circuits in both Term 2 and Term 3 as a continuation.",
+              "options": [
+                "Map it once in Term 2 only",
+                "Keep separate entries in Term 2 and Term 3"
+              ]
+            }
+          },
+          {
+            "name": "Heat transfer",
+            "shortName": "Heat transfer",
+            "family": "energy_change",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think heat only moves by conduction",
+              "Learners think insulators create cold"
+            ]
+          },
+          {
+            "name": "Rocks and the rock cycle",
+            "shortName": "Rocks",
+            "family": "earth_beyond",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think rocks stay the same forever",
+              "Learners think weathering and erosion mean the same thing"
+            ]
+          },
+          {
+            "name": "Weather and climate",
+            "shortName": "Weather",
+            "family": "earth_beyond",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners confuse weather with climate",
+              "Learners think the Sun directly causes wind"
+            ]
+          }
+        ]
+      },
+      {
+        "term": 4,
+        "topics": [
+          {
+            "name": "Ecosystems and food webs",
+            "shortName": "Ecosystems",
+            "family": "life_living",
+            "prerequisites": [
+              "Photosynthesis and respiration"
+            ],
+            "misconceptions": [
+              "Learners think food webs start with animals",
+              "Learners think decomposers are not important"
+            ]
+          },
+          {
+            "name": "Human impact on the environment",
+            "shortName": "Human impact",
+            "family": "life_living",
+            "prerequisites": [
+              "Ecosystems and food webs"
+            ],
+            "misconceptions": [
+              "Learners think pollution only means litter",
+              "Learners think one person cannot make a difference"
+            ]
+          },
+          {
+            "name": "The solar system and the seasons",
+            "shortName": "Solar system",
+            "family": "earth_beyond",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think seasons are caused by Earth's distance from the Sun",
+              "Learners think the Sun orbits Earth"
+            ]
+          },
+          {
+            "name": "Forces and motion graphs",
+            "shortName": "Forces and motion",
+            "family": "energy_change",
+            "prerequisites": [],
+            "misconceptions": [
+              "Learners think a flat distance-time graph means an object is moving fast",
+              "Learners think balanced forces mean an object cannot be moving"
+            ]
+          }
+        ]
+      }
+    ],
+    "leftOut": [
+      {
+        "name": "States of matter and the particle model",
+        "reason": "Listed as a Grade 8 topic for revision only in Term 1 and not assessed in Grade 9."
+      }
+    ]
+  }
+}

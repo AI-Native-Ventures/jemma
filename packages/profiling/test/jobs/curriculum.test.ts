@@ -133,7 +133,7 @@ test('draft_topic_map saves a draft and one Needs you item', async () => {
 test('save_topic_map_draft returns topics and unsure counts', async () => {
   await asDraft()
   const out = await saveTopicMapDraft.run(ctxFor(a), { mapId: a.mapId, draft: bigDraft() })
-  expect(out).toEqual({ topics: 24, unsure: 2 })
+  expect(out).toEqual({ topics: 24, unsure: 2, codeQuestions: 0 })
 })
 
 test('curriculum text cannot add instructions', async () => {

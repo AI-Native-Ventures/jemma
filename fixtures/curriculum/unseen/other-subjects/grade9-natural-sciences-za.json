@@ -1,0 +1,32 @@
+{
+  "id": "grade9-natural-sciences-za",
+  "file": "grade9-natural-sciences-za.pdf",
+  "mimeType": "application/pdf",
+  "grade": 9,
+  "subject": "Natural Sciences",
+  "country": "ZA",
+  "termCount": 4,
+  "textLayer": true,
+  "families": ["life_living", "matter_materials", "energy_change", "earth_beyond"],
+  "topics": [
+    { "name": "Cells and their parts", "terms": [1], "family": "life_living", "match": [["cell"]] },
+    { "name": "Photosynthesis and respiration", "terms": [1], "family": "life_living", "match": [["photosynthesis"], ["respiration"]] },
+    { "name": "Atoms, elements and the periodic table", "terms": [1], "family": "matter_materials", "match": [["atom"], ["element"], ["periodic"]] },
+    { "name": "Chemical reactions and word equations", "terms": [1], "family": "matter_materials", "match": [["chemical", "reaction"], ["word", "equation"]] },
+    { "name": "Acids, bases and the pH scale", "terms": [2], "family": "matter_materials", "match": [["acid"], ["base"], ["ph"]] },
+    { "name": "Reproduction in flowering plants", "terms": [2], "family": "life_living", "match": [["reproduction"], ["flower"]] },
+    { "name": "Electric circuits", "terms": [2, 3], "family": "energy_change", "match": [["electric", "circuit"]] },
+    { "name": "Series and parallel circuits", "terms": [2], "family": "energy_change", "match": [["series"], ["parallel"]] },
+    { "name": "Heat transfer", "terms": [3], "family": "energy_change", "match": [["heat"]] },
+    { "name": "Rocks and the rock cycle", "terms": [3], "family": "earth_beyond", "match": [["rock"]] },
+    { "name": "Weather and climate", "terms": [3], "family": "earth_beyond", "match": [["weather"], ["climate"]] },
+    { "name": "Ecosystems and food webs", "terms": [4], "family": "life_living", "match": [["ecosystem"], ["food", "web"]] },
+    { "name": "Human impact on the environment", "terms": [4], "family": "life_living", "match": [["impact"]] },
+    { "name": "The solar system and the seasons", "terms": [4], "family": "earth_beyond", "match": [["solar"], ["season"]] },
+    { "name": "Forces and motion graphs", "terms": [4], "family": "energy_change", "match": [["force"], ["motion"]] }
+  ],
+  "traps": {
+    "twoTerms": { "name": "Electric circuits", "terms": [2, 3] },
+    "otherGrade": { "name": "States of matter and the particle model", "grade": 8, "match": [["state", "matter"], ["particle"]] }
+  }
+}

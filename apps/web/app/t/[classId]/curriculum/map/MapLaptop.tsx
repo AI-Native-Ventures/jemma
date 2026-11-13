@@ -120,7 +120,7 @@ export function MapLaptop({ view }: { view: MapView }) {
                       {`Term ${t.term}`}
                       {t.badge > 0 ? <span style={{ minWidth: 18, height: 18, padding: '0 5px', borderRadius: 999, background: '#FF6A4D', fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{t.badge}</span> : null}
                     </span>
-                    <span style={{ fontSize: 12, fontWeight: 500, color: '#5D5A73' }}>{TERM_SHORT[t.term]}</span>
+                    {view.months ? <span style={{ fontSize: 12, fontWeight: 500, color: '#5D5A73' }}>{TERM_SHORT[t.term]}</span> : null}
                   </h2>
                   {all.filter((x) => x.term === t.term).map(tile)}
                   {view.leftOut.filter((l) => l.term === t.term).map((l) => (
@@ -220,7 +220,7 @@ function EditPanel({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label htmlFor="tterm" style={label}>Term</label>
           <select id="tterm" value={term} onChange={(e) => { const n = Number(e.target.value); setTerm(n); setPosition((termCounts[n] ?? 0) + (n === topic.term ? -1 : 0)) }} style={{ ...field, padding: '0 10px' }}>
-            {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{`Term ${n}`}</option>)}
+            {Object.keys(termCounts).map(Number).sort((a, b) => a - b).map((n) => <option key={n} value={n}>{`Term ${n}`}</option>)}
           </select>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
