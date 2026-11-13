@@ -205,7 +205,7 @@ export async function applyImportFix(db: JemmaDb, importId: string, fix: Fix): P
   const stored = storedOf(row)
   if (!stored.mapping) return { ok: false, reason: 'This file is not ready to check.' }
   const facts = await loadClassFacts(db, row.class_id)
-  const rows = applyFix(stored.rows, fix, { learners: facts.learners, families: facts.families })
+  const rows = applyFix(stored.rows, fix, { learners: facts.learners, families: facts.families, subject: facts.subject })
   const problems = findProblems(rows, { existing: await loadExisting(db, facts.learners.map((l) => l.id)), families: facts.families })
   const saved = await db.from('record_imports').update({ rows: rows as unknown as Json, problems: problems as unknown as Json }).eq('id', importId).eq('status', 'ready').select('id')
   if (saved.error || !saved.data?.length) return { ok: false, reason: 'Could not save that. Try again.' }

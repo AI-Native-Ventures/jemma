@@ -10,7 +10,7 @@ import {
   type PieceKind,
   type Problem,
 } from '../schemas/records'
-import { DEFAULT_SUBJECT, canonicalSubject } from './strands'
+import { DEFAULT_SUBJECT, canonicalFamily, canonicalSubject } from './strands'
 
 // Past records brought in from a file. The model only says what each column means. Everything below is code:
 // it reads every row, matches the learners, reads the marks, works out the term, and finds what is wrong.
@@ -420,11 +420,19 @@ export function tidyFamily(text: string): string | null {
   return word === '' ? null : word
 }
 
-/** A strand the class offers, or (when the class offers none) a tidied short word. Null when it is neither. */
-export function pickFamily(family: string, families: FamilyChoice[] | null): string | null {
+/**
+ * A strand the class offers, or (when the class offers none) a tidied short word. Null when it is neither.
+ * The exact key or label comes first, so whatever matched before matches the same way. With the class's `subject`, a word that says the
+ * same strand another way ("Numbers", "Shape", "geometry") finds the strand the class offers, through the plain form of `canonicalFamily`.
+ */
+export function pickFamily(family: string, families: FamilyChoice[] | null, subject?: string): string | null {
   if (families === null) return tidyFamily(family)
   const key = plainText(family)
-  return families.find((f) => plainText(f.family) === key || plainText(f.label) === key)?.family ?? null
+  const exact = families.find((f) => plainText(f.family) === key || plainText(f.label) === key)
+  if (exact) return exact.family
+  if (subject === undefined) return null
+  const plain = canonicalFamily(subject, family)
+  return plain === '' ? null : (families.find((f) => canonicalFamily(subject, f.family) === plain)?.family ?? null)
 }
 
 const stem = (word: string) => word.replace(/s$/, '')
@@ -441,13 +449,13 @@ function strandByName(text: string, families: FamilyChoice[]): string | null {
  * The strand of a topic text. The model's answer for that text comes first (an answer of `unsure`, or one the class does not offer, does
  * not stand). A topic the model did not see is placed by a strand's name written in it. Otherwise null: Jemma is unsure.
  */
-export function resolveFamily(text: string | null, topics: FileMapping['topics'], families: FamilyChoice[] | null): string | null {
+export function resolveFamily(text: string | null, topics: FileMapping['topics'], families: FamilyChoice[] | null, subject?: string): string | null {
   if (text === null || text.trim() === '') return null
   const key = same(text)
   const said = topics.find((t) => same(t.text) === key)
   if (said) {
     if (plainText(said.family) === 'unsure') return null
-    const picked = pickFamily(said.family, families)
+    const picked = pickFamily(said.family, families, subject)
     if (picked) return picked
   }
   return families ? strandByName(text, families) : null
@@ -567,7 +575,7 @@ export function readRows(table: RawTable, mapping: FileMapping, ctx: ReadContext
       markProblem,
       topic: topic === null ? null : clip(topic, 120),
       strandText: strandText === null ? null : clip(strandText, 120),
-      family: isMarked ? resolveFamily(strandText, mapping.topics, ctx.families) : null,
+      family: isMarked ? resolveFamily(strandText, mapping.topics, ctx.families, ctx.subject) : null,
       text: note === '' ? null : clip(note, 1000),
       teacher: cellOf(raw, mapping.teacher) || mapping.fixed.teacher,
       present,
@@ -643,10 +651,10 @@ export type Fix = { row: number; childId?: string; family?: string; skip?: boole
  * One decision of the teacher, applied to a copy of the rows: pick the learner (one of the class), change the strand (for every row with
  * the same topic words), skip the row, or keep a repeat. A choice that is not allowed changes nothing.
  */
-export function applyFix(rows: ImportRow[], fix: Fix, c: { learners: ImportLearner[]; families: FamilyChoice[] | null }): ImportRow[] {
+export function applyFix(rows: ImportRow[], fix: Fix, c: { learners: ImportLearner[]; families: FamilyChoice[] | null; subject?: string }): ImportRow[] {
   const target = rows.find((r) => r.n === fix.row)
   if (!target) return rows
-  const family = fix.family === undefined ? undefined : pickFamily(fix.family, c.families)
+  const family = fix.family === undefined ? undefined : pickFamily(fix.family, c.families, c.subject)
   const group = target.strandText === null ? null : same(target.strandText)
   return rows.map((r) => {
     if (r.n === fix.row) {
@@ -769,7 +777,7 @@ export function validateOneResult(input: OneResultInput, c: OneResultContext): {
   if (title === '') return { ok: false, error: 'Give the piece a title' }
   if (title.length > 120) return { ok: false, error: 'Keep the title under 120 letters' }
   const subject = canonicalSubject((input.subject ?? '').trim() || c.subject || DEFAULT_SUBJECT)
-  const family = (input.family ?? '').trim() === '' ? null : pickFamily(input.family!, c.families)
+  const family = (input.family ?? '').trim() === '' ? null : pickFamily(input.family!, c.families, subject)
   if (family === null) return { ok: false, error: (input.family ?? '').trim() === '' ? 'Pick the strand' : 'Pick one of the strands in the list' }
   const marks = asInt(input.marks)
   const outOf = asInt(input.outOf)
