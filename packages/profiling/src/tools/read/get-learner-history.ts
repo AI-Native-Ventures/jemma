@@ -4,6 +4,7 @@ import {
   buildTable,
   findPatterns,
   historySlots,
+  isLoggedLate,
   missingSlots,
   plainDate,
   recordLabel,
@@ -19,9 +20,6 @@ import {
 } from '../../logic'
 import { LearnerHistorySchema, type LearnerHistory, type SubjectHistory } from '../../schemas/long-view'
 import { assertInSchool, defineTool, ok, type ToolContext } from '../context'
-
-const LATE_AFTER_DAYS = 60
-const DAY_MS = 24 * 60 * 60 * 1000
 
 export type LoadedHistory = {
   history: LearnerHistory
@@ -52,6 +50,7 @@ export async function loadHistory(ctx: ToolContext, childId: string): Promise<Lo
     id: r.id, source: r.source as LongViewRecord['source'], grade: r.grade, year: r.year, term: r.term, happenedOn: r.happened_on, loggedAt: r.logged_at,
     teacherName: r.teacher_name, title: r.title, family: r.family, topicName: r.topic_name, marks: r.marks, outOf: r.out_of,
     quality: r.quality === 'unclear' ? 'unclear' : 'clear', text: r.text, present: r.present, total: r.total, subject: r.subject,
+    importId: r.import_id, addedBy: r.added_by, addedByName: r.added_by_name,
   }))
 
   // This year's marked answers: the strand comes from the topic, the date from the test (or the paper), the label names the test and the question,
@@ -125,7 +124,8 @@ export async function loadHistory(ctx: ToolContext, childId: string): Promise<Lo
       .sort(compareSlots)
       .map((c) => ({ ...c, percent: c.total > 0 ? Math.round((c.present * 100) / c.total) : 0 })),
     loggedLate: records
-      .filter((r) => Date.parse(r.loggedAt) - Date.parse(r.happenedOn) > LATE_AFTER_DAYS * DAY_MS)
+      // The same rule as the screen (`isLoggedLate`): a record a teacher brought in is not late.
+      .filter(isLoggedLate)
       .sort((a, b) => a.happenedOn.localeCompare(b.happenedOn) || recordLabel(a).localeCompare(recordLabel(b)))
       .map((r) => ({ id: r.id, subject: recordSubject(r), label: recordLabel(r), happenedOn: r.happenedOn, loggedAt: r.loggedAt })),
   }

@@ -100,9 +100,28 @@ export type LongViewRecord = {
   importId?: string | null
   /** The row of that file. */
   sourceRow?: number | null
+  /** The user who added the record (`learner_records.added_by`): a file, or one result typed by hand. Null or missing for the demo seed. */
+  addedBy?: string | null
   /** The teacher who added the record (a file, or one result typed by hand). Missing for the demo seed. */
   addedByName?: string | null
 }
+
+/** A piece written into the records more than this many days after it happened is "logged late". */
+export const LATE_AFTER_DAYS = 60
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/**
+ * A record a teacher brought in through "Add past records": it came from a file (`import_id`) or was typed in by hand (`added_by`).
+ * Such a record is written long after it happened by nature. The demo seed and the records of the term have neither.
+ */
+export const isBroughtIn = (r: Pick<LongViewRecord, 'importId' | 'addedBy' | 'addedByName'>): boolean => !!r.importId || !!r.addedBy || !!r.addedByName
+
+/**
+ * "Logged late": written into the records more than LATE_AFTER_DAYS after it happened, and NOT brought in (a record that was brought in
+ * says where it came from instead). The screen and `get_learner_history` both ask here, so they keep one rule.
+ */
+export const isLoggedLate = (r: Pick<LongViewRecord, 'happenedOn' | 'loggedAt'> & Partial<Pick<LongViewRecord, 'importId' | 'addedBy' | 'addedByName'>>): boolean =>
+  !isBroughtIn(r) && Date.parse(r.loggedAt) - Date.parse(r.happenedOn) > LATE_AFTER_DAYS * DAY_MS
 
 /**
  * One marked answer of this year (from `question_results`). It takes its subject and grade from the class of the test it was written in

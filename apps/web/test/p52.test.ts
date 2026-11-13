@@ -204,6 +204,56 @@ describe('what Jemma could not use', () => {
     expect(v.late).toEqual(['Assignment: Angles, Mrs Naidoo, 4 Mar 2025'])
   })
 
+  it('a record a teacher brought in is not "logged late", however old it is; a seeded record that old still is', () => {
+    // 400 days between the day it happened and the day it was written down.
+    const old = { happenedOn: '2025-03-04', loggedAt: '2026-04-08T10:00:00Z', term: 1 }
+    const v = buildLongView(
+      input({
+        records: [
+          record({ id: 'seed', title: 'Assignment: Angles', family: 'shapes', ...old }),
+          record({ id: 'file', title: 'Quiz: From a file', family: 'fractions', ...old, importId: 'imp-1', sourceRow: 4, addedBy: 'user-1', addedByName: 'Ms Banda' }),
+          record({ id: 'typed', title: 'Quiz: Typed by hand', family: 'decimals', ...old, addedBy: 'user-1', addedByName: 'Ms Banda' }),
+        ],
+        importFiles: { 'imp-1': 'term-1-marks.csv' },
+      }),
+    )
+    expect(v.late).toEqual(['Assignment: Angles, Mrs Naidoo, 4 Mar 2025'])
+  })
+
+  it('the source sheet of a record that was brought in says where it came from and does not say it was logged late', () => {
+    const old = { happenedOn: '2025-03-04', loggedAt: '2026-04-08T10:00:00Z', year: 2025, term: 1 }
+    const rows = [
+      record({ id: 'seed', title: 'Seeded', family: 'fractions', ...old }),
+      record({ id: 'file', title: 'From a file', family: 'fractions', ...old, term: 2, happenedOn: '2025-05-04', importId: 'imp-1', sourceRow: 4, addedBy: 'user-1', addedByName: 'Ms Banda' }),
+      record({ id: 'typed', title: 'Typed by hand', family: 'fractions', ...old, term: 3, happenedOn: '2025-08-04', addedBy: 'user-1', addedByName: 'Ms Banda' }),
+    ]
+    const v = buildLongView(
+      input({
+        records: rows,
+        importFiles: { 'imp-1': 'term-1-marks.csv' },
+        patterns: [pattern({ evidence: rows.map((r) => ({ kind: 'record' as const, id: r.id, label: `${r.title}, Mrs Naidoo, ${r.happenedOn}` })) })],
+      }),
+    )
+    const sheets = Object.fromEntries(v.groups.drafts[0]!.evidence.map((e) => [e.id, 'sheet' in e ? e.sheet : null]))
+    expect(sheets.seed).toMatchObject({ late: true, origin: null })
+    expect(sheets.file).toMatchObject({ late: false })
+    expect(sheets.file!.origin).toMatch(/^From term-1-marks\.csv, row 4\. Added by Ms Banda/)
+    expect(sheets.typed).toMatchObject({ late: false })
+    expect(sheets.typed!.origin).toMatch(/^Added by Ms Banda/)
+  })
+
+  it('the 60 day rule is unchanged for a record that was not brought in: exactly 60 days is on time, more is late', () => {
+    const v = buildLongView(
+      input({
+        records: [
+          record({ id: 'a', title: 'Sixty days', happenedOn: '2025-03-01', loggedAt: '2025-04-30T00:00:00Z', term: 1 }),
+          record({ id: 'b', title: 'Sixty one days', family: 'shapes', happenedOn: '2025-03-01', loggedAt: '2025-05-01T10:00:00Z', term: 1 }),
+        ],
+      }),
+    )
+    expect(v.late).toEqual(['Sixty one days, Mrs Naidoo, 1 Mar 2025'])
+  })
+
   it('writes missing terms by grade in plain words', () => {
     expect(linesFor([{ grade: 5, year: 2025, term: 2 }, { grade: 5, year: 2025, term: 3 }])).toEqual(['No results for Grade 5, Terms 2 and 3'])
     expect(linesFor([{ grade: 5, year: 2025, term: 2 }])).toEqual(['No results for Grade 5, Term 2'])
