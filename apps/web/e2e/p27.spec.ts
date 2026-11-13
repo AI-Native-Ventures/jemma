@@ -86,7 +86,7 @@ test('nothing tonight after the session is done', async ({ page }, testInfo) => 
   await expect(page.getByRole('heading', { name: 'Adding decimals' })).toBeVisible()
   // nothing is planned for tonight and Amina has fixed gaps: she can practise now (the card that said "Keep a fixed gap fixed" was a link to a list)
   await expect(page.getByRole('button', { name: 'Practise now' })).toBeVisible()
-  await expect(page.getByText('Jemma writes a short practice for you. It takes about a minute.')).toBeVisible()
+  await expect(page.getByText('Jemma writes a short practice for you. It takes a minute or two.')).toBeVisible()
   await expect(page.getByText('Keep a fixed gap fixed')).toHaveCount(0)
   await expect(page.getByText("You've fixed 3 gaps so far")).toBeVisible()
   await noHorizontalScroll(page)

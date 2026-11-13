@@ -51,7 +51,7 @@ export function PracticeCard({ state }: { state: PracticeState }) {
       <section role="status" aria-live="polite" aria-labelledby="practice-writing" className={`${card} items-center gap-3.5 text-center`}>
         <Ring />
         <h2 id="practice-writing" className="m-0 text-[24px] leading-[1.2] font-bold tracking-[-0.01em] text-pretty">Jemma is writing your practice.</h2>
-        <p className="m-0 text-[17px] leading-[1.45] text-body">About a minute. You can wait here.</p>
+        <p className="m-0 text-[17px] leading-[1.45] text-body">A minute or two. You can wait here.</p>
       </section>
     )
   }
@@ -72,7 +72,7 @@ export function PracticeCard({ state }: { state: PracticeState }) {
         )}
         {failed ? 'Try again' : 'Practise now'}
       </PendingButton>
-      {failed ? null : <p className="m-0 text-center text-[16px] leading-[1.45] text-body">Jemma writes a short practice for you. It takes about a minute.</p>}
+      {failed ? null : <p className="m-0 text-center text-[16px] leading-[1.45] text-body">Jemma writes a short practice for you. It takes a minute or two.</p>}
       {error ? <p role="alert" className="m-0 text-center text-[14px] text-coral-text">{error}</p> : null}
     </section>
   )
