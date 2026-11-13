@@ -60,7 +60,9 @@ async function withTimeLimit<T>(ms: number, parent: AbortSignal | undefined, cal
 
 /**
  * Retries a failed model call with backoff, and gives each live try `timeoutMs` to answer (a free model that never answers would
- * hold the whole run until Cloudflare ends it). Sits inside the replay layer, so only live calls are retried and timed: a recorded
+ * hold the whole run until Cloudflare ends it). A timeout is not tried again on the same model: a model that hangs once usually
+ * hangs again, so the error is thrown at once and the next model in the chain (`withFallbacks`) gets the call. Every other
+ * retryable error keeps its retries. Sits inside the replay layer, so only live calls are retried and timed: a recorded
  * answer is never timed, and the replay layer sees the call as it was (the signal is added below it, and the key leaves it out anyway).
  * Streams are left alone: nothing in Jemma streams, and this layer has never wrapped them.
  */
@@ -76,7 +78,7 @@ export function withModelRetry(
         try {
           return await withTimeLimit(timeoutMs, params.abortSignal, (abortSignal) => model.doGenerate({ ...params, abortSignal }))
         } catch (err) {
-          if (i >= waits.length || !isRetryableModelError(err)) throw err
+          if (err instanceof ModelTimeoutError || i >= waits.length || !isRetryableModelError(err)) throw err
           await sleep(waits[i]!)
         }
       }
@@ -133,7 +135,7 @@ function rawModel(label: string, provider: string, modelId: string, env: AiEnv) 
 
 type Chained = ReturnType<typeof wrapLanguageModel>
 
-/** Tries each model in order. Moves on after a 5xx, overload or replay miss; any other error is the caller's. */
+/** Tries each model in order. Moves on after a 5xx, overload, timeout or replay miss; any other error is the caller's. With no model left, the first error goes up. */
 export function withFallbacks(models: Chained[]): Chained {
   if (models.length === 1) return models[0]!
   const first = models[0]!
@@ -143,7 +145,7 @@ export function withFallbacks(models: Chained[]): Chained {
       try {
         return await call(m)
       } catch (err) {
-        if (!(err instanceof ReplayMissError) && !isRetryableModelError(err)) throw err
+        if (!(err instanceof ReplayMissError) && !(err instanceof ModelTimeoutError) && !isRetryableModelError(err)) throw err
         firstError ??= err
       }
     }

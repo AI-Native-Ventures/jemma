@@ -15,14 +15,89 @@ export function readConfidenceMin(ctx: ToolContext): number {
   return fromEnv !== undefined && fromEnv !== '' && Number.isFinite(n) ? n : DEFAULT_READ_CONFIDENCE_MIN
 }
 
-const PROBLEM_TITLE: Record<NonNullable<PaperRead['problem']>, string> = {
+/**
+ * What `papers.error` holds when a photo could not be used. The model chooses among the first four (`PaperReadSchema.problem`).
+ * `read_failed` is written by code, when the job behind the photo ended failed for good (`endUnreadablePaper`): the model cannot choose it.
+ */
+export type PaperProblem = NonNullable<PaperRead['problem']> | 'read_failed'
+
+export const PROBLEM_TITLE: Record<PaperProblem, string> = {
   too_dark: 'Photo too dark',
   blurry: 'Photo too blurry',
   cut_off: 'Photo cut off',
   not_a_test: 'Not a test paper',
+  read_failed: 'Jemma could not read this photo',
 }
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
+
+type PaperRow = { id: string; test_id: string | null; child_id: string | null }
+
+/** Re-running replaces the earlier read and its open items. */
+async function clearEarlierRead(ctx: ToolContext, paperId: string): Promise<void> {
+  await ok(ctx.db.from('question_results').delete().eq('paper_id', paperId).select('id'))
+  await ok(ctx.db.from('needs_you_items').delete().eq('ref_id', paperId).eq('status', 'open').select('id'))
+}
+
+/** What a paper belongs to and who is asked about it: its test and class (a teacher's paper), or the parent linked to its child (a parent's). */
+async function paperScope(ctx: ToolContext, paper: PaperRow) {
+  const db = ctx.db
+  const teacherPaper = !!paper.test_id
+  const test = paper.test_id ? await ok(db.from('tests').select('id, title, class_id').eq('id', paper.test_id).single()) : null
+  const cls = test ? await ok(db.from('classes').select('id, teacher_id').eq('id', test.class_id).single()) : null
+  const owner = async (): Promise<string | null> => {
+    if (cls) return cls.teacher_id
+    if (!paper.child_id) return null
+    const link = await maybe(
+      db.from('parent_links').select('parent_id').eq('child_id', paper.child_id).eq('status', 'approved').limit(1).maybeSingle(),
+    )
+    return link?.parent_id ?? null
+  }
+  const needsYou = async (kind: 'check_answer' | 'unreadable_name' | 'confirm_scan', childId: string | null, title: string, detail: string) => {
+    const ownerId = await owner()
+    if (!ownerId) return
+    await ok(
+      db
+        .from('needs_you_items')
+        .insert({ owner_id: ownerId, school_id: ctx.schoolId, child_id: childId, kind, ref_id: paper.id, status: 'open', title, detail })
+        .select('id'),
+    )
+  }
+  const setPaper = async (patch: Record<string, unknown>) => {
+    await ok(db.from('papers').update(patch as never).eq('id', paper.id).select('id'))
+  }
+  return { teacherPaper, test, cls, classId: cls?.id, owner, needsYou, setPaper }
+}
+type PaperScope = Awaited<ReturnType<typeof paperScope>>
+
+/**
+ * How a photo that cannot be used ends. A teacher's paper becomes `needs_you`, with a Needs you item that asks for a retake or a
+ * check by hand. A parent's paper becomes `failed`, and the parent is asked for a new photo. Both `mark_paper` (the model said the page
+ * is not usable) and `endUnreadablePaper` (the job behind the photo failed) end a paper through here.
+ */
+async function endUnusablePaper(ctx: ToolContext, paper: PaperRow, scope: PaperScope, problem: PaperProblem, nameAsWritten: string | null) {
+  const label = PROBLEM_TITLE[problem]
+  if (scope.teacherPaper) {
+    await scope.setPaper({ status: 'needs_you', error: problem, name_read: nameAsWritten })
+    await scope.needsYou('confirm_scan', paper.child_id, label, `${scope.test!.title} · retake the photo or check it yourself`)
+    await logActivity(ctx, { text: 'Read 1 paper. 1 unsure, sent to you.', tool: 'mark_paper', classId: scope.classId, childId: paper.child_id ?? undefined })
+    return { childId: paper.child_id, total: 0, unsure: [], status: 'needs_you' as const }
+  }
+  await scope.setPaper({ status: 'failed', error: problem })
+  await logActivity(ctx, { text: `${label}, asked for a new photo`, tool: 'mark_paper', childId: paper.child_id ?? undefined })
+  return { childId: paper.child_id, total: 0, unsure: [], status: 'failed' as const }
+}
+
+/**
+ * The job behind a photo ended failed for good (a model that kept failing, an answer that did not fit, a run that died three times):
+ * the paper ends exactly as an unusable page does, with the code `read_failed`. Called by `afterEventFailed`, which only passes a paper
+ * that is still `queued` or `reading`.
+ */
+export async function endUnreadablePaper(base: ToolContext, paper: PaperRow): Promise<void> {
+  const ctx = await contextFor(base, 'papers', paper.id)
+  await clearEarlierRead(ctx, paper.id)
+  await endUnusablePaper(ctx, paper, await paperScope(ctx, paper), 'read_failed', null)
+}
 
 export const markPaper = defineTool({
   name: 'mark_paper',
@@ -41,49 +116,12 @@ export const markPaper = defineTool({
     const min = readConfidenceMin(ctx)
     const paper = await ok(db.from('papers').select('id, test_id, child_id, owner').eq('id', paperId).single())
 
-    // Re-running replaces the earlier read and its open items.
-    await ok(db.from('question_results').delete().eq('paper_id', paperId).select('id'))
-    await ok(db.from('needs_you_items').delete().eq('ref_id', paperId).eq('status', 'open').select('id'))
+    await clearEarlierRead(ctx, paperId)
 
-    const teacherPaper = !!paper.test_id
-    const test = paper.test_id ? await ok(db.from('tests').select('id, title, class_id').eq('id', paper.test_id).single()) : null
-    const cls = test ? await ok(db.from('classes').select('id, teacher_id').eq('id', test.class_id).single()) : null
-    const classId = cls?.id
-    const owner = async (): Promise<string | null> => {
-      if (cls) return cls.teacher_id
-      if (!paper.child_id) return null
-      const link = await maybe(
-        db.from('parent_links').select('parent_id').eq('child_id', paper.child_id).eq('status', 'approved').limit(1).maybeSingle(),
-      )
-      return link?.parent_id ?? null
-    }
-    const needsYou = async (kind: 'check_answer' | 'unreadable_name' | 'confirm_scan', childId: string | null, title: string, detail: string) => {
-      const ownerId = await owner()
-      if (!ownerId) return
-      await ok(
-        db
-          .from('needs_you_items')
-          .insert({ owner_id: ownerId, school_id: ctx.schoolId, child_id: childId, kind, ref_id: paperId, status: 'open', title, detail })
-          .select('id'),
-      )
-    }
-    const setPaper = async (patch: Record<string, unknown>) => {
-      await ok(db.from('papers').update(patch as never).eq('id', paperId).select('id'))
-    }
+    const scope = await paperScope(ctx, paper)
+    const { teacherPaper, test, cls, classId, owner, needsYou, setPaper } = scope
 
-    if (!read.pageUsable) {
-      const problem = read.problem ?? 'blurry'
-      const label = PROBLEM_TITLE[problem]
-      if (teacherPaper) {
-        await setPaper({ status: 'needs_you', error: problem, name_read: read.nameAsWritten })
-        await needsYou('confirm_scan', paper.child_id, label, `${test!.title} · retake the photo or check it yourself`)
-        await logActivity(ctx, { text: 'Read 1 paper. 1 unsure, sent to you.', tool: 'mark_paper', classId, childId: paper.child_id ?? undefined })
-        return { childId: paper.child_id, total: 0, unsure: [], status: 'needs_you' as const }
-      }
-      await setPaper({ status: 'failed', error: problem })
-      await logActivity(ctx, { text: `${label}, asked for a new photo`, tool: 'mark_paper', childId: paper.child_id ?? undefined })
-      return { childId: paper.child_id, total: 0, unsure: [], status: 'failed' as const }
-    }
+    if (!read.pageUsable) return endUnusablePaper(ctx, paper, scope, read.problem ?? 'blurry', read.nameAsWritten)
 
     // Who wrote it.
     let childId = paper.child_id

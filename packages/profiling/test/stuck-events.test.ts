@@ -27,7 +27,7 @@ function memory(seed: Tables, opts: { fail?: Fail; beforeUpdate?: (row: Row) => 
         for (const r of all) if (filters.every((f) => f(r))) opts.beforeUpdate?.(r)
         const hit = all.filter((r) => filters.every((f) => f(r)))
         for (const r of hit) Object.assign(r, patch)
-        return { data: hit.map((r) => ({ id: r.id })), error: null }
+        return { data: hit.map((r) => ({ ...r })), error: null }
       }
       const hit = all.filter((r) => filters.every((f) => f(r)))
       const ordered = sort ? [...hit].sort((a, b) => (String(a[sort!]) < String(b[sort!]) ? -1 : 1)) : hit

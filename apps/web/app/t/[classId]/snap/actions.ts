@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import type { JemmaDb } from '@jemma/profiling/db'
 import { markAnswer } from '@jemma/profiling/logic'
 import { AnswerKeyItemSchema, type AnswerKeyItem, type EventPayload, type EventType } from '@jemma/profiling/schemas'
-import { sendEvent } from '@/lib/agent'
+import { retryEvent, sendEvent } from '@/lib/agent'
 import { recordApproval } from '@/lib/approvals'
 import { requireRole } from '@/lib/auth'
 import { READ_MIN } from '@/lib/data/p31'
@@ -135,6 +135,24 @@ export async function uploadMemo(classId: string, testId: string, form: FormData
     return { ok: true }
   } catch (e) {
     return fail(e instanceof Error ? e.message : 'Could not save the memo.')
+  }
+}
+
+/**
+ * "Try the same photo again" on the card that says the memo could not be read: takes no file. Puts the newest `key.snapped` event of the
+ * test back to the queue when it ended failed (`retryEvent`). Does nothing when the newest event is not failed (it was asked for already).
+ */
+export async function retryKey(classId: string, testId: string): Promise<ActionResult> {
+  try {
+    const { admin } = await ownTest(classId, testId)
+    const found = await admin.from('events').select('id, status').eq('type', 'key.snapped').eq('payload->>testId', testId).order('created_at', { ascending: false }).limit(1)
+    if (found.error) return fail(found.error.message)
+    const newest = found.data[0]
+    if (newest?.status === 'failed') await retryEvent(newest.id)
+    revalidatePath(`/t/${classId}/snap/${testId}/key`)
+    return { ok: true }
+  } catch (e) {
+    return fail(e instanceof Error ? e.message : 'Could not ask Jemma to try again.')
   }
 }
 

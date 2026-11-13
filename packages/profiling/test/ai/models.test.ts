@@ -156,22 +156,96 @@ describe('a model call that never answers', () => {
     expect(m.doGenerateCalls[0]!.abortSignal?.aborted).toBe(true)
   })
 
-  test('the retry layer then tries again, once for each wait, and a later answer is returned', async () => {
-    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry } = await parts()
+  test('a timeout is not tried again on the same model: it is thrown at once, with no wait', async () => {
+    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry, ModelTimeoutError } = await parts()
     const waits: number[] = []
-    let calls = 0
-    const m = new MockLanguageModelV4({ doGenerate: async (options) => (++calls < 3 ? hang(options) : answer) })
-    const out = await wrapLanguageModel({ model: m, middleware: withModelRetry(async (ms) => void waits.push(ms), [7, 8, 9], 20) }).doGenerate(params)
-    expect(out.content).toEqual([{ type: 'text', text: 'hi' }])
-    expect(m.doGenerateCalls.length).toBe(3)
-    expect(waits).toEqual([7, 8])
+    const m = new MockLanguageModelV4({ doGenerate: async (options) => hang(options) })
+    await expect(wrapLanguageModel({ model: m, middleware: withModelRetry(async (ms) => void waits.push(ms), [7, 8, 9], 20) }).doGenerate(params)).rejects.toBeInstanceOf(ModelTimeoutError)
+    expect(m.doGenerateCalls.length).toBe(1)
+    expect(waits).toEqual([])
   })
 
-  test('when every try times out, the last error is the timeout', async () => {
-    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry } = await parts()
+  test('one model only, and it never answers: one call, and a timeout error goes up', async () => {
+    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry, withFallbacks, ModelTimeoutError } = await parts()
     const m = new MockLanguageModelV4({ doGenerate: async (options) => hang(options) })
-    await expect(wrapLanguageModel({ model: m, middleware: withModelRetry(async () => {}, [1, 2], 15) }).doGenerate(params)).rejects.toThrow(/timeout/i)
-    expect(m.doGenerateCalls.length).toBe(3)
+    const chain = withFallbacks([wrapLanguageModel({ model: m, middleware: withModelRetry(async () => {}, [1, 2, 3], 20) })])
+    const err = await Promise.resolve(chain.doGenerate(params)).catch((e: unknown) => e)
+    expect(err).toBeInstanceOf(ModelTimeoutError)
+    expect((err as Error).message).toMatch(/timeout/i)
+    expect(m.doGenerateCalls.length).toBe(1)
+  })
+
+  test('the next model gets the call: model 1 never answers, model 2 answers, and the time spent is one limit', async () => {
+    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry, withFallbacks } = await parts()
+    const waits: number[] = []
+    const sleep = async (ms: number) => void waits.push(ms)
+    const first = new MockLanguageModelV4({ modelId: 'one', doGenerate: async (options) => hang(options) })
+    const second = new MockLanguageModelV4({ modelId: 'two', doGenerate: async () => ({ ...(answer as object), content: [{ type: 'text', text: 'from two' }] }) as never })
+    const chain = withFallbacks([
+      wrapLanguageModel({ model: first, middleware: withModelRetry(sleep, [1, 2, 3], 40) }),
+      wrapLanguageModel({ model: second, middleware: withModelRetry(sleep, [1, 2, 3], 40) }),
+    ])
+    const started = Date.now()
+    const out = await chain.doGenerate(params)
+    const spent = Date.now() - started
+    expect(out.content).toEqual([{ type: 'text', text: 'from two' }])
+    expect(first.doGenerateCalls.length).toBe(1)
+    expect(second.doGenerateCalls.length).toBe(1)
+    expect(waits).toEqual([])
+    // One limit (40 ms here), not five tries of it.
+    expect(spent).toBeGreaterThanOrEqual(35)
+    expect(spent).toBeLessThan(150)
+  })
+
+  test('with no model left, the timeout error goes up as it did, and each model was called once', async () => {
+    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry, withFallbacks, ModelTimeoutError } = await parts()
+    const first = new MockLanguageModelV4({ modelId: 'one', doGenerate: async (options) => hang(options) })
+    const second = new MockLanguageModelV4({ modelId: 'two', doGenerate: async (options) => hang(options) })
+    const chain = withFallbacks([
+      wrapLanguageModel({ model: first, middleware: withModelRetry(async () => {}, [1, 2], 20) }),
+      wrapLanguageModel({ model: second, middleware: withModelRetry(async () => {}, [1, 2], 20) }),
+    ])
+    await expect(chain.doGenerate(params)).rejects.toBeInstanceOf(ModelTimeoutError)
+    expect(first.doGenerateCalls.length).toBe(1)
+    expect(second.doGenerateCalls.length).toBe(1)
+  })
+
+  test('a 500 from model 1 is retried on model 1 as before, and only then does model 2 get the call', async () => {
+    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry, withFallbacks } = await parts()
+    const waits: number[] = []
+    const sleep = async (ms: number) => void waits.push(ms)
+    let tries = 0
+    const first = new MockLanguageModelV4({
+      modelId: 'one',
+      doGenerate: async () => {
+        tries++
+        throw Object.assign(new Error('Internal server error'), { statusCode: 500 })
+      },
+    })
+    const second = new MockLanguageModelV4({ modelId: 'two', doGenerate: async () => answer })
+    const chain = withFallbacks([
+      wrapLanguageModel({ model: first, middleware: withModelRetry(sleep, [5, 6], 5000) }),
+      wrapLanguageModel({ model: second, middleware: withModelRetry(sleep, [5, 6], 5000) }),
+    ])
+    expect((await chain.doGenerate(params)).content).toEqual([{ type: 'text', text: 'hi' }])
+    expect(tries).toBe(3)
+    expect(waits).toEqual([5, 6])
+    expect(second.doGenerateCalls.length).toBe(1)
+  })
+
+  test('a 500 that goes away on model 1 is answered by model 1, as before', async () => {
+    const { MockLanguageModelV4, wrapLanguageModel, withModelRetry } = await parts()
+    const waits: number[] = []
+    let tries = 0
+    const m = new MockLanguageModelV4({
+      doGenerate: async () => {
+        if (++tries < 2) throw Object.assign(new Error('Internal server error'), { statusCode: 500 })
+        return answer
+      },
+    })
+    const out = await wrapLanguageModel({ model: m, middleware: withModelRetry(async (ms) => void waits.push(ms), [5, 6], 5000) }).doGenerate(params)
+    expect(out.content).toEqual([{ type: 'text', text: 'hi' }])
+    expect(waits).toEqual([5])
   })
 
   test('a call that answers in time is untouched, and its timer is gone', async () => {
@@ -260,12 +334,12 @@ describe('a model call that never answers', () => {
       const m = getModel('text', { AI_MODE: 'live', replayStore: new MemoryStore(), LLM_PROVIDER: 'opencode', LLM_MODEL: 'some-model-free', OPENCODE_API_KEY: 'k' })
       const call = Promise.resolve(m.doGenerate(params)).catch((e: unknown) => e)
       await vi.advanceTimersByTimeAsync(240_000)
-      // The first try ended with the limit: the request was cancelled and the retry layer is waiting to try again.
+      // The try ended with the limit: the request was cancelled, and the same model is not asked again.
+      expect(await call).toBeInstanceOf((await import('../../src/ai')).ModelTimeoutError)
       expect(fetchMock).toHaveBeenCalledTimes(1)
       expect((fetchMock.mock.calls[0]![1] as RequestInit).signal?.aborted).toBe(true)
-      await vi.advanceTimersByTimeAsync(2000)
-      expect(fetchMock).toHaveBeenCalledTimes(2)
-      void call
+      await vi.advanceTimersByTimeAsync(60_000)
+      expect(fetchMock).toHaveBeenCalledTimes(1)
     } finally {
       vi.useRealTimers()
       vi.unstubAllGlobals()

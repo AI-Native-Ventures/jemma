@@ -1,6 +1,6 @@
 import { SupabaseReplayStore } from '@jemma/profiling/ai'
 import { createServiceClient } from '@jemma/profiling/db'
-import { checkDesktopTimeouts, checkOperatorTimeouts, checkStuckEvents, runEvent } from '@jemma/profiling/orchestrator'
+import { afterEventFailed, checkDesktopTimeouts, checkOperatorTimeouts, checkStuckEvents, runEvent } from '@jemma/profiling/orchestrator'
 import type { ToolContext } from '@jemma/profiling/tools'
 import type { Env } from './env'
 import { cloudJobs, type CloudJobs } from './jobs'
@@ -85,11 +85,17 @@ export async function checkStuck(env: Env): Promise<number> {
   return checkStuckEvents(createServiceClient(env), async (eventId) => void (await env.EVENTS_QUEUE.send({ eventId })))
 }
 
-/** Marks an event failed after its last queue delivery blew up outside the job plan. */
+/**
+ * Marks an event failed after its last queue delivery blew up outside the job plan. When it was the read of a paper's photo, the
+ * paper says so too (`afterEventFailed`), the same as when `runEvent` ends an event failed.
+ */
 export async function failEvent(env: Env, eventId: string, error: string): Promise<void> {
-  await createServiceClient(env)
+  const db = createServiceClient(env)
+  const ended = await db
     .from('events')
     .update({ status: 'failed', error, finished_at: new Date().toISOString() })
     .eq('id', eventId)
     .in('status', ['queued', 'running'])
+    .select('id, school_id, type, payload')
+  if (ended.data?.[0]) await afterEventFailed(db, ended.data[0])
 }
