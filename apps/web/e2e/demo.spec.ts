@@ -73,6 +73,11 @@ test('Main shows the copy and this sandbox join code', async ({ page }) => {
   await expect(page.getByText("see the result, the updated gaps and Amina's Long view.")).toBeVisible()
   await expect(page.getByText(/Your copy started today at \d\d:\d\d\./)).toBeVisible()
   await expect(page.getByText('Every person and paper here is made up.')).toBeVisible()
+  // The three big buttons come first; the rest of the school is listed under them, and an empty school can be started.
+  await expect(page.getByRole('heading', { name: 'More people at Hillview' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Mr Dlamini/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Ms Okafor/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Start from an empty school/ })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
   if (test.info().project.name === 'phone') await shoot(page, 'Main', true)
 })

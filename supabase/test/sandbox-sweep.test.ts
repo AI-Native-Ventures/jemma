@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { createClient } from '@supabase/supabase-js'
 import { createServiceClient, type JemmaDb } from '../../packages/profiling/src/db'
-import { createSandbox, deleteSandbox, sweepOldSandboxes, type Sandbox } from '../seed/demo'
+import { createSandbox, deleteSandbox, sweepOldSandboxes, type Sandbox, type SandboxKind } from '../seed/demo'
 
 // The sweep of old demo sandboxes on real rows: my own sandboxes, made here and backdated here.
 //
@@ -18,17 +18,24 @@ const admin: JemmaDb = createServiceClient({ SUPABASE_URL: url, SUPABASE_SERVICE
 const DAY = 24 * 60 * 60_000
 const ago = (days: number) => new Date(Date.now() - days * DAY).toISOString()
 
-type Logins = Record<'teacher' | 'parent' | 'learner', { userId: string; email: string; password: string }>
+type Logins = { teacher: { userId: string; email: string; password: string } } & Record<string, unknown>
 type Made = Sandbox & { userIds: string[]; logins: Logins }
+
+/** Every user id in a sandbox's logins: Ms Banda, the other teachers, the four parents and Amina (a Hillview copy has eight), or the one teacher of an empty school. */
+function userIdsOf(value: unknown): string[] {
+  if (!value || typeof value !== 'object') return []
+  const v = value as Record<string, unknown>
+  return typeof v.userId === 'string' ? [v.userId] : Object.values(v).flatMap(userIdsOf)
+}
 
 const made: Made[] = []
 const extraSchools: string[] = []
 
-async function make(stage: 'start' | 'marked', ageDays: number): Promise<Made> {
-  const s = await createSandbox(admin, { stage })
+async function make(stage: 'start' | 'marked', ageDays: number, kind: SandboxKind = 'hillview'): Promise<Made> {
+  const s = await createSandbox(admin, { stage, kind })
   const row = await admin.from('demo_sandboxes').select('logins').eq('id', s.sandboxId).single()
   const logins = row.data!.logins as unknown as Logins
-  const m = { ...s, logins, userIds: [logins.teacher.userId, logins.parent.userId, logins.learner.userId] }
+  const m = { ...s, logins, userIds: userIdsOf(logins) }
   made.push(m)
   const aged = await admin.from('demo_sandboxes').update({ created_at: ago(ageDays) }).eq('id', s.sandboxId).select('id')
   expect(aged.data).toHaveLength(1)
@@ -52,6 +59,7 @@ let idle1: Made
 let idle2: Made
 let idle3: Made
 let plainSchool: string
+let emptyOld: Made
 
 beforeAll(async () => {
   // A copy that has files (papers and curriculum) and log lines, made to look 40 days old and unused.
@@ -72,6 +80,7 @@ beforeAll(async () => {
   idle1 = await make('start', 30)
   idle2 = await make('start', 20)
   idle3 = await make('start', 10)
+  emptyOld = await make('start', 35, 'empty')
 
   // A school that has no sandbox row at all, and is "old".
   const school = await admin.from('schools').insert({ name: 'sweep test school without a sandbox', country: 'ZA', created_at: ago(90) }).select('id').single()
@@ -103,7 +112,7 @@ describe('sweepOldSandboxes on real rows', () => {
     }
   })
 
-  test('removes an old copy nobody used, with its school, its three users and its files', async () => {
+  test('removes an old copy nobody used, with its school, its eight users and its files', async () => {
     expect((await filesOf(idleWithFiles.schoolId)).length).toBeGreaterThan(0) // there is something to remove
     const removed = await sweepOldSandboxes(admin, { onlySandboxIds: [idleWithFiles.sandboxId] })
     expect(removed).toEqual([idleWithFiles.sandboxId])
@@ -111,6 +120,37 @@ describe('sweepOldSandboxes on real rows', () => {
     expect(await schoolRow(idleWithFiles.schoolId)).toEqual([])
     for (const id of idleWithFiles.userIds) expect(await userExists(id)).toBe(false)
     expect(await filesOf(idleWithFiles.schoolId)).toEqual([])
+  })
+
+  test('a copy has eight users (three teachers, four parents, Amina) and an empty school has one', () => {
+    expect(idleWithFiles.userIds).toHaveLength(8)
+    expect(emptyOld.userIds).toHaveLength(1)
+    expect(emptyOld.kind).toBe('empty')
+  })
+
+  test('removes an old empty school nobody used, with its teacher', async () => {
+    expect(await schoolRow(emptyOld.schoolId)).toHaveLength(1)
+    const removed = await sweepOldSandboxes(admin, { onlySandboxIds: [emptyOld.sandboxId] })
+    expect(removed).toEqual([emptyOld.sandboxId])
+    expect(await sandboxRow(emptyOld.sandboxId)).toEqual([])
+    expect(await schoolRow(emptyOld.schoolId)).toEqual([])
+    for (const id of emptyOld.userIds) expect(await userExists(id)).toBe(false)
+  })
+
+  test('a learner login made after the sandbox was is removed with it', async () => {
+    // Hillview copies made by this file are removed in the tests above and below; make one more, give a learner a login by hand, age it, sweep it.
+    const extra = await make('start', 50)
+    const kid = await admin.from('children').select('id').eq('school_id', extra.schoolId).eq('first_name', 'Thabo').single()
+    const user = await admin.auth.admin.createUser({ email: `late-${extra.sandboxId.slice(0, 8)}@kids.jemma.invalid`, password: 'not-a-real-pin-0000', email_confirm: true })
+    expect(user.error).toBeNull()
+    const lateId = user.data.user!.id
+    await admin.from('profiles').insert({ user_id: lateId, role: 'learner', display_name: 'Thabo', school_id: extra.schoolId })
+    await admin.from('children').update({ user_id: lateId }).eq('id', kid.data!.id)
+    // The user is not in the sandbox row's logins: the school knows it.
+    expect(extra.userIds).not.toContain(lateId)
+    const removed = await sweepOldSandboxes(admin, { onlySandboxIds: [extra.sandboxId] })
+    expect(removed).toEqual([extra.sandboxId])
+    expect(await userExists(lateId)).toBe(false)
   })
 
   test('removes at most `limit` per call, oldest first, and the next call takes the rest', async () => {

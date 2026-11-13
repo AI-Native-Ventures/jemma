@@ -34,7 +34,7 @@ describe('the seeded test', () => {
     const minutes = (Date.now() - Date.parse(test.shared_at!)) / 60_000
     expect(minutes).toBeGreaterThan(38)
     expect(minutes).toBeLessThan(45)
-    const teacher = await ok(service.from('profiles').select('user_id').eq('school_id', s.schoolId).eq('role', 'teacher').single())
+    const teacher = await ok(service.from('profiles').select('user_id').eq('school_id', s.schoolId).eq('role', 'teacher').eq('display_name', CAST.teacher.displayName).single())
     expect(test.shared_by).toBe(teacher!.user_id)
 
     const approvals = await ok(service.from('approvals').select('kind, decision, decided_by, decided_by_name, note, school_id').eq('ref_id', test.id))

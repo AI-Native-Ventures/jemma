@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
+import { hillviewPeople } from '../../../../supabase/seed/fixtures/hillview'
 import { getDemoState } from '@/lib/demo'
 import { tryDemoAction } from './actions'
 import { PersonButton } from './PersonButton'
+import { PersonChip } from './PersonChip'
 import { Chevron, ResetIcon } from './parts'
 import { StartedAt } from './StartedAt'
 
@@ -13,6 +15,68 @@ const PEOPLE = [
   { role: 'parent', initials: 'TM', avatar: 'bg-coral-tint', name: 'Thandi M', detail: "Parent · Amina's mother", start: false },
   { role: 'learner', initials: 'A', avatar: 'bg-coral-soft', name: 'Amina', detail: 'Learner · Grade 6', start: false },
 ] as const
+
+/** The three people above the fold are not listed again. Amina is one of the five learners of 6B. */
+const BIG_THREE = new Set(['Ms Banda', 'Thandi M', 'Amina'])
+
+function MorePeople({ year }: { year: number }) {
+  const people = hillviewPeople(year)
+  const teachers = people.teachers.filter((t) => !BIG_THREE.has(t.displayName))
+  const parents = people.parents.filter((p) => !BIG_THREE.has(p.displayName))
+  const heading = 'm-0 text-[14px] font-semibold text-body'
+  return (
+    <section aria-labelledby="more" className="flex flex-col gap-3.5">
+      <div className="flex flex-col gap-1">
+        <h2 id="more" className="m-0 text-[17px] font-semibold">More people at Hillview</h2>
+        <p className="m-0 text-[15px] leading-[1.45] text-body text-pretty">
+          Three teachers, four Mathematics classes and 23 learners, across Grades 4 to 7. Tap anyone to sign in as them in your own copy.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <h3 className={heading}>Teachers</h3>
+        {teachers.map((t) => (
+          <form key={t.key} action={tryDemoAction} className="contents">
+            <input type="hidden" name="person" value={`teacher:${t.key}`} />
+            <PersonChip variant="row" name={t.displayName} detail={`Teacher · ${t.classes.join(', ')}`} />
+          </form>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <h3 className={heading}>Parents</h3>
+        {parents.map((p) => (
+          <form key={p.key} action={tryDemoAction} className="contents">
+            <input type="hidden" name="person" value={`parent:${p.key}`} />
+            <PersonChip variant="row" name={p.displayName} detail={`Parent · ${p.children.map((c) => `${c.name} (Grade ${c.grade})`).join(', ')}`} />
+          </form>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <h3 className={heading}>Learners, by class</h3>
+        {people.learners.map((g) => {
+          const names = g.names.filter((n) => !BIG_THREE.has(n))
+          return (
+            <div key={g.classKey} className="flex flex-col gap-2">
+              <p className="m-0 text-[14px] text-body">{g.classKey === '6b-maths' ? '6B Mathematics: Amina is above, with her four classmates' : g.className}</p>
+              <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
+                {names.map((n) => (
+                  <li key={n}>
+                    <form action={tryDemoAction} className="contents">
+                      <input type="hidden" name="person" value={`learner:${n}`} />
+                      <PersonChip variant="chip" name={n} />
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
 
 const STEPS = [
   ['Teacher:', " upload the curriculum, approve Jemma's topic map."],
@@ -44,7 +108,7 @@ export default async function DemoPage() {
         <div className="flex flex-col gap-2.5">
           <h1 className="m-0 text-[36px] leading-[1.08] font-bold tracking-[-0.02em]">Try the demo</h1>
           <p className="m-0 text-[17px] leading-[1.45] text-body text-pretty">
-            You get your own copy of Hillview Primary, a made-up school. Sign in as the teacher, the parent or the learner. Nothing you do reaches other judges.
+            You get your own copy of Hillview Primary, a made-up school. It has teachers, parents and learners in several grades. Sign in as any of them. Nothing you do reaches other judges.
           </p>
         </div>
 
@@ -64,6 +128,21 @@ export default async function DemoPage() {
               </PersonButton>
             </form>
           ))}
+        </section>
+
+        <MorePeople year={new Date().getUTCFullYear()} />
+
+        <section aria-labelledby="empty" className="flex flex-col gap-3 rounded-20 border border-line bg-card p-[18px]">
+          <div className="flex flex-col gap-1">
+            <h2 id="empty" className="m-0 text-[17px] font-semibold">Start from an empty school</h2>
+            <p className="m-0 text-[15px] leading-[1.45] text-body text-pretty">
+              A school with no class and one teacher, you. Make a Mathematics class in any grade, then fill it with made-up learners and their history in one tap.
+            </p>
+          </div>
+          <form action={tryDemoAction} className="contents">
+            <input type="hidden" name="start" value="empty" />
+            <PersonChip variant="row" name="Start from an empty school" detail="You are the teacher" busy="Making your empty school" />
+          </form>
         </section>
 
         <section aria-labelledby="path" className="rounded-20 border border-line bg-card px-[18px] pt-[18px] pb-1.5">

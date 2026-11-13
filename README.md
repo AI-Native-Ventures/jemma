@@ -39,7 +39,7 @@ Jemma is running. Open http://localhost:3000/demo
 
 Open that page and follow the tour below. You get your own copy of the made-up school Hillview Primary.
 
-How it works on your machine: the local database is Supabase in Docker (`supabase/config.toml`, with the migrations in `supabase/migrations`). Jemma runs with `AI_MODE=replay`, so every model call is answered from `fixtures/ai-replays.json.gz`, 164 recorded answers made earlier with free models. The agent worker runs from `apps/agent/wrangler.local.jsonc`, which has no Cloudflare speech binding, so lessons are saved with no audio and the player uses browser speech. Jemma only knows the answers recorded for the demo path: the sample curriculum, the five sample papers, the sessions that follow and the Long view updates (one for each learner who has a pattern, and Amina's again after the teacher's note). Something new, such as your own photo, has no recorded answer and the job shows an error.
+How it works on your machine: the local database is Supabase in Docker (`supabase/config.toml`, with the migrations in `supabase/migrations`). Jemma runs with `AI_MODE=replay`, so every model call is answered from `fixtures/ai-replays.json.gz`, 167 recorded answers made earlier with free models. The agent worker runs from `apps/agent/wrangler.local.jsonc`, which has no Cloudflare speech binding, so lessons are saved with no audio and the player uses browser speech. Jemma only knows the answers recorded for the demo path: the sample curriculum, the five sample papers, the sessions that follow and the Long view updates (one for each learner who has a pattern, Amina's again after the teacher's note, and three made-up learners: Neo, Lindiwe and Mpho). Something new, such as your own photo, has no recorded answer and the job shows an error.
 
 To stop:
 
@@ -173,7 +173,7 @@ The agent serves MCP at `/mcp` and needs a bearer token. See [docs/mcp-server.md
 ## What is not finished
 
 - **No real teacher and no real learner has used Jemma.** The school, the people and the records are made up.
-- **English and Maths only.** The demo has one class, Grade 6 Mathematics. Only Grade 6 data is seeded.
+- **Mathematics only.** The demo school has four Mathematics classes, in Grades 4 to 7. Only 6B has hand-made history; the learners of the other classes are made up by code. Other subjects are not offered yet.
 - **Not built yet:** Grade 8 to 12 question types, teen invites, chat, billing, offline mode and messages between teacher and parent. Screens that link to them say "Coming after the challenge".
 - **No live in-browser camera for teachers.** Teachers snap with the phone's own camera, one photo per page.
 - **No email, SMS or WhatsApp.** Jemma only shows notifications inside the app. Email sign-in is not part of the demo path and was not tested against a real inbox. Use the demo page.

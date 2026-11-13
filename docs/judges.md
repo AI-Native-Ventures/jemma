@@ -33,19 +33,29 @@ Three invented Mathematics curriculum documents of different shapes are in the r
 - `fixtures/curriculum/unseen/grade5-mathematics-za.pdf`: Grade 5 Mathematics, South Africa, a paragraph for each week, no tables.
 - `fixtures/curriculum/unseen/grade4-mathematics-ke.pdf`: Grade 4 Mathematics, Kenya, three terms, page pictures like a scan, no text.
 
-To try one, make a class in that grade, open Curriculum and upload the file. If the live link only offers the demo's Grade 6 class, use a local copy (README, "Run it"). Jemma takes a PDF, a JPG or a PNG of at most 10 MB and 40 pages for each document, and says so when a file is too big or the wrong kind. What the curriculum reader did with each document, measured and scored by code, is in "A curriculum Jemma had never seen" in [EVALS.md](../EVALS.md). The first version of Jemma covers Mathematics only: three earlier documents about other subjects are kept in `fixtures/curriculum/unseen/other-subjects/`, and their results are in EVALS.md under "Outside Mathematics".
+To try one, make a class in that grade, open Curriculum and upload the file. The live link lets you make a Mathematics class in any grade, so make one in the grade of the file. Jemma takes a PDF, a JPG or a PNG of at most 10 MB and 40 pages for each document, and says so when a file is too big or the wrong kind. What the curriculum reader did with each document, measured and scored by code, is in "A curriculum Jemma had never seen" in [EVALS.md](../EVALS.md). The first version of Jemma covers Mathematics only: three earlier documents about other subjects are kept in `fixtures/curriculum/unseen/other-subjects/`, and their results are in EVALS.md under "Outside Mathematics".
 
 ## Demo accounts
 
-There is nothing to type. The demo page signs you in as one of three people in your own copy of the school. You do not need an email address.
+There is nothing to type. The demo page signs you in as any of these people in your own copy of the school. You do not need an email address. The first three are the big buttons on the demo page. The rest are under "More people at Hillview", and on the switch page.
 
 | Person | Role | What they are |
 | --- | --- | --- |
-| Ms Banda | Teacher | Teaches class 6B Mathematics, Grade 6. |
+| Ms Banda | Teacher | Teaches 6B Mathematics (Grade 6) and 5A Mathematics (Grade 5). "Start here". |
 | Thandi M | Parent | Amina's mother. |
-| Amina | Learner | A Grade 6 learner. |
+| Amina | Learner | A Grade 6 learner in 6B Mathematics. |
+| Mr Dlamini | Teacher | Teaches 7A Mathematics (Grade 7). |
+| Ms Okafor | Teacher | Teaches 4A Mathematics (Grade 4). |
+| Nomsa K | Parent | Mother of Neo (5A, Grade 5) and Lindiwe (7A, Grade 7): two children in different grades. |
+| Peter A and Grace A | Parents | Both guardians of Nyokabi (4A, Grade 4). |
+| Thabo, Lerato, Sipho, Naledi | Learners | With Amina, the five children of 6B Mathematics. |
+| Neo, Busisiwe, Ayodele, Nia, Khanyi, Wanjiru | Learners | 5A Mathematics. Made up by code, with messy Mathematics records back to Grade 3. |
+| Lindiwe, Nomvula, Mpho, Ama, Tafara, Yaw | Learners | 7A Mathematics. Made up the same way. |
+| Nyokabi, Tapiwa, Folake, Thabiso, Baraka, Juma | Learners | 4A Mathematics. Made up the same way. |
 
-The other learners in the class are Thabo, Lerato, Sipho and Naledi.
+Only Neo, Lindiwe and Nyokabi (and Amina, after step 3 of the demo path) have a linked parent. The other learners have none. A learner's login is made when you pick that learner.
+
+Under the demo path there is also **Start from an empty school**: a second kind of copy with no class and one teacher, "You". Create a Mathematics class in any grade, open its learners screen, and tap **Add made-up learners**. That adds six learners with up to three years of messy history in the class's subject (Mathematics) and asks Jemma for their Long view. The button only shows in a demo school.
 
 ## What each role sees
 
@@ -69,7 +79,7 @@ Everything the agent does goes through Jemma's own MCP server (25 tools). You ca
 - **A curriculum Jemma had never seen.** Three invented Mathematics documents were read live on the free models and scored by code ([EVALS.md](../EVALS.md), "A curriculum Jemma had never seen"): Grade 9 South Africa passed 3 of 3 runs, the Grade 4 Kenya scan (three terms) 3 of 3, and Grade 5 South Africa 1 of 3. In both fails the model named the topic that the plan lists in two terms differently in the later term, so the question that code adds for a topic with the same name in two terms never fired (code asked in none of the 9 runs, the model asked in 7); the text-reading fallback was never needed live, so only tests cover it.
 - **The operator route is off on the hosted demo.** The owner's laptop doing the demo's AI work with Claude Code was proven on a local agent worker only. Curriculum PDFs are read by the cloud model only.
 - **Jemma Desktop.** The Mac app in `apps/desktop` runs jobs on your Claude Code or Codex subscription. It is unverified: it was not run for this submission. Pair it by entering the six-character code shown in the signed-in Jemma web app; build the unsigned Mac app with `CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter desktop dist`.
-- **English and Maths only.** The demo has one class: Grade 6 Mathematics. Other subjects and grades are not seeded.
+- **Mathematics only.** The demo school has four Mathematics classes, in Grades 4 to 7. Only 6B has hand-made history (the five children of the demo path); the learners of the other classes are made up by code. Other subjects are not offered yet.
 - **Email sign-in is not part of the path.** The sign-in screen asks for a 6-digit code that is emailed to you, and the demo does not use it. If you try it, the email may arrive as a magic link instead of a code, depending on how the mail template is set. This was not tested against a real inbox for this document. Use the demo page.
 - **Some links lead to "Coming after the challenge".** A few screens link to features that are not built, such as messaging a teacher, starting from another teacher's map, and adding another teacher's code.
 - **No email, SMS or WhatsApp.** Jemma only shows notifications inside the app.
