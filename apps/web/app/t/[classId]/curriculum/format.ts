@@ -1,3 +1,4 @@
+import { sameTopicName } from '@jemma/profiling/logic'
 import { TopicMapDraftSchema, type TopicMapDraft } from '@jemma/profiling/schemas'
 
 /** What the teacher chose for each check: topic or left-out name to the option label. Stored beside the draft. */
@@ -168,12 +169,16 @@ export function removeTopicIn(src: TopicMapDraft, name: string): TopicMapDraft {
   return d
 }
 
-/** A topic listed in more than one term, kept in one of them: the entries in the other terms go. Nothing else changes. */
+/**
+ * A topic listed in more than one term, kept in one of them: the entries in the other terms go. Nothing else changes.
+ * "The same topic" is the rule the question uses (`sameTopicName`: without case and extra spaces), so "Keep in Term 2" on "Perimeter and Area"
+ * also removes "perimeter and area" in Term 3. The entry that stays keeps its own spelling.
+ */
 function keepInTermIn(src: TopicMapDraft, name: string, term: number): TopicMapDraft {
-  const inTerms = src.terms.filter((t) => t.topics.some((x) => x.name === name))
+  const inTerms = src.terms.filter((t) => t.topics.some((x) => sameTopicName(x.name, name)))
   if (inTerms.length < 2 || !inTerms.some((t) => t.term === term)) return src
   const d = clone(src)
-  for (const t of d.terms) if (t.term !== term) t.topics = t.topics.filter((x) => x.name !== name)
+  for (const t of d.terms) if (t.term !== term) t.topics = t.topics.filter((x) => !sameTopicName(x.name, name))
   return d
 }
 

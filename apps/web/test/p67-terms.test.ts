@@ -82,6 +82,22 @@ describe('answering the question about a topic that the plan lists in two terms'
     expect(where(resolveIn(read(asked()), 'Ratio, rate and proportion', 'Move to Term 3').draft, 'Ratio, rate and proportion')).toEqual([3])
   })
 
+  test('one name rule: "Keep in Term 2" on "Perimeter and Area" also removes "perimeter and area" in Term 3, and the entry that stays keeps its spelling', () => {
+    const d = askAboutRepeatedTopics(draft([[2, [topic('Perimeter and Area'), topic('Angles')]], [3, [topic('  perimeter  AND area '), topic('Functions')]]])).draft
+    const after = resolveIn(read(d), 'Perimeter and Area', 'Keep in Term 2')
+    expect(after.draft.terms.map((t) => [t.term, t.topics.map((x) => x.name)])).toEqual([
+      [2, ['Perimeter and Area', 'Angles']],
+      [3, ['Functions']],
+    ])
+    expect(unresolved(after, 1)).toEqual([])
+    // and the other way round: the entry in Term 3 stays, with its own spelling
+    const other = resolveIn(read(d), '  perimeter  AND area ', 'Keep in Term 3')
+    expect(other.draft.terms.map((t) => [t.term, t.topics.map((x) => x.name)])).toEqual([
+      [2, ['Angles']],
+      [3, ['  perimeter  AND area ', 'Functions']],
+    ])
+  })
+
   test('a topic listed once keeps working as it did: "Keep" changes nothing and "Move" moves it', () => {
     const one = read(draft([[1, [topic('A', { reason: 'Listed in Terms 1 and 2', options: ['Keep in Term 1', 'Move to Term 2'] })]], [2, [topic('B')]]]))
     expect(resolveIn(one, 'A', 'Keep in Term 1').draft).toEqual(one.draft)
