@@ -10,6 +10,12 @@ type Entry = Draft['terms'][number]['topics'][number]
 /** The name of a topic compared without case and without extra spaces. */
 const sameName = (name: string): string => name.trim().toLowerCase().replace(/\s+/g, ' ')
 
+/**
+ * The one rule for "the same topic": two names are the same when they differ only by case or extra spaces. The question about a topic listed in
+ * two terms uses it, and so does the screen that answers the question ("Keep in Term 2" removes every other entry of the same topic).
+ */
+export const sameTopicName = (a: string, b: string): boolean => sameName(a) === sameName(b)
+
 /** A question counts only when it has words in it. */
 const asked = (x: Entry): boolean => !!x.check && x.check.reason.trim().length > 0
 

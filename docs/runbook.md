@@ -88,11 +88,15 @@ A `Replay miss` in an event's error names the job that asked (its model id and t
 
 ```bash
 cd packages/profiling
-# optional: real speech for the audio lesson
-pnpm --filter agent exec wrangler dev -c ../../packages/profiling/scripts/tts-proxy/wrangler.jsonc --port 8799 &
+# optional: real speech for the audio lesson (the proxy's process id goes in a file, so it can be stopped by that id and nothing else)
+mkdir -p ../../.jemma
+pnpm --filter agent exec wrangler dev -c ../../packages/profiling/scripts/tts-proxy/wrangler.jsonc --port 8799 & echo $! > ../../.jemma/tts-proxy.pid
 TTS_PROXY_URL=http://localhost:8799 AI_MODE=record \
   node --import tsx --import ./scripts/register-md.mjs scripts/live-smoke.ts --fresh
+kill "$(cat ../../.jemma/tts-proxy.pid)" && rm ../../.jemma/tts-proxy.pid    # afterwards: stops that proxy and nothing else
 ```
+
+`.jemma/` is ignored by git. Stop the proxy when the run ends, the same way as the agent above: by its own process id, never by name.
 
 - `--steps draft_map,approve_map,...` runs some steps on the sandbox in `scripts/.smoke-state.json`.
 - Set `AI_MODE=replay` to run the same script without a model: a replay miss means a prompt changed since the recording, so record again.

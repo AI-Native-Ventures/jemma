@@ -11,6 +11,7 @@ import { createSupabaseServer } from '@/lib/supabase/server'
 import { checkDocument, sizeProblem } from './upload-checks'
 import {
   SAMPLE_DOCS,
+  SAMPLE_ONLY_FOR,
   addTopicIn,
   moveTopicIn,
   plural,
@@ -19,6 +20,7 @@ import {
   renameTopicIn,
   saveTopicIn,
   resolveIn,
+  sampleCurriculumFits,
   toRaw,
   topicCount,
   type TopicEdit,
@@ -100,12 +102,14 @@ export async function uploadCurriculum(classId: string, files: File[]): Promise<
   return { ok: true }
 }
 
-/** Demo only: the two documents the board shows, copied from the sample files. */
+/** Demo only, and only for a Grade 6 Mathematics class: the two documents the board shows, copied from the sample files. */
 export async function useSampleCurriculum(classId: string): Promise<void> {
   const cls = await ownClass(classId)
   const admin = createSupabaseAdmin()
   const school = await admin.from('schools').select('sandbox_id').eq('id', cls.school_id).single()
   if (!school.data?.sandbox_id) throw new Error('The sample curriculum is only for the demo')
+  const taught = await admin.from('classes').select('subject, grade').eq('id', classId).single()
+  if (!taught.data || !sampleCurriculumFits(taught.data.subject, taught.data.grade)) throw new Error(SAMPLE_ONLY_FOR)
   const mapId = await draftMapFor(admin, classId)
   const rows = []
   for (const [i, doc] of SAMPLE_DOCS.entries()) {

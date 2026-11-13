@@ -44,6 +44,33 @@ export const initialsOf = (name: string): string =>
 const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
 export const numberWord = (n: number): string => WORDS[n] ?? String(n)
 const plural = (n: number, one: string, many = `${one}s`) => (n === 1 ? one : many)
+const capital = (word: string): string => word.charAt(0).toUpperCase() + word.slice(1)
+
+/** What the class list heading needs to know about one class. `needs` counts the open Needs you items, `papers` those that are papers. */
+export type HeadlineClass = { label: string; needs: number; papers: number; tests: number }
+
+/**
+ * The big sentence on the class list. Each class has at most one sentence: it needs the teacher, or (with nothing waiting) it has no test yet.
+ * With one or two sentences they are all said. With three or more the heading stays short: how many classes need the teacher, then how many
+ * are waiting to be set up. A single class of either kind keeps its own sentence. Pure: no database.
+ */
+export function classesHeadline(classes: HeadlineClass[]): string {
+  if (classes.length === 0) return 'Create your first class to get started.'
+  const needing = classes.filter((c) => c.needs > 0)
+  const waiting = classes.filter((c) => c.needs === 0 && c.tests === 0)
+  const needsSentence = (c: HeadlineClass) => `${c.label} needs you for ${numberWord(c.needs)} ${c.papers === c.needs ? plural(c.needs, 'paper') : plural(c.needs, 'thing')}.`
+  const waitingSentence = (c: HeadlineClass) => `${c.label} is waiting to be set up.`
+  // Today's text, in the order of the classes.
+  const own = classes.flatMap((c) => (c.needs > 0 ? [needsSentence(c)] : c.tests === 0 ? [waitingSentence(c)] : []))
+  if (own.length <= 2) return own.join(' ') || 'Everything is up to date.'
+  const parts: string[] = []
+  if (needing.length === 1) parts.push(needsSentence(needing[0]!))
+  else if (needing.length > 1) parts.push(`${capital(numberWord(needing.length))} classes need you.`)
+  if (waiting.length === 1) parts.push(waitingSentence(waiting[0]!))
+  // After a sentence about the classes that need you "Two are waiting" is clear. On its own it needs its noun.
+  else if (waiting.length > 1) parts.push(`${capital(numberWord(waiting.length))} ${needing.length > 0 ? 'are' : 'classes are'} waiting to be set up.`)
+  return parts.join(' ')
+}
 
 const fmt = (iso: string, opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('en-ZA', { timeZone: TZ, ...opts }).format(new Date(iso))
 
@@ -164,15 +191,7 @@ export async function getTeacherClasses(): Promise<ClassesView> {
   })
 
   const labels = classLabels(cards.map((c) => c.name))
-  const sentences = cards.flatMap((c, i) => {
-    const n = needsBy.get(c.id)
-    if (n && n.n > 0) {
-      const noun = n.papers === n.n ? plural(n.n, 'paper') : plural(n.n, 'thing')
-      return [`${labels[i]} needs you for ${numberWord(n.n)} ${noun}.`]
-    }
-    return c.tests === 0 ? [`${labels[i]} is waiting to be set up.`] : []
-  })
-  const headline = cards.length === 0 ? 'Create your first class to get started.' : sentences.join(' ') || 'Everything is up to date.'
+  const headline = classesHeadline(cards.map((c, i) => ({ label: labels[i]!, needs: needsBy.get(c.id)?.n ?? 0, papers: needsBy.get(c.id)?.papers ?? 0, tests: c.tests })))
 
   return {
     greeting: greeting(),

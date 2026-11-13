@@ -753,3 +753,78 @@ describe('answersToResults: this year\'s answers take their subject and grade fr
     ])
   })
 })
+
+describe('one strand, one row: a map that says `numbers` and a record that says `whole_numbers` are the same strand', () => {
+  const base = {
+    topics: [
+      { id: 'tp-num', family: 'numbers', name: 'Counting in tens' },
+      { id: 'tp-shape', family: 'shape', name: 'Triangles' },
+      { id: 'tp-alg', family: 'Patterns and Algebra', name: 'Number patterns' },
+      { id: 'tp-read', family: 'Speaking and listening', name: 'Talking about a story' },
+    ],
+    papers: [
+      { id: 'pa-maths', test_id: 'te-maths', created_at: '2026-10-01T08:00:00Z' },
+      { id: 'pa-eng', test_id: 'te-eng', created_at: '2026-10-01T08:00:00Z' },
+    ],
+    tests: [
+      { id: 'te-maths', title: 'Class Test 1', written_on: '2026-10-10', class_id: 'cl-maths' },
+      { id: 'te-eng', title: 'English Test 1', written_on: '2026-10-10', class_id: 'cl-eng' },
+    ],
+    classes: [
+      { id: 'cl-maths', subject: 'Mathematics', grade: 6 },
+      { id: 'cl-eng', subject: 'English', grade: 6 },
+    ],
+    homeworkGrade: 6,
+  }
+  const answer = (id: string, paper: string, topic: string, n = 1) => ({ id, paper_id: paper, n, correct: id.endsWith('r'), topic_id: topic })
+
+  test('an answer takes the plain family of its topic', () => {
+    const out = answersToResults({
+      ...base,
+      answers: [answer('a1r', 'pa-maths', 'tp-num'), answer('a2r', 'pa-maths', 'tp-shape'), answer('a3r', 'pa-maths', 'tp-alg'), answer('a4r', 'pa-eng', 'tp-read')],
+    })
+    expect(out.map((r) => [r.id, r.family])).toEqual([
+      ['a1r', 'whole_numbers'],
+      ['a2r', 'shapes'],
+      ['a3r', 'patterns_and_algebra'],
+      ['a4r', 'speaking_listening'],
+    ])
+  })
+
+  test('answers on `numbers` and records on `whole_numbers` land in ONE row of the table, in the same term', () => {
+    const results = answersToResults({ ...base, answers: [1, 2, 3].map((n) => answer(`n${n}r`, 'pa-maths', 'tp-num', n)) })
+    const records = [rec({ year: 2026, term: 4, family: 'whole_numbers', marks: 7, outOf: 10 }), rec({ year: 2026, term: 3, family: 'whole_numbers', marks: 6, outOf: 10 })]
+    const { table } = buildTable(records, results)
+    expect(table.map((f) => f.family)).toEqual(['whole_numbers'])
+    const row = table[0]!
+    expect(row.slots.map((s) => [s.year, s.term, s.percent, s.points])).toEqual([
+      [2026, 3, 60, 10],
+      // term 4: 3 right answers out of 3, and a quiz of 7 out of 10: 10 out of 13.
+      [2026, 4, 77, 13],
+    ])
+  })
+
+  test('a record that says `numbers` or `Shapes and space` is read as `whole_numbers` or `shapes`, and nothing is stored differently', () => {
+    const asWritten = [rec({ year: 2026, term: 2, family: 'Numbers', marks: 6, outOf: 10 }), rec({ year: 2026, term: 3, family: 'whole_numbers', marks: 7, outOf: 10 }), rec({ year: 2026, term: 4, family: 'number', marks: 8, outOf: 10 })]
+    const before = JSON.stringify(asWritten)
+    const { table } = buildTable(asWritten, [])
+    expect(table.map((f) => [f.family, f.slots.map((s) => s.percent)])).toEqual([['whole_numbers', [60, 70, 80]]])
+    // The records that came in are not changed.
+    expect(JSON.stringify(asWritten)).toBe(before)
+  })
+
+  test('three terms of mixed spellings make one pattern, not three rows that never reach three terms', () => {
+    const records = [quiz(2026, 2, 30, 'numbers'), quiz(2026, 3, 40, 'whole_numbers'), quiz(2026, 4, 20, 'Whole numbers')]
+    const found = only(records)
+    expect(found.map((p) => [p.kind, p.family])).toEqual([['struggle', 'whole_numbers']])
+  })
+
+  test('another subject keeps its own strands: English `Speaking and listening` is one row, and `numbers` stays `numbers` there', () => {
+    const records = [rec({ year: 2026, term: 3, family: 'Speaking and listening', subject: 'English' }), rec({ year: 2026, term: 3, family: 'speaking_listening', subject: 'English' }), rec({ year: 2026, term: 3, family: 'numbers', subject: 'English' })]
+    const { table } = buildTable(records, [])
+    expect(table.map((f) => [f.subject, f.family])).toEqual([
+      ['English', 'numbers'],
+      ['English', 'speaking_listening'],
+    ])
+  })
+})

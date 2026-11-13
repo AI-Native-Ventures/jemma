@@ -1,5 +1,5 @@
 import type { LongViewEvidence, LongViewKind, LongViewTerm, PatternCandidate } from '../schemas/long-view'
-import { DEFAULT_SUBJECT, canonicalSubject, compareSubjects } from './strands'
+import { DEFAULT_SUBJECT, canonicalFamily, canonicalSubject, compareSubjects } from './strands'
 
 // The Long view: code finds the strengths and struggles that hold for 3 terms or more. A model only puts them in words.
 // Pure functions, no database. Terms are calendar quarters: Jan to Mar is 1, Apr to Jun 2, Jul to Sep 3, Oct to Dec 4.
@@ -100,9 +100,28 @@ export type LongViewRecord = {
   importId?: string | null
   /** The row of that file. */
   sourceRow?: number | null
+  /** The user who added the record (`learner_records.added_by`): a file, or one result typed by hand. Null or missing for the demo seed. */
+  addedBy?: string | null
   /** The teacher who added the record (a file, or one result typed by hand). Missing for the demo seed. */
   addedByName?: string | null
 }
+
+/** A piece written into the records more than this many days after it happened is "logged late". */
+export const LATE_AFTER_DAYS = 60
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/**
+ * A record a teacher brought in through "Add past records": it came from a file (`import_id`) or was typed in by hand (`added_by`).
+ * Such a record is written long after it happened by nature. The demo seed and the records of the term have neither.
+ */
+export const isBroughtIn = (r: Pick<LongViewRecord, 'importId' | 'addedBy' | 'addedByName'>): boolean => !!r.importId || !!r.addedBy || !!r.addedByName
+
+/**
+ * "Logged late": written into the records more than LATE_AFTER_DAYS after it happened, and NOT brought in (a record that was brought in
+ * says where it came from instead). The screen and `get_learner_history` both ask here, so they keep one rule.
+ */
+export const isLoggedLate = (r: Pick<LongViewRecord, 'happenedOn' | 'loggedAt'> & Partial<Pick<LongViewRecord, 'importId' | 'addedBy' | 'addedByName'>>): boolean =>
+  !isBroughtIn(r) && Date.parse(r.loggedAt) - Date.parse(r.happenedOn) > LATE_AFTER_DAYS * DAY_MS
 
 /**
  * One marked answer of this year (from `question_results`). It takes its subject and grade from the class of the test it was written in
@@ -153,15 +172,17 @@ export function answersToResults(src: AnswerSources): AnswerResult[] {
     // A paper of a test the reader cannot see (another teacher's class) is left out: calling it homework would give it the wrong subject.
     if (p.test_id && !made) return []
     const c = made ? klass.get(made.class_id) : undefined
+    const subject = c?.subject?.trim() ? canonicalSubject(c.subject) : DEFAULT_SUBJECT
     return [
       {
         id: a.id,
         correct: a.correct,
-        family: t.family,
+        // Read in its plain form: a map the model drafted says `numbers`, a record says `whole_numbers`, and they are one strand. The topic keeps its own word.
+        family: canonicalFamily(subject, t.family),
         isoDate: made?.written_on ?? p.created_at,
         label: `${made?.title ?? 'Homework'}, question ${a.n}`,
         grade: c?.grade ?? src.homeworkGrade,
-        subject: c?.subject?.trim() ? canonicalSubject(c.subject) : DEFAULT_SUBJECT,
+        subject,
         classId: c?.id ?? null,
         testTitle: made?.title ?? null,
         topicName: t.name,
@@ -253,7 +274,7 @@ export function buildTable(records: LongViewRecord[], results: LongViewResult[])
   const table: FamilyTable[] = []
   const notCounted: NotCounted[] = []
   for (const subject of subjectsOf(records, results)) {
-    const one = buildSubjectTable(recordsForSubject(records, subject), resultsForSubject(results, subject))
+    const one = buildSubjectTable(recordsForSubject(records, subject), resultsForSubject(results, subject), subject)
     table.push(...one.table.map((f) => ({ subject, ...f })))
     notCounted.push(...one.notCounted.map((n) => ({ ...n, subject })))
   }
@@ -267,11 +288,13 @@ export function buildTable(records: LongViewRecord[], results: LongViewResult[])
  * - From current results: percent is the share of right answers, points is the number of answers.
  * - A record whose quality is 'unclear' never counts. It comes back in `notCounted` with its label.
  * - A term where a family has fewer than MIN_POINTS is left out for that family: "no data".
+ * A record's family is read in its plain form (`canonicalFamily`), so `numbers` and `whole_numbers` are one row. The record itself is not changed.
  * Families come back in alphabetical order and terms oldest first.
  */
 export function buildSubjectTable(
   records: LongViewRecord[],
   results: LongViewResult[],
+  subject: string = DEFAULT_SUBJECT,
 ): { table: Omit<FamilyTable, 'subject'>[]; notCounted: { id: string; label: string }[] } {
   const items: Item[] = []
   const notCounted: { id: string; label: string }[] = []
@@ -282,7 +305,7 @@ export function buildSubjectTable(
       continue
     }
     if (!r.family || r.marks === null || r.outOf === null || r.outOf <= 0 || r.marks < 0 || r.marks > r.outOf) continue
-    items.push({ family: r.family, slot: r, grade: r.grade, got: r.marks, of: r.outOf, date: r.happenedOn, source: { kind: 'record', id: r.id, label: recordLabel(r) } })
+    items.push({ family: canonicalFamily(subject, r.family), slot: r, grade: r.grade, got: r.marks, of: r.outOf, date: r.happenedOn, source: { kind: 'record', id: r.id, label: recordLabel(r) } })
   }
   for (const r of results) {
     items.push({ family: r.family, slot: slotOf(r.isoDate), grade: r.grade ?? null, got: r.correct ? 1 : 0, of: 1, date: r.isoDate, source: { kind: 'result', id: r.id, label: r.label } })

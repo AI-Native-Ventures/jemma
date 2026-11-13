@@ -7,6 +7,7 @@ import {
   inQuestionOrder,
   levelOf,
   linesFor,
+  noPatternBlock,
   pillText,
   strandName,
   subjectLinkOf,
@@ -202,6 +203,56 @@ describe('what Jemma could not use', () => {
     )
     expect(v.unclear).toEqual(['Quiz: Fractions, Mrs Naidoo, 12 Aug 2025'])
     expect(v.late).toEqual(['Assignment: Angles, Mrs Naidoo, 4 Mar 2025'])
+  })
+
+  it('a record a teacher brought in is not "logged late", however old it is; a seeded record that old still is', () => {
+    // 400 days between the day it happened and the day it was written down.
+    const old = { happenedOn: '2025-03-04', loggedAt: '2026-04-08T10:00:00Z', term: 1 }
+    const v = buildLongView(
+      input({
+        records: [
+          record({ id: 'seed', title: 'Assignment: Angles', family: 'shapes', ...old }),
+          record({ id: 'file', title: 'Quiz: From a file', family: 'fractions', ...old, importId: 'imp-1', sourceRow: 4, addedBy: 'user-1', addedByName: 'Ms Banda' }),
+          record({ id: 'typed', title: 'Quiz: Typed by hand', family: 'decimals', ...old, addedBy: 'user-1', addedByName: 'Ms Banda' }),
+        ],
+        importFiles: { 'imp-1': 'term-1-marks.csv' },
+      }),
+    )
+    expect(v.late).toEqual(['Assignment: Angles, Mrs Naidoo, 4 Mar 2025'])
+  })
+
+  it('the source sheet of a record that was brought in says where it came from and does not say it was logged late', () => {
+    const old = { happenedOn: '2025-03-04', loggedAt: '2026-04-08T10:00:00Z', year: 2025, term: 1 }
+    const rows = [
+      record({ id: 'seed', title: 'Seeded', family: 'fractions', ...old }),
+      record({ id: 'file', title: 'From a file', family: 'fractions', ...old, term: 2, happenedOn: '2025-05-04', importId: 'imp-1', sourceRow: 4, addedBy: 'user-1', addedByName: 'Ms Banda' }),
+      record({ id: 'typed', title: 'Typed by hand', family: 'fractions', ...old, term: 3, happenedOn: '2025-08-04', addedBy: 'user-1', addedByName: 'Ms Banda' }),
+    ]
+    const v = buildLongView(
+      input({
+        records: rows,
+        importFiles: { 'imp-1': 'term-1-marks.csv' },
+        patterns: [pattern({ evidence: rows.map((r) => ({ kind: 'record' as const, id: r.id, label: `${r.title}, Mrs Naidoo, ${r.happenedOn}` })) })],
+      }),
+    )
+    const sheets = Object.fromEntries(v.groups.drafts[0]!.evidence.map((e) => [e.id, 'sheet' in e ? e.sheet : null]))
+    expect(sheets.seed).toMatchObject({ late: true, origin: null })
+    expect(sheets.file).toMatchObject({ late: false })
+    expect(sheets.file!.origin).toMatch(/^From term-1-marks\.csv, row 4\. Added by Ms Banda/)
+    expect(sheets.typed).toMatchObject({ late: false })
+    expect(sheets.typed!.origin).toMatch(/^Added by Ms Banda/)
+  })
+
+  it('the 60 day rule is unchanged for a record that was not brought in: exactly 60 days is on time, more is late', () => {
+    const v = buildLongView(
+      input({
+        records: [
+          record({ id: 'a', title: 'Sixty days', happenedOn: '2025-03-01', loggedAt: '2025-04-30T00:00:00Z', term: 1 }),
+          record({ id: 'b', title: 'Sixty one days', family: 'shapes', happenedOn: '2025-03-01', loggedAt: '2025-05-01T10:00:00Z', term: 1 }),
+        ],
+      }),
+    )
+    expect(v.late).toEqual(['Sixty one days, Mrs Naidoo, 1 Mar 2025'])
   })
 
   it('writes missing terms by grade in plain words', () => {
@@ -414,6 +465,24 @@ describe('the update line', () => {
   it('does not wait for ever on an update that nobody picked up', () => {
     expect(buildLongView(input({ events: [ev('queued', 40)] })).update.state).toBe('failed')
     expect(buildLongView(input({ events: [ev('running', 20)] })).update.state).toBe('failed')
+  })
+
+  it('with no pattern, the empty block says Jemma is still looking while an update is running, and "Too early to tell" in every other state', () => {
+    const looking = { title: 'Jemma is looking across the terms.', body: 'Patterns show here in a minute or two.' }
+    const early = { title: 'Too early to tell', body: 'A pattern needs 3 terms of clear results.' }
+    // through the real screen data: no pattern row, an update in each state
+    expect(noPatternBlock(buildLongView(input({ events: [ev('running', 1)] })))).toEqual(looking)
+    expect(noPatternBlock(buildLongView(input({ events: [ev('queued', 2)] })))).toEqual(looking)
+    expect(noPatternBlock(buildLongView(input({ events: [] })))).toEqual(early)
+    expect(noPatternBlock(buildLongView(input({ events: [ev('done', 90, true)] })))).toEqual(early)
+    expect(noPatternBlock(buildLongView(input({ events: [ev('failed', 5)] })))).toEqual(early)
+    expect(noPatternBlock(buildLongView(input({ events: [ev('queued', 40)] })))).toEqual(early)
+  })
+
+  it('with a pattern in the subject there is no empty block, whatever the update is doing', () => {
+    expect(noPatternBlock(buildLongView(input({ events: [ev('running', 1)], patterns: [pattern()] })))).toBeNull()
+    expect(noPatternBlock({ subjectPatternCount: 1, update: { state: 'idle' } })).toBeNull()
+    expect(noPatternBlock({ subjectPatternCount: 0, update: { state: 'failed' } })?.title).toBe('Too early to tell')
   })
 
   it('asks for an update on open only with no pattern rows and no update in the last 10 minutes', () => {

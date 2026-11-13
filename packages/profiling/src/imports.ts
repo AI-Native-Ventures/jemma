@@ -5,6 +5,7 @@ import {
   SAMPLE_ROWS,
   TableError,
   applyFix,
+  canonicalFamily,
   countRows,
   findProblems,
   parseTable,
@@ -59,7 +60,8 @@ export async function allowedFamilies(db: JemmaDb, classId: string, subject: str
   if (maps[0]) {
     const topics = await ok(db.from('topics').select('family, term, position').eq('map_id', maps[0].id))
     const ordered = [...topics].sort((a, b) => a.term - b.term || a.position - b.position)
-    const families = [...new Set(ordered.map((t) => t.family).filter((f): f is string => !!f))]
+    // Read in their plain form, so a map that says `numbers` and `shape` offers the same strands as the records do (`whole_numbers`, `shapes`). Nothing stored changes.
+    const families = [...new Set(ordered.map((t) => (t.family ? canonicalFamily(subject, t.family) : '')).filter((f) => !!f))]
     if (families.length > 0) return families.map((family) => ({ family, label: strandLabel(subject, family) }))
   }
   const known = strandOrder(subject)
