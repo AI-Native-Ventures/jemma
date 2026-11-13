@@ -6,6 +6,7 @@ import type { ReactNode } from 'react'
 import { useState, useTransition } from 'react'
 import type { AnswerKeyItem } from '@jemma/profiling/schemas'
 import { SURE, PageTitle } from '../../../_parts'
+import { shrinkPhoto } from '@/lib/shrink-photo'
 import { postFiles } from '@/lib/upload-client'
 import { approveKey, confirmKeyItem, type ActionResult } from '../../../actions'
 
@@ -34,7 +35,7 @@ export function DraftKey({ classId, testId, items, unsure, approved, children }:
     if (!file) return
     start(async () => {
       const form = new FormData()
-      form.set('file', file)
+      form.set('file', await shrinkPhoto(file))
       try {
         const res = await postFiles<ActionResult>('t', 'uploadMemo', [classId, testId], form)
         if (!res.ok) return setError(res.message)

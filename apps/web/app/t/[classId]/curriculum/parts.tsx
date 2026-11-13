@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { ErrorRetry } from '@/components/blocks'
 import { Button, Sheet } from '@/components/ui'
+import { shrinkPhoto } from '@/lib/shrink-photo'
 import { postFiles } from '@/lib/upload-client'
 import { retryDraft, useSampleCurriculum, type UploadResult } from './actions'
 import { notAllowedMessage, sizeProblem, sniffKind } from './upload-checks'
@@ -44,7 +45,8 @@ export function UploadButtons({ classId }: { classId: string }) {
       }
       try {
         const form = new FormData()
-        for (const f of files) form.append('file', f)
+        // A phone photo is made smaller first (a PDF is not touched). The checks above have passed, so their messages do not change.
+        for (const f of files) form.append('file', await shrinkPhoto(f))
         const done = await postFiles<UploadResult>('t', 'uploadCurriculum', [classId], form)
         if (!done.ok) return setError(done.message)
         router.refresh()

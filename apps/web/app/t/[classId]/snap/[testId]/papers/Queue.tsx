@@ -4,6 +4,7 @@ import { Spinner } from '@/components/ui/Button'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition, type ReactNode } from 'react'
+import { shrinkPhoto } from '@/lib/shrink-photo'
 import { postFiles } from '@/lib/upload-client'
 import { useSamplePapers, type ActionResult } from '../../actions'
 import { RETAKE_PATH } from '../../_parts'
@@ -51,7 +52,7 @@ export function RetakeButton({ classId, paperId, position }: { classId: string; 
           if (!file) return
           start(async () => {
             const form = new FormData()
-            form.set('file', file)
+            form.set('file', await shrinkPhoto(file))
             await postFiles<ActionResult>('t', 'retakePaper', [classId, paperId], form).catch(() => undefined)
             router.refresh()
           })
@@ -85,7 +86,7 @@ export function Queue({
     setError(null)
     start(async () => {
       const form = new FormData()
-      form.set('file', file)
+      form.set('file', await shrinkPhoto(file))
       try {
         const res =
           kind === 'paper' || !lastPaper

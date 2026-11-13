@@ -265,6 +265,8 @@ Every model call goes through `packages/profiling/src/ai/models.ts` and is wrapp
 
 The key is the model id plus the call, with uuids and dates left out. So an answer recorded in one sandbox replays in another. All sandboxes start from the same synthetic inputs, so one warm-up run makes later runs fast. That is why the judges' deployment uses `cache`: the free models are slow and often fail, and a stored answer is served in seconds. Tests never call a live model: they use the mock models from `ai/test` or `replay`.
 
+A recorded answer holds the model's answer and not the request that was sent. The request carries the whole file in base64, a row of several MB that the database stops before it is saved (a 5 MB PDF showed this on the deployed preview on 13 November 2026). The key is made from the call, so it does not change. Rows recorded before that date can still hold the request, all of it synthetic, and they replay as they always did. In `cache` mode a failed save or a failed read of a recorded answer never fails the call: it is logged in one line, the answer is used, and a failed read counts as a miss. `record` still fails when a save fails, so a recording run never loses an answer silently, and `replay` still fails when a read fails.
+
 A change to a job prompt, a schema or a model id changes the key. Record again after any of those. The steps are in [runbook.md](runbook.md).
 
 ## Why files go through an upload route
@@ -279,6 +281,8 @@ Why, as measured on the deployed preview on 13 November 2026:
 - Which rule of Cloudflare's does this was not identified, so none is named here.
 
 A refusal is chance: about 2 in 100 for a 180 KB file, about 3 in 10 for a 3 MB phone photo, about 1 in 2 for a 5 MB PDF. A test (`packages/profiling/test/upload-guard.test.ts`) fails if a screen imports one of the seven functions again. The refusal only happens on Cloudflare, so a local run cannot show it: the local tests prove that no file travels in a form action and that the bytes are stored whole, and the edge itself is checked on the deployed app.
+
+A photo over 1 MB is made smaller in the browser before it is sent (its longest side at most 2000 px, written as a JPEG), so a phone photo of 3 to 8 MB is a few hundred KB. A PDF, and a photo of 1 MB or less such as the sample photos, are sent as they are, with the same bytes.
 
 ## What is not built
 
