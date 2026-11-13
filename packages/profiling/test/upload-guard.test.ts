@@ -84,6 +84,11 @@ describe('no screen sends file bytes through a form action', () => {
     expect(offenders, WHY).toEqual([])
   })
 
+  test('the client helper can name all seven functions', () => {
+    const client = readFileSync(join(root, 'apps/web/lib/upload-client.ts'), 'utf8')
+    for (const fn of UPLOAD_FUNCTIONS) expect(client, `${fn} is an UploadAction`).toContain(`'${fn}'`)
+  })
+
   test('the two upload routes name all seven functions, and the actions files still export them', () => {
     const routes = ['apps/web/app/t/upload/route.ts', 'apps/web/app/p/upload/route.ts'].map((f) => readFileSync(join(root, f), 'utf8')).join('\n')
     const actions = ['apps/web/app/t/[classId]/curriculum/actions.ts', 'apps/web/app/t/[classId]/snap/actions.ts', 'apps/web/app/p/[childId]/snap/actions.ts']
