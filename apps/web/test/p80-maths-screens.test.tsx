@@ -14,6 +14,9 @@ vi.mock('next/navigation', () => ({
 }))
 vi.mock('../app/k/actions', () => ({ startPractice: vi.fn(async () => ({ ok: true })), retryPractice: vi.fn(async () => ({ ok: true })) }))
 vi.mock('../lib/data/p80', () => ({ getMyMaths: async () => state.view }))
+// These tests are the "My school" screens (P95 added the "My own" ones, tested in p95-my-maths-own.test.tsx).
+vi.mock('../lib/data/own-screens', () => ({ getScreenShape: async () => ({ workspace: 'school' }) }))
+vi.mock('../app/k/own-actions', () => ({ setWorkspace: vi.fn(async () => ({ ok: true })), addMyGrade: vi.fn(async () => ({ ok: true })) }))
 
 import MyMathsPage from '../app/k/maths/page'
 import MyMathsPartPage from '../app/k/maths/[family]/page'
@@ -108,7 +111,7 @@ describe('/k/maths', () => {
   it('while tonight\'s lesson waits there is no Practise button, one line and a link to today', async () => {
     state.view = view({ status: 'due' })
     await page()
-    expect(screen.queryAllByRole('button')).toHaveLength(0)
+    expect(screen.queryAllByRole('button', { name: /^Practise/ })).toHaveLength(0)
     expect(screen.getByText(/Finish tonight's lesson first\./)).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Go to today' }).getAttribute('href')).toBe('/k')
     // the counts and the way into each part stay
@@ -118,7 +121,7 @@ describe('/k/maths', () => {
   it('while a practice is being written there is no Practise button either', async () => {
     state.view = view({ status: 'writing' })
     await page()
-    expect(screen.queryAllByRole('button')).toHaveLength(0)
+    expect(screen.queryAllByRole('button', { name: /^Practise/ })).toHaveLength(0)
     expect(screen.getByText(/Jemma is writing your practice\./)).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Go to today' }).getAttribute('href')).toBe('/k')
   })

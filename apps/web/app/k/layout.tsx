@@ -1,11 +1,12 @@
 import { cookies, headers } from 'next/headers'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { Sidebar, TabBar } from '@/components/blocks'
 import { requireRole } from '@/lib/auth'
 import { myChild } from '@/lib/data/p27'
 import { initialsOf } from '@/lib/initials'
-import { HANDOVER_COOKIE, handoverAllows } from '@/lib/handover'
+import { HANDOVER_COOKIE, handoverAllows, isOwnHandover } from '@/lib/handover'
 import { isPublicPath } from '@/lib/public-paths'
 import { activeTab } from '@/lib/space'
 import { createSupabaseServer } from '@/lib/supabase/server'
@@ -16,7 +17,8 @@ const isBare = (pathname: string) => BARE.some((p) => pathname === p || pathname
 
 /**
  * Learner space. The phone has no top bar (each screen greets the child); the laptop gets the sidebar.
- * A parent who handed the phone over sees only that session and the hand-back screen, with no navigation.
+ * A parent who handed the phone over for one session sees only that session and the hand-back screen, with no navigation. A parent who handed it
+ * over for the learner's own practice ("Practise at home") shows the learner's own screens with the tab bar, and a link that takes the phone back.
  */
 export default async function LearnerLayout({ children }: { children: ReactNode }) {
   const pathname = (await headers()).get('x-pathname') ?? '/k'
@@ -32,6 +34,17 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
   if (me?.role === 'parent') {
     const handover = await handoverAllows((await cookies()).get(HANDOVER_COOKIE)?.value, pathname)
     if (!handover) redirect('/p')
+    if (isOwnHandover(handover) && !isBare(pathname)) {
+      return (
+        <div className="flex min-h-dvh flex-col bg-ground">
+          <main className="flex-1">{children}</main>
+          <Link href={`/p/${handover.childId}`} className="flex min-h-12 items-center justify-center px-5 py-3 text-center text-[15px] font-semibold text-body underline underline-offset-[3px]">
+            Grown-up? Take the phone back.
+          </Link>
+          <TabBar role="learner" active={await activeTab('learner', '/k')} label="Practise at home" />
+        </div>
+      )
+    }
     return <main className="min-h-dvh bg-ground">{children}</main>
   }
 

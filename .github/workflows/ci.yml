@@ -134,8 +134,8 @@ jobs:
           . ./.env.local
           set +a
           failed=0
-          PLAYWRIGHT_HTML_REPORT=playwright-report/with-agent-phone pnpm --filter web exec playwright test p27 p28 p73 p82 p94 --project=phone --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/with-agent-phone || failed=1
-          PLAYWRIGHT_HTML_REPORT=playwright-report/with-agent-laptop pnpm --filter web exec playwright test p73 --project=laptop --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/with-agent-laptop || failed=1
+          PLAYWRIGHT_HTML_REPORT=playwright-report/with-agent-phone pnpm --filter web exec playwright test p27 p28 p73 p82 p94 p95 --project=phone --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/with-agent-phone || failed=1
+          PLAYWRIGHT_HTML_REPORT=playwright-report/with-agent-laptop pnpm --filter web exec playwright test p73 p95 --project=laptop --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/with-agent-laptop || failed=1
           exit "$failed"
 
       # The real agent and the stand-in cannot share port 8787. The agent was started by start.sh and its process group is in .jemma/pids.
