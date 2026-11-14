@@ -4,18 +4,23 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState, useTransition } from 'react'
 import { shrinkPhoto } from '@/lib/shrink-photo'
 import { postFiles } from '@/lib/upload-client'
+import { useRefreshPoll } from '@/lib/use-refresh-poll'
 import type { ActionResult } from '../../actions'
 
-/** Refreshes the server data every 3 s on the laptop layout, so pages snapped with the phone land without a reload. */
+/**
+ * Refreshes the server data 3 s after the last answer came back, on the laptop layout only, so pages snapped with the phone land without
+ * a reload.
+ */
 export function LaptopPoll() {
-  const router = useRouter()
+  const [wide, setWide] = useState(false)
   useEffect(() => {
-    const wide = window.matchMedia('(min-width: 1024px)')
-    const id = setInterval(() => {
-      if (wide.matches) router.refresh()
-    }, 3000)
-    return () => clearInterval(id)
-  }, [router])
+    const query = window.matchMedia('(min-width: 1024px)')
+    const sync = () => setWide(query.matches)
+    sync()
+    query.addEventListener('change', sync)
+    return () => query.removeEventListener('change', sync)
+  }, [])
+  useRefreshPoll(3000, wide)
   return null
 }
 

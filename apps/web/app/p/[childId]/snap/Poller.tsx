@@ -1,15 +1,9 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useRefreshPoll } from '@/lib/use-refresh-poll'
 
-/** Refreshes the server data every 2 s while `active`. */
+/** Refreshes the server data 2 s after the last answer came back, while `active`. */
 export function Poller({ active }: { active: boolean }) {
-  const router = useRouter()
-  useEffect(() => {
-    if (!active) return
-    const id = setInterval(() => router.refresh(), 2000)
-    return () => clearInterval(id)
-  }, [active, router])
+  useRefreshPoll(2000, active)
   return null
 }

@@ -3,9 +3,10 @@
 import { scoreText, type MyMathsSuggestion } from '@jemma/profiling/logic'
 import { PendingButton } from '@/components/ui/Button'
 import type { PracticeState } from '@/lib/data/p27'
+import { useRefreshPoll } from '@/lib/use-refresh-poll'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { retryPractice, type ActionResult } from './actions'
 import { PractiseButton } from './Practise'
 
@@ -26,19 +27,16 @@ function Ring() {
 /**
  * What the learner's home offers when there is no session to start (the state is worked out on the server, see `practiceState`):
  * the first thing "My maths" suggests, with a Practise button and a link to choose something else; the writing state (the screen asks again
- * every 3 seconds, the way the teacher's key screen does); the failed state with a retry; or one plain line when there is nothing to practise
- * yet, with a link to "My maths".
+ * 3 seconds after the last answer came back, the way the teacher's key screen does); the failed state with a retry; or one plain line when
+ * there is nothing to practise yet, with a link to "My maths".
  */
 export function PracticeCard({ state, suggestion }: { state: PracticeState; suggestion: MyMathsSuggestion | null }) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [pending, start] = useTransition()
 
-  useEffect(() => {
-    if (state !== 'writing') return
-    const id = setInterval(() => router.refresh(), 3000)
-    return () => clearInterval(id)
-  }, [state, router])
+  // While Jemma writes: look again 3 seconds after the last answer came back, never while the last look is still waiting.
+  useRefreshPoll(3000, state === 'writing')
 
   const run = (action: () => Promise<ActionResult>) =>
     start(async () => {
