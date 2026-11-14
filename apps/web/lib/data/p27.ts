@@ -2,7 +2,7 @@ import { cookies } from 'next/headers'
 import { HANDOVER_COOKIE, verifyHandover } from '../handover'
 import { buildMyMaths, type MyMaths, type MyMathsSuggestion } from '@jemma/profiling/logic'
 import { loadMyMathsInput } from '@jemma/profiling/orchestrator'
-import { LessonSchema, QuestionSchema, type Lesson, type DiagramSpec } from '@jemma/profiling/schemas'
+import { LessonSchema, QuestionSchema, type Lesson, type SeniorDiagramSpec } from '@jemma/profiling/schemas'
 import { notFound } from 'next/navigation'
 import { stripQuestion, type QuestionForChild } from '@/app/k/session/[sessionId]/logic'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
@@ -17,7 +17,7 @@ export type TonightCard = {
   minutes: number
   format: Lesson['format']
   /** First picture of the lesson, for the preview on the card. */
-  preview: DiagramSpec | null
+  preview: SeniorDiagramSpec | null
 }
 
 export type NextCard = { day: string; topic: string; minutes: number | null; format: Lesson['format'] | null }

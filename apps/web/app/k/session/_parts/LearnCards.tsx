@@ -1,6 +1,6 @@
 'use client'
 
-import type { DiagramSpec } from '@jemma/profiling/schemas'
+import type { DiagramSpec, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 import { DiagramView } from '@/components/diagrams'
 import type { LessonForChild } from '../[sessionId]/types'
 import { BarRows, rowFills } from './Bars'
@@ -37,7 +37,7 @@ function sameAmountCaption(spec: Extract<DiagramSpec, { kind: 'fraction_bar' }>)
   return name ? `Same amount. Now it's in ${name}.` : null
 }
 
-function CardPicture({ spec }: { spec: DiagramSpec }) {
+function CardPicture({ spec }: { spec: SeniorDiagramSpec }) {
   if (spec.kind !== 'fraction_bar') return <DiagramView spec={spec} variant="learn" />
   return (
     <div aria-hidden="true" className="flex flex-col gap-2.5 bg-[#F7F6FB] p-4 [border-radius:18px]">

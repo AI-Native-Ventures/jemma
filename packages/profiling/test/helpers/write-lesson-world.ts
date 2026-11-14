@@ -81,3 +81,12 @@ export async function askedFor(spec: ClassSpec, prompt: string, reply = '{}'): P
   if (!seen[0]) throw new Error('the model was never asked')
   return seen[0]
 }
+
+/** Like `askedFor`, but with every request the job made (a bad reply is sent back once), in order. */
+export async function askedForAll(spec: ClassSpec, prompt: string, reply: string): Promise<Seen[]> {
+  const seen: Seen[] = []
+  const db = writeLessonWorld(spec)
+  const ctx: ToolContext = { db, schoolId: SCHOOL, eventId: null, env: { replayStore: new MemoryStore() }, now: () => new Date('2026-11-14T10:00:00Z') }
+  await runJobWriteLesson(ctx, '', { childId: CHILD, sessionId: SESSION }, { model: recordingModel(reply, seen), prompt }).catch(() => undefined)
+  return seen
+}

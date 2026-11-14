@@ -3,7 +3,8 @@ import { generateJson, getModel } from '../../ai'
 import { renderPrompt } from '../../ai/prompt-variants'
 import { classContext, isSeniorMaths } from '../../ai/subject-profile'
 import type { JemmaDb } from '../../db'
-import { PrimaryLessonSchema, SeniorLessonSchema, type Lesson } from '../../schemas/lesson'
+import { pictureProblem } from '../../logic/picture'
+import { PrimaryLessonSchema, SeniorLessonSchema, type Lesson, type Question } from '../../schemas/lesson'
 import { contextFor, maybe, ok, type ToolContext } from '../../tools/context'
 import { getChildContext } from '../../tools/read/get-child-context'
 import { badQuestions, saveLesson } from '../../tools/save/save-lesson'
@@ -23,6 +24,12 @@ async function topicOfSession(db: JemmaDb, sessionId: string, name: string): Pro
   const session = await maybe(db.from('sessions').select('topic_id').eq('id', sessionId).maybeSingle())
   const topic = session?.topic_id ? await maybe(db.from('topics').select('name, family').eq('id', session.topic_id).maybeSingle()) : null
   return { name, family: topic?.family ?? null }
+}
+
+/** What is wrong with the pictures of the questions that were sent back, for the model to put right (senior classes only: no other class draws one). */
+const pictureNote = (questions: Question[]) => {
+  const reasons = [...new Set(questions.flatMap((q) => (q.diagram ? [pictureProblem(q.diagram)] : [])).filter((r): r is string => r !== null))]
+  return reasons.length ? ` A picture must make sense: ${reasons.join('; ')}.` : ''
 }
 
 const hasQuestions = (content: unknown) =>
@@ -83,7 +90,10 @@ export async function runJobWriteLesson(
       feedback = `\n\nYour last answer had answers that cannot be marked: ${[
         ...bad.warmup.map((i) => `warmup question ${i + 1}`),
         ...bad.questions.map((i) => `question ${i + 1}`),
-      ].join(', ')}. Write the whole lesson again with a single markable answer for each.`
+      ].join(', ')}. Write the whole lesson again with a single markable answer for each.${pictureNote([
+        ...bad.warmup.map((i) => output.warmup[i]!),
+        ...bad.questions.map((i) => output.questions[i]!),
+      ])}`
     } catch (err) {
       lastError = err
       const why = (err instanceof Error ? err.message : String(err)).replace(/\s+/g, ' ').slice(0, 300)
