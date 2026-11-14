@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
+import { writeLine } from '../app/k/session/_parts/Paper'
 import { QuestionScreen } from '../app/k/session/_parts/QuestionScreen'
 import { answerShape, answerValue, stripQuestion, type QuestionForChild } from '../app/k/session/[sessionId]/logic'
 
@@ -337,5 +338,18 @@ describe('rendering on the server', () => {
       expect(out).not.toContain('data-reads')
       expect(out).not.toContain('Type an expression')
     }
+  })
+})
+
+describe('the paper sheet writes the same lines, for a pencil', () => {
+  it('each new kind has its own line, and the old ones keep theirs', () => {
+    expect(writeLine({ kind: 'expression', form: 'any' })).toBe('Write an expression, like 2x + 3.')
+    expect(writeLine({ kind: 'expression', form: 'factorised' })).toBe('Write it as a product of brackets, like (x + 2)(x - 2).')
+    expect(writeLine({ kind: 'expression', form: 'expanded' })).toBe('Write it with no brackets, like x\u00b2 + 4x + 4.')
+    expect(writeLine({ kind: 'equation' })).toBe('Write the answer, like x = 4. Two answers: x = 3 or x = -1.')
+    expect(writeLine({ kind: 'point' })).toBe('Write the x and the y of the point, like (2; 3).')
+    expect(writeLine({ kind: 'number' })).toBe('Write a number. It may be negative, like -3.')
+    expect(writeLine({ kind: 'whole' })).toBe('Write a whole number.')
+    expect(writeLine({ kind: 'text' })).toBe('Write your answer.')
   })
 })
