@@ -1,6 +1,6 @@
 'use server'
 
-import { markAnswer, type Stage } from '@jemma/profiling/logic'
+import type { Stage } from '@jemma/profiling/logic'
 import { LessonSchema, QuestionSchema, type Lesson, type Question } from '@jemma/profiling/schemas'
 import type { JemmaDb, Json } from '@jemma/profiling/db'
 import { sendEvent } from '@/lib/agent'
@@ -9,6 +9,7 @@ import { createSupabaseServer } from '@/lib/supabase/server'
 import { loadShortLabels } from '@/lib/topics'
 import {
   adaptedOf,
+  completeAnswer,
   DEFAULT_TRY_COUNT,
   missedOf,
   nextInSequence,
@@ -141,7 +142,8 @@ export async function answer(
     throw new Error('That question is not next')
   }
 
-  const { correct } = markAnswer(text, current.question.answer)
+  // The server finishes the answer from the stored question (a missing number goes back into its fraction), whatever the browser sent.
+  const { stored, correct } = completeAnswer(current.question, text)
   const earlier = run.items.filter((i) => i.phase === 'try').sort((a, b) => a.position - b.position).map((i) => i.correct)
   const { error } = await run.admin.from('session_items').insert({
     session_id: sessionId,
@@ -149,7 +151,7 @@ export async function answer(
     phase: current.phase,
     question: current.question as unknown as NonNullable<Json>,
     difficulty: current.question.difficulty,
-    answer: text,
+    answer: stored,
     correct,
     seconds: Math.max(0, Math.min(600, Math.round(seconds))),
     adapted: current.phase === 'try' ? adaptedOf([...earlier, correct]) : null,
@@ -160,7 +162,7 @@ export async function answer(
     phase: current.phase,
     position: current.index,
     question: current.question,
-    answer: text,
+    answer: stored,
     correct,
     difficulty: current.question.difficulty,
     seconds,

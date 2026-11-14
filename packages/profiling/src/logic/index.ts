@@ -1,5 +1,6 @@
 export * from './types'
 export * from './answers'
+export * from './missing-part'
 export * from './names'
 export * from './quiz'
 export * from './stages'
