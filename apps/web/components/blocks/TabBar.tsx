@@ -10,11 +10,14 @@ export type TabBarProps = {
   label: string
   /** Base path of the space, for example `/t/<classId>`. Defaults to the role home. */
   base?: string
+  /** Show only these tabs, in the order of the role's tabs. An empty list shows no bar (a child's page with nowhere else to go). Omitted: every tab. */
+  only?: TabId[]
 }
 
 /** Phone bottom bar. Hidden from width 1024, where `Sidebar` takes over. */
-export function TabBar({ role, active, label, base = HOMES[role] }: TabBarProps) {
-  const tabs = TABS[role]
+export function TabBar({ role, active, label, base = HOMES[role], only }: TabBarProps) {
+  const tabs = only ? TABS[role].filter((t) => only.includes(t.id)) : TABS[role]
+  if (tabs.length === 0) return null
   const learner = role === 'learner'
   return (
     <nav

@@ -39,11 +39,13 @@ async function personalSchoolsOf(admin: JemmaDb, schoolId: string): Promise<stri
 export async function teardown(admin: JemmaDb, schoolId: string | null, userIds: string[]): Promise<void> {
   if (schoolId) {
     // A learner's login is made when someone picks that learner, long after the sandbox was made. The school knows them: read them
-    // before the school goes, so no auth user is left behind. A learner's private workspace has the same login, so it adds no one.
-    const [learners, staff, personal] = await Promise.all([
-      admin.from('children').select('user_id').eq('school_id', schoolId).not('user_id', 'is', null),
-      admin.from('profiles').select('user_id').eq('school_id', schoolId),
-      personalSchoolsOf(admin, schoolId),
+    // before the school goes, so no auth user is left behind. A learner's private workspace has the same login, so it adds no one. A child whose
+    // school does not use Jemma (P99) lives in a personal school of its own and gets its login there (its parent makes the sign-in code), so the
+    // personal schools are read the same way.
+    const personal = await personalSchoolsOf(admin, schoolId)
+    const [learners, staff] = await Promise.all([
+      admin.from('children').select('user_id').in('school_id', [schoolId, ...personal]).not('user_id', 'is', null),
+      admin.from('profiles').select('user_id').in('school_id', [schoolId, ...personal]),
     ])
     userIds = [...new Set([...userIds, ...(learners.data ?? []).map((r) => r.user_id!), ...(staff.data ?? []).map((r) => r.user_id)])]
     for (const id of [schoolId, ...personal]) {

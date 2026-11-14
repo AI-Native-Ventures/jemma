@@ -19,7 +19,7 @@ export const OWN_PRELOADED_GRADES = [6, 7] as const
 export type OwnPractice = {
   /** The topic of the Grade 6 CAPS map the session is on (its exact name). */
   topicName: string
-  family: 'fractions' | 'whole_numbers'
+  family: string
   lesson: Lesson
   format: Lesson['format']
   plannedMinutes: number
@@ -185,14 +185,14 @@ export function ownMarkedTest(): OwnMarkedTest {
 }
 
 /** The paper: the twin's own, no test, marked, the ticks as its total (the whole numbers `papers.total` holds), read 3 days before the copy was made. */
-export const ownPaperRow = (childId: string, now: Date) => ({
+export const ownPaperRow = (childId: string, now: Date, test: OwnMarkedTest = ownMarkedTest()) => ({
   test_id: null,
   child_id: childId,
   owner: 'parent' as const,
   kind: 'test' as const,
   status: 'marked' as const,
   name_read: null,
-  total: ownMarkedTest().results.filter((r) => r.correct).length,
+  total: test.results.filter((r) => r.correct).length,
   error: null,
   created_at: new Date(now.getTime() - 3 * DAY).toISOString(),
 })
@@ -224,8 +224,8 @@ export const ownGapRow = (input: { childId: string; topicId: string; topicName: 
 })
 
 /** The line of "What Jemma did" the reader writes for this test (none left out), so the copy reads the same as one the reader made. */
-export const ownTestLogRow = (input: { schoolId: string; childId: string; at: string }) => {
-  const results = ownMarkedTest().results
+export const ownTestLogRow = (input: { schoolId: string; childId: string; at: string; test?: OwnMarkedTest }) => {
+  const results = (input.test ?? ownMarkedTest()).results
   return {
     school_id: input.schoolId,
     child_id: input.childId,

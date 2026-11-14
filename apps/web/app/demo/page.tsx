@@ -49,7 +49,7 @@ function MorePeople({ year }: { year: number }) {
         {parents.map((p) => (
           <form key={p.key} action={tryDemoAction} className="contents">
             <input type="hidden" name="person" value={`parent:${p.key}`} />
-            <PersonChip variant="row" name={p.displayName} detail={`Parent · ${p.children.map((c) => `${c.name} (Grade ${c.grade})`).join(', ')}`} />
+            <PersonChip variant="row" name={p.displayName} detail={`Parent · ${p.children.map((c) => (c.alone ? `${c.name} (on his own, Grade ${c.grade})` : `${c.name} (Grade ${c.grade})`)).join(', ')}`} />
           </form>
         ))}
       </div>

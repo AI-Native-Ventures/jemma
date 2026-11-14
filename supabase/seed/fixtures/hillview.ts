@@ -7,7 +7,7 @@ import { strandOrder } from '../../../packages/profiling/src/logic/strands'
 import { CAST } from './cast'
 
 export type TeacherKey = 'banda' | 'dlamini' | 'okafor'
-export type ParentKey = 'thandi' | 'nomsa' | 'peter' | 'grace'
+export type ParentKey = 'thandi' | 'nomsa' | 'peter' | 'grace' | 'zanele'
 export type ClassKey = '6b-maths' | '5a-maths' | '7a-maths' | '4a-maths'
 
 export const HILLVIEW_TEACHERS: { key: TeacherKey; displayName: string; emailLocal: string; subject: string }[] = [
@@ -41,7 +41,15 @@ export const HILLVIEW_PARENTS: { key: ParentKey; displayName: string; emailLocal
   { key: 'nomsa', displayName: 'Nomsa K', emailLocal: 'nomsa', relation: 'mum' },
   { key: 'peter', displayName: 'Peter A', emailLocal: 'peter', relation: 'dad' },
   { key: 'grace', displayName: 'Grace A', emailLocal: 'grace', relation: 'mum' },
+  { key: 'zanele', displayName: 'Zanele M', emailLocal: 'zanele', relation: 'mum' },
 ]
+
+/**
+ * The one family whose child's school does not use Jemma (P99): Zanele M added Kagiso on his own, in Grade 8. Kagiso is not a learner of Hillview and is in no
+ * class of it: he has a personal school of his own and a link to Zanele (written by the seed, `own-independent.ts`). The demo page lists Zanele with the
+ * other parents, with her child "on his own".
+ */
+export const INDEPENDENT_FAMILY = { parent: 'zanele' as const, child: 'Kagiso', grade: 8 }
 
 /**
  * Who each parent is linked to, by class and position among that class's made-up learners (0 is the first).
@@ -87,13 +95,14 @@ export function hillviewPeople(year: number) {
   const classesOf = (t: TeacherKey) => HILLVIEW_CLASSES.filter((c) => c.teacher === t)
   const parents = HILLVIEW_PARENTS.map((p) => ({
     ...p,
-    children:
-      p.key === 'thandi'
-        ? [{ name: 'Amina', grade: 6 }]
+    children: (p.key === 'thandi'
+      ? [{ name: 'Amina', grade: 6 }]
+      : p.key === INDEPENDENT_FAMILY.parent
+        ? [{ name: INDEPENDENT_FAMILY.child, grade: INDEPENDENT_FAMILY.grade, alone: true }]
         : HILLVIEW_LINKS.filter((l) => l.parent === p.key).map((l) => ({
             name: madeUpLearner(made, l.classKey, l.at)!.firstName,
             grade: HILLVIEW_CLASSES.find((c) => c.key === l.classKey)!.grade,
-          })),
+          }))) as { name: string; grade: number; /** True for a child on their own: no school, no class. */ alone?: boolean }[],
   }))
   return {
     teachers: HILLVIEW_TEACHERS.map((t) => ({ ...t, classes: classesOf(t.key).map((c) => c.name) })),
