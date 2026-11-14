@@ -120,6 +120,35 @@ jobs:
           pnpm --filter web exec playwright install chromium
           timeout --kill-after=10 150 pnpm --filter web exec playwright install-deps chromium || echo "::warning::Extra system packages could not be installed (package servers unreachable). Going on with the libraries the runner image has."
 
+      # TEMPORARY (P84): every 20 seconds, what the local database holds and what the learner screens' topics query costs (the
+      # screens draw slower late in the run). The log goes into the failure artifact. Removed once the cause is known.
+      - name: Sample the local database in the background
+        id: sampler
+        run: |
+          mkdir -p .jemma/logs
+          cat > .jemma/db-sampler.sh <<'EOF'
+          set -a
+          . ./.env.local
+          set +a
+          while true; do
+            echo "== $(date -u +%T)"
+            psql "$SUPABASE_DB_URL" -Atc "select 'sandboxes=' || (select count(*) from demo_sandboxes) || ' schools=' || (select count(*) from schools) || ' topics=' || (select count(*) from topics) || ' maps=' || (select count(*) from curriculum_maps) || ' children=' || (select count(*) from children) || ' events=' || (select count(*) from events) || ' users=' || (select count(*) from auth.users)" 2>&1
+            psql "$SUPABASE_DB_URL" 2>&1 <<'SQL' | grep -E "Execution Time|Planning Time|ERROR"
+          begin;
+          set local role authenticated;
+          select set_config('request.jwt.claims', json_build_object('sub', gen_random_uuid(), 'role', 'authenticated')::text, true);
+          explain (analyze, timing off, summary on) select name, short_name from topics where short_name is not null;
+          rollback;
+          SQL
+            sleep 20
+          done
+          EOF
+          command -v psql >/dev/null || echo "psql is not installed" > .jemma/logs/db-sampler.log
+          if command -v psql >/dev/null; then
+            nohup bash .jemma/db-sampler.sh > .jemma/logs/db-sampler.log 2>&1 &
+            echo $! > .jemma/db-sampler.pid
+          fi
+
       # The web app that start.sh runs (port 3000) is used by every spec (PREVIEW_URL), as in the demo path step.
       - name: Feature specs that use the real agent (recorded answers)
         id: with-agent
@@ -176,8 +205,13 @@ jobs:
           PLAYWRIGHT_HTML_REPORT=playwright-report/stand-in-laptop pnpm --filter web exec playwright test p75 p80 --project=laptop --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/stand-in-laptop || failed=1
           exit "$failed"
 
+      - name: Stop the database sampler
+        if: always()
+        run: |
+          if [ -f .jemma/db-sampler.pid ]; then kill "$(cat .jemma/db-sampler.pid)" 2>/dev/null || true; fi
+
       - name: Upload the logs and the Playwright reports
-        if: failure() || cancelled()
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: jemma-feature-specs-logs

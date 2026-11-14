@@ -70,7 +70,8 @@ test.setTimeout(240_000)
 const practiceEvents = async (childId: string) =>
   (await admin().from('events').select('id, status, payload').eq('type', 'practice.requested').eq('payload->>childId', childId).order('created_at')).data ?? []
 
-const NEVER = /%|percent|\bgrade\b|\brank\b|classmate|class average|strand|subtopic/i
+// "Percentages" is a topic of the Fractions part, so the word is looked for as a whole word ("63 percent"), and the sign "%" as before.
+const NEVER = /%|\bpercent\b|\bgrade\b|\brank\b|classmate|class average|strand|subtopic/i
 /** The words of the screen itself. The laptop's sidebar (outside <main>) names the learner's class, "Grade 6 · Hillview Primary", which is not a mark. */
 const screenText = (page: Page) => page.locator('main').first().innerText()
 
