@@ -75,10 +75,10 @@ export default async function SnapSavedPage({ params }: { params: Promise<{ chil
       ) : null}
 
       <div className="mt-1 flex flex-col gap-2">
-        <a href={`/p/${childId}`} className="flex h-[52px] items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white no-underline">
+        <a href={`/p/${childId}`} className="flex min-h-14 items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white no-underline">
           Back to {paper.childFirstName}&apos;s profile
         </a>
-        <a href={`/p/${childId}/snap`} className="flex h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card text-[17px] font-semibold text-ink no-underline">
+        <a href={`/p/${childId}/snap`} className="flex min-h-14 items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-5 py-3 text-center text-[17px] font-semibold text-balance text-ink no-underline">
           Snap another page
         </a>
       </div>

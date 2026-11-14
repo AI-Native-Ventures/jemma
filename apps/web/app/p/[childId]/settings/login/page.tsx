@@ -68,7 +68,7 @@ export default async function ParentChildLoginPage({ params }: { params: Promise
           <span>Keep the code at home. {teacher} can&apos;t see it.</span>
         </p>
 
-        <Link href={`/p/${childId}/settings`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: 14, background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
+        <Link href={`/p/${childId}/settings`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
           Done
         </Link>
         <div style={{ flex: 1 }} />

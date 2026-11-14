@@ -21,7 +21,7 @@ function Note({ children }: { children: string }) {
 }
 
 const nextClass =
-  'flex h-[60px] cursor-pointer items-center justify-center rounded-18 border-0 bg-ink text-[19px] font-bold text-white disabled:cursor-default disabled:opacity-40'
+  'flex min-h-[60px] cursor-pointer items-center justify-center rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white disabled:cursor-default disabled:opacity-40'
 
 /** One short line under the boxes that says what goes in them. It never says whether an answer was right. */
 function Hint({ children }: { children: string }) {
@@ -105,7 +105,16 @@ const FORM_HINTS = {
 } as const
 const EQUATION_HINT = 'Type the answer, like x = 4. Two answers: x = 3 or x = -1.'
 
-const keyClass = 'flex h-12 min-w-12 cursor-pointer items-center justify-center rounded-14 border-2 border-edge bg-card px-3 text-[22px] font-bold text-ink'
+const keyClass = 'flex min-h-12 min-w-12 cursor-pointer items-center justify-center rounded-14 border-2 border-edge bg-card px-3 text-[22px] font-bold text-ink'
+
+/**
+ * The columns of the key row: one row for five keys or fewer (five keys are 49 px wide even on a 320 px phone), else two even rows (8 keys are 4 + 4).
+ * The classes are written out so the stylesheet has them.
+ */
+export function keyColumns(count: number): string {
+  const columns = count <= 5 ? count : Math.ceil(count / 2)
+  return ({ 1: 'grid-cols-1', 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4', 5: 'grid-cols-5' } as Record<number, string>)[columns] ?? 'grid-cols-4'
+}
 
 /**
  * One text box for an answer made of letters, and under it one row of maths keys that put their sign where the cursor is. Under the keys the answer
@@ -148,7 +157,7 @@ function TypedMath({ value, onChange, keys, hint }: { value: string; onChange: (
         onChange={(e) => onChange(e.target.value.slice(0, MAX_TEXT))}
         className="mx-auto block h-[64px] w-full max-w-[360px] rounded-18 border-[3px] border-coral bg-card px-3 text-center text-[28px] font-bold text-ink outline-none"
       />
-      <div data-keys="true" className="flex flex-wrap justify-center gap-2">
+      <div data-keys="true" className={`grid w-full max-w-[360px] gap-2 ${keyColumns(keys.length)}`}>
         {keys.map((k) => (
           <button key={k.label} type="button" aria-label={k.label} onMouseDown={(e) => e.preventDefault()} onClick={() => insert(k.insert)} className={keyClass}>
             {k.text}
@@ -348,7 +357,7 @@ function Choices({ q, picked, onPick, warm }: { q: QuestionForChild; picked: str
             type="button"
             aria-pressed={on}
             onClick={() => onPick(letter)}
-            className={`flex cursor-pointer items-center justify-center rounded-[22px] ${warm ? 'h-[124px]' : 'h-20'} font-bold ${
+            className={`flex cursor-pointer items-center justify-center rounded-[22px] px-5 py-3 text-center text-balance ${warm ? 'min-h-[124px]' : 'min-h-20'} font-bold ${
               warm ? 'text-[30px]' : 'text-[26px]'
             } ${on ? 'border-[3px] border-ink bg-ink text-white' : 'border-2 border-edge bg-card text-ink'}`}
           >

@@ -106,6 +106,6 @@ export function Bullet({ size, top, children, lineHeight = 1.4, gap = 10 }: { si
 export const list: CSSProperties = { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column' }
 
 export const primaryButton: CSSProperties = {
-  display: 'flex', alignItems: 'center', justifyContent: 'center', height: 52, borderRadius: 14, background: ink, color: '#FFFFFF',
-  fontSize: 17, fontWeight: 600, textDecoration: 'none', border: 'none', cursor: 'pointer', width: '100%', padding: 0,
+  display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 56, borderRadius: 14, background: ink, color: '#FFFFFF',
+  fontSize: 17, fontWeight: 600, textDecoration: 'none', border: 'none', cursor: 'pointer', width: '100%', padding: '12px 20px', textAlign: 'center', textWrap: 'balance',
 }

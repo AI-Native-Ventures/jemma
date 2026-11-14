@@ -50,8 +50,8 @@ export default async function LinkPendingPage() {
           <p style={{ margin: 0, fontSize: 14, lineHeight: 1.45, color: body }}>Her answer shows up in Needs you on {childName}&apos;s profile.</p>
         </section>
 
-        <a href={`/p/${pending.childId}/snap`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: 14, border: `1.5px solid ${ink}`, background: '#FFFFFF', color: ink, fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={ink} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <a href={`/p/${pending.childId}/snap`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: `1.5px solid ${ink}`, background: '#FFFFFF', color: ink, fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={ink} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
             <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" />
             <circle cx="12" cy="12.5" r="3.5" />
           </svg>
@@ -65,7 +65,7 @@ export default async function LinkPendingPage() {
               <span id="demo" style={{ fontSize: 15, fontWeight: 600 }}>In the demo you are {teacherName} too.</span>
             </p>
             <form action={switchToTeacher}>
-              <PendingButton type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, width: '100%', borderRadius: 14, background: ink, color: '#FFFFFF', fontSize: 17, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <PendingButton type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', width: '100%', borderRadius: 14, background: ink, color: '#FFFFFF', fontSize: 17, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
                 Switch to {teacherName} to approve
               </PendingButton>
             </form>

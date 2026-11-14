@@ -157,7 +157,7 @@ export default async function ParentSessionPage({ params }: { params: Promise<{ 
         ) : null}
 
         <div className="flex-1" />
-        <Link href={`/p/${childId}`} className="flex h-[52px] items-center justify-center rounded-14 bg-ink text-[17px] font-semibold text-white no-underline">
+        <Link href={`/p/${childId}`} className="flex min-h-14 items-center justify-center rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white no-underline">
           Done
         </Link>
       </main>

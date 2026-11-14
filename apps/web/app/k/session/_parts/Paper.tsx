@@ -23,7 +23,7 @@ function Ring() {
 
 function CameraIcon() {
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
       <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.2-2h6.2l1.2 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z" />
       <circle cx="12" cy="13" r="3.4" />
     </svg>
@@ -32,7 +32,7 @@ function CameraIcon() {
 
 function PhoneIcon() {
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
       <rect x="7" y="3" width="10" height="18" rx="2.2" />
       <path d="M11 17.5h2" />
     </svg>
@@ -41,7 +41,7 @@ function PhoneIcon() {
 
 /** Both choices are the same size and the same weight: neither is pushed. */
 const choiceButton =
-  'flex h-[76px] w-full cursor-pointer items-center justify-center gap-3.5 rounded-20 border-2 border-ink bg-card px-4 text-[22px] font-bold text-ink'
+  'flex min-h-[76px] w-full cursor-pointer items-center justify-center gap-3.5 rounded-20 border-2 border-ink bg-card px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[22px]'
 const linkButton = 'flex min-h-11 cursor-pointer items-center justify-center border-0 bg-transparent text-[16px] font-semibold text-ink underline underline-offset-[3px]'
 const card = 'flex flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(31,29,54,0.06)]'
 
@@ -166,7 +166,7 @@ export type PhotoButtonProps = {
 export function PhotoButton({ label, busy, onPhoto }: PhotoButtonProps) {
   return (
     <label
-      className={`relative flex h-[68px] w-full items-center justify-center gap-3 rounded-20 bg-coral text-[22px] font-bold text-ink focus-within:ring-4 focus-within:ring-ink ${
+      className={`relative flex min-h-[68px] w-full items-center justify-center gap-3 rounded-20 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink focus-within:ring-4 focus-within:ring-ink sm:text-[22px] ${
         busy ? 'cursor-default opacity-60' : 'cursor-pointer'
       }`}
     >

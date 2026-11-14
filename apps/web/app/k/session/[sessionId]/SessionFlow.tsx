@@ -4,6 +4,7 @@ import { PAPER_QUESTION_COUNT } from '@jemma/profiling/logic'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { shrinkPhoto } from '@/lib/shrink-photo'
+import { startAskPoll } from '@/lib/poll-scheduler'
 import { postFiles } from '@/lib/upload-client'
 import { AppHeader } from '../_parts/AppHeader'
 import { LearnAudio } from '../_parts/LearnAudio'
@@ -32,7 +33,7 @@ type Phase =
   | 'results'
   | 'progress'
 
-/** How often the screen asks again while Jemma reads a photo (the way the practice card asks). */
+/** How long the screen waits, after the last answer, before it asks again while Jemma reads a photo (the way the practice card asks). */
 const ASK_AGAIN_MS = 3000
 
 export type SessionFlowProps = {
@@ -155,24 +156,21 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
     }
   }
 
-  // While Jemma reads the photo: ask every 3 seconds. A closed session shows the results, a read that failed shows what to do. A question
-  // that cannot be answered (the connection) is asked again at the next tick.
+  // While Jemma reads the photo: ask again 3 seconds after the last answer came back, one ask at a time (a slow server is never asked again
+  // while it is still answering). A closed session shows the results, a read that failed shows what to do. A question that cannot be
+  // answered (the connection) is asked again after the next wait.
   useEffect(() => {
     if (phase !== 'reading') return
     let live = true
-    const id = setInterval(async () => {
-      try {
-        const progress = await paperProgress(sessionId)
-        if (!live) return
-        if (progress === 'done') void finish()
-        else if (progress === 'failed') setPhase('failed')
-      } catch {
-        // asked again in 3 seconds
-      }
-    }, ASK_AGAIN_MS)
+    const stop = startAskPoll(ASK_AGAIN_MS, async () => {
+      const progress = await paperProgress(sessionId)
+      if (!live) return
+      if (progress === 'done') void finish()
+      else if (progress === 'failed') setPhase('failed')
+    })
     return () => {
       live = false
-      clearInterval(id)
+      stop()
     }
   }, [phase, sessionId, finish])
 
@@ -223,7 +221,7 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
         ) : (
           <div className="flex flex-1 flex-col gap-4 p-5">
             <h1 className="m-0 text-[28px] font-bold">{lesson.title}</h1>
-            <button type="button" onClick={startTry} className="h-[60px] rounded-18 border-0 bg-ink text-[19px] font-bold text-white">I&apos;m ready</button>
+            <button type="button" onClick={startTry} className="min-h-[60px] rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white">I&apos;m ready</button>
           </div>
         )
       ) : null}
@@ -236,7 +234,7 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
         <>
           <Results firstName={firstName} missed={done.missed} />
           <div className="px-5 pb-[26px]">
-            <button type="button" onClick={() => setPhase('progress')} className="flex h-[60px] w-full cursor-pointer items-center justify-center rounded-18 border-0 bg-ink text-[19px] font-bold text-white">
+            <button type="button" onClick={() => setPhase('progress')} className="flex min-h-[60px] w-full cursor-pointer items-center justify-center rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
               Got it
             </button>
           </div>

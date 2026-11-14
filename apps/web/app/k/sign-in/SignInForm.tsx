@@ -120,7 +120,7 @@ export function SignInForm() {
       <PendingButton pending={pending}
         type="submit"
         disabled={pending}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 64, borderRadius: 20, border: 'none', background: '#FF6A4D', color: '#1F1D36', fontSize: 22, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', opacity: pending ? 0.6 : 1 }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 64, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 20, border: 'none', background: '#FF6A4D', color: '#1F1D36', fontSize: 20, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', opacity: pending ? 0.6 : 1 }}
       >
         Sign in
       </PendingButton>

@@ -103,10 +103,10 @@ export function LearnCards({ lesson, card, onBack, onNext }: LearnCardsProps) {
         ))}
       </div>
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2.5">
-        <button type="button" onClick={onBack} disabled={card === 0} className="h-[60px] cursor-pointer rounded-18 border-2 border-ink bg-card text-[18px] font-semibold text-ink disabled:opacity-40">
+        <button type="button" onClick={onBack} disabled={card === 0} className="min-h-[60px] cursor-pointer rounded-18 border-2 border-ink bg-card px-5 py-3 text-center text-[18px] font-semibold text-balance text-ink disabled:opacity-40">
           Back
         </button>
-        <button type="button" onClick={onNext} className="h-[60px] cursor-pointer rounded-18 border-0 bg-ink text-[19px] font-bold text-white">
+        <button type="button" onClick={onNext} className="min-h-[60px] cursor-pointer rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
           {last ? "I'm ready" : 'Next card'}
         </button>
       </div>

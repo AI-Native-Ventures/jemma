@@ -70,9 +70,9 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
             {topic.firstPaperId ? (
               <Link
                 href={`/p/${childId}/papers/${topic.firstPaperId}`}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 12, border: '1.5px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 12, border: '1.5px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
                   <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
                   <path d="M14 3v5h5M9 13h6M9 17h4" />
                 </svg>
@@ -146,7 +146,7 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
 
         <Link
           href={`/p/${childId}/learn`}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 52, borderRadius: 14, background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}
         >
           Practise it now
         </Link>

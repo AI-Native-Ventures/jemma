@@ -6,11 +6,70 @@ import { Gem } from './Gems'
 import { QuestionPicture } from './QuestionPicture'
 import type { MissedQuestion } from '../[sessionId]/logic'
 
+/** A sign (or an equals sign) that stands alone between two terms of an answer. */
+const SIGNS = new Set(['+', '-', '\u2212', '\u00d7', '\u00f7', '*', '='])
+
+/**
+ * The terms of a written answer, each kept in one piece, or null when the answer is not a line of terms (no sign standing alone between two terms
+ * and no bracket with a space inside: a number, a mixed number, an amount of money and every other old kind come back null and are drawn as they always were). A sign goes with the
+ * term after it ("+ 12"), an equals sign with the term before it too ("x = 3"), and a bracket is never cut open, so a line can only wrap at a
+ * space between two terms, never between a sign and its number.
+ */
+export function termUnits(value: string): string[] | null {
+  const tokens: string[] = []
+  let depth = 0
+  let word = ''
+  for (const c of value.trim()) {
+    if (c === '(') depth++
+    else if (c === ')') depth = Math.max(0, depth - 1)
+    if (c === ' ' && depth === 0) {
+      if (word) tokens.push(word)
+      word = ''
+    } else {
+      word += c
+    }
+  }
+  if (word) tokens.push(word)
+  if (!tokens.some((t) => SIGNS.has(t) || t.includes(' '))) return null
+  const units: string[] = []
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i]!
+    const after = tokens[i + 1]
+    if (!SIGNS.has(t) || after === undefined) {
+      units.push(t)
+    } else if (t === '=' && units.length > 0) {
+      units.push(`${units.pop()} = ${after}`)
+      i++
+    } else {
+      units.push(`${t} ${after}`)
+      i++
+    }
+  }
+  return units
+}
+
+/** An answer needs the whole width of its box when it is more than a short number: more than 6 characters. */
+const isLong = (value: string) => value.trim().length > 6
+
 /** An answer as the child reads it: a fraction stacked, a mixed number as its whole number and a stacked fraction. */
 function Stacked({ value, size, rule, gap, side }: { value: string; size: number; rule: number; gap: number; side: number }) {
   if (isFraction(value)) {
     const [n, d] = value.split('/')
     return <Frac top={n!} bottom={d!} size={size} rule={rule} gap={gap} side={side} />
+  }
+  // A line of terms ("3x + 12 + 0", "x² + 4x + 4", "x = 3 or x = -1") keeps each term in one piece: it wraps only at a space between terms.
+  const units = termUnits(value)
+  if (units && (hasMath(value) || withFractions(value, () => null).every((p) => typeof p === 'string'))) {
+    return (
+      <span data-terms="true" style={{ fontSize: size }} className="min-w-0 text-right font-bold">
+        {units.map((unit, i) => (
+          <span key={i}>
+            {i > 0 ? ' ' : null}
+            <span className="whitespace-nowrap">{hasMath(unit) ? <MathText text={unit} size={size} rule={rule} gap={gap} side={side} className="" /> : unit}</span>
+          </span>
+        ))}
+      </span>
+    )
   }
   // An answer with a power or a root (a senior class) is drawn with them; every other answer is drawn as it always was.
   if (hasMath(value)) {
@@ -42,6 +101,9 @@ function RightBar({ m }: { m: MissedQuestion }) {
     </span>
   )
 }
+
+/** "You wrote" and "Right answer" sit side by side, unless one answer is longer than a short number: then they stack, each as wide as the screen. */
+const stack = (m: MissedQuestion) => !m.unread && (isLong(m.wrote) || isLong(m.right))
 
 export function Results({ firstName, missed }: { firstName: string; missed: MissedQuestion[] }) {
   const lead =
@@ -76,18 +138,18 @@ export function Results({ firstName, missed }: { firstName: string; missed: Miss
             </span>
           </div>
           <QuestionPicture spec={m.diagram} variant="card" />
-          <div className="grid grid-cols-2 gap-2">
+          <div className={`grid ${stack(m) ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
             {/* A paper answer that could not be read says so, in words, in the place of an empty answer (a long line gets the whole row). */}
-            <span className={`flex items-center justify-between rounded-14 bg-soft-2 px-3.5 py-2.5 ${m.unread ? 'col-span-2 gap-3' : ''}`}>
-              <span className="text-[14px] text-body">You wrote</span>
+            <span className={`flex items-center justify-between rounded-14 bg-soft-2 px-3.5 py-2.5 ${m.unread ? 'col-span-2 gap-3' : stack(m) ? 'gap-3' : ''}`}>
+              <span className={stack(m) ? 'flex-none text-[14px] text-body' : 'text-[14px] text-body'}>You wrote</span>
               {m.unread ? (
                 <span data-unread="true" className="text-right text-[15px] leading-[1.3] font-semibold">Jemma could not read this one</span>
               ) : (
                 <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
               )}
             </span>
-            <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-coral bg-[#FFF1ED] px-3.5 py-2.5 ${m.unread ? 'col-span-2' : ''}`}>
-              <span className="text-[14px] font-semibold">Right answer</span>
+            <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-coral bg-[#FFF1ED] px-3.5 py-2.5 ${m.unread ? 'col-span-2' : stack(m) ? 'gap-3' : ''}`}>
+              <span className={stack(m) ? 'flex-none text-[14px] font-semibold' : 'text-[14px] font-semibold'}>Right answer</span>
               <Stacked value={m.right} size={20} rule={2} gap={2} side={3} />
             </span>
           </div>

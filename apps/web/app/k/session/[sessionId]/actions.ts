@@ -7,7 +7,7 @@ import { sendEvent } from '@/lib/agent'
 import { myChild } from '@/lib/data/p27'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
-import { loadShortLabels } from '@/lib/topics'
+import { classIdsOfChild, loadShortLabels } from '@/lib/topics'
 import {
   adaptedOf,
   DEFAULT_TRY_COUNT,
@@ -242,7 +242,10 @@ export async function finishSession(sessionId: string): Promise<FinishedSession>
           now,
         })
     : null
-  const stage = gap && move ? { ...move, topicName: (await loadShortLabels(run.admin))(gap.topic_name) } : null
+  // The short label of the topic that moved. `run.admin` is the service client (no row level security), so the scope is what keeps this read to the
+  // learner's own topics: the session was read above as the learner (under RLS), so `run.session.child_id` is theirs, and the topics read is the
+  // maps of that child's classes only (ids of enrolments, then topics by map id), not every topic of every school.
+  const stage = gap && move ? { ...move, topicName: (await loadShortLabels(run.admin, { classIds: await classIdsOfChild(run.admin, run.session.child_id) }))(gap.topic_name) } : null
 
   let minutes = run.session.minutes
   if (run.session.status !== 'done') {
@@ -343,7 +346,7 @@ export async function snapPractice(sessionId: string, files: File[]): Promise<Sn
 }
 
 /**
- * Where the learner's paper answer stands, asked every 3 seconds while Jemma reads the photo (the way the practice card asks). The session is
+ * Where the learner's paper answer stands, asked again 3 seconds after the last answer while Jemma reads the photo (the way the practice card asks). The session is
  * proven the learner's by row-level security before the event is read with the service client by its id.
  */
 export async function paperProgress(sessionId: string): Promise<PaperProgress> {
