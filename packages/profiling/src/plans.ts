@@ -15,12 +15,41 @@ export const JobNameSchema = z.enum(JOB_NAMES)
 export type JobName = z.infer<typeof JobNameSchema>
 export type JobStep = { job: JobName; ids: Record<string, string> }
 
-/** Per learner: plan the next session (code), write the lesson, refresh guidance. */
-function perChildTail(childIds: string[]): JobStep[] {
+/** Learners per read when `withHeldPapers` looks at a whole class: a hosted database returns at most 1000 rows to one read. */
+const HELD_CHECK_CHUNK = 25
+
+/**
+ * The learners among `childIds` who have a paper in a test that is still held (the teacher has not shared it with parents).
+ * The rule is `paper_shared` of 0018_share_gate.sql: a paper of no test, or of a test that is not held, is shared. The paper's status
+ * does not matter: a paper being read again, or one that failed on a re-read, can still have the answers of its earlier marking.
+ * A parent and the learner read the guidance card, and every runner writes it from the learner's whole profile (`get_learner_profile`
+ * has no held filter, and a tool does not know its job), so the card is never planned for these learners. `test.shared` plans it
+ * for each learner with a marked paper once the test is shared, if nothing of theirs is held any more.
+ */
+async function withHeldPapers(db: JemmaDb, childIds: string[]): Promise<Set<string>> {
+  const out = new Set<string>()
+  for (let i = 0; i < childIds.length; i += HELD_CHECK_CHUNK) {
+    const part = childIds.slice(i, i + HELD_CHECK_CHUNK)
+    const papers = await ok(db.from('papers').select('child_id, test_id').in('child_id', part))
+    const testIds = [...new Set(papers.map((p) => p.test_id).filter((t): t is string => !!t))]
+    if (testIds.length === 0) continue
+    const tests = await ok(db.from('tests').select('id, held').in('id', testIds))
+    const held = new Set(tests.filter((t) => t.held).map((t) => t.id))
+    for (const p of papers) if (p.child_id && p.test_id && held.has(p.test_id)) out.add(p.child_id)
+  }
+  return out
+}
+
+/**
+ * Per learner: plan the next session (code), write the lesson, refresh guidance. A learner with a paper in another test that is
+ * still held gets no guidance step: the card would be written from results the family may not see yet (see `withHeldPapers`).
+ */
+async function perChildTail(db: JemmaDb, childIds: string[]): Promise<JobStep[]> {
+  const held = await withHeldPapers(db, childIds)
   return childIds.flatMap((childId) => [
     { job: 'plan_next_session' as const, ids: { childId } },
     { job: 'write_lesson' as const, ids: { childId } },
-    { job: 'guidance' as const, ids: { childId } },
+    ...(held.has(childId) ? [] : [{ job: 'guidance' as const, ids: { childId } }]),
   ])
 }
 
@@ -50,7 +79,7 @@ async function testTail(db: JemmaDb, paperId: string, onlyChild = false): Promis
   return [
     ...childIds.map((childId) => ({ job: 'diagnose' as const, ids: { testId, childId } })),
     { job: 'class_report' as const, ids: { classId: test.class_id, testId } },
-    ...(test.held ? [] : perChildTail(childIds)),
+    ...(test.held ? [] : await perChildTail(db, childIds)),
   ]
 }
 
@@ -122,7 +151,8 @@ export async function jobPlan(event: JemmaEvent, db: JemmaDb, now: Date = new Da
     }
     case 'observation.added':
     case 'activity.added':
-      return [{ job: 'guidance', ids: { childId: event.childId } }]
+      // A learner with a paper in a held test gets no card from a note or an activity: `test.shared` writes it once the test is shared.
+      return (await withHeldPapers(db, [event.childId])).has(event.childId) ? [] : [{ job: 'guidance', ids: { childId: event.childId } }]
     case 'homework.snapped': {
       const paper = await ok(db.from('papers').select('child_id, status').eq('id', event.paperId).single())
       if (paper.status === 'queued' || paper.status === 'reading') return [{ job: 'read_paper', ids: { paperId: event.paperId } }]
@@ -145,7 +175,7 @@ export async function jobPlan(event: JemmaEvent, db: JemmaDb, now: Date = new Da
     }
     case 'test.shared':
       // The teacher shared the results: now each learner with a marked paper gets the next session, the lesson and the guidance.
-      return (await isHeld(db, event.testId)) ? [] : perChildTail(await markedChildren(db, event.testId))
+      return (await isHeld(db, event.testId)) ? [] : perChildTail(db, await markedChildren(db, event.testId))
     case 'records.uploaded': {
       // Once the file is read (ready), or the teacher has already decided, there is nothing left to map.
       const found = await ok(db.from('record_imports').select('status').eq('id', event.importId).single())
