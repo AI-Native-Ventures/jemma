@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MyMathsSuggestion } from '@jemma/profiling/logic'
 import type { LearnerToday } from '../lib/data/p27'
@@ -75,6 +75,44 @@ describe('the home in My own', () => {
     expect(screen.getByRole('button', { name: 'My own' }).getAttribute('aria-pressed')).toBe('true')
     expect(screen.getByRole('link', { name: /Start/ }).getAttribute('href')).toBe('/k/session/s1')
     expect(screen.queryByRole('region', { name: 'Pick something to practise' })).toBeNull()
+  })
+})
+
+describe('the way to the learner\'s own work (P97\'s pages at /k/own)', () => {
+  it('My own has one card "Add your own work" with its line, linking to /k/own', async () => {
+    await page()
+    const link = screen.getByRole('link', { name: /Add your own work/ })
+    expect(link.getAttribute('href')).toBe('/k/own')
+    expect(link.textContent).toContain('A marked test or your own curriculum.')
+    expect(screen.getAllByRole('link', { name: /Add your own work/ })).toHaveLength(1)
+  })
+
+  it('the card is also there with a session tonight, and with a suggestion', async () => {
+    state.today = today({ tonight: { sessionId: 's1', topic: 'Fractions of amounts', minutes: 10, format: 'reading', preview: null } as LearnerToday['tonight'] })
+    await page()
+    expect(screen.getAllByRole('link', { name: /Add your own work/ })).toHaveLength(1)
+    cleanup()
+    state.today = today({ practice: 'ready', suggestion })
+    await page()
+    expect(screen.getAllByRole('link', { name: /Add your own work/ })).toHaveLength(1)
+  })
+
+  it('the card is tall, has room at the sides and no fixed height (the P90 rule)', async () => {
+    await page()
+    const classes = screen.getByRole('link', { name: /Add your own work/ }).className.split(/\s+/)
+    expect(classes.some((c) => c.startsWith('min-h-') || /^py-/.test(c))).toBe(true)
+    expect(classes.some((c) => /^px-(4|5|6)$/.test(c) || /^pl-/.test(c))).toBe(true)
+    expect(classes.some((c) => /^h-\d|^h-\[/.test(c))).toBe(false)
+  })
+
+  it('My school has no such card', async () => {
+    state.today = today({ workspace: 'school' })
+    await page()
+    expect(screen.queryByRole('link', { name: /Add your own work/ })).toBeNull()
+    state.today = today({ workspace: 'school', tonight: { sessionId: 's1', topic: 'Fractions of amounts', minutes: 10, format: 'reading', preview: null } as LearnerToday['tonight'] })
+    cleanup()
+    await page()
+    expect(screen.queryByRole('link', { name: /Add your own work/ })).toBeNull()
   })
 })
 

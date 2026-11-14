@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MyMathsView } from '../lib/data/p80'
 import type { ScreenShape } from '../lib/data/own-screens'
@@ -133,6 +133,50 @@ describe('the grade chips', () => {
     const nav = within(screen.getByRole('navigation', { name: 'Grades' }))
     expect(nav.getAllByRole('link').map((a) => a.textContent)).toEqual(['+ Another grade'])
     expect(screen.getByText('Add a grade to start.')).toBeTruthy()
+  })
+})
+
+describe('the way to the learner\'s own work (P97\'s pages at /k/own)', () => {
+  it('My own has one row "Add your own work" with its line, linking to /k/own, right under the grade chips', async () => {
+    await page('7')
+    const link = screen.getByRole('link', { name: /Add your own work/ })
+    expect(link.getAttribute('href')).toBe('/k/own')
+    expect(link.textContent).toContain('A marked test or your own curriculum.')
+    expect(screen.getAllByRole('link', { name: /Add your own work/ })).toHaveLength(1)
+    const chips = screen.getByRole('navigation', { name: 'Grades' })
+    expect(chips.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    const suggested = screen.getByRole('heading', { level: 2, name: 'Suggested for you' })
+    expect(link.compareDocumentPosition(suggested) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('is there for a grade with no topics, and for a learner with no grade yet', async () => {
+    state.shape = own(9, [6, 9])
+    state.view = view(noTopics)
+    await page('9')
+    expect(screen.getAllByRole('link', { name: /Add your own work/ })).toHaveLength(1)
+    cleanup()
+    state.shape = own(null, [])
+    state.view = view([])
+    await page()
+    expect(screen.getAllByRole('link', { name: /Add your own work/ })).toHaveLength(1)
+  })
+
+  it('the row is tall, has room at the sides and no fixed height', async () => {
+    await page('7')
+    const classes = screen.getByRole('link', { name: /Add your own work/ }).className.split(/\s+/)
+    expect(classes.some((c) => c.startsWith('min-h-'))).toBe(true)
+    expect(classes.some((c) => /^px-(4|5|6)$/.test(c) || /^pl-/.test(c))).toBe(true)
+    expect(classes.some((c) => /^h-\d|^h-\[/.test(c))).toBe(false)
+  })
+
+  it('My school has no such row, and the part page has none', async () => {
+    state.shape = { workspace: 'school' }
+    await page()
+    expect(screen.queryByRole('link', { name: /Add your own work/ })).toBeNull()
+    cleanup()
+    state.shape = own(7)
+    await part('numbers', '7')
+    expect(screen.queryByRole('link', { name: /Add your own work/ })).toBeNull()
   })
 })
 
