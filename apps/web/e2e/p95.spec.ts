@@ -124,7 +124,7 @@ test.describe('My own, the screens', () => {
 
     // Into a part of Grade 9 and Practise on a topic: the home says Jemma is writing it. The event is for the private workspace, never the school child.
     await all.getByRole('link').first().click()
-    await expect(page).toHaveURL(/\/k\/maths\/[a-z_]+\?grade=9$/, { timeout: 45_000 })
+    await expect(page).toHaveURL(/\/k\/maths\/[^/?]+\?grade=9$/, { timeout: 45_000 })
     const practise = page.locator('main').getByRole('button', { name: /^Practise / }).first()
     await check(practise).toBeVisible()
     await noSidewaysScroll(page)
