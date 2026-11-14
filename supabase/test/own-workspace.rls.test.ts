@@ -40,8 +40,10 @@ async function mkUser(key: string, role: 'teacher' | 'parent' | 'learner', schoo
 }
 
 const consent = { guardian: true, teach: true, improve: false }
-// Every read under row level security names the rows this file made. A read of a whole table asks the policy about every row of every test of the
-// shared database and runs into the statement timeout; the same read filtered by id (or by map) is cheap, and says the same thing about our rows.
+// Every read under row level security names the rows this file made, never a table and never a whole map. A read asks the policy about every row it
+// returns, and the policies of `topics` (can_see_map, then can_see_child inside it) are costly for each row: reading the 60 or so topics of two maps
+// ran into the 8 second statement timeout on a busy CI database. So a topic is read on a primary key, one or two rows, and what it proves about
+// the policy is the same. Children, sessions, classes and schools are a handful of rows each.
 type Scoped = 'children' | 'sessions' | 'classes' | 'schools' | 'topics'
 const scope = (table: Scoped): [column: string, values: () => string[]] => {
   const known = (...keys: string[]) => () => keys.map((k) => ids[k]).filter((v): v is string => !!v)
@@ -55,7 +57,7 @@ const scope = (table: Scoped): [column: string, values: () => string[]] => {
     case 'schools':
       return ['id', known('sA', 'sB', 'twinSchool', 'thaboSchool')]
     case 'topics':
-      return ['map_id', known('map6', 'map7')]
+      return ['id', known('topic6', 'topic7')]
   }
 }
 const idsOf = async (client: JemmaDb, table: Scoped): Promise<string[]> => {
@@ -113,7 +115,8 @@ beforeAll(async () => {
   const map7 = await ok(service.from('curriculum_maps').select('id').eq('class_id', g7.classId).eq('status', 'approved'))
   Object.assign(ids, { map6: map6[0]!.id, map7: map7[0]!.id })
   const topic = (await ok(service.from('topics').select('id, name').eq('map_id', map6[0]!.id).eq('name', 'Common fractions')))[0]!
-  Object.assign(ids, { topic: topic.id })
+  const topic7 = (await ok(service.from('topics').select('id').eq('map_id', map7[0]!.id).order('term').order('position').limit(1)))[0]!
+  Object.assign(ids, { topic: topic.id, topic6: topic.id, topic7: topic7.id })
   const [session] = await ok(
     service
       .from('sessions')
@@ -211,7 +214,8 @@ describe('who reads the twin', () => {
     expect(await idsOf(learner, 'sessions')).toContain(ids.session)
     expect((await idsOf(learner, 'classes'))).toEqual(expect.arrayContaining([ids.cA!, ids.g6!, ids.g7!]))
     expect((await idsOf(learner, 'schools')).length).toBe(2)
-    expect((await idsOf(learner, 'topics')).length).toBeGreaterThan(10)
+    // One topic of each of the two own maps (the learner owns both classes).
+    expect((await idsOf(learner, 'topics')).sort()).toEqual([ids.topic6!, ids.topic7!].sort())
   })
 
   test('an approved parent reads the twin and its sessions, as they read the school child', async () => {
