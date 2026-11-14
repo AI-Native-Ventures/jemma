@@ -105,7 +105,9 @@ describe('sandboxes', () => {
     expect(after.stage).toBe('start')
     expect(after.school_id).not.toBe(before.school_id)
     expect(await ok(admin.from('schools').select('id').eq('id', before.school_id))).toEqual([])
-    const [cls] = await ok(admin.from('classes').select('id, join_code').eq('school_id', after.school_id))
+    // The home class is the oldest of the four (6B Mathematics): the classes of a copy come back in no order unless they are asked for in one.
+    const classes = await ok(admin.from('classes').select('id, name, join_code').eq('school_id', after.school_id).order('created_at'))
+    const [cls] = classes
     const children = await ok(admin.from('children').select('id, first_name').eq('school_id', after.school_id))
     const childIds = children.map((c) => c.id)
     expect(children).toHaveLength(23)
@@ -114,6 +116,12 @@ describe('sandboxes', () => {
 
     const maps = await ok(admin.from('curriculum_maps').select('id').eq('class_id', cls!.id))
     expect(maps).toHaveLength(0)
+    // The made-up classes start with the CAPS map of their grade, approved. 6B keeps its first step: the teacher's own upload.
+    expect(cls!.name).toBe('6B Mathematics')
+    for (const name of ['5A Mathematics', '7A Mathematics', '4A Mathematics']) {
+      const made = await ok(admin.from('curriculum_maps').select('id, status').eq('class_id', classes.find((c) => c.name === name)!.id))
+      expect(made.map((m) => m.status), name).toEqual(['approved'])
+    }
     const tests = await ok(admin.from('tests').select('id').eq('class_id', cls!.id))
     expect(tests).toHaveLength(0)
     const testPapers = await ok(admin.from('papers').select('id').in('child_id', childIds).not('test_id', 'is', null))

@@ -39,6 +39,10 @@ async function make(stage: 'start' | 'marked', ageDays: number, kind: SandboxKin
   made.push(m)
   const aged = await admin.from('demo_sandboxes').update({ created_at: ago(ageDays) }).eq('id', s.sandboxId).select('id')
   expect(aged.data).toHaveLength(1)
+  // The seed writes lines of the activity log when the copy is made (a made-up class starts with its CAPS map, and the line says so). They are
+  // as old as the copy: a copy that looks `ageDays` old has lines that look the same age, or it would count as in use.
+  const lines = await admin.from('activity_log').update({ created_at: ago(ageDays), at: ago(ageDays) }).eq('school_id', s.schoolId).select('id')
+  expect(lines.error).toBeNull()
   return m
 }
 
