@@ -4,7 +4,7 @@ One row for each rule sentence of the African Agentic AI Design Challenge page f
 
 Status is one of: **met** (a proof exists and was opened), **met with a limit** (the limit is written), **not met**, or **the owner's** (only the owner can do or confirm it: the video, eligibility, the submission itself).
 
-GitHub runs cited are all green and all ran the whole CI job on a clean Ubuntu machine: `./start.sh --ci`, typecheck, the whole `pnpm test`, and the demo path on a phone. They are run 42925958625 (develop at 6691e99, the latest), run 42916065533 (develop at 39723ab) and run 42910274227 (develop at 734a0b7), all in the repository AI-Native-Ventures/jemma. A test (`packages/profiling/test/docs.test.ts`) checks that every status below is one of the four, and that every file named in a row exists.
+GitHub runs cited are all green and all ran the whole CI job on a clean Ubuntu machine: `./start.sh --ci`, typecheck, the whole `pnpm test`, and the demo path on a phone. They are run 42925958625 (develop at 6691e99, the newest of the three), run 42916065533 (develop at 39723ab) and run 42910274227 (develop at 734a0b7), all in the repository AI-Native-Ventures/jemma. They are runs of develop as it stood on 10 and 11 November 2026, before the changes of 12 to 14 November. A test (`packages/profiling/test/docs.test.ts`) checks that every status below is one of the four, and that every file named in a row exists.
 
 | Rule (the page's words) | Where Jemma meets it | Proof | Status |
 | --- | --- | --- | --- |
