@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { GemIcon } from '@/components/ui'
 import { CameraGlyph } from '../_parts'
 
@@ -70,8 +71,9 @@ export function ErrorScreen({ problem, photoUrl, retakeHref }: { problem: string
 
       <div className="flex flex-col gap-2">
         <Link href={retakeHref} className="flex min-h-14 items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white no-underline">
-          <CameraGlyph color="#FFFFFF" />
-          Retake photo
+          <IconLabel gap={8} icon={<CameraGlyph color="#FFFFFF" />}>
+            Retake photo
+          </IconLabel>
         </Link>
       </div>
     </main>

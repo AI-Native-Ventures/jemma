@@ -1,6 +1,7 @@
 'use client'
 
 import { PendingButton } from '@/components/ui/Button'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { startPractice } from './actions'
@@ -34,8 +35,7 @@ export function PractiseButton({ choice, label = 'Practise', size = 'small', onM
   return (
     <>
       <PendingButton type="button" pending={pending} onClick={run} aria-label={label === 'Practise' ? `Practise ${choice.topicName}` : undefined} className={size === 'big' ? big : small}>
-        {size === 'big' ? <svg width="22" height="22" viewBox="0 0 24 24" fill="#1F1D36" aria-hidden="true" className="flex-none"><path d="M7 4.5v15l13-7.5z" /></svg> : null}
-        {label}
+        {size === 'big' ? <IconLabel icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="#1F1D36" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" /></svg>}>{label}</IconLabel> : label}
       </PendingButton>
       {message ? <p role="alert" className="m-0 w-full text-center text-[14px] text-coral-text">{message}</p> : null}
     </>
