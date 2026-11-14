@@ -70,6 +70,8 @@ const TOOL_LABELS: Record<string, string> = {
   add_activity: 'Saved an activity',
   mark_paper: 'Marked a paper',
   save_practice_answers: 'Marked a practice answered on paper',
+  get_own_test: 'Read the photo of a marked test',
+  save_own_test_results: "Saved the teacher's marks from a marked test",
   update_learner_profile: 'Updated a learner profile',
   class_gap_report: 'Wrote the class report',
   plan_next_session: 'Planned the next lesson',
