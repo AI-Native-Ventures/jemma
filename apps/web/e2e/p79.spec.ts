@@ -7,8 +7,9 @@ import { MemoryStore } from '../../../packages/profiling/src/ai/stores'
 import { planNextSession, type SessionPlan } from '../../../packages/profiling/src/tools/save/plan-next-session'
 import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 
-// A learner can always practise. The learner's home offers "Practise now" whenever nothing is planned for tonight. A tap asks for a practice
-// (`practice.requested`), the home says Jemma is writing it, and when the lesson is written the home offers tonight's session. A practice that
+// A learner can always practise. The learner's home suggests something to practise whenever nothing is planned for tonight (P80: the first
+// suggestion of My maths, with a Practise button and a link to choose something else). A tap asks for a practice (`practice.requested`, with
+// the learner's choice), the home says Jemma is writing it, and when the lesson is written the home offers tonight's session. A practice that
 // failed says so and offers "Try again". A learner with nothing to practise reads one plain line.
 //
 // The stand-in agent below answers 202 to every post and runs no job, so the spec plays the agent where a job would run: it calls the real
@@ -66,32 +67,35 @@ const practiceEvents = async (childId: string) =>
   (await admin().from('events').select('id, status, error, payload').eq('type', 'practice.requested').eq('payload->>childId', childId).order('created_at')).data ?? []
 
 test.describe('a learner can always practise', () => {
-  test('Amina, with her gaps fixed and nothing for tonight, sees Practise now; a tap says Jemma is writing; a written lesson is offered as tonight', async ({ page }, testInfo) => {
+  test('Amina, with nothing for tonight, sees a suggestion to practise; a tap says Jemma is writing; a written lesson is offered as tonight', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'phone', 'the learner screens are phone screens')
     const sb = await sandbox(page, 'session_done')
     await page.goto('/k')
     await check(page.getByRole('heading', { level: 1, name: /^Nothing new tonight, Amina! Your next lesson is on \w+day\.$/ })).toBeVisible()
     await expect(page.getByText('Jemma is getting your next lesson ready.')).toHaveCount(0)
     await expect(page.getByText('Keep a fixed gap fixed')).toHaveCount(0)
-    await expect(page.getByRole('button', { name: 'Practise now' })).toBeVisible()
-    await expect(page.getByText('Jemma writes a short practice for you. It takes a minute or two.')).toBeVisible()
+    await expect(page.getByText('Suggested for you')).toBeVisible()
+    await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(1)
+    await expect(page.getByRole('link', { name: 'Choose something else' })).toBeVisible()
     await expect(page.getByText("You've fixed 3 gaps so far")).toBeVisible()
     await proof(page, 'practise-now')
 
-    // the tap: one event, queued (the stand-in answers 202), and the home says Jemma is writing
-    await page.getByRole('button', { name: 'Practise now' }).click()
+    // the tap: one event with the learner's choice, queued (the stand-in answers 202), and the home says Jemma is writing
+    await page.getByRole('button', { name: /^Practise / }).click()
     await check(page.getByText('Jemma is writing your practice.')).toBeVisible()
     await expect(page.getByText('A minute or two. You can wait here.')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Practise now' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(0)
     const events = await practiceEvents(sb.childId)
     expect(events).toHaveLength(1)
-    expect(events[0]).toMatchObject({ status: 'queued', payload: { childId: sb.childId } })
+    expect(events[0]).toMatchObject({ status: 'queued', payload: { childId: sb.childId, topicName: expect.any(String) } })
     await proof(page, 'writing')
 
-    // the spec plays the agent: the real planner brings the session to today, and the lesson gets its questions
+    // the spec plays the agent: the real planner plans the learner's choice for today (next to the session planned for later), and the lesson gets its questions
     const db = admin()
     const child = (await db.from('children').select('school_id').eq('id', sb.childId).single()).data!
-    const plan = (await planNextSession.run({ db, schoolId: child.school_id, eventId: null, env: { replayStore: new MemoryStore() }, now: () => new Date() }, { childId: sb.childId, practice: true })) as SessionPlan
+    const asked = events[0]!.payload as { topicId?: string; topicName?: string }
+    const choice = asked.topicName ? { choice: { topicId: asked.topicId ?? null, topicName: asked.topicName } } : {}
+    const plan = (await planNextSession.run({ db, schoolId: child.school_id, eventId: null, env: { replayStore: new MemoryStore() }, now: () => new Date() }, { childId: sb.childId, practice: true, ...choice })) as SessionPlan
     expect(plan).toMatchObject({ planned: true, plannedFor: new Date().toISOString().slice(0, 10) })
     const finished = (await db.from('sessions').select('lesson_id').eq('child_id', sb.childId).eq('status', 'done').limit(1)).data ?? []
     const written = (await db.from('lessons').select('content').eq('id', finished[0]!.lesson_id!).single()).data!
@@ -107,7 +111,7 @@ test.describe('a learner can always practise', () => {
     test.skip(testInfo.project.name !== 'phone', 'the learner screens are phone screens')
     const sb = await sandbox(page, 'session_done')
     await page.goto('/k')
-    await page.getByRole('button', { name: 'Practise now' }).click()
+    await page.getByRole('button', { name: /^Practise / }).click()
     await check(page.getByText('Jemma is writing your practice.')).toBeVisible()
     const [event] = await practiceEvents(sb.childId)
     expect(event).toBeTruthy()
@@ -117,7 +121,7 @@ test.describe('a learner can always practise', () => {
     expect((await db.from('events').update({ status: 'failed', error: 'Jemma stopped answering. Try again.', finished_at: new Date().toISOString() }).eq('id', event!.id)).error).toBeNull()
     await check(page.getByRole('heading', { name: 'Jemma could not write your practice.' })).toBeVisible({ timeout: 60_000 })
     await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Practise now' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(0)
     await proof(page, 'failed')
 
     // Try again: the same event goes back to queued (the stand-in answers 202), and the home is writing again
@@ -142,7 +146,8 @@ test.describe('a learner can always practise', () => {
     await page.goto('/k')
     await check(page.getByRole('heading', { level: 1, name: 'Nothing new tonight, Amina.' })).toBeVisible()
     await expect(page.getByText('Practice starts after your teacher marks a test.')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Practise now' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(0)
+    await expect(page.getByRole('link', { name: 'See my maths' })).toBeVisible()
     await expect(page.getByText('Jemma is getting your next lesson ready.')).toHaveCount(0)
     await proof(page, 'nothing-to-practise')
   })

@@ -1,5 +1,7 @@
 import { cookies } from 'next/headers'
 import { HANDOVER_COOKIE, verifyHandover } from '../handover'
+import { buildMyMaths, type MyMaths, type MyMathsSuggestion } from '@jemma/profiling/logic'
+import { loadMyMathsInput } from '@jemma/profiling/orchestrator'
 import { LessonSchema, QuestionSchema, type Lesson, type DiagramSpec } from '@jemma/profiling/schemas'
 import { notFound } from 'next/navigation'
 import { stripQuestion, type QuestionForChild } from '@/app/k/session/[sessionId]/logic'
@@ -35,12 +37,14 @@ export type LearnerToday = {
   /** Gaps not fixed yet. */
   toGo: number
   practice: PracticeState
+  /** The first thing "My maths" suggests, shown on the home when nothing is planned and the learner can practise. Null otherwise. */
+  suggestion: MyMathsSuggestion | null
 }
 
 /**
- * The state of "Practise now", from three facts and nothing else (so it is tested without a database).
+ * The state of the practice card on the learner's home, from three facts and nothing else (so it is tested without a database).
  * `event` is the status of the newest `practice.requested` event of this learner, or null when there is none. `session` is true when there is
- * a session to start tonight. `canPractise` is the cheap check (see `learnerCanPractise`).
+ * a session to start tonight. `canPractise` is true when "My maths" has something to suggest.
  * - A practice that is queued or running: `writing`, whatever else is true.
  * - A practice that failed while there is no session to start: `failed`.
  * - Otherwise `ready` when the learner can practise, else `none`.
@@ -93,69 +97,64 @@ export async function newestPracticeEvent(childId: string): Promise<{ id: string
   }
 }
 
+/** "My maths" for one learner, read with the service client by this learner's id only (a learner's own session cannot read marked answers). */
+export async function myMathsOf(childId: string, now: Date = new Date()): Promise<MyMaths> {
+  return buildMyMaths(await loadMyMathsInput(createSupabaseAdmin(), childId, now))
+}
+
+type SessionRow = { id: string; status: string; planned_for: string; lesson_id: string | null; topic_name: string | null; format: Lesson['format'] | null; planned_minutes: number | null }
+
+/** The learner's sessions that are planned or begun, in day order. */
+export async function loadLearnerSessions(supabase: Awaited<ReturnType<typeof createSupabaseServer>>, childId: string): Promise<SessionRow[]> {
+  const { data } = await supabase
+    .from('sessions')
+    .select('id, status, planned_for, lesson_id, topic_name, format, planned_minutes')
+    .eq('child_id', childId)
+    .in('status', ['planned', 'in_progress'])
+    .order('planned_for')
+  return (data ?? []) as SessionRow[]
+}
+
 /**
- * The cheap check for "Practise now": a gap (open or fixed), or one past record with marks, or an approved map of a class the learner is in.
- * It is not the whole pick (`pickPractice` decides what to practise). Read with the service client, by this learner's id only.
+ * The session to start tonight: the latest planned session that is due (today or earlier) and has a lesson row. A session whose lesson is
+ * still empty (a placeholder from planning) is not offered while a practice that was asked for is being written or has failed: the screen
+ * says so instead. Any other session shows as it always did. The home, "My maths" and the server actions all use this one rule.
  */
-async function learnerCanPractise(childId: string, gapCount: number): Promise<boolean> {
-  if (gapCount > 0) return true
-  try {
-    const admin = createSupabaseAdmin()
-    const marked = await admin
-      .from('learner_records')
-      .select('id')
-      .eq('child_id', childId)
-      .in('source', ['quiz', 'assignment', 'project'])
-      .eq('quality', 'clear')
-      .not('family', 'is', null)
-      .not('marks', 'is', null)
-      .limit(1)
-    if (marked.data?.length) return true
-    const enrolled = await admin.from('enrolments').select('class_id').eq('child_id', childId)
-    const classIds = (enrolled.data ?? []).map((e) => e.class_id)
-    if (classIds.length === 0) return false
-    const maps = await admin.from('curriculum_maps').select('id').eq('status', 'approved').in('class_id', classIds).limit(1)
-    return (maps.data?.length ?? 0) > 0
-  } catch {
-    return false
+export async function tonightFrom(
+  supabase: Awaited<ReturnType<typeof createSupabaseServer>>,
+  sessions: SessionRow[],
+  asked: { status: string } | null,
+  today: string,
+): Promise<TonightCard | null> {
+  const open = sessions.filter((s) => s.planned_for <= today && s.lesson_id)
+  const tonightRow = open[open.length - 1]
+  if (!tonightRow) return null
+  const { data: lessonRow } = await supabase.from('lessons').select('content').eq('id', tonightRow.lesson_id!).maybeSingle()
+  const lesson = LessonSchema.safeParse(lessonRow?.content)
+  const waiting = !lessonHasQuestions(lessonRow?.content) && (asked?.status === 'queued' || asked?.status === 'running' || asked?.status === 'failed')
+  if (waiting) return null
+  return {
+    sessionId: tonightRow.id,
+    topic: tonightRow.topic_name ?? (lesson.success ? lesson.data.title : 'Tonight'),
+    minutes: tonightRow.planned_minutes ?? (lesson.success ? lesson.data.minutes : 10),
+    format: tonightRow.format ?? (lesson.success ? lesson.data.format : 'reading'),
+    preview: lesson.success ? (lesson.data.diagram?.steps[0]?.diagram ?? lesson.data.cards?.find((c) => c.diagram)?.diagram ?? null) : null,
   }
 }
 
 export async function getLearnerToday(): Promise<LearnerToday> {
   const { supabase, child } = await myChild()
   const short = await loadShortLabels(supabase)
-  const today = new Date().toISOString().slice(0, 10)
-  const [{ data: sessions }, { data: gaps }, asked] = await Promise.all([
-    supabase
-      .from('sessions')
-      .select('id, status, planned_for, lesson_id, topic_name, format, planned_minutes')
-      .eq('child_id', child.id)
-      .in('status', ['planned', 'in_progress'])
-      .order('planned_for'),
+  const now = new Date()
+  const today = now.toISOString().slice(0, 10)
+  const [sessions, { data: gaps }, asked] = await Promise.all([
+    loadLearnerSessions(supabase, child.id),
     supabase.from('gaps').select('stage, created_at').eq('child_id', child.id).order('created_at'),
     newestPracticeEvent(child.id),
   ])
 
-  const open = (sessions ?? []).filter((s) => s.planned_for <= today && s.lesson_id)
-  const tonightRow = open[open.length - 1]
-  let tonight: TonightCard | null = null
-  if (tonightRow) {
-    const { data: lessonRow } = await supabase.from('lessons').select('content').eq('id', tonightRow.lesson_id!).maybeSingle()
-    const lesson = LessonSchema.safeParse(lessonRow?.content)
-    // A session whose lesson is still empty (a placeholder from planning) is not offered while a practice that was asked for is being
-    // written or has failed: the screen says so instead. Any other session shows as it always did.
-    const waiting = !lessonHasQuestions(lessonRow?.content) && (asked?.status === 'queued' || asked?.status === 'running' || asked?.status === 'failed')
-    if (!waiting) {
-      tonight = {
-        sessionId: tonightRow.id,
-        topic: tonightRow.topic_name ?? (lesson.success ? lesson.data.title : 'Tonight'),
-        minutes: tonightRow.planned_minutes ?? (lesson.success ? lesson.data.minutes : 10),
-        format: tonightRow.format ?? (lesson.success ? lesson.data.format : 'reading'),
-        preview: lesson.success ? (lesson.data.diagram?.steps[0]?.diagram ?? lesson.data.cards?.find((c) => c.diagram)?.diagram ?? null) : null,
-      }
-    }
-  }
-  const upcoming = (sessions ?? []).find((s) => s.planned_for > today)
+  const tonight = await tonightFrom(supabase, sessions, asked, today)
+  const upcoming = sessions.find((s) => s.planned_for > today)
   const next: NextCard | null = upcoming
     ? { day: dayName(upcoming.planned_for), topic: short(upcoming.topic_name ?? ''), minutes: upcoming.planned_minutes, format: upcoming.format }
     : null
@@ -166,10 +165,12 @@ export async function getLearnerToday(): Promise<LearnerToday> {
     .sort((a, b) => order[a.stage] - order[b.stage])
     .map((g): GapGem => (g.stage === 'fixed' ? 'full' : g.stage === 'practising' ? 'half' : 'empty'))
   const fixed = all.filter((g) => g.stage === 'fixed').length
-  // The cheap check is only asked when it can change the answer: no session to start, and no practice that is being written or failed.
+  // "My maths" is only read when it can change the answer: no session to start, and no practice that is being written or failed. The learner
+  // can practise when it has something to suggest.
   const decided = asked?.status === 'queued' || asked?.status === 'running' || (asked?.status === 'failed' && !tonight)
-  const practice = practiceState({ event: asked?.status ?? null, session: tonight !== null, canPractise: tonight || decided ? false : await learnerCanPractise(child.id, all.length) })
-  return { firstName: child.first_name, tonight, next, gems, fixed, toGo: all.length - fixed, practice }
+  const suggestion = tonight || decided ? null : ((await myMathsOf(child.id, now)).suggestions[0] ?? null)
+  const practice = practiceState({ event: asked?.status ?? null, session: tonight !== null, canPractise: suggestion !== null })
+  return { firstName: child.first_name, tonight, next, gems, fixed, toGo: all.length - fixed, practice, suggestion }
 }
 
 export type SessionPage = {

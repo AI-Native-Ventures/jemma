@@ -97,7 +97,7 @@ Browser, as Ms Banda:
 4. Tap **Looks right**. The card says "Not shared. Talk to Thandi first."
 5. Tap **We have talked**. The card says it was shared after the talk.
 
-Then open `/demo/switch` and choose Thandi M. Her profile has a card, "From your talk with Ms Banda". Open it: it shows the words and where they come from. Then choose Amina. Show Today and My gaps: no Long view anywhere.
+Then open `/demo/switch` and choose Thandi M. Her profile has a card, "From your talk with Ms Banda". Open it: it shows the words and where they come from. Then choose Amina. Show Today and My maths: her own count in each part of Mathematics, and no Long view anywhere.
 
 Say: "Code found these patterns and a model only worded them. The teacher opens a source, says it looks right, and shares it only after talking to the family. The parent sees it now. The child never sees it."
 

@@ -48,6 +48,8 @@ describe('the words for a score', () => {
 describe('the parts of Mathematics', () => {
   test('all six strands come in the order of the subject, with "No score yet", for a learner with nothing at all', () => {
     const out = buildMyMaths(base)
+    expect(out.subject).toBe('Mathematics')
+    expect(buildMyMaths(input({ subject: 'Maths' })).subject).toBe('Mathematics')
     expect(out.strands.map((s) => [s.family, s.label])).toEqual([
       ['whole_numbers', 'Whole numbers'],
       ['fractions', 'Fractions'],

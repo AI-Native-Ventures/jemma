@@ -43,7 +43,7 @@ export type MyMathsSuggestion = {
   reason: 'To fix' | 'Practising' | 'Keep it fixed' | 'A good next step'
   score: Score
 }
-export type MyMaths = { strands: MyMathsStrand[]; gaps: MyMathsGap[]; suggestions: MyMathsSuggestion[] }
+export type MyMaths = { subject: string; strands: MyMathsStrand[]; gaps: MyMathsGap[]; suggestions: MyMathsSuggestion[] }
 
 /** The most the screen suggests. */
 const MAX_SUGGESTIONS = 3
@@ -149,5 +149,5 @@ export function buildMyMaths(input: MyMathsInput): MyMaths {
     if (pick) suggestions.push(fromPick(pick))
   }
 
-  return { strands, gaps, suggestions }
+  return { subject, strands, gaps, suggestions }
 }

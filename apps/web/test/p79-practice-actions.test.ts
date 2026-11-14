@@ -12,6 +12,17 @@ const state = vi.hoisted(() => ({
   updates: [] as { patch: Record<string, unknown>; filters: string[] }[],
   sendFails: false,
   retryFails: false,
+  /** The session to start tonight, as the home's rule finds it (null: none). */
+  tonight: null as unknown,
+  rules: {
+    mapTopics: [
+      { id: 't-dec', name: 'Adding decimals', family: 'decimals' },
+      { id: 't-add', name: 'Adding fractions', family: 'fractions' },
+    ],
+    gaps: [{ topicId: null, topicName: 'Mental sums' }],
+    subject: 'Mathematics' as string | null,
+  },
+  rulesFor: [] as string[],
 }))
 
 vi.mock('next/headers', () => ({ cookies: async () => ({ get: () => undefined }) }))
@@ -47,8 +58,14 @@ vi.mock('@/lib/supabase/admin', () => ({
     },
   }),
 }))
+vi.mock('@jemma/profiling/orchestrator', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@jemma/profiling/orchestrator')>()),
+  loadChoiceRules: async (_db: unknown, childId: string) => (state.rulesFor.push(childId), state.rules),
+}))
 vi.mock('@/lib/data/p27', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/data/p27')>()),
+  loadLearnerSessions: async () => [],
+  tonightFrom: async () => state.tonight,
   myChild: async () => {
     if (state.who === 'nobody') throw new Error('NEXT_NOT_FOUND')
     return { supabase: {}, child: { id: state.childId, first_name: 'Amina' } }
@@ -65,6 +82,9 @@ beforeEach(() => {
   state.updates = []
   state.sendFails = false
   state.retryFails = false
+  state.tonight = null
+  state.rulesFor = []
+  state.rules.subject = 'Mathematics'
   vi.mocked(sendEvent).mockClear()
   vi.mocked(retryEvent).mockClear()
   vi.mocked(revalidatePath).mockClear()
@@ -156,5 +176,64 @@ describe('retryPractice', () => {
   it('never throws', async () => {
     state.who = 'nobody'
     expect(await retryPractice()).toMatchObject({ ok: false })
+  })
+})
+
+
+describe('startPractice with the learner\'s choice', () => {
+  it('sends the choice in the words the rules found (never the words the learner typed), with the topic id when there is one', async () => {
+    expect(await startPractice({ topicName: '  adding DECIMALS ' })).toEqual({ ok: true })
+    expect(sendEvent).toHaveBeenCalledWith('practice.requested', { childId: 'child-1', topicName: 'Adding decimals', topicId: 't-dec' })
+    expect(state.rulesFor).toEqual(['child-1'])
+  })
+
+  it('a strand is sent by its label with no topic id, and a gap by its name', async () => {
+    await startPractice({ topicName: 'shapes and SPACE' })
+    expect(sendEvent).toHaveBeenLastCalledWith('practice.requested', { childId: 'child-1', topicName: 'Shapes and space' })
+    await startPractice({ topicName: 'mental sums' })
+    expect(sendEvent).toHaveBeenLastCalledWith('practice.requested', { childId: 'child-1', topicName: 'Mental sums' })
+  })
+
+  it('without a choice it is the practice of before: nothing but the learner in the event', async () => {
+    await startPractice()
+    expect(sendEvent).toHaveBeenCalledWith('practice.requested', { childId: 'child-1' })
+  })
+
+  it('a choice that is not the learner\'s to make is refused with a plain message and nothing is sent', async () => {
+    for (const choice of [{ topicName: 'Quadratic equations' }, { topicName: '' }, { topicName: '  ', topicId: 't-dec' }, { topicName: 'Reading' }]) {
+      const answer = await startPractice(choice)
+      expect(answer, JSON.stringify(choice)).toEqual({ ok: false, message: 'Jemma cannot practise that. Pick one from your list.' })
+    }
+    expect(sendEvent).not.toHaveBeenCalled()
+  })
+
+  it('does nothing while a session is due tonight: one thing at a time', async () => {
+    state.tonight = { sessionId: 's1' }
+    expect(await startPractice({ topicName: 'Adding decimals' })).toEqual({ ok: true })
+    expect(await startPractice()).toEqual({ ok: true })
+    expect(sendEvent).not.toHaveBeenCalled()
+  })
+
+  it('does nothing while a practice is being written, and does not even look at the choice', async () => {
+    state.events = [{ id: 'ev-1', status: 'queued' }]
+    expect(await startPractice({ topicName: 'Quadratic equations' })).toEqual({ ok: true })
+    expect(sendEvent).not.toHaveBeenCalled()
+    expect(state.rulesFor).toEqual([])
+  })
+
+  it('a learner that cannot be found is an answer, and nothing is sent', async () => {
+    state.who = 'nobody'
+    expect(await startPractice({ topicName: 'Adding decimals' })).toMatchObject({ ok: false })
+    expect(sendEvent).not.toHaveBeenCalled()
+  })
+})
+
+describe('retryPractice while a session is due', () => {
+  it('does nothing', async () => {
+    state.tonight = { sessionId: 's1' }
+    state.events = [{ id: 'ev-failed', status: 'failed' }]
+    expect(await retryPractice()).toEqual({ ok: true })
+    expect(retryEvent).not.toHaveBeenCalled()
+    expect(sendEvent).not.toHaveBeenCalled()
   })
 })

@@ -107,7 +107,7 @@ export default function KitPage() {
 
       <Frame title="Learner: tab bar">
         <TabBar role="learner" active="today" label="Amina" base="#" />
-        <TabBar role="learner" active="gaps" label="Amina" base="#" />
+        <TabBar role="learner" active="maths" label="Amina" base="#" />
       </Frame>
 
       <Frame title="Empty and error states">
@@ -167,7 +167,7 @@ export default function KitPage() {
             Start
           </Button>
           <Button size="lg">Done</Button>
-          <Button variant="link">See all my gaps</Button>
+          <Button variant="link">See my maths</Button>
           <Field label="Your child's name, as the school has it" defaultValue="Amina" />
           <Field label="Login code" error="That code is not right." defaultValue="K7Q2" />
           <KitSheet />

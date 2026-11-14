@@ -34,9 +34,9 @@ describe('TabBar', () => {
     expect(links[0]?.querySelector('[data-raised="true"]')).toBeNull()
   })
 
-  test('learner tab bar has Today and My gaps (Me opens from the avatar)', () => {
+  test('learner tab bar has Today and My maths (Me opens from the avatar)', () => {
     render(<TabBar role="learner" active="today" label="Amina" />)
-    expect(labels(screen.getByRole('navigation'))).toEqual(['Today', 'My gaps'])
+    expect(labels(screen.getByRole('navigation'))).toEqual(['Today', 'My maths'])
   })
 
   test('active tab is marked current', () => {

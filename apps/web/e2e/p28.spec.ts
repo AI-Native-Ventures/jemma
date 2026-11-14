@@ -82,24 +82,24 @@ test.describe('child-sign-in', () => {
   })
 })
 
-test.describe('child-gaps', () => {
-  test('after the first session: 1 practising, fixed ones listed', async ({ page }, testInfo) => {
+// The tab "My gaps" is now "My maths" (P80): /k/gaps redirects there, and the learner's gaps are listed under "Your gaps" with their stage and their own count.
+test.describe('child-gaps (now on My maths)', () => {
+  test('after the first session: the gaps are listed with their stage, and /k/gaps goes to My maths', async ({ page }, testInfo) => {
     const sb = await openSandbox(page, { stage: 'session_done', role: 'learner' })
     try {
       await page.goto('/k/gaps')
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText(/You're fixing \d+ gaps?\. 3 are already fixed\./)
-      const fixed = page.getByRole('region', { name: 'Fixed' })
-      await expect(fixed.getByRole('listitem')).toHaveCount(3)
-      await expect(fixed.getByText('Equivalent fractions')).toBeVisible()
-      await expect(fixed.getByText('Ordering whole numbers')).toBeVisible()
-      await expect(fixed.getByText('Rounding off')).toBeVisible()
-      await expect(page.getByText('Fixed means you got it right again days later, so it stuck.')).toBeVisible()
-      const practising = page.getByRole('region', { name: 'Practising' })
-      await expect(practising.getByText('Adding fractions with different denominators')).toBeVisible()
-      await expect(practising.getByText(/^Moved here tonight\./)).toBeVisible()
-      const fresh = page.getByRole('region', { name: 'New', exact: true })
-      await expect(fresh.getByText('Adding decimals')).toBeVisible()
-      await expect(fresh.getByRole('link', { name: 'Practise' })).toBeVisible()
+      await expect(page).toHaveURL(/\/k\/maths$/)
+      await expect(page.getByRole('heading', { level: 1, name: 'My maths' })).toBeVisible()
+      const gaps = page.getByRole('region', { name: 'Your gaps' })
+      await expect(gaps.getByText('Practising ·', { exact: false })).toHaveCount(1)
+      await expect(gaps.getByText('Fixed ·', { exact: false })).toHaveCount(3)
+      await expect(gaps.getByText('New ·', { exact: false })).toHaveCount(1)
+      await expect(gaps.getByText('Equivalent fractions')).toBeVisible()
+      await expect(gaps.getByText('Ordering whole numbers')).toBeVisible()
+      await expect(gaps.getByText('Rounding off')).toBeVisible()
+      await expect(gaps.getByText('Adding fractions with different denominators')).toBeVisible()
+      await expect(gaps.getByText('Adding decimals')).toBeVisible()
+      await expect(page.getByRole('region', { name: 'All of Mathematics' })).toBeVisible()
       await noHorizontalScroll(page)
       await shot(page, testInfo, 'child-gaps')
     } finally {
@@ -107,12 +107,13 @@ test.describe('child-gaps', () => {
     }
   })
 
-  test('before any session every unfixed gap is New', async ({ page }) => {
+  test('before any session every unfixed gap is New, and each has a Practise button', async ({ page }) => {
     const sb = await openSandbox(page, { stage: 'marked', role: 'learner' })
     try {
-      await page.goto('/k/gaps')
-      await expect(page.getByRole('region', { name: 'Practising' })).toHaveCount(0)
-      await expect(page.getByRole('region', { name: 'New', exact: true }).getByRole('link', { name: 'Practise' }).first()).toBeVisible()
+      await page.goto('/k/maths')
+      const gaps = page.getByRole('region', { name: 'Your gaps' })
+      await expect(gaps.getByText('Practising ·', { exact: false })).toHaveCount(0)
+      await expect(gaps.getByText('New ·', { exact: false }).first()).toBeVisible()
     } finally {
       await sb.cleanup()
     }

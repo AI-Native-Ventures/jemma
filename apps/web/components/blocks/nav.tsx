@@ -22,7 +22,7 @@ export type TabId =
   | 'profile'
   | 'learn'
   | 'today'
-  | 'gaps'
+  | 'maths'
   | 'me'
 
 export type TabDef = { id: TabId; label: string; path: string; icon: (size: number) => ReactNode }
@@ -44,7 +44,7 @@ export const TABS: Record<Role, TabDef[]> = {
   ],
   learner: [
     { id: 'today', label: 'Today', path: '', icon: (s) => <SunIcon size={s} /> },
-    { id: 'gaps', label: 'My gaps', path: '/gaps', icon: (s) => <GapsIcon size={s} /> },
+    { id: 'maths', label: 'My maths', path: '/maths', icon: (s) => <GapsIcon size={s} /> },
   ],
 }
 
