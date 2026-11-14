@@ -40,6 +40,16 @@ export function curriculumStage(map: { status: 'draft' | 'approved'; docs: numbe
   return map.docs === 0 ? 'empty' : 'reading'
 }
 
+/**
+ * The line of the approved board's log about where the map came from. A map from the official curriculum (it has its source beside the
+ * draft and no document) says it was loaded, in the words of the activity log line the teacher's tap writes. A map drafted from documents
+ * says how many.
+ */
+export function draftedLine(source: DraftSource | undefined, docs: number, grade: number, loadedTopics: number): string {
+  if (source?.kind === 'caps' && docs === 0) return `Loaded the CAPS map for Grade ${grade}: ${plural(loadedTopics, 'topic')}`
+  return `Drafted the map from your ${plural(docs, 'document')}`
+}
+
 /** What a teacher reads when the CAPS map is not for their class. */
 export const CAPS_NOT_MATHS = 'The CAPS map is for a Mathematics class.'
 export const CAPS_NOT_SA = 'The CAPS map is for a school in South Africa.'

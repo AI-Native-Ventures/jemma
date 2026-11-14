@@ -27,14 +27,14 @@ The topics were read from the documents by four AI research agents (one for each
 - `capsName`: the name as the document prints it.
 - `contentArea`: the content area of the document the topic sits under.
 
-316 topics in all.
+488 topics in all.
 
 ## How the files were put together
 
 - Names are tidied: print typos such as "dvision" and stray spaces are fixed. The document's own name is kept in `capsName`.
 - Rows named "Mental Mathematics" are left out, and so are the Foundation Phase rows that are ways of working ("Problem-solving techniques", "Techniques"). Revision and exam rows are left out too.
 - A topic that the document repeats in a later term carries that term in its name, for example "Common fractions (Term 4)".
-- In the Foundation Phase the document teaches almost every row in every term. Each row is listed once, in the first term it is taught.
+- In the Foundation Phase the document teaches almost every row in every term. A row repeats in every term it is taught, with the term in its name, as in the other phases, so each term of Grades 1 to 3 has its own list.
 - The strand (`family`) is given by a rule from the content area of the document and the name of the topic. It is a reading, not something the document states.
 
 ## What is not verified
@@ -43,7 +43,7 @@ The topics were read from the documents by four AI research agents (one for each
 - Only the 2011 editions were read. The Department and the provinces have published later yearly teaching plans, and they may order or pace topics differently. They were not read.
 - In the Foundation Phase the Data Handling cells are merged across rows in the document. They were split by reading which sentence belongs to which row.
 - Some strands are judgement calls. For example Grade 12 "Polynomial functions" is under `algebra` because the overview places the Remainder and Factor Theorems there, and "Counting and probability" is under `probability`.
-- A term with no topic has an empty list in its file, and the draft map leaves it out. Grade 12 Term 4 has none: the table gives revision and exams only. Grade 1 Term 4 has none either, because each Foundation Phase row is listed once, in the first term it is taught.
+- A term with no topic has an empty list in its file, and the draft map leaves it out. Grade 12 Term 4 has none: the table gives revision and exams only.
 - Formulas, symbols and diagrams in the tables did not come out as text, so the files hold names only.
 - The Senior Phase clarification tables were read from extracted text, not page by page as images. The time allocation tables were checked as page images.
 - No prerequisites and no usual mistakes are given for any topic, because the documents do not give them.

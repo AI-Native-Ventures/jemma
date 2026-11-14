@@ -1,13 +1,16 @@
+import { capsDraft } from '@jemma/profiling/caps'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import {
   behindHeadline,
   choicesSummary,
   currentTerm,
   dayLabel,
+  draftedLine,
   plural,
   readDraft,
   termInView,
   timeHm,
+  topicCount,
   type ReadDraft,
 } from '@/app/t/[classId]/curriculum/format'
 
@@ -116,7 +119,9 @@ export async function getApprovedView(classId: string, state: CurriculumState, n
   const log: { at: string; text: string }[] = []
   if (testName && tagged.size > 0) log.push({ at: timeHm(approvedAt), text: `Tagged ${testName}'s ${plural(tagged.size, 'question')} to ${plural(taggedTopics.size, 'topic')} on your map` })
   log.push({ at: timeHm(approvedAt), text: `Saved the map you approved: ${plural(topicTotal, 'topic')}${choices.map((c) => `, ${c}`).join('')}` })
-  log.push({ at: timeHm(map.created_at), text: `Drafted the map from your ${plural(state.docs.length, 'document')}` })
+  // A map from the official curriculum has no document: its line says the CAPS map of the grade was loaded, with the count that was loaded.
+  const caps = read?.source ? capsDraft(read.draft.grade) : null
+  log.push({ at: timeHm(map.created_at), text: draftedLine(read?.source, state.docs.length, read?.draft.grade ?? 0, caps ? topicCount(caps) : 0) })
 
   return { approvedOn: dayLabel(approvedAt), headline, testName, current, currentTopics, earlier, log }
 }
