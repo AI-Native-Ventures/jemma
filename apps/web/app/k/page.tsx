@@ -89,9 +89,9 @@ export default async function ChildToday() {
           </div>
           <Link
             href={`/k/session/${tonight.sessionId}`}
-            className="flex h-[68px] items-center justify-center gap-3 rounded-20 bg-coral text-[24px] font-bold text-ink no-underline"
+            className="flex min-h-[68px] items-center justify-center gap-3 rounded-20 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink no-underline sm:text-[24px]"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#1F1D36" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" /></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#1F1D36" aria-hidden="true" className="flex-none"><path d="M7 4.5v15l13-7.5z" /></svg>
             Start
           </Link>
         </section>

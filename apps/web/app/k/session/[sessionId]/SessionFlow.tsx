@@ -223,7 +223,7 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
         ) : (
           <div className="flex flex-1 flex-col gap-4 p-5">
             <h1 className="m-0 text-[28px] font-bold">{lesson.title}</h1>
-            <button type="button" onClick={startTry} className="h-[60px] rounded-18 border-0 bg-ink text-[19px] font-bold text-white">I&apos;m ready</button>
+            <button type="button" onClick={startTry} className="min-h-[60px] rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white">I&apos;m ready</button>
           </div>
         )
       ) : null}
@@ -236,7 +236,7 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
         <>
           <Results firstName={firstName} missed={done.missed} />
           <div className="px-5 pb-[26px]">
-            <button type="button" onClick={() => setPhase('progress')} className="flex h-[60px] w-full cursor-pointer items-center justify-center rounded-18 border-0 bg-ink text-[19px] font-bold text-white">
+            <button type="button" onClick={() => setPhase('progress')} className="flex min-h-[60px] w-full cursor-pointer items-center justify-center rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
               Got it
             </button>
           </div>

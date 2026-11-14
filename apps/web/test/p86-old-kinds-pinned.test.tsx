@@ -56,20 +56,24 @@ const RESULTS: Record<string, MissedQuestion[]> = {
   unread: [missed({ unread: true, wrote: '' })],
 }
 
-/** sha256 of the HTML of each screen on develop b11ae36. */
+/**
+ * sha256 of the HTML of each screen on develop b11ae36. The question screens were re-pinned once by P90 (14 Nov 2026), which gave the Next button
+ * and the answer tiles of a choice question room at their sides (`min-h-` instead of `h-`, `px-5 py-3 text-center text-balance`): the HTML of
+ * each screen with those classes put back is byte for byte the old one, and the Results screens were not touched.
+ */
 const PINNED: Record<string, string> = {
-  'question:choice': 'e7ac72647ef09f63cdeb9f37b62bc0e25b23e6860b42ff7b539976a936253d24',
-  'question:choiceWarm': '06a83c1bb377f87dceca243fc42a55cf41caea2fc84f965283a7f3784be205ca',
-  'question:decimal': '741366bfbe2009259271fd4ae938fd402bf76832de04827f3c22b98c72495df6',
-  'question:fraction': '62630c4a65ac1f30a8bfa5772a4a12fb580c9740f710378a70f1da18cec0cc02',
-  'question:fractionSum': '53c3d8883b0f36c0db1b90a92d8fa2564d5f8b74ab470f166f593759836accd7',
-  'question:fractionWarm': '3ee9a26b6b9d7bbbad665778162745c5ba20fa371527a86340ab322984ec5367',
-  'question:missing': '95fadff80f9ca61517717f010ba8434ec0132ad906805d507660e923cddfe106',
-  'question:missingWarm': '886bf0dc70c1b365195fc2fad0656a7a9e659b052f0a2172d6b713472df1e639',
-  'question:mixed': '980a2dc1d1af56a587a165e8792d0ba4aa9c79b3bd96c3ae3605e8deab7cb409',
-  'question:money': 'c6e60aafb3d724900b8125878d97e5116ddbdebdee0b750bedda62896b798284',
-  'question:plain': '046ce82db4dee81079b0f34cb5b4a9ae083f4fb67ce5a52f8db92f21418b48c7',
-  'question:whole': '6351f98d857d93a36ee1fa3463b0212cf003ed0a3343974b04a62c7e70a9ff78',
+  'question:choice': '0b8419be3300d71f3b74f31f0293b40531a73d6baee314e5c17e69ca4404fc2e',
+  'question:choiceWarm': 'ab48a81d1b514385f5f5cc710ea45c2ef7c868758d5a24bfbdbd9f68b92af45d',
+  'question:decimal': '551bb7bbce0722e11bea70df82b966501ea446f690aece80d4fd9f35cfc8dada',
+  'question:fraction': '9177c77e918aab33560bb016985be2070834b96fae089cad564a0cba7e8edb30',
+  'question:fractionSum': 'c77fcd1ffb3627a42cfa3f3aeb69d833b5ec4c6eb4518700f1f2b0f1c180fe9d',
+  'question:fractionWarm': '7055e95315ffdf80e79b59426756e88dbbd67a519c50e4276ca20fd8d23f9bae',
+  'question:missing': 'f017a246079b01df404c357e633ad3e6126ba7cb5fd4c50eb4977fb3ac8227bb',
+  'question:missingWarm': '71cacff057106ea94752412ed93eaa8511ab64ac5732268476a29f1081117290',
+  'question:mixed': '8394270180af5ed55ca5ca385f371bff376a0b26cf79afe2c4a78f23ceb003b6',
+  'question:money': '98b336f86d4ef9a2e8275f5d0a099cfe5660d74097fca8161c02ef81dcb190a5',
+  'question:plain': '14e6521822ffc49b7315c80c11e242c62585f8398dc322ece9cddddedb1096cb',
+  'question:whole': '35e0ca559a828a16705d0c5a83a1a0cb30c4e549423114a8778bbef668e84edb',
   'results:mixed': 'ba5b2182437cef66e05f5d45d7ac7041b22a331cb01eb682189af19939948c86',
   'results:none': '2735fcbe081ee46a5be28c93e39012b4551e47937171a4e51966ce805246f63f',
   'results:one': '2110d5061169fdce48cbeabfc8dfb7cf9c4b2f61c26c167d082d0b7110b79a42',
