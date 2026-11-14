@@ -16,6 +16,10 @@ const state = vi.hoisted(() => ({
   lesson: null as unknown,
   items: [] as Record<string, unknown>[],
   snaps: [] as { id: string; status: string }[],
+  /** The learner's gaps, as the database holds them now (after the agent moved one, when it did). */
+  gaps: [] as Record<string, unknown>[],
+  /** Rows of `format_trials` for the session: the agent writes one when it applies a finished session to the profile. */
+  trials: [] as Record<string, unknown>[],
 }))
 
 vi.mock('@/lib/agent', () => ({ sendEvent: vi.fn(async () => 'event') }))
@@ -44,6 +48,18 @@ vi.mock('@/lib/supabase/admin', () => {
       from: (table: string) => {
         if (table === 'session_items') return answer(state.items)
         if (table === 'events') return answer(state.snaps)
+        if (table === 'format_trials') return answer(state.trials)
+        if (table === 'gaps') {
+          // `.neq('stage', 'fixed')` drops the fixed ones, as the database does
+          let rows = state.gaps
+          const chain: Record<string, unknown> = {
+            select: () => chain,
+            eq: () => chain,
+            neq: (_column: string, value: string) => ((rows = rows.filter((g) => g.stage !== value)), chain),
+            then: (resolve: (v: unknown) => unknown) => resolve({ data: rows, error: null }),
+          }
+          return chain
+        }
         if (table === 'sessions') {
           const reads = answer([]) as Record<string | symbol, unknown>
           return new Proxy(reads, { get: (_t, prop) => (prop === 'update' ? () => answer(null) : reads[prop]) })
@@ -78,6 +94,8 @@ beforeEach(() => {
   state.session = { ...baseSession }
   state.items = []
   state.snaps = []
+  state.gaps = []
+  state.trials = []
 })
 
 describe('progressOf', () => {
@@ -174,5 +192,60 @@ describe('the results of a paper answer that could not be read', () => {
     const done = await finishSession('s1')
     expect(done.missed.map((m) => [m.n, m.wrote, m.unread])).toEqual([[3, '', true]])
     expect(done.minutes).toBe(9)
+  })
+})
+
+describe('the progress after a paper answer, whether or not the agent has already moved the gap', () => {
+  // The session was closed at 15:00:00. The agent follows the read at once, so by the time the child sees the results it may have applied the
+  // session to the profile (a `format_trials` row says so), moving the gap at 15:00:01.
+  const CLOSED = '2026-11-14T15:00:00.000Z'
+  const LATER = '2026-11-14T15:00:01.000Z'
+  const EARLIER = '2026-11-10T09:00:00.000Z'
+  const gap = (over: Record<string, unknown>) => ({ topic_id: null, topic_name: 'Equivalent fractions', created_at: '2026-11-01T09:00:00.000Z', stage: 'new', first_practised_at: null, fixed_at: null, ...over })
+
+  beforeEach(() => {
+    state.session = { ...baseSession, status: 'done', right: 4, minutes: 9, finished_at: CLOSED }
+    state.items = fiveTries()
+    state.snaps = [{ id: 'e1', status: 'running' }]
+  })
+
+  it('not applied yet: the move is worked out from the gap as it is, as on the screen', async () => {
+    state.gaps = [gap({ stage: 'new' })]
+    expect((await finishSession('s1')).stage).toEqual({ from: 'new', to: 'practising', topicName: 'Equivalent fractions' })
+  })
+
+  it('not applied yet: a fixed gap is not counted', async () => {
+    state.gaps = [gap({ stage: 'fixed', fixed_at: EARLIER })]
+    expect((await finishSession('s1')).stage).toBeNull()
+  })
+
+  it('applied, a new gap that this session moved to Practising: moved, not kept', async () => {
+    state.trials = [{ id: 't1' }]
+    state.gaps = [gap({ stage: 'practising', first_practised_at: LATER })]
+    expect((await finishSession('s1')).stage).toEqual({ from: 'new', to: 'practising', topicName: 'Equivalent fractions' })
+  })
+
+  it('applied, a gap that was already Practising and stays: kept', async () => {
+    state.trials = [{ id: 't1' }]
+    state.gaps = [gap({ stage: 'practising', first_practised_at: EARLIER })]
+    expect((await finishSession('s1')).stage).toEqual({ from: 'practising', to: 'practising', topicName: 'Equivalent fractions' })
+  })
+
+  it('applied, a gap that this session fixed: fixed (the screen must not lose it because the gap is fixed now)', async () => {
+    state.trials = [{ id: 't1' }]
+    state.gaps = [gap({ stage: 'fixed', first_practised_at: EARLIER, fixed_at: LATER })]
+    expect((await finishSession('s1')).stage).toEqual({ from: 'practising', to: 'fixed', topicName: 'Equivalent fractions' })
+  })
+
+  it('applied, a gap that was fixed long before this session: nothing moved', async () => {
+    state.trials = [{ id: 't1' }]
+    state.gaps = [gap({ stage: 'fixed', first_practised_at: EARLIER, fixed_at: EARLIER })]
+    expect((await finishSession('s1')).stage).toBeNull()
+  })
+
+  it('applied, no gap on this topic: no stage line', async () => {
+    state.trials = [{ id: 't1' }]
+    state.gaps = [gap({ topic_name: 'Something else', stage: 'practising', first_practised_at: LATER })]
+    expect((await finishSession('s1')).stage).toBeNull()
   })
 })

@@ -18,6 +18,7 @@ import {
   stageAfter,
   stripQuestion,
   type QuestionForChild,
+  type StageMove,
   type StoredItem,
 } from './logic'
 import { newestSnap, progressOf, type PaperProgress } from './paper'
@@ -34,6 +35,7 @@ type Run = {
     question_count: number | null
     right: number | null
     minutes: number | null
+    finished_at: string | null
   }
   lessonRow: { id: string; topic_id: string | null; topic_name: string; audio_path: string | null }
   lesson: Lesson
@@ -54,7 +56,7 @@ async function loadRun(sessionId: string): Promise<Run> {
   if (!auth.user) throw new Error('Not signed in')
   const { data: session, error } = await supabase
     .from('sessions')
-    .select('id, child_id, status, lesson_id, warmup, topic_id, topic_name, question_count, right, minutes')
+    .select('id, child_id, status, lesson_id, warmup, topic_id, topic_name, question_count, right, minutes, finished_at')
     .eq('id', sessionId)
     .maybeSingle()
   if (error || !session) throw new Error('Session not found')
@@ -91,6 +93,27 @@ async function loadRun(sessionId: string): Promise<Run> {
     tryCount: session.question_count ?? DEFAULT_TRY_COUNT,
     items,
   }
+}
+
+/** True when `update_learner_profile` already applied this session: it writes one `format_trials` row per session. */
+async function profileApplied(admin: JemmaDb, sessionId: string): Promise<boolean> {
+  const { data } = await admin.from('format_trials').select('id').eq('session_id', sessionId).limit(1)
+  return (data?.length ?? 0) > 0
+}
+
+/**
+ * The move a session made when the agent applied it before the child saw the results, found from the gap as it is now and from when the
+ * session was closed: a gap that began practising, or was fixed, after that moment was moved by this session. A gap fixed before it was
+ * not this session's, and says nothing here (null), as a fixed gap says nothing on the screen's own path.
+ */
+function moveAlreadyMade(
+  gap: { stage: string; first_practised_at: string | null; fixed_at: string | null },
+  closedAt: string | null,
+): StageMove | null {
+  const after = (at: string | null) => !!at && !!closedAt && new Date(at).getTime() >= new Date(closedAt).getTime()
+  if (gap.stage === 'fixed') return after(gap.fixed_at) ? { from: 'practising', to: 'fixed' } : null
+  if (gap.stage === 'practising') return { from: after(gap.first_practised_at) ? 'new' : 'practising', to: 'practising' }
+  return { from: 'new', to: 'practising' }
 }
 
 const stripNext = (run: Run, items: StoredItem[]): QuestionForChild | null => {
@@ -196,26 +219,29 @@ export async function finishSession(sessionId: string): Promise<FinishedSession>
   const topicName = run.lessonRow.topic_name
   const topicId = run.lessonRow.topic_id ?? run.session.topic_id
 
-  const { data: gaps } = await run.admin
+  // A session closed before this call (an answer read from a photo: the agent follows the read at once) may already be applied to the
+  // profile, and then the gap has moved. The screen's own session is closed by this call, so for it nothing is applied yet.
+  const applied = run.session.status === 'done' && (await profileApplied(run.admin, sessionId))
+  const asked = run.admin
     .from('gaps')
-    .select('stage, first_practised_at, topic_id, topic_name, created_at')
+    .select('stage, first_practised_at, fixed_at, topic_id, topic_name, created_at')
     .eq('child_id', run.session.child_id)
-    .neq('stage', 'fixed')
+  const { data: gaps } = applied ? await asked : await asked.neq('stage', 'fixed')
   const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
   const gap = (gaps ?? [])
     .filter((g) => (topicId && g.topic_id === topicId) || same(g.topic_name, topicName))
     .sort((a, b) => b.created_at.localeCompare(a.created_at))[0]
-  const stage = gap
-    ? {
-        ...stageAfter({
+  const move = gap
+    ? applied
+      ? moveAlreadyMade(gap, run.session.finished_at)
+      : stageAfter({
           stage: gap.stage as Stage,
           right,
           firstPractisedAt: gap.first_practised_at ? new Date(gap.first_practised_at) : null,
           now,
-        }),
-        topicName: (await loadShortLabels(run.admin))(gap.topic_name),
-      }
+        })
     : null
+  const stage = gap && move ? { ...move, topicName: (await loadShortLabels(run.admin))(gap.topic_name) } : null
 
   let minutes = run.session.minutes
   if (run.session.status !== 'done') {

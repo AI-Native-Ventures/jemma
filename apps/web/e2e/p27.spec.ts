@@ -128,6 +128,8 @@ test('the whole session: no right or wrong, only missed questions at the end, ga
   await noHorizontalScroll(page)
   await shot(page, testInfo, 'child-learn-diagram')
   await page.getByRole('button', { name: "I'm ready" }).click()
+  // after Learn the screen asks how to answer (P83): these tests answer on the screen
+  await page.getByRole('button', { name: 'Answer on the screen', exact: true }).click()
 
   const noFeedback = async () => {
     const text = (await page.locator('body').innerText()).toLowerCase()
@@ -176,6 +178,8 @@ test('answers never reach the client before finishing', async ({ page }) => {
   await page.getByRole('link', { name: 'Start' }).click()
   await warmupThrough(page)
   await page.getByRole('button', { name: "I'm ready" }).click()
+  // after Learn the screen asks how to answer (P83): these tests answer on the screen
+  await page.getByRole('button', { name: 'Answer on the screen', exact: true }).click()
   await tryQuestion(page, 1, false)
   await page.getByRole('button', { name: 'Next', exact: true }).click()
   await expect(page.getByText('Question 2 of 5')).toBeVisible()
