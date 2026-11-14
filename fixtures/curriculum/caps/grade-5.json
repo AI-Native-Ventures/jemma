@@ -1,0 +1,314 @@
+{
+  "grade": 5,
+  "phase": "Intermediate Phase",
+  "subject": "Mathematics",
+  "country": "ZA",
+  "source": {
+    "title": "Curriculum and Assessment Policy Statement (CAPS), Mathematics, Intermediate Phase, Grades 4-6 (PDF file name: CAPS IP MATHEMATICS GR 4-6 web.pdf)",
+    "publisher": "Department of Basic Education, South Africa",
+    "url": "https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20IP%20%20MATHEMATICS%20GR%204-6%20web.pdf",
+    "pages": "PDF page 127 (printed page 122): table 'Time allocation per topic: Grade 5', all four terms (topic names, order, hours). Clarification of content tables: Term 1 PDF pages 128-158 (printed 123-153); Term 2 PDF 159-178 (printed 154-173); Term 3 PDF 179-198 (printed 174-193); Term 4 PDF 199-213 (printed 194-208)."
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Whole numbers: counting, ordering, comparing, representing and place value (4-digit numbers)",
+          "shortName": "Counting and place value",
+          "family": "whole_numbers",
+          "capsName": "Whole numbers: counting, ordering, comparing, representing and place value (4-digit numbers)",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Number sentences",
+          "shortName": "Number sentences",
+          "family": "patterns",
+          "capsName": "Number sentences",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Whole numbers: addition and subtraction (5-digit numbers)",
+          "shortName": "Addition and subtraction",
+          "family": "whole_numbers",
+          "capsName": "Whole numbers: addition and subtraction (5-digit numbers)",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Numeric patterns",
+          "shortName": "Numeric patterns",
+          "family": "patterns",
+          "capsName": "Numeric patterns",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Whole numbers: multiplication (2-digit by 2-digit) and division (3-digit by 1-digit)",
+          "shortName": "Multiplication and division",
+          "family": "whole_numbers",
+          "capsName": "Whole numbers: multiplication (2-digit by 2-digit) and division (3-digit by 1-digit)",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Time",
+          "shortName": "Time",
+          "family": "measurement",
+          "capsName": "Time",
+          "contentArea": "Measurement"
+        },
+        {
+          "name": "Data handling",
+          "shortName": "Data handling",
+          "family": "data",
+          "capsName": "Data handling",
+          "contentArea": "Data Handling"
+        },
+        {
+          "name": "Properties of 2-D shapes",
+          "shortName": "Properties of 2-D shapes",
+          "family": "shapes",
+          "capsName": "Properties of 2-D shapes",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Capacity/volume",
+          "shortName": "Capacity/volume",
+          "family": "measurement",
+          "capsName": "Capacity/volume",
+          "contentArea": "Measurement"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Whole numbers: counting, ordering, comparing, representing and place value (6-digit numbers)",
+          "shortName": "Counting and place value (Term 2)",
+          "family": "whole_numbers",
+          "capsName": "Whole numbers: counting, ordering, comparing, representing and place value (6-digit numbers)",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Whole numbers: addition and subtraction (5-digit numbers) (Term 2)",
+          "shortName": "Addition and subtraction (Term 2)",
+          "family": "whole_numbers",
+          "capsName": "Whole numbers: addition and subtraction (5-digit numbers)",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Common fractions",
+          "shortName": "Common fractions",
+          "family": "fractions",
+          "capsName": "Common fractions",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Length",
+          "shortName": "Length",
+          "family": "measurement",
+          "capsName": "Length",
+          "contentArea": "Measurement"
+        },
+        {
+          "name": "Whole numbers: multiplication (3-digit by 2-digit)",
+          "shortName": "Multiplication",
+          "family": "whole_numbers",
+          "capsName": "Whole numbers: multiplication (3-digit by 2- digit)",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Properties of 3-D objects",
+          "shortName": "Properties of 3-D objects",
+          "family": "shapes",
+          "capsName": "Properties of 3-D objects",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Geometric patterns",
+          "shortName": "Geometric patterns",
+          "family": "patterns",
+          "capsName": "Geometric patterns",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Symmetry",
+          "shortName": "Symmetry",
+          "family": "shapes",
+          "capsName": "Symmetry",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Whole numbers: division (4-digit by 2 digit)",
+          "shortName": "Division",
+          "family": "whole_numbers",
+          "capsName": "Whole numbers: division (4-digit by 2 digit)",
+          "contentArea": "Numbers, Operations and Relationships"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Common fractions (Term 3)",
+          "shortName": "Common fractions (Term 3)",
+          "family": "fractions",
+          "capsName": "Common fractions",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Mass",
+          "shortName": "Mass",
+          "family": "measurement",
+          "capsName": "Mass",
+          "contentArea": "Measurement"
+        },
+        {
+          "name": "Whole numbers: counting, ordering, comparing, representing and place value (6-digit numbers) (Term 3)",
+          "shortName": "Counting and place value (Term 3)",
+          "family": "whole_numbers",
+          "capsName": "Whole numbers: counting, ordering, comparing, representing and place value (6-digit numbers)",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Whole numbers: addition and subtraction",
+          "shortName": "Addition and subtraction (Term 3)",
+          "family": "whole_numbers",
+          "capsName": "Whole numbers: addition and subtraction",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Viewing objects",
+          "shortName": "Viewing objects",
+          "family": "shapes",
+          "capsName": "Viewing objects",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Properties of 2-D objects",
+          "shortName": "Properties of 2-D objects",
+          "family": "shapes",
+          "capsName": "Properties of 2-D objects",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Transformations",
+          "shortName": "Transformations",
+          "family": "shapes",
+          "capsName": "Transformations",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Temperature",
+          "shortName": "Temperature",
+          "family": "measurement",
+          "capsName": "Temperature",
+          "contentArea": "Measurement"
+        },
+        {
+          "name": "Data handling (Term 3)",
+          "shortName": "Data handling (Term 3)",
+          "family": "data",
+          "capsName": "Data handling",
+          "contentArea": "Data Handling"
+        },
+        {
+          "name": "Numeric patterns (Term 3)",
+          "shortName": "Numeric patterns (Term 3)",
+          "family": "patterns",
+          "capsName": "Numeric patterns",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Whole numbers: multiplication (3-digit by 2-digit) (Term 3)",
+          "shortName": "Multiplication (Term 3)",
+          "family": "whole_numbers",
+          "capsName": "Whole numbers: multiplication (3-digit by 2- digit)",
+          "contentArea": "Numbers, Operations and Relationships"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Whole numbers: counting, ordering, comparing, representing and place value (6-digit numbers) (Term 4)",
+          "shortName": "Counting and place value (Term 4)",
+          "family": "whole_numbers",
+          "capsName": "Whole numbers: counting, ordering, comparing, representing and place value (6-digit numbers)",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Whole numbers: addition and subtraction (5-digit numbers) (Term 4)",
+          "shortName": "Addition and subtraction (Term 4)",
+          "family": "whole_numbers",
+          "capsName": "Whole numbers: addition and subtraction (5-digit numbers)",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Properties of 3-D objects (Term 4)",
+          "shortName": "Properties of 3-D objects (Term 4)",
+          "family": "shapes",
+          "capsName": "Properties of 3-D objects",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Common fractions (Term 4)",
+          "shortName": "Common fractions (Term 4)",
+          "family": "fractions",
+          "capsName": "Common fractions",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Whole numbers: division (3-digit by 2-digit)",
+          "shortName": "Division (Term 4)",
+          "family": "whole_numbers",
+          "capsName": "Whole numbers: division (3-digit by 2-digit)",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Area, perimeter & volume",
+          "shortName": "Area, perimeter & volume",
+          "family": "measurement",
+          "capsName": "Area, perimeter & volume",
+          "contentArea": "Measurement"
+        },
+        {
+          "name": "Position and movement",
+          "shortName": "Position and movement",
+          "family": "shapes",
+          "capsName": "Position and movement",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Transformations (Term 4)",
+          "shortName": "Transformations (Term 4)",
+          "family": "shapes",
+          "capsName": "Transformations",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Geometric patterns (Term 4)",
+          "shortName": "Geometric patterns (Term 4)",
+          "family": "patterns",
+          "capsName": "Geometric patterns",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Number sentences (Term 4)",
+          "shortName": "Number sentences (Term 4)",
+          "family": "patterns",
+          "capsName": "Number sentences",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Probability",
+          "shortName": "Probability",
+          "family": "probability",
+          "capsName": "Probability",
+          "contentArea": "Data Handling"
+        }
+      ]
+    }
+  ]
+}

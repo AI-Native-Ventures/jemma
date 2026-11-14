@@ -1,0 +1,222 @@
+{
+  "grade": 1,
+  "phase": "Foundation Phase",
+  "subject": "Mathematics",
+  "country": "ZA",
+  "source": {
+    "title": "Curriculum and Assessment Policy Statement (CAPS), Foundation Phase, Grades 1-3, Mathematics (English)",
+    "publisher": "Department of Basic Education, Republic of South Africa (education.gov.za)",
+    "url": "https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20MATHS%20%20ENGLISH%20GR%201-3%20FS.pdf",
+    "pages": "Grade 1 overview per term, section 3.4.1. Printed pages 40-44, 47-55 = PDF pages 45-49, 52-60 (Numbers, Operations and Relationships: printed 40-44 / PDF 45-49; Patterns, Functions and Algebra: printed 47-48 / PDF 52-53; Space and Shape (Geometry): printed 49-52 / PDF 54-57; Measurement: printed 53-54 / PDF 58-59; Data Handling: printed 55 / PDF 60). Cross-check only: Table 3.2 lessons per content area per term, printed page 38 / PDF page 43."
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Count objects",
+          "shortName": "Count objects",
+          "family": "whole_numbers",
+          "capsName": "Count objects",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Count forwards and backwards",
+          "shortName": "Count forwards and backwards",
+          "family": "whole_numbers",
+          "capsName": "Count forwards and backwards",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Number symbols and number names",
+          "shortName": "Number symbols and number names",
+          "family": "whole_numbers",
+          "capsName": "Number symbols and number names",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Describe, compare and order numbers",
+          "shortName": "Describe, compare and order numbers",
+          "family": "whole_numbers",
+          "capsName": "Describe, compare and order numbers",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Problems in context: addition and subtraction",
+          "shortName": "Problems in context: addition and subtraction",
+          "family": "whole_numbers",
+          "capsName": "Addition and subtraction",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Grouping and sharing leading to division",
+          "shortName": "Grouping and sharing leading to division",
+          "family": "whole_numbers",
+          "capsName": "Grouping and sharing leading to division",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Addition and subtraction",
+          "shortName": "Addition and subtraction",
+          "family": "whole_numbers",
+          "capsName": "Addition and subtraction",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Geometric patterns",
+          "shortName": "Geometric patterns",
+          "family": "patterns",
+          "capsName": "Geometric patterns",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Number patterns",
+          "shortName": "Number patterns",
+          "family": "patterns",
+          "capsName": "Number patterns",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Position, orientation and views",
+          "shortName": "Position, orientation and views",
+          "family": "shapes",
+          "capsName": "Position, orientation and views",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "3-D objects",
+          "shortName": "3-D objects",
+          "family": "shapes",
+          "capsName": "3-D objects",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Time",
+          "shortName": "Time",
+          "family": "measurement",
+          "capsName": "Time",
+          "contentArea": "Measurement"
+        },
+        {
+          "name": "Length",
+          "shortName": "Length",
+          "family": "measurement",
+          "capsName": "Length",
+          "contentArea": "Measurement"
+        },
+        {
+          "name": "Mass",
+          "shortName": "Mass",
+          "family": "measurement",
+          "capsName": "Mass",
+          "contentArea": "Measurement"
+        },
+        {
+          "name": "Capacity/Volume",
+          "shortName": "Capacity/Volume",
+          "family": "measurement",
+          "capsName": "Capacity/Volume",
+          "contentArea": "Measurement"
+        },
+        {
+          "name": "Collect and sort objects",
+          "shortName": "Collect and sort objects",
+          "family": "data",
+          "capsName": "Collect and sort objects",
+          "contentArea": "Data Handling"
+        },
+        {
+          "name": "Represent sorted collection of objects",
+          "shortName": "Represent sorted collection of objects",
+          "family": "data",
+          "capsName": "Represent sorted collection of objects",
+          "contentArea": "Data Handling"
+        },
+        {
+          "name": "Discuss and report on sorted collection of objects",
+          "shortName": "Discuss and report on sorted collection of objects",
+          "family": "data",
+          "capsName": "Discuss and report on sorted collection of objects",
+          "contentArea": "Data Handling"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Problems in context: repeated addition leading to multiplication",
+          "shortName": "Problems in context: repeated addition leading to multiplication",
+          "family": "whole_numbers",
+          "capsName": "Repeated addition leading to multiplication",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Money",
+          "shortName": "Money",
+          "family": "whole_numbers",
+          "capsName": "Money",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Repeated addition leading to multiplication",
+          "shortName": "Repeated addition leading to multiplication",
+          "family": "whole_numbers",
+          "capsName": "Repeated addition leading to multiplication",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "2-D shapes",
+          "shortName": "2-D shapes",
+          "family": "shapes",
+          "capsName": "2-D shapes",
+          "contentArea": "Space and Shape (Geometry)"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Place value",
+          "shortName": "Place value",
+          "family": "whole_numbers",
+          "capsName": "Place value",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Symmetry",
+          "shortName": "Symmetry",
+          "family": "shapes",
+          "capsName": "Symmetry",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Collect and organise data",
+          "shortName": "Collect and organise data",
+          "family": "data",
+          "capsName": "Collect and organise data",
+          "contentArea": "Data Handling"
+        },
+        {
+          "name": "Represent data",
+          "shortName": "Represent data",
+          "family": "data",
+          "capsName": "Represent data",
+          "contentArea": "Data Handling"
+        },
+        {
+          "name": "Analyse and Interpret data",
+          "shortName": "Analyse and Interpret data",
+          "family": "data",
+          "capsName": "Analyse and Interpret data",
+          "contentArea": "Data Handling"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": []
+    }
+  ]
+}

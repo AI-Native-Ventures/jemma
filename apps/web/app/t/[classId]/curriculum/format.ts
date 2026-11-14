@@ -3,18 +3,59 @@ import { TopicMapDraftSchema, type TopicMapDraft } from '@jemma/profiling/schema
 
 /** What the teacher chose for each check: topic or left-out name to the option label. Stored beside the draft. */
 export type Resolutions = Record<string, string>
-export type ReadDraft = { draft: TopicMapDraft; resolutions: Resolutions }
+/** Where a draft came from when it did not come from the teacher's own documents: the official curriculum (CAPS). Stored beside the draft. */
+export type DraftSource = { kind: 'caps'; title: string; publisher: string; address: string }
+export type ReadDraft = { draft: TopicMapDraft; resolutions: Resolutions; source?: DraftSource }
+
+const readSource = (raw: unknown): DraftSource | undefined => {
+  const s = (raw as { source?: Partial<DraftSource> | null } | null)?.source
+  return s && typeof s === 'object' && s.kind === 'caps' && typeof s.title === 'string' && typeof s.publisher === 'string' && typeof s.address === 'string'
+    ? { kind: 'caps', title: s.title, publisher: s.publisher, address: s.address }
+    : undefined
+}
 
 /** The draft jsonb is `{}` until the draft_map job saves it. */
 export function readDraft(raw: unknown): ReadDraft | null {
   const parsed = TopicMapDraftSchema.safeParse(raw)
   if (!parsed.success || parsed.data.terms.length === 0) return null
   const res = (raw as { resolutions?: Resolutions }).resolutions
-  return { draft: parsed.data, resolutions: res && typeof res === 'object' ? res : {} }
+  const source = readSource(raw)
+  return { draft: parsed.data, resolutions: res && typeof res === 'object' ? res : {}, ...(source ? { source } : {}) }
 }
 
-/** The jsonb to store: the draft plus the teacher's choices. */
-export const toRaw = (draft: TopicMapDraft, resolutions: Resolutions) => ({ ...draft, resolutions })
+/** The jsonb to store: the draft plus the teacher's choices, and the source when the draft came from the official curriculum. */
+export const toRaw = (draft: TopicMapDraft, resolutions: Resolutions, source?: DraftSource) => ({ ...draft, resolutions, ...(source ? { source } : {}) })
+
+/** What the curriculum screen shows for a class: nothing yet, Jemma reading documents, a draft ready to check, or the approved map. */
+export type CurriculumStage = 'empty' | 'reading' | 'draft' | 'approved'
+
+/**
+ * Which screen a class's curriculum is at. A map that can be read is ready (to check, or approved) with or without a document: the
+ * official CAPS map has none. Documents with no readable map yet mean Jemma is reading. No map, or a map with no document and nothing
+ * to read, is the empty screen.
+ */
+export function curriculumStage(map: { status: 'draft' | 'approved'; docs: number; read: boolean } | null): CurriculumStage {
+  if (!map) return 'empty'
+  if (map.read) return map.status === 'approved' ? 'approved' : 'draft'
+  return map.docs === 0 ? 'empty' : 'reading'
+}
+
+/** What a teacher reads when the CAPS map is not for their class. */
+export const CAPS_NOT_MATHS = 'The CAPS map is for a Mathematics class.'
+export const CAPS_NOT_SA = 'The CAPS map is for a school in South Africa.'
+export const CAPS_NOT_GRADE = 'The CAPS map covers Grades 1 to 12.'
+export const CAPS_HAS_MAP = 'This class already has an approved topic map.'
+
+/** Why a class cannot start from the CAPS map, in plain words, or null when it can: Mathematics, a school in South Africa, Grades 1 to 12. */
+export function capsRefusal(subject: string, country: string, grade: number): string | null {
+  if (!sameSubject(subject, 'Mathematics')) return CAPS_NOT_MATHS
+  if (!/^(za|south africa)$/i.test(country.trim())) return CAPS_NOT_SA
+  if (!Number.isInteger(grade) || grade < 1 || grade > 12) return CAPS_NOT_GRADE
+  return null
+}
+
+/** True when the class is offered "Start from the CAPS map". A school stores its country as a code (`ZA`). */
+export const capsFits = (subject: string, country: string, grade: number): boolean => capsRefusal(subject, country, grade) === null
 
 export const TERM_RANGE: Record<number, string> = { 1: 'January to March', 2: 'April to June', 3: 'July to September', 4: 'October to December' }
 export const TERM_SHORT: Record<number, string> = { 1: 'Jan to Mar', 2: 'Apr to Jun', 3: 'Jul to Sep', 4: 'Oct to Dec' }

@@ -7,7 +7,7 @@ import { ErrorRetry } from '@/components/blocks'
 import { Button, Sheet } from '@/components/ui'
 import { shrinkPhoto } from '@/lib/shrink-photo'
 import { postFiles } from '@/lib/upload-client'
-import { retryDraft, useSampleCurriculum, type UploadResult } from './actions'
+import { retryDraft, useCapsMap, useSampleCurriculum, type UploadResult } from './actions'
 import { notAllowedMessage, sizeProblem, sniffKind } from './upload-checks'
 
 const outlined = {
@@ -71,6 +71,36 @@ export function UploadButtons({ classId }: { classId: string }) {
       </div>
       {error ? <p role="alert" style={{ margin: 0, fontSize: 14, color: '#B8381F' }}>{error}</p> : null}
     </>
+  )
+}
+
+/**
+ * "Start from the CAPS map": the official South African topics of the class's grade, term by term, with no document. The map is stored as a
+ * draft and the teacher is taken to the review screen, where it is checked and approved as before.
+ */
+export function CapsButton({ classId, grade }: { classId: string; grade: number }) {
+  const router = useRouter()
+  const [pending, start] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+  return (
+    <section aria-label="Start from the CAPS map" style={{ display: 'flex', flexDirection: 'column', gap: 10, background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 20, padding: 16 }}>
+      <Button
+        variant="primary"
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            setError(null)
+            const result = await useCapsMap(classId)
+            if (result.ok) router.push(`/t/${classId}/curriculum/map`)
+            else setError(result.message)
+          })
+        }
+      >
+        Start from the CAPS map
+      </Button>
+      <p style={{ margin: 0, fontSize: 15, lineHeight: 1.45, color: '#5D5A73' }}>The official South African topics for Grade {grade}, term by term. You check it and approve it.</p>
+      {error ? <p role="alert" style={{ margin: 0, fontSize: 14, color: '#B8381F' }}>{error}</p> : null}
+    </section>
   )
 }
 

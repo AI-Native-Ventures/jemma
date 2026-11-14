@@ -1,0 +1,139 @@
+{
+  "grade": 10,
+  "phase": "Further Education and Training Phase",
+  "subject": "Mathematics",
+  "country": "ZA",
+  "source": {
+    "title": "Curriculum and Assessment Policy Statement (CAPS) Mathematics, Further Education and Training Phase, Grades 10-12 (National Curriculum Statement)",
+    "publisher": "Department of Basic Education, Republic of South Africa (published on www.education.gov.za, (c) 2011)",
+    "url": "https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20FET%20_%20MATHEMATICS%20_%20GR%2010-12%20_%20Web_1133.pdf",
+    "pages": "PDF pages 22 (printed 17; section 3.2.1 table: topics and weeks, all terms); 17-20 (overview 3.1.1); 23-25 (pace setters 3.2.2); 26-28 term 1, 29-30 term 2, 31-33 term 3, 34 term 4 (section 3.2.3 Grade 10 tables)"
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Algebraic expressions",
+          "shortName": "Algebraic expressions",
+          "family": "algebra",
+          "capsName": "Algebraic expressions",
+          "contentArea": "Algebra"
+        },
+        {
+          "name": "Exponents",
+          "shortName": "Exponents",
+          "family": "algebra",
+          "capsName": "Exponents",
+          "contentArea": "Algebra"
+        },
+        {
+          "name": "Number patterns",
+          "shortName": "Number patterns",
+          "family": "patterns",
+          "capsName": "Number patterns",
+          "contentArea": "Number Patterns, Sequences and Series"
+        },
+        {
+          "name": "Equations and inequalities",
+          "shortName": "Equations and inequalities",
+          "family": "algebra",
+          "capsName": "Equations and inequalities",
+          "contentArea": "Algebra"
+        },
+        {
+          "name": "Trigonometry",
+          "shortName": "Trigonometry",
+          "family": "trigonometry",
+          "capsName": "Trigonometry",
+          "contentArea": "Trigonometry"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Functions",
+          "shortName": "Functions",
+          "family": "functions",
+          "capsName": "Functions",
+          "contentArea": "Functions"
+        },
+        {
+          "name": "Trigonometric functions",
+          "shortName": "Trigonometric functions",
+          "family": "functions",
+          "capsName": "Trigonometric functions",
+          "contentArea": "Functions"
+        },
+        {
+          "name": "Euclidean Geometry",
+          "shortName": "Euclidean Geometry",
+          "family": "shapes",
+          "capsName": "Euclidean Geometry",
+          "contentArea": "Euclidean Geometry and Measurement"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Analytical Geometry",
+          "shortName": "Analytical Geometry",
+          "family": "analytical_geometry",
+          "capsName": "Analytical Geometry",
+          "contentArea": "Analytical Geometry"
+        },
+        {
+          "name": "Finance and growth",
+          "shortName": "Finance and growth",
+          "family": "finance",
+          "capsName": "Finance and growth",
+          "contentArea": "Finance, Growth and Decay"
+        },
+        {
+          "name": "Statistics",
+          "shortName": "Statistics",
+          "family": "data",
+          "capsName": "Statistics",
+          "contentArea": "Statistics"
+        },
+        {
+          "name": "Trigonometry (Term 3)",
+          "shortName": "Trigonometry (Term 3)",
+          "family": "trigonometry",
+          "capsName": "Trigonometry",
+          "contentArea": "Trigonometry"
+        },
+        {
+          "name": "Euclidean Geometry (Term 3)",
+          "shortName": "Euclidean Geometry (Term 3)",
+          "family": "shapes",
+          "capsName": "Euclidean Geometry",
+          "contentArea": "Euclidean Geometry and Measurement"
+        },
+        {
+          "name": "Measurement",
+          "shortName": "Measurement",
+          "family": "measurement",
+          "capsName": "Measurement",
+          "contentArea": "Euclidean Geometry and Measurement"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Probability",
+          "shortName": "Probability",
+          "family": "probability",
+          "capsName": "Probability",
+          "contentArea": "Probability"
+        }
+      ]
+    }
+  ]
+}
