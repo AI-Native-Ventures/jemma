@@ -85,7 +85,7 @@ If the run printed `FAIL` lines or `failed`, say so and keep going: that is part
 
 Browser, signed in as Ms Banda, on the class home. Tap **See the full log**. Open "What went in and what came out" on one tool row. Scroll to an approval line, for example "Ms Banda approved the topic map".
 
-Say: "Every tool call is logged with what went in, what came out and the time. Every approval carries the name of the person. The goose run you just saw made its calls in its own made-up school, so they are in that school's log, with the engine and model on each row. This is the log of this school."
+Say: "Every tool call is logged with what went in, what came out and the time. Each approval is saved with the name of the person. The goose run you just saw made its calls in its own made-up school, so they are in that school's log, with the engine and model on each row. This is the log of this school."
 
 ### 4. Share, the Long view, the talk (1:50 to 2:30)
 
