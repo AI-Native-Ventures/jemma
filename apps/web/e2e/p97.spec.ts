@@ -73,6 +73,8 @@ async function aminaInMyOwn(page: Page) {
   await page.goto('/k')
   await page.getByRole('button', { name: 'My own' }).click()
   await check(page.getByRole('button', { name: 'My own' })).toHaveAttribute('aria-pressed', 'true')
+  // The switch shows the tapped workspace at once and asks the server afterwards (P95b): the cookie is set only when the private workspace exists.
+  await expect.poll(async () => (await page.context().cookies()).find((c) => c.name === 'jemma_ws')?.value, { timeout: 45_000 }).toBe('own')
   const twin = (await admin().from('children').select('id, school_id').eq('private_of', sb.childId).single()).data!
   return { sb, twinId: twin.id, schoolId: twin.school_id }
 }
