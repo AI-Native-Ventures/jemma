@@ -8,6 +8,13 @@ export type Call = { table: string; verb: 'insert' | 'update' | 'delete'; values
 
 export type FakeAdmin = ReturnType<typeof fakeAdmin>
 
+/** The cascades the schema has (`on delete cascade`): deleting a row of the first table deletes the rows of the others that point at it. */
+const CASCADES: Record<string, [table: string, column: string][]> = {
+  classes: [['curriculum_maps', 'class_id'], ['curriculum_docs', 'class_id'], ['enrolments', 'class_id']],
+  papers: [['paper_pages', 'paper_id'], ['question_results', 'paper_id']],
+  curriculum_maps: [['topics', 'map_id']],
+}
+
 type Filter = (row: Row) => boolean
 
 function valueAt(row: Row, column: string): unknown {
@@ -64,6 +71,7 @@ export function fakeAdmin(
           ran = true
           const gone = rows(table).filter(matches)
           tables[table] = rows(table).filter((r) => !gone.includes(r))
+          for (const [child, column] of CASCADES[table] ?? []) tables[child] = rows(child).filter((r) => !gone.some((g) => g.id === r[column]))
           calls.push({ table, verb, filters: described })
         }
         return { data: [], error: null }
@@ -126,10 +134,10 @@ export function fakeAdmin(
 
   const storage = {
     from: (bucket: string) => ({
-      upload: async (path: string, file: File) => {
+      upload: async (path: string, body: File | Uint8Array, opts?: { contentType?: string }) => {
         const failure = options.uploadError?.(path) ?? null
         if (failure) return { error: { message: failure } }
-        uploads.push({ bucket, path, type: file.type, size: file.size })
+        uploads.push({ bucket, path, type: opts?.contentType ?? (body as File).type, size: body instanceof Uint8Array ? body.length : body.size })
         return { error: null }
       },
       remove: async (paths: string[]) => {

@@ -7,7 +7,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 // do it. The proxy and the route run here with stand-ins for the sign-in and for the action. No database, no server.
 
 const who = vi.hoisted(() => ({ user: 'learner' as 'nobody' | 'learner' | 'teacher' | 'parent' }))
-const snap = vi.hoisted(() => ({ calls: [] as { sessionId: string; files: File[] }[], fails: false, own: [] as File[][] }))
+const snap = vi.hoisted(() => ({ calls: [] as { sessionId: string; files: File[] }[], fails: false, own: [] as File[][], curricula: [] as { grade: number; name: string; files: File[] }[] }))
 
 vi.mock('@supabase/ssr', () => ({
   createServerClient: () => ({
@@ -28,6 +28,10 @@ vi.mock('../app/k/own/actions', () => ({
     snap.own.push(files)
     return { ok: true, paperId: 'paper-1' }
   },
+  uploadOwnCurriculum: async (grade: number, name: string, files: File[]) => {
+    snap.curricula.push({ grade, name, files })
+    return { ok: true, mapId: 'map-1' }
+  },
 }))
 
 import { proxy } from '../proxy'
@@ -47,6 +51,7 @@ afterEach(() => {
   snap.calls = []
   snap.fails = false
   snap.own = []
+  snap.curricula = []
 })
 
 const door = (path: string, cookie?: string) => proxy(new NextRequest(`${ORIGIN}${path}`, { method: 'POST', headers: cookie ? { cookie } : {} }))
@@ -139,6 +144,19 @@ describe('the learner route itself', () => {
     expect((await POST(post('snapOwnTest', ['x'], pages))).status).toBe(400)
     expect(snap.own).toHaveLength(1)
     expect(snap.calls).toEqual([])
+  })
+
+  it('names uploadOwnCurriculum with the grade and the name before the files (P97), the grade as a number, and answers its result', async () => {
+    const pdf = new File([new Uint8Array(10)], 'plan.pdf', { type: 'application/pdf' })
+    const res = await POST(post('uploadOwnCurriculum', ['7', "My school's Term 1 plan"], [pdf]))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ result: { ok: true, mapId: 'map-1' } })
+    expect(snap.curricula).toHaveLength(1)
+    expect(snap.curricula[0]).toMatchObject({ grade: 7, name: "My school's Term 1 plan" })
+    expect(snap.curricula[0]!.files.map((f) => f.name)).toEqual(['plan.pdf'])
+    // exactly two arguments: any other count is refused before the function runs
+    for (const args of [[], ['7'], ['7', 'name', 'extra']]) expect((await POST(post('uploadOwnCurriculum', args, [pdf]))).status).toBe(400)
+    expect(snap.curricula).toHaveLength(1)
   })
 
   it('no other function can be named, not the teacher\'s, not the parent\'s, not the names every object has', async () => {

@@ -184,6 +184,19 @@ describe('the guard reads the right files', () => {
     expect(files.some((f) => f.startsWith('app/p/'))).toBe(true)
   })
 
+  it('finds the screens of "Add your own work" in My own (P97), so their buttons are held to the same rule', () => {
+    for (const f of [
+      'app/k/own/Screens.tsx',
+      'app/k/own/TestPieces.tsx',
+      'app/k/own/CurriculumScreens.tsx',
+      'app/k/own/test/SnapTest.tsx',
+      'app/k/own/curriculum/CurriculumUpload.tsx',
+      'app/k/own/curriculum/Review.tsx',
+    ]) {
+      expect(files, f).toContain(f)
+    }
+  })
+
   it('finds the teacher screens, the sign-in pages and the demo pages too', () => {
     expect(files).toContain('app/t/[classId]/page.tsx')
     expect(files).toContain('app/t/[classId]/snap/SnapTestForm.tsx')

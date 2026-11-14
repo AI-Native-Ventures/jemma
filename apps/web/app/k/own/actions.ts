@@ -2,13 +2,17 @@
 
 import { revalidatePath } from 'next/cache'
 import type { JemmaDb } from '@jemma/profiling/db'
+import { checkDocument, sizeProblem } from '@/app/t/[classId]/curriculum/upload-checks'
+import { readDraft, removeTopicIn, toRaw, topicCount } from '@/app/t/[classId]/curriculum/format'
 import { retryEvent, sendEvent } from '@/lib/agent'
+import { newJoinCode } from '@/lib/class-writes'
+import { approveDraftMap, draftMapFor, fireCurriculumUploaded } from '@/lib/curriculum-map'
 import { myChild } from '@/lib/data/p27'
-import { newestOwnTestEvent } from '@/lib/data/own-uploads'
+import { newestOwnTestEvent, ownMapOf } from '@/lib/data/own-uploads'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
-import { MAX_PAGE_BYTES, MAX_PAGES, NOT_OWN, ownTestState } from './format'
+import { GRADE_CHOICES, MAX_PAGE_BYTES, MAX_PAGES, NAME_MAX, NOT_OWN, ownTestState } from './format'
 
-// What a learner adds in "My own" (P97): the photos of a test they got back marked, and (further down) their own curriculum. Every action here is for
+// What a learner adds in "My own" (P97): the photos of a test they got back marked, and their own curriculum. Every action here is for
 // the private twin only: a learner who is in My school, or a child that is not a twin, is refused in plain words. The pages of a marked test reach
 // the server through the learner's upload route (/k/upload, see lib/upload-route.ts), never as the argument of a form action. Nothing here touches
 // the school child, its class, its school or the school's record.
@@ -23,10 +27,19 @@ const TEST_NOT_FOUND = 'That test was not found.'
 const refuse = (message: string) => ({ ok: false as const, message })
 const reasonOf = (e: unknown) => (e instanceof Error ? e.message : String(e))
 
+type Twin = { id: string; supabase: Awaited<ReturnType<typeof myChild>>['supabase'] }
+
 /** The private twin of this request, or null for a learner who is in My school. A request from a person who is no learner never gets here (`myChild` stops it). */
-async function twinOnly(): Promise<{ id: string } | null> {
-  const { child } = await myChild()
-  return child.private_of ? { id: child.id } : null
+async function twinOnly(): Promise<Twin | null> {
+  const { supabase, child } = await myChild()
+  return child.private_of ? { id: child.id, supabase } : null
+}
+
+/** The person who tapped: the learner, or the parent whose phone it is after a hand-over. The class of an own curriculum and its approval are theirs. */
+async function actorOf(twin: Twin): Promise<string> {
+  const { data } = await twin.supabase.auth.getUser()
+  if (!data.user) throw new Error('Not signed in')
+  return data.user.id
 }
 
 /** What a stored page is called at its end: the reader tells the model what a file is from its ending, so a png is stored as .png. */
@@ -136,6 +149,152 @@ export async function retryOwnTest(paperId: string): Promise<OwnActionResult> {
     return refuse(UNREACHED)
   }
   revalidatePath(`/k/own/test/${paperId}`)
+  revalidatePath('/k/own')
+  return { ok: true }
+}
+
+// ---- an own curriculum --------------------------------------------------------------------------------------------------------------------
+
+export type UploadOwnCurriculumResult = { ok: true; mapId: string } | { ok: false; message: string }
+
+const NOT_SAVED_FILES = 'Could not save your files. Try again.'
+const NOT_SENT = 'Could not send your curriculum. Try again.'
+const NOT_FOUND_CURRICULUM = 'That curriculum was not found.'
+const STILL_READING = 'Jemma is still reading your curriculum.'
+const ALREADY_DONE = 'This curriculum is already done.'
+
+const isGrade = (grade: unknown): grade is number => typeof grade === 'number' && Number.isInteger(grade) && GRADE_CHOICES.includes(grade)
+
+/**
+ * The learner adds their own curriculum (a PDF or photos of the pages; reached through the upload route /k/upload, never as a form action).
+ * Only the private twin may add one. A private class is made for it in the personal school: named by the learner, the grade they chose, Mathematics,
+ * the person acting as its teacher, the twin enrolled. The documents are checked as the teacher's upload checks them (a PDF, a JPG or a PNG read from
+ * the first bytes, at most 10 MB and 40 pages a document), stored under the class and listed, a draft map is made for them (`draftMapFor`, the teacher's
+ * own), and `curriculum.uploaded` is sent so Jemma reads them. Nothing is kept when any step fails. Answers the id of the map.
+ */
+export async function uploadOwnCurriculum(grade: number, name: string, files: File[]): Promise<UploadOwnCurriculumResult> {
+  const twin = await twinOnly()
+  if (!twin) return refuse(NOT_OWN)
+  if (!isGrade(grade)) return refuse('Pick a grade from 1 to 12.')
+  const title = typeof name === 'string' ? name.trim().replace(/\s+/g, ' ') : ''
+  if (!title) return refuse('Give your curriculum a name.')
+  if (title.length > NAME_MAX) return refuse('Use a shorter name.')
+  const documents = files.filter((f) => f instanceof File)
+  if (documents.length === 0) return refuse('Add a file, or take photos of the pages.')
+  const tooBig = sizeProblem(documents)
+  if (tooBig) return refuse(tooBig)
+  const checked: { file: File; bytes: Uint8Array; mimeType: string; pages: number }[] = []
+  for (const file of documents) {
+    const bytes = new Uint8Array(await file.arrayBuffer())
+    const check = await checkDocument(file.name, bytes)
+    if (!check.ok) return refuse(check.message)
+    checked.push({ file, bytes, mimeType: check.mimeType, pages: check.pages })
+  }
+
+  const userId = await actorOf(twin)
+  const admin = createSupabaseAdmin()
+  const { data: kid, error: kidError } = await admin.from('children').select('school_id').eq('id', twin.id).single()
+  if (kidError || !kid) throw new Error('Child not found')
+
+  let classId: string | null = null
+  let code = newJoinCode()
+  for (let attempt = 0; attempt < 5 && !classId; attempt++) {
+    const row = await admin
+      .from('classes')
+      .insert({ school_id: kid.school_id, teacher_id: userId, name: title, grade, year: new Date().getUTCFullYear(), subject: 'Mathematics', join_code: code })
+      .select('id')
+      .single()
+    if (row.data) classId = row.data.id
+    else if (row.error?.code === '23505') code = newJoinCode()
+    else {
+      console.error(`own curriculum class not made: ${row.error?.message ?? 'no row'}`)
+      return refuse(NOT_SAVED_FILES)
+    }
+  }
+  if (!classId) return refuse(NOT_SAVED_FILES)
+
+  const stored: string[] = []
+  // The class goes (and with it its enrolment, documents and map), and so do the files stored so far.
+  const undo = async () => {
+    if (stored.length > 0) await admin.storage.from('curriculum').remove(stored)
+    await admin.from('classes').delete().eq('id', classId!)
+  }
+  let mapId: string
+  try {
+    const enrolled = await admin.from('enrolments').insert({ class_id: classId, child_id: twin.id })
+    if (enrolled.error) throw new Error(enrolled.error.message)
+    const rows: { class_id: string; storage_path: string; title: string; pages: number }[] = []
+    for (const [i, { file, bytes, mimeType, pages }] of checked.entries()) {
+      const safe = file.name.replace(/[^\w.-]+/g, '_')
+      const path = `${kid.school_id}/${classId}/${Date.now()}-${i}-${safe}`
+      const up = await admin.storage.from('curriculum').upload(path, bytes, { contentType: mimeType })
+      if (up.error) throw new Error(up.error.message)
+      stored.push(path)
+      rows.push({ class_id: classId, storage_path: path, title: file.name.replace(/\.[^.]+$/, ''), pages })
+    }
+    const ins = await admin.from('curriculum_docs').insert(rows)
+    if (ins.error) throw new Error(ins.error.message)
+    mapId = await draftMapFor(admin, classId)
+  } catch (e) {
+    console.error(`own curriculum not saved: ${reasonOf(e)}`)
+    await undo()
+    return refuse(NOT_SAVED_FILES)
+  }
+  try {
+    await fireCurriculumUploaded(mapId)
+  } catch (e) {
+    console.error(`curriculum.uploaded for ${mapId} not sent: ${reasonOf(e)}`)
+    await undo()
+    return refuse(NOT_SENT)
+  }
+  revalidatePath('/k/own')
+  return { ok: true, mapId }
+}
+
+/**
+ * "Take out" on a topic of the draft of an own curriculum: the topic leaves the draft, and so does every "needs" that pointed at it. Only for a draft of
+ * the twin's own that Jemma has written. Never throws to the screen once the learner is known.
+ */
+export async function removeOwnTopic(mapId: string, topicName: string): Promise<OwnActionResult> {
+  const twin = await twinOnly()
+  if (!twin) return refuse(NOT_OWN)
+  const admin = createSupabaseAdmin()
+  const map = await ownMapOf(admin, twin.id, mapId)
+  if (!map) return refuse(NOT_FOUND_CURRICULUM)
+  const read = readDraft(map.draft)
+  if (map.status === 'approved') return refuse(ALREADY_DONE)
+  if (!read) return refuse(STILL_READING)
+  const saved = await admin.from('curriculum_maps').update({ draft: toRaw(removeTopicIn(read.draft, topicName), read.resolutions, read.source) as never }).eq('id', mapId).eq('status', 'draft')
+  if (saved.error) {
+    console.error(`topic not taken out of ${mapId}: ${saved.error.message}`)
+    return refuse('Could not take that topic out. Try again.')
+  }
+  revalidatePath(`/k/own/curriculum/${mapId}`)
+  return { ok: true }
+}
+
+/**
+ * "These look right": the draft becomes the topics of the learner's own class (the teacher's own approval, `approveDraftMap`, with the learner or the
+ * parent who acts for them as the person who approved it), and past results are tagged to them. Only for a draft of the twin's own that Jemma has
+ * written and that still has a topic. A map that is already approved is left alone. Never throws to the screen once the learner is known.
+ */
+export async function approveOwnCurriculum(mapId: string): Promise<OwnActionResult> {
+  const twin = await twinOnly()
+  if (!twin) return refuse(NOT_OWN)
+  const admin = createSupabaseAdmin()
+  const map = await ownMapOf(admin, twin.id, mapId)
+  if (!map) return refuse(NOT_FOUND_CURRICULUM)
+  if (map.status === 'approved') return { ok: true }
+  const read = readDraft(map.draft)
+  if (!read) return refuse(STILL_READING)
+  if (topicCount(read.draft) === 0) return refuse('Keep at least one topic.')
+  try {
+    await approveDraftMap(admin, map, await actorOf(twin))
+  } catch (e) {
+    console.error(`own curriculum ${mapId} not approved: ${reasonOf(e)}`)
+    return refuse('Could not save your curriculum. Try again.')
+  }
+  revalidatePath(`/k/own/curriculum/${mapId}`)
   revalidatePath('/k/own')
   return { ok: true }
 }

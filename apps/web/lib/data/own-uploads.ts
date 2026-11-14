@@ -1,5 +1,6 @@
 import type { JemmaDb } from '@jemma/profiling/db'
-import { dayLabel, leftOutOf, ownTestState, type OwnCurriculumRow, type OwnTestRow, type OwnTestView } from '@/app/k/own/format'
+import { dayLabel, curriculumStateOf, leftOutOf, ownTestState, reviewOf, type OwnCurriculumRow, type OwnCurriculumView, type OwnTestRow, type OwnTestView } from '@/app/k/own/format'
+import { readDraft } from '@/app/t/[classId]/curriculum/format'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { myChild } from './p27'
 
@@ -51,7 +52,83 @@ export async function getOwnHome(): Promise<OwnHome> {
     const mine = results.filter((r) => r.paper_id === p.id)
     return { id: p.id, state, right: mine.filter((r) => r.correct).length, outOf: mine.length, day: dayLabel(p.created_at) }
   })
-  return { workspace: 'own', firstName: child.first_name, tests, curricula: [] }
+  return { workspace: 'own', firstName: child.first_name, tests, curricula: await ownCurricula(admin, child.id) }
+}
+
+/** The newest `curriculum.uploaded` event of each of these maps: map id to its status. */
+async function curriculumEvents(admin: JemmaDb, mapIds: string[]): Promise<Map<string, string>> {
+  const found = new Map<string, string>()
+  if (mapIds.length === 0) return found
+  const { data } = await admin.from('events').select('status, payload, created_at').eq('type', 'curriculum.uploaded').in('payload->>mapId', mapIds).order('created_at', { ascending: false })
+  for (const e of data ?? []) {
+    const id = (e.payload as { mapId?: unknown } | null)?.mapId
+    if (typeof id === 'string' && !found.has(id)) found.set(id, e.status)
+  }
+  return found
+}
+
+/**
+ * The own curricula of the twin, newest first: the classes it is in that have documents (a class made from the CAPS map has none), each with the
+ * state of its newest map. The id of a row is its map's.
+ */
+async function ownCurricula(admin: JemmaDb, twinId: string): Promise<OwnCurriculumRow[]> {
+  const { data: enrolled } = await admin.from('enrolments').select('class_id').eq('child_id', twinId)
+  const classIds = [...new Set((enrolled ?? []).map((e) => e.class_id))]
+  if (classIds.length === 0) return []
+  const [docs, classes, maps] = await Promise.all([
+    admin.from('curriculum_docs').select('class_id').in('class_id', classIds),
+    admin.from('classes').select('id, name, grade, created_at').in('id', classIds),
+    admin.from('curriculum_maps').select('id, class_id, status, draft, created_at').in('class_id', classIds).order('created_at', { ascending: false }),
+  ])
+  const withDocs = new Set((docs.data ?? []).map((d) => d.class_id))
+  const docCount = (classId: string) => (docs.data ?? []).filter((d) => d.class_id === classId).length
+  const newest = new Map<string, NonNullable<typeof maps.data>[number]>()
+  for (const m of maps.data ?? []) if (!newest.has(m.class_id)) newest.set(m.class_id, m)
+  const mine = (classes.data ?? []).filter((c) => withDocs.has(c.id)).sort((a, b) => b.created_at.localeCompare(a.created_at) || a.id.localeCompare(b.id))
+  const eventOf = await curriculumEvents(admin, mine.flatMap((c) => (newest.get(c.id) ? [newest.get(c.id)!.id] : [])))
+  return mine.flatMap((c) => {
+    const map = newest.get(c.id)
+    if (!map) return []
+    const state = curriculumStateOf({ map, docs: docCount(c.id), read: readDraft(map.draft) !== null, eventFailed: eventOf.get(map.id) === 'failed' })
+    return [{ id: map.id, name: c.name, grade: c.grade, state, day: dayLabel(c.created_at) }]
+  })
+}
+
+/**
+ * A map of the twin's own: the map exists, the twin is enrolled in its class, and the class is in the twin's personal school. Null for anything else
+ * (another learner's map, a class test's map, a map that does not exist), so a learner can only read and change what is theirs.
+ */
+export async function ownMapOf(
+  admin: JemmaDb,
+  twinId: string,
+  mapId: string,
+): Promise<{ id: string; class_id: string; status: 'draft' | 'approved'; draft: unknown; className: string; classGrade: number } | null> {
+  const { data: map } = await admin.from('curriculum_maps').select('id, class_id, status, draft').eq('id', mapId).maybeSingle()
+  if (!map) return null
+  const [enrolled, cls, kid] = await Promise.all([
+    admin.from('enrolments').select('class_id').eq('class_id', map.class_id).eq('child_id', twinId),
+    admin.from('classes').select('school_id, name, grade').eq('id', map.class_id).maybeSingle(),
+    admin.from('children').select('school_id').eq('id', twinId).maybeSingle(),
+  ])
+  if ((enrolled.data?.length ?? 0) === 0 || !cls.data || cls.data.school_id !== kid.data?.school_id) return null
+  return { ...map, className: cls.data.name, classGrade: cls.data.grade }
+}
+
+/**
+ * The screen of one own curriculum of the twin `twinId`, or null when the map is not the twin's own. A draft that can be read becomes the review (the
+ * terms, the topics and what was left out); an approved map says it is done; a map Jemma has not drafted yet is being read, or failed when its event did.
+ */
+export async function getOwnCurriculumView(twinId: string, mapId: string): Promise<OwnCurriculumView | null> {
+  const admin = createSupabaseAdmin()
+  const map = await ownMapOf(admin, twinId, mapId)
+  if (!map) return null
+  const read = readDraft(map.draft)
+  const docs = (await admin.from('curriculum_docs').select('id').eq('class_id', map.class_id)).data ?? []
+  const eventFailed = (await curriculumEvents(admin, [mapId])).get(mapId) === 'failed'
+  const state = curriculumStateOf({ map, docs: docs.length, read: read !== null, eventFailed })
+  if (state === 'draft' && read) return { state: 'draft', review: reviewOf(read, { mapId, classId: map.class_id, name: map.className }) }
+  if (state === 'approved') return { state: 'approved', mapId, name: map.className, grade: map.classGrade, classId: map.class_id }
+  return { state: state === 'failed' ? 'failed' : 'reading', mapId, name: map.className }
 }
 
 /**

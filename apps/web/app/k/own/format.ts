@@ -1,3 +1,5 @@
+import { curriculumStage, needsLabel, type ReadDraft } from '@/app/t/[classId]/curriculum/format'
+
 // The pure words and rules of "Add your own work" in My own (P97): what a learner reads, what state a test or a curriculum is in, and the shapes the
 // screens are drawn from. No database, no clock, no cookies: the screens, the actions and the tests import the same file.
 
@@ -81,3 +83,73 @@ export type OwnCurriculumState = 'reading' | 'draft' | 'approved' | 'failed'
 
 /** One row of "What you added": an own curriculum. The id is its map's. */
 export type OwnCurriculumRow = { id: string; name: string; grade: number; state: OwnCurriculumState; day: string }
+
+// ---- an own curriculum --------------------------------------------------------------------------------------------------------------------
+
+/** The grades a learner can give an own curriculum: the CAPS maps of My own cover Grades 1 to 12. */
+export const GRADE_CHOICES: number[] = Array.from({ length: 12 }, (_, i) => i + 1)
+
+/** The longest name a learner can give an own curriculum. */
+export const NAME_MAX = 60
+
+/** Where "Done" points: My maths at the grade. The address carries the grade, as the grade chips of My own do. */
+export const myMathsHref = (grade: number): string => `/k/maths?grade=${grade}`
+
+/**
+ * The state of an own curriculum from its map (null when it has none), how many documents it has, whether its draft can be read, and whether its
+ * newest `curriculum.uploaded` event failed. A draft that can be read is ready to check (or done) whatever its event says. A map Jemma has not
+ * drafted yet is being read, until its event has failed. Nothing to read at all (no map, or no document) cannot be read.
+ */
+export function curriculumStateOf(input: { map: { status: 'draft' | 'approved' } | null; docs: number; read: boolean; eventFailed: boolean }): OwnCurriculumState {
+  const stage = input.map ? curriculumStage({ status: input.map.status, docs: input.docs, read: input.read }) : 'empty'
+  if (stage === 'approved') return 'approved'
+  if (stage === 'draft') return 'draft'
+  if (stage === 'reading') return input.eventFailed ? 'failed' : 'reading'
+  return 'failed'
+}
+
+export type OwnMapTopic = { name: string; /** "Needs topic 1" or "Needs Fractions (T1)", or null. */ needs: string | null; /** Why Jemma is not sure of this topic, or null. */ note: string | null }
+
+/** What the review of a draft is drawn from: the terms that have topics, and what Jemma left out. */
+export type OwnMapView = {
+  mapId: string
+  classId: string
+  grade: number
+  name: string
+  topicCount: number
+  terms: { term: number; topics: OwnMapTopic[] }[]
+  leftOut: { name: string; reason: string }[]
+}
+
+/**
+ * The review of a draft map for the learner, from the same pieces the teacher's review uses: the terms in order (a term with no topic is not
+ * listed), each topic with what it needs (`needsLabel`) and, until a choice was made about it, why Jemma was not sure of it; and the topics Jemma
+ * left out, until a choice was made about them.
+ */
+export function reviewOf(read: ReadDraft, info: { mapId: string; classId: string; name: string }): OwnMapView {
+  const terms = [...read.draft.terms]
+    .filter((t) => t.topics.length > 0)
+    .sort((a, b) => a.term - b.term)
+    .map((t) => ({
+      term: t.term,
+      topics: t.topics.map((x) => ({
+        name: x.name,
+        needs: needsLabel(read.draft, t.term, x.prerequisites),
+        note: x.check && !read.resolutions[x.name] ? x.check.reason : null,
+      })),
+    }))
+  return {
+    ...info,
+    grade: read.draft.grade,
+    topicCount: terms.reduce((n, t) => n + t.topics.length, 0),
+    terms,
+    leftOut: read.draft.leftOut.filter((l) => !read.resolutions[l.name]),
+  }
+}
+
+/** What the screen of one own curriculum is drawn from. */
+export type OwnCurriculumView =
+  | { state: 'reading'; mapId: string; name: string }
+  | { state: 'failed'; mapId: string; name: string }
+  | { state: 'draft'; review: OwnMapView }
+  | { state: 'approved'; mapId: string; name: string; grade: number; classId: string }

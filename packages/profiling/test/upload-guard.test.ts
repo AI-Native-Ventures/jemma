@@ -9,8 +9,8 @@ import { describe, expect, test } from 'vitest'
 
 const root = resolve(import.meta.dirname, '../../..')
 
-/** The functions that take file bytes (nine since P97). They stay `'use server'` functions, and only the three upload routes call them. */
-const UPLOAD_FUNCTIONS = ['uploadCurriculum', 'uploadMemo', 'addPaper', 'uploadScans', 'addPage', 'retakePaper', 'snapHomework', 'snapPractice', 'snapOwnTest'] as const
+/** The functions that take file bytes (ten since P97). They stay `'use server'` functions, and only the three upload routes call them. */
+const UPLOAD_FUNCTIONS = ['uploadCurriculum', 'uploadMemo', 'addPaper', 'uploadScans', 'addPage', 'retakePaper', 'snapHomework', 'snapPractice', 'snapOwnTest', 'uploadOwnCurriculum'] as const
 
 const WHY = "file bytes must go through postFiles (lib/upload-client.ts): Cloudflare's edge refuses a form action whose body holds the bytes '$F"
 
@@ -48,6 +48,7 @@ describe('the guard itself', () => {
     expect(uploadFunctionsImported(`import { uploadMemo as send } from "../actions.ts"`)).toEqual(['uploadMemo'])
     expect(uploadFunctionsImported(`import { answer, snapPractice } from './actions'`)).toEqual(['snapPractice'])
     expect(uploadFunctionsImported(`import { retryOwnTest, snapOwnTest } from '../actions'`)).toEqual(['snapOwnTest'])
+    expect(uploadFunctionsImported(`import { uploadOwnCurriculum, removeOwnTopic } from '../actions'`)).toEqual(['uploadOwnCurriculum'])
     expect(uploadFunctionsImported(`import {\n  approveKey,\n  uploadScans,\n} from '@/app/t/[classId]/snap/actions'`)).toEqual(['uploadScans'])
     expect(uploadFunctionsImported(`import * as actions from './actions'\nawait actions.snapHomework(a, b, c, d)`)).toEqual(['snapHomework'])
     expect(uploadFunctionsImported(`const { uploadMemo } = await import('./actions')`)).toEqual(['uploadMemo'])
@@ -77,7 +78,7 @@ describe('no screen sends file bytes through a form action', () => {
   test('the scan reads the client files (it is not passing on an empty list)', () => {
     expect(clients.length).toBeGreaterThan(30)
     // the screens that send files
-    for (const file of ['curriculum/parts.tsx', 'own/test/SnapTest.tsx', 'papers/UploadZone.tsx', 'snap/SnapTestForm.tsx', 'key/KeyList.tsx', 'key/draft/DraftKey.tsx', 'papers/Queue.tsx', 'photo/PhotoScreen.tsx', 'session/[sessionId]/SessionFlow.tsx']) {
+    for (const file of ['curriculum/parts.tsx', 'own/test/SnapTest.tsx', 'own/curriculum/CurriculumUpload.tsx', 'papers/UploadZone.tsx', 'snap/SnapTestForm.tsx', 'key/KeyList.tsx', 'key/draft/DraftKey.tsx', 'papers/Queue.tsx', 'photo/PhotoScreen.tsx', 'session/[sessionId]/SessionFlow.tsx']) {
       expect(clients.some((f) => f.endsWith(file)), file).toBe(true)
     }
   })
