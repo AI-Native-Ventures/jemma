@@ -236,7 +236,11 @@ describe('the overview and the teacher\'s read-only function', () => {
     expect(summary!.sessions).toEqual([expect.objectContaining({ topic: 'Common fractions', right: 3, asked: 5 })])
     expect(await getOwnWorkspaceForTeacher(service, { teacherId: ids.otherTeacher!, classId: ids.cA!, childId: ids.amina!, now: NOW })).toBeNull()
     expect(await getOwnWorkspaceForTeacher(service, { teacherId: ids.teacher!, classId: ids.cA!, childId: ids.twin!, now: NOW })).toBeNull()
-    expect(await getOwnWorkspaceForTeacher(service, { teacherId: ids.teacher!, classId: ids.cA!, childId: ids.thabo!, now: NOW })).toBeNull()
+    // Zola never opened My own: nothing. Thabo's parent opened it and added no grade yet: an empty workspace, not nothing.
+    expect(await getOwnWorkspaceForTeacher(service, { teacherId: ids.teacher!, classId: ids.cA!, childId: ids.zola!, now: NOW })).toBeNull()
+    expect(await getOwnWorkspaceForTeacher(service, { teacherId: ids.teacher!, classId: ids.cA!, childId: ids.thabo!, now: NOW })).toEqual({
+      firstName: 'Thabo', grades: [], gaps: { open: [], fixed: [] }, sessions: [],
+    })
     expect(JSON.stringify([await ok(service.from('sessions').select('id').eq('child_id', ids.twin!)), await ok(service.from('children').select('id').eq('private_of', ids.amina!))])).toBe(before)
   })
 })
