@@ -86,3 +86,107 @@ jobs:
       - name: Stop Jemma
         if: always()
         run: ./start.sh --stop
+
+  # The browser specs of the newer features (apps/web/e2e), on this machine's own local database and recorded answers. Nothing here
+  # touches a hosted project and no model is called. It runs beside `one-command-run`, whose demo path is the check of the recorded answers.
+  # Two kinds of spec, so two steps with the agent changed in between:
+  #  1. specs that need the real agent worker (replay mode): the web app posts to it and it runs the jobs;
+  #  2. specs written with a stand-in agent (a tiny server that answers 202 to every post and runs no job, so an event stays queued
+  #     and the spec plays the agent itself). The web app posts to AGENT_URL (port 8787), so the real agent is stopped and the spec's
+  #     stand-in takes its port (STAND_IN_AGENT_PORT).
+  feature-specs:
+    name: Feature specs in a browser
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Start Jemma with one command
+        id: start
+        timeout-minutes: 20
+        run: ./start.sh --ci
+
+      # Same as in the first job: the browser first, the extra system packages only for a short time.
+      - name: Install the browser
+        id: browser
+        timeout-minutes: 10
+        run: |
+          pnpm --filter web exec playwright install chromium
+          timeout --kill-after=10 150 pnpm --filter web exec playwright install-deps chromium || echo "::warning::Extra system packages could not be installed (package servers unreachable). Going on with the libraries the runner image has."
+
+      # The web app that start.sh runs (port 3000) is used by every spec (PREVIEW_URL), as in the demo path step.
+      - name: Feature specs that use the real agent (recorded answers)
+        id: with-agent
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        timeout-minutes: 20
+        env:
+          PLAYWRIGHT_HTML_OPEN: never
+          PREVIEW_URL: http://localhost:3000
+          PREVIEW_AGENT_URL: http://localhost:8787
+        run: |
+          set -a
+          . ./.env.local
+          set +a
+          failed=0
+          PLAYWRIGHT_HTML_REPORT=playwright-report/with-agent-phone pnpm --filter web exec playwright test p27 p28 p73 p82 --project=phone --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/with-agent-phone || failed=1
+          PLAYWRIGHT_HTML_REPORT=playwright-report/with-agent-laptop pnpm --filter web exec playwright test p73 --project=laptop --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/with-agent-laptop || failed=1
+          exit "$failed"
+
+      # The real agent and the stand-in cannot share port 8787. The agent was started by start.sh and its process group is in .jemma/pids.
+      - name: Stop the real agent, so the stand-in agent can take its port
+        id: free-port
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        run: |
+          pid="$(awk -F= '$1 == "agent" { print $2; exit }' .jemma/pids)"
+          test -n "$pid"
+          port_free() { node -e "require('node:net').createServer().once('error', () => process.exit(1)).listen(8787, function () { this.close(() => process.exit(0)) })"; }
+          kill -TERM -- "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null || true
+          for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+            port_free && break
+            sleep 1
+          done
+          if ! port_free; then
+            kill -KILL -- "-$pid" 2>/dev/null || true
+            sleep 2
+          fi
+          port_free || { echo "Port 8787 is still busy"; exit 1; }
+          echo "The real agent is stopped and port 8787 is free."
+
+      - name: Feature specs that use a stand-in agent
+        id: with-stand-in
+        if: ${{ !cancelled() && steps.free-port.outcome == 'success' }}
+        timeout-minutes: 20
+        env:
+          PLAYWRIGHT_HTML_OPEN: never
+          PREVIEW_URL: http://localhost:3000
+          PREVIEW_AGENT_URL: http://localhost:8787
+          STAND_IN_AGENT_PORT: '8787'
+        run: |
+          set -a
+          . ./.env.local
+          set +a
+          failed=0
+          PLAYWRIGHT_HTML_REPORT=playwright-report/stand-in-phone pnpm --filter web exec playwright test p75 p77 p79 p80 p83 --project=phone --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/stand-in-phone || failed=1
+          PLAYWRIGHT_HTML_REPORT=playwright-report/stand-in-laptop pnpm --filter web exec playwright test p75 p80 --project=laptop --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/stand-in-laptop || failed=1
+          exit "$failed"
+
+      - name: Upload the logs and the Playwright reports
+        if: failure() || cancelled()
+        uses: actions/upload-artifact@v7
+        with:
+          name: jemma-feature-specs-logs
+          path: |
+            .jemma/logs/
+            apps/web/playwright-report/
+            apps/web/test-results/
+          if-no-files-found: ignore
+
+      - name: Stop Jemma
+        if: always()
+        run: ./start.sh --stop
