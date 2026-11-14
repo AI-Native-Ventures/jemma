@@ -113,7 +113,7 @@ const PATHS: Record<IconName, ReactNode> = {
 
 export function Icon({ name, size = 18, width = 1.9, color }: { name: IconName; size?: number; width?: number; color?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={width} {...STROKE} stroke={color ?? 'currentColor'} aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={width} {...STROKE} stroke={color ?? 'currentColor'} aria-hidden="true" style={{ flexShrink: 0 }}>
       {PATHS[name]}
     </svg>
   )

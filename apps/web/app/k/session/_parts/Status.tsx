@@ -76,14 +76,14 @@ export function LoadError({ onRetry, warmupHref }: { onRetry: () => void; warmup
         <p className="m-0 text-[18px] leading-[1.45] text-body text-pretty">It&apos;s not you. The internet is slow right now. Nothing you did is lost.</p>
       </section>
       <div className="flex flex-col gap-2.5">
-        <button type="button" onClick={onRetry} className="flex h-[68px] cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-coral text-[23px] font-bold text-ink">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <button type="button" onClick={onRetry} className="flex min-h-[68px] cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[23px]">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
             <path d="M20 12a8 8 0 1 1-2.34-5.66" /><path d="M20 4v4.5h-4.5" />
           </svg>
           Try again
         </button>
         {warmupHref ? (
-          <button type="button" onClick={warmupHref} className="flex h-[60px] cursor-pointer items-center justify-center rounded-20 border-2 border-ink bg-card text-[19px] font-semibold text-ink">
+          <button type="button" onClick={warmupHref} className="flex min-h-[60px] cursor-pointer items-center justify-center rounded-20 border-2 border-ink bg-card px-5 py-3 text-center text-[19px] font-semibold text-balance text-ink">
             Do the warm-up first
           </button>
         ) : null}
@@ -176,7 +176,7 @@ export function Progress({ done, onDone }: { done: FinishedSession; onDone: () =
       ) : null}
       <div className="flex-1" />
       <div className="flex w-full flex-col gap-1.5">
-        <button type="button" onClick={onDone} className="flex h-[60px] cursor-pointer items-center justify-center rounded-18 border-0 bg-ink text-[19px] font-bold text-white">
+        <button type="button" onClick={onDone} className="flex min-h-[60px] cursor-pointer items-center justify-center rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
           Done
         </button>
         <Link href="/k/maths" className="flex min-h-11 items-center justify-center text-[16px] font-semibold text-ink underline underline-offset-[3px]">

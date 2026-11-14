@@ -115,7 +115,7 @@ export function MeForm({ firstName, initial }: { firstName: string; initial: str
       </section>
 
       <form action={signOutChild} style={{ display: 'contents' }}>
-        <PendingButton type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 60, borderRadius: 20, border: '2px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36', fontSize: 19, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+        <PendingButton type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 60, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 20, border: '2px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36', fontSize: 19, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
           I&apos;m done for today
         </PendingButton>
       </form>

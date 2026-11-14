@@ -53,7 +53,7 @@ async function Start({ first, initials }: { first: string; initials: string }) {
               </span>
             </p>
           ) : null}
-          <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 52, borderRadius: 14, background: ink, color: '#FFFFFF', fontSize: 17, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+          <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, background: ink, color: '#FFFFFF', fontSize: 17, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
             Find the class
           </button>
         </form>

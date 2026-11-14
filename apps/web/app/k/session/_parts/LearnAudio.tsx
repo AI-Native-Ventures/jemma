@@ -227,11 +227,11 @@ export function LearnAudio({ lesson, firstName, onReady }: { lesson: LessonForCh
         })}
       </section>
       <div className="flex-1" />
-      <button type="button" onClick={onReady} className="h-[60px] cursor-pointer rounded-18 border-0 bg-ink text-[19px] font-bold text-white">
+      <button type="button" onClick={onReady} className="min-h-[60px] cursor-pointer rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
         I&apos;m ready
       </button>
       <Sheet open={lang} onClose={() => setLang(false)} title="Coming after the challenge" description="This part of Jemma is not in this version yet.">
-        <button type="button" onClick={() => setLang(false)} className="h-[52px] cursor-pointer rounded-14 border-0 bg-ink text-[17px] font-semibold text-white">
+        <button type="button" onClick={() => setLang(false)} className="min-h-14 cursor-pointer rounded-14 border-0 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white">
           Got it
         </button>
       </Sheet>

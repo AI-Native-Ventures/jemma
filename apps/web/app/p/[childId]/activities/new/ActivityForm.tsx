@@ -152,7 +152,7 @@ export function ActivityForm({ childId, name }: { childId: string; name: string 
         type="button"
         onClick={save}
         disabled={pending}
-        style={css('display:flex;align-items:center;justify-content:center;height:52px;border-radius:14px;border:none;background:#1F1D36;color:#FFFFFF;font-size:17px;font-weight:600;opacity:' + (pending ? '0.6' : '1'))}
+        style={css('display:flex;align-items:center;justify-content:center;min-height:56px;padding:12px 20px;text-align:center;text-wrap:balance;border-radius:14px;border:none;background:#1F1D36;color:#FFFFFF;font-size:17px;font-weight:600;opacity:' + (pending ? '0.6' : '1'))}
       >
         Save activity
       </PendingButton>

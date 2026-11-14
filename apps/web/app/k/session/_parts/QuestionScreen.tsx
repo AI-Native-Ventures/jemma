@@ -20,7 +20,7 @@ function Note({ children }: { children: string }) {
 }
 
 const nextClass =
-  'flex h-[60px] cursor-pointer items-center justify-center rounded-18 border-0 bg-ink text-[19px] font-bold text-white disabled:cursor-default disabled:opacity-40'
+  'flex min-h-[60px] cursor-pointer items-center justify-center rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white disabled:cursor-default disabled:opacity-40'
 
 /** One short line under the boxes that says what goes in them. It never says whether an answer was right. */
 function Hint({ children }: { children: string }) {
@@ -347,7 +347,7 @@ function Choices({ q, picked, onPick, warm }: { q: QuestionForChild; picked: str
             type="button"
             aria-pressed={on}
             onClick={() => onPick(letter)}
-            className={`flex cursor-pointer items-center justify-center rounded-[22px] ${warm ? 'h-[124px]' : 'h-20'} font-bold ${
+            className={`flex cursor-pointer items-center justify-center rounded-[22px] px-5 py-3 text-center text-balance ${warm ? 'min-h-[124px]' : 'min-h-20'} font-bold ${
               warm ? 'text-[30px]' : 'text-[26px]'
             } ${on ? 'border-[3px] border-ink bg-ink text-white' : 'border-2 border-edge bg-card text-ink'}`}
           >

@@ -134,10 +134,10 @@ export function CheckScreen({
                   />
                 ) : (
                   <span className="grid grid-cols-2 gap-2">
-                    <button type="button" onClick={() => setSure((cur) => [...cur, a.n])} className="h-11 rounded-12 border-none bg-ink text-[15px] font-semibold text-white">
+                    <button type="button" onClick={() => setSure((cur) => [...cur, a.n])} className="min-h-11 rounded-12 border-none bg-ink px-5 py-2 text-center text-[15px] font-semibold text-balance text-white">
                       Yes, {a.answer}
                     </button>
-                    <button type="button" onClick={() => setFixing((cur) => [...cur, a.n])} className="h-11 rounded-12 border-[1.5px] border-ink bg-card text-[15px] font-semibold text-ink">
+                    <button type="button" onClick={() => setFixing((cur) => [...cur, a.n])} className="min-h-11 rounded-12 border-[1.5px] border-ink bg-card px-5 py-2 text-center text-[15px] font-semibold text-balance text-ink">
                       Fix it
                     </button>
                   </span>
@@ -162,9 +162,9 @@ export function CheckScreen({
           type="button"
           disabled={busy}
           onClick={() => void save()}
-          className="flex h-[52px] items-center justify-center gap-2 rounded-14 border-none bg-ink text-[17px] font-semibold text-white disabled:opacity-50"
+          className="flex min-h-14 items-center justify-center gap-2 rounded-14 border-none bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
             <path d="m5 12.5 4.5 4.5L19 7.5" />
           </svg>
           Confirm and save

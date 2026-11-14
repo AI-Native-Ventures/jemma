@@ -116,15 +116,15 @@ export function LearnDiagram({ lesson, onReady }: LearnDiagramProps) {
         <button
           type="button"
           onClick={() => setPlays((n) => n + 1)}
-          className="flex h-[60px] cursor-pointer items-center justify-center gap-2 rounded-18 border-2 border-ink bg-card text-[17px] font-semibold text-ink"
+          className="flex min-h-[60px] cursor-pointer items-center justify-center gap-2 rounded-18 border-2 border-ink bg-card px-5 py-3 text-center text-[17px] font-semibold text-balance text-ink"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
             <path d="M4 12a8 8 0 1 0 2.34-5.66" />
             <path d="M4 4v4.5h4.5" />
           </svg>
           Again
         </button>
-        <button type="button" onClick={onReady} className="h-[60px] cursor-pointer rounded-18 border-0 bg-ink text-[19px] font-bold text-white">
+        <button type="button" onClick={onReady} className="min-h-[60px] cursor-pointer rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
           I&apos;m ready
         </button>
       </div>
