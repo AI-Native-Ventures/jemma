@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Sheet } from '@/components/ui'
 import type { LessonForChild } from '../[sessionId]/types'
+import { FractionText } from './Frac'
 import { AUDIO_ICON, LearnBadge } from './LearnCards'
 
 const BARS = [10, 18, 26, 14, 32, 22, 16, 28, 38, 20, 12, 26, 34, 18, 24, 14, 30, 22, 16, 10, 20, 28, 18, 26, 14, 22, 32, 16, 24, 12, 18, 28, 20, 26, 14, 22, 16, 10]
@@ -161,7 +162,9 @@ export function LearnAudio({ lesson, firstName, onReady }: { lesson: LessonForCh
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icons/jemma-app-icon.svg" alt="" width={48} height={48} className="block size-12" />
           <span className="flex flex-col gap-px">
-            <h1 id="memo" className="m-0 text-[21px] leading-[1.2] font-bold">{lesson.title}</h1>
+            <h1 id="memo" className="m-0 text-[21px] leading-[1.2] font-bold">
+              <FractionText text={lesson.title} size={26} rule={2.5} gap={3} side={3} color="#FFFFFF" />
+            </h1>
             <span className="text-[14px] text-[#D6D4E2]">Jemma, for {firstName}</span>
           </span>
         </div>
@@ -218,7 +221,7 @@ export function LearnAudio({ lesson, firstName, onReady }: { lesson: LessonForCh
               key={i}
               className={`m-0 text-[17px] leading-[1.55] ${now ? '-mx-2 rounded-12 bg-[#FFF1ED] p-2 font-medium text-ink' : 'text-body'}`}
             >
-              {sentences.join(' ')}
+              <FractionText text={sentences.join(' ')} size={22} rule={2} gap={3} side={3} />
             </p>
           )
         })}

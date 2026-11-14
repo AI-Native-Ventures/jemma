@@ -2,6 +2,7 @@ import { createServiceClient, type JemmaDb } from '@jemma/profiling/db'
 import { expect, test, type Page } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
 import { TERMS, topicMapDraft } from '../../../supabase/seed/fixtures/marked-state'
+import { boxesFor, type LessonQuestion } from './helpers/answers'
 import { signInWithPassword } from './helpers/session'
 import { openSandbox } from './helpers/sandbox'
 
@@ -74,21 +75,16 @@ async function signInAs(page: Page, logins: Logins, role: keyof Logins) {
   await signInWithPassword(page, logins[role].email, logins[role].password)
 }
 
-type LessonQuestion = { prompt: string; answer: string; choices?: string[]; render?: string; terms?: string[] }
-
-/** What the child taps or types for one question: the right answer, or something that is not. */
+/** What the child taps or types for one question: the right answer, or something that is not. A typed question is answered box by box (see helpers/answers.ts). */
 async function answerQuestion(page: Page, q: LessonQuestion, right: boolean) {
   const wrongChoice = (choices: string[]) => choices.findIndex((c, i) => c !== q.answer && String.fromCharCode(65 + i) !== q.answer)
   const rightChoice = (choices: string[]) => choices.findIndex((c, i) => c === q.answer || String.fromCharCode(65 + i) === q.answer)
   if (q.choices?.length) {
     const i = right ? rightChoice(q.choices) : wrongChoice(q.choices)
     await page.getByRole('button', { pressed: false }).nth(Math.max(i, 0)).click()
-  } else if (q.render === 'fraction_sum' && q.terms?.length === 2) {
-    const [top, bottom] = (right ? q.answer : '1/99').split('/')
-    await page.getByLabel('Top number').fill(top!)
-    await page.getByLabel('Bottom number').fill(bottom ?? '1')
   } else {
-    await page.getByLabel('Your answer').fill(right ? q.answer : '0')
+    // The boxes the screen shows for this kind of answer (a missing number, a fraction, a mixed number, one number), each found by its label.
+    for (const box of boxesFor(q, right)) await page.getByLabel(box.label, { exact: true }).fill(box.value)
   }
   await page.getByRole('button', { name: 'Next', exact: true }).click()
 }
