@@ -3,6 +3,7 @@
 import { Frac, FractionText, hasMath, isFraction, MathText, withFractions } from './Frac'
 import { Bar, type Fill } from './Bars'
 import { Gem } from './Gems'
+import { QuestionPicture } from './QuestionPicture'
 import type { MissedQuestion } from '../[sessionId]/logic'
 
 /** A sign (or an equals sign) that stands alone between two terms of an answer. */
@@ -136,6 +137,7 @@ export function Results({ firstName, missed }: { firstName: string; missed: Miss
               )}
             </span>
           </div>
+          <QuestionPicture spec={m.diagram} variant="card" />
           <div className={`grid ${stack(m) ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
             {/* A paper answer that could not be read says so, in words, in the place of an empty answer (a long line gets the whole row). */}
             <span className={`flex items-center justify-between rounded-14 bg-soft-2 px-3.5 py-2.5 ${m.unread ? 'col-span-2 gap-3' : stack(m) ? 'gap-3' : ''}`}>

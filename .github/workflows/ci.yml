@@ -172,7 +172,7 @@ jobs:
           . ./.env.local
           set +a
           failed=0
-          PLAYWRIGHT_HTML_REPORT=playwright-report/stand-in-phone pnpm --filter web exec playwright test p75 p77 p79 p80 p83 p86 --project=phone --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/stand-in-phone || failed=1
+          PLAYWRIGHT_HTML_REPORT=playwright-report/stand-in-phone pnpm --filter web exec playwright test p75 p77 p79 p80 p83 p86 p87 --project=phone --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/stand-in-phone || failed=1
           PLAYWRIGHT_HTML_REPORT=playwright-report/stand-in-laptop pnpm --filter web exec playwright test p75 p80 --project=laptop --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/stand-in-laptop || failed=1
           exit "$failed"
 

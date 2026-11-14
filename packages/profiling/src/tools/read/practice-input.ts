@@ -8,7 +8,7 @@ export async function loadLearnerMap(db: JemmaDb, childId: string) {
   const enrolments = await ok(db.from('enrolments').select('class_id').eq('child_id', childId))
   const classIds = [...new Set(enrolments.map((e) => e.class_id))]
   const [classes, maps] = await Promise.all([
-    classIds.length ? ok(db.from('classes').select('id, subject').in('id', classIds)) : Promise.resolve([]),
+    classIds.length ? ok(db.from('classes').select('id, subject, grade').in('id', classIds)) : Promise.resolve([]),
     classIds.length ? ok(db.from('curriculum_maps').select('id').eq('status', 'approved').in('class_id', classIds)) : Promise.resolve([]),
   ])
   const topics = maps.length ? await ok(db.from('topics').select('id, name, family, term, position, prerequisite_ids').in('map_id', maps.map((m) => m.id))) : []
@@ -94,6 +94,7 @@ export async function loadMyMathsInput(db: JemmaDb, childId: string, now: Date):
   return {
     now,
     subject,
+    grade: classes[0]?.grade ?? null,
     topics: topics.map((t) => ({ id: t.id, name: t.name, family: t.family, term: t.term, position: t.position, prerequisiteIds: t.prerequisite_ids ?? [] })),
     gaps: gaps.map((g) => ({ topicId: g.topic_id, topicName: g.topic_name, stage: g.stage, createdAt: g.created_at, fixedAt: g.fixed_at })),
     answers: results.flatMap((r) => {

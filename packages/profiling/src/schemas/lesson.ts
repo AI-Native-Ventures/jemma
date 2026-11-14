@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { DiagramSpecSchema } from './diagram'
+import { DiagramSpecSchema, SeniorDiagramSpecSchema } from './diagram'
 
 // Same union as logic/types.ts Format; the coordinator unifies them.
 export const FormatSchema = z.enum(['reading', 'diagram', 'audio'])
@@ -51,6 +51,8 @@ export const SeniorQuestionSchema = z.object({
   answerKind: z.enum(ANSWER_KINDS),
   choices: z.array(z.string()).optional(),
   form: FormSchema.optional(),
+  /** A picture the question needs (a graph to read, a triangle with an angle to find). It never holds the answer. Senior classes only. */
+  diagram: SeniorDiagramSpecSchema.optional(),
   difficulty: Difficulty,
   why: z.string(),
   rightWay: z.string(),
@@ -61,22 +63,22 @@ export const QuestionSchema = SeniorQuestionSchema
 export type Question = z.infer<typeof QuestionSchema>
 export type PrimaryQuestion = z.infer<typeof PrimaryQuestionSchema>
 
-/** One lesson around one kind of question. The fields, their order and the two rules are the same for both shapes. */
-const lessonAround = <Q extends z.ZodType<{ difficulty: 1 | 2 | 3 }>>(question: Q) =>
+/** One lesson around one kind of question and one set of pictures. The fields, their order and the two rules are the same for both shapes. */
+const lessonAround = <Q extends z.ZodType<{ difficulty: 1 | 2 | 3 }>, D extends z.ZodType>(question: Q, picture: D) =>
   z
     .object({
       format: FormatSchema,
       title: z.string(),
       minutes: z.number(),
       cards: z
-        .array(z.object({ heading: z.string(), body: z.string(), diagram: DiagramSpecSchema.optional() }))
+        .array(z.object({ heading: z.string(), body: z.string(), diagram: picture.optional() }))
         .optional(),
       diagram: z
         .object({
           title: z.string(),
           caption: z.string(),
-          steps: z.array(z.object({ caption: z.string(), diagram: DiagramSpecSchema })),
-          contrast: z.object({ caption: z.string(), diagram: DiagramSpecSchema }).optional(),
+          steps: z.array(z.object({ caption: z.string(), diagram: picture })),
+          contrast: z.object({ caption: z.string(), diagram: picture }).optional(),
         })
         .optional(),
       audio: z.object({ script: z.string() }).optional(),
@@ -94,10 +96,10 @@ const lessonAround = <Q extends z.ZodType<{ difficulty: 1 | 2 | 3 }>>(question: 
       }
     })
 
-export const PrimaryLessonSchema = lessonAround(PrimaryQuestionSchema)
+export const PrimaryLessonSchema = lessonAround(PrimaryQuestionSchema, DiagramSpecSchema)
 export type PrimaryLesson = z.infer<typeof PrimaryLessonSchema>
 
-export const SeniorLessonSchema = lessonAround(SeniorQuestionSchema)
+export const SeniorLessonSchema = lessonAround(SeniorQuestionSchema, SeniorDiagramSpecSchema)
 
 /** The lesson as every reader sees it: the wide, senior shape. */
 export const LessonSchema = SeniorLessonSchema

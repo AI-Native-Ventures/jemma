@@ -11,8 +11,8 @@ import { isBaselineClass, isSeniorMaths, subjectProfile, type ClassContext } fro
  * not the baseline also gains one line at the top: `Subject: <name>. Grade: <n>. Country: <country name>.`
  *
  * A senior class (Mathematics, Grades 7 to 12: `isSeniorMaths`) also gets the rules of its own: the lesson writer is told the four answer kinds that code marks
- * by meaning (number, expression, equation, point) and the form of an expression, the child is a "learner", and the reader of a practice answered on paper is told to
- * keep algebra as written. Such a rule is placed before the other rules on the same phrase, so that it wins. The baseline class never meets one (it is Grade 6).
+ * by meaning (number, expression, equation, point) and the form of an expression, when a question carries a picture (a graph on a grid, a triangle) and how
+ * to give one, the child is a "learner", and the reader of a practice answered on paper is told to keep algebra as written. Such a rule is placed before the other rules on the same phrase, so that it wins. The baseline class never meets one (it is Grade 6).
  *
  * The long view is not here: its prompt belongs to another packet. A rule never reads a file at run time; the tests check that
  * every `find` still occurs in its file, and the sha256 of each file, so an edit of a file cannot go unnoticed.
@@ -64,6 +64,21 @@ const seniorAnswers = (c: ClassContext) => {
     (za ? ' Money is in rand, decimals use a comma.' : '')
   )
 }
+
+/**
+ * What a senior class's lesson writer is told about pictures. The sentence of the file stays; the rule adds when a question carries a picture, which of
+ * the two new pictures to use for what, how to give a graph (by its constants: code draws it) and a triangle, the limits the save gate holds to, and that
+ * a label never holds the answer.
+ */
+const SENIOR_PICTURES =
+  'Use only the diagram kinds in the schema. ' +
+  'A question may carry a `diagram` when the picture is needed to answer it: reading a graph, a gradient, an intercept, a turning point, an angle or a side of a triangle. ' +
+  'Say in the `prompt` where to look ("this line", "the triangle"). ' +
+  'Use `coordinate_plane` for functions, graphs and analytical geometry, and `triangle` for trigonometry and geometry. ' +
+  'Give a graph by its constants (a `line` by `m` and `c`, a `parabola` by `a`, `p`, `q`): code draws it, so never list the points of a curve. ' +
+  'A `trig` graph takes x in degrees. A grid has `xMin` below `xMax` and `yMin` below `yMax`, at most 200 wide (720 across for a `trig` graph), at most 3 graphs and 12 points. ' +
+  'A `triangle` has exactly three `vertices` names; give `angles` (they add up to 180) only to draw its shape, and write the angle or side that is asked for as `x` in `angleLabels` or `sides`. ' +
+  'Never put the answer in a label. A lesson card or a diagram step may use these two pictures too.'
 
 export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
   draft_map: [
@@ -149,6 +164,8 @@ export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
     { find: 'for a Grade 6 child', when: (c) => c.grade !== 6, replace: (c) => `for a Grade ${c.grade} child` },
     { find: 'other than the maths.', when: notMaths, replace: () => 'other than the lesson.' },
     { find: 'with the working said out loud', when: notMaths, replace: () => 'with the ideas said out loud' },
+    // A senior class: graphs on a grid and triangles, in a card, a step or a question.
+    { find: 'Use only the diagram kinds in the schema.', when: isSeniorMaths, replace: () => SENIOR_PICTURES },
   ],
   guidance: [
     { find: 'The child is in Grade 1 to 7: plain, warm, short words.', when: outsidePrimary, replace: (c) => `The child is in Grade ${c.grade}: plain, warm, short words.` },

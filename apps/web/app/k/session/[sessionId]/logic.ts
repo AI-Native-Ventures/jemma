@@ -1,5 +1,5 @@
 import { completeAnswer, fillMissing, finishAnswer, missingPart, nextDifficulty, nextStage, paperQuestions, type MissingPart, type Stage } from '@jemma/profiling/logic'
-import type { Form, Question } from '@jemma/profiling/schemas'
+import type { Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -25,6 +25,8 @@ export type QuestionForChild = {
   choices?: string[]
   /** The form an expression has to be in, when the question asks for one (a senior class only). */
   form?: Form
+  /** The picture the question needs, drawn between its words and the answer box (a senior class only). It never holds the answer. */
+  diagram?: SeniorDiagramSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -46,6 +48,8 @@ export type MissedQuestion = {
   prompt: string
   render: Question['render']
   terms?: string[]
+  /** The picture of the question, drawn under its heading (a senior class only). */
+  diagram?: SeniorDiagramSpec
   wrote: string
   /** The answer on paper could not be read: the screen says so under "You wrote" instead of showing an empty answer. */
   unread?: boolean
@@ -69,6 +73,7 @@ export function stripQuestion(
     answerKind: q.answerKind,
     ...(q.choices ? { choices: q.choices } : {}),
     ...(q.form ? { form: q.form } : {}),
+    ...(q.diagram ? { diagram: q.diagram } : {}),
   }
 }
 
@@ -190,6 +195,7 @@ export function missedOf(items: StoredItem[]): MissedQuestion[] {
       prompt: item.question.prompt,
       render: item.question.render,
       ...(item.question.terms ? { terms: item.question.terms } : {}),
+      ...(item.question.diagram ? { diagram: item.question.diagram } : {}),
       // An answer saved before the missing number was put back into its fraction is shown completed too.
       wrote: item.unread ? '' : answerText(item.question, finishAnswer(item.question, item.answer).stored),
       ...(item.unread ? { unread: true } : {}),

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { DiagramSpec } from '@jemma/profiling/schemas'
+import type { SeniorDiagramSpec } from '@jemma/profiling/schemas'
 import { DiagramView } from '@/components/diagrams'
 import { IconLabel } from '@/components/ui/IconLabel'
 import type { LessonForChild } from '../[sessionId]/types'
@@ -11,7 +11,7 @@ import { DIAGRAM_ICON, LearnBadge } from './LearnCards'
 
 type Step = NonNullable<LessonForChild['diagram']>['steps'][number]
 
-const rowsOf = (spec: DiagramSpec): RowSpec[] | null => (spec.kind === 'fraction_bar' ? spec.rows : null)
+const rowsOf = (spec: SeniorDiagramSpec): RowSpec[] | null => (spec.kind === 'fraction_bar' ? spec.rows : null)
 
 /** What one step draws. Rows that only restate the amount above them are folded into one cut-up row. */
 function stepRows(step: Step, previous?: Step) {

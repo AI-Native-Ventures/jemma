@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { parseAnswer } from '../../logic/answers'
 import { isMeaningKind, meaningKeyProblem } from '../../logic/meaning'
+import { pictureProblem } from '../../logic/picture'
 import { FormatSchema, LessonSchema, type Format, type Lesson, type Question } from '../../schemas/lesson'
 import { resolveSpeech } from '../../speech'
 import { assertInSchool, contextFor, defineTool, logActivity, ok, type ToolContext } from '../context'
@@ -9,10 +10,18 @@ import type { Json } from '../../db'
 const MIN_PER_LEVEL = 4
 
 /**
- * Why an answer does not fit its `answerKind`, or null when it does. A key of the four senior kinds (number, expression, equation, point) must be
- * readable by its kind (logic/meaning.ts); the old kinds are checked by `parseAnswer` exactly as they always were.
+ * Why a question cannot be used, or null when it can: its answer does not fit its `answerKind`, or its picture makes no sense. A key of the four senior
+ * kinds (number, expression, equation, point) must be readable by its kind (logic/meaning.ts); the old kinds are checked by `parseAnswer` exactly as
+ * they always were. The answer is looked at first. A picture (senior classes only) is checked by `pictureProblem`.
  */
 export function answerProblem(q: Question): string | null {
+  const answer = answerKeyProblem(q)
+  if (answer) return answer
+  const picture = q.diagram ? pictureProblem(q.diagram) : null
+  return picture ? `picture: ${picture}` : null
+}
+
+function answerKeyProblem(q: Question): string | null {
   if (isMeaningKind(q.answerKind)) return meaningKeyProblem(q.answerKind, q.answer)
   const parsed = parseAnswer(q.answer)
   const fine =
@@ -29,7 +38,7 @@ export function badQuestions(lesson: Lesson): { warmup: number[]; questions: num
   return { warmup: bad(lesson.warmup), questions: bad(lesson.questions) }
 }
 
-const DIAGRAM_WORDS: Record<string, string> = {
+export const DIAGRAM_WORDS: Record<string, string> = {
   fraction_bar: 'fraction bars',
   number_line: 'a number line',
   area_model: 'an area model',
@@ -37,6 +46,8 @@ const DIAGRAM_WORDS: Record<string, string> = {
   bar_chart: 'a bar chart',
   shape_2d: 'shapes',
   grid_area: 'a grid',
+  coordinate_plane: 'graphs on a grid',
+  triangle: 'triangles',
 }
 
 function how(lesson: Lesson): string {
