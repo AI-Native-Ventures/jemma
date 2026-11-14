@@ -71,6 +71,8 @@ const practiceEvents = async (childId: string) =>
   (await admin().from('events').select('id, status, payload').eq('type', 'practice.requested').eq('payload->>childId', childId).order('created_at')).data ?? []
 
 const NEVER = /%|percent|\bgrade\b|\brank\b|classmate|class average|strand|subtopic/i
+/** The words of the screen itself. The laptop's sidebar (outside <main>) names the learner's class, "Grade 6 · Hillview Primary", which is not a mark. */
+const screenText = (page: Page) => page.locator('main').first().innerText()
 
 test.describe('My maths', () => {
   test('Amina, after the marked and shared test, sees her counts, opens Fractions, taps Practise on a topic and lands on "Jemma is writing your practice."', async ({ page }, testInfo) => {
@@ -93,7 +95,7 @@ test.describe('My maths', () => {
       await expect(all.getByRole('link', { name: new RegExp(label) })).toBeVisible()
     }
     await expect(all.getByRole('link', { name: /Fractions/ })).toContainText(/\d+ of \d+ right/)
-    expect(await page.locator('body').innerText()).not.toMatch(NEVER)
+    expect(await screenText(page)).not.toMatch(NEVER)
     await noSidewaysScroll(page)
     await proof(page, 'my-maths')
 
@@ -101,11 +103,14 @@ test.describe('My maths', () => {
     await all.getByRole('link', { name: /Fractions/ }).click()
     await expect(page).toHaveURL(/\/k\/maths\/fractions$/, { timeout: 45_000 })
     await check(page.getByRole('heading', { level: 1, name: 'Fractions' })).toBeVisible()
-    await expect(page.getByRole('link', { name: /My maths/ })).toBeVisible()
+    // the link back is the one inside the page: the tab bar and the sidebar (also called "My maths") sit outside <main>
+    const back = page.locator('main a[href="/k/maths"]')
+    await expect(back).toBeVisible()
+    await expect(back).toHaveText(/My maths/)
     const rows = page.getByRole('listitem')
     expect(await rows.count()).toBeGreaterThan(0)
     await expect(page.getByText(/\d+ of \d+ right|No score yet/).first()).toBeVisible()
-    expect(await page.locator('body').innerText()).not.toMatch(NEVER)
+    expect(await screenText(page)).not.toMatch(NEVER)
     await noSidewaysScroll(page)
     await proof(page, 'my-maths-fractions')
 

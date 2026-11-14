@@ -54,7 +54,12 @@ test.describe('the CAPS map', () => {
 
       // The review screen: Term 1 with "Algebraic expressions". No document, no model, no waiting.
       await check(page).toHaveURL(new RegExp(`/t/${classId}/curriculum/map$`))
-      await check(page.getByText('Algebraic expressions').first()).toBeVisible()
+      // The review screen opens on the term the calendar is in (Term 4 from October), so Term 1 is chosen first.
+      // A tap before the page has loaded its scripts does nothing, so the tap is made again until the term shows.
+      await expect(async () => {
+        await page.getByRole('button', { name: 'Term 1', exact: true }).click()
+        await expect(page.getByText('Algebraic expressions').first()).toBeVisible({ timeout: 3_000 })
+      }).toPass({ timeout: 45_000 })
       await expect(page.getByText('Term 1').first()).toBeVisible()
       const db = admin()
       const maps = (await db.from('curriculum_maps').select('id, status').eq('class_id', classId)).data!

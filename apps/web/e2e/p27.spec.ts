@@ -83,7 +83,8 @@ test('nothing tonight after the session is done', async ({ page }, testInfo) => 
   sandbox = await openSandbox(page, { stage: 'session_done', role: 'learner' })
   await page.goto('/k')
   await expect(page.getByRole('heading', { name: /^Nothing new tonight, Amina! Your next lesson is on \w+day\.$/ })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Adding decimals' })).toBeVisible()
+  // The card of the next lesson (its heading is #wed). The suggestion below it can name the same topic, so the heading is not looked for on its own.
+  await expect(page.locator('h2#wed')).toHaveText('Adding decimals')
   // nothing is planned for tonight and Amina has gaps: her home suggests what to practise (the card that said "Keep a fixed gap fixed" was a link to a list)
   await expect(page.getByText('Suggested for you')).toBeVisible()
   await expect(page.getByRole('button', { name: /^Practise / })).toBeVisible()
