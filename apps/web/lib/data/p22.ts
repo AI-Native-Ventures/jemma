@@ -1,5 +1,6 @@
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
+import { kindsOfSchools } from './own-parent'
 
 export type FoundClass = {
   classId: string
@@ -140,6 +141,8 @@ export type ChildCard = {
   firstName: string
   grade: number
   schoolName: string
+  /** True for a child whose school does not use Jemma (P99): the card says "On their own" where a school's name would be. */
+  alone?: boolean
   needs: number
   /** Tonight's planned session, for the card's second line. */
   tonight: { topic: string; minutes: number | null } | null
@@ -156,11 +159,13 @@ export async function getParentHome(userId: string): Promise<ParentHome> {
   // The parent's children, not their private workspaces (row level security lets the parent read those too, but they are not another child).
   const { data: kids } = await supabase
     .from('children')
-    .select('id, first_name, grade, schools(name)')
+    .select('id, first_name, grade, school_id, schools(name)')
     .is('private_of', null)
     .order('first_name')
   if (kids && kids.length > 0) {
     const ids = kids.map((k) => k.id)
+    // A parent cannot read a school (the parent belongs to none), so the kind of each school, to tell a child on their own, is read apart.
+    const kinds = await kindsOfSchools(kids.map((k) => k.school_id))
     const today = new Date().toISOString().slice(0, 10)
     const [{ data: needs }, { data: sessions }] = await Promise.all([
       supabase.from('needs_you_items').select('child_id').eq('owner_id', userId).eq('status', 'open').in('child_id', ids),
@@ -180,6 +185,7 @@ export async function getParentHome(userId: string): Promise<ParentHome> {
           firstName: k.first_name,
           grade: k.grade,
           schoolName: k.schools?.name ?? '',
+          alone: kinds.get(k.school_id) === 'private',
           needs: needs?.filter((n) => n.child_id === k.id).length ?? 0,
           tonight: s?.topic_name ? { topic: s.topic_name, minutes: s.planned_minutes } : null,
         }

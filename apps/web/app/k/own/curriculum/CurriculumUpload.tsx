@@ -18,7 +18,7 @@ const pick = 'flex min-h-[60px] w-full cursor-pointer items-center justify-cente
  * kind of each file are checked here before anything is sent (the teacher's own checks; the server checks again), a photo is made smaller, and the files go
  * through the learner's upload route (`uploadOwnCurriculum`, see lib/upload-route.ts). A name is needed before a picker opens, because choosing the files sends them.
  */
-export function CurriculumUpload({ defaultGrade }: { defaultGrade: number }) {
+export function CurriculumUpload({ defaultGrade, alone = false }: { defaultGrade: number; alone?: boolean }) {
   const router = useRouter()
   const [grade, setGrade] = useState(defaultGrade)
   const [name, setName] = useState('')
@@ -68,7 +68,7 @@ export function CurriculumUpload({ defaultGrade }: { defaultGrade: number }) {
         </select>
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="own-name" className="text-[15px] font-semibold">Name it, like &quot;My school&apos;s Term 1 plan&quot;</label>
+        <label htmlFor="own-name" className="text-[15px] font-semibold">{alone ? 'Name it, like "Term 1 plan"' : 'Name it, like "My school\'s Term 1 plan"'}</label>
         <input id="own-name" type="text" value={name} maxLength={NAME_MAX} autoComplete="off" onChange={(e) => setName(e.target.value)} className={field} />
       </div>
       <input ref={photos} type="file" accept="image/jpeg,image/png" capture="environment" multiple hidden onChange={(e) => { send(e.target.files); e.target.value = '' }} />

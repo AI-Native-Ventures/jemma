@@ -1,3 +1,4 @@
+import { isOwnRecord } from '@jemma/profiling/own-names'
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { getOwnCurriculumView } from '@/lib/data/own-uploads'
@@ -14,7 +15,7 @@ export const dynamic = 'force-dynamic'
 export default async function OwnCurriculumMapPage({ params }: { params: Promise<{ mapId: string }> }) {
   const { mapId } = await params
   const { child } = await myChild()
-  if (!child.private_of) redirect('/k/own')
+  if (!isOwnRecord(child)) redirect('/k/own')
   const view = await getOwnCurriculumView(child.id, mapId)
   if (!view) notFound()
   return <CurriculumScreen view={view} firstName={child.first_name} />

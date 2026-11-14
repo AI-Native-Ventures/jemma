@@ -141,15 +141,18 @@ test.describe('My own', () => {
     const sb = await createSandbox(db, { stage: 'start' })
     made.push(sb.sandboxId)
     const before = (await db.from('schools').select('id, kind').eq('sandbox_id', sb.sandboxId)).data!
-    expect(before.map((s) => s.kind).sort()).toEqual(['private', 'school'])
-    const personal = before.find((s) => s.kind === 'private')!.id
-    expect((await db.from('children').select('id').eq('school_id', personal)).data).toHaveLength(1)
+    // Amina's personal school and Kagiso's (P99, the child of Zanele M): each holds one child.
+    expect(before.map((s) => s.kind).sort()).toEqual(['private', 'private', 'school'])
+    const personals = before.filter((s) => s.kind === 'private').map((s) => s.id)
+    for (const personal of personals) expect((await db.from('children').select('id').eq('school_id', personal)).data).toHaveLength(1)
 
     await deleteSandbox(db, sb.sandboxId)
     made.splice(0)
     expect((await db.from('schools').select('id').eq('sandbox_id', sb.sandboxId)).data).toEqual([])
-    expect((await db.from('children').select('id').eq('school_id', personal)).data).toEqual([])
-    expect((await db.from('classes').select('id').eq('school_id', personal)).data).toEqual([])
+    for (const personal of personals) {
+      expect((await db.from('children').select('id').eq('school_id', personal)).data).toEqual([])
+      expect((await db.from('classes').select('id').eq('school_id', personal)).data).toEqual([])
+    }
   })
 
   test('a copy that starts from an empty school has no personal school', async () => {

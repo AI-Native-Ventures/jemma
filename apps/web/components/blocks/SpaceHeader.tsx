@@ -10,7 +10,8 @@ export type SpaceHeaderProps = {
   demo?: boolean
   /** Where the Demo badge goes (the "switch who you are" screen). */
   demoHref?: string
-  notificationsHref?: string
+  /** Where the bell goes. `null` shows no bell. */
+  notificationsHref?: string | null
   /** Unread count; the coral dot shows when above 0. */
   unread?: number
   /** First letter in a coral circle, as on the parent header. */
@@ -63,6 +64,7 @@ export function SpaceHeader({
             <DemoBadge />
           </Link>
         ) : null}
+        {notificationsHref !== null ? (
         <Link
           href={notificationsHref}
           aria-label={unread > 0 ? `Notifications, ${unread} new` : 'Notifications'}
@@ -76,6 +78,7 @@ export function SpaceHeader({
             />
           ) : null}
         </Link>
+        ) : null}
         <Link
           href={settingsHref}
           aria-label={settingsLabel}

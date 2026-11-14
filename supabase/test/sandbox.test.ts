@@ -90,9 +90,10 @@ describe('sandboxes', () => {
   test('reset restores the start stage', async () => {
     const s = await make()
     const before = await loginsOf(s.sandboxId)
-    // Amina's own private workspace comes with every copy: a personal school tied to the sandbox, which a reset takes away with the school.
+    // Amina's own private workspace and Kagiso's (the child of Zanele M, whose school does not use Jemma) come with every copy: two personal schools tied to the
+    // sandbox, which a reset takes away with the school.
     const personalBefore = await ok(admin.from('schools').select('id').eq('sandbox_id', s.sandboxId).eq('kind', 'private'))
-    expect(personalBefore).toHaveLength(1)
+    expect(personalBefore).toHaveLength(2)
     await ok(admin.from('curriculum_maps').insert({ class_id: s.classId, status: 'draft' }))
     const [test] = await ok(
       admin.from('tests').insert({ class_id: s.classId, title: 'Extra', out_of: 10 }).select('id'),
@@ -109,7 +110,7 @@ describe('sandboxes', () => {
     expect(after.school_id).not.toBe(before.school_id)
     expect(await ok(admin.from('schools').select('id').eq('id', before.school_id))).toEqual([])
     expect(await ok(admin.from('schools').select('id').in('id', personalBefore.map((p) => p.id)))).toEqual([])
-    expect(await ok(admin.from('schools').select('id').eq('sandbox_id', s.sandboxId).eq('kind', 'private'))).toHaveLength(1)
+    expect(await ok(admin.from('schools').select('id').eq('sandbox_id', s.sandboxId).eq('kind', 'private'))).toHaveLength(2)
     // The home class is the oldest of the four (6B Mathematics): the classes of a copy come back in no order unless they are asked for in one.
     const classes = await ok(admin.from('classes').select('id, name, join_code').eq('school_id', after.school_id).order('created_at'))
     const [cls] = classes
@@ -430,7 +431,7 @@ describe('sandboxes', () => {
     expect(row.kind).toBe('hillview')
     const logins = row.logins as Record<string, unknown>
     expect(Object.keys((logins.teachers ?? {}) as object).sort()).toEqual(['dlamini', 'okafor'])
-    expect(Object.keys((logins.parents ?? {}) as object).sort()).toEqual(['grace', 'nomsa', 'peter'])
+    expect(Object.keys((logins.parents ?? {}) as object).sort()).toEqual(['grace', 'nomsa', 'peter', 'zanele'])
     expect(logins.learners).toEqual({}) // a learner's login is made when someone picks them
 
     const profiles = await ok(admin.from('profiles').select('user_id, role, display_name, school_id').eq('school_id', s.schoolId))

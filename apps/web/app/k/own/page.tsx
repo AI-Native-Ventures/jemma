@@ -12,5 +12,5 @@ export const dynamic = 'force-dynamic'
 export default async function AddOwnWorkPage() {
   const home = await getOwnHome()
   if (home.workspace === 'school') return <NotOwnScreen firstName={home.firstName} />
-  return <OwnHomeScreen firstName={home.firstName} tests={home.tests} curricula={home.curricula} />
+  return <OwnHomeScreen firstName={home.firstName} tests={home.tests} curricula={home.curricula} alone={home.alone} />
 }

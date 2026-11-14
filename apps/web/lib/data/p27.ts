@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { HANDOVER_COOKIE, verifyHandover } from '../handover'
 import { buildMyMaths, type MyMaths, type MyMathsSuggestion } from '@jemma/profiling/logic'
 import { loadMyMathsInput } from '@jemma/profiling/orchestrator'
+import { isIndependent, isOwnRecord } from '@jemma/profiling/own-names'
 import { LessonSchema, QuestionSchema, type Lesson, type SeniorDiagramSpec } from '@jemma/profiling/schemas'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
@@ -35,6 +36,8 @@ export type LearnerToday = {
   firstName: string
   /** Which workspace the home shows: "My school" or "My own". */
   workspace: Workspace
+  /** True for a child whose school does not use Jemma (P99): the record is its own workspace, so the home has no switch and says "Your own practice." */
+  alone?: boolean
   tonight: TonightCard | null
   next: NextCard | null
   gems: GapGem[]
@@ -67,7 +70,33 @@ export const lessonHasQuestions = (content: unknown): boolean =>
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 export const dayName = (iso: string) => DAYS[new Date(`${iso}T00:00:00Z`).getUTCDay()]!
 
-const CHILD_COLUMNS = 'id, first_name, parent_first_name, parent_relation, grade, private_of, schools(name)'
+const CHILD_COLUMNS = 'id, school_id, first_name, parent_first_name, parent_relation, grade, private_of, schools(name, kind)'
+
+/**
+ * The kind of a school ('school' or 'private'), read with the service client for one school id. A parent's hand-over reads a child under the parent's
+ * own login, and row level security hides every school but the parent's own (a parent has none), so the kind cannot come with the child there. It reads
+ * the kind of the school of a child the request has already been allowed to read, nothing else. A school that cannot be read counts as a school.
+ */
+async function schoolKindOf(schoolId: string | undefined): Promise<string> {
+  if (!schoolId) return 'school'
+  try {
+    const { data } = await createSupabaseAdmin().from('schools').select('kind').eq('id', schoolId).maybeSingle()
+    return data?.kind ?? 'school'
+  } catch {
+    return 'school'
+  }
+}
+
+/**
+ * The child row with the school it is in, always filled: the learner's own client reads their own school (kind and all); a twin is an own record by
+ * `private_of` and needs no school; only a parent's hand-over of a child with a school has to read the kind apart (`schoolKindOf`).
+ * After this, `isOwnRecord(child)` and `isIndependent(child)` give the right answer for every child the learner's screens work on.
+ */
+async function withSchool<T extends { school_id: string; private_of: string | null; schools: { name: string; kind: string } | null }>(row: T) {
+  const seen = row.schools?.kind
+  const kind = seen ?? (row.private_of ? 'private' : await schoolKindOf(row.school_id))
+  return { ...row, schools: { name: row.schools?.name ?? '', kind } }
+}
 
 /** The workspace this device chose (the cookie `jemma_ws`). Outside a request there is no cookie: "My school". */
 async function workspaceChosen(): Promise<Workspace> {
@@ -89,12 +118,12 @@ async function findLearner() {
   const { data: auth } = await supabase.auth.getUser()
   if (!auth.user) notFound()
   const { data: own } = await supabase.from('children').select(CHILD_COLUMNS).eq('user_id', auth.user.id).is('private_of', null).maybeSingle()
-  if (own) return { supabase, userId: auth.user.id, named: own }
+  if (own) return { supabase, userId: auth.user.id, named: await withSchool(own) }
   const handover = await verifyHandover((await cookies()).get(HANDOVER_COOKIE)?.value)
   if (!handover) notFound()
   const { data: named } = await supabase.from('children').select(CHILD_COLUMNS).eq('id', handover.childId).maybeSingle()
   if (!named) notFound()
-  return { supabase, userId: auth.user.id, named }
+  return { supabase, userId: auth.user.id, named: await withSchool(named) }
 }
 
 /**
@@ -108,10 +137,12 @@ async function findLearner() {
  */
 export const myChild = cache(async () => {
   const { supabase, named } = await findLearner()
-  if (named.private_of) return { supabase, child: named }
+  // A twin, or a child whose school does not use Jemma (P99): the record IS the learner's own workspace, whatever the cookie says. No school workspace
+  // exists for such a child, so there is nothing to switch to and no twin to look for.
+  if (isOwnRecord(named)) return { supabase, child: named }
   if ((await workspaceChosen()) === 'own') {
     const { data: twin } = await supabase.from('children').select(CHILD_COLUMNS).eq('private_of', named.id).maybeSingle()
-    if (twin) return { supabase, child: twin }
+    if (twin) return { supabase, child: await withSchool(twin) }
   }
   return { supabase, child: named }
 })
@@ -216,10 +247,10 @@ export async function getLearnerToday(): Promise<LearnerToday> {
   // can practise when it has something to suggest.
   const decided = asked?.status === 'queued' || asked?.status === 'running' || (asked?.status === 'failed' && !tonight)
   // In a private workspace the suggestion comes from one grade, the same one "My maths" shows first.
-  const classId = tonight || decided || !child.private_of ? undefined : ((await defaultOwnClass(child.id)) ?? undefined)
+  const classId = tonight || decided || !isOwnRecord(child) ? undefined : ((await defaultOwnClass(child.id)) ?? undefined)
   const suggestion = tonight || decided ? null : ((await myMathsOf(child.id, now, classId)).suggestions[0] ?? null)
   const practice = practiceState({ event: asked?.status ?? null, session: tonight !== null, canPractise: suggestion !== null })
-  return { firstName: child.first_name, workspace: child.private_of ? 'own' : 'school', tonight, next, gems, fixed, toGo: all.length - fixed, practice, suggestion }
+  return { firstName: child.first_name, workspace: isOwnRecord(child) ? 'own' : 'school', alone: isIndependent(child), tonight, next, gems, fixed, toGo: all.length - fixed, practice, suggestion }
 }
 
 export type SessionPage = {

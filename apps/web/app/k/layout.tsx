@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { Sidebar, TabBar } from '@/components/blocks'
 import { requireRole } from '@/lib/auth'
+import { isOwnRecord } from '@jemma/profiling/own-names'
 import { myChild } from '@/lib/data/p27'
 import { initialsOf } from '@/lib/initials'
 import { HANDOVER_COOKIE, handoverAllows, isOwnHandover } from '@/lib/handover'
@@ -55,7 +56,7 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
 
   const active = await activeTab('learner', '/k')
   const name = `${child.first_name}'s Jemma`
-  const subtitle = `Grade ${child.grade} · ${child.private_of ? 'My own' : (child.schools?.name ?? '')}`
+  const subtitle = `Grade ${child.grade} · ${isOwnRecord(child) ? 'My own' : (child.schools?.name ?? '')}`
   const bare = isBare(pathname)
 
   return (

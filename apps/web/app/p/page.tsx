@@ -121,7 +121,7 @@ function Children({ kids, first, initials }: { kids: ChildCard[]; first: string;
                 </span>
                 <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <span style={{ fontSize: 22, fontWeight: 600 }}>{k.firstName}</span>
-                  <span style={{ fontSize: 15, color: body }}>Grade {k.grade} · {k.schoolName}</span>
+                  <span style={{ fontSize: 15, color: body }}>Grade {k.grade} · {k.alone ? 'On their own' : k.schoolName}</span>
                 </span>
                 {k.needs > 0 ? (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px 6px 8px', borderRadius: 999, background: '#FF6A4D', color: ink, fontSize: 13, fontWeight: 600, flex: 'none' }}>

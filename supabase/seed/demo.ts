@@ -10,8 +10,9 @@ import { AMINA_ACTIVITIES, AWAY_DAY_INDEX, CAST, CHILD_PIN, EMPTY_SCHOOL, EMPTY_
 import { FIXED_GAPS, FORMAT_FAMILY, FORMAT_TRIALS, TERM3_ROWS } from './fixtures/history'
 import { writeApprovedMap } from '../../packages/profiling/src/curriculum/caps-map'
 import { capsClassMaps } from './fixtures/caps-maps'
-import { HILLVIEW_CLASSES, HILLVIEW_LINKS, awayOnDay, HILLVIEW_PARENTS, HILLVIEW_TEACHERS, madeUpClasses, madeUpLearner } from './fixtures/hillview'
+import { HILLVIEW_CLASSES, HILLVIEW_LINKS, INDEPENDENT_FAMILY, awayOnDay, HILLVIEW_PARENTS, HILLVIEW_TEACHERS, madeUpClasses, madeUpLearner } from './fixtures/hillview'
 import { longHistory } from './fixtures/long-history'
+import { independentChildRow, independentClassRows, independentLinkRow, independentMarkedTest, independentMaps, independentPractice, independentSchoolRow } from './fixtures/own-independent'
 import { ownClassRows, ownGapRow, ownItemRows, ownLessonRow, ownMarkedTest, ownMaps, ownPaperRow, ownPractice, ownResultRows, ownSchoolRow, ownSessionRow, ownTestLogRow, ownTwinRow } from './fixtures/own-workspace'
 import { PATTERN_LEARNERS, wordPatterns } from './fixtures/long-view-wording'
 import {
@@ -402,6 +403,62 @@ async function buildHillview(admin: JemmaDb, sandboxId: string, stage: SandboxSt
             'own gap',
           ),
           ok(admin.from('activity_log').insert(ownTestLogRow({ schoolId: personal.id, childId: twin.id, at: at(0) })), 'activity_log (own marked test)'),
+        ])
+      })(),
+      // Kagiso, the family whose child's school does not use Jemma (P99): his mum Zanele M added him on his own in Grade 8. A personal school (tied to the
+      // sandbox, so the clean-up takes it), ONE child row with no school behind it, a class for Grade 8 and Grade 9 with the approved CAPS maps, Zanele's approved
+      // link, two finished practice sessions in Grade 8 with their lessons, and one marked test already read: the rows of Amina's own workspace, written for a
+      // child that has no school workspace. Nothing of Hillview is touched.
+      (async () => {
+        const zaneleId = parentLogin[INDEPENDENT_FAMILY.parent]!.userId
+        const zanele = HILLVIEW_PARENTS.find((p) => p.key === INDEPENDENT_FAMILY.parent)!
+        const personal = await ok(admin.from('schools').insert(independentSchoolRow(SCHOOL.country, sandboxId)).select('id').single(), 'independent school')
+        const [kid, classes] = await Promise.all([
+          ok(
+            admin.from('children').insert(independentChildRow({ schoolId: personal.id, parent: { firstName: zanele.displayName.split(' ')[0]!, relation: zanele.relation } })).select('id').single(),
+            'independent child',
+          ),
+          ok(admin.from('classes').insert(independentClassRows({ schoolId: personal.id, parentId: zaneleId, year, code: randomCode })).select('id, grade'), 'independent classes'),
+        ])
+        const homeClass = classes.find((c) => c.grade === INDEPENDENT_FAMILY.grade)!
+        const [, mapped] = await Promise.all([
+          Promise.all([
+            ok(admin.from('enrolments').insert(classes.map((c) => ({ class_id: c.id, child_id: kid.id }))), 'independent enrolments'),
+            ok(admin.from('parent_links').insert(independentLinkRow({ parentId: zaneleId, childId: kid.id, classId: homeClass.id, at: at(120) })), 'independent link'),
+          ]),
+          Promise.all(
+            independentMaps().map(async (m) => {
+              const classIdOf = classes.find((c) => c.grade === m.grade)!.id
+              const { topicRows } = await writeApprovedMap(admin, { classId: classIdOf, stored: m.stored, approvedAt: at(0), rows: m.rows })
+              await ok(admin.from('activity_log').insert({ school_id: personal.id, class_id: classIdOf, at: at(0), text: m.log, tool: 'use_caps_map' }), 'activity_log (independent CAPS map)')
+              return { grade: m.grade, topicRows }
+            }),
+          ),
+        ])
+        const topicIds = new Map(mapped.find((m) => m.grade === INDEPENDENT_FAMILY.grade)!.topicRows.map((t) => [t.name, t.id]))
+        const topicIdOf = (name: string) => topicIds.get(name) ?? (() => { throw new Error(`demo seed: topic not on the Grade ${INDEPENDENT_FAMILY.grade} map: ${name}`) })()
+        const practice = independentPractice()
+        const lessons = await ok(
+          admin.from('lessons').insert(practice.map((p) => ownLessonRow(p, { childId: kid.id, topicId: topicIdOf(p.topicName) }))).select('id, topic_name'),
+          'independent lessons',
+        )
+        const sessions = await ok(
+          admin
+            .from('sessions')
+            .insert(practice.map((p) => ownSessionRow(p, { childId: kid.id, lessonId: lessons.find((l) => l.topic_name === p.topicName)!.id, topicId: topicIdOf(p.topicName) }, now)))
+            .select('id, topic_name'),
+          'independent sessions',
+        )
+        await ok(admin.from('session_items').insert(practice.flatMap((p) => ownItemRows(p, sessions.find((s) => s.topic_name === p.topicName)!.id))), 'independent session items')
+        const markedTest = independentMarkedTest()
+        const paper = await ok(admin.from('papers').insert(ownPaperRow(kid.id, now, markedTest)).select('id').single(), 'independent marked test')
+        const results = await ok(admin.from('question_results').insert(ownResultRows(markedTest, { paperId: paper.id, childId: kid.id, topicIdOf })).select('id, n, correct'), 'independent marked results')
+        await Promise.all([
+          ok(
+            admin.from('gaps').insert(ownGapRow({ childId: kid.id, topicId: topicIdOf(markedTest.gapTopicName), topicName: markedTest.gapTopicName, wrongResultIds: results.filter((r) => !r.correct).map((r) => r.id) })),
+            'independent gap',
+          ),
+          ok(admin.from('activity_log').insert(ownTestLogRow({ schoolId: personal.id, childId: kid.id, at: at(0), test: markedTest })), 'activity_log (independent marked test)'),
         ])
       })(),
       ensureSampleFiles(admin, { loadSheet }),

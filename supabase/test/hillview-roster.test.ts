@@ -40,7 +40,7 @@ describe('the roster of Hillview Primary', () => {
   })
 
   test('parents: Thandi M and Amina; one parent with two children in different grades (5A and 7A); one child with two guardians; five or more with none', () => {
-    expect(HILLVIEW_PARENTS.map((p) => p.displayName)).toEqual(['Thandi M', 'Nomsa K', 'Peter A', 'Grace A'])
+    expect(HILLVIEW_PARENTS.map((p) => p.displayName)).toEqual(['Thandi M', 'Nomsa K', 'Peter A', 'Grace A', 'Zanele M'])
     const made = madeUpClasses(YEAR)
     const childOf = (l: (typeof HILLVIEW_LINKS)[number]) => madeUpLearner(made, l.classKey, l.at)!.firstName
     const byParent = new Map<string, string[]>()

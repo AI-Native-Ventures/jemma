@@ -8,7 +8,7 @@ import { createSupabaseServer } from '@/lib/supabase/server'
 // class's own teacher for the teacher's read-only view. The cookie that says which workspace is on screen is in `./workspace`.
 
 export { capsClassName, isCapsClassName, OwnWorkspaceError, OWN_GRADES } from '@jemma/profiling/own'
-export type { AddedGrade, OwnClass, OwnGrade, OwnGap, OwnPractised, OwnSummary } from '@jemma/profiling/own'
+export type { AddedChild, AddedGrade, OwnClass, OwnGrade, OwnGap, OwnPractised, OwnSummary } from '@jemma/profiling/own'
 
 /**
  * The learner's private workspace: the twin of the school child, made on the first call (a personal school named "{first name}'s own" and the twin,
@@ -25,6 +25,15 @@ export async function ensureOwnWorkspace(childId: string, actorUserId: string): 
  */
 export async function addOwnGrade(twinId: string, grade: number, actorUserId: string): Promise<own.AddedGrade> {
   return own.addOwnGrade(createSupabaseAdmin(), twinId, grade, actorUserId)
+}
+
+/**
+ * A parent adds a child whose school does not use Jemma (P99): the personal school, the child (one row, its own record is its My own), the CAPS class of
+ * the grade with its map (South Africa) and the parent's approved link. The caller has checked that `parentId` is the signed-in parent. A name, a grade or
+ * a country that cannot be used throws `OwnWorkspaceError` with one plain sentence.
+ */
+export async function addChildAlone(input: { parentId: string; firstName: string; grade: number; country: string }): Promise<own.AddedChild> {
+  return own.addChildAlone(createSupabaseAdmin(), input)
 }
 
 /** The twin of a school child, or null when the learner has not opened "My own". */

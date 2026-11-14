@@ -70,10 +70,10 @@ const TEST_NOTE: Record<OwnTestRow['state'], string> = { reading: 'Marked test: 
 const CURRICULUM_NOTE: Record<OwnCurriculumState, string> = { reading: 'Jemma is reading it', draft: 'Ready to check', approved: 'Done', failed: 'Could not be read' }
 
 /** The home: two big choices, then what the learner added (marked tests with their state and result, own curricula with their state). */
-export function OwnHomeScreen({ firstName, tests, curricula }: { firstName: string; tests: OwnTestRow[]; curricula: OwnCurriculumRow[] }) {
+export function OwnHomeScreen({ firstName, tests, curricula, alone = false }: { firstName: string; tests: OwnTestRow[]; curricula: OwnCurriculumRow[]; alone?: boolean }) {
   return (
     <Shell firstName={firstName}>
-      <WorkspaceSwitch current="own" />
+      <WorkspaceSwitch current="own" alone={alone} />
       <Title>Add your own work</Title>
       <div className="flex flex-col gap-3">
         <Link href="/k/own/test" className={choiceCard}>
@@ -82,7 +82,7 @@ export function OwnHomeScreen({ firstName, tests, curricula }: { firstName: stri
         </Link>
         <Link href="/k/own/curriculum" className={choiceCard}>
           <span className="text-[22px] leading-[1.2] font-bold">Your own curriculum</span>
-          <span className="text-[16px] leading-[1.4] text-body">Your school&apos;s plan or a book&apos;s contents. Jemma turns it into topics you check.</span>
+          <span className="text-[16px] leading-[1.4] text-body">{alone ? "A plan or a book's contents." : "Your school's plan or a book's contents."} Jemma turns it into topics you check.</span>
         </Link>
       </div>
       {tests.length + curricula.length > 0 ? (

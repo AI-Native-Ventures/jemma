@@ -21,7 +21,7 @@ const ago = (days: number) => new Date(Date.now() - days * DAY).toISOString()
 type Logins = { teacher: { userId: string; email: string; password: string } } & Record<string, unknown>
 type Made = Sandbox & { userIds: string[]; logins: Logins }
 
-/** Every user id in a sandbox's logins: Ms Banda, the other teachers, the four parents and Amina (a Hillview copy has eight), or the one teacher of an empty school. */
+/** Every user id in a sandbox's logins: Ms Banda, the other teachers, the five parents and Amina (a Hillview copy has nine), or the one teacher of an empty school. */
 function userIdsOf(value: unknown): string[] {
   if (!value || typeof value !== 'object') return []
   const v = value as Record<string, unknown>
@@ -116,7 +116,7 @@ describe('sweepOldSandboxes on real rows', () => {
     }
   })
 
-  test('removes an old copy nobody used, with its school, its eight users and its files', async () => {
+  test('removes an old copy nobody used, with its school, its nine users and its files', async () => {
     expect((await filesOf(idleWithFiles.schoolId)).length).toBeGreaterThan(0) // there is something to remove
     const removed = await sweepOldSandboxes(admin, { onlySandboxIds: [idleWithFiles.sandboxId] })
     expect(removed).toEqual([idleWithFiles.sandboxId])
@@ -126,8 +126,8 @@ describe('sweepOldSandboxes on real rows', () => {
     expect(await filesOf(idleWithFiles.schoolId)).toEqual([])
   })
 
-  test('a copy has eight users (three teachers, four parents, Amina) and an empty school has one', () => {
-    expect(idleWithFiles.userIds).toHaveLength(8)
+  test('a copy has nine users (three teachers, five parents, Amina) and an empty school has one', () => {
+    expect(idleWithFiles.userIds).toHaveLength(9)
     expect(emptyOld.userIds).toHaveLength(1)
     expect(emptyOld.kind).toBe('empty')
   })

@@ -14,9 +14,12 @@ export type SidebarProps = {
   switchHref: string
   user: { name: string; initials: string }
   settingsHref: string
-  notificationsHref?: string
+  /** Where the bell goes. `null` shows no bell. */
+  notificationsHref?: string | null
   unread?: number
   base?: string
+  /** Show only these tabs, in the order of the role's tabs. An empty list shows no navigation. Omitted: every tab. */
+  only?: TabId[]
 }
 
 function Wordmark() {
@@ -44,7 +47,9 @@ export function Sidebar({
   notificationsHref = '/notifications',
   unread = 0,
   base = HOMES[role],
+  only,
 }: SidebarProps) {
+  const tabs = only ? TABS[role].filter((t) => only.includes(t.id)) : TABS[role]
   return (
     <aside className="hidden w-[254px] leading-[normal] flex-none flex-col gap-[22px] border-r border-line bg-card px-3.5 pt-[22px] pb-[18px] lg:flex">
       <Wordmark />
@@ -59,8 +64,9 @@ export function Sidebar({
         </span>
         <SwapIcon />
       </Link>
+      {tabs.length > 0 ? (
       <nav aria-label={label} className="flex flex-col gap-1">
-        {TABS[role].map((tab) => {
+        {tabs.map((tab) => {
           const on = tab.id === active
           const snap = tab.id === 'snap' && role !== 'learner'
           return (
@@ -84,6 +90,7 @@ export function Sidebar({
           )
         })}
       </nav>
+      ) : null}
       <div className="flex-1" />
       <div className="flex items-center gap-2.5 border-t border-soft pt-2.5 pr-1 pl-1.5">
         <span
@@ -93,6 +100,7 @@ export function Sidebar({
           {user.initials}
         </span>
         <span className="min-w-0 flex-1 truncate text-[14px] font-semibold">{user.name}</span>
+        {notificationsHref !== null ? (
         <Link
           href={notificationsHref}
           aria-label={unread > 0 ? `Notifications, ${unread} new` : 'Notifications'}
@@ -103,6 +111,7 @@ export function Sidebar({
             <span aria-hidden="true" className="absolute top-[9px] right-2.5 size-2.5 rounded-pill border-2 border-card bg-coral" />
           ) : null}
         </Link>
+        ) : null}
         <Link
           href={settingsHref}
           aria-label="Settings"

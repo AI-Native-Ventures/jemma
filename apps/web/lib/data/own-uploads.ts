@@ -1,4 +1,5 @@
 import type { JemmaDb } from '@jemma/profiling/db'
+import { isIndependent, isOwnRecord } from '@jemma/profiling/own-names'
 import { dayLabel, curriculumStateOf, leftOutOf, ownTestState, reviewOf, type OwnCurriculumRow, type OwnCurriculumView, type OwnTestRow, type OwnTestView } from '@/app/k/own/format'
 import { readDraft } from '@/app/t/[classId]/curriculum/format'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
@@ -24,7 +25,7 @@ export async function newestOwnTestEvent(admin: JemmaDb, paperId: string): Promi
   }
 }
 
-export type OwnHome = { workspace: 'school'; firstName: string } | { workspace: 'own'; firstName: string; tests: OwnTestRow[]; curricula: OwnCurriculumRow[] }
+export type OwnHome = { workspace: 'school'; firstName: string } | { workspace: 'own'; firstName: string; tests: OwnTestRow[]; curricula: OwnCurriculumRow[]; /** True for a child whose school does not use Jemma (P99). */ alone?: boolean }
 
 /**
  * The home of "Add your own work". In My school it is only the first name (the screen says to switch). In My own it is what the learner added: the
@@ -32,7 +33,7 @@ export type OwnHome = { workspace: 'school'; firstName: string } | { workspace: 
  */
 export async function getOwnHome(): Promise<OwnHome> {
   const { child } = await myChild()
-  if (!child.private_of) return { workspace: 'school', firstName: child.first_name }
+  if (!isOwnRecord(child)) return { workspace: 'school', firstName: child.first_name }
   const admin = createSupabaseAdmin()
   const [papers, events] = await Promise.all([
     admin.from('papers').select('id, status, created_at').eq('child_id', child.id).is('test_id', null).eq('kind', 'test').order('created_at', { ascending: false }),
@@ -52,7 +53,7 @@ export async function getOwnHome(): Promise<OwnHome> {
     const mine = results.filter((r) => r.paper_id === p.id)
     return { id: p.id, state, right: mine.filter((r) => r.correct).length, outOf: mine.length, day: dayLabel(p.created_at) }
   })
-  return { workspace: 'own', firstName: child.first_name, tests, curricula: await ownCurricula(admin, child.id) }
+  return { workspace: 'own', firstName: child.first_name, tests, curricula: await ownCurricula(admin, child.id), alone: isIndependent(child) }
 }
 
 /** The newest `curriculum.uploaded` event of each of these maps: map id to its status. */

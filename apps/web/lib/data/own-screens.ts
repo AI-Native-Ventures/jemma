@@ -1,3 +1,4 @@
+import { isIndependent, isOwnRecord } from '@jemma/profiling/own-names'
 import { listOwnClasses } from '@/lib/own-workspace'
 import { type GradeChip, pickClass } from '@/lib/own-grades'
 import { myChild } from './p27'
@@ -7,7 +8,17 @@ import { myChild } from './p27'
 // device after hand-over), so the workspace is the one the cookie chose. No marks are read here: the counts come from `getMyMaths`.
 
 /** "My school" as it always was, or "My own" with the grades the learner added and the one that is shown. */
-export type ScreenShape = { workspace: 'school' } | { workspace: 'own'; /** The grade of the learner's school: a grade above it gets the line "Take your time". */ schoolGrade: number; grades: GradeChip[]; picked: GradeChip | null }
+export type ScreenShape =
+  | { workspace: 'school' }
+  | {
+      workspace: 'own'
+      /** The grade of the learner's school: a grade above it gets the line "Take your time". */
+      schoolGrade: number
+      grades: GradeChip[]
+      picked: GradeChip | null
+      /** True for a child whose school does not use Jemma (P99): no switch, and the line "Your own practice." */
+      alone?: boolean
+    }
 
 /**
  * The shape of "My maths" for this request. In My own: the classes of the private workspace, one chip each (a cheap read with no counts: lowest
@@ -16,9 +27,9 @@ export type ScreenShape = { workspace: 'school' } | { workspace: 'own'; /** The 
  */
 export async function getScreenShape(query: { class?: string | string[]; grade?: string | string[] } = {}): Promise<ScreenShape> {
   const { child } = await myChild()
-  if (!child.private_of) return { workspace: 'school' }
+  if (!isOwnRecord(child)) return { workspace: 'school' }
   const grades = (await listOwnClasses(child.id)).map((c) => ({ classId: c.id, grade: c.grade, caps: c.caps, name: c.name }))
-  return { workspace: 'own', schoolGrade: child.grade, grades, picked: pickClass(grades, query, child.grade) }
+  return { workspace: 'own', schoolGrade: child.grade, grades, picked: pickClass(grades, query, child.grade), alone: isIndependent(child) }
 }
 
 /**
@@ -27,7 +38,7 @@ export async function getScreenShape(query: { class?: string | string[]; grade?:
  */
 export async function getGradeSheet(): Promise<{ firstName: string; schoolGrade: number; added: number[] } | null> {
   const { child } = await myChild()
-  if (!child.private_of) return null
+  if (!isOwnRecord(child)) return null
   const added = (await listOwnClasses(child.id)).filter((c) => c.caps).map((c) => c.grade)
   return { firstName: child.first_name, schoolGrade: child.grade, added }
 }

@@ -10,6 +10,9 @@ export type GradeChip = { classId: string; grade: number; caps: boolean; name: s
 /** The line under the switch while "My own" is on screen. */
 export const OWN_NOTE = 'Your own practice. Nothing here goes to your school.'
 
+/** The line for a child whose school does not use Jemma (P99): there is no school workspace, no switch and no school to speak of. */
+export const OWN_NOTE_ALONE = 'Your own practice.'
+
 /** The grades of the grade sheet: 1 to 12, in order. */
 export const GRADES_TO_PICK: number[] = Array.from({ length: 12 }, (_, i) => i + 1)
 
