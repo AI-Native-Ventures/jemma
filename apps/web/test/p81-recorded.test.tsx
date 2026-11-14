@@ -75,8 +75,11 @@ describe('the recorded lessons', () => {
       const key = q.choices?.length ? 'choice' : `${q.answerKind}${q.render === 'fraction_sum' ? ' (fraction sum)' : ''}`
       count.set(key, (count.get(key) ?? 0) + 1)
     }
-    // Printed so the number can be read in the test log; the check is that no kind falls outside the ones the screen handles.
+    // Printed so the number can be read in the test log; the check is that no kind falls outside the ones the screen handles
+    // (the four last ones are the kinds of a senior class, P86: nothing recorded uses them, and an old recording still parses with the wide schema).
     console.info('recorded answer kinds', Object.fromEntries(count))
-    for (const key of count.keys()) expect(['choice', 'fraction', 'mixed', 'whole', 'decimal', 'money']).toContain(key.replace(' (fraction sum)', ''))
+    for (const key of count.keys()) {
+      expect(['choice', 'fraction', 'mixed', 'whole', 'decimal', 'money', 'number', 'expression', 'equation', 'point']).toContain(key.replace(' (fraction sum)', ''))
+    }
   })
 })

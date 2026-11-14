@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { markAnswer, oneConfusableAway, matchName } from '../../logic'
+import { markAnswer, markReadAnswer, oneConfusableAway, matchName } from '../../logic'
 import { AnswerKeyItemSchema } from '../../schemas/curriculum'
 import { PaperReadSchema, type PaperRead } from '../../schemas/papers'
 import { contextFor, defineTool, logActivity, maybe, ok, type ToolContext } from '../context'
@@ -158,10 +158,15 @@ export const markPaper = defineTool({
       ? key.map((item) => {
           const a = byN.get(item.n)
           const answerRead = a?.answerAsRead ?? ''
-          const lookAlike = oneConfusableAway(answerRead, item.answer)
+          const old = markAnswer(answerRead, item.answer)
+          // Only where the old reader cannot compare (a text key or a text answer), the reader by meaning may say the answer is right
+          // (-3 and a minus sign, 3 + 2x and 2x + 3). It never says wrong: every other outcome is as it always was.
+          const byMeaning = !old.comparable && markReadAnswer(item.answer, answerRead)
+          const lookAlike = !byMeaning && oneConfusableAway(answerRead, item.answer)
           // A look-alike misread is stored as unsure, so every screen (review, paper, profile) treats it the same way.
           const confidence = lookAlike ? Math.min(a?.confidence ?? 0, LOOK_ALIKE_CONFIDENCE) : (a?.confidence ?? 0)
-          const { correct, comparable } = markAnswer(answerRead, item.answer)
+          const correct = old.correct || byMeaning
+          const comparable = old.comparable || byMeaning
           if (confidence < min || !comparable || lookAlike) {
             unsure.push(item.n)
             lines.push({ n: item.n, read: answerRead })

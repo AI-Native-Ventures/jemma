@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { parseAnswer } from '../../logic/answers'
+import { isMeaningKind, meaningKeyProblem } from '../../logic/meaning'
 import { FormatSchema, LessonSchema, type Format, type Lesson, type Question } from '../../schemas/lesson'
 import { resolveSpeech } from '../../speech'
 import { assertInSchool, contextFor, defineTool, logActivity, ok, type ToolContext } from '../context'
@@ -7,8 +8,12 @@ import type { Json } from '../../db'
 
 const MIN_PER_LEVEL = 4
 
-/** Why an answer does not fit its `answerKind`, or null when it does. */
+/**
+ * Why an answer does not fit its `answerKind`, or null when it does. A key of the four senior kinds (number, expression, equation, point) must be
+ * readable by its kind (logic/meaning.ts); the old kinds are checked by `parseAnswer` exactly as they always were.
+ */
 export function answerProblem(q: Question): string | null {
+  if (isMeaningKind(q.answerKind)) return meaningKeyProblem(q.answerKind, q.answer)
   const parsed = parseAnswer(q.answer)
   const fine =
     q.answerKind === 'choice' ? parsed.kind === 'choice'
