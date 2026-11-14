@@ -95,7 +95,7 @@ What to try next:
 
 ## How to run it yourself
 
-One command: `pnpm evals`. It starts its own agent worker on port 8756, runs all 11 tasks 3 times each, stops the worker, cleans up every sandbox and token it made, and writes this file with `pnpm evals:report`. It needs Goose installed, a free OpenRouter key as `OPENROUTER_API_KEY` in `.env.local`, and the database values in `.env.local` (`./start.sh` writes them for a local database; the saved run used the team's dev database, and the local one was not tried). The saved run took about 84 minutes for 33 runs. Free models can be busy: if the model is down, wait and run again. `pnpm evals --task class-report` runs one task, and `pnpm evals --rehearse done` tests the harness with a fake goose and no model. Details: `evals/README.md`.
+One command: `pnpm evals`. It starts its own agent worker on port 8756, runs all 11 tasks 3 times each, stops the worker, cleans up every sandbox and token it made, and writes this file with `pnpm evals:report`. It needs Goose installed, a free OpenRouter key as `OPENROUTER_API_KEY` in `.env.local`, and the database values in `.env.local` (`./start.sh` writes them for a local database; the saved run used the team's dev database, and the local one was not tried). The 33 saved runs add up to about 84 minutes of run time (the sum of the run times, not the clock time of one command). Free models can be busy: if the model is down, wait and run again. `pnpm evals --task class-report` runs one task, and `pnpm evals --rehearse done` tests the harness with a fake goose and no model. Details: `evals/README.md`.
 
 ## Raw results
 

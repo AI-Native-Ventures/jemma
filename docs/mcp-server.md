@@ -70,7 +70,7 @@ Every tool is created with `defineTool`, and `defineTool` wraps the tool's `run`
 
 Every string longer than 2000 characters is stored as `<N characters>`. Image data is never stored: a read tool that returns photos is logged with its output and `images: <count>`. A failure to write the log row never changes what the tool returns and never causes a retry of a save.
 
-Every approval a person gives in the web app is saved in `approvals` with the name of the person (`decided_by`, `decided_by_name`) and the time. Only the teachers of the school can read `tool_calls`, and they read it on the screen "What Jemma did, in full" (`/t/<classId>/log`). Parents and learners cannot read it. Both tables are written by the service role only.
+Every approval a person gives in the web app is saved in `approvals` with the name of the person (`decided_by`, `decided_by_name`) and the time. The save is written after the change and is best effort: if it fails the approval still stands and the failure is only logged (see "Gates" in [architecture.md](architecture.md)). Only the teachers of the school can read `tool_calls`, and they read it on the screen "What Jemma did, in full" (`/t/<classId>/log`). Parents and learners cannot read it. Both tables are written by the service role only.
 
 ## Which tools update or analyse learner profiles
 
