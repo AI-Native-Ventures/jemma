@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { capsDraft, capsSource } from '@jemma/profiling/caps'
 import type { JemmaDb } from '@jemma/profiling/db'
 import { requireRole } from '@/lib/auth'
 import { retryEvent, sendEvent } from '@/lib/agent'
@@ -10,9 +11,11 @@ import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import { checkDocument, sizeProblem } from './upload-checks'
 import {
+  CAPS_HAS_MAP,
   SAMPLE_DOCS,
   SAMPLE_ONLY_FOR,
   addTopicIn,
+  capsRefusal,
   moveTopicIn,
   plural,
   readDraft,
@@ -124,6 +127,46 @@ export async function useSampleCurriculum(classId: string): Promise<void> {
   revalidatePath(`/t/${classId}/curriculum`)
 }
 
+export type CapsResult = { ok: true } | { ok: false; message: string }
+
+/**
+ * "Start from the CAPS map": the official South African Mathematics topics of the class's grade become its draft map. No document, no
+ * event and no model: the topics come from the files in the repository. The teacher checks and approves the map as before. A refusal is
+ * returned, not thrown, so the teacher can read it. A class that already has an approved map is left alone.
+ */
+export async function useCapsMap(classId: string): Promise<CapsResult> {
+  const cls = await ownClass(classId)
+  const admin = createSupabaseAdmin()
+  const [taught, school] = await Promise.all([
+    admin.from('classes').select('subject, grade').eq('id', classId).single(),
+    admin.from('schools').select('country').eq('id', cls.school_id).single(),
+  ])
+  if (!taught.data || !school.data) throw new Error('Class not found')
+  const { subject, grade } = taught.data
+  const refusal = capsRefusal(subject, school.data.country, grade)
+  if (refusal) return { ok: false, message: refusal }
+  const draft = capsDraft(grade)
+  const source = capsSource(grade)
+  if (!draft || !source) return { ok: false, message: capsRefusal(subject, school.data.country, 0)! }
+
+  const approved = await admin.from('curriculum_maps').select('id').eq('class_id', classId).eq('status', 'approved').limit(1)
+  if ((approved.data?.length ?? 0) > 0) return { ok: false, message: CAPS_HAS_MAP }
+
+  const mapId = await draftMapFor(admin, classId)
+  const saved = await admin.from('curriculum_maps').update({ draft: toRaw(draft, {}, { kind: 'caps', ...source }) as never }).eq('id', mapId).eq('status', 'draft')
+  if (saved.error) throw new Error(saved.error.message)
+  const logged = await admin.from('activity_log').insert({
+    school_id: cls.school_id,
+    class_id: classId,
+    at: new Date().toISOString(),
+    tool: 'use_caps_map',
+    text: `Loaded the CAPS map for Grade ${grade}: ${plural(topicCount(draft), 'topic')}`,
+  })
+  if (logged.error) throw new Error(logged.error.message)
+  revalidatePath(`/t/${classId}/curriculum`, 'layout')
+  return { ok: true }
+}
+
 /** Re-queues the draft job after a failure. */
 export async function retryDraft(mapId: string): Promise<void> {
   const map = await ownMap(mapId)
@@ -139,7 +182,8 @@ async function editDraft(mapId: string, edit: (r: NonNullable<ReturnType<typeof 
   const read = readDraft(map.draft)
   if (!read) throw new Error('The draft is not ready yet')
   const next = edit(read)
-  const res = await createSupabaseAdmin().from('curriculum_maps').update({ draft: toRaw(next.draft, next.resolutions) as never }).eq('id', mapId)
+  // The source of a draft (the official curriculum) stays with it through every edit.
+  const res = await createSupabaseAdmin().from('curriculum_maps').update({ draft: toRaw(next.draft, next.resolutions, read.source) as never }).eq('id', mapId)
   if (res.error) throw new Error(res.error.message)
   revalidatePath(`/t/${map.class_id}/curriculum`, 'layout')
 }

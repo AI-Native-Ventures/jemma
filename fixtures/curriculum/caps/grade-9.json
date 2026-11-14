@@ -1,0 +1,209 @@
+{
+  "grade": 9,
+  "phase": "Senior Phase",
+  "subject": "Mathematics",
+  "country": "ZA",
+  "source": {
+    "title": "Curriculum and Assessment Policy Statement (CAPS), Mathematics, Grades 7-9",
+    "publisher": "Department of Basic Education, Republic of South Africa",
+    "url": "https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20SP%20%20MATHEMATICS%20GR%207-9.pdf",
+    "pages": "PDF p122 (printed p118): time allocation per term, all four terms. Clarification tables: Term 1 PDF pp123-137 (printed 119-133), Term 2 pp138-144 (printed 134-140), Term 3 pp145-150 (printed 141-146), Term 4 pp151-157 (printed 147-153)."
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Whole numbers",
+          "shortName": "Whole numbers",
+          "family": "whole_numbers",
+          "capsName": "Whole numbers",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Integers",
+          "shortName": "Integers",
+          "family": "integers_and_exponents",
+          "capsName": "Integers",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Common fractions",
+          "shortName": "Common fractions",
+          "family": "fractions",
+          "capsName": "Common fractions",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Decimal fractions",
+          "shortName": "Decimal fractions",
+          "family": "decimals",
+          "capsName": "Decimal fractions",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Exponents",
+          "shortName": "Exponents",
+          "family": "integers_and_exponents",
+          "capsName": "Exponents",
+          "contentArea": "Numbers, Operations and Relationships"
+        },
+        {
+          "name": "Numeric and geometric patterns",
+          "shortName": "Numeric and geometric patterns",
+          "family": "patterns",
+          "capsName": "Numeric and geometric patterns",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Functions and relationships",
+          "shortName": "Functions and relationships",
+          "family": "functions",
+          "capsName": "Functions and relationships",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Algebraic expressions",
+          "shortName": "Algebraic expressions",
+          "family": "algebra",
+          "capsName": "Algebraic expressions",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Algebraic equations",
+          "shortName": "Algebraic equations",
+          "family": "algebra",
+          "capsName": "Algebraic equations",
+          "contentArea": "Patterns, Functions and Algebra"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Construction of geometric figures",
+          "shortName": "Construction of geometric figures",
+          "family": "shapes",
+          "capsName": "Construction of geometric figures",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Geometry of 2D shapes",
+          "shortName": "Geometry of 2D shapes",
+          "family": "shapes",
+          "capsName": "Geometry of 2D shapes",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Geometry of straight-lines",
+          "shortName": "Geometry of straight-lines",
+          "family": "shapes",
+          "capsName": "Geometry of straight-lines",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Theorem of Pythagoras",
+          "shortName": "Theorem of Pythagoras",
+          "family": "measurement",
+          "capsName": "Theorem of Pythagoras",
+          "contentArea": "Measurement"
+        },
+        {
+          "name": "Area and Perimeter of 2D shapes",
+          "shortName": "Area and Perimeter of 2D shapes",
+          "family": "measurement",
+          "capsName": "Area and Perimeter of 2D shapes",
+          "contentArea": "Measurement"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Functions and relationships (Term 3)",
+          "shortName": "Functions and relationships (Term 3)",
+          "family": "functions",
+          "capsName": "Functions and relationships",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Algebraic expressions (Term 3)",
+          "shortName": "Algebraic expressions (Term 3)",
+          "family": "algebra",
+          "capsName": "Algebraic expressions",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Algebraic equations (Term 3)",
+          "shortName": "Algebraic equations (Term 3)",
+          "family": "algebra",
+          "capsName": "Algebraic equations",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Graphs",
+          "shortName": "Graphs",
+          "family": "functions",
+          "capsName": "Graphs",
+          "contentArea": "Patterns, Functions and Algebra"
+        },
+        {
+          "name": "Surface Area and volume of 3D objects",
+          "shortName": "Surface Area and volume of 3D objects",
+          "family": "measurement",
+          "capsName": "Surface Area and volume of 3D objects",
+          "contentArea": "Measurement"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Transformation geometry",
+          "shortName": "Transformation geometry",
+          "family": "shapes",
+          "capsName": "Transformation geometry",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Geometry of 3D objects",
+          "shortName": "Geometry of 3D objects",
+          "family": "shapes",
+          "capsName": "Geometry of 3D objects",
+          "contentArea": "Space and Shape (Geometry)"
+        },
+        {
+          "name": "Collect, organize and summarize data",
+          "shortName": "Collect, organize and summarize data",
+          "family": "data",
+          "capsName": "Collect, organize and summarize data",
+          "contentArea": "Data Handling"
+        },
+        {
+          "name": "Represent data",
+          "shortName": "Represent data",
+          "family": "data",
+          "capsName": "Represent data",
+          "contentArea": "Data Handling"
+        },
+        {
+          "name": "Interpret, analyse and report data",
+          "shortName": "Interpret, analyse and report data",
+          "family": "data",
+          "capsName": "Interpret, analyse and report data",
+          "contentArea": "Data Handling"
+        },
+        {
+          "name": "Probability",
+          "shortName": "Probability",
+          "family": "probability",
+          "capsName": "Probability",
+          "contentArea": "Data Handling"
+        }
+      ]
+    }
+  ]
+}

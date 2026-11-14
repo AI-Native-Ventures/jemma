@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { getApprovedView, getCurriculum, getDraftLog, type ApprovedTopic } from '@/lib/data/p30'
 import { createSupabaseServer } from '@/lib/supabase/server'
-import { docNote, currentTerm, plural, sampleCurriculumFits, TERM_SHORT, unresolved } from './format'
-import { AutoRefresh, ComingLink, DraftFailed, SampleButton, UploadButtons } from './parts'
+import { capsFits, curriculumStage, docNote, currentTerm, plural, sampleCurriculumFits, TERM_SHORT, unresolved, type DraftSource } from './format'
+import { AutoRefresh, CapsButton, ComingLink, DraftFailed, SampleButton, UploadButtons } from './parts'
 
 const GEM = (
   <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" style={{ flex: 'none', marginTop: 10 }}>
@@ -17,12 +17,16 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
   const { classId } = await params
   const state = await getCurriculum(classId)
   const { map, docs, read } = state
+  // A map that can be read is ready (to check, or approved) with or without a document: the CAPS map has none.
+  const stage = curriculumStage(map ? { status: map.status, docs: docs.length, read: Boolean(read) } : null)
 
-  if (map?.status === 'approved' && read) return <Approved classId={classId} state={state} />
+  if (stage === 'approved') return <Approved classId={classId} state={state} />
 
-  if (!map || docs.length === 0) {
+  if (stage === 'empty' || !map) {
     const supabase = await createSupabaseServer()
-    const { data } = await supabase.from('classes').select('subject, grade, schools(sandbox_id)').eq('id', classId).maybeSingle()
+    const { data } = await supabase.from('classes').select('subject, grade, schools(sandbox_id, country)').eq('id', classId).maybeSingle()
+    // The official South African Mathematics topics (CAPS) are offered to a Mathematics class of a South African school in Grades 1 to 12.
+    const caps = !!data && capsFits(data.subject, data.schools?.country ?? '', data.grade)
     // The sample documents are Grade 6 Mathematics pages: the button is for that class in a demo school, and for no other.
     const sample = Boolean(data?.schools?.sandbox_id) && !!data && sampleCurriculumFits(data.subject, data.grade)
     return (
@@ -35,6 +39,7 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
           </div>
           <p style={{ margin: '0 0 0 24px', fontSize: 15, lineHeight: 1.45, color: '#5D5A73' }}>Nothing reaches a learner until you approve the map.</p>
         </div>
+        {caps ? <CapsButton classId={classId} grade={data.grade} /> : null}
         <section aria-labelledby="docs" style={{ ...card, gap: 10 }}>
           <h2 id="docs" style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Your documents</h2>
           <UploadButtons classId={classId} />
@@ -45,7 +50,7 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
     )
   }
 
-  if (!read) {
+  if (stage === 'reading' || !read) {
     return (
       <div style={wrap}>
         {state.failedEventId ? (
@@ -85,27 +90,59 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
         <p style={{ margin: '0 0 0 24px', fontSize: 15, lineHeight: 1.45, color: '#5D5A73' }}>Nothing reaches a learner until you approve the map.</p>
       </div>
 
-      <DocsCard docs={docs} read>
-        <UploadButtons classId={classId} />
-      </DocsCard>
+      {read.source ? (
+        <SourceCard source={read.source}>
+          <UploadButtons classId={classId} />
+        </SourceCard>
+      ) : (
+        <DocsCard docs={docs} read>
+          <UploadButtons classId={classId} />
+        </DocsCard>
+      )}
 
-      <section aria-labelledby="did" style={{ ...card, gap: 6 }}>
-        <h2 id="did" style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 600 }}>What Jemma did</h2>
-        <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {log.map((e, i) => (
-            <li key={i} style={{ display: 'flex', gap: 12, fontSize: 14, lineHeight: 1.4 }}>
-              <span style={{ width: 40, flex: 'none', color: '#5D5A73', fontVariantNumeric: 'tabular-nums' }}>{e.at}</span>
-              <span>{e.text}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
+      {log.length > 0 ? (
+        <section aria-labelledby="did" style={{ ...card, gap: 6 }}>
+          <h2 id="did" style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 600 }}>What Jemma did</h2>
+          <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {log.map((e, i) => (
+              <li key={i} style={{ display: 'flex', gap: 12, fontSize: 14, lineHeight: 1.4 }}>
+                <span style={{ width: 40, flex: 'none', color: '#5D5A73', fontVariantNumeric: 'tabular-nums' }}>{e.at}</span>
+                <span>{e.text}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
 
       <Link href={`/t/${classId}/curriculum/map`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, marginTop: 37, borderRadius: 14, background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
         Check the draft map
       </Link>
       <ComingLink>Or start from a map another teacher approved</ComingLink>
     </div>
+  )
+}
+
+/** "From {title}, {publisher}." and the address as a link: where a map that came from the official curriculum comes from. */
+function SourceLine({ source }: { source: DraftSource }) {
+  const host = new URL(source.address).hostname.replace(/^www\./, '')
+  return (
+    <p style={{ margin: 0, fontSize: 14, lineHeight: 1.45, color: '#5D5A73' }}>
+      From {source.title}, {source.publisher}.{' '}
+      <a href={source.address} target="_blank" rel="noreferrer" style={{ color: '#1F1D36', fontWeight: 600, textUnderlineOffset: 3 }}>
+        {host}
+      </a>
+    </p>
+  )
+}
+
+/** What a draft from the official curriculum shows where the documents would be listed: one line about its source. */
+function SourceCard({ source, children }: { source: DraftSource; children?: React.ReactNode }) {
+  return (
+    <section aria-labelledby="source" style={{ ...card, gap: 10 }}>
+      <h2 id="source" style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Where it comes from</h2>
+      <SourceLine source={source} />
+      {children}
+    </section>
   )
 }
 
@@ -198,6 +235,7 @@ async function Approved({ classId, state }: { classId: string; state: Awaited<Re
           {GEM}
           <h1 style={{ ...h1, letterSpacing: '-0.015em' }}>{v.headline}</h1>
         </div>
+        {state.read?.source ? <SourceLine source={state.read.source} /> : null}
       </div>
 
       <section aria-labelledby="now" style={rowCard}>

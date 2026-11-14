@@ -1,0 +1,117 @@
+{
+  "grade": 12,
+  "phase": "Further Education and Training Phase",
+  "subject": "Mathematics",
+  "country": "ZA",
+  "source": {
+    "title": "Curriculum and Assessment Policy Statement (CAPS) Mathematics, Further Education and Training Phase, Grades 10-12 (National Curriculum Statement)",
+    "publisher": "Department of Basic Education, Republic of South Africa (published on www.education.gov.za, (c) 2011)",
+    "url": "https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20FET%20_%20MATHEMATICS%20_%20GR%2010-12%20_%20Web_1133.pdf",
+    "pages": "PDF pages 22 (printed 17; section 3.2.1 table: topics and weeks, all terms); 17-20 (overview 3.1.1); 23-25 (pace setters 3.2.2); 45-48 term 1, 49-52 term 2, 53-54 term 3, 55 term 4 (section 3.2.3 Grade 12 tables)"
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Patterns, sequences and series",
+          "shortName": "Patterns, sequences and series",
+          "family": "patterns",
+          "capsName": "Patterns, sequences and series",
+          "contentArea": "Number Patterns, Sequences and Series"
+        },
+        {
+          "name": "Functions and inverse functions",
+          "shortName": "Functions and inverse functions",
+          "family": "functions",
+          "capsName": "Functions and inverse functions",
+          "contentArea": "Functions"
+        },
+        {
+          "name": "Exponential and logarithmic functions",
+          "shortName": "Exponential and logarithmic functions",
+          "family": "functions",
+          "capsName": "Exponential and logarithmic functions",
+          "contentArea": "Functions"
+        },
+        {
+          "name": "Finance, growth and decay",
+          "shortName": "Finance, growth and decay",
+          "family": "finance",
+          "capsName": "Finance, growth and decay",
+          "contentArea": "Finance, Growth and Decay"
+        },
+        {
+          "name": "Trigonometry - compound angles",
+          "shortName": "Trigonometry - compound angles",
+          "family": "trigonometry",
+          "capsName": "Trigonometry - compound angles",
+          "contentArea": "Trigonometry"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Trigonometry 2D and 3D",
+          "shortName": "Trigonometry 2D and 3D",
+          "family": "trigonometry",
+          "capsName": "Trigonometry 2D and 3D",
+          "contentArea": "Trigonometry"
+        },
+        {
+          "name": "Polynomial functions",
+          "shortName": "Polynomial functions",
+          "family": "algebra",
+          "capsName": "Polynomial functions",
+          "contentArea": "Algebra"
+        },
+        {
+          "name": "Differential calculus",
+          "shortName": "Differential calculus",
+          "family": "calculus",
+          "capsName": "Differential calculus",
+          "contentArea": "Differential Calculus"
+        },
+        {
+          "name": "Analytical Geometry",
+          "shortName": "Analytical Geometry",
+          "family": "analytical_geometry",
+          "capsName": "Analytical Geometry",
+          "contentArea": "Analytical Geometry"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Geometry",
+          "shortName": "Geometry",
+          "family": "shapes",
+          "capsName": "Geometry",
+          "contentArea": "Euclidean Geometry and Measurement"
+        },
+        {
+          "name": "Statistics (regression and correlation)",
+          "shortName": "Statistics",
+          "family": "data",
+          "capsName": "Statistics (regression and correlation)",
+          "contentArea": "Statistics"
+        },
+        {
+          "name": "Counting and Probability",
+          "shortName": "Counting and Probability",
+          "family": "probability",
+          "capsName": "Counting and Probability",
+          "contentArea": "Probability"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": []
+    }
+  ]
+}
