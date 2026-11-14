@@ -2,12 +2,12 @@
 import { NextRequest } from 'next/server'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
-// The learner's upload route /k/upload. Only `snapPractice` can be named through it, and the proxy keeps out everyone who is not that learner:
+// The learner's upload route /k/upload. Only `snapPractice` and (P97) `snapOwnTest` can be named through it, and the proxy keeps out everyone who is not that learner:
 // a signed-out post is sent to sign-in and a teacher's (or a parent's, without a hand-over) is sent home, exactly as /t/upload and /p/upload
 // do it. The proxy and the route run here with stand-ins for the sign-in and for the action. No database, no server.
 
 const who = vi.hoisted(() => ({ user: 'learner' as 'nobody' | 'learner' | 'teacher' | 'parent' }))
-const snap = vi.hoisted(() => ({ calls: [] as { sessionId: string; files: File[] }[], fails: false }))
+const snap = vi.hoisted(() => ({ calls: [] as { sessionId: string; files: File[] }[], fails: false, own: [] as File[][] }))
 
 vi.mock('@supabase/ssr', () => ({
   createServerClient: () => ({
@@ -20,6 +20,13 @@ vi.mock('../app/k/session/[sessionId]/actions', () => ({
     if (snap.fails) throw new Error('storage: school-1/c1/practice/secret-path.jpg')
     snap.calls.push({ sessionId, files })
     return { ok: true }
+  },
+}))
+
+vi.mock('../app/k/own/actions', () => ({
+  snapOwnTest: async (files: File[]) => {
+    snap.own.push(files)
+    return { ok: true, paperId: 'paper-1' }
   },
 }))
 
@@ -39,6 +46,7 @@ afterEach(() => {
   who.user = 'learner'
   snap.calls = []
   snap.fails = false
+  snap.own = []
 })
 
 const door = (path: string, cookie?: string) => proxy(new NextRequest(`${ORIGIN}${path}`, { method: 'POST', headers: cookie ? { cookie } : {} }))
@@ -118,6 +126,19 @@ describe('the learner route itself', () => {
     expect(snap.calls).toHaveLength(1)
     expect(snap.calls[0]!.sessionId).toBe('s1')
     expect(snap.calls[0]!.files.map((f) => [f.name, f.size])).toEqual([['answers.jpg', 10]])
+  })
+
+  it('names snapOwnTest with no argument before the files (P97: the pages of a marked test, from the private twin only) and answers its result', async () => {
+    const pages = [new File([new Uint8Array(10)], 'a.jpg', { type: 'image/jpeg' }), new File([new Uint8Array(20)], 'b.jpg', { type: 'image/jpeg' })]
+    const res = await POST(post('snapOwnTest', [], pages))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ result: { ok: true, paperId: 'paper-1' } })
+    expect(snap.own).toHaveLength(1)
+    expect(snap.own[0]!.map((f) => [f.name, f.size])).toEqual([['a.jpg', 10], ['b.jpg', 20]])
+    // no argument is taken: any is refused before the function runs
+    expect((await POST(post('snapOwnTest', ['x'], pages))).status).toBe(400)
+    expect(snap.own).toHaveLength(1)
+    expect(snap.calls).toEqual([])
   })
 
   it('no other function can be named, not the teacher\'s, not the parent\'s, not the names every object has', async () => {

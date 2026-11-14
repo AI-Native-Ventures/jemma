@@ -1,4 +1,5 @@
 import { handleUpload, takes } from '@/lib/upload-route'
+import { snapOwnTest } from '../own/actions'
 import { snapPractice } from '../session/[sessionId]/actions'
 
 /** The files of a post: one `file` field each. */
@@ -12,4 +13,6 @@ const filesOf = (form: FormData) => form.getAll('file').filter((f): f is File =>
 export const POST = (request: Request) =>
   handleUpload(request, {
     snapPractice: takes(1, ([sessionId], form) => snapPractice(sessionId!, filesOf(form))),
+    // The pages of a marked test, from the private twin only (the function checks it): no argument before the files.
+    snapOwnTest: takes(0, (_args, form) => snapOwnTest(filesOf(form))),
   })
