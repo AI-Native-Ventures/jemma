@@ -104,7 +104,16 @@ const FORM_HINTS = {
 } as const
 const EQUATION_HINT = 'Type the answer, like x = 4. Two answers: x = 3 or x = -1.'
 
-const keyClass = 'flex h-12 min-w-12 cursor-pointer items-center justify-center rounded-14 border-2 border-edge bg-card px-3 text-[22px] font-bold text-ink'
+const keyClass = 'flex min-h-12 min-w-12 cursor-pointer items-center justify-center rounded-14 border-2 border-edge bg-card px-3 text-[22px] font-bold text-ink'
+
+/**
+ * The columns of the key row: one row for five keys or fewer (five keys are 49 px wide even on a 320 px phone), else two even rows (8 keys are 4 + 4).
+ * The classes are written out so the stylesheet has them.
+ */
+export function keyColumns(count: number): string {
+  const columns = count <= 5 ? count : Math.ceil(count / 2)
+  return ({ 1: 'grid-cols-1', 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4', 5: 'grid-cols-5' } as Record<number, string>)[columns] ?? 'grid-cols-4'
+}
 
 /**
  * One text box for an answer made of letters, and under it one row of maths keys that put their sign where the cursor is. Under the keys the answer
@@ -147,7 +156,7 @@ function TypedMath({ value, onChange, keys, hint }: { value: string; onChange: (
         onChange={(e) => onChange(e.target.value.slice(0, MAX_TEXT))}
         className="mx-auto block h-[64px] w-full max-w-[360px] rounded-18 border-[3px] border-coral bg-card px-3 text-center text-[28px] font-bold text-ink outline-none"
       />
-      <div data-keys="true" className="flex flex-wrap justify-center gap-2">
+      <div data-keys="true" className={`grid w-full max-w-[360px] gap-2 ${keyColumns(keys.length)}`}>
         {keys.map((k) => (
           <button key={k.label} type="button" aria-label={k.label} onMouseDown={(e) => e.preventDefault()} onClick={() => insert(k.insert)} className={keyClass}>
             {k.text}
