@@ -21,6 +21,34 @@ export type PollScheduler = {
   finished(): void
 }
 
+/**
+ * A poll whose ask is a plain async call (for example a server action), not a router refresh: `ask` is called every `ms`, one ask at a time.
+ * The next wait of `ms` starts only after the last ask has settled, answered or failed (the caller handles its own errors; a failed ask is
+ * simply over). Returns the function that stops it: no new ask after that, and an ask still waiting is left to settle.
+ */
+export function startAskPoll(ms: number, ask: () => Promise<void>): () => void {
+  let busy = false
+  const scheduler: PollScheduler = createPollScheduler({
+    wait: () => ms,
+    isBusy: () => busy,
+    refresh: () => {
+      busy = true
+      void (async () => {
+        try {
+          await ask()
+        } catch {
+          // Over, not retried at once: the next wait starts below.
+        } finally {
+          busy = false
+          scheduler.finished()
+        }
+      })()
+    },
+  })
+  scheduler.start()
+  return () => scheduler.stop()
+}
+
 /** How long a new ask has to show up as busy. A browser shows it within a frame or two. */
 export const SETTLE_MS = 25
 

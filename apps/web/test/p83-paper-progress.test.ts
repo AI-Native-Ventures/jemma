@@ -23,7 +23,7 @@ const state = vi.hoisted(() => ({
 }))
 
 vi.mock('@/lib/agent', () => ({ sendEvent: vi.fn(async () => 'event') }))
-vi.mock('@/lib/topics', () => ({ loadShortLabels: async () => (name: string) => name }))
+vi.mock('@/lib/topics', () => ({ loadShortLabels: async () => (name: string) => name, classIdsOfChild: async () => [] }))
 vi.mock('@/lib/data/p27', () => ({ myChild: async () => ({ supabase: {}, child: { id: 'c1' } }) }))
 vi.mock('@/lib/supabase/server', () => ({
   createSupabaseServer: async () => ({
