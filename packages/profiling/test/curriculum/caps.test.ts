@@ -50,8 +50,24 @@ describe('the 12 files', () => {
     expect(new Set(shorts).size, 'short names are unique').toBe(shorts.length)
   })
 
-  test('there are 316 topics in all', () => {
-    expect(GRADES.reduce((n, g) => n + file(g).terms.reduce((m, t) => m + t.topics.length, 0), 0)).toBe(316)
+  test('there are 488 topics in all', () => {
+    expect(GRADES.reduce((n, g) => n + file(g).terms.reduce((m, t) => m + t.topics.length, 0), 0)).toBe(488)
+  })
+
+  test('Grades 1 to 3: a row repeats in every term it is taught, so every term has topics', () => {
+    const perTerm = (g: number) => file(g).terms.map((t) => t.topics.length)
+    expect(perTerm(1)).toEqual([18, 18, 20, 21])
+    expect(perTerm(2)).toEqual([19, 21, 21, 23])
+    expect(perTerm(3)).toEqual([22, 23, 25, 23])
+    for (const g of [1, 2, 3]) for (const t of file(g).terms) expect(t.topics.length, `grade ${g} term ${t.term}`).toBeGreaterThan(0)
+  })
+
+  test.each(GRADES)('grade %i: a name that ends in "(Term N)" sits in Term N', (grade) => {
+    for (const t of file(grade).terms)
+      for (const x of t.topics) {
+        const mark = /\(Term (\d)\)$/.exec(x.name)
+        if (mark) expect(Number(mark[1]), `${x.name} in term ${t.term}`).toBe(t.term)
+      }
   })
 })
 
