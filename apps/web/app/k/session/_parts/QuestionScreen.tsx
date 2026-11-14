@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { answerShape, answerValue, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
 import { PendingButton } from '@/components/ui/Button'
 import { Frac, FractionText, MathText, withFractions } from './Frac'
+import { QuestionPicture } from './QuestionPicture'
 
 const CHOICE_LETTERS = ['A', 'B', 'C', 'D']
 const noteClass = 'm-0 flex items-start gap-2.5 text-[15px] leading-[1.45] text-body'
@@ -397,12 +398,16 @@ export function QuestionScreen({ q, busy, onAnswer }: QuestionScreenProps) {
           <p className="m-0 text-[16px] text-body">A quick one from a gap you already fixed.</p>
         </div>
         {shape.kind === 'missing' ? (
-          <MissingQuestion q={q} shape={shape} value={text} onChange={setText} />
+          <>
+            <QuestionPicture spec={q.diagram} />
+            <MissingQuestion q={q} shape={shape} value={text} onChange={setText} />
+          </>
         ) : (
           <>
             <h1 data-prompt={q.prompt} className="m-0 text-[28px] leading-[1.2] font-semibold">
               <FractionText text={q.prompt} size={34} rule={3} gap={4} side={5} className="mx-1.5 align-middle" />
             </h1>
+            <QuestionPicture spec={q.diagram} />
             {shape.kind === 'choice' ? <Choices q={q} picked={picked} onPick={setPicked} warm /> : <AnswerArea shape={shape} b={boxes} />}
           </>
         )}
@@ -431,7 +436,10 @@ export function QuestionScreen({ q, busy, onAnswer }: QuestionScreenProps) {
       </div>
       <section aria-label="Question" className="flex flex-col items-center gap-[30px] rounded-[28px] border border-line bg-card px-[18px] py-[30px]">
         {shape.kind === 'missing' ? (
-          <MissingQuestion q={q} shape={shape} value={text} onChange={setText} />
+          <>
+            <QuestionPicture spec={q.diagram} />
+            <MissingQuestion q={q} shape={shape} value={text} onChange={setText} />
+          </>
         ) : (
           <>
             {fractionSum ? (
@@ -453,6 +461,7 @@ export function QuestionScreen({ q, busy, onAnswer }: QuestionScreenProps) {
                 <FractionText text={q.prompt} size={34} rule={3} gap={4} side={5} />
               </h1>
             )}
+            <QuestionPicture spec={q.diagram} />
             {shape.kind === 'choice' ? <Choices q={q} picked={picked} onPick={setPicked} warm={false} /> : <AnswerArea shape={shape} b={boxes} />}
           </>
         )}

@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 import { answerShape, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
 import { Frac, FractionText } from './Frac'
+import { QuestionPicture } from './QuestionPicture'
 
 // A practice answered on paper: the choice before the first Try question, the sheet of five questions with the photo button, the wait while
 // Jemma reads the photo, and the card for a photo that could not be read. All of them are drawn from their props alone (the state lives in
@@ -134,6 +135,7 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
             <FractionText text={q.prompt} size={30} rule={3} gap={4} side={5} className="mx-1 align-middle" />
           </h2>
         )}
+        <QuestionPicture spec={q.diagram} />
         {shape.kind === 'choice' ? (
           <ol aria-label="Choices" className="m-0 grid list-none grid-cols-2 gap-2 p-0">
             {(q.choices ?? []).map((choice, i) => (

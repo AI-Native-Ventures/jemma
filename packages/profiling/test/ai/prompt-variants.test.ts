@@ -244,6 +244,69 @@ describe('a senior class (Mathematics, Grades 7 to 12)', () => {
   })
 })
 
+// P87: pictures. A senior class's lesson writer is told when a question carries a picture and how to give a graph or a triangle.
+describe('pictures, for a senior class', () => {
+  const lesson = (grade: number, country = 'ZA', subject = 'Mathematics') => renderPrompt('write_lesson', md('write_lesson'), klass(subject, grade, country))
+  const SENTENCE = 'Use only the diagram kinds in the schema.'
+
+  test('a Grade 10 class: the sentence of the file stays and the picture rule follows it, in the Safety section', () => {
+    const out = lesson(10)
+    expect(out).toContain(`${SENTENCE} A question may carry a \`diagram\` when the picture is needed to answer it`)
+    for (const word of [
+      'reading a graph, a gradient, an intercept, a turning point, an angle or a side of a triangle',
+      'Use `coordinate_plane` for functions, graphs and analytical geometry, and `triangle` for trigonometry and geometry.',
+      'never list the points of a curve',
+      'A `trig` graph takes x in degrees.',
+      'at most 200 wide (720 across for a `trig` graph), at most 3 graphs and 12 points',
+      'exactly three `vertices` names',
+      'Never put the answer in a label.',
+      'A lesson card or a diagram step may use these two pictures too.',
+    ]) {
+      expect(out).toContain(word)
+    }
+    expect(out.indexOf(SENTENCE)).toBeGreaterThan(out.indexOf('## Safety'))
+    expect(out).toContain('No links, no questions about the child')
+    expect(out.split(SENTENCE)).toHaveLength(2)
+  })
+
+  test.each([[7], [8], [9], [11], [12]])('Grade %i is told too', (grade) => expect(lesson(grade)).toContain('Use `coordinate_plane` for functions'))
+
+  test('outside South Africa it is the same rule, and it names no rand or decimal comma', () => {
+    const out = lesson(9, 'KE')
+    expect(out).toContain('Use `coordinate_plane` for functions')
+    expect(out).not.toMatch(/decimal comma|decimals use a comma|\bR5\b|\brand\b|`money`/i)
+  })
+
+  test('one rule, on the sentence of the file, for a senior class only', () => {
+    const rules = PROMPT_RULES.write_lesson.filter((r) => r.find === SENTENCE)
+    expect(rules).toHaveLength(1)
+    expect(rules[0]!.when(klass('Mathematics', 10, 'ZA'))).toBe(true)
+    expect(rules[0]!.when(klass('Mathematics', 6, 'ZA'))).toBe(false)
+    expect(rules[0]!.when(klass('Mathematics', 5, 'ZA'))).toBe(false)
+    expect(rules[0]!.when(klass('Mathematics', 13, 'ZA'))).toBe(false)
+    expect(rules[0]!.when(klass('Natural Sciences', 10, 'ZA'))).toBe(false)
+  })
+
+  test.each([[1], [4], [5], [13]])('Grade %i is told nothing about pictures of this kind', (grade) => {
+    const out = lesson(grade)
+    expect(out).not.toMatch(/coordinate_plane|`triangle`|`diagram` when the picture/)
+    expect(out).toContain(`${SENTENCE} No links`)
+  })
+
+  test('another subject is told nothing about them either', () => {
+    expect(lesson(10, 'ZA', 'Natural Sciences')).not.toMatch(/coordinate_plane|`triangle`/)
+  })
+
+  test('the baseline class still gets the file byte for byte', () => {
+    expect(lesson(6)).toBe(md('write_lesson'))
+    expect(md('write_lesson')).not.toMatch(/coordinate_plane|`triangle`/)
+  })
+
+  test('the lesson of a class that is not senior is not a way into the rule: the primary prompt has no picture rule', () => {
+    expect(lesson(6, 'KE')).not.toContain('coordinate_plane')
+  })
+})
+
 describe('the reader of a practice answered on paper, for a senior class', () => {
   const read = (grade: number, country = 'ZA', place?: 'practice') => renderPrompt('read_paper', md('read_paper'), klass('Mathematics', grade, country), place)
   const ALGEBRA = 'Keep algebra as written: letters, powers as `^` or `²`, minus signs, brackets and `√`.'

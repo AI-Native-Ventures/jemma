@@ -19,6 +19,8 @@ export type MyMathsInput = {
   now: Date
   /** The subject of the learner's class. */
   subject: string
+  /** The grade of the learner's class. A senior class (Mathematics, Grades 7 to 12) with an approved map lists the families of that map. Not known: the list as it always was. */
+  grade?: number | null
   /** The topics of this year's approved maps of the classes the learner is in. */
   topics: { id: string; name: string; family: string; term: number; position: number; prerequisiteIds: string[] }[]
   /** The learner's gaps, open and fixed. */
@@ -47,6 +49,9 @@ export type MyMaths = { subject: string; strands: MyMathsStrand[]; gaps: MyMaths
 
 /** The most the screen suggests. */
 const MAX_SUGGESTIONS = 3
+
+/** A senior class: Mathematics, Grades 7 to 12. Its map has algebra, functions, trigonometry and the like, not the six strands of primary school. */
+const SENIOR_GRADES = { from: 7, to: 12 }
 
 /** The same name by the rule the planner and the profile use for topic names: trimmed, lower case. */
 const same = (a: string, b: string): boolean => a.trim().toLowerCase() === b.trim().toLowerCase()
@@ -149,5 +154,16 @@ export function buildMyMaths(input: MyMathsInput): MyMaths {
     if (pick) suggestions.push(fromPick(pick))
   }
 
-  return { subject, strands, gaps, suggestions }
+  // A senior class (Mathematics, Grades 7 to 12) whose class has an approved map: "All of Mathematics" lists the families of that map, in the order
+  // they first appear in it (term, then position), and then any of the six primary strands that holds a score of the learner. A primary strand with
+  // no topic in the map and no score is left out. Everyone else has the list above: the six strands, then any other family of the map.
+  const senior =
+    subject === 'Mathematics' && typeof input.grade === 'number' && input.grade >= SENIOR_GRADES.from && input.grade <= SENIOR_GRADES.to && topics.length > 0
+  if (!senior) return { subject, strands, gaps, suggestions }
+  const ownFamilies = mapFamilies.filter((f, i) => mapFamilies.indexOf(f) === i)
+  const shown = [
+    ...ownFamilies.map((family) => strands.find((s) => s.family === family)!),
+    ...strands.filter((s) => strandOrder(subject).includes(s.family) && !ownFamilies.includes(s.family) && s.score.asked > 0),
+  ]
+  return { subject, strands: shown, gaps, suggestions }
 }
