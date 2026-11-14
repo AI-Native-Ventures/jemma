@@ -154,6 +154,11 @@ test.describe('small faults a judge can run into', () => {
 
     await page.goto(`/t/${sb.classId}/learners/records`)
     await page.getByRole('button', { name: /Use the tidy file/ }).click()
+    // Choosing the file opens the check screen of that file (its address ends with the file's id). Wait until that screen is open before
+    // anything else. On a fresh server the first visit to it is slow (it is built on that visit), and a reload while the page is still on
+    // its way there brings back the upload screen, where "What Jemma understood" never shows. That is what failed this test now and then.
+    await check(page).toHaveURL(/\/learners\/records\/[0-9a-f-]{36}$/)
+    const importId = page.url().split('/').pop()!
     // The screen refreshes itself while Jemma reads, but with a slow database a refresh can be cut off by the next one. So wait on the
     // database for the file to be read, then open the screen again.
     const status = async () => (await db.from('record_imports').select('status').eq('school_id', school)).data?.[0]?.status
@@ -162,7 +167,6 @@ test.describe('small faults a judge can run into', () => {
     await check(page.getByRole('heading', { name: 'What Jemma understood' })).toBeVisible()
     await page.getByRole('button', { name: 'Add to records' }).click()
     await expect.poll(status, { timeout: 120_000, intervals: [2000] }).toBe('approved')
-    const importId = page.url().split('/').pop()!
     // Saying yes queues the writing; the agent writes the fifteen records.
     const written = async () => (await db.from('learner_records').select('id').eq('import_id', importId)).data?.length
     await expect.poll(written, { timeout: 180_000, intervals: [2000] }).toBe(15)
