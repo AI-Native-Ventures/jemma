@@ -35,9 +35,10 @@ Each is a tap by a named teacher, saved in `approvals` with the name and the tim
 - Answer key: Approve key.
 - Unsure marks: the teacher checks the paper.
 - Guardian link: the teacher says yes.
-- Sharing results: Share with parents, once per test (also `tests.shared_by`).
-- Long view pattern: Looks right (also `long_view_patterns.approved_by_name`).
-- The talk: We have talked. Only then does the parent see the pattern (`discussed_by_name`). The learner never does.
+- Past records: Add to records.
+- Sharing results: Share with parents, once per test.
+- Long view pattern: Looks right.
+- The talk: We have talked. Only then does a parent see it. The learner never does.
 
 ## What is logged
 
