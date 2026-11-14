@@ -11,7 +11,7 @@ const chip = 'flex min-h-[76px] w-full cursor-pointer flex-col items-center just
 
 /**
  * The 12 grades of the CAPS maps. The learner's school grade says "your grade" and the grades already in My own say "added". A tap calls
- * `addMyGrade` (it loads that grade's map), says "Loading Grade N..." while it works and opens My maths at that grade. A refusal is said in plain
+ * `addMyGrade` (it loads that grade's map), says "Loading Grade N..." while it works and opens My maths at the class it made. A refusal is said in plain
  * words under the chips. Every grade can be added, the ones ahead of the learner's own too.
  */
 export function GradePicker({ schoolGrade, added }: { schoolGrade: number; added: number[] }) {
@@ -27,7 +27,7 @@ export function GradePicker({ schoolGrade, added }: { schoolGrade: number; added
     start(async () => {
       const res = await addMyGrade(grade)
       if (res.ok) {
-        router.push(`/k/maths?grade=${grade}`)
+        router.push(`/k/maths?class=${res.classId}`)
         router.refresh()
         return
       }

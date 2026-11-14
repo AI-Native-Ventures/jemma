@@ -97,7 +97,7 @@ test.describe('My own, the screens', () => {
 
     // Grade 7 is above her own grade: one plain line.
     await grades.getByRole('link', { name: 'Grade 7' }).click()
-    await expect(page).toHaveURL(/\/k\/maths\?grade=7$/, { timeout: 45_000 })
+    await expect(page).toHaveURL(/\/k\/maths\?class=[0-9a-f-]{36}$/, { timeout: 45_000 })
     await check(page.getByText('This is Grade 7 work. Take your time.')).toBeVisible()
     await expect(grades.getByRole('link', { name: 'Grade 7' })).toHaveAttribute('aria-current', 'page')
     await noSidewaysScroll(page)
@@ -118,7 +118,7 @@ test.describe('My own, the screens', () => {
 
     // Grade 9: it loads its CAPS map and opens My maths at it, with its topics and the line.
     await sheet.getByRole('button', { name: 'Grade 9' }).click()
-    await expect(page).toHaveURL(/\/k\/maths\?grade=9$/, { timeout: 90_000 })
+    await expect(page).toHaveURL(/\/k\/maths\?class=[0-9a-f-]{36}$/, { timeout: 90_000 })
     await check(page.getByText('This is Grade 9 work. Take your time.')).toBeVisible()
     await expect(page.getByRole('navigation', { name: 'Grades' }).getByRole('link', { name: 'Grade 9' })).toHaveAttribute('aria-current', 'page')
     await expect(page.getByRole('navigation', { name: 'Grades' }).getByRole('link')).toHaveCount(4)
@@ -136,9 +136,13 @@ test.describe('My own, the screens', () => {
     expect(maps.map((m) => m.status)).toEqual(['approved'])
     expect(((await db.from('topics').select('id').eq('map_id', maps[0]!.id)).data ?? []).length).toBeGreaterThan(0)
 
+    // The old address ?grade=9 still works: it means the CAPS class of Grade 9.
+    await page.goto('/k/maths?grade=9')
+    await check(page.getByRole('navigation', { name: 'Grades' }).getByRole('link', { name: 'Grade 9' })).toHaveAttribute('aria-current', 'page')
+
     // Into a part of Grade 9 and Practise on a topic: the home says Jemma is writing it. The event is for the private workspace, never the school child.
     await all.getByRole('link').first().click()
-    await expect(page).toHaveURL(/\/k\/maths\/[^/?]+\?grade=9$/, { timeout: 45_000 })
+    await expect(page).toHaveURL(/\/k\/maths\/[^/?]+\?class=[0-9a-f-]{36}$/, { timeout: 45_000 })
     const practise = page.locator('main').getByRole('button', { name: /^Practise / }).first()
     await check(practise).toBeVisible()
     await noSidewaysScroll(page)

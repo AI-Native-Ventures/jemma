@@ -15,11 +15,11 @@ export const dynamic = 'force-dynamic'
 /**
  * One part of Mathematics: its label and the learner's count, then this year's topics of that part with their counts, the stage of a gap on
  * a topic, and a Practise button for each. When the class has no approved map, or the map has no topic of this part, one line and one button
- * to practise the part itself. In My own the address carries the grade (`?grade=7`), and the way back goes to that grade.
+ * to practise the part itself. In My own the address carries the class (`?class=<id>`), and the way back goes to that class.
  */
-export default async function MyMathsPartPage({ params, searchParams }: { params: Promise<{ family: string }>; searchParams?: Promise<{ grade?: string | string[] }> }) {
+export default async function MyMathsPartPage({ params, searchParams }: { params: Promise<{ family: string }>; searchParams?: Promise<{ class?: string | string[]; grade?: string | string[] }> }) {
   const { family } = await params
-  const shape = await getScreenShape((await searchParams)?.grade)
+  const shape = await getScreenShape((await searchParams) ?? {})
   const own = shape.workspace === 'own' ? shape : null
   const { firstName, maths, status } = await getMyMaths(own?.picked?.classId)
   const strand = maths.strands.find((s) => s.family === family)
@@ -27,7 +27,7 @@ export default async function MyMathsPartPage({ params, searchParams }: { params
   const grade = own?.picked?.grade ?? null
   // In My own there is no teacher to wait for: a part with no topic says the grade has none yet.
   const screen = strandScreen(strand, own && grade !== null ? noTopicsLine(grade) : undefined)
-  const back = own && grade !== null ? `/k/maths?grade=${grade}` : '/k/maths'
+  const back = own?.picked ? `/k/maths?class=${own.picked.classId}` : '/k/maths'
   const lock = lockOf(status)
   return (
     <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans leading-[normal] lg:min-h-dvh">

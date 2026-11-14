@@ -3,6 +3,7 @@ import type { JemmaDb } from './db'
 import { buildMyMaths, type Score } from './logic'
 import { maybe, ok } from './tools/context'
 import { loadMyMathsInput } from './tools/read/practice-input'
+import { capsClassName, isCapsClassName, OWN_GRADES } from './own-class-names'
 
 // A learner's own private workspace ("My own") beside the school one ("My school"). It is a SECOND `children` row for the same learner (the
 // "twin": same name, grade and login, `private_of` = the school child), in a personal school of its own (`schools.kind = 'private'`), with one
@@ -11,8 +12,7 @@ import { loadMyMathsInput } from './tools/read/practice-input'
 // the class reports never see it. Nothing here writes to the school child, its class or its school. Server only: every function takes the
 // service client, and checks that the person acting may act for the learner.
 
-/** The grades a learner can add: the CAPS maps cover Grades 1 to 12. */
-export const OWN_GRADES = { from: 1, to: 12 } as const
+export { capsClassName, isCapsClassName, OWN_GRADES }
 
 /** What a learner reads when a grade or a person is refused. A message is plain words. */
 export class OwnWorkspaceError extends Error {
@@ -106,7 +106,7 @@ const topicCountOf = async (db: JemmaDb, classId: string): Promise<number> => {
 }
 
 /**
- * Adds a grade (1 to 12) to a learner's own workspace: a private Mathematics class "Grade {N} (my own)" in the personal school, owned by the
+ * Adds a grade (1 to 12) to a learner's own workspace: the private Mathematics CAPS class "Grade {N} (my own)" (`capsClassName`) in the personal school, owned by the
  * person acting (the learner, or the parent who acts for them), with the twin enrolled. In a school in South Africa the class gets the CAPS map of
  * that grade, approved, with its topics, written by the same code the demo seed uses for 5A, 7A and 4A, and the line "Loaded the CAPS map for
  * Grade {N}: {count} topics". Anywhere else the class has no map yet. Adding a grade that is already there adds nothing (and finishes a map that
@@ -122,7 +122,8 @@ export async function addOwnGrade(db: JemmaDb, twinId: string, grade: number, ac
   const school = await ok(db.from('schools').select('country, kind').eq('id', twin.school_id).single())
   if (school.kind !== 'private') throw new OwnWorkspaceError('That is not a private workspace.')
 
-  const sameGrade = () => ok(db.from('classes').select('id').eq('school_id', twin.school_id).eq('grade', grade).order('created_at').order('id'))
+  // Only the CAPS class of the grade counts: a learner's own curriculum of the same grade (P97) never blocks it and never gets its map.
+  const sameGrade = () => ok(db.from('classes').select('id').eq('school_id', twin.school_id).eq('grade', grade).eq('name', capsClassName(grade)).order('created_at').order('id'))
   let classId: string
   let created = false
   const existing = (await sameGrade())[0]
@@ -133,7 +134,7 @@ export async function addOwnGrade(db: JemmaDb, twinId: string, grade: number, ac
     for (let attempt = 0; attempt < 5 && !made; attempt++) {
       const row = await db
         .from('classes')
-        .insert({ school_id: twin.school_id, teacher_id: actorUserId, name: `Grade ${grade} (my own)`, grade, year: now.getUTCFullYear(), subject: 'Mathematics', join_code: code })
+        .insert({ school_id: twin.school_id, teacher_id: actorUserId, name: capsClassName(grade), grade, year: now.getUTCFullYear(), subject: 'Mathematics', join_code: code })
         .select('id')
         .single()
       if (row.data) made = row.data.id
@@ -168,27 +169,34 @@ export async function addOwnGrade(db: JemmaDb, twinId: string, grade: number, ac
 
 const sum = (scores: Score[]): Score => ({ right: scores.reduce((n, s) => n + s.right, 0), asked: scores.reduce((n, s) => n + s.asked, 0) })
 
-export type OwnClass = { id: string; name: string; grade: number }
+/** One class of a private workspace. `caps` is true for the CAPS class of a grade (`capsClassName`), false for a learner's own curriculum (P97). */
+export type OwnClass = { id: string; name: string; grade: number; caps: boolean }
 
-/** The classes of a private workspace, one for each grade it has, lowest grade first. A cheap read (no counts): nothing but the classes. */
+/**
+ * The classes of a private workspace, lowest grade first; of one grade the CAPS class comes first, then the learner's own curricula in the order
+ * they were made. A cheap read (no counts): nothing but the classes.
+ */
 export async function listOwnClasses(db: JemmaDb, twinId: string): Promise<OwnClass[]> {
   const enrolments = await ok(db.from('enrolments').select('class_id').eq('child_id', twinId))
   const ids = [...new Set(enrolments.map((e) => e.class_id))]
   if (ids.length === 0) return []
-  const classes = await ok(db.from('classes').select('id, name, grade, created_at').in('id', ids))
-  return classes.sort((a, b) => a.grade - b.grade || a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id)).map((c) => ({ id: c.id, name: c.name, grade: c.grade }))
+  const classes = (await ok(db.from('classes').select('id, name, grade, created_at').in('id', ids))).map((c) => ({ ...c, caps: isCapsClassName(c.name, c.grade) }))
+  return classes
+    .sort((a, b) => a.grade - b.grade || Number(b.caps) - Number(a.caps) || a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id))
+    .map((c) => ({ id: c.id, name: c.name, grade: c.grade, caps: c.caps }))
 }
 
 /**
- * The class "My maths" shows first in a private workspace: the one of the learner's own grade, else the lowest grade. Null when the workspace has
- * no grade yet.
+ * The class "My maths" shows first in a private workspace: the CAPS class of the learner's own grade, else a class of that grade (an own
+ * curriculum), else the lowest grade. Null when the workspace has no class yet.
  */
 export async function defaultOwnClass(db: JemmaDb, twinId: string): Promise<string | null> {
   const [classes, twin] = await Promise.all([listOwnClasses(db, twinId), maybe(db.from('children').select('grade').eq('id', twinId).maybeSingle())])
+  // The list puts the CAPS class of a grade before an own class of it, so the first of the learner's grade is the CAPS one when there is one.
   return (classes.find((c) => c.grade === twin?.grade) ?? classes[0])?.id ?? null
 }
 
-export type OwnGrade = { classId: string; grade: number; name: string; /** Topics on the approved map of this grade. */ topics: number; /** The learner's own count in this grade. */ score: Score }
+export type OwnGrade = { classId: string; grade: number; name: string; /** True for the CAPS class of the grade, false for the learner's own curriculum. */ caps: boolean; /** Topics on the approved map of this grade. */ topics: number; /** The learner's own count in this grade. */ score: Score }
 
 /** The grades a private workspace has: for each, the class, the topics of its map and the learner's own count (from `buildMyMaths`, the same rule as "My maths"). */
 export async function getOwnOverview(db: JemmaDb, twinId: string, now: Date = new Date()): Promise<OwnGrade[]> {
@@ -197,7 +205,7 @@ export async function getOwnOverview(db: JemmaDb, twinId: string, now: Date = ne
     classes.map(async (c) => {
       const input = await loadMyMathsInput(db, twinId, now, { classId: c.id })
       const topics = buildMyMaths(input).strands.flatMap((s) => s.topics)
-      return { classId: c.id, grade: c.grade, name: c.name, topics: input.topics.length, score: sum(topics.map((t) => t.score)) }
+      return { classId: c.id, grade: c.grade, name: c.name, caps: c.caps, topics: input.topics.length, score: sum(topics.map((t) => t.score)) }
     }),
   )
 }
@@ -241,6 +249,7 @@ export async function getOwnWorkspaceForTeacher(
         classId: c.id,
         grade: c.grade,
         name: c.name,
+        caps: c.caps,
         topics: mine.topics.length,
         score: sum(topics.map((t) => t.score)),
         practised: topics.filter((t) => t.score.asked > 0).map((t) => ({ topicId: t.id, name: t.name, term: t.term, score: t.score })),

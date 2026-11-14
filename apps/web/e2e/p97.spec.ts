@@ -284,7 +284,8 @@ test.describe('Add your own work', () => {
     await check(page.getByRole('heading', { level: 2, name: 'Term 2' })).toHaveCount(0)
     await page.getByRole('button', { name: 'These look right' }).click()
     await check(page.getByRole('heading', { level: 1, name: 'Done. Find it in My maths.' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Open My maths' })).toHaveAttribute('href', '/k/maths?grade=6')
+    // The link names the class of the own curriculum (P95c), not the grade: the CAPS class of Grade 6 is a class of its own.
+    await expect(page.getByRole('link', { name: 'Open My maths' })).toHaveAttribute('href', `/k/maths?class=${map.class_id}`)
     await noSidewaysScroll(page)
     await proof(page, 'own-curriculum-done')
 
@@ -299,6 +300,18 @@ test.describe('Add your own work', () => {
     expect(approvals).toEqual([{ kind: 'topic_map', decision: 'approved', decided_by_name: 'Amina', school_id: schoolId }])
     // Nothing of the school moved: Amina's school child has no own class and the school's own classes are the same five.
     expect((await db.from('enrolments').select('class_id').eq('child_id', sb.childId)).data).toHaveLength(1)
+
+    // "Open My maths" opens the own curriculum itself, not the CAPS class of its grade (P95c): its chip is the chosen one. The old address means the
+    // CAPS class of the grade.
+    await page.getByRole('link', { name: 'Open My maths' }).click()
+    await expect(page).toHaveURL(new RegExp(`/k/maths\\?class=${map.class_id}$`), { timeout: 45_000 })
+    const chips = page.getByRole('navigation', { name: 'Grades' })
+    await check(chips.getByRole('link', { name: "Grade 6 \u00b7 My school's Term 1 plan" })).toHaveAttribute('aria-current', 'page')
+    await expect(chips.getByRole('link', { name: 'Grade 6', exact: true })).not.toHaveAttribute('aria-current', 'page')
+    await noSidewaysScroll(page)
+    await page.goto('/k/maths?grade=6')
+    await check(chips.getByRole('link', { name: 'Grade 6', exact: true })).toHaveAttribute('aria-current', 'page')
+    await expect(chips.getByRole('link', { name: "Grade 6 \u00b7 My school's Term 1 plan" })).not.toHaveAttribute('aria-current', 'page')
   })
 
   test('a learner in My school is told to switch, and has no way to add anything there', async ({ page }) => {

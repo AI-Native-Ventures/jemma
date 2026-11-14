@@ -20,11 +20,12 @@ const list = 'm-0 flex list-none flex-col rounded-20 border border-line bg-card 
 /**
  * "My maths": the learner's own count in each part of Mathematics ("5 of 6 right", never a percent), what Jemma suggests, the learner's gaps
  * and a way into each part. The count is the learner's own, from class tests the teacher has shared and from their own practices.
- * In My own the switch is on top and, under it, a chip for each grade the learner added: the page is that one grade's map (the address carries it,
- * `?grade=7`), with one plain line above a grade higher than the learner's own and "No topics yet" for a grade with no map.
+ * In My own the switch is on top and, under it, a chip for each class of the learner's private workspace (the CAPS class of a grade, and a curriculum
+ * of the learner's own): the page is that one class's map (the address carries it, `?class=<id>`; the old `?grade=7` means the CAPS class of that
+ * grade), with one plain line above a class of a grade higher than the learner's own and "No topics yet" for a class with no map.
  */
-export default async function MyMathsPage({ searchParams }: { searchParams?: Promise<{ grade?: string | string[] }> } = {}) {
-  const shape = await getScreenShape((await searchParams)?.grade)
+export default async function MyMathsPage({ searchParams }: { searchParams?: Promise<{ class?: string | string[]; grade?: string | string[] }> } = {}) {
+  const shape = await getScreenShape((await searchParams) ?? {})
   const own = shape.workspace === 'own' ? shape : null
   const { firstName, maths, status } = await getMyMaths(own?.picked?.classId)
   const lock = lockOf(status)
@@ -34,7 +35,7 @@ export default async function MyMathsPage({ searchParams }: { searchParams?: Pro
   // Nothing to list: My own with no grade yet, or a grade with no map (a school outside South Africa has no CAPS map to load).
   const empty = own !== null && (grade === null || topicCount === 0)
   const higher = own && grade !== null ? higherGradeLine(grade, own.schoolGrade) : null
-  const toPart = (family: string) => `/k/maths/${family}${own && grade !== null ? `?grade=${grade}` : ''}`
+  const toPart = (family: string) => `/k/maths/${family}${own?.picked ? `?class=${own.picked.classId}` : ''}`
   return (
     <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans leading-[normal] lg:min-h-dvh">
       <AppHeader firstName={firstName} />
@@ -45,7 +46,7 @@ export default async function MyMathsPage({ searchParams }: { searchParams?: Pro
           <h1 className="m-0 text-[30px] leading-[1.14] font-bold tracking-[-0.02em] text-pretty">My maths</h1>
         </div>
 
-        {own ? <GradeChips grades={own.grades} current={grade} /> : null}
+        {own ? <GradeChips grades={own.grades} current={own.picked?.classId ?? null} /> : null}
         {own ? <OwnWorkLink /> : null}
         {own && grade === null ? <p className="m-0 text-[16px] leading-[1.45] text-body">{ADD_A_GRADE}</p> : null}
         {higher ? <p className="m-0 text-[16px] leading-[1.45] text-body">{higher}</p> : null}

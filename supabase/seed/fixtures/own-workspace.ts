@@ -1,5 +1,6 @@
 import { capsMapOf, type CapsMap } from '../../../packages/profiling/src/curriculum/caps-map'
 import type { Json } from '../../../packages/profiling/src/db'
+import { capsClassName } from '../../../packages/profiling/src/own-class-names'
 import { LessonSchema, type Lesson, type Question } from '../../../packages/profiling/src/schemas'
 import { AMINA_LESSON, SESSION_DONE, SESSION_TRY, SESSION_WARMUP } from './marked-state'
 
@@ -125,10 +126,10 @@ export const ownTwinRow = (input: { schoolId: string; aminaId: string; learnerId
   parent_first_name: input.parent.firstName, parent_relation: input.parent.relation,
 })
 
-/** One private Mathematics class for each preloaded grade, owned by Amina's login (the learner owns the workspace). */
+/** One private Mathematics CAPS class for each preloaded grade (named by the one rule, `capsClassName`), owned by Amina's login (the learner owns the workspace). */
 export const ownClassRows = (input: { schoolId: string; learnerId: string; year: number; code: () => string }) =>
   OWN_PRELOADED_GRADES.map((grade) => ({
-    school_id: input.schoolId, teacher_id: input.learnerId, name: `Grade ${grade} (my own)`, grade, year: input.year, subject: 'Mathematics', join_code: input.code(),
+    school_id: input.schoolId, teacher_id: input.learnerId, name: capsClassName(grade), grade, year: input.year, subject: 'Mathematics', join_code: input.code(),
   }))
 
 export const ownLessonRow = (p: OwnPractice, ids: { childId: string; topicId: string }) => ({
