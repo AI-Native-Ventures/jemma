@@ -1,6 +1,7 @@
 'use client'
 
 import { PendingButton } from '@/components/ui/Button'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { useState, useSyncExternalStore, useTransition } from 'react'
 import { Button, Sheet } from '@/components/ui'
 import { addTopic, approveMap, moveTopic, renameTopic, resolveCheck } from '../actions'
@@ -196,9 +197,10 @@ function MapPhone({ view }: { view: MapView }) {
         </section>
       ))}
 
-      <button type="button" onClick={openAdd} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 48, borderRadius: 14, border: '1.5px dashed #8C89A3', background: 'transparent', color: '#1F1D36', fontSize: 15, fontWeight: 600 }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-        {`Add a topic to Term ${term}`}
+      <button type="button" onClick={openAdd} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 48, padding: '10px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: '1.5px dashed #8C89A3', background: 'transparent', color: '#1F1D36', fontSize: 15, fontWeight: 600 }}>
+        <IconLabel gap={8} icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>}>
+          {`Add a topic to Term ${term}`}
+        </IconLabel>
       </button>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4 }}>
@@ -206,10 +208,11 @@ function MapPhone({ view }: { view: MapView }) {
           type="button"
           disabled={pending}
           onClick={() => run(() => approveMap(view.mapId))}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: 14, border: 'none', background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600 }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: 'none', background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600 }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
-          Approve map
+          <IconLabel gap={8} icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>}>
+            Approve map
+          </IconLabel>
         </PendingButton>
         <p style={{ margin: 0, textAlign: 'center', fontSize: 13, color: '#5D5A73' }}>You can edit the map any time. Jemma re-tags past results.</p>
       </div>
@@ -227,7 +230,7 @@ function MapPhone({ view }: { view: MapView }) {
             </select>
           </label>
         ) : null}
-        <Button variant="primary" onClick={submitSheet}>{sheet?.kind === 'add' ? 'Add topic' : 'Save topic'}</Button>
+        <Button variant="primary" className="!h-auto min-h-[52px] !px-5 py-3" onClick={submitSheet}>{sheet?.kind === 'add' ? 'Add topic' : 'Save topic'}</Button>
       </Sheet>
     </div>
   )

@@ -1,4 +1,5 @@
 export { DemoBadge } from './DemoBadge'
+export { EmptyLine } from './EmptyLine'
 export { EmptyState } from './EmptyState'
 export type { EmptyStateProps } from './EmptyState'
 export { ErrorRetry } from './ErrorRetry'

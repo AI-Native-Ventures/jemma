@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { getPaperView, hhmm } from '@/lib/data/p31'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import { PhotoViewer } from './PhotoViewer'
@@ -40,9 +41,10 @@ export default async function PaperPage({
           {name}&apos;s paper as you snapped it at {hhmm(view.paper.createdAt)}.
           {focus?.crop ? ` The coral box is question ${focus.n}${focus.unsure ? ", the answer Jemma wasn't sure about" : ''}.` : ''}
         </p>
-        <Link href={back} className="flex h-[52px] items-center justify-center gap-2 rounded-14 bg-card text-[17px] font-semibold text-ink no-underline">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>
-          {focus && item ? `Back to question ${focus.n}` : 'Back'}
+        <Link href={back} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-card px-5 py-3 text-center text-[17px] font-semibold text-balance text-ink no-underline">
+          <IconLabel gap={8} icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>}>
+            {focus && item ? `Back to question ${focus.n}` : 'Back'}
+          </IconLabel>
         </Link>
       </div>
     </div>

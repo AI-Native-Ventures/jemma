@@ -94,7 +94,7 @@ export function PairDesktopRow() {
         <span data-testid="pair-code" className="flex h-[64px] items-center justify-center rounded-14 bg-soft-2 text-[28px] font-bold tracking-[0.3em]">
           {failed ? 'No code' : (code ?? '......')}
         </span>
-        <button type="button" onClick={() => setOpen(false)} className="flex h-[52px] items-center justify-center rounded-14 bg-ink text-[17px] font-semibold text-white">
+        <button type="button" onClick={() => setOpen(false)} className="flex min-h-[52px] items-center justify-center rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white">
           Done
         </button>
       </Sheet>

@@ -1,12 +1,13 @@
 import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
-import { NeedsYouList } from '@/components/blocks'
+import { EmptyLine, NeedsYouList } from '@/components/blocks'
 import { Headline } from '@/components/blocks'
 import { markReteachDone } from './gaps/actions'
 import { FullLogLink } from './log/FullLogLink'
 import { ShareCard } from './ShareCard'
 import { PrintButton } from './gaps/LaptopPrintButton'
 import { numberWord, type ClassGapView, type ClassHome, type GapDetail } from '@/lib/data/p18'
+import { emptyGapsLine, emptyLogLine } from '@/lib/empty-boxes'
 
 const diamond = (size: number, mt: string) => (
   <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" className={`flex-none ${mt}`}>
@@ -161,6 +162,7 @@ function Detail({ detail, base }: { detail: GapDetail; base: string }) {
 export function LaptopHome({ home, detail, base, classId }: { home: ClassHome; detail: GapDetail | null; base: string; classId: string }) {
   const selected = detail?.gap.key
   const test = home.latestTest
+  const noGaps = emptyGapsLine(home.gaps.length)
   return (
     <div className="px-9 pt-8 pb-10 leading-[normal]">
       <div className="mx-auto flex max-w-[1120px] flex-col gap-[22px]">
@@ -189,6 +191,7 @@ export function LaptopHome({ home, detail, base, classId }: { home: ClassHome; d
             <h2 id="gaps" className="m-0 mb-0.5 text-[18px] font-semibold">
               What the class doesn&apos;t get yet
             </h2>
+            {noGaps ? <EmptyLine>{noGaps}</EmptyLine> : null}
             {home.gaps.map((g, i) => (
               <GapCard key={g.key} gap={g} index={i} on={g.key === selected} base={base} />
             ))}
@@ -221,18 +224,24 @@ export function LaptopHome({ home, detail, base, classId }: { home: ClassHome; d
             <h2 id="did" className="m-0 text-[16px] font-semibold">
               What Jemma did today
             </h2>
-            <Link href={`${base}/notifications`} className="flex min-h-11 items-center text-[14px] font-semibold text-ink underline underline-offset-[3px]">
-              See all
-            </Link>
+            {home.activity.length > 0 ? (
+              <Link href={`${base}/notifications`} className="flex min-h-11 items-center text-[14px] font-semibold text-ink underline underline-offset-[3px]">
+                See all
+              </Link>
+            ) : null}
           </div>
-          <ol className="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-x-6 gap-y-2.5 p-0">
-            {home.activity.map((e, i) => (
-              <li key={i} className="flex gap-3 text-[14px] leading-[1.4]">
-                <span className="w-10 flex-none text-body tabular-nums">{e.at}</span>
-                <span>{e.text}</span>
-              </li>
-            ))}
-          </ol>
+          {home.activity.length === 0 ? (
+            <EmptyLine>{emptyLogLine('teacher')}</EmptyLine>
+          ) : (
+            <ol className="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-x-6 gap-y-2.5 p-0">
+              {home.activity.map((e, i) => (
+                <li key={i} className="flex gap-3 text-[14px] leading-[1.4]">
+                  <span className="w-10 flex-none text-body tabular-nums">{e.at}</span>
+                  <span>{e.text}</span>
+                </li>
+              ))}
+            </ol>
+          )}
           <FullLogLink href={`${base}/log`} />
         </section>
       </div>

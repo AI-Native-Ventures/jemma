@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { notFound } from 'next/navigation'
 import { getChildProfileView, dayLabel } from '@/lib/data/p19'
 import { getLongViewSummary } from '@/lib/data/p52'
@@ -169,9 +170,10 @@ export default async function ChildProfilePage({ params }: { params: Promise<{ c
               <span style={{ fontSize: 15, lineHeight: 1.45 }}>{v.latestNote.text}</span>
             </div>
           ) : null}
-          <Link href={`${base}/learners/${v.id}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 46, borderRadius: 12, border: '1.5px solid #1F1D36', color: '#1F1D36', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-            Add a note
+          <Link href={`${base}/learners/${v.id}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 46, padding: '10px 20px', borderRadius: 12, border: '1.5px solid #1F1D36', color: '#1F1D36', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>
+            <IconLabel gap={8} icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>}>
+              Add a note
+            </IconLabel>
           </Link>
           {v.linkedTo ? <p style={{ margin: 0, fontSize: 13, color: '#5D5A73' }}>{v.linkedTo} sees your notes on {v.name}&apos;s profile.</p> : null}
         </section>

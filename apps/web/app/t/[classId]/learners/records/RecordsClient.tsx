@@ -225,6 +225,7 @@ function Paste({ pending, onSend, setError }: { pending: boolean; onSend: (text:
       </Row>
       <Button
         size="md"
+        className="!h-auto min-h-[52px] !px-5 py-3"
         pending={pending}
         onClick={() => {
           if (text.trim() === '') return setError('Paste the table first.')
@@ -279,10 +280,10 @@ function OneResult({ classId, subject, grade, year, learners, families }: { clas
         </h2>
         <p className="m-0 text-[15px] leading-[1.45]">{`${saved.name}'s Long view is updating with this result. It shows who added it.`}</p>
         <div className="flex flex-col gap-2 sm:flex-row">
-          <Button href={`/t/${classId}/learners/${saved.childId}/long-view`} size="sm">
+          <Button href={`/t/${classId}/learners/${saved.childId}/long-view`} size="sm" className="!h-auto min-h-[46px] !px-5 py-2.5">
             {`See ${saved.name}'s Long view`}
           </Button>
-          <Button variant="secondary" size="sm" onClick={() => setSaved(null)}>
+          <Button variant="secondary" size="sm" className="!h-auto min-h-[46px] !px-5 py-2.5" onClick={() => setSaved(null)}>
             Add another result
           </Button>
         </div>
@@ -379,7 +380,7 @@ function OneResult({ classId, subject, grade, year, learners, families }: { clas
       <Row id="or-teacher" text="Teacher's name at the time" hint="The teacher who set or marked it then.">
         <input id="or-teacher" type="text" value={teacher} onChange={(e) => setTeacher(e.target.value)} className={input} />
       </Row>
-      <Button pending={pending} onClick={save}>
+      <Button pending={pending} onClick={save} className="!h-auto min-h-[52px] !px-5 py-3">
         Save this result
       </Button>
     </Card>

@@ -50,9 +50,9 @@ export default async function DemoResetPage() {
         </div>
         <div className="mt-1.5 flex flex-col gap-2">
           <form action={resetDemoAction} className="contents">
-            <PendingButton type="submit" className="flex h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-14 bg-ink font-[inherit] text-[17px] font-semibold text-white">Reset demo</PendingButton>
+            <PendingButton type="submit" className="flex min-h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center font-[inherit] text-[17px] font-semibold text-balance text-white">Reset demo</PendingButton>
           </form>
-          <a href="/demo/switch" className="flex h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card text-[17px] font-semibold text-ink no-underline">Keep my demo</a>
+          <a href="/demo/switch" className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-5 py-3 text-center text-[17px] font-semibold text-balance text-ink no-underline">Keep my demo</a>
         </div>
       </section>
     </DimmedClass>

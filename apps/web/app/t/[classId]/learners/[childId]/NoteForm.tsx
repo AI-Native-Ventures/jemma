@@ -67,7 +67,7 @@ export function NoteForm({ childId, initialKind, linkedTo, name }: { childId: st
         type="button"
         onClick={submit}
         disabled={pending || !text.trim()}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 48, borderRadius: 14, border: 'none', background: '#1F1D36', color: '#FFFFFF', fontSize: 16, fontWeight: 600, opacity: pending || !text.trim() ? 0.6 : 1, cursor: 'pointer' }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 48, padding: '10px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: 'none', background: '#1F1D36', color: '#FFFFFF', fontSize: 16, fontWeight: 600, opacity: pending || !text.trim() ? 0.6 : 1, cursor: 'pointer' }}
       >
         Save note
       </PendingButton>

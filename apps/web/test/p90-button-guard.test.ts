@@ -3,21 +3,24 @@ import { globSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-// P90 guard: no button or link of the learner's screens (apps/web/app/k) or the parent's screens (apps/web/app/p) is drawn as a big tap target
+// P90 guard (widened in P91 to the teacher's screens, apps/web/app/t, the sign-in and sign-up pages, apps/web/app/(auth), and the demo pages,
+// apps/web/app/demo): no button or link of the learner's screens (apps/web/app/k) or the parent's screens (apps/web/app/p) is drawn as a big tap target
 // with a fixed height and no room at the sides. It reads the source files, not a browser. A button, a link, a label, a PendingButton, a Button, or a style object named ...Button / ...btn, that
 //   - has a fixed `h-[Npx]` (or `h-N`) and no fixed width (it is as wide as its box or its grid cell: `w-full` or no width at all) and no `px-`
 //     (or `pl-` and `pr-`), or
 //   - sets a fixed inline `height` of 46 px or more and no space at the sides (`padding`) and no fixed `width`, or
 //   - is the kit's `<Button>` (a fixed height and 16 px at the sides) without the override that gives it `min-h-` and `px-5` or more
+//     (the kit's `variant="link"` is a plain underlined text link with `min-h-11` and no fixed height: it is let through)
 // is a fault: its words touch the edges and a long label cannot take a second line.
 
 const webRoot = resolve(import.meta.dirname, '..')
-const files = ['app/k/**/*.{ts,tsx}', 'app/p/**/*.{ts,tsx}'].flatMap((p) => globSync(p, { cwd: webRoot })).sort()
+const files = ['app/k/**/*.{ts,tsx}', 'app/p/**/*.{ts,tsx}', 'app/t/**/*.{ts,tsx}', 'app/(auth)/**/*.{ts,tsx}', 'app/demo/**/*.{ts,tsx}'].flatMap((p) => globSync(p, { cwd: webRoot })).sort()
 
 /**
  * Elements left as they are on purpose. An element is let through when its opening tag holds `needle`. Each one says why.
  */
 const ALLOWED: { file: string; needle: string; why: string }[] = [
+  { file: 'app/t/[classId]/settings/SettingsClient.tsx', needle: 'aria-pressed={value === g}', why: 'a grade chip, four to a row: "Grade 10" fills the chip and nothing can wrap, so there is no room to give' },
   { file: 'app/k/sign-in/SignInForm.tsx', needle: 'style={keyStyle}', why: 'a keypad key with one digit in it: the grid sets its width and there are no words to wrap' },
   { file: 'app/p/[childId]/activities/new/ActivityForm.tsx', needle: 'aria-pressed={on}', why: 'a day chip, seven to a row: three letters, no room for 20 px at each side and nothing that can wrap' },
 ]
@@ -111,12 +114,12 @@ const allowed = (file: string, tag: string) => ALLOWED.some((a) => a.file === fi
 const INTERACTIVE = /<(button|Link|a|label|PendingButton|Button)(?=[\s>])/g
 
 /** An icon (an svg, or one of the icon components) first in a flex button with words after it. The icon is left alone at the edge when the words wrap. */
-const ICON_FIRST = /^\s*(?:\{[^{}]*\?\s*)?<(svg|Icon|CameraGlyph|CameraIcon|PhoneIcon|GemIcon)\b/
+const ICON_FIRST = /^\s*(?:\{[^{}]*\?\s*)?<(svg|Icon|[A-Z]\w*(?:Icon|Glyph))\b/
 function iconBesideWords(body: string): boolean {
   if (!ICON_FIRST.test(body)) return false
   const left = body
     .replace(/<svg[\s\S]*?<\/svg>/g, ' ')
-    .replace(/<(Icon|CameraGlyph|CameraIcon|PhoneIcon|GemIcon)\b[^>]*\/>/g, ' ')
+    .replace(/<(Icon|[A-Z]\w*(?:Icon|Glyph))\b[^>]*\/>/g, ' ')
     .replace(/<[^>]*>/g, ' ')
   return /[A-Za-z]{2,}/.test(left)
 }
@@ -135,7 +138,7 @@ function scanSource(file: string, src: string): Found[] {
       const roomy = words.some((w) => /^px-/.test(w)) || (words.some((w) => /^pl-/.test(w)) && words.some((w) => /^pr-/.test(w)))
       if (fixed && wide && !roomy && !allowed(file, tag)) found.push({ file, line, tag: m[1]!, why: 'a fixed h, as wide as its box, and no px-' })
     }
-    if (m[1] === 'Button') {
+    if (m[1] === 'Button' && !/\svariant=["']link["']/.test(tag)) {
       const words = (cls?.text ?? '').replace(/[{}'"`]/g, ' ').split(/\s+/)
       const room = words.some((w) => /^(!)?px-(5|6|7|8)$/.test(w) || /^(!)?px-\[(2\d|[3-9]\d)px\]$/.test(w))
       if (!(room && words.some((w) => w.startsWith('min-h-'))) && !allowed(file, tag)) found.push({ file, line, tag: 'Button', why: 'the kit Button (52 px high, 16 px at the sides) without min-h- and px-5' })
@@ -181,6 +184,15 @@ describe('the guard reads the right files', () => {
     expect(files.some((f) => f.startsWith('app/p/'))).toBe(true)
   })
 
+  it('finds the teacher screens, the sign-in pages and the demo pages too', () => {
+    expect(files).toContain('app/t/[classId]/page.tsx')
+    expect(files).toContain('app/t/[classId]/snap/SnapTestForm.tsx')
+    expect(files).toContain('app/(auth)/sign-in/page.tsx')
+    expect(files).toContain('app/(auth)/_parts.tsx')
+    expect(files).toContain('app/demo/page.tsx')
+    expect(files).toContain('app/demo/reset/page.tsx')
+  })
+
   it('catches the fault it is looking for, and lets a button with room through', () => {
     const bad = `const big = 'flex h-[68px] w-full items-center justify-center rounded-20 bg-coral text-[22px] font-bold'\nexport const A = () => <label className={big}>Take a photo</label>`
     expect(scanSource('x.tsx', bad)).toHaveLength(1)
@@ -216,13 +228,23 @@ describe('the guard reads the right files', () => {
     expect(scanSource('x.tsx', iconSized)).toEqual([])
     const iconOnly = `export const N = () => <Link href="/x" aria-label="Back" style={{ display: 'flex', width: 44, height: 44 }}><svg width="20"><path d="M0 0" /></svg></Link>`
     expect(scanSource('x.tsx', iconOnly)).toEqual([])
+    const kitLink = `export const Q = () => <Button href="/x" variant="link" className="flex-1">Back to the newest</Button>`
+    expect(scanSource('x.tsx', kitLink)).toEqual([])
+    const kitSecondary = `export const R = () => <Button href="/x" variant="secondary" size="sm" className="flex-1">Show older</Button>`
+    expect(scanSource('x.tsx', kitSecondary)).toHaveLength(1)
+    const namedIcon = `export const S = () => <button type="button" className="flex min-h-14 justify-center px-5"><CheckIcon size={20} />Yes, approve</button>`
+    expect(scanSource('x.tsx', namedIcon)).toHaveLength(1)
+    const namedIconGrouped = `export const T = () => <button type="button" className="flex min-h-14 justify-center px-5"><IconLabel icon={<CheckIcon size={20} />}>Yes, approve</IconLabel></button>`
+    expect(scanSource('x.tsx', namedIconGrouped)).toEqual([])
+    const boxedWithWidth = `export const U = () => <a href="/x" style={{ display: 'flex', height: 52, width: '100%', borderRadius: 14 }}>Back</a>`
+    expect(scanSource('x.tsx', boxedWithWidth)).toHaveLength(1)
     const fixedSquare = `export const G = () => <button className="flex h-11 w-[52px] items-center justify-center">x</button>`
     expect(scanSource('x.tsx', fixedSquare)).toEqual([])
   })
 })
 
 describe('no big button without room', () => {
-  it('no button or link of app/k or app/p is as wide as its box with a fixed height and no px-', () => {
+  it('no button or link of app/k, app/p, app/t, app/(auth) or app/demo is as wide as its box with a fixed height and no px-', () => {
     const faults = files.flatMap(scan).map((f) => `${f.file}:${f.line} <${f.tag}> ${f.why}`)
     expect(faults).toEqual([])
   })

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { hillviewPeople } from '../../../../supabase/seed/fixtures/hillview'
 import { getDemoState } from '@/lib/demo'
 import { tryDemoAction } from './actions'
@@ -182,9 +183,10 @@ export default async function DemoPage() {
               Reset puts your copy back to step 1 with fresh sample papers. It takes about 10 seconds and only changes your copy.
             </p>
           </div>
-          <a href="/demo/reset" className="flex h-12 items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card text-[16px] font-semibold text-ink no-underline">
-            <ResetIcon size={20} />
-            Reset demo
+          <a href="/demo/reset" className="flex min-h-12 items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-5 py-2.5 text-center text-[16px] font-semibold text-balance text-ink no-underline">
+            <IconLabel gap={8} icon={<ResetIcon size={20} />}>
+              Reset demo
+            </IconLabel>
           </a>
           {demo ? <p className="m-0 text-[13px] text-body"><StartedAt iso={demo.startedAt} /></p> : null}
         </section>

@@ -113,7 +113,7 @@ export function NamePicker({
         </p>
       ) : null}
       {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
-      <PendingButton pending={pending} type="button" disabled={!pick || pending} onClick={submit} className="flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink text-[17px] font-semibold text-white disabled:opacity-50">
+      <PendingButton pending={pending} type="button" disabled={!pick || pending} onClick={submit} className="flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
         Paper {position} is {pick?.name ?? '...'}&apos;s
       </PendingButton>
     </div>

@@ -21,7 +21,7 @@ export function EditDetails({ name }: { name: string }) {
           Your name
         </label>
         <input id="your-name" value={value} onChange={(e) => setValue(e.target.value)} className="h-[52px] rounded-14 border border-muted-2 bg-card px-3.5 text-[17px] text-ink" />
-        <PendingButton pending={pending} type="button" disabled={pending || !value.trim()} onClick={() => start(async () => { await saveName(value); setOpen(false) })} className="flex h-[52px] items-center justify-center rounded-14 bg-ink text-[17px] font-semibold text-white disabled:opacity-50">
+        <PendingButton pending={pending} type="button" disabled={pending || !value.trim()} onClick={() => start(async () => { await saveName(value); setOpen(false) })} className="flex min-h-[52px] items-center justify-center rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
           Save
         </PendingButton>
       </Sheet>
@@ -61,7 +61,7 @@ export function DeleteAccount() {
 export function SignOutButton() {
   return (
     <form action={signOut}>
-      <PendingButton type="submit" className="flex h-12 w-full items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card text-[17px] font-semibold text-ink">
+      <PendingButton type="submit" className="flex min-h-12 w-full items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-5 py-2.5 text-center text-[17px] font-semibold text-balance text-ink">
         Sign out
       </PendingButton>
     </form>

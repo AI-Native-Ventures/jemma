@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { EmptyState, Headline, NeedsYouList, WhatJemmaDid } from '@/components/blocks'
+import { EmptyLine, EmptyState, Headline, NeedsYouList, WhatJemmaDid } from '@/components/blocks'
 import { ChevronRightIcon } from '@/components/ui/icons'
 import { getClassHome, getGapDetail, type ClassGapView, type ClassHome, type GapStage } from '@/lib/data/p18'
+import { emptyGapsLine, emptyLogLine } from '@/lib/empty-boxes'
 import { LaptopHome } from './LaptopHome'
 import { FullLogLink } from './log/FullLogLink'
 import { Only } from './Only'
@@ -123,11 +124,13 @@ function NextGap({ gap, index, base }: { gap: ClassGapView; index: number; base:
 }
 
 function Gaps({ home, base, hideDots }: { home: ClassHome; base: string; hideDots: boolean }) {
+  const none = emptyGapsLine(home.gaps.length)
   return (
     <section aria-labelledby="gaps" className="flex flex-col gap-2.5">
       <h2 id="gaps" className="m-0 text-[18px] font-semibold">
         What the class doesn&apos;t get yet
       </h2>
+      {none ? <EmptyLine>{none}</EmptyLine> : null}
       {home.gaps.map((g, i) =>
         home.mode === 'next' ? <NextGap key={g.key} gap={g} index={i} base={base} /> : <HomeGap key={g.key} gap={g} index={i} base={base} hideDots={hideDots} />,
       )}
@@ -297,18 +300,24 @@ function PhoneHome({ home, base, classId }: { home: ClassHome; base: string; cla
             <h2 id="did" className="m-0 text-[16px] font-semibold">
               What Jemma did since yesterday
             </h2>
-            <Link href={`${base}/notifications`} className="flex min-h-11 items-center text-[14px] font-semibold text-ink underline underline-offset-[3px]">
-              See all
-            </Link>
+            {home.activity.length > 0 ? (
+              <Link href={`${base}/notifications`} className="flex min-h-11 items-center text-[14px] font-semibold text-ink underline underline-offset-[3px]">
+                See all
+              </Link>
+            ) : null}
           </div>
-          <ol className="m-0 flex list-none flex-col gap-[9px] p-0">
-            {home.activity.map((e, i) => (
-              <li key={i} className="flex gap-3 text-[14px] leading-[1.4]">
-                <span className={`${e.at.length > 5 ? 'w-[66px]' : 'w-10'} flex-none text-body tabular-nums`}>{e.at}</span>
-                <span>{e.text}</span>
-              </li>
-            ))}
-          </ol>
+          {home.activity.length === 0 ? (
+            <EmptyLine>{emptyLogLine('teacher')}</EmptyLine>
+          ) : (
+            <ol className="m-0 flex list-none flex-col gap-[9px] p-0">
+              {home.activity.map((e, i) => (
+                <li key={i} className="flex gap-3 text-[14px] leading-[1.4]">
+                  <span className={`${e.at.length > 5 ? 'w-[66px]' : 'w-10'} flex-none text-body tabular-nums`}>{e.at}</span>
+                  <span>{e.text}</span>
+                </li>
+              ))}
+            </ol>
+          )}
           <FullLogLink href={`${base}/log`} />
         </section>
       ) : (

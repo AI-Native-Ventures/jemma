@@ -1,6 +1,7 @@
 'use client'
 
 import { Spinner } from '@/components/ui/Button'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { CameraIcon, RetryIcon, WarningIcon } from '@/components/ui/icons'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
@@ -46,10 +47,11 @@ export function MemoReadFailed({ classId, testId }: { classId: string; testId: s
       <div className="mt-1 flex flex-col gap-2">
         <label
           aria-busy={(pending && which === 'photo') || undefined}
-          className={`relative flex h-[52px] items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink ${pending ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
+          className={`relative flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink ${pending ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
         >
-          <CameraIcon size={20} />
-          Take the photo again
+          <IconLabel gap={8} icon={<CameraIcon size={20} />}>
+            Take the photo again
+          </IconLabel>
           <input
             type="file"
             accept="image/*"
@@ -68,10 +70,11 @@ export function MemoReadFailed({ classId, testId }: { classId: string; testId: s
           onClick={again}
           disabled={pending}
           aria-busy={(pending && which === 'same') || undefined}
-          className="relative flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card text-[17px] font-semibold text-ink disabled:cursor-default disabled:opacity-60"
+          className="relative flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-5 py-3 text-center text-[17px] font-semibold text-balance text-ink disabled:cursor-default disabled:opacity-60"
         >
-          <RetryIcon />
-          Try the same photo again
+          <IconLabel gap={8} icon={<RetryIcon />}>
+            Try the same photo again
+          </IconLabel>
           {pending && which === 'same' ? <Spinner /> : null}
         </button>
       </div>
