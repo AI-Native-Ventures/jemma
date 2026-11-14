@@ -128,7 +128,7 @@ describe('the read-only page', () => {
     await page()
     const text = document.body.textContent!
     expect(text).not.toMatch(/%/)
-    expect(text).not.toContain('—')
+    expect(text).not.toContain(String.fromCharCode(0x2014))
     expect(text).not.toMatch(/\b(he|she|his|her)\b/i)
   })
 

@@ -70,7 +70,7 @@ describe('the parent\'s Learn screen on the phone', () => {
     const card = screen.getByRole('region', { name: 'Practise at home' })
     expect(card.textContent).toMatch(/school record/)
     expect(card.textContent).not.toMatch(/\b(he|she|his|her)\b/i)
-    expect(card.textContent).not.toContain('—')
+    expect(card.textContent).not.toContain(String.fromCharCode(0x2014))
   })
 
   it('shows only one copy of the button (the laptop\'s is not drawn on the phone)', async () => {

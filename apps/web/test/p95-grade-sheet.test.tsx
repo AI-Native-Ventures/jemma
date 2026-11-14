@@ -69,7 +69,8 @@ describe('the grade sheet', () => {
   it('has no switch of My school and My own, and says nothing about a teacher', async () => {
     await page()
     expect(screen.queryByRole('group', { name: 'Where you practise' })).toBeNull()
-    expect(document.body.textContent).not.toMatch(/your teacher|—/i)
+    expect(document.body.textContent).not.toMatch(/your teacher/i)
+    expect(document.body.textContent).not.toContain(String.fromCharCode(0x2014))
   })
 
   it('a learner who is in My school is sent back to My maths (there is no grade to add there)', async () => {

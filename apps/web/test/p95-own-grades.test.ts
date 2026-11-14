@@ -65,7 +65,7 @@ describe('the words', () => {
   })
 
   it('no sentence has an em dash', () => {
-    for (const s of [OWN_NOTE, higherGradeLine(9, 6)!, noTopicsLine(9), ADD_A_GRADE]) expect(s).not.toContain('—')
+    for (const s of [OWN_NOTE, higherGradeLine(9, 6)!, noTopicsLine(9), ADD_A_GRADE]) expect(s).not.toContain(String.fromCharCode(0x2014))
   })
 })
 

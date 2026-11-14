@@ -197,7 +197,7 @@ describe('the topics of a grade', () => {
   it('says nothing about a teacher or the school in My own', async () => {
     await page('7')
     expect(document.body.textContent).not.toMatch(/your teacher|the teacher/i)
-    expect(document.body.textContent).not.toContain('—')
+    expect(document.body.textContent).not.toContain(String.fromCharCode(0x2014))
   })
 })
 

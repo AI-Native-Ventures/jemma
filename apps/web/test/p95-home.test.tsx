@@ -58,7 +58,7 @@ describe('the home in My own', () => {
     await page()
     expect(document.body.textContent).not.toMatch(/teacher|marks a test/i)
     expect(document.body.textContent!.replace('Your own practice. Nothing here goes to your school.', '').replace('My school', '')).not.toMatch(/school/i)
-    expect(document.body.textContent).not.toContain('—')
+    expect(document.body.textContent).not.toContain(String.fromCharCode(0x2014))
   })
 
   it('with a suggestion it shows the suggestion as before and not the empty card', async () => {
