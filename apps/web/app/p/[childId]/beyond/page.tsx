@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { notFound } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
 import { getBeyond } from '@/lib/data/p23'
@@ -96,8 +97,9 @@ export default async function ParentBeyondPage({ params }: { params: Promise<{ c
             ))}
           </ul>
           <Link href={`/p/${childId}/activities/new`} style={css('display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border-radius:12px;border:1.5px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:15px;font-weight:600;text-decoration:none')}>
-            <Icon name="plus" size={18} width={2} />
-            Add an activity
+            <IconLabel gap={6} icon={<Icon name="plus" size={18} width={2} />}>
+              Add an activity
+            </IconLabel>
           </Link>
         </section>
 

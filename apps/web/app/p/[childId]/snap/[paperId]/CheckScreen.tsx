@@ -1,5 +1,6 @@
 'use client'
 
+import { IconLabel } from '@/components/ui/IconLabel'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -164,10 +165,11 @@ export function CheckScreen({
           onClick={() => void save()}
           className="flex min-h-14 items-center justify-center gap-2 rounded-14 border-none bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
+          <IconLabel gap={8} icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="m5 12.5 4.5 4.5L19 7.5" />
-          </svg>
-          Confirm and save
+          </svg>}>
+            Confirm and save
+          </IconLabel>
         </button>
         <Link href={retakeHref} className="flex min-h-11 items-center justify-center text-[15px] font-semibold text-ink underline underline-offset-[3px]">
           Retake the photo

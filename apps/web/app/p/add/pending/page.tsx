@@ -1,4 +1,5 @@
 import { PendingButton } from '@/components/ui/Button'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
 import { getDemoState } from '@/lib/demo'
@@ -51,11 +52,12 @@ export default async function LinkPendingPage() {
         </section>
 
         <a href={`/p/${pending.childId}/snap`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: `1.5px solid ${ink}`, background: '#FFFFFF', color: ink, fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={ink} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
+          <IconLabel gap={8} icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={ink} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
             <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" />
             <circle cx="12" cy="12.5" r="3.5" />
-          </svg>
-          Snap {childName}&apos;s homework meanwhile
+          </svg>}>
+            Snap {childName}&apos;s homework meanwhile
+          </IconLabel>
         </a>
 
         {demo ? (

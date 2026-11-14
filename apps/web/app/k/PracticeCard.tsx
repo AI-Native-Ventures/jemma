@@ -2,6 +2,7 @@
 
 import { scoreText, type MyMathsSuggestion } from '@jemma/profiling/logic'
 import { PendingButton } from '@/components/ui/Button'
+import { IconLabel } from '@/components/ui/IconLabel'
 import type { PracticeState } from '@/lib/data/p27'
 import { useRefreshPoll } from '@/lib/use-refresh-poll'
 import Link from 'next/link'
@@ -11,7 +12,7 @@ import { retryPractice, type ActionResult } from './actions'
 import { PractiseButton } from './Practise'
 
 const card = 'flex flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(31,29,54,0.06)]'
-const bigButton = 'flex h-[68px] w-full cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-coral text-[24px] font-bold text-ink disabled:opacity-60'
+const bigButton = 'flex min-h-[68px] w-full cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[24px] disabled:opacity-60'
 const chooseLink = 'flex min-h-11 items-center justify-center text-[16px] font-semibold text-ink underline underline-offset-[3px]'
 
 /** The same coral ring the lesson-loading screen turns while Jemma works. */
@@ -83,10 +84,15 @@ export function PracticeCard({ state, suggestion }: { state: PracticeState; sugg
     <section role="alert" aria-labelledby="practice-card" className={`${card} gap-4`}>
       <h2 id="practice-card" className="m-0 text-[24px] leading-[1.2] font-bold tracking-[-0.01em] text-pretty">Jemma could not write your practice.</h2>
       <PendingButton type="button" pending={pending} onClick={() => run(retryPractice)} className={bigButton}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M20 12a8 8 0 1 1-2.34-5.66" /><path d="M20 4v4.5h-4.5" />
-        </svg>
-        Try again
+        <IconLabel
+          icon={
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M20 12a8 8 0 1 1-2.34-5.66" /><path d="M20 4v4.5h-4.5" />
+            </svg>
+          }
+        >
+          Try again
+        </IconLabel>
       </PendingButton>
       {error ? <p role="alert" className="m-0 text-center text-[14px] text-coral-text">{error}</p> : null}
     </section>

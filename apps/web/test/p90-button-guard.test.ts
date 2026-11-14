@@ -16,12 +16,10 @@ const files = ['app/k/**/*.{ts,tsx}', 'app/p/**/*.{ts,tsx}'].flatMap((p) => glob
 
 /**
  * Elements left as they are on purpose. An element is let through when its opening tag holds `needle`. Each one says why.
- * A line that lists a file P89 owns is a fault P90 may not edit: P89 fixes it, and the line goes once it has.
  */
 const ALLOWED: { file: string; needle: string; why: string }[] = [
   { file: 'app/k/sign-in/SignInForm.tsx', needle: 'style={keyStyle}', why: 'a keypad key with one digit in it: the grid sets its width and there are no words to wrap' },
   { file: 'app/p/[childId]/activities/new/ActivityForm.tsx', needle: 'aria-pressed={on}', why: 'a day chip, seven to a row: three letters, no room for 20 px at each side and nothing that can wrap' },
-  { file: 'app/k/PracticeCard.tsx', needle: 'className={bigButton}', why: 'owned by P89 in this round (the practice card): P89 gives it the same room, then this line goes' },
 ]
 
 type Found = { file: string; line: number; tag: string; why: string }
@@ -112,6 +110,17 @@ const allowed = (file: string, tag: string) => ALLOWED.some((a) => a.file === fi
 
 const INTERACTIVE = /<(button|Link|a|label|PendingButton|Button)(?=[\s>])/g
 
+/** An icon (an svg, or one of the icon components) first in a flex button with words after it. The icon is left alone at the edge when the words wrap. */
+const ICON_FIRST = /^\s*(?:\{[^{}]*\?\s*)?<(svg|Icon|CameraGlyph|CameraIcon|PhoneIcon|GemIcon)\b/
+function iconBesideWords(body: string): boolean {
+  if (!ICON_FIRST.test(body)) return false
+  const left = body
+    .replace(/<svg[\s\S]*?<\/svg>/g, ' ')
+    .replace(/<(Icon|CameraGlyph|CameraIcon|PhoneIcon|GemIcon)\b[^>]*\/>/g, ' ')
+    .replace(/<[^>]*>/g, ' ')
+  return /[A-Za-z]{2,}/.test(left)
+}
+
 function scanSource(file: string, src: string): Found[] {
   const known = consts(src)
   const found: Found[] = []
@@ -132,6 +141,18 @@ function scanSource(file: string, src: string): Found[] {
       if (!(room && words.some((w) => w.startsWith('min-h-'))) && !allowed(file, tag)) found.push({ file, line, tag: 'Button', why: 'the kit Button (52 px high, 16 px at the sides) without min-h- and px-5' })
     }
     const style = attribute(tag, 'style', known)
+    // An icon beside the words of a button whose content is centred: the words wrap to two lines and the icon is left alone at the edge. IconLabel
+    // keeps them together. (A row with its icon at the left and its words beside it is not this: those are not centred.)
+    const drawn = `${cls?.text ?? ''} ${style?.text ?? ''}`
+    // A button that does not shrink (flex: none) or has a fixed width is as wide as its words: it never wraps.
+    const sizedToWords = /flex-none|flex:\s*'?none|(?<![\w-])width:\s*\d|(^|\s)(w|size)-(\[|\d)/.test(drawn)
+    if (/\bflex\b|display:\s*['"]?flex/.test(drawn) && /justify-center|justifyContent:\s*'center'|justify-content:\s*center/.test(drawn) && !sizedToWords) {
+      const from = m.index! + tag.length
+      const close = src.indexOf(`</${m[1]}>`, from)
+      if (close > 0 && iconBesideWords(src.slice(from, close)) && !allowed(file, tag)) {
+        found.push({ file, line, tag: m[1]!, why: 'an icon beside the words (wrap them in IconLabel, from @/components/ui/IconLabel)' })
+      }
+    }
     if (style) {
       const height = /(?<![\w-])height:\s*(\d+)/.exec(style.text)
       const fixedWidth = /(?<![\w-])width:\s*\d+/.test(style.text)
@@ -183,6 +204,18 @@ describe('the guard reads the right files', () => {
     expect(scanSource('x.tsx', kit)).toHaveLength(1)
     const kitRoomy = `export const J = () => <Button variant="primary" className="!h-auto min-h-14 !px-5 py-3" onClick={go}>Got it</Button>`
     expect(scanSource('x.tsx', kitRoomy)).toEqual([])
+    const iconBeside = `export const K = () => <button type="button" className="flex min-h-14 justify-center px-5 gap-3"><svg width="20"><path d="M0 0" /></svg>Retry</button>`
+    expect(scanSource('x.tsx', iconBeside)).toHaveLength(1)
+    const iconBesideInline = `export const L = () => <Link href="/x" style={{ display: 'flex', justifyContent: 'center', minHeight: 56, padding: '12px 20px' }}><Icon name="down" size={18} />Download</Link>`
+    expect(scanSource('x.tsx', iconBesideInline)).toHaveLength(1)
+    const iconGrouped = `export const M = () => <button type="button" className="flex min-h-14 justify-center px-5"><IconLabel icon={<svg width="20" />}>Retry</IconLabel></button>`
+    expect(scanSource('x.tsx', iconGrouped)).toEqual([])
+    const iconRow = `export const O = () => <a className="flex min-h-14 items-center gap-3 px-5"><svg width="20"><path d="M0 0" /></svg>A row with words</a>`
+    expect(scanSource('x.tsx', iconRow)).toEqual([])
+    const iconSized = `export const P = () => <Link href="/x" style={css('display:flex;justify-content:center;height:46px;padding:0 18px;flex:none')}><svg width="16"><path d="M0 0" /></svg>Snap a test</Link>`
+    expect(scanSource('x.tsx', iconSized)).toEqual([])
+    const iconOnly = `export const N = () => <Link href="/x" aria-label="Back" style={{ display: 'flex', width: 44, height: 44 }}><svg width="20"><path d="M0 0" /></svg></Link>`
+    expect(scanSource('x.tsx', iconOnly)).toEqual([])
     const fixedSquare = `export const G = () => <button className="flex h-11 w-[52px] items-center justify-center">x</button>`
     expect(scanSource('x.tsx', fixedSquare)).toEqual([])
   })

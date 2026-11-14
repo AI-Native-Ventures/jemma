@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { answerShape, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
 import { Frac, FractionText } from './Frac'
 
@@ -55,12 +56,10 @@ export function PaperChoice({ onPaper, onScreen }: { onPaper: () => void; onScre
       </div>
       <div className="flex flex-col gap-3">
         <button type="button" onClick={onPaper} className={choiceButton}>
-          <CameraIcon />
-          Answer on paper
+          <IconLabel icon={<CameraIcon />} gap={14}>Answer on paper</IconLabel>
         </button>
         <button type="button" onClick={onScreen} className={choiceButton}>
-          <PhoneIcon />
-          Answer on the screen
+          <IconLabel icon={<PhoneIcon />} gap={14}>Answer on the screen</IconLabel>
         </button>
       </div>
       <p className="m-0 text-[16px] leading-[1.45] text-body">On paper you write your answers and take one photo. You do not need a pencil on the screen.</p>
@@ -168,8 +167,7 @@ export function PhotoButton({ label, busy, onPhoto }: PhotoButtonProps) {
         busy ? 'cursor-default opacity-60' : 'cursor-pointer'
       }`}
     >
-      <CameraIcon />
-      {busy ? 'Sending your photo...' : label}
+      <IconLabel icon={<CameraIcon />}>{busy ? 'Sending your photo...' : label}</IconLabel>
       <input
         type="file"
         accept="image/*"

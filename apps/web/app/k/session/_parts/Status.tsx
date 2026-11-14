@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { IconLabel } from '@/components/ui/IconLabel'
 import type { StageMove } from '../[sessionId]/logic'
 import type { FinishedSession } from '../[sessionId]/types'
 import { Diamond } from './Gems'
@@ -77,10 +78,15 @@ export function LoadError({ onRetry, warmupHref }: { onRetry: () => void; warmup
       </section>
       <div className="flex flex-col gap-2.5">
         <button type="button" onClick={onRetry} className="flex min-h-[68px] cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[23px]">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
-            <path d="M20 12a8 8 0 1 1-2.34-5.66" /><path d="M20 4v4.5h-4.5" />
-          </svg>
-          Try again
+          <IconLabel
+            icon={
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 12a8 8 0 1 1-2.34-5.66" /><path d="M20 4v4.5h-4.5" />
+              </svg>
+            }
+          >
+            Try again
+          </IconLabel>
         </button>
         {warmupHref ? (
           <button type="button" onClick={warmupHref} className="flex min-h-[60px] cursor-pointer items-center justify-center rounded-20 border-2 border-ink bg-card px-5 py-3 text-center text-[19px] font-semibold text-balance text-ink">
