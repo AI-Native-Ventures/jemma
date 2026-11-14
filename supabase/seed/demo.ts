@@ -12,6 +12,7 @@ import { writeApprovedMap } from '../../packages/profiling/src/curriculum/caps-m
 import { capsClassMaps } from './fixtures/caps-maps'
 import { HILLVIEW_CLASSES, HILLVIEW_LINKS, awayOnDay, HILLVIEW_PARENTS, HILLVIEW_TEACHERS, madeUpClasses, madeUpLearner } from './fixtures/hillview'
 import { longHistory } from './fixtures/long-history'
+import { ownClassRows, ownItemRows, ownLessonRow, ownMaps, ownPractice, ownSchoolRow, ownSessionRow, ownTwinRow } from './fixtures/own-workspace'
 import { PATTERN_LEARNERS, wordPatterns } from './fixtures/long-view-wording'
 import {
   AMINA_LESSON, AMINA_LOG, CLASS_LOG, CURRICULUM_DOCS, HOMEWORK_NEEDS, SIPHO_NEEDS, WEEK_PLAN, PARENT_NOTES, TEACHER_NOTES, HOMEWORK_ROWS, LESSON_TOPIC, RETEACH, RETEACH_EXPLANATION, RETEACH_MISSING_BASIC, RETEACH_TOPIC, RETEACH_WHY,
@@ -351,6 +352,45 @@ async function buildHillview(admin: JemmaDb, sandboxId: string, stage: SandboxSt
         await writeApprovedMap(admin, { classId: classIdOf, stored: m.stored, approvedAt: at(0), rows: m.rows })
         await ok(admin.from('activity_log').insert({ school_id: schoolId, class_id: classIdOf, at: at(0), text: m.log, tool: 'use_caps_map' }), 'activity_log (CAPS map)')
       }),
+      // Amina's own workspace ("My own"), in every copy: a personal school, her twin, a class and the approved CAPS map for Grade 6 and for Grade 7,
+      // and two finished practice sessions in Grade 6 (fractions, whole numbers) with their lessons, so a visitor who walks through as a learner sees
+      // real counts at once. The personal school carries the sandbox id, so the clean-up takes it. Nothing of Amina's school record is touched.
+      (async () => {
+        const personal = await ok(admin.from('schools').insert(ownSchoolRow(SCHOOL, sandboxId)).select('id').single(), 'own school')
+        const [twin, ownClasses] = await Promise.all([
+          ok(
+            admin.from('children').insert(ownTwinRow({ schoolId: personal.id, aminaId, learnerId, grade: 6, parent: { firstName: CAST.parent.firstName, relation: CAST.parent.relation } })).select('id').single(),
+            'own twin',
+          ),
+          ok(admin.from('classes').insert(ownClassRows({ schoolId: personal.id, learnerId, year, code: randomCode })).select('id, grade'), 'own classes'),
+        ])
+        const [, mapped] = await Promise.all([
+          ok(admin.from('enrolments').insert(ownClasses.map((c) => ({ class_id: c.id, child_id: twin.id }))), 'own enrolments'),
+          Promise.all(
+            ownMaps().map(async (m) => {
+              const ownClassId = ownClasses.find((c) => c.grade === m.grade)!.id
+              const { topicRows } = await writeApprovedMap(admin, { classId: ownClassId, stored: m.stored, approvedAt: at(0), rows: m.rows })
+              await ok(admin.from('activity_log').insert({ school_id: personal.id, class_id: ownClassId, at: at(0), text: m.log, tool: 'use_caps_map' }), 'activity_log (own CAPS map)')
+              return { grade: m.grade, topicRows }
+            }),
+          ),
+        ])
+        const topicIds = new Map(mapped.find((m) => m.grade === 6)!.topicRows.map((t) => [t.name, t.id]))
+        const topicIdOf = (name: string) => topicIds.get(name) ?? (() => { throw new Error(`demo seed: topic not on the Grade 6 map: ${name}`) })()
+        const practice = ownPractice()
+        const lessons = await ok(
+          admin.from('lessons').insert(practice.map((p) => ownLessonRow(p, { childId: twin.id, topicId: topicIdOf(p.topicName) }))).select('id, topic_name'),
+          'own lessons',
+        )
+        const sessions = await ok(
+          admin
+            .from('sessions')
+            .insert(practice.map((p) => ownSessionRow(p, { childId: twin.id, lessonId: lessons.find((l) => l.topic_name === p.topicName)!.id, topicId: topicIdOf(p.topicName) }, now)))
+            .select('id, topic_name'),
+          'own sessions',
+        )
+        await ok(admin.from('session_items').insert(practice.flatMap((p) => ownItemRows(p, sessions.find((s) => s.topic_name === p.topicName)!.id))), 'own session items')
+      })(),
       ensureSampleFiles(admin, { loadSheet }),
     ]
     await Promise.all(startWork)

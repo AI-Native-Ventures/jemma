@@ -90,6 +90,9 @@ describe('sandboxes', () => {
   test('reset restores the start stage', async () => {
     const s = await make()
     const before = await loginsOf(s.sandboxId)
+    // Amina's own private workspace comes with every copy: a personal school tied to the sandbox, which a reset takes away with the school.
+    const personalBefore = await ok(admin.from('schools').select('id').eq('sandbox_id', s.sandboxId).eq('kind', 'private'))
+    expect(personalBefore).toHaveLength(1)
     await ok(admin.from('curriculum_maps').insert({ class_id: s.classId, status: 'draft' }))
     const [test] = await ok(
       admin.from('tests').insert({ class_id: s.classId, title: 'Extra', out_of: 10 }).select('id'),
@@ -105,6 +108,8 @@ describe('sandboxes', () => {
     expect(after.stage).toBe('start')
     expect(after.school_id).not.toBe(before.school_id)
     expect(await ok(admin.from('schools').select('id').eq('id', before.school_id))).toEqual([])
+    expect(await ok(admin.from('schools').select('id').in('id', personalBefore.map((p) => p.id)))).toEqual([])
+    expect(await ok(admin.from('schools').select('id').eq('sandbox_id', s.sandboxId).eq('kind', 'private'))).toHaveLength(1)
     // The home class is the oldest of the four (6B Mathematics): the classes of a copy come back in no order unless they are asked for in one.
     const classes = await ok(admin.from('classes').select('id, name, join_code').eq('school_id', after.school_id).order('created_at'))
     const [cls] = classes
@@ -325,11 +330,14 @@ describe('sandboxes', () => {
     const trials = await ok(admin.from('format_trials').select('format, score').eq('child_id', aminaId))
     expect(trials).toHaveLength(9)
 
-    // The parent sees Amina, the learner sees only herself.
+    // The parent sees Amina, the learner sees only herself. Both also see Amina's own private workspace (a second child with her name, in a
+    // personal school of its own, made with every copy): the school's Amina is the one that is not a twin.
     const parent = await signIn(s.sandboxId, 'parent')
-    expect((await ok(parent.from('children').select('first_name'))).map((c) => c.first_name)).toEqual(['Amina'])
+    expect((await ok(parent.from('children').select('first_name').is('private_of', null))).map((c) => c.first_name)).toEqual(['Amina'])
+    expect(await ok(parent.from('children').select('first_name').not('private_of', 'is', null))).toEqual([{ first_name: 'Amina' }])
     const learner = await signIn(s.sandboxId, 'learner')
-    expect((await ok(learner.from('children').select('first_name'))).map((c) => c.first_name)).toEqual(['Amina'])
+    expect((await ok(learner.from('children').select('first_name').is('private_of', null))).map((c) => c.first_name)).toEqual(['Amina'])
+    expect(await ok(learner.from('children').select('first_name').not('private_of', 'is', null))).toEqual([{ first_name: 'Amina' }])
 
     const log = await ok(admin.from('activity_log').select('text').eq('class_id', s.classId))
     expect(log.map((l) => l.text)).toContain('Wrote a 10 minute reteach for adding fractions')
