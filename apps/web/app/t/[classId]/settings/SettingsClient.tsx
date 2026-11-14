@@ -1,6 +1,7 @@
 'use client'
 
 import { PendingButton } from '@/components/ui/Button'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { useEffect, useState, useTransition } from 'react'
 import { Sheet } from '@/components/ui'
 import { ChevronRightIcon } from '@/components/ui/icons'
@@ -9,7 +10,7 @@ import { GRADES } from '@/lib/subjects'
 import { addLearner, enrolSchoolLearner, findSchoolLearners, makeLearnerCode, newClassCode, removeParent, renameClass, setClassGrade } from './actions'
 
 const editBtn = 'min-h-11 flex-none rounded-12 border border-muted-2 bg-card px-3.5 text-[14px] font-semibold text-ink'
-const save = 'flex h-[52px] items-center justify-center rounded-14 bg-ink text-[17px] font-semibold text-white disabled:opacity-50'
+const save = 'flex min-h-[52px] items-center justify-center rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50'
 
 function SettingRow({ label, value, editLabel, first, children }: { label: string; value: string; editLabel: string; first?: boolean; children: (close: () => void) => React.ReactNode }) {
   const [open, setOpen] = useState(false)
@@ -65,12 +66,18 @@ export function GradeSheet({ classId, grade, onClose }: { classId: string; grade
 export function NewCodeButton({ classId }: { classId: string }) {
   const [pending, start] = useTransition()
   return (
-    <PendingButton pending={pending} type="button" disabled={pending} onClick={() => start(() => newClassCode(classId))} className="flex min-h-11 items-center justify-center gap-2 rounded-12 border border-muted-2 bg-card text-[15px] font-semibold text-ink">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M20 12a8 8 0 1 1-2.34-5.66" />
-        <path d="M20 4v4.5h-4.5" />
-      </svg>
-      Make a new code
+    <PendingButton pending={pending} type="button" disabled={pending} onClick={() => start(() => newClassCode(classId))} className="flex min-h-11 items-center justify-center gap-2 rounded-12 border border-muted-2 bg-card px-5 py-2 text-center text-[15px] font-semibold text-balance text-ink">
+      <IconLabel
+        gap={8}
+        icon={
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M20 12a8 8 0 1 1-2.34-5.66" />
+            <path d="M20 4v4.5h-4.5" />
+          </svg>
+        }
+      >
+        Make a new code
+      </IconLabel>
     </PendingButton>
   )
 }

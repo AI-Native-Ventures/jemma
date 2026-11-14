@@ -114,7 +114,7 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
         </section>
       ) : null}
 
-      <Link href={`/t/${classId}/curriculum/map`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, marginTop: 37, borderRadius: 14, background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
+      <Link href={`/t/${classId}/curriculum/map`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, marginTop: 37, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
         Check the draft map
       </Link>
       <ComingLink>Or start from a map another teacher approved</ComingLink>
@@ -275,7 +275,7 @@ async function Approved({ classId, state }: { classId: string; state: Awaited<Re
         </ol>
       </section>
 
-      <Link href={`/t/${classId}/curriculum/map`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 50, borderRadius: 14, border: '1.5px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
+      <Link href={`/t/${classId}/curriculum/map`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 50, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: '1.5px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
         See or edit the whole map
       </Link>
     </div>

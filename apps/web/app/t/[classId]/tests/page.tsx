@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { CameraIcon, ChevronRightIcon, GemIcon } from '@/components/ui/icons'
 import { getTestsList, type TestSummary } from '@/lib/data/p20'
 import { LaptopTests } from './LaptopTests'
@@ -126,10 +127,11 @@ export default async function TeacherTestsPage({
 
       <Link
         href={`${base}/snap`}
-        className="flex h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card text-[16px] font-semibold text-ink no-underline"
+        className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-5 py-3 text-center text-[16px] font-semibold text-balance text-ink no-underline"
       >
-        <CameraIcon size={20} />
-        Snap the next test
+        <IconLabel gap={8} icon={<CameraIcon size={20} />}>
+          Snap the next test
+        </IconLabel>
       </Link>
     </div>
     </>

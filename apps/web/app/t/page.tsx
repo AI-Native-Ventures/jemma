@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { Wordmark } from '@/components/install'
 import { BellIcon, ChevronRightIcon, ClipboardIcon, PeopleIcon } from '@/components/ui/icons'
 import { requireRole } from '@/lib/auth'
@@ -95,11 +96,17 @@ export default async function TeacherClassesPage() {
             ))}
           </section>
 
-          <Link href="/t/new" className="flex h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-dashed border-muted-2 text-[16px] font-semibold text-ink no-underline">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Create a class
+          <Link href="/t/new" className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-dashed border-muted-2 px-5 py-3 text-center text-[16px] font-semibold text-balance text-ink no-underline">
+            <IconLabel
+              gap={8}
+              icon={
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              }
+            >
+              Create a class
+            </IconLabel>
           </Link>
         </main>
       </Column>

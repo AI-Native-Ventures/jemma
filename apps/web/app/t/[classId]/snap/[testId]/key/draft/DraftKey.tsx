@@ -77,8 +77,8 @@ export function DraftKey({ classId, testId, items, unsure, approved, children }:
                     </span>
                   ) : (
                     <span className="grid grid-cols-2 gap-2">
-                      <button type="button" aria-pressed="false" disabled={pending} onClick={() => save(item.n, item.answer)} className="h-[46px] cursor-pointer rounded-12 border border-edge bg-card text-[15px] font-medium text-ink">{item.answer} is right</button>
-                      <button type="button" aria-pressed="false" onClick={() => { setEditing(item.n); setDraft(item.answer) }} className="h-[46px] cursor-pointer rounded-12 border border-edge bg-card text-[15px] font-medium text-ink">Change it</button>
+                      <button type="button" aria-pressed="false" disabled={pending} onClick={() => save(item.n, item.answer)} className="min-h-[46px] cursor-pointer rounded-12 border border-edge bg-card px-3 py-2 text-center text-[15px] font-medium text-balance text-ink">{item.answer} is right</button>
+                      <button type="button" aria-pressed="false" onClick={() => { setEditing(item.n); setDraft(item.answer) }} className="min-h-[46px] cursor-pointer rounded-12 border border-edge bg-card px-3 py-2 text-center text-[15px] font-medium text-balance text-ink">Change it</button>
                     </span>
                   )}
                 </li>
@@ -97,7 +97,7 @@ export function DraftKey({ classId, testId, items, unsure, approved, children }:
       {children}
       <div className="flex flex-col gap-2">
         {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
-        <PendingButton pending={pending} type="button" onClick={approve} disabled={pending || approved} className="flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink text-[17px] font-semibold text-white disabled:opacity-60">Approve key and snap papers</PendingButton>
+        <PendingButton pending={pending} type="button" onClick={approve} disabled={pending || approved} className="flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-60">Approve key and snap papers</PendingButton>
         <label className="flex min-h-11 cursor-pointer items-center justify-center text-[15px] font-semibold text-ink underline underline-offset-[3px] focus-within:outline-2 focus-within:outline-ink">
           A memo is safer: snap the memo instead
           <input type="file" accept="image/*" capture="environment" className="sr-only" disabled={pending} onChange={(e) => { memo(e.target.files?.[0]); e.target.value = '' }} />

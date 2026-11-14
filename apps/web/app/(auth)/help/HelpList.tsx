@@ -33,7 +33,7 @@ const chevron = (up: boolean) => (
   </svg>
 )
 
-const stuckButton = { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 48, width: '100%', borderRadius: 14, border: `1.5px solid ${colors.ink}`, background: '#FFFFFF', color: colors.ink, fontSize: 16, fontWeight: 600, cursor: 'pointer' } as const
+const stuckButton = { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 48, width: '100%', padding: '10px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: `1.5px solid ${colors.ink}`, background: '#FFFFFF', color: colors.ink, fontSize: 16, fontWeight: 600, cursor: 'pointer' } as const
 
 export function HelpList() {
   const [open, setOpen] = useState<number | null>(0)

@@ -50,7 +50,7 @@ export function ShareCard({ classId, card, className = '' }: { classId: string; 
         <p className="m-0 font-semibold text-ink">{words.marked}</p>
         {words.waiting ? <p className="m-0 text-pretty">{words.waiting}</p> : null}
       </div>
-      <Button size="md" pending={pending} onClick={share} className="w-full">
+      <Button size="md" pending={pending} onClick={share} className="w-full !h-auto min-h-[52px] !px-5 py-3">
         {words.button}
       </Button>
       {error ? (

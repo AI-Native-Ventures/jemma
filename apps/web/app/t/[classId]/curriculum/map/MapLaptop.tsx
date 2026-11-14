@@ -274,7 +274,7 @@ function EditPanel({
 
       <p style={{ margin: 0, fontSize: 13, lineHeight: 1.45, color: '#5D5A73' }}>{`Found in the teaching plan, Term ${topic.term}. Every test question and lesson on this topic gets tagged to it.`}</p>
       <div style={{ display: 'flex', gap: 8 }}>
-        <PendingButton pending={pending} type="button" disabled={pending || !name.trim()} onClick={() => onSave(name.trim(), term, position, needs)} style={{ ...dark, flex: 1, height: 46 }}>Save</PendingButton>
+        <PendingButton pending={pending} type="button" disabled={pending || !name.trim()} onClick={() => onSave(name.trim(), term, position, needs)} style={{ ...dark, flex: 1, height: 'auto', minHeight: 46, padding: '10px 20px', textAlign: 'center', textWrap: 'balance' }}>Save</PendingButton>
         <PendingButton pending={pending} type="button" disabled={pending} onClick={onRemove} style={{ ...light, height: 46, padding: '0 14px' }}>Remove topic</PendingButton>
       </div>
     </>

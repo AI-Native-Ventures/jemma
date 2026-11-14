@@ -1,6 +1,7 @@
 'use client'
 
 import { Spinner } from '@/components/ui/Button'
+import { IconLabel } from '@/components/ui/IconLabel'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition, type ReactNode } from 'react'
@@ -108,16 +109,18 @@ export function Queue({
 
   return (
     <>
-      <label className={`relative flex h-[68px] cursor-pointer items-center justify-center gap-3 rounded-20 bg-coral text-[21px] font-bold text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink ${pending ? 'opacity-60' : ''}`}>
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" /><circle cx="12" cy="12.5" r="3.5" /></svg>
-        Snap paper {next}
+      <label className={`relative flex min-h-[68px] cursor-pointer items-center justify-center gap-3 rounded-20 bg-coral px-5 py-3 text-center text-[21px] font-bold text-balance text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink ${pending ? 'opacity-60' : ''}`}>
+        <IconLabel gap={12} icon={<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" /><circle cx="12" cy="12.5" r="3.5" /></svg>}>
+          Snap paper {next}
+        </IconLabel>
         {pending ? <Spinner /> : null}
         <input {...cameraProps} data-testid="snap-paper" disabled={pending} onChange={(e) => { send(e.target.files?.[0], 'paper'); e.target.value = '' }} />
       </label>
       {lastPaper ? (
-        <label className="flex h-[50px] cursor-pointer items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card text-[17px] font-semibold text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-          Add a page to paper {lastPaper.position}
+        <label className="flex min-h-[50px] cursor-pointer items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-5 py-3 text-center text-[17px] font-semibold text-balance text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink">
+          <IconLabel gap={8} icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>}>
+            Add a page to paper {lastPaper.position}
+          </IconLabel>
           <input {...cameraProps} data-testid="snap-page" disabled={pending} onChange={(e) => { send(e.target.files?.[0], 'page'); e.target.value = '' }} />
         </label>
       ) : null}
@@ -129,7 +132,7 @@ export function Queue({
         No papers with you?
         <button type="button" onClick={sample} disabled={pending} className="inline-flex min-h-11 cursor-pointer items-center border-none bg-transparent p-0 text-[15px] font-semibold text-ink underline underline-offset-[3px]">Use the sample papers</button>
       </p>
-      <Link href={`/t/${classId}/snap/${testId}/progress`} className="flex h-[52px] items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white no-underline">
+      <Link href={`/t/${classId}/snap/${testId}/progress`} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white no-underline">
         Done snapping · {count} paper{count === 1 ? '' : 's'}
       </Link>
     </>

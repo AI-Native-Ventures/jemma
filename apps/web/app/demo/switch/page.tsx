@@ -1,4 +1,5 @@
 import { PendingButton } from '@/components/ui/Button'
+import { IconLabel } from '@/components/ui/IconLabel'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { GemIcon } from '@/components/ui/icons'
@@ -164,10 +165,11 @@ export default async function DemoSwitchPage() {
         </section>
         )}
         <div className="grid grid-cols-2 gap-2">
-          <a href="/demo" className="flex h-12 items-center justify-center rounded-14 border-[1.5px] border-ink bg-card text-[16px] font-semibold text-ink no-underline">Demo page</a>
-          <a href="/demo/reset" className="flex h-12 items-center justify-center gap-1.5 rounded-14 border-[1.5px] border-ink bg-card text-[16px] font-semibold text-ink no-underline">
-            <ResetIcon size={18} />
-            Reset demo
+          <a href="/demo" className="flex min-h-12 items-center justify-center rounded-14 border-[1.5px] border-ink bg-card px-5 py-2.5 text-center text-[16px] font-semibold text-balance text-ink no-underline">Demo page</a>
+          <a href="/demo/reset" className="flex min-h-12 items-center justify-center gap-1.5 rounded-14 border-[1.5px] border-ink bg-card px-5 py-2.5 text-center text-[16px] font-semibold text-balance text-ink no-underline">
+            <IconLabel gap={6} icon={<ResetIcon size={18} />}>
+              Reset demo
+            </IconLabel>
           </a>
         </div>
       </section>

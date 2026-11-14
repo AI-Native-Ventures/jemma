@@ -1,6 +1,7 @@
 'use client'
 
 import { PendingButton } from '@/components/ui/Button'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition } from 'react'
 import { ErrorRetry } from '@/components/blocks'
@@ -12,7 +13,7 @@ import { retryDraft, useCapsMap, useSampleCurriculum, type UploadResult } from '
 import { notAllowedMessage, sizeProblem, sniffKind } from './upload-checks'
 
 const outlined = {
-  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 12,
+  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 46, padding: '10px 16px', textAlign: 'center', textWrap: 'balance', borderRadius: 12,
   border: '1.5px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36', fontSize: 15, fontWeight: 600,
 } as const
 
@@ -58,12 +59,14 @@ export function UploadButtons({ classId }: { classId: string }) {
         <input ref={photos} type="file" accept="image/jpeg,image/png" capture="environment" multiple hidden onChange={(e) => { send(e.target.files); e.target.value = '' }} />
         <input ref={file} type="file" accept="application/pdf,image/jpeg,image/png" multiple hidden onChange={(e) => { send(e.target.files); e.target.value = '' }} />
         <PendingButton pending={pending} type="button" disabled={pending} onClick={() => photos.current?.click()} style={outlined}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
-          Take photos
+          <IconLabel gap={8} icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg>}>
+            Take photos
+          </IconLabel>
         </PendingButton>
         <PendingButton pending={pending} type="button" disabled={pending} onClick={() => file.current?.click()} style={outlined}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M5 15v3.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V15"/></svg>
-          Add a file
+          <IconLabel gap={8} icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M5 15v3.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V15"/></svg>}>
+            Add a file
+          </IconLabel>
         </PendingButton>
       </div>
       {error ? <p role="alert" style={{ margin: 0, fontSize: 14, color: '#B8381F' }}>{error}</p> : null}
@@ -83,6 +86,7 @@ export function CapsButton({ classId, grade }: { classId: string; grade: number 
     <section aria-label="Start from the CAPS map" style={{ display: 'flex', flexDirection: 'column', gap: 10, background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 20, padding: 16 }}>
       <Button
         variant="primary"
+        className="!h-auto min-h-[52px] !px-5 py-3"
         disabled={pending}
         onClick={() =>
           start(async () => {
@@ -108,6 +112,7 @@ export function SampleButton({ classId }: { classId: string }) {
   return (
     <Button
       variant="primary"
+      className="!h-auto min-h-[52px] !px-5 py-3"
       disabled={pending}
       onClick={() =>
         start(async () => {
@@ -134,7 +139,7 @@ export function ComingLink({ children }: { children: string }) {
         {children}
       </button>
       <Sheet open={open} onClose={() => setOpen(false)} title="Coming after the challenge" description="This part of Jemma is not in this version yet.">
-        <Button variant="primary" onClick={() => setOpen(false)}>
+        <Button variant="primary" className="!h-auto min-h-[52px] !px-5 py-3" onClick={() => setOpen(false)}>
           Got it
         </Button>
       </Sheet>

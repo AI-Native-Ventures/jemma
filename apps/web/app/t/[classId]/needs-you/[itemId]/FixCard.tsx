@@ -1,6 +1,7 @@
 'use client'
 
 import { PendingButton } from '@/components/ui/Button'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { confirmPaper, resolveAnswer } from '../../snap/actions'
@@ -103,10 +104,11 @@ export function ConfirmButton({ classId, paperId, name, disabled }: { classId: s
             router.push(`/t/${classId}`)
           })
         }
-        className="flex h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink text-[17px] font-semibold text-white disabled:opacity-50 lg:text-[16px]"
+        className="flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50 lg:text-[16px]"
       >
-        {tick(20, 2.2)}
-        Confirm {name}&apos;s paper
+        <IconLabel gap={8} icon={tick(20, 2.2)}>
+          Confirm {name}&apos;s paper
+        </IconLabel>
       </PendingButton>
     </>
   )

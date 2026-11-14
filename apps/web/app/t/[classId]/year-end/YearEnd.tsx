@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { CheckIcon } from '@/components/ui/icons'
 import { ComingSheet } from '../../_p21-client'
 
@@ -50,15 +51,21 @@ export function YearEnd({ short, nextGrade, grade, csvHref }: { short: string; n
       </p>
 
       <div className="flex flex-col gap-2">
-        <button type="button" onClick={() => setOpen(true)} className="flex h-[52px] items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white">
+        <button type="button" onClick={() => setOpen(true)} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white">
           {choice === 'up' ? `Move ${short} up after the last day of term` : `Archive ${short} after the last day of term`}
         </button>
-        <a href={csvHref} download className="flex h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card text-[16px] font-semibold text-ink no-underline">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5" />
-            <path d="M5 19.5h14" />
-          </svg>
-          Download {short}&apos;s marks (CSV)
+        <a href={csvHref} download className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-5 py-3 text-center text-[16px] font-semibold text-balance text-ink no-underline">
+          <IconLabel
+            gap={8}
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5" />
+                <path d="M5 19.5h14" />
+              </svg>
+            }
+          >
+            Download {short}&apos;s marks (CSV)
+          </IconLabel>
         </a>
       </div>
       <ComingSheet open={open} onClose={() => setOpen(false)} />

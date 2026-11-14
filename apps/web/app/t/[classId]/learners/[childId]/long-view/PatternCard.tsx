@@ -75,7 +75,7 @@ function EvidenceSheet({ sheet, onClose }: { sheet: LvSheet | null; onClose: () 
           It was written into the records long after it happened. It still counts.
         </p>
       ) : null}
-      <Button variant="secondary" size="sm" onClick={onClose}>
+      <Button variant="secondary" size="sm" className="!h-auto min-h-[46px] !px-5 py-2.5" onClick={onClose}>
         Close
       </Button>
     </Sheet>
@@ -135,10 +135,10 @@ export function PatternCard({ p, parentName }: { p: LvPattern; parentName: strin
 
       {p.status === 'draft' ? (
         <div className="flex gap-2">
-          <Button size="sm" className="flex-1" pending={d.pending && d.which === 'approve'} disabled={d.pending} onClick={() => d.run('approve', () => approvePattern(p.id))}>
+          <Button size="sm" className="flex-1 !h-auto min-h-[46px] !px-5 py-2.5" pending={d.pending && d.which === 'approve'} disabled={d.pending} onClick={() => d.run('approve', () => approvePattern(p.id))}>
             Looks right
           </Button>
-          <Button variant="secondary" size="sm" className="flex-1" pending={d.pending && d.which === 'dismiss'} disabled={d.pending} onClick={() => d.run('dismiss', () => dismissPattern(p.id))}>
+          <Button variant="secondary" size="sm" className="flex-1 !h-auto min-h-[46px] !px-5 py-2.5" pending={d.pending && d.which === 'dismiss'} disabled={d.pending} onClick={() => d.run('dismiss', () => dismissPattern(p.id))}>
             Not yet
           </Button>
         </div>
@@ -153,7 +153,7 @@ export function PatternCard({ p, parentName }: { p: LvPattern; parentName: strin
                 <p className="m-0 text-[15px] leading-[1.45]">
                   <strong className="font-semibold">Not shared.</strong> Talk to {parentName} first.
                 </p>
-                <Button variant="secondary" size="sm" pending={d.pending} disabled={d.pending} onClick={() => d.run('discuss', () => markDiscussed(p.id))}>
+                <Button variant="secondary" size="sm" className="!h-auto min-h-[46px] !px-5 py-2.5" pending={d.pending} disabled={d.pending} onClick={() => d.run('discuss', () => markDiscussed(p.id))}>
                   We have talked
                 </Button>
               </>

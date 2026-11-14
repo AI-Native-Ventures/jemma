@@ -83,10 +83,10 @@ function Failed({ view }: { view: ReviewView }) {
         <p className="m-0 text-[15px] leading-[1.45]">{view.failure}</p>
         {error ? <Problem text={error} /> : null}
         <div className="flex flex-col gap-2 sm:flex-row">
-          <Button icon={<RetryIcon size={18} />} pending={pending} onClick={() => run('retry', () => retryRead(view.id))}>
+          <Button icon={<RetryIcon size={18} />} className="!h-auto min-h-[52px] !px-5 py-3" pending={pending} onClick={() => run('retry', () => retryRead(view.id))}>
             Try again
           </Button>
-          <Button variant="secondary" href={`/t/${view.classId}/learners/records`}>
+          <Button variant="secondary" href={`/t/${view.classId}/learners/records`} className="!h-auto min-h-[52px] !px-5 py-3">
             Add a different file
           </Button>
         </div>
@@ -99,7 +99,7 @@ function Discarded({ view }: { view: ReviewView }) {
   return (
     <>
       <Lead>{`You discarded ${view.fileName}. Nothing was added.`}</Lead>
-      <Button variant="secondary" href={`/t/${view.classId}/learners/records`} className="lg:max-w-[320px]">
+      <Button variant="secondary" href={`/t/${view.classId}/learners/records`} className="lg:max-w-[320px] !h-auto min-h-[52px] !px-5 py-3">
         Add past records
       </Button>
     </>
@@ -127,7 +127,7 @@ function Added({ view }: { view: ReviewView }) {
         </p>
         {error ? <Problem text={error} /> : null}
         {none ? (
-          <Button pending={pending} onClick={() => run('add', () => addToRecords(view.id))}>
+          <Button className="!h-auto min-h-[52px] !px-5 py-3" pending={pending} onClick={() => run('add', () => addToRecords(view.id))}>
             Add to records
           </Button>
         ) : (
@@ -142,7 +142,7 @@ function Added({ view }: { view: ReviewView }) {
           </ul>
         )}
       </Card>
-      <Button variant="secondary" href={`/t/${view.classId}/learners`} className="lg:max-w-[320px]">
+      <Button variant="secondary" href={`/t/${view.classId}/learners`} className="lg:max-w-[320px] !h-auto min-h-[52px] !px-5 py-3">
         Back to learners
       </Button>
     </>
@@ -260,10 +260,10 @@ function Ready({ view }: { view: ReviewView }) {
         <p className="m-0 text-[14px] leading-[1.4] text-body">Nothing reaches a parent or a learner. A pattern is only shared after you have talked to the family.</p>
         {gate.error ? <Problem text={gate.error} /> : null}
         <div className="flex flex-col gap-2 sm:flex-row">
-          <Button size="lg" disabled={c.ready === 0 || gate.pending} pending={gate.pending && gate.which === 'add'} onClick={() => gate.run('add', () => addToRecords(view.id))}>
+          <Button size="lg" className="!h-auto min-h-[60px] !px-5 py-3" disabled={c.ready === 0 || gate.pending} pending={gate.pending && gate.which === 'add'} onClick={() => gate.run('add', () => addToRecords(view.id))}>
             Add to records
           </Button>
-          <Button size="lg" variant="secondary" disabled={gate.pending} pending={gate.pending && gate.which === 'discard'} onClick={() => gate.run('discard', () => discardRecords(view.id))}>
+          <Button size="lg" variant="secondary" className="!h-auto min-h-[60px] !px-5 py-3" disabled={gate.pending} pending={gate.pending && gate.which === 'discard'} onClick={() => gate.run('discard', () => discardRecords(view.id))}>
             Discard
           </Button>
         </div>
@@ -277,7 +277,7 @@ function ProblemCard({ view, row }: { view: ReviewView; row: ProblemRow }) {
   const [learner, setLearner] = useState('')
   const [strand, setStrand] = useState('')
   const busy = (name: string) => pending && which === name
-  const smallBtn = 'min-h-11 !h-auto !py-2'
+  const smallBtn = 'min-h-11 !h-auto !px-5 !py-2'
   return (
     <Card as="article" radius={18} aria-label={`Row ${row.n}`} className="gap-3">
       <div className="flex flex-col gap-1">

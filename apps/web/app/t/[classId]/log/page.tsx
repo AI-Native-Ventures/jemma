@@ -104,7 +104,7 @@ export default async function TeacherLogPage({
         {olderCursor || view.older ? (
           <div className="flex flex-col gap-2 sm:flex-row">
             {olderCursor ? (
-              <Button href={`${base}/log?before=${encodeURIComponent(olderCursor)}`} variant="secondary" size="sm" className="flex-1">
+              <Button href={`${base}/log?before=${encodeURIComponent(olderCursor)}`} variant="secondary" size="sm" className="flex-1 !h-auto min-h-[46px] !px-5 py-2.5">
                 Show older
               </Button>
             ) : null}

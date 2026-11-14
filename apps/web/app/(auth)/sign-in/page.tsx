@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { IconLabel } from '@/components/ui/IconLabel'
 import { Wordmark } from '@/components/install'
 import { colors } from '../_parts'
 import { SignInForm } from './SignInForm'
@@ -24,17 +25,18 @@ export default function SignInPage() {
       </div>
       <Link
         href="/sign-up"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 52, borderRadius: 14, border: `1.5px solid ${colors.ink}`, background: '#FFFFFF', color: colors.ink, fontSize: 17, fontWeight: 600, textDecoration: 'none' }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 52, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: `1.5px solid ${colors.ink}`, background: '#FFFFFF', color: colors.ink, fontSize: 17, fontWeight: 600, textDecoration: 'none' }}
       >
         Create an account
       </Link>
 
       <div style={{ flex: 1 }} />
-      <Link href="/demo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 44, fontSize: 15, fontWeight: 600, color: colors.ink, textDecoration: 'none' }}>
-        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
+      <Link href="/demo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 44, padding: '10px 20px', textAlign: 'center', fontSize: 15, fontWeight: 600, color: colors.ink, textDecoration: 'none' }}>
+        <IconLabel gap={8} icon={<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
           <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
-        </svg>
-        Judging the challenge? Try the demo
+        </svg>}>
+          Judging the challenge? Try the demo
+        </IconLabel>
       </Link>
     </div>
   )
