@@ -101,7 +101,7 @@ describe('the pieces are wired in', () => {
     const names = registry.map((t) => t.name)
     expect(names).toEqual(expect.arrayContaining(['get_record_import', 'save_record_mapping', 'import_learner_records']))
     expect(names).not.toContain('add_learner_record')
-    expect(names).toHaveLength(25)
+    expect(names).toHaveLength(27)
     expect(AI_JOBS).toContain('map_records')
     expect(EventSchema.parse({ type: 'records.uploaded', importId: 'x' })).toEqual({ type: 'records.uploaded', importId: 'x' })
   })

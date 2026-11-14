@@ -8,10 +8,12 @@ import { getLearnerHistory } from './read/get-learner-history'
 import { getLearnerProfile } from './read/get-learner-profile'
 import { getMemo } from './read/get-memo'
 import { getPaper } from './read/get-paper'
+import { getPracticePaper } from './read/get-practice-paper'
 import { saveAnswerKey } from './save/save-answer-key'
 import { saveTopicMapDraft } from './save/save-topic-map-draft'
 import { addActivity, addObservation, logExternalCalls, recordAttendance, subjectGuidance } from './save'
 import { markPaper } from './save/mark-paper'
+import { savePracticeAnswers } from './save/save-practice-answers'
 import { classGapReport } from './save/class-gap-report'
 import { updateLearnerProfile } from './save/update-learner-profile'
 import { planNextSession } from './save/plan-next-session'
@@ -52,6 +54,8 @@ export const registry: ToolDef<any, any>[] = [
   getRecordImport,
   saveRecordMapping,
   importLearnerRecords,
+  getPracticePaper,
+  savePracticeAnswers,
 ]
 
 export { registerSpeech } from '../speech'

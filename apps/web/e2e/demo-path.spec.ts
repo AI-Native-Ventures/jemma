@@ -305,6 +305,10 @@ test('the whole demo path', async ({ page }) => {
         await page.getByRole('button', { name: "I'm ready" }).click()
       } else if (await page.getByRole('button', { name: 'Next card' }).isVisible()) {
         await page.getByRole('button', { name: 'Next card' }).click()
+      } else if (await page.getByRole('button', { name: 'Answer on the screen', exact: true }).isVisible()) {
+        // After Learn the screen asks how to answer (P83): the demo path answers on the screen, exactly as before.
+        answered = null
+        await page.getByRole('button', { name: 'Answer on the screen', exact: true }).click()
       } else {
         await page.waitForTimeout(400)
       }

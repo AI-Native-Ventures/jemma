@@ -19,6 +19,11 @@ export const EventSchema = z.discriminatedUnion('type', [
    * chose what to practise (checked again when it is planned); without them code picks the topic.
    */
   z.object({ type: z.literal('practice.requested'), childId: z.string(), topicId: z.string().optional(), topicName: z.string().optional() }),
+  /**
+   * A learner answered a practice on paper and sent one photo. `path` is where the photo is stored (the private `papers` bucket) and `questions`
+   * are the indexes into the lesson's questions that went on paper, in order, numbered 1 to 5 on the sheet (`paperQuestions` picks them).
+   */
+  z.object({ type: z.literal('practice.snapped'), sessionId: z.string(), path: z.string(), questions: z.array(z.number().int().min(0)) }),
 ])
 export type JemmaEvent = z.infer<typeof EventSchema>
 export type EventType = JemmaEvent['type']

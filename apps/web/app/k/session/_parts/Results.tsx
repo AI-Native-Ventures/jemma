@@ -67,11 +67,16 @@ export function Results({ firstName, missed }: { firstName: string; missed: Miss
             </span>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <span className="flex items-center justify-between rounded-14 bg-soft-2 px-3.5 py-2.5">
+            {/* A paper answer that could not be read says so, in words, in the place of an empty answer (a long line gets the whole row). */}
+            <span className={`flex items-center justify-between rounded-14 bg-soft-2 px-3.5 py-2.5 ${m.unread ? 'col-span-2 gap-3' : ''}`}>
               <span className="text-[14px] text-body">You wrote</span>
-              <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
+              {m.unread ? (
+                <span data-unread="true" className="text-right text-[15px] leading-[1.3] font-semibold">Jemma could not read this one</span>
+              ) : (
+                <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
+              )}
             </span>
-            <span className="flex items-center justify-between rounded-14 border-[1.5px] border-coral bg-[#FFF1ED] px-3.5 py-2.5">
+            <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-coral bg-[#FFF1ED] px-3.5 py-2.5 ${m.unread ? 'col-span-2' : ''}`}>
               <span className="text-[14px] font-semibold">Right answer</span>
               <Stacked value={m.right} size={20} rule={2} gap={2} side={3} />
             </span>

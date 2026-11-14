@@ -1,4 +1,4 @@
-import { markAnswer, missingPart, nextDifficulty, nextStage, type MissingPart, type Stage } from '@jemma/profiling/logic'
+import { completeAnswer, fillMissing, missingPart, nextDifficulty, nextStage, paperQuestions, type MissingPart, type Stage } from '@jemma/profiling/logic'
 import type { Question } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
@@ -34,6 +34,8 @@ export type StoredItem = {
   correct: boolean
   difficulty: number
   seconds: number
+  /** A paper answer that could not be read: the answer is empty and it counts as missed. Kept inside the stored question, see `save_practice_answers`. */
+  unread?: boolean
 }
 
 export type MissedQuestion = {
@@ -43,6 +45,8 @@ export type MissedQuestion = {
   render: Question['render']
   terms?: string[]
   wrote: string
+  /** The answer on paper could not be read: the screen says so under "You wrote" instead of showing an empty answer. */
+  unread?: boolean
   right: string
   why: string
   rightWay: string
@@ -121,8 +125,8 @@ export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices
   return { kind: q.answerKind === 'choice' ? 'text' : q.answerKind }
 }
 
-/** What the child typed for a missing part, put back into its fraction: 9 with a known bottom of 15 is "9/15". */
-export const fillMissing = (part: MissingPart, typed: string) => (part.unknown === 'top' ? `${typed}/${part.known}` : `${part.known}/${typed}`)
+// One rule for the screen and for paper: the agent's `save_practice_answers` finishes and marks a written answer with the same functions.
+export { completeAnswer, fillMissing, paperQuestions }
 
 export type AnswerBoxes = { whole: string; top: string; bottom: string; text: string }
 
@@ -148,21 +152,6 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
   }
 }
 
-/**
- * Finishes what the child typed from the stored question, and marks it. A number typed for a missing part goes back
- * into its fraction, and counts as right when the fraction OR the bare number matches the key (a key can be "9/15" or "9").
- * A whole fraction, and every other question, is marked as typed. The server does this again whatever the browser sent.
- */
-export function completeAnswer(q: Pick<Question, 'prompt' | 'answer' | 'choices'>, typed: string): { stored: string; correct: boolean } {
-  const text = typed.trim()
-  const part = q.choices?.length ? null : missingPart(q.prompt)
-  if (part && /^\d+$/.test(text)) {
-    const stored = fillMissing(part, text)
-    return { stored, correct: markAnswer(stored, q.answer).correct || markAnswer(text, q.answer).correct }
-  }
-  return { stored: text, correct: markAnswer(text, q.answer).correct }
-}
-
 /** The text of an answer: a choice letter becomes the choice itself. */
 export function answerText(q: Question, value: string): string {
   const letter = /^\(?([a-d])\)?\.?$/i.exec(value.trim())
@@ -180,7 +169,8 @@ export function missedOf(items: StoredItem[]): MissedQuestion[] {
       render: item.question.render,
       ...(item.question.terms ? { terms: item.question.terms } : {}),
       // An answer saved before the missing number was put back into its fraction is shown completed too.
-      wrote: answerText(item.question, completeAnswer(item.question, item.answer).stored),
+      wrote: item.unread ? '' : answerText(item.question, completeAnswer(item.question, item.answer).stored),
+      ...(item.unread ? { unread: true } : {}),
       right: answerText(item.question, item.question.answer),
       why: item.question.why,
       rightWay: item.question.rightWay,

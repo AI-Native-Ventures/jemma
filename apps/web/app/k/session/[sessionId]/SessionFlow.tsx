@@ -1,20 +1,39 @@
 'use client'
 
+import { PAPER_QUESTION_COUNT } from '@jemma/profiling/logic'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { shrinkPhoto } from '@/lib/shrink-photo'
+import { postFiles } from '@/lib/upload-client'
 import { AppHeader } from '../_parts/AppHeader'
 import { LearnAudio } from '../_parts/LearnAudio'
 import { LearnCards } from '../_parts/LearnCards'
 import { LearnDiagram } from '../_parts/LearnDiagram'
+import { PaperChoice, PaperFailed, PaperReading, PaperSheet } from '../_parts/Paper'
 import { LoadError, Loading, Progress } from '../_parts/Status'
 import { QuestionScreen } from '../_parts/QuestionScreen'
 import { Results } from '../_parts/Results'
 import { StepHeader } from '../_parts/StepHeader'
-import { answer, beginSession, finishSession } from './actions'
+import { answer, beginSession, finishSession, paperProgress, type SnapResult } from './actions'
 import type { QuestionForChild } from './logic'
 import type { FinishedSession, LessonForChild } from './types'
 
-type Phase = 'loading' | 'error' | 'warmup' | 'learn' | 'try' | 'finishing' | 'results' | 'progress'
+type Phase =
+  | 'loading'
+  | 'error'
+  | 'warmup'
+  | 'learn'
+  | 'choose'
+  | 'paper'
+  | 'reading'
+  | 'failed'
+  | 'try'
+  | 'finishing'
+  | 'results'
+  | 'progress'
+
+/** How often the screen asks again while Jemma reads a photo (the way the practice card asks). */
+const ASK_AGAIN_MS = 3000
 
 export type SessionFlowProps = {
   sessionId: string
@@ -37,6 +56,9 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
   const [card, setCard] = useState(0)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState<FinishedSession | null>(null)
+  /** A photo is being sent, and why the last one did not go. */
+  const [sending, setSending] = useState(false)
+  const [photoError, setPhotoError] = useState<string | null>(null)
   const started = useRef(false)
 
   const finish = useCallback(async () => {
@@ -52,9 +74,15 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
   const begin = useCallback(async () => {
     setPhase('loading')
     try {
-      const { lesson: l } = await beginSession(sessionId)
+      const { lesson: l, paper } = await beginSession(sessionId)
       setLesson(l)
       if (!l.first) return void finish()
+      // The child already sent a photo: wait for it (or offer what to do when it could not be read), do not start the questions again.
+      if (l.first.phase === 'try' && (paper === 'reading' || paper === 'failed')) {
+        setPending(l.first)
+        setPhase(paper)
+        return
+      }
       if (l.first.phase === 'warmup') {
         setQ(l.first)
         setPhase('warmup')
@@ -96,12 +124,57 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
     }
   }
 
-  const startTry = () => {
+  /** The questions on the screen: today's flow, unchanged. */
+  const startScreen = () => {
     if (!pending) return void finish()
     setQ(pending)
     setPending(null)
     setPhase('try')
   }
+
+  /** After Learn. Before the first Try question (while no Try answer is stored) the child chooses how to answer. */
+  const startTry = () => {
+    if (!pending) return void finish()
+    if (pending.index === 1 && lesson?.paper?.length === PAPER_QUESTION_COUNT) return void setPhase('choose')
+    startScreen()
+  }
+
+  const sendPhoto = async (file: File) => {
+    setSending(true)
+    setPhotoError(null)
+    try {
+      const form = new FormData()
+      form.append('file', await shrinkPhoto(file))
+      const res = await postFiles<SnapResult>('k', 'snapPractice', [sessionId], form)
+      if (res.ok) setPhase('reading')
+      else setPhotoError(res.message)
+    } catch {
+      setPhotoError('That did not upload. Check your connection and try again.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  // While Jemma reads the photo: ask every 3 seconds. A closed session shows the results, a read that failed shows what to do. A question
+  // that cannot be answered (the connection) is asked again at the next tick.
+  useEffect(() => {
+    if (phase !== 'reading') return
+    let live = true
+    const id = setInterval(async () => {
+      try {
+        const progress = await paperProgress(sessionId)
+        if (!live) return
+        if (progress === 'done') void finish()
+        else if (progress === 'failed') setPhase('failed')
+      } catch {
+        // asked again in 3 seconds
+      }
+    }, ASK_AGAIN_MS)
+    return () => {
+      live = false
+      clearInterval(id)
+    }
+  }, [phase, sessionId, finish])
 
   const toWarmup = () => {
     if (warmup.length === 0) return
@@ -122,7 +195,7 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
     )
   }
 
-  const step = phase === 'warmup' ? 0 : phase === 'learn' ? 1 : phase === 'try' ? 2 : 3
+  const step = phase === 'warmup' ? 0 : phase === 'learn' ? 1 : phase === 'try' || phase === 'choose' || phase === 'paper' || phase === 'reading' || phase === 'failed' ? 2 : 3
   return (
     <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-ground font-sans leading-[normal] lg:static lg:z-auto lg:min-h-dvh lg:overflow-visible">
       {phase === 'progress' ? (
@@ -154,6 +227,10 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
           </div>
         )
       ) : null}
+      {phase === 'choose' ? <PaperChoice onPaper={() => setPhase('paper')} onScreen={startScreen} /> : null}
+      {phase === 'paper' ? <PaperSheet questions={lesson?.paper ?? []} busy={sending} error={photoError} onPhoto={sendPhoto} onScreen={startScreen} /> : null}
+      {phase === 'reading' ? <PaperReading /> : null}
+      {phase === 'failed' ? <PaperFailed busy={sending} error={photoError} onPhoto={sendPhoto} onScreen={startScreen} /> : null}
       {phase === 'finishing' ? <div role="status" className="flex flex-1 items-center justify-center text-[18px] text-body">One moment...</div> : null}
       {phase === 'results' && done ? (
         <>

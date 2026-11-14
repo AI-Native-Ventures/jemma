@@ -18,7 +18,7 @@ flowchart LR
 
 | | Server | What it does here |
 | --- | --- | --- |
-| Built | Jemma's own, 25 tools (`packages/profiling/src/tools/registry.ts`) | Read a learner's records, mark a paper, save a profile update, class report, lesson, guidance card or Long view draft. |
+| Built | Jemma's own, 27 tools (`packages/profiling/src/tools/registry.ts`) | Read a learner's records, mark a paper, save a profile update, class report, lesson, guidance card or Long view draft. |
 | Borrowed | The official filesystem server, pinned 2.2.0 | Lets goose write a Markdown copy of a report into one folder. |
 
 Why borrowed: sandboxed, allow-listed file access with path-escape protection is security code we should not write and audit ourselves.
