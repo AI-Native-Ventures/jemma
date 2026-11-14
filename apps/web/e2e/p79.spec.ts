@@ -16,7 +16,8 @@ import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 // planner (`plan_next_session` with `practice: true`, code only) and writes the lesson's questions into the lesson row with the service
 // client. Nothing here calls a model.
 //
-// WRITTEN, NOT RUN (the shared database could not take a browser spec when this was written). Run it against a production build, phone project:
+// RUNS IN CI on every push (job "Feature specs in a browser", .github/workflows/ci.yml), on CI's own local database, phone project. There the stand-in
+// takes port 8787 (STAND_IN_AGENT_PORT), where the web app posts. Never run it against the hosted preview database. By hand, against a production build:
 //   pnpm --filter web build
 //   AGENT_URL=http://127.0.0.1:8779 pnpm --filter web exec next start --port 3279        (own terminal, stop it by its pid after)
 //   P79_PROOF=1 PREVIEW_URL=http://localhost:3279 pnpm --filter web exec playwright test p79 --project=phone --workers=1

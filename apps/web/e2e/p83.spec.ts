@@ -17,7 +17,8 @@ import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 // try answers and closes the session with the service client (what `save_practice_answers` does), or ends the event failed. Nothing here
 // calls a model, and no real photo of handwriting is read: the photo is a small generated PNG.
 //
-// WRITTEN, NOT RUN (the shared database could not take a browser spec when this was written). Run it against a production build, phone project:
+// RUNS IN CI on every push (job "Feature specs in a browser", .github/workflows/ci.yml), on CI's own local database, phone project. There the stand-in
+// takes port 8787 (STAND_IN_AGENT_PORT), where the web app posts. Never run it against the hosted preview database. By hand, against a production build:
 //   pnpm --filter web build
 //   AGENT_URL=http://127.0.0.1:8783 pnpm --filter web exec next start --port 3283        (own terminal, stop it by its pid after)
 //   P83_PROOF=1 PREVIEW_URL=http://localhost:3283 pnpm --filter web exec playwright test p83 --project=phone --workers=1

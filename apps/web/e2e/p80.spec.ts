@@ -11,7 +11,8 @@ import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 // The stand-in agent below answers 202 to every post and runs no job, so a tap on Practise leaves a `practice.requested` event queued and the
 // home says Jemma is writing it. Nothing here calls a model.
 //
-// WRITTEN, NOT RUN (the shared database could not take a browser spec when this was written). Run it against a production build, phone and laptop:
+// RUNS IN CI on every push (job "Feature specs in a browser", .github/workflows/ci.yml), on CI's own local database, phone and laptop. There the stand-in
+// takes port 8787 (STAND_IN_AGENT_PORT), where the web app posts. Never run it against the hosted preview database. By hand, against a production build:
 //   pnpm --filter web build
 //   AGENT_URL=http://127.0.0.1:8780 pnpm --filter web exec next start --port 3280        (own terminal, stop it by its pid after)
 //   P80_PROOF=1 PREVIEW_URL=http://localhost:3280 pnpm --filter web exec playwright test p80 --workers=1

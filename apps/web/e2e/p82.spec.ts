@@ -3,8 +3,8 @@ import { expect, test, type Page } from '@playwright/test'
 import { createSandbox, deleteSandbox, type SandboxKind } from '../../../supabase/seed/demo'
 import { signInWithPassword } from './helpers/session'
 
-// The official South African Mathematics curriculum (CAPS) in the teacher's hands (P82). WRITTEN AND NOT RUN: the shared database could not
-// serve a browser spec on the day it was written, so nothing here has been seen to pass. Phone project.
+// The official South African Mathematics curriculum (CAPS) in the teacher's hands (P82). RUNS IN CI on every push (job "Feature specs in a
+// browser", .github/workflows/ci.yml), on CI's own local database, phone project. Never run it against the hosted preview database.
 // - An empty school, a Grade 10 class, one tap on "Start from the CAPS map": the review screen shows Term 1 with "Algebraic expressions",
 //   the teacher approves, and the approved board says where the topics come from.
 // - A fresh demo copy as Mr Dlamini: his class 7A starts with its CAPS map already approved.
