@@ -6,6 +6,7 @@ import { AppHeader } from './session/_parts/AppHeader'
 import { ChevronRight, FormatChip, MinutesChip } from './session/_parts/Chips'
 import { Diamond, Gem } from './session/_parts/Gems'
 import { PreviewBars } from './session/_parts/PreviewBars'
+import { OwnWorkLink } from './OwnWorkLink'
 import { PracticeCard } from './PracticeCard'
 import { WorkspaceSwitch } from './WorkspaceSwitch'
 
@@ -65,6 +66,7 @@ export default async function ChildToday() {
           ) : null}
           <PracticeCard state={today.practice} suggestion={today.suggestion} workspace={today.workspace} />
           <GapsCard today={today} tone="rest" />
+          {today.workspace === 'own' ? <OwnWorkLink /> : null}
         </div>
       </div>
     )
@@ -99,6 +101,7 @@ export default async function ChildToday() {
           </Link>
         </section>
         <GapsCard today={today} tone="today" />
+        {today.workspace === 'own' ? <OwnWorkLink /> : null}
       </div>
     </div>
   )
