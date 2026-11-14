@@ -2,7 +2,7 @@
 
 ## Agent shape
 
-An event starts a job plan. Code builds the plan from the database after every step. Each of the 9 AI jobs is one run. Goose, Claude Code on the owner's laptop and the operator runner call Jemma's tools over MCP. The hosted app's own runner calls the same functions in code, and its model gets no tools. Save tools enforce the rules in code: marks, sources, school scope, and banned words for Long view patterns only. Code then checks what the event had to produce, retries, falls back to another model, or hands the item to the teacher.
+An event starts a job plan. Code builds the plan from the database after every step. Each of the 10 AI jobs is one run. Goose, Claude Code on the owner's laptop and the operator runner call Jemma's tools over MCP. The hosted app's own runner calls the same functions in code, and its model gets no tools. Save tools enforce the rules in code: marks, sources, school scope, and banned words for Long view patterns only. Code then checks what the event had to produce, retries, falls back to another model, or hands the item to the teacher.
 
 ```mermaid
 flowchart LR
@@ -18,7 +18,7 @@ flowchart LR
 
 | | Server | What it does here |
 | --- | --- | --- |
-| Built | Jemma's own, 27 tools (`packages/profiling/src/tools/registry.ts`) | Reads records. Saves marks, profile updates, reports, lessons, guidance and Long view drafts. |
+| Built | Jemma's own, 29 tools (`packages/profiling/src/tools/registry.ts`) | Reads records. Saves marks, profile updates, reports, lessons, guidance and Long view drafts. |
 | Borrowed | The official filesystem server, pinned 2.2.0 | Lets goose write a Markdown copy of a report into one folder. |
 
 Why borrowed: sandboxed, allow-listed file access with path-escape protection is security code we should not write and audit ourselves.
