@@ -12,7 +12,7 @@ import { writeApprovedMap } from '../../packages/profiling/src/curriculum/caps-m
 import { capsClassMaps } from './fixtures/caps-maps'
 import { HILLVIEW_CLASSES, HILLVIEW_LINKS, awayOnDay, HILLVIEW_PARENTS, HILLVIEW_TEACHERS, madeUpClasses, madeUpLearner } from './fixtures/hillview'
 import { longHistory } from './fixtures/long-history'
-import { ownClassRows, ownItemRows, ownLessonRow, ownMaps, ownPractice, ownSchoolRow, ownSessionRow, ownTwinRow } from './fixtures/own-workspace'
+import { ownClassRows, ownGapRow, ownItemRows, ownLessonRow, ownMarkedTest, ownMaps, ownPaperRow, ownPractice, ownResultRows, ownSchoolRow, ownSessionRow, ownTestLogRow, ownTwinRow } from './fixtures/own-workspace'
 import { PATTERN_LEARNERS, wordPatterns } from './fixtures/long-view-wording'
 import {
   AMINA_LESSON, AMINA_LOG, CLASS_LOG, CURRICULUM_DOCS, HOMEWORK_NEEDS, SIPHO_NEEDS, WEEK_PLAN, PARENT_NOTES, TEACHER_NOTES, HOMEWORK_ROWS, LESSON_TOPIC, RETEACH, RETEACH_EXPLANATION, RETEACH_MISSING_BASIC, RETEACH_TOPIC, RETEACH_WHY,
@@ -390,6 +390,19 @@ async function buildHillview(admin: JemmaDb, sandboxId: string, stage: SandboxSt
           'own sessions',
         )
         await ok(admin.from('session_items').insert(practice.flatMap((p) => ownItemRows(p, sessions.find((s) => s.topic_name === p.topicName)!.id))), 'own session items')
+        // One test Amina got back marked, already read (so /k/own says "Marked test: 6 of 8 right" at once, with no upload in the demo): the paper,
+        // its 8 results on two Grade 6 topics, the one open gap on the topic of the two wrong answers (those answers are its evidence) and the line
+        // the reader writes. The paper has no photo pages: nothing reads them again.
+        const markedTest = ownMarkedTest()
+        const paper = await ok(admin.from('papers').insert(ownPaperRow(twin.id, now)).select('id').single(), 'own marked test')
+        const results = await ok(admin.from('question_results').insert(ownResultRows(markedTest, { paperId: paper.id, childId: twin.id, topicIdOf })).select('id, n, correct'), 'own marked results')
+        await Promise.all([
+          ok(
+            admin.from('gaps').insert(ownGapRow({ childId: twin.id, topicId: topicIdOf(markedTest.gapTopicName), topicName: markedTest.gapTopicName, wrongResultIds: results.filter((r) => !r.correct).map((r) => r.id) })),
+            'own gap',
+          ),
+          ok(admin.from('activity_log').insert(ownTestLogRow({ schoolId: personal.id, childId: twin.id, at: at(0) })), 'activity_log (own marked test)'),
+        ])
       })(),
       ensureSampleFiles(admin, { loadSheet }),
     ]

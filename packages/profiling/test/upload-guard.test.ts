@@ -9,8 +9,8 @@ import { describe, expect, test } from 'vitest'
 
 const root = resolve(import.meta.dirname, '../../..')
 
-/** The eight functions that take file bytes. They stay `'use server'` functions, and only the three upload routes call them. */
-const UPLOAD_FUNCTIONS = ['uploadCurriculum', 'uploadMemo', 'addPaper', 'uploadScans', 'addPage', 'retakePaper', 'snapHomework', 'snapPractice'] as const
+/** The functions that take file bytes (ten since P97). They stay `'use server'` functions, and only the three upload routes call them. */
+const UPLOAD_FUNCTIONS = ['uploadCurriculum', 'uploadMemo', 'addPaper', 'uploadScans', 'addPage', 'retakePaper', 'snapHomework', 'snapPractice', 'snapOwnTest', 'uploadOwnCurriculum'] as const
 
 const WHY = "file bytes must go through postFiles (lib/upload-client.ts): Cloudflare's edge refuses a form action whose body holds the bytes '$F"
 
@@ -19,7 +19,7 @@ function isClientFile(source: string): boolean {
   return /^(?:\s|\/\/[^\n]*\n|\/\*[\s\S]*?\*\/)*(['"])use client\1/.test(source)
 }
 
-/** The names of the eight functions that a client file takes from an actions file (a named import, a namespace import or a dynamic import). */
+/** The names of the upload functions that a client file takes from an actions file (a named import, a namespace import or a dynamic import). */
 function uploadFunctionsImported(source: string): string[] {
   const found = new Set<string>()
   const fromActions = (specifier: string) => /(?:^|\/)actions(?:\.[cm]?[jt]sx?)?$/.test(specifier)
@@ -47,6 +47,8 @@ describe('the guard itself', () => {
     expect(uploadFunctionsImported(`import { addPage, addPaper, retakePaper } from '../../actions'`).sort()).toEqual(['addPage', 'addPaper', 'retakePaper'])
     expect(uploadFunctionsImported(`import { uploadMemo as send } from "../actions.ts"`)).toEqual(['uploadMemo'])
     expect(uploadFunctionsImported(`import { answer, snapPractice } from './actions'`)).toEqual(['snapPractice'])
+    expect(uploadFunctionsImported(`import { retryOwnTest, snapOwnTest } from '../actions'`)).toEqual(['snapOwnTest'])
+    expect(uploadFunctionsImported(`import { uploadOwnCurriculum, removeOwnTopic } from '../actions'`)).toEqual(['uploadOwnCurriculum'])
     expect(uploadFunctionsImported(`import {\n  approveKey,\n  uploadScans,\n} from '@/app/t/[classId]/snap/actions'`)).toEqual(['uploadScans'])
     expect(uploadFunctionsImported(`import * as actions from './actions'\nawait actions.snapHomework(a, b, c, d)`)).toEqual(['snapHomework'])
     expect(uploadFunctionsImported(`const { uploadMemo } = await import('./actions')`)).toEqual(['uploadMemo'])
@@ -55,6 +57,7 @@ describe('the guard itself', () => {
   test('it lets the other actions, and the same names from somewhere else, through', () => {
     expect(uploadFunctionsImported(`import { approveKey, confirmKeyItem, createTest } from '../../actions'`)).toEqual([])
     expect(uploadFunctionsImported(`import { uploadMemo } from '@/lib/upload-client'`)).toEqual([])
+    expect(uploadFunctionsImported(`import { retryOwnTest, approveOwnCurriculum } from './actions'`)).toEqual([])
     expect(uploadFunctionsImported(`import * as actions from './actions'\nawait actions.approveKey(a)`)).toEqual([])
     expect(uploadFunctionsImported(`import { postFiles } from '@/lib/upload-client'\nconst x = 'uploadMemo'`)).toEqual([])
   })
@@ -75,7 +78,7 @@ describe('no screen sends file bytes through a form action', () => {
   test('the scan reads the client files (it is not passing on an empty list)', () => {
     expect(clients.length).toBeGreaterThan(30)
     // the screens that send files
-    for (const file of ['curriculum/parts.tsx', 'papers/UploadZone.tsx', 'snap/SnapTestForm.tsx', 'key/KeyList.tsx', 'key/draft/DraftKey.tsx', 'papers/Queue.tsx', 'photo/PhotoScreen.tsx', 'session/[sessionId]/SessionFlow.tsx']) {
+    for (const file of ['curriculum/parts.tsx', 'own/test/SnapTest.tsx', 'own/curriculum/CurriculumUpload.tsx', 'papers/UploadZone.tsx', 'snap/SnapTestForm.tsx', 'key/KeyList.tsx', 'key/draft/DraftKey.tsx', 'papers/Queue.tsx', 'photo/PhotoScreen.tsx', 'session/[sessionId]/SessionFlow.tsx']) {
       expect(clients.some((f) => f.endsWith(file)), file).toBe(true)
     }
   })
@@ -85,18 +88,19 @@ describe('no screen sends file bytes through a form action', () => {
     expect(offenders, WHY).toEqual([])
   })
 
-  test('the client helper can name all eight functions', () => {
+  test('the client helper can name every upload function', () => {
     const client = readFileSync(join(root, 'apps/web/lib/upload-client.ts'), 'utf8')
     for (const fn of UPLOAD_FUNCTIONS) expect(client, `${fn} is an UploadAction`).toContain(`'${fn}'`)
   })
 
-  test('the three upload routes name all eight functions, and the actions files still export them', () => {
+  test('the three upload routes name every upload function, and the actions files still export them', () => {
     const routes = ['apps/web/app/t/upload/route.ts', 'apps/web/app/p/upload/route.ts', 'apps/web/app/k/upload/route.ts'].map((f) => readFileSync(join(root, f), 'utf8')).join('\n')
     const actions = [
       'apps/web/app/t/[classId]/curriculum/actions.ts',
       'apps/web/app/t/[classId]/snap/actions.ts',
       'apps/web/app/p/[childId]/snap/actions.ts',
       'apps/web/app/k/session/[sessionId]/actions.ts',
+      'apps/web/app/k/own/actions.ts',
     ]
       .map((f) => readFileSync(join(root, f), 'utf8'))
       .join('\n')

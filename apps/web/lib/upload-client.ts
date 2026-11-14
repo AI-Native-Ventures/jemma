@@ -1,5 +1,5 @@
 /** The functions the three upload routes (app/t/upload, app/p/upload, app/k/upload) will call. The names are the routes' own, not the server's. */
-export type UploadAction = 'uploadCurriculum' | 'uploadMemo' | 'addPaper' | 'uploadScans' | 'addPage' | 'retakePaper' | 'snapHomework' | 'snapPractice'
+export type UploadAction = 'uploadCurriculum' | 'uploadMemo' | 'addPaper' | 'uploadScans' | 'addPage' | 'retakePaper' | 'snapHomework' | 'snapPractice' | 'snapOwnTest' | 'uploadOwnCurriculum'
 
 /**
  * Sends files to the server. Every screen that sends file bytes uses this, never a form action: Cloudflare's edge refuses a
