@@ -153,9 +153,11 @@ export type ParentHome =
 /** What `/p` shows for this parent, read through RLS (children appear only once a link is approved). */
 export async function getParentHome(userId: string): Promise<ParentHome> {
   const supabase = await createSupabaseServer()
+  // The parent's children, not their private workspaces (row level security lets the parent read those too, but they are not another child).
   const { data: kids } = await supabase
     .from('children')
     .select('id, first_name, grade, schools(name)')
+    .is('private_of', null)
     .order('first_name')
   if (kids && kids.length > 0) {
     const ids = kids.map((k) => k.id)

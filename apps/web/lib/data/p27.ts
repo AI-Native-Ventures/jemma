@@ -5,9 +5,11 @@ import { loadMyMathsInput } from '@jemma/profiling/orchestrator'
 import { LessonSchema, QuestionSchema, type Lesson, type SeniorDiagramSpec } from '@jemma/profiling/schemas'
 import { notFound } from 'next/navigation'
 import { stripQuestion, type QuestionForChild } from '@/app/k/session/[sessionId]/logic'
+import { defaultOwnClass } from '@/lib/own-workspace'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import { classIdsOfChild, loadShortLabels } from '@/lib/topics'
+import { WORKSPACE_COOKIE, workspaceOf, type Workspace } from '@/lib/workspace'
 
 export type GapGem = 'full' | 'half' | 'empty'
 
@@ -30,6 +32,8 @@ export type PracticeState = 'writing' | 'failed' | 'ready' | 'none'
 
 export type LearnerToday = {
   firstName: string
+  /** Which workspace the home shows: "My school" or "My own". */
+  workspace: Workspace
   tonight: TonightCard | null
   next: NextCard | null
   gems: GapGem[]
@@ -62,26 +66,62 @@ export const lessonHasQuestions = (content: unknown): boolean =>
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 export const dayName = (iso: string) => DAYS[new Date(`${iso}T00:00:00Z`).getUTCDay()]!
 
-export async function myChild() {
+const CHILD_COLUMNS = 'id, first_name, parent_first_name, parent_relation, grade, private_of, schools(name)'
+
+/** The workspace this device chose (the cookie `jemma_ws`). Outside a request there is no cookie: "My school". */
+async function workspaceChosen(): Promise<Workspace> {
+  try {
+    return workspaceOf((await cookies()).get(WORKSPACE_COOKIE)?.value)
+  } catch {
+    return 'school'
+  }
+}
+
+/**
+ * The learner of this request and the person acting: the learner's own session (the child of this login that belongs to the school: a learner
+ * with a private workspace has two children with the one login, and `private_of is null` is the school's), or a parent's device after hand-over
+ * (the cookie names a child, and RLS lets this parent read them). `named` is the child found; it can be the private twin when the hand-over was
+ * of one of the twin's own sessions.
+ */
+async function findLearner() {
   const supabase = await createSupabaseServer()
   const { data: auth } = await supabase.auth.getUser()
   if (!auth.user) notFound()
-  const { data: own } = await supabase
-    .from('children')
-    .select('id, first_name, parent_first_name, parent_relation')
-    .eq('user_id', auth.user.id)
-    .maybeSingle()
-  if (own) return { supabase, child: own }
-  // A parent's device after hand-over: the cookie names the child, and RLS lets this parent read them.
+  const { data: own } = await supabase.from('children').select(CHILD_COLUMNS).eq('user_id', auth.user.id).is('private_of', null).maybeSingle()
+  if (own) return { supabase, userId: auth.user.id, named: own }
   const handover = await verifyHandover((await cookies()).get(HANDOVER_COOKIE)?.value)
   if (!handover) notFound()
-  const { data: child } = await supabase
-    .from('children')
-    .select('id, first_name, parent_first_name, parent_relation')
-    .eq('id', handover.childId)
-    .maybeSingle()
-  if (!child) notFound()
-  return { supabase, child }
+  const { data: named } = await supabase.from('children').select(CHILD_COLUMNS).eq('id', handover.childId).maybeSingle()
+  if (!named) notFound()
+  return { supabase, userId: auth.user.id, named }
+}
+
+/**
+ * The child a learner's screens work on, found the way they always were (the learner's own session, or a parent's device after hand-over) and then
+ * by the workspace the device chose. "My school" (the default) is the child of the school. "My own" is the private twin of that child, found by
+ * `private_of`; a learner who has no twin yet is still in "My school". A hand-over of one of the twin's own sessions names the twin, and the
+ * signed cookie wins over the device's choice (it is the child of that one session). Every learner screen and action goes through here, so
+ * home, "My maths", practice, sessions and paper answers work the same in both workspaces and never mix them.
+ */
+export async function myChild() {
+  const { supabase, named } = await findLearner()
+  if (named.private_of) return { supabase, child: named }
+  if ((await workspaceChosen()) === 'own') {
+    const { data: twin } = await supabase.from('children').select(CHILD_COLUMNS).eq('private_of', named.id).maybeSingle()
+    if (twin) return { supabase, child: twin }
+  }
+  return { supabase, child: named }
+}
+
+/**
+ * The school child and the person acting, whichever workspace is on screen: what the switch needs to open or add to the private workspace.
+ * A hand-over that names the twin answers the school child it belongs to.
+ */
+export async function schoolChildOfRequest() {
+  const { supabase, userId, named } = await findLearner()
+  if (!named.private_of) return { supabase, userId, child: named }
+  const { data: home } = await supabase.from('children').select(CHILD_COLUMNS).eq('id', named.private_of).maybeSingle()
+  return { supabase, userId, child: home ?? named }
 }
 
 /**
@@ -97,9 +137,12 @@ export async function newestPracticeEvent(childId: string): Promise<{ id: string
   }
 }
 
-/** "My maths" for one learner, read with the service client by this learner's id only (a learner's own session cannot read marked answers). */
-export async function myMathsOf(childId: string, now: Date = new Date()): Promise<MyMaths> {
-  return buildMyMaths(await loadMyMathsInput(createSupabaseAdmin(), childId, now))
+/**
+ * "My maths" for one learner, read with the service client by this learner's id only (a learner's own session cannot read marked answers).
+ * With a `classId`, one class's map only (a private workspace shows one grade at a time).
+ */
+export async function myMathsOf(childId: string, now: Date = new Date(), classId?: string): Promise<MyMaths> {
+  return buildMyMaths(await (classId ? loadMyMathsInput(createSupabaseAdmin(), childId, now, { classId }) : loadMyMathsInput(createSupabaseAdmin(), childId, now)))
 }
 
 type SessionRow = { id: string; status: string; planned_for: string; lesson_id: string | null; topic_name: string | null; format: Lesson['format'] | null; planned_minutes: number | null }
@@ -169,9 +212,11 @@ export async function getLearnerToday(): Promise<LearnerToday> {
   // "My maths" is only read when it can change the answer: no session to start, and no practice that is being written or failed. The learner
   // can practise when it has something to suggest.
   const decided = asked?.status === 'queued' || asked?.status === 'running' || (asked?.status === 'failed' && !tonight)
-  const suggestion = tonight || decided ? null : ((await myMathsOf(child.id, now)).suggestions[0] ?? null)
+  // In a private workspace the suggestion comes from one grade, the same one "My maths" shows first.
+  const classId = tonight || decided || !child.private_of ? undefined : ((await defaultOwnClass(child.id)) ?? undefined)
+  const suggestion = tonight || decided ? null : ((await myMathsOf(child.id, now, classId)).suggestions[0] ?? null)
   const practice = practiceState({ event: asked?.status ?? null, session: tonight !== null, canPractise: suggestion !== null })
-  return { firstName: child.first_name, tonight, next, gems, fixed, toGo: all.length - fixed, practice, suggestion }
+  return { firstName: child.first_name, workspace: child.private_of ? 'own' : 'school', tonight, next, gems, fixed, toGo: all.length - fixed, practice, suggestion }
 }
 
 export type SessionPage = {

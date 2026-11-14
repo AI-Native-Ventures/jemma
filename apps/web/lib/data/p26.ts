@@ -94,7 +94,8 @@ export async function getAccount(): Promise<AccountData> {
     .select('display_name')
     .eq('user_id', auth.user?.id ?? '')
     .maybeSingle()
-  const { data: kids } = await supabase.from('children').select('id, first_name').order('first_name')
+  // The learners of this parent, not their private workspaces (the parent may read those too, but they are not another child).
+  const { data: kids } = await supabase.from('children').select('id, first_name').is('private_of', null).order('first_name')
   const name = profile?.display_name ?? ''
   return {
     name,
