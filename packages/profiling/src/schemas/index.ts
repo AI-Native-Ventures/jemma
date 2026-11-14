@@ -1,5 +1,6 @@
 export * from './curriculum'
 export * from './papers'
+export * from './marked-test'
 export * from './diagnosis'
 export * from './diagram'
 export * from './lesson'

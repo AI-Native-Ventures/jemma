@@ -196,12 +196,13 @@ export function endEventFailed(db: JemmaDb, eventId: string, error: string, atte
 }
 
 /** The event types whose job reads a photo of one paper. */
-const PAPER_PHOTO_EVENTS = new Set(['paper.snapped', 'homework.snapped'])
+const PAPER_PHOTO_EVENTS = new Set(['paper.snapped', 'homework.snapped', 'own_test.snapped'])
 
 /**
- * An event ended failed for good: when it is the read of a paper's photo (`paper.snapped`, `homework.snapped`) and the paper is
+ * An event ended failed for good: when it is the read of a paper's photo (`paper.snapped`, `homework.snapped`, `own_test.snapped`) and the paper is
  * still `queued` or `reading`, the paper ends the way `mark_paper` ends a page that is not usable (`endUnreadablePaper`): a teacher's
- * paper becomes `needs_you` with a Needs you item that asks for a retake or a check by hand, a parent's paper becomes `failed`.
+ * paper becomes `needs_you` with a Needs you item that asks for a retake or a check by hand, a parent's paper (and a learner's own test, which
+ * has no test) becomes `failed`.
  * A paper that is already `marked`, `needs_you` or `failed` is never touched, and no other event type does anything. Every place that
  * ends an event failed for good calls it after `endEventFailed` changed a row: `runEvent`, `checkStuckEvents` and the agent's `failEvent`.
  * Never throws: a failure is logged as one line and the event's own end stays as written.

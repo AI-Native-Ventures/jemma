@@ -6,7 +6,7 @@ import { maybe, ok } from './tools/context'
 import { loadPracticeInput } from './tools/read/practice-input'
 
 /** The AI jobs. Each has a prompt file `jobs/<job>.md` (see jobs/README.md). */
-export const AI_JOBS = ['draft_map', 'read_key', 'read_paper', 'diagnose', 'class_report', 'write_lesson', 'guidance', 'long_view', 'map_records'] as const
+export const AI_JOBS = ['draft_map', 'read_key', 'read_paper', 'diagnose', 'class_report', 'write_lesson', 'guidance', 'long_view', 'map_records', 'read_marked_test'] as const
 /** Plain-code steps that sit in the plans next to the AI jobs. */
 export const CODE_JOBS = ['plan_next_session', 'update_learner_profile'] as const
 export const JOB_NAMES = [...AI_JOBS, ...CODE_JOBS] as const
@@ -162,6 +162,21 @@ export async function jobPlan(event: JemmaEvent, db: JemmaDb, now: Date = new Da
     }
     case 'long_view.requested':
       return [{ job: 'long_view', ids: { childId: event.childId } }]
+    case 'own_test.snapped': {
+      // A learner's own marked test: read the teacher's marks, then (once the paper is marked) find gaps and plan from them. A paper that is
+      // not this learner's is never planned. A failed paper has nothing more to do.
+      const paper = await ok(db.from('papers').select('child_id, status').eq('id', event.paperId).single())
+      if (paper.child_id !== event.childId) return []
+      if (paper.status === 'queued' || paper.status === 'reading') return [{ job: 'read_marked_test', ids: { paperId: event.paperId } }]
+      if (paper.status === 'marked') {
+        return [
+          { job: 'diagnose', ids: { childId: event.childId, paperId: event.paperId } },
+          { job: 'plan_next_session', ids: { childId: event.childId } },
+          { job: 'write_lesson', ids: { childId: event.childId } },
+        ]
+      }
+      return []
+    }
     case 'practice.requested': {
       // The learner asked to practise now. A session for today whose lesson has questions: nothing to do. One whose lesson is still empty:
       // write it. None: plan one for today (code picks the topic), then write its lesson.
@@ -252,6 +267,13 @@ export async function postconditions(event: JemmaEvent, db: JemmaDb, now: Date =
     case 'session.finished':
       await nextSessionPlanned(event.sessionId)
       break
+    case 'own_test.snapped': {
+      // The paper is read: marked, or failed (the event then ends failed by itself).
+      const paper = await ok(db.from('papers').select('child_id, status').eq('id', event.paperId).single())
+      if (paper.child_id !== event.childId) missing.push(`own test ${event.paperId} is not the paper of child ${event.childId}`)
+      else if (paper.status !== 'marked' && paper.status !== 'failed') missing.push(`own test ${event.paperId} is not read yet`)
+      break
+    }
     case 'practice.snapped': {
       // The paper was read: the session is closed with its five try answers. Then it is held to the rule of a session finished on the screen.
       const session = await ok(db.from('sessions').select('status').eq('id', event.sessionId).single())
