@@ -151,9 +151,14 @@ async function classRef(supabase: Supabase, classId: string): Promise<ClassRef> 
   return data
 }
 
-async function loadSummaries(supabase: Supabase, tests: { id: string; title: string; written_on: string | null; out_of: number }[]) {
+async function loadSummaries(
+  supabase: Supabase,
+  classId: string,
+  tests: { id: string; title: string; written_on: string | null; out_of: number }[],
+  labels?: (name: string) => string,
+) {
   if (tests.length === 0) return []
-  const short = await loadShortLabels(supabase)
+  const short = labels ?? (await loadShortLabels(supabase, { classIds: [classId] }))
   const { data: papers } = await supabase
     .from('papers')
     .select('id, test_id, child_id, status, total')
@@ -183,14 +188,14 @@ export type TestsList = {
 export async function getTestsList(classId: string): Promise<TestsList> {
   const supabase = await createSupabaseServer()
   const cls = await classRef(supabase, classId)
-  const short = await loadShortLabels(supabase)
+  const short = await loadShortLabels(supabase, { classIds: [classId] })
   const { data: tests } = await supabase
     .from('tests')
     .select('id, title, written_on, out_of')
     .eq('class_id', classId)
     .order('written_on', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false })
-  const summaries = await loadSummaries(supabase, tests ?? [])
+  const summaries = await loadSummaries(supabase, classId, tests ?? [], short)
 
   const latest = summaries.find((s) => s.marked > 0)
   // The class gap Jemma found for this test is what pulled it down; fall back to the lowest topic.
@@ -219,7 +224,7 @@ async function loadTest(supabase: Supabase, classId: string, testId: string) {
     .eq('class_id', classId)
     .maybeSingle()
   if (!test) notFound()
-  const [summary] = await loadSummaries(supabase, [test])
+  const [summary] = await loadSummaries(supabase, classId, [test])
   return summary!
 }
 
@@ -298,7 +303,7 @@ function mode<T>(list: T[]): { value: T; count: number } | null {
 /** `teacher-question`. */
 export async function getQuestionDetail(classId: string, testId: string, n: number): Promise<QuestionDetail> {
   const supabase = await createSupabaseServer()
-  const short = await loadShortLabels(supabase)
+  const short = await loadShortLabels(supabase, { classIds: [classId] })
   const cls = await classRef(supabase, classId)
   const { data: test } = await supabase
     .from('tests')

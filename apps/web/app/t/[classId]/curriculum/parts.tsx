@@ -2,11 +2,12 @@
 
 import { PendingButton } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { ErrorRetry } from '@/components/blocks'
 import { Button, Sheet } from '@/components/ui'
 import { shrinkPhoto } from '@/lib/shrink-photo'
 import { postFiles } from '@/lib/upload-client'
+import { useRefreshPoll } from '@/lib/use-refresh-poll'
 import { retryDraft, useCapsMap, useSampleCurriculum, type UploadResult } from './actions'
 import { notAllowedMessage, sizeProblem, sniffKind } from './upload-checks'
 
@@ -15,13 +16,9 @@ const outlined = {
   border: '1.5px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36', fontSize: 15, fontWeight: 600,
 } as const
 
-/** Reloads the page's data every few seconds while the agent drafts the map. */
+/** Reloads the page's data a few seconds after the last answer came back, while the agent drafts the map. */
 export function AutoRefresh({ everyMs = 4000 }: { everyMs?: number }) {
-  const router = useRouter()
-  useEffect(() => {
-    const id = setInterval(() => router.refresh(), everyMs)
-    return () => clearInterval(id)
-  }, [router, everyMs])
+  useRefreshPoll(everyMs)
   return null
 }
 
