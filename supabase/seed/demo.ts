@@ -8,6 +8,7 @@ import { LessonSchema, ReteachSchema, GuidanceSchema, TopicMapDraftSchema, Answe
 import { classTest1Results, classTest1Roster, classTest1Scores, classTest1ScoresBeforeFix, classTest1Wrong, siphoQ7BeforeFix } from './fixtures/class-test-1'
 import { AMINA_ACTIVITIES, AWAY_DAY_INDEX, CAST, CHILD_PIN, EMPTY_SCHOOL, EMPTY_TEACHER, NOTES, SCHOOL, lastSchoolDays } from './fixtures/cast'
 import { FIXED_GAPS, FORMAT_FAMILY, FORMAT_TRIALS, TERM3_ROWS } from './fixtures/history'
+import { capsClassMaps, type TopicRow } from './fixtures/caps-maps'
 import { HILLVIEW_CLASSES, HILLVIEW_LINKS, awayOnDay, HILLVIEW_PARENTS, HILLVIEW_TEACHERS, madeUpClasses, madeUpLearner } from './fixtures/hillview'
 import { longHistory } from './fixtures/long-history'
 import { PATTERN_LEARNERS, wordPatterns } from './fixtures/long-view-wording'
@@ -342,6 +343,13 @@ async function buildHillview(admin: JemmaDb, sandboxId: string, stage: SandboxSt
         ),
         'parent links',
       ),
+      // The made-up classes (5A, 7A, 4A, not 6B) start with the CAPS map of their grade already approved, so a learner there sees real topics.
+      // One chain for each class, side by side with everything above: the map, then its topics in one insert and its line of the log.
+      ...capsClassMaps().map(async (m) => {
+        const classIdOf = classOf[m.classKey]!
+        await writeApprovedMap(admin, { classId: classIdOf, stored: m.stored, approvedAt: at(0), rows: m.rows })
+        await ok(admin.from('activity_log').insert({ school_id: schoolId, class_id: classIdOf, at: at(0), text: m.log, tool: 'use_caps_map' }), 'activity_log (CAPS map)')
+      }),
       ensureSampleFiles(admin, { loadSheet }),
     ]
     await Promise.all(startWork)
@@ -370,6 +378,22 @@ type MarkedCtx = {
   withSession: boolean
 }
 
+/**
+ * An approved topic map of a class and its topic rows, as the seed writes them: the map first, then every topic in one insert. The marked
+ * stage writes 6B's map this way, and so does each made-up class that starts from the CAPS map.
+ */
+async function writeApprovedMap(
+  admin: JemmaDb,
+  input: { classId: string; stored: unknown; approvedAt: string; rows: TopicRow[] },
+): Promise<{ map: { id: string }; topicRows: { id: string; name: string }[] }> {
+  const map = await ok(
+    admin.from('curriculum_maps').insert({ class_id: input.classId, status: 'approved', draft: json(input.stored), approved_at: input.approvedAt }).select('id').single(),
+    'map',
+  )
+  const topicRows = await ok(admin.from('topics').insert(input.rows.map((r) => ({ map_id: map.id, ...r }))).select('id, name'), 'topics')
+  return { map, topicRows }
+}
+
 async function buildMarked(c: MarkedCtx): Promise<void> {
   const { admin, schoolId, classId, teacherId, parentId, childId, aminaId } = c
   const today = c.now.toISOString().slice(0, 10)
@@ -380,23 +404,14 @@ async function buildMarked(c: MarkedCtx): Promise<void> {
 
   // Curriculum documents and the approved map.
   const draft = TopicMapDraftSchema.parse(topicMapDraft())
-  const map = await ok(
-    admin.from('curriculum_maps').insert({ class_id: classId, status: 'approved', draft: json(draft), approved_at: c.at(62) }).select('id').single(),
-    'map',
-  )
-  const topicRows = await ok(
-    admin
-      .from('topics')
-      .insert(
-        TERMS.flatMap((t) =>
-          t.topics.map((p, i) => ({
-            map_id: map.id, term: t.term, position: i + 1, name: p.name, short_name: p.short ?? p.name, family: p.family, misconceptions: p.misconceptions,
-          })),
-        ),
-      )
-      .select('id, name'),
-    'topics',
-  )
+  const { map, topicRows } = await writeApprovedMap(admin, {
+    classId,
+    stored: draft,
+    approvedAt: c.at(62),
+    rows: TERMS.flatMap((t) =>
+      t.topics.map((p, i) => ({ term: t.term, position: i + 1, name: p.name, short_name: p.short ?? p.name, family: p.family, misconceptions: p.misconceptions })),
+    ),
+  })
   const topicId = new Map(topicRows.map((t) => [t.name, t.id]))
   const tid = (name: string) => {
     const id = topicId.get(name)

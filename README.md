@@ -65,6 +65,8 @@ Open `/demo` (on your machine, or on the live demo). Pick **Ms Banda** (teacher)
 
 These are screenshots from the running app at 390 px, taken by the builders of each screen. The Share with parents card is in `design/proof/p50b/class-home-card-390.png`.
 
+**Any grade, from the official curriculum.** A Mathematics class of a South African school in any grade from 1 to 12 can start from the CAPS map. On the Curriculum screen tap **Start from the CAPS map**: the official topics for the grade, term by term, become the draft topic map, with no document and no model. The teacher checks the map and approves it as before. The topics come from four public documents of the Department of Basic Education (2011): [fixtures/curriculum/caps/README.md](fixtures/curriculum/caps/README.md) names them and says how the files were put together and what is not verified. In the demo school the made-up classes 5A, 7A and 4A start with their grade's CAPS map already approved. 6B does not: its first step is the teacher's own upload.
+
 ## How the agent works
 
 1. An event (a photo, a note, a finished lesson, shared results) starts a job plan that code builds from the database after every step.
@@ -184,6 +186,8 @@ The agent serves MCP at `/mcp` and needs a bearer token. See [docs/mcp-server.md
 
 - **No real teacher and no real learner has used Jemma.** The school, the people and the records are made up.
 - **Mathematics only.** The demo school has four Mathematics classes, in Grades 4 to 7, and the class form offers Grades 1 to 12. Only 6B has hand-made history; the learners of the other classes are made up by code. Other subjects are not offered yet, and the only reads of another subject by a model were three curriculum documents (EVALS.md, "Outside Mathematics": 3 of 3, 0 of 3 and 0 of 2 judged runs passed).
+- **Grades 8 to 12 are thin.** The CAPS maps cover Grades 1 to 12, but the lessons and the practice are still shaped for the primary school. For Grades 8 to 12 they are limited to typed numbers and choices, have no graphs and no proper notation, and were never tried with a model.
+- **The CAPS maps hold no prerequisites and no usual mistakes.** The documents do not give them, so no topic of a CAPS map has them filled in. The topics were read from the 2011 documents, not from the later yearly teaching plans (see `fixtures/curriculum/caps/README.md`).
 - **Not built yet:** Grade 8 to 12 question types, teen invites, chat, billing, offline mode and messages between teacher and parent. Also not built: deleting or downloading a family's data, deleting an account, moving a class up or archiving it at the end of the year, starting from another teacher's map, adding a second teacher's code, and a sign-up for a Grade 8 to 12 learner. Screens that link to them say "Coming after the challenge".
 - **No live in-browser camera for teachers.** Teachers snap with the phone's own camera, one photo per page.
 - **No email, SMS or WhatsApp.** Jemma only shows notifications inside the app. Email sign-in is not part of the demo path and was not tested against a real inbox. Use the demo page.
@@ -220,7 +224,7 @@ More detail is in [docs/architecture.md](docs/architecture.md) (what is not buil
 | `evals` | The eval harness, its eleven tasks and the saved results behind `EVALS.md`. |
 | `supabase/migrations` | Database schema, row-level security, functions. |
 | `supabase/seed` | The made-up school, the demo sandboxes and the sample papers. |
-| `fixtures` | Synthetic papers, the sample curriculum and the recorded AI answers. |
+| `fixtures` | Synthetic papers, the sample curriculum, the CAPS topics of Grades 1 to 12 and the recorded AI answers. |
 | `design` | The v1 design boards (`v1-screens`), reference and actual screenshots (`design/proof`). |
 | `docs` | Documentation, the spec, the plan and the runbook. |
 

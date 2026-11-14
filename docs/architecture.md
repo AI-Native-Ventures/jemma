@@ -261,6 +261,16 @@ A real class cannot show a pattern until its past results are in the Long view. 
 
 Where a record came from is told by those columns: `import_id` set is a file, `added_by` set with no `import_id` is a teacher who typed it, both empty is the demo seed. `source` stays the kind of piece, because the pattern finder counts only quizzes, assignments and projects.
 
+## The official curriculum (CAPS)
+
+A Mathematics class of a South African school can start from the official curriculum instead of a document of its own.
+
+- **The data.** `fixtures/curriculum/caps/grade-1.json` to `grade-12.json`: 316 topics, term by term, with a strand for each. They were read from four public documents of the Department of Basic Education (2011): the topic names and the term order only, not the text of the documents. The README next to the files names the documents, says how the files were put together and lists what is not verified.
+- **The module.** `packages/profiling/src/curriculum/caps.ts` imports the 12 files, so they are part of the bundle of the web app and of the agent (a Worker has no disk). `capsGrades()` is 1 to 12, `capsSource(grade)` is the title, the publisher and the address of the document, and `capsDraft(grade)` is a `TopicMapDraft` with the file's terms and topics in order and nothing to check. The documents give no prerequisites or usual mistakes, so those stay empty.
+- **The tap.** On the curriculum screen of a class with no map, "Start from the CAPS map" runs `useCapsMap` (`apps/web/app/t/[classId]/curriculum/actions.ts`). It refuses any class that is not Mathematics, not in a South African school (`schools.country` is `ZA`) or not in Grades 1 to 12, and a class that already has an approved map. It stores the draft in the draft map row the way `draftMapFor` makes it, with a `source` (title, publisher, address) beside the draft and the teacher's choices, and writes one line to the activity log. No document row, no event, no model call. Nothing changes for the model-drafted maps.
+- **The gate stays.** The teacher is taken to the same review screen, edits as before and taps Approve map. `approveMap` writes the topics and the approval with the teacher's name, exactly as for a map drafted from a document. A draft that can be read is ready with or without a document, and the screen says "From {title}, {publisher}." with the address as a link, for the draft and for the approved map.
+- **The demo school.** The made-up classes 5A, 7A and 4A start with the CAPS map of their grade already approved (the seed writes the map and its topics, one insert for each class, side by side with the rest of the copy). The seed writes no approval row for it. 6B starts without a map: its first step is the teacher's own upload, and its recorded answers depend on that.
+
 ## The tool log
 
 Every tool is created with `defineTool` (`packages/profiling/src/tools/context.ts`), which saves one `tool_calls` row for each call, whether it came from a cloud job or through `/mcp`: the school, the event, the server, the tool, who ran it (`cloud`, `mcp` or `runner`), the engine and model when known, the input and output, whether it worked, and the time and duration. A runner reports the calls an agent made to other servers with `log_external_calls`, and one `agent_run` row with tokens and cost. Strings longer than 2000 characters are stored as their length, image data is never stored, and a failure to write the log never changes what a tool returns. Teachers read it on "The full log". The details are in [mcp-server.md](mcp-server.md).
@@ -303,5 +313,6 @@ A photo over 1 MB is made smaller in the browser before it is sent (its longest 
 - The curriculum PDF on a laptop or on goose. `draft_map` is never handed to the operator, and has not been run on goose. Curriculum PDFs are read by the cloud model only.
 - The operator route on the hosted demo. It is proven on a local agent worker only.
 - The live in-browser camera for teachers. Teachers snap with the phone's own camera, one photo per page.
+- Lessons and practice for Grades 8 to 12. The CAPS maps cover Grades 1 to 12, but the lessons and the practice are limited to typed numbers and choices, have no graphs and no proper notation, and were never tried with a model.
 - Grade 8 to 12 question types, teen invites, chat, billing, offline mode and messages between teacher and parent. The app shows "Coming after the challenge" where a screen links to them.
 - Mathematics only, in English. The class form offers Grades 1 to 12 and the demo school has four classes in Grades 4 to 7, but only 6B has hand-made history: the learners of the other classes are made up by code.
