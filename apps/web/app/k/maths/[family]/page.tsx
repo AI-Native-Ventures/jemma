@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { getScreenShape } from '@/lib/data/own-screens'
 import { getMyMaths } from '@/lib/data/p80'
+import { noTopicsLine } from '@/lib/own-grades'
 import { PracticeRow, PractiseButton } from '../../Practise'
 import { AppHeader } from '../../session/_parts/AppHeader'
 import { Diamond } from '../../session/_parts/Gems'
@@ -13,20 +15,25 @@ export const dynamic = 'force-dynamic'
 /**
  * One part of Mathematics: its label and the learner's count, then this year's topics of that part with their counts, the stage of a gap on
  * a topic, and a Practise button for each. When the class has no approved map, or the map has no topic of this part, one line and one button
- * to practise the part itself.
+ * to practise the part itself. In My own the address carries the grade (`?grade=7`), and the way back goes to that grade.
  */
-export default async function MyMathsPartPage({ params }: { params: Promise<{ family: string }> }) {
+export default async function MyMathsPartPage({ params, searchParams }: { params: Promise<{ family: string }>; searchParams?: Promise<{ grade?: string | string[] }> }) {
   const { family } = await params
-  const { firstName, maths, status } = await getMyMaths()
+  const shape = await getScreenShape((await searchParams)?.grade)
+  const own = shape.workspace === 'own' ? shape : null
+  const { firstName, maths, status } = await getMyMaths(own?.picked?.classId)
   const strand = maths.strands.find((s) => s.family === family)
   if (!strand) notFound()
-  const screen = strandScreen(strand)
+  const grade = own?.picked?.grade ?? null
+  // In My own there is no teacher to wait for: a part with no topic says the grade has none yet.
+  const screen = strandScreen(strand, own && grade !== null ? noTopicsLine(grade) : undefined)
+  const back = own && grade !== null ? `/k/maths?grade=${grade}` : '/k/maths'
   const lock = lockOf(status)
   return (
     <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans leading-[normal] lg:min-h-dvh">
       <AppHeader firstName={firstName} />
       <main className="mx-auto flex w-full flex-1 flex-col gap-5 px-5 pt-[18px] pb-[22px] lg:max-w-[560px]">
-        <Link href="/k/maths" className="flex min-h-11 items-center text-[16px] font-semibold text-ink no-underline">
+        <Link href={back} className="flex min-h-11 items-center text-[16px] font-semibold text-ink no-underline">
           <span aria-hidden="true" className="mr-1.5">&lsaquo;</span>My maths
         </Link>
         <div className="flex items-start gap-2.5">

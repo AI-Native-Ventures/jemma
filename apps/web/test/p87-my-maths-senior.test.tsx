@@ -15,6 +15,9 @@ vi.mock('next/navigation', () => ({
 }))
 vi.mock('../app/k/actions', () => ({ startPractice: vi.fn(async () => ({ ok: true })), retryPractice: vi.fn(async () => ({ ok: true })) }))
 vi.mock('../lib/data/p80', () => ({ getMyMaths: async () => state.view }))
+// These tests are the "My school" screens (P95 added the "My own" ones, tested in p95-my-maths-own.test.tsx).
+vi.mock('../lib/data/own-screens', () => ({ getScreenShape: async () => ({ workspace: 'school' }) }))
+vi.mock('../app/k/own-actions', () => ({ setWorkspace: vi.fn(async () => ({ ok: true })), addMyGrade: vi.fn(async () => ({ ok: true })) }))
 
 import MyMathsPage from '../app/k/maths/page'
 import MyMathsPartPage from '../app/k/maths/[family]/page'

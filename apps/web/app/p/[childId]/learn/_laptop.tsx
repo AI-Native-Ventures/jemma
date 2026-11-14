@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { PAPER_ICON, LaptopShell } from '../_laptop'
 import { css } from '../beyond/_parts'
 import { dayNumber, decimalComma, FORMAT_LABEL, weekdayShort, type LearnData } from '@/lib/data/p25'
+import { OwnPracticeCard } from './OwnPracticeCard'
 
 const CHIP = 'display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;background:#F4F3F8;font-size:14px;font-weight:600'
 const CARD = 'display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px;padding:18px'
@@ -68,6 +69,8 @@ export function LearnLaptop({ childId, data, tonight }: { childId: string; data:
         </section>
 
         <div style={css('flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:20px')}>
+          <OwnPracticeCard childId={childId} name={name} />
+
           <section aria-labelledby="ll-week" style={css(`${CARD};gap:6px`)}>
             <h2 id="ll-week" style={css('margin:0 0 4px;font-size:18px;font-weight:600')}>This week</h2>
             <ol style={css('list-style:none;margin:0;padding:0;display:flex;flex-direction:column')}>

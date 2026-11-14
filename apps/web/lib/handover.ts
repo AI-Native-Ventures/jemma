@@ -4,6 +4,12 @@
 export const HANDOVER_COOKIE = 'jemma_handover'
 export const HANDOVER_TTL_SECONDS = 60 * 90
 
+/**
+ * What the cookie holds in place of a session id when the parent hands the phone over for the learner's own practice ("Practise at home"): there is
+ * no session to start, the child lands on the home of "My own" and chooses. It is not a session id (those are uuids), so it can never be taken for one.
+ */
+export const OWN_HANDOVER = 'own'
+
 async function hmac(value: string): Promise<string> {
   const pepper = process.env.CHILD_PIN_PEPPER
   if (!pepper) throw new Error('CHILD_PIN_PEPPER is not set')
@@ -27,13 +33,25 @@ export async function verifyHandover(value: string | undefined, now = Date.now()
   return { sessionId, childId }
 }
 
+/** True when the hand-over is the one for the learner's own practice, not for one session. */
+export const isOwnHandover = (h: { sessionId: string } | null): boolean => h?.sessionId === OWN_HANDOVER
+
 /**
- * True when the cookie covers this path: the session it was signed for, the hand-back screen, or the learner's upload route (the child may answer
- * on paper on the parent's phone: `snapPractice` checks the child and the session itself).
+ * The learner's own screens a hand-over of the learner's own practice opens: the home, My maths (and the grade page), the gaps, a session, the
+ * hand-back screen and the paper upload. Not the account page, not the sign-in, not a screen of the parent or the teacher.
+ */
+const OWN_SCREENS = ['/k/maths', '/k/gaps', '/k/session', '/k/done']
+const underOwn = (pathname: string) => pathname === '/k' || pathname === '/k/upload' || OWN_SCREENS.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+
+/**
+ * True when the cookie covers this path. A hand-over of one session covers the session it was signed for, the hand-back screen, or the learner's
+ * upload route (the child may answer on paper on the parent's phone: `snapPractice` checks the child and the session itself). A hand-over of the
+ * learner's own practice covers the learner's own screens (`OWN_SCREENS`); the session page checks that a session is the learner's own.
  */
 export async function handoverAllows(cookie: string | undefined, pathname: string): Promise<{ sessionId: string; childId: string } | null> {
   const h = await verifyHandover(cookie)
   if (!h) return null
+  if (isOwnHandover(h)) return underOwn(pathname) ? h : null
   if (pathname === '/k/done' || pathname.startsWith('/k/done/')) return h
   if (pathname === '/k/upload') return h
   if (pathname === `/k/session/${h.sessionId}` || pathname.startsWith(`/k/session/${h.sessionId}/`)) return h

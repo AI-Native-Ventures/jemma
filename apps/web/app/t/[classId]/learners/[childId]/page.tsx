@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getLearnerView } from '@/lib/data/p19'
+import { twinOfChild } from '@/lib/own-workspace'
 import { Avatar, BackHeader, Chevron, Diamond, Page, card, font } from '../_parts'
 import { NoteForm } from './NoteForm'
 
@@ -8,6 +9,8 @@ export default async function LearnerPage({ params }: { params: Promise<{ classI
   const { classId, childId } = await params
   const v = await getLearnerView(classId, childId)
   if (!v) notFound()
+  // Only a learner who opened "My own" has a page of their own practice (a link to look, read only).
+  const hasOwn = (await twinOfChild(v.id)) !== null
   const stat = (value: string, label: string) => (
     <span style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '10px 12px', borderRadius: 12, background: '#F4F3F8' }}>
       <span style={{ fontSize: 20, fontWeight: 700 }}>{value}</span>
@@ -44,6 +47,16 @@ export default async function LearnerPage({ params }: { params: Promise<{ classI
           </span>
           <Chevron />
         </Link>
+
+        {hasOwn ? (
+          <Link href={`/t/${classId}/learners/${v.id}/own`} style={{ ...card(20), flexDirection: 'row', alignItems: 'center', gap: 12, padding: '14px 12px 14px 16px', textDecoration: 'none', color: '#1F1D36' }}>
+            <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2, lineHeight: 1.3 }}>
+              <span style={{ fontSize: 16, fontWeight: 600 }}>{v.name}&apos;s own practice</span>
+              <span style={{ fontSize: 14, color: '#5D5A73' }}>What {v.name} practises on their own. Read only.</span>
+            </span>
+            <Chevron />
+          </Link>
+        ) : null}
 
         <NoteForm childId={v.id} initialKind="participation" linkedTo={v.linkedTo} name={v.name} />
 
