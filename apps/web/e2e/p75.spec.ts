@@ -35,22 +35,25 @@ async function proof(page: Page, name: string) {
 
 /** The agent's stand-in: accepts every post to /events, so the web app believes the agent took the event. It runs no job. */
 let agent: Server
+// The port the web app posts to (its AGENT_URL). CI frees 8787 (the real agent's) and sets STAND_IN_AGENT_PORT=8787.
+const STAND_IN_PORT = Number(process.env.STAND_IN_AGENT_PORT ?? 8767)
 test.beforeAll(async () => {
   agent = createServer((req, res) => {
     if (req.url === '/health') return void res.writeHead(200).end('ok')
     req.resume()
     req.on('end', () => res.writeHead(202, { 'content-type': 'application/json' }).end('{"queued":true}'))
   })
-  await new Promise<void>((done) => agent.listen(8767, done))
+  await new Promise<void>((done) => agent.listen(STAND_IN_PORT, done))
 })
 test.afterAll(async () => {
   await new Promise((done) => agent.close(done))
 })
 
 const opened: OpenedSandbox[] = []
-test.afterAll(async () => {
-  test.setTimeout(240_000)
-  await Promise.all(opened.map((s) => s.cleanup().catch(() => undefined)))
+// A copy is removed as soon as its test is over: every copy adds topics that each screen reads through row level security, so copies left
+// standing until the end of the file make every screen slower (seen on CI).
+test.afterEach(async () => {
+  await Promise.all(opened.splice(0).map((s) => s.cleanup().catch(() => undefined)))
 })
 async function sandbox(page: Page, stage: 'start' | 'session_done') {
   const s = await openSandbox(page, { stage, role: 'teacher' })

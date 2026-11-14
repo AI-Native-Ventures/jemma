@@ -3,8 +3,8 @@ import { expect, test, type Page } from '@playwright/test'
 import { createSandbox, deleteSandbox, type SandboxKind } from '../../../supabase/seed/demo'
 import { signInWithPassword } from './helpers/session'
 
-// The official South African Mathematics curriculum (CAPS) in the teacher's hands (P82). WRITTEN AND NOT RUN: the shared database could not
-// serve a browser spec on the day it was written, so nothing here has been seen to pass. Phone project.
+// The official South African Mathematics curriculum (CAPS) in the teacher's hands (P82). RUNS IN CI on every push (job "Feature specs in a
+// browser", .github/workflows/ci.yml), on CI's own local database, phone project. Never run it against the hosted preview database.
 // - An empty school, a Grade 10 class, one tap on "Start from the CAPS map": the review screen shows Term 1 with "Algebraic expressions",
 //   the teacher approves, and the approved board says where the topics come from.
 // - A fresh demo copy as Mr Dlamini: his class 7A starts with its CAPS map already approved.
@@ -54,7 +54,12 @@ test.describe('the CAPS map', () => {
 
       // The review screen: Term 1 with "Algebraic expressions". No document, no model, no waiting.
       await check(page).toHaveURL(new RegExp(`/t/${classId}/curriculum/map$`))
-      await check(page.getByText('Algebraic expressions').first()).toBeVisible()
+      // The review screen opens on the term the calendar is in (Term 4 from October), so Term 1 is chosen first.
+      // A tap before the page has loaded its scripts does nothing, so the tap is made again until the term shows.
+      await expect(async () => {
+        await page.getByRole('button', { name: 'Term 1', exact: true }).click()
+        await expect(page.getByText('Algebraic expressions').first()).toBeVisible({ timeout: 3_000 })
+      }).toPass({ timeout: 45_000 })
       await expect(page.getByText('Term 1').first()).toBeVisible()
       const db = admin()
       const maps = (await db.from('curriculum_maps').select('id, status').eq('class_id', classId)).data!

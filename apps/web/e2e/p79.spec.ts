@@ -16,7 +16,8 @@ import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 // planner (`plan_next_session` with `practice: true`, code only) and writes the lesson's questions into the lesson row with the service
 // client. Nothing here calls a model.
 //
-// WRITTEN, NOT RUN (the shared database could not take a browser spec when this was written). Run it against a production build, phone project:
+// RUNS IN CI on every push (job "Feature specs in a browser", .github/workflows/ci.yml), on CI's own local database, phone project. There the stand-in
+// takes port 8787 (STAND_IN_AGENT_PORT), where the web app posts. Never run it against the hosted preview database. By hand, against a production build:
 //   pnpm --filter web build
 //   AGENT_URL=http://127.0.0.1:8779 pnpm --filter web exec next start --port 3279        (own terminal, stop it by its pid after)
 //   P79_PROOF=1 PREVIEW_URL=http://localhost:3279 pnpm --filter web exec playwright test p79 --project=phone --workers=1
@@ -36,22 +37,25 @@ async function proof(page: Page, name: string) {
 
 /** The agent's stand-in: accepts every post to /events, so the web app believes the agent took the event. It runs no job. */
 let agent: Server
+// The port the web app posts to (its AGENT_URL). CI frees 8787 (the real agent's) and sets STAND_IN_AGENT_PORT=8787.
+const STAND_IN_PORT = Number(process.env.STAND_IN_AGENT_PORT ?? 8779)
 base.beforeAll(async () => {
   agent = createServer((req, res) => {
     if (req.url === '/health') return void res.writeHead(200).end('ok')
     req.resume()
     req.on('end', () => res.writeHead(202, { 'content-type': 'application/json' }).end('{"queued":true}'))
   })
-  await new Promise<void>((done) => agent.listen(8779, done))
+  await new Promise<void>((done) => agent.listen(STAND_IN_PORT, done))
 })
 base.afterAll(async () => {
   await new Promise((done) => agent.close(done))
 })
 
 const opened: OpenedSandbox[] = []
-base.afterAll(async () => {
-  base.setTimeout(240_000)
-  await Promise.all(opened.map((s) => s.cleanup().catch(() => undefined)))
+// A copy is removed as soon as its test is over: every copy adds topics that each screen reads through row level security, so copies left
+// standing until the end of the file make every screen slower (seen on CI).
+base.afterEach(async () => {
+  await Promise.all(opened.splice(0).map((s) => s.cleanup().catch(() => undefined)))
 })
 async function sandbox(page: Page, stage: 'start' | 'marked' | 'session_done') {
   const s = await openSandbox(page, { stage, role: 'learner' })

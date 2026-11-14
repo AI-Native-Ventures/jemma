@@ -11,7 +11,8 @@ import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 // The stand-in agent below answers 202 to every post and runs no job, so a tap on Practise leaves a `practice.requested` event queued and the
 // home says Jemma is writing it. Nothing here calls a model.
 //
-// WRITTEN, NOT RUN (the shared database could not take a browser spec when this was written). Run it against a production build, phone and laptop:
+// RUNS IN CI on every push (job "Feature specs in a browser", .github/workflows/ci.yml), on CI's own local database, phone and laptop. There the stand-in
+// takes port 8787 (STAND_IN_AGENT_PORT), where the web app posts. Never run it against the hosted preview database. By hand, against a production build:
 //   pnpm --filter web build
 //   AGENT_URL=http://127.0.0.1:8780 pnpm --filter web exec next start --port 3280        (own terminal, stop it by its pid after)
 //   P80_PROOF=1 PREVIEW_URL=http://localhost:3280 pnpm --filter web exec playwright test p80 --workers=1
@@ -38,22 +39,25 @@ async function noSidewaysScroll(page: Page) {
 
 /** The agent's stand-in: accepts every post to /events, so the web app believes the agent took the event. It runs no job. */
 let agent: Server
+// The port the web app posts to (its AGENT_URL). CI frees 8787 (the real agent's) and sets STAND_IN_AGENT_PORT=8787.
+const STAND_IN_PORT = Number(process.env.STAND_IN_AGENT_PORT ?? 8780)
 base.beforeAll(async () => {
   agent = createServer((req, res) => {
     if (req.url === '/health') return void res.writeHead(200).end('ok')
     req.resume()
     req.on('end', () => res.writeHead(202, { 'content-type': 'application/json' }).end('{"queued":true}'))
   })
-  await new Promise<void>((done) => agent.listen(8780, done))
+  await new Promise<void>((done) => agent.listen(STAND_IN_PORT, done))
 })
 base.afterAll(async () => {
   await new Promise((done) => agent.close(done))
 })
 
 const opened: OpenedSandbox[] = []
-base.afterAll(async () => {
-  base.setTimeout(240_000)
-  await Promise.all(opened.map((s) => s.cleanup().catch(() => undefined)))
+// A copy is removed as soon as its test is over: every copy adds topics that each screen reads through row level security, so copies left
+// standing until the end of the file make every screen slower (seen on CI).
+base.afterEach(async () => {
+  await Promise.all(opened.splice(0).map((s) => s.cleanup().catch(() => undefined)))
 })
 async function sandbox(page: Page, stage: 'start' | 'marked' | 'session_done') {
   const s = await openSandbox(page, { stage, role: 'learner' })
@@ -68,7 +72,10 @@ test.setTimeout(240_000)
 const practiceEvents = async (childId: string) =>
   (await admin().from('events').select('id, status, payload').eq('type', 'practice.requested').eq('payload->>childId', childId).order('created_at')).data ?? []
 
-const NEVER = /%|percent|\bgrade\b|\brank\b|classmate|class average|strand|subtopic/i
+// "Percentages" is a topic of the Fractions part, so the word is looked for as a whole word ("63 percent"), and the sign "%" as before.
+const NEVER = /%|\bpercent\b|\bgrade\b|\brank\b|classmate|class average|strand|subtopic/i
+/** The words of the screen itself. The laptop's sidebar (outside <main>) names the learner's class, "Grade 6 · Hillview Primary", which is not a mark. */
+const screenText = (page: Page) => page.locator('main').first().innerText()
 
 test.describe('My maths', () => {
   test('Amina, after the marked and shared test, sees her counts, opens Fractions, taps Practise on a topic and lands on "Jemma is writing your practice."', async ({ page }, testInfo) => {
@@ -91,7 +98,7 @@ test.describe('My maths', () => {
       await expect(all.getByRole('link', { name: new RegExp(label) })).toBeVisible()
     }
     await expect(all.getByRole('link', { name: /Fractions/ })).toContainText(/\d+ of \d+ right/)
-    expect(await page.locator('body').innerText()).not.toMatch(NEVER)
+    expect(await screenText(page)).not.toMatch(NEVER)
     await noSidewaysScroll(page)
     await proof(page, 'my-maths')
 
@@ -99,11 +106,14 @@ test.describe('My maths', () => {
     await all.getByRole('link', { name: /Fractions/ }).click()
     await expect(page).toHaveURL(/\/k\/maths\/fractions$/, { timeout: 45_000 })
     await check(page.getByRole('heading', { level: 1, name: 'Fractions' })).toBeVisible()
-    await expect(page.getByRole('link', { name: /My maths/ })).toBeVisible()
+    // the link back is the one inside the page: the tab bar and the sidebar (also called "My maths") sit outside <main>
+    const back = page.locator('main a[href="/k/maths"]')
+    await expect(back).toBeVisible()
+    await expect(back).toHaveText(/My maths/)
     const rows = page.getByRole('listitem')
     expect(await rows.count()).toBeGreaterThan(0)
     await expect(page.getByText(/\d+ of \d+ right|No score yet/).first()).toBeVisible()
-    expect(await page.locator('body').innerText()).not.toMatch(NEVER)
+    expect(await screenText(page)).not.toMatch(NEVER)
     await noSidewaysScroll(page)
     await proof(page, 'my-maths-fractions')
 
