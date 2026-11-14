@@ -1,6 +1,6 @@
 'use client'
 
-import { Frac, FractionText, isFraction, withFractions } from './Frac'
+import { Frac, FractionText, hasMath, isFraction, MathText, withFractions } from './Frac'
 import { Bar, type Fill } from './Bars'
 import { Gem } from './Gems'
 import type { MissedQuestion } from '../[sessionId]/logic'
@@ -10,6 +10,14 @@ function Stacked({ value, size, rule, gap, side }: { value: string; size: number
   if (isFraction(value)) {
     const [n, d] = value.split('/')
     return <Frac top={n!} bottom={d!} size={size} rule={rule} gap={gap} side={side} />
+  }
+  // An answer with a power or a root (a senior class) is drawn with them; every other answer is drawn as it always was.
+  if (hasMath(value)) {
+    return (
+      <span style={{ fontSize: size }} className="font-bold">
+        <MathText text={value} size={size} rule={rule} gap={gap} side={side} className="" />
+      </span>
+    )
   }
   const parts = withFractions(value, (n, d, k) => <Frac key={k} top={n} bottom={d} size={size} rule={rule} gap={gap} side={side} />)
   if (parts.every((p) => typeof p === 'string')) return <span style={{ fontSize: size }} className="font-bold">{value}</span>

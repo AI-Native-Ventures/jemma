@@ -86,6 +86,19 @@ export function writeLine(shape: AnswerShape): string {
       return 'Write a number with a comma, like 0,5.'
     case 'whole':
       return 'Write a whole number.'
+    // The four kinds of a senior class: the same lines as the question screen, for a pencil.
+    case 'expression':
+      return shape.form === 'factorised'
+        ? 'Write it as a product of brackets, like (x + 2)(x - 2).'
+        : shape.form === 'expanded'
+          ? 'Write it with no brackets, like x\u00b2 + 4x + 4.'
+          : 'Write an expression, like 2x + 3.'
+    case 'equation':
+      return 'Write the answer, like x = 4. Two answers: x = 3 or x = -1.'
+    case 'point':
+      return 'Write the x and the y of the point, like (2; 3).'
+    case 'number':
+      return 'Write a number. It may be negative, like -3.'
     default:
       return 'Write your answer.'
   }

@@ -1,5 +1,5 @@
-import { completeAnswer, fillMissing, missingPart, nextDifficulty, nextStage, paperQuestions, type MissingPart, type Stage } from '@jemma/profiling/logic'
-import type { Question } from '@jemma/profiling/schemas'
+import { completeAnswer, fillMissing, finishAnswer, missingPart, nextDifficulty, nextStage, paperQuestions, type MissingPart, type Stage } from '@jemma/profiling/logic'
+import type { Form, Question } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -23,6 +23,8 @@ export type QuestionForChild = {
   terms?: string[]
   answerKind: Question['answerKind']
   choices?: string[]
+  /** The form an expression has to be in, when the question asks for one (a senior class only). */
+  form?: Form
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -66,6 +68,7 @@ export function stripQuestion(
     ...(q.terms ? { terms: q.terms } : {}),
     answerKind: q.answerKind,
     ...(q.choices ? { choices: q.choices } : {}),
+    ...(q.form ? { form: q.form } : {}),
   }
 }
 
@@ -117,18 +120,28 @@ export type AnswerShape =
   /** One number is missing from a fraction in the question ("3/5 = ?/15"): the child types it where it is missing. */
   | { kind: 'missing'; part: MissingPart }
   | { kind: 'fraction' | 'mixed' | 'whole' | 'decimal' | 'money' | 'text' }
+  /** The four kinds of a senior class, marked by meaning: a number that may be negative, an expression, an equation, a point. */
+  | { kind: 'number' | 'equation' | 'point' }
+  | { kind: 'expression'; form: Form }
 
-export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices'>): AnswerShape {
+export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'>): AnswerShape {
   if (q.choices?.length) return { kind: 'choice' }
+  // A question marked by meaning is never a missing number in a fraction, whatever its prompt holds.
+  if (q.answerKind === 'expression') return { kind: 'expression', form: q.form ?? 'any' }
+  if (q.answerKind === 'number' || q.answerKind === 'equation' || q.answerKind === 'point') return { kind: q.answerKind }
   const part = missingPart(q.prompt)
   if (part) return { kind: 'missing', part }
   return { kind: q.answerKind === 'choice' ? 'text' : q.answerKind }
 }
 
 // One rule for the screen and for paper: the agent's `save_practice_answers` finishes and marks a written answer with the same functions.
-export { completeAnswer, fillMissing, paperQuestions }
+export { completeAnswer, fillMissing, finishAnswer, paperQuestions }
 
-export type AnswerBoxes = { whole: string; top: string; bottom: string; text: string }
+/** What the boxes hold. `x` and `y` are the two boxes of a point (a senior class). */
+export type AnswerBoxes = { whole: string; top: string; bottom: string; text: string; x?: string; y?: string }
+
+/** A number as the child typed it holds a digit: a minus alone, or a comma alone, is not a number yet. */
+const hasDigit = (s: string) => /\d/.test(s)
 
 /**
  * The text sent for what the boxes on screen hold, or '' while a box that is shown is still empty.
@@ -137,7 +150,10 @@ export type AnswerBoxes = { whole: string; top: string; bottom: string; text: st
 export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
   const [whole, top, bottom] = [boxes.whole.trim(), boxes.top.trim(), boxes.bottom.trim()]
   // "12," is a number the child stopped typing: the comma at the end is not part of it.
-  const text = shape.kind === 'missing' || shape.kind === 'text' ? boxes.text.trim() : boxes.text.trim().replace(/[.,]+$/, '')
+  const text =
+    shape.kind === 'missing' || shape.kind === 'text' || shape.kind === 'expression' || shape.kind === 'equation'
+      ? boxes.text.trim()
+      : boxes.text.trim().replace(/[.,]+$/, '')
   switch (shape.kind) {
     case 'missing':
       return text ? fillMissing(shape.part, text) : ''
@@ -147,6 +163,12 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
       return whole && top && bottom ? `${whole} ${top}/${bottom}` : ''
     case 'money':
       return text ? `R${text}` : ''
+    case 'number':
+      return hasDigit(text) ? text : ''
+    case 'point': {
+      const [x, y] = [(boxes.x ?? '').trim().replace(/[.,]+$/, ''), (boxes.y ?? '').trim().replace(/[.,]+$/, '')]
+      return hasDigit(x) && hasDigit(y) ? `(${x}; ${y})` : ''
+    }
     default:
       return text
   }
@@ -169,7 +191,7 @@ export function missedOf(items: StoredItem[]): MissedQuestion[] {
       render: item.question.render,
       ...(item.question.terms ? { terms: item.question.terms } : {}),
       // An answer saved before the missing number was put back into its fraction is shown completed too.
-      wrote: item.unread ? '' : answerText(item.question, completeAnswer(item.question, item.answer).stored),
+      wrote: item.unread ? '' : answerText(item.question, finishAnswer(item.question, item.answer).stored),
       ...(item.unread ? { unread: true } : {}),
       right: answerText(item.question, item.question.answer),
       why: item.question.why,

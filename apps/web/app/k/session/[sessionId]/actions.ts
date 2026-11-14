@@ -10,8 +10,8 @@ import { createSupabaseServer } from '@/lib/supabase/server'
 import { loadShortLabels } from '@/lib/topics'
 import {
   adaptedOf,
-  completeAnswer,
   DEFAULT_TRY_COUNT,
+  finishAnswer,
   missedOf,
   nextInSequence,
   paperQuestions,
@@ -181,8 +181,9 @@ export async function answer(
     throw new Error('That question is not next')
   }
 
-  // The server finishes the answer from the stored question (a missing number goes back into its fraction), whatever the browser sent.
-  const { stored, correct } = completeAnswer(current.question, text)
+  // The server finishes the answer from the stored question (a missing number goes back into its fraction), whatever the browser sent. A question of
+  // the four senior kinds (number, expression, equation, point) is stored as typed and marked by meaning; every other question is marked as before.
+  const { stored, correct } = finishAnswer(current.question, text)
   const earlier = run.items.filter((i) => i.phase === 'try').sort((a, b) => a.position - b.position).map((i) => i.correct)
   const { error } = await run.admin.from('session_items').insert({
     session_id: sessionId,

@@ -112,6 +112,14 @@ export function isBaselineClass(c: ClassContext | null): boolean {
   return !c || (c.subjectKey === 'mathematics' && c.grade === 6 && c.country === 'ZA')
 }
 
+/**
+ * True for a Mathematics class of Grade 7 to 12 (a "senior class"): its learners type algebra, negative numbers, points, percents and angles, and
+ * code marks them by meaning. False for a class that could not be told, and for the baseline class (it is Grade 6, so it is never senior).
+ */
+export function isSeniorMaths(c: ClassContext | null): boolean {
+  return !!c && c.subjectKey === 'mathematics' && Number.isInteger(c.grade) && c.grade >= 7 && c.grade <= 12
+}
+
 // ---- Which class the work belongs to ---------------------------------------------------------------------------------
 
 /** What a job was given. The class is found from the first of these that names one; a child is placed last. */

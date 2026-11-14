@@ -1,9 +1,10 @@
 import type { LanguageModel } from 'ai'
 import { generateJson, getModel } from '../../ai'
 import { renderPrompt } from '../../ai/prompt-variants'
-import { classContext } from '../../ai/subject-profile'
-import { LessonSchema, type Lesson } from '../../schemas/lesson'
-import { contextFor, ok, type ToolContext } from '../../tools/context'
+import { classContext, isSeniorMaths } from '../../ai/subject-profile'
+import type { JemmaDb } from '../../db'
+import { PrimaryLessonSchema, SeniorLessonSchema, type Lesson } from '../../schemas/lesson'
+import { contextFor, maybe, ok, type ToolContext } from '../../tools/context'
 import { getChildContext } from '../../tools/read/get-child-context'
 import { badQuestions, saveLesson } from '../../tools/save/save-lesson'
 
@@ -13,6 +14,16 @@ const ATTEMPTS = 3
 const REGENERATIONS = 1
 
 export type WriteLessonOptions = { model?: LanguageModel; prompt?: string }
+
+/**
+ * The topic of the planned session as a senior class's lesson writer is told it: its name and its family (algebra, functions, trigonometry...).
+ * The family is read from the topic the session was planned from; a session without one has the name only.
+ */
+async function topicOfSession(db: JemmaDb, sessionId: string, name: string): Promise<{ name: string; family: string | null }> {
+  const session = await maybe(db.from('sessions').select('topic_id').eq('id', sessionId).maybeSingle())
+  const topic = session?.topic_id ? await maybe(db.from('topics').select('name, family').eq('id', session.topic_id).maybeSingle()) : null
+  return { name, family: topic?.family ?? null }
+}
 
 const hasQuestions = (content: unknown) =>
   typeof content === 'object' && content !== null && Array.isArray((content as { questions?: unknown }).questions) && (content as { questions: unknown[] }).questions.length > 0
@@ -44,7 +55,17 @@ export async function runJobWriteLesson(
   const model = opts.model ?? getModel('text', ctx.env)
   const klass = await classContext(ctx.db, { childId, sessionId: session.id, eventId: ctx.eventId })
   const system = renderPrompt('write_lesson', opts.prompt ?? FALLBACK_PROMPT, klass)
-  const data = JSON.stringify({ profile: info.profile, openGaps: info.gaps, formatTrials: info.formatTrials, plannedSession: session })
+  // Only a senior class (Mathematics, Grades 7 to 12) gets the wide lesson schema and the topic with its family. Every other class, the demo
+  // class above all, is asked exactly as before: the recorded answers are found by a hash of this very text.
+  const senior = isSeniorMaths(klass)
+  const topic = senior ? await topicOfSession(ctx.db, session.id, session.topicName) : null
+  const data = JSON.stringify({
+    profile: info.profile,
+    openGaps: info.gaps,
+    formatTrials: info.formatTrials,
+    plannedSession: session,
+    ...(topic ? { topic } : {}),
+  })
   const base_prompt = `Planned session: ${session.topicName}, format ${session.format}.\n<untrusted>${data}</untrusted>`
 
   let best: Lesson | null = null
@@ -54,7 +75,7 @@ export async function runJobWriteLesson(
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
     try {
       // Prompt-side JSON: free models fail provider-side structured output on a schema this big.
-      const output = await generateJson({ model, schema: LessonSchema, system, prompt: base_prompt + feedback })
+      const output = await generateJson({ model, schema: senior ? SeniorLessonSchema : PrimaryLessonSchema, system, prompt: base_prompt + feedback })
       best = output
       const bad = badQuestions(output)
       if (!bad.warmup.length && !bad.questions.length) break

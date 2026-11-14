@@ -164,3 +164,121 @@ describe('a class that is not the baseline', () => {
     expect(renderPrompt('read_paper', md('read_paper'), klass('English', 6, 'ZA'))).not.toContain('Keep fractions as')
   })
 })
+
+// P86: a senior class is a Mathematics class of Grade 7 to 12. Its lesson writer is told the four answer kinds that code marks by meaning, and its
+// practice reader is told to keep algebra as written. The baseline class and every class below Grade 7 never meet these rules.
+describe('a senior class (Mathematics, Grades 7 to 12)', () => {
+  const lesson = (grade: number, country = 'ZA', subject = 'Mathematics') => renderPrompt('write_lesson', md('write_lesson'), klass(subject, grade, country))
+
+  test('a Grade 10 South African class: the old kinds and the four new ones with an example each, and the form', () => {
+    const out = lesson(10)
+    expect(out.startsWith('Subject: Mathematics. Grade: 10. Country: South Africa.\n\n')).toBe(true)
+    for (const kind of ['`fraction` (`3/4`)', '`mixed` (`1 1/2`)', '`decimal` (`0,75`)', '`whole` (`12`)', '`money` (`R5`)', '`choice` (a letter A to D)']) expect(out).toContain(kind)
+    for (const example of ['`number` (`-3`, `15%` or `30°`', '`expression` (`2x^2 + 7x`', 'powers with `^` and roots with `sqrt()`', '`equation` (`x = 3 or x = -1`', '`point` (`(2; -3)`)']) {
+      expect(out).toContain(example)
+    }
+    expect(out).toContain('set `form` to `factorised` or `expanded`')
+    expect(out).toContain('Money is in rand, decimals use a comma.')
+    expect(out).toContain('`answer` must be one value that a computer can mark')
+  })
+
+  test('a learner, not a child; the grade is the class grade, and no Grade 6 is left', () => {
+    const out = lesson(10)
+    expect(out).toContain('Warm, plain, for a Grade 10 learner.')
+    expect(out).not.toContain('Grade 10 child')
+    expect(out).not.toContain('Grade 6')
+  })
+
+  test('the senior rule wins over the two other rules on the same sentence, and the old sentence is gone', () => {
+    const out = lesson(10)
+    expect(out).not.toContain('`3/4`, `1 1/2`, `0,75`, `12`, `R5` or a choice letter')
+    const rules = PROMPT_RULES.write_lesson.filter((r) => r.find.startsWith('`answer` must be one value'))
+    expect(rules).toHaveLength(3)
+    expect(rules[0]!.when(klass('Mathematics', 10, 'ZA'))).toBe(true)
+    // The senior rule is the first of the three: it fires for a senior class only.
+    expect(rules[1]!.when(klass('Mathematics', 10, 'ZA'))).toBe(false)
+    expect(rules[2]!.when(klass('Mathematics', 10, 'ZA'))).toBe(false)
+    expect(rules[0]!.when(klass('Mathematics', 6, 'ZA'))).toBe(false)
+    expect(rules[0]!.when(klass('Natural Sciences', 10, 'ZA'))).toBe(false)
+  })
+
+  test('outside South Africa: no rand, no decimal comma, a decimal as the class writes it', () => {
+    const out = lesson(9, 'KE')
+    expect(out).toContain('for a school in Kenya')
+    expect(out).toContain('for a Grade 9 learner')
+    expect(out).toContain('`decimal` (a decimal written the way the class writes it)')
+    expect(out).not.toMatch(/decimal comma|decimals use a comma|\bR5\b|\brand\b|`money`/i)
+    expect(out).toContain('`expression` (`2x^2 + 7x`')
+  })
+
+  test.each([[7], [8], [11], [12]])('Grade %i is senior too', (grade) => {
+    expect(lesson(grade)).toContain('`equation` (`x = 3 or x = -1`')
+    expect(lesson(grade)).toContain(`for a Grade ${grade} learner`)
+  })
+
+  test.each([[1], [4], [5], [13]])('Grade %i gets no senior rule: the old sentence, and a child', (grade) => {
+    const out = lesson(grade)
+    expect(out).not.toMatch(/`expression`|`equation`|`point`|`form`|for a Grade \d+ learner/)
+    expect(out).toContain('`3/4`, `1 1/2`, `0,75`, `12`, `R5` or a choice letter')
+    expect(out).toContain(`for a Grade ${grade} child`)
+  })
+
+  test('another subject gets no senior rule either', () => {
+    expect(lesson(10, 'ZA', 'Natural Sciences')).not.toMatch(/`expression`|`equation`|`point`|`form`|for a Grade \d+ learner/)
+  })
+
+  test('the baseline class still gets the file byte for byte, and the senior text is not a way into it', () => {
+    expect(lesson(6)).toBe(md('write_lesson'))
+  })
+
+  test('the rest of the file is kept: every line that no rule touches is still there, in order', () => {
+    const base = md('write_lesson')
+    const out = lesson(10)
+    const touched = new Set(PROMPT_RULES.write_lesson.flatMap((r) => base.split('\n').filter((l) => l.includes(r.find))))
+    let from = 0
+    for (const line of base.split('\n').filter((l) => !touched.has(l))) {
+      const at = out.indexOf(line, from)
+      expect(at, `the line ${JSON.stringify(line.slice(0, 60))} must still be there`).toBeGreaterThanOrEqual(from)
+      from = at + line.length
+    }
+  })
+})
+
+describe('the reader of a practice answered on paper, for a senior class', () => {
+  const read = (grade: number, country = 'ZA', place?: 'practice') => renderPrompt('read_paper', md('read_paper'), klass('Mathematics', grade, country), place)
+  const ALGEBRA = 'Keep algebra as written: letters, powers as `^` or `²`, minus signs, brackets and `√`.'
+  const KEEP = 'Keep fractions as `3/4` or `3 3/4`, decimals with the comma or point they used, and money with its `R`.'
+
+  test('a Grade 10 practice: the sentence of the file, then one about algebra', () => {
+    const out = read(10, 'ZA', 'practice')
+    expect(out).toContain(`${KEEP} ${ALGEBRA}`)
+    expect(out.split(ALGEBRA)).toHaveLength(2)
+  })
+
+  test('outside South Africa the sentence has the currency sign, and the algebra sentence follows', () => {
+    const out = read(10, 'KE', 'practice')
+    expect(out).toContain(`money with its currency sign. ${ALGEBRA}`)
+    expect(out).not.toContain('with its `R`')
+  })
+
+  test('a class test or a homework photo of the same class is read with the prompt it always had (no place)', () => {
+    expect(read(10)).not.toContain('Keep algebra')
+    expect(read(10)).toContain(KEEP)
+    expect(read(10, 'KE')).not.toContain('Keep algebra')
+  })
+
+  test('the baseline class, and a class below Grade 7, are not told anything about algebra', () => {
+    expect(read(6, 'ZA', 'practice')).toBe(md('read_paper'))
+    expect(read(4, 'ZA', 'practice')).not.toContain('Keep algebra')
+    expect(read(13, 'ZA', 'practice')).not.toContain('Keep algebra')
+  })
+
+  test('another subject is not told anything about algebra', () => {
+    expect(renderPrompt('read_paper', md('read_paper'), klass('Natural Sciences', 10, 'ZA'), 'practice')).not.toContain('Keep algebra')
+  })
+
+  test('the file read_paper.md and write_lesson.md are not changed (the sha256 test above pins them)', () => {
+    expect(createHash('sha256').update(md('write_lesson')).digest('hex')).toBe(SHA256.write_lesson)
+    expect(createHash('sha256').update(md('read_paper')).digest('hex')).toBe(SHA256.read_paper)
+  })
+})

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import type { Json } from '../../db'
-import { completeAnswer } from '../../logic'
+import { finishAnswer } from '../../logic'
 import { PaperReadSchema, type PaperRead } from '../../schemas/papers'
 import { contextFor, defineTool, logActivity, ok } from '../context'
 import { loadPractice } from '../read/get-practice-paper'
@@ -37,12 +37,13 @@ export const savePracticeAnswers = defineTool({
     const min = readConfidenceMin(ctx)
     const byN = new Map(read.answers.map((a) => [a.n, a]))
 
-    // Mark in code: the answer as written, finished by the rule of its question (the one the screen uses), then marked against the key.
+    // Mark in code: the answer as written, finished by the rule of its question (the one the screen uses: `finishAnswer`, which marks the four senior
+    // kinds by meaning and every other question as it always was), then marked against the key.
     const rows = practice.questions.map(({ n, question }) => {
       const a = byN.get(n)
       const written = (a?.answerAsRead ?? '').trim()
       if (!a || written === '' || a.confidence < min) return { n, question, answer: '', correct: false, unread: true }
-      const done = completeAnswer(question, written)
+      const done = finishAnswer(question, written)
       return { n, question, answer: done.stored, correct: done.correct, unread: false }
     })
     const right = rows.filter((r) => r.correct).length
