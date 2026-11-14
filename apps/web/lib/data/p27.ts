@@ -7,7 +7,7 @@ import { notFound } from 'next/navigation'
 import { stripQuestion, type QuestionForChild } from '@/app/k/session/[sessionId]/logic'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
-import { loadShortLabels } from '@/lib/topics'
+import { classIdsOfChild, loadShortLabels } from '@/lib/topics'
 
 export type GapGem = 'full' | 'half' | 'empty'
 
@@ -144,10 +144,11 @@ export async function tonightFrom(
 
 export async function getLearnerToday(): Promise<LearnerToday> {
   const { supabase, child } = await myChild()
-  const short = await loadShortLabels(supabase)
   const now = new Date()
   const today = now.toISOString().slice(0, 10)
-  const [sessions, { data: gaps }, asked] = await Promise.all([
+  const [short, sessions, { data: gaps }, asked] = await Promise.all([
+    // Short labels of the topics of this learner's own classes only (not every topic of every school).
+    classIdsOfChild(supabase, child.id).then((classIds) => loadShortLabels(supabase, { classIds })),
     loadLearnerSessions(supabase, child.id),
     supabase.from('gaps').select('stage, created_at').eq('child_id', child.id).order('created_at'),
     newestPracticeEvent(child.id),

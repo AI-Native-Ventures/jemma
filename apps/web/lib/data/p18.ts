@@ -226,7 +226,7 @@ async function load(classId: string) {
 
   return {
     now,
-    short: await loadShortLabels(supabase),
+    short: await loadShortLabels(supabase, { classIds: [classId] }),
     cls,
     test,
     plans: plans ?? [],

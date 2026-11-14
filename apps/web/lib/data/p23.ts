@@ -1,7 +1,7 @@
 import { createSupabaseAdmin } from '../supabase/admin'
 import { createSupabaseServer } from '../supabase/server'
 import { shortSubject } from '../subjects'
-import { loadShortLabels } from '../topics'
+import { classIdsOfChild, loadShortLabels } from '../topics'
 
 /** Parent profile, report, beyond the tests and add activity. Everything is read through RLS. */
 
@@ -200,7 +200,7 @@ function chipFromEvidence(childId: string, byId: Map<string, ResultRow>, e: { la
 
 export async function getProfile(childId: string): Promise<ProfileData | null> {
   const supabase = await createSupabaseServer()
-  const short = await loadShortLabels(supabase)
+  const short = await loadShortLabels(supabase, { classIds: await classIdsOfChild(supabase, childId) })
   const [child, card, results, needs, notes, attendance, activities, log, latestTest, gaps] = await Promise.all([
     supabase.from('children').select('id, first_name, grade').eq('id', childId).maybeSingle(),
     supabase.from('guidance_cards').select('content, updated_at').eq('child_id', childId).maybeSingle(),
@@ -382,7 +382,7 @@ export type ReportData = {
 
 export async function getReport(childId: string): Promise<ReportData | null> {
   const supabase = await createSupabaseServer()
-  const short = await loadShortLabels(supabase)
+  const short = await loadShortLabels(supabase, { classIds: await classIdsOfChild(supabase, childId) })
   const [child, results, gaps, sessions, planned, notes, attendance, acts, card, papers] = await Promise.all([
     supabase.from('children').select('first_name, grade').eq('id', childId).maybeSingle(),
     supabase.from('question_results').select(RESULT_SELECT).eq('child_id', childId),

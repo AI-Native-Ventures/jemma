@@ -68,7 +68,7 @@ async function classChildren(classId: string) {
 
 export async function getLearnersView(classId: string): Promise<LearnersView> {
   const supabase = await createSupabaseServer()
-  const short = await loadShortLabels(supabase)
+  const short = await loadShortLabels(supabase, { classIds: [classId] })
   const [kids, clsRes, testsRes] = await Promise.all([
     classChildren(classId),
     supabase.from('classes').select('name, join_code').eq('id', classId).single(),
@@ -188,7 +188,7 @@ export async function getLearnerView(classId: string, childId: string): Promise<
   const child = await loadChild(classId, childId)
   if (!child) return null
   const supabase = await createSupabaseServer()
-  const short = await loadShortLabels(supabase)
+  const short = await loadShortLabels(supabase, { classIds: [classId] })
   const [clsRes, testsRes, attRes, gapRes, paperRes, obsRes, resultsRes] = await Promise.all([
     supabase.from('classes').select('name').eq('id', classId).single(),
     supabase.from('tests').select('id, out_of').eq('class_id', classId),
@@ -264,7 +264,7 @@ export async function getChildProfileView(classId: string, childId: string): Pro
   const learner = await getLearnerView(classId, childId)
   if (!learner) return null
   const supabase = await createSupabaseServer()
-  const short = await loadShortLabels(supabase)
+  const short = await loadShortLabels(supabase, { classIds: [classId] })
   const today = todayIso()
   const [needsRes, resultsRes, papersRes, testsRes, guidanceRes, gapsRes, sessionRes] = await Promise.all([
     supabase.from('needs_you_items').select('id, title, detail').eq('child_id', childId).eq('status', 'open'),

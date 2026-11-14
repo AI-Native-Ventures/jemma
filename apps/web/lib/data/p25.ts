@@ -1,7 +1,7 @@
 import { whatHelps } from '@jemma/profiling/logic'
 import type { Format } from '@jemma/profiling/logic'
 import { createSupabaseServer } from '../supabase/server'
-import { loadShortLabels } from '../topics'
+import { classIdsOfChild, loadShortLabels } from '../topics'
 
 type Db = Awaited<ReturnType<typeof createSupabaseServer>>
 
@@ -62,7 +62,10 @@ export type LearnData = {
   helps: { family: string; rows: { format: Format; status: 'too_early' | 'measured'; average: number; sessions: number }[] }
 }
 
-async function plannedSessions(db: Db, childId: string): Promise<(PlannedSession & { lessonId: string | null })[]> {
+/** Short labels of the topics of the classes this child is in. The enrolments are read as the caller, so a child the caller cannot see has no class here. */
+const labelsOfChild = async (db: Db, childId: string) => loadShortLabels(db, { classIds: await classIdsOfChild(db, childId) })
+
+async function plannedSessions(db: Db, childId: string, labels?: (name: string) => string): Promise<(PlannedSession & { lessonId: string | null })[]> {
   const { data, error } = await db
     .from('sessions')
     .select('id, planned_for, topic_id, topic_name, format, planned_minutes, question_count, lesson_id, status')
@@ -70,7 +73,7 @@ async function plannedSessions(db: Db, childId: string): Promise<(PlannedSession
     .in('status', ['planned', 'in_progress'])
     .order('planned_for', { ascending: true })
   if (error) throw new Error(`p25: ${error.message}`)
-  const short = await loadShortLabels(db)
+  const short = labels ?? (await labelsOfChild(db, childId))
   return data.map((s) => {
     const minutes = s.planned_minutes ?? 0
     const topicName = s.topic_name ?? ''
@@ -247,10 +250,11 @@ export async function loadSessionResult(childId: string, sessionId: string): Pro
     .maybeSingle()
   if (!s || s.status !== 'done') return null
 
+  const short = await labelsOfChild(db, childId)
   const [{ data: rows }, { data: gap }, upcoming] = await Promise.all([
     db.from('session_items').select('position, phase, question, answer, correct, seconds, adapted').eq('session_id', sessionId),
     db.from('gaps').select('stage').eq('child_id', childId).eq('topic_name', s.topic_name ?? '').maybeSingle(),
-    plannedSessions(db, childId),
+    plannedSessions(db, childId, short),
   ])
   const all = rows ?? []
   const tries = all.filter((r) => r.phase === 'try').sort((a, b) => a.position - b.position)
@@ -286,7 +290,7 @@ export async function loadSessionResult(childId: string, sessionId: string): Pro
     minutes: s.minutes ?? 0,
     format: (s.format ?? 'reading') as Format,
     topicName: s.topic_name ?? '',
-    shortName: (await loadShortLabels(db))(s.topic_name ?? ''),
+    shortName: short(s.topic_name ?? ''),
     stage: gap?.stage ?? 'new',
     warmup: { right: warm.filter((r) => r.correct).length, total: warm.length },
     items,
