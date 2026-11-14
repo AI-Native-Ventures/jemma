@@ -50,13 +50,16 @@ describe('the job plan of practice.requested', () => {
 
   test('such a session whose lesson has no questions yet: write_lesson', async () => {
     for (const content of [{}, { questions: [] }, null]) {
-      const db = world({ sessions: [session(TODAY, 'l1')], lessons: [lesson('l1', content)] })
-      expect(await plan(db)).toEqual([{ job: 'write_lesson', ids: { childId: CHILD } }])
+      const due = session(TODAY, 'l1')
+      const db = world({ sessions: [due], lessons: [lesson('l1', content)] })
+      // the lesson is written for that session, by id: the learner may have another planned for a later day
+      expect(await plan(db)).toEqual([{ job: 'write_lesson', ids: { childId: CHILD, sessionId: due.id } }])
     }
   })
 
   test('a session with no lesson row at all is a session without questions', async () => {
-    expect(await plan(world({ sessions: [session(TODAY, null)] }))).toEqual([{ job: 'write_lesson', ids: { childId: CHILD } }])
+    const due = session(TODAY, null)
+    expect(await plan(world({ sessions: [due] }))).toEqual([{ job: 'write_lesson', ids: { childId: CHILD, sessionId: due.id } }])
   })
 
   test('no such session: plan_next_session with practice 1, then write_lesson', async () => {
@@ -87,6 +90,38 @@ describe('the job plan of practice.requested', () => {
     expect((await plan(db)).map((s) => s.job)).toEqual(['write_lesson'])
     db.tables.lessons![0]!.content = withQuestions
     expect(await plan(db)).toEqual([])
+  })
+})
+
+describe('a practice the learner chose', () => {
+  const chosen = (over: Record<string, unknown>) => EventSchema.parse({ ...event, ...over })
+  const run = (db: MemoryDb, over: Record<string, unknown>) => jobPlan(chosen(over), db, NOW)
+
+  test('the event may carry the topic id and the topic name, and nothing else is needed', () => {
+    expect(EventSchema.parse({ type: 'practice.requested', childId: 'c1', topicId: 't1', topicName: 'Fractions' })).toEqual({ type: 'practice.requested', childId: 'c1', topicId: 't1', topicName: 'Fractions' })
+    expect(EventSchema.parse({ type: 'practice.requested', childId: 'c1', topicName: 'Fractions' })).toEqual({ type: 'practice.requested', childId: 'c1', topicName: 'Fractions' })
+    expect(EventSchema.safeParse({ type: 'practice.requested', childId: 'c1', topicName: 5 }).success).toBe(false)
+  })
+
+  test('the plan step carries the choice in its ids, and the lesson step does not need it', async () => {
+    expect(await run(world(), { topicId: 't-dec', topicName: 'Adding decimals' })).toEqual([
+      { job: 'plan_next_session', ids: { childId: CHILD, practice: '1', topicName: 'Adding decimals', topicId: 't-dec' } },
+      { job: 'write_lesson', ids: { childId: CHILD } },
+    ])
+    expect((await run(world(), { topicName: 'Fractions' }))[0]).toEqual({ job: 'plan_next_session', ids: { childId: CHILD, practice: '1', topicName: 'Fractions' } })
+  })
+
+  test('a topic id with no name is no choice, and an event with no choice has the ids of a practice with no choice', async () => {
+    expect((await run(world(), { topicId: 't-dec' }))[0]).toEqual({ job: 'plan_next_session', ids: { childId: CHILD, practice: '1' } })
+    expect((await jobPlan(EventSchema.parse(event), world(), NOW))[0]).toEqual({ job: 'plan_next_session', ids: { childId: CHILD, practice: '1' } })
+  })
+
+  test('once the choice is planned, the plan is write_lesson for that session, and once it is written nothing', async () => {
+    const due = session(TODAY, 'l1')
+    const db = world({ sessions: [due, session('2026-11-14', 'l2')], lessons: [lesson('l1', {}), lesson('l2', withQuestions)] })
+    expect(await run(db, { topicName: 'Fractions' })).toEqual([{ job: 'write_lesson', ids: { childId: CHILD, sessionId: due.id } }])
+    db.tables.lessons![0]!.content = withQuestions
+    expect(await run(db, { topicName: 'Fractions' })).toEqual([])
   })
 })
 

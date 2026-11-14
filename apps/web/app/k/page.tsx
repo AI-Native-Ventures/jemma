@@ -16,7 +16,7 @@ function GapsCard({ today, tone }: { today: LearnerToday; tone: 'today' | 'rest'
   const stroke = tone === 'today' ? '#8C89A3' : '#1F1D36'
   return (
     <Link
-      href="/k/gaps"
+      href="/k/maths"
       className="flex items-center gap-3.5 rounded-20 border border-line bg-card py-4 pr-3.5 pl-[18px] text-ink no-underline"
     >
       <span className="flex flex-1 flex-col gap-2">
@@ -60,7 +60,7 @@ export default async function ChildToday() {
               </span>
             </section>
           ) : null}
-          <PracticeCard state={today.practice} />
+          <PracticeCard state={today.practice} suggestion={today.suggestion} />
           <GapsCard today={today} tone="rest" />
         </div>
       </div>

@@ -179,8 +179,8 @@ export function Progress({ done, onDone }: { done: FinishedSession; onDone: () =
         <button type="button" onClick={onDone} className="flex h-[60px] cursor-pointer items-center justify-center rounded-18 border-0 bg-ink text-[19px] font-bold text-white">
           Done
         </button>
-        <Link href="/k/gaps" className="flex min-h-11 items-center justify-center text-[16px] font-semibold text-ink underline underline-offset-[3px]">
-          See all my gaps
+        <Link href="/k/maths" className="flex min-h-11 items-center justify-center text-[16px] font-semibold text-ink underline underline-offset-[3px]">
+          See my maths
         </Link>
       </div>
     </main>

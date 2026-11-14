@@ -12,6 +12,8 @@ import { updateLearnerProfile } from './tools/save/update-learner-profile'
 
 // Re-exported so a plain Node process (the operator runner) gets them without the tools barrel, which imports job prompts (.md files).
 export { jobPlan, postconditions } from './plans'
+// The loaders the learner's screens and the server action that asks for a practice use (the web app reaches the package through this entry).
+export { loadChoiceRules, loadMyMathsInput } from './tools/read/practice-input'
 export type { JobStep } from './plans'
 
 /** A cloud job: calls the read tools, asks the model, saves through the save tool. */
@@ -124,7 +126,9 @@ function isBadOutput(err: unknown): boolean {
 export const codeJobs: Partial<Record<JobName, CloudJob>> = {
   async plan_next_session(ctx, _eventId, ids) {
     // `practice` is '1' only in the plan of `practice.requested`: the learner asked to practise now.
-    await planNextSession.run(ctx, { childId: ids.childId!, practice: ids.practice === '1' })
+    // A choice rides in the ids as `topicName` (and `topicId` when the topic has one): the learner chose what to practise.
+    const choice = ids.practice === '1' && ids.topicName ? { topicName: ids.topicName, topicId: ids.topicId ?? null } : undefined
+    await planNextSession.run(ctx, { childId: ids.childId!, practice: ids.practice === '1', ...(choice ? { choice } : {}) })
   },
   async update_learner_profile(ctx, _eventId, ids) {
     await updateLearnerProfile.run(ctx, { childId: ids.childId!, sessionId: ids.sessionId })

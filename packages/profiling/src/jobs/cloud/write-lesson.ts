@@ -30,7 +30,9 @@ export async function runJobWriteLesson(
   const childId = ids.childId
   if (!childId) throw new Error('write_lesson needs a childId')
   const ctx = await contextFor(base, 'children', childId)
-  const info = await getChildContext.run(ctx, { childId })
+  // `ids.sessionId` names the session to write for (a practice the learner chose is planned for today next to a session planned for later);
+  // without it the latest planned session is taken, as always.
+  const info = await getChildContext.run(ctx, { childId, sessionId: ids.sessionId })
   if ('images' in info) throw new Error('unexpected image result')
   const session = info.session
   if (!session || session.status !== 'planned') return
