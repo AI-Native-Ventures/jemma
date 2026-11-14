@@ -2,7 +2,12 @@ import { z } from 'zod'
 import { LearnerProfileSchema, type LearnerProfile } from '../../schemas/profile'
 import { assertInSchool, defineTool, maybe, ok, type ToolContext } from '../context'
 
-/** Builds the learner profile from the database. The child must already be checked with `assertInSchool`. */
+/**
+ * Builds the learner profile from the database. The child must already be checked with `assertInSchool`.
+ * It reads every result of the child, held tests included: `diagnose` and `class_report` run while a test is held and need them. A tool
+ * does not know which job calls it (an MCP call carries no event), so the family-facing guidance card is kept safe by the plans instead:
+ * none plans `guidance` for a learner with a paper in a held test (`withHeldPapers` in `plans.ts`).
+ */
 export async function loadProfile(ctx: ToolContext, childId: string): Promise<LearnerProfile> {
   const db = ctx.db
   const child = await ok(db.from('children').select('id, first_name, grade, school_id').eq('id', childId).single())
