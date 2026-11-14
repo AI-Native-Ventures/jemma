@@ -1,6 +1,6 @@
 'use client'
 
-import { OWN_NOTE } from '@/lib/own-grades'
+import { OWN_NOTE, OWN_NOTE_ALONE } from '@/lib/own-grades'
 import type { Workspace } from '@/lib/workspace'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { setWorkspace } from './own-actions'
@@ -26,7 +26,7 @@ const CHOICES: { workspace: Workspace; label: string }[] = [
  * arrives is the truth: its `current` is what is shown from then on. A refusal puts the old state back and says why in the action's own words.
  * A tap on the one that is shown does nothing.
  */
-export function WorkspaceSwitch({ current }: { current: Workspace }) {
+function Switch({ current }: { current: Workspace }) {
   const [shown, setShown] = useState<Workspace>(current)
   const [message, setMessage] = useState<string | null>(null)
   const [pending, start] = useTransition()
@@ -72,4 +72,13 @@ export function WorkspaceSwitch({ current }: { current: Workspace }) {
       {message ? <p role="alert" className="m-0 px-1 text-[14px] text-coral-text">{message}</p> : null}
     </div>
   )
+}
+
+/**
+ * What the top of the learner's home and of My maths shows: the switch, or, for a child whose school does not use Jemma (`alone`, P99), only the line
+ * "Your own practice." That child's record is its own workspace: there is no My school to go to, so nothing is offered to switch.
+ */
+export function WorkspaceSwitch({ current, alone = false }: { current: Workspace; alone?: boolean }) {
+  if (alone) return <p className="m-0 px-1 text-[15px] leading-[1.4] text-body">{OWN_NOTE_ALONE}</p>
+  return <Switch current={current} />
 }

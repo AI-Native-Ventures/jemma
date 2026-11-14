@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import type { JemmaDb } from '@jemma/profiling/db'
 import { isCapsClassName } from '@jemma/profiling/own'
+import { isOwnRecord } from '@jemma/profiling/own-names'
 import { checkDocument, sizeProblem } from '@/app/t/[classId]/curriculum/upload-checks'
 import { readDraft, removeTopicIn, toRaw, topicCount } from '@/app/t/[classId]/curriculum/format'
 import { retryEvent, sendEvent } from '@/lib/agent'
@@ -30,10 +31,10 @@ const reasonOf = (e: unknown) => (e instanceof Error ? e.message : String(e))
 
 type Twin = { id: string; supabase: Awaited<ReturnType<typeof myChild>>['supabase'] }
 
-/** The private twin of this request, or null for a learner who is in My school. A request from a person who is no learner never gets here (`myChild` stops it). */
+/** The own record of this request (a private twin, or a child whose school does not use Jemma), or null for a learner who is in My school. A request from a person who is no learner never gets here (`myChild` stops it). */
 async function twinOnly(): Promise<Twin | null> {
   const { supabase, child } = await myChild()
-  return child.private_of ? { id: child.id, supabase } : null
+  return isOwnRecord(child) ? { id: child.id, supabase } : null
 }
 
 /** The person who tapped: the learner, or the parent whose phone it is after a hand-over. The class of an own curriculum and its approval are theirs. */

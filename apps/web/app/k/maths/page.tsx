@@ -40,7 +40,7 @@ export default async function MyMathsPage({ searchParams }: { searchParams?: Pro
     <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans leading-[normal] lg:min-h-dvh">
       <AppHeader firstName={firstName} />
       <main className="mx-auto flex w-full flex-1 flex-col gap-5 px-5 pt-[18px] pb-[22px] lg:max-w-[560px]">
-        <WorkspaceSwitch current={shape.workspace} />
+        <WorkspaceSwitch current={shape.workspace} alone={own?.alone} />
         <div className="flex items-start gap-2.5">
           <Diamond size={16} className="mt-3 flex-none" />
           <h1 className="m-0 text-[30px] leading-[1.14] font-bold tracking-[-0.02em] text-pretty">My maths</h1>

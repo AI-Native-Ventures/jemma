@@ -3,7 +3,7 @@ import type { JemmaDb } from './db'
 import { buildMyMaths, type Score } from './logic'
 import { maybe, ok } from './tools/context'
 import { loadMyMathsInput } from './tools/read/practice-input'
-import { capsClassName, isCapsClassName, OWN_GRADES } from './own-class-names'
+import { capsClassName, isCapsClassName, isIndependent, isOwnRecord, OWN_GRADES, type OwnRecordChild } from './own-class-names'
 
 // A learner's own private workspace ("My own") beside the school one ("My school"). It is a SECOND `children` row for the same learner (the
 // "twin": same name, grade and login, `private_of` = the school child), in a personal school of its own (`schools.kind = 'private'`), with one
@@ -12,7 +12,8 @@ import { capsClassName, isCapsClassName, OWN_GRADES } from './own-class-names'
 // the class reports never see it. Nothing here writes to the school child, its class or its school. Server only: every function takes the
 // service client, and checks that the person acting may act for the learner.
 
-export { capsClassName, isCapsClassName, OWN_GRADES }
+export { capsClassName, isCapsClassName, isIndependent, isOwnRecord, OWN_GRADES }
+export type { OwnRecordChild }
 
 /** What a learner reads when a grade or a person is refused. A message is plain words. */
 export class OwnWorkspaceError extends Error {
@@ -56,16 +57,21 @@ async function mustMayActFor(db: JemmaDb, child: { id: string; user_id: string |
  * personal school of its own (`kind 'private'`, named "{first name}'s own", with the school's country; its sandbox, when the school is a demo's,
  * so the demo clean-up takes it too). Nothing else is made: the classes come with `addOwnGrade`. Only the learner's own login or an approved
  * parent may ask. Answers the twin's id.
+ *
+ * A child whose school does not use Jemma (P99: a child of a personal school, `private_of` null) has no school workspace to keep apart: its own record
+ * IS its "My own". It answers the child itself and makes nothing (never a twin of a twin).
  */
 export async function ensureOwnWorkspace(db: JemmaDb, childId: string, actorUserId: string): Promise<string> {
   const child = (await maybe(db.from('children').select(CHILD_COLUMNS).eq('id', childId).maybeSingle())) as SchoolChild | null
   if (!child) throw new OwnWorkspaceError('That learner was not found.')
   if (child.private_of) throw new OwnWorkspaceError('My own has no My own of its own.')
   await mustMayActFor(db, child, actorUserId)
+
+  const home = await ok(db.from('schools').select('country, region, grades, sandbox_id, kind').eq('id', child.school_id).single())
+  if (home.kind === 'private') return child.id
   const found = await twinOfChild(db, childId)
   if (found) return found.id
 
-  const home = await ok(db.from('schools').select('country, region, grades, sandbox_id').eq('id', child.school_id).single())
   const school = await ok(
     db
       .from('schools')
@@ -107,7 +113,8 @@ const topicCountOf = async (db: JemmaDb, classId: string): Promise<number> => {
 
 /**
  * Adds a grade (1 to 12) to a learner's own workspace: the private Mathematics CAPS class "Grade {N} (my own)" (`capsClassName`) in the personal school, owned by the
- * person acting (the learner, or the parent who acts for them), with the twin enrolled. In a school in South Africa the class gets the CAPS map of
+ * person acting (the learner, or the parent who acts for them), with the learner enrolled. `twinId` is the private twin of a school child, or (P99) a
+ * child of a personal school whose school does not use Jemma: its own record is the workspace. In a school in South Africa the class gets the CAPS map of
  * that grade, approved, with its topics, written by the same code the demo seed uses for 5A, 7A and 4A, and the line "Loaded the CAPS map for
  * Grade {N}: {count} topics". Anywhere else the class has no map yet. Adding a grade that is already there adds nothing (and finishes a map that
  * an earlier call did not write). Grade 0, grade 13 and a grade that is not a whole number are refused.
@@ -115,15 +122,24 @@ const topicCountOf = async (db: JemmaDb, classId: string): Promise<number> => {
 export async function addOwnGrade(db: JemmaDb, twinId: string, grade: number, actorUserId: string, now: Date = new Date()): Promise<AddedGrade> {
   if (!isGrade(grade)) throw new OwnWorkspaceError(`Pick a grade from ${OWN_GRADES.from} to ${OWN_GRADES.to}.`)
   const twin = (await maybe(db.from('children').select(CHILD_COLUMNS).eq('id', twinId).maybeSingle())) as SchoolChild | null
-  if (!twin?.private_of) throw new OwnWorkspaceError('That is not a private workspace.')
-  const home = await maybe(db.from('children').select('id, user_id').eq('id', twin.private_of).maybeSingle())
-  if (!home) throw new OwnWorkspaceError('That learner was not found.')
-  await mustMayActFor(db, home, actorUserId)
+  if (!twin) throw new OwnWorkspaceError('That is not a private workspace.')
   const school = await ok(db.from('schools').select('country, kind').eq('id', twin.school_id).single())
   if (school.kind !== 'private') throw new OwnWorkspaceError('That is not a private workspace.')
+  // A twin is acted for through the school child it belongs to; a child of a personal school is acted for directly.
+  const home = twin.private_of ? await maybe(db.from('children').select('id, user_id').eq('id', twin.private_of).maybeSingle()) : twin
+  if (!home) throw new OwnWorkspaceError('That learner was not found.')
+  await mustMayActFor(db, home, actorUserId)
+  return addGradeToWorkspace(db, { schoolId: twin.school_id, childId: twinId, country: school.country }, grade, actorUserId, now)
+}
 
+/**
+ * The work of `addOwnGrade` once the person acting is known to be allowed: finds or makes the CAPS class of `grade` in the personal school, enrols the
+ * child, and writes the CAPS map when the school is in South Africa and the class has none. It checks nobody: only `addOwnGrade` (which has checked) and
+ * `addChildAlone` (the parent who is adding the child is the person who makes the workspace) call it.
+ */
+async function addGradeToWorkspace(db: JemmaDb, ws: { schoolId: string; childId: string; country: string }, grade: number, actorUserId: string, now: Date): Promise<AddedGrade> {
   // Only the CAPS class of the grade counts: a learner's own curriculum of the same grade (P97) never blocks it and never gets its map.
-  const sameGrade = () => ok(db.from('classes').select('id').eq('school_id', twin.school_id).eq('grade', grade).eq('name', capsClassName(grade)).order('created_at').order('id'))
+  const sameGrade = () => ok(db.from('classes').select('id').eq('school_id', ws.schoolId).eq('grade', grade).eq('name', capsClassName(grade)).order('created_at').order('id'))
   let classId: string
   let created = false
   const existing = (await sameGrade())[0]
@@ -134,7 +150,7 @@ export async function addOwnGrade(db: JemmaDb, twinId: string, grade: number, ac
     for (let attempt = 0; attempt < 5 && !made; attempt++) {
       const row = await db
         .from('classes')
-        .insert({ school_id: twin.school_id, teacher_id: actorUserId, name: capsClassName(grade), grade, year: now.getUTCFullYear(), subject: 'Mathematics', join_code: code })
+        .insert({ school_id: ws.schoolId, teacher_id: actorUserId, name: capsClassName(grade), grade, year: now.getUTCFullYear(), subject: 'Mathematics', join_code: code })
         .select('id')
         .single()
       if (row.data) made = row.data.id
@@ -153,18 +169,91 @@ export async function addOwnGrade(db: JemmaDb, twinId: string, grade: number, ac
     }
   }
 
-  const enrolled = await ok(db.from('enrolments').select('class_id').eq('class_id', classId).eq('child_id', twinId))
-  if (enrolled.length === 0) await ok(db.from('enrolments').insert({ class_id: classId, child_id: twinId }).select('class_id'))
+  const enrolled = await ok(db.from('enrolments').select('class_id').eq('class_id', classId).eq('child_id', ws.childId))
+  if (enrolled.length === 0) await ok(db.from('enrolments').insert({ class_id: classId, child_id: ws.childId }).select('class_id'))
 
-  const caps = isSouthAfrica(school.country) ? capsMapOf(grade) : null
+  const caps = isSouthAfrica(ws.country) ? capsMapOf(grade) : null
   if (caps) {
     const hasMap = (await ok(db.from('curriculum_maps').select('id').eq('class_id', classId).eq('status', 'approved').limit(1))).length > 0
     if (!hasMap) {
       await writeApprovedMap(db, { classId, stored: caps.stored, approvedAt: now.toISOString(), rows: caps.rows })
-      await ok(db.from('activity_log').insert({ school_id: twin.school_id, class_id: classId, at: now.toISOString(), text: caps.log, tool: 'use_caps_map' }).select('id'))
+      await ok(db.from('activity_log').insert({ school_id: ws.schoolId, class_id: classId, at: now.toISOString(), text: caps.log, tool: 'use_caps_map' }).select('id'))
     }
   }
   return { classId, grade, created, topics: await topicCountOf(db, classId) }
+}
+
+const NAME_MAX = 40
+const squash = (text: string): string => text.trim().replace(/\s+/g, ' ')
+
+/** The first name a parent typed for a child, or the plain reason it cannot be used. */
+function checkFirstName(raw: unknown): string {
+  const name = typeof raw === 'string' ? squash(raw) : ''
+  if (!name) throw new OwnWorkspaceError('Type your child’s first name.')
+  if (name.length > NAME_MAX) throw new OwnWorkspaceError(`Keep the name under ${NAME_MAX} letters.`)
+  if (!/^[\p{L}][\p{L}\p{M} '’-]*$/u.test(name)) throw new OwnWorkspaceError('Use letters only for the name.')
+  return name
+}
+
+/** The sandbox a demo parent belongs to: the sandbox of the school of any child the parent is linked to. Null for a parent with no child in a demo school. */
+async function sandboxOfParent(db: JemmaDb, parentId: string): Promise<string | null> {
+  const links = await ok(db.from('parent_links').select('child_id').eq('parent_id', parentId).eq('status', 'approved'))
+  if (links.length === 0) return null
+  const kids = await ok(db.from('children').select('school_id').in('id', links.map((l) => l.child_id)))
+  if (kids.length === 0) return null
+  const schools = await ok(db.from('schools').select('sandbox_id').in('id', [...new Set(kids.map((k) => k.school_id))]))
+  return schools.find((s) => s.sandbox_id)?.sandbox_id ?? null
+}
+
+export type AddedChild = { childId: string; schoolId: string; classId: string; grade: number; /** Topics of the approved map of the grade, 0 outside South Africa. */ topics: number }
+
+/**
+ * A parent adds a child whose school does not use Jemma (P99). Makes ONE `children` row in a personal school of its own (`schools.kind 'private'`,
+ * named "{first name}'s own", the parent's chosen country, no sandbox unless the parent is a demo parent's), with `private_of` null and no login yet,
+ * the CAPS class of the grade (with its approved map in South Africa: `addGradeToWorkspace`, the parent as the person acting), and the approved
+ * `parent_links` row that makes the parent the linked parent. The parent's own consent is the act of adding the child, so no teacher says yes. The child
+ * has no school workspace: its own record IS its "My own" (`isOwnRecord`).
+ * A missing or odd name, a grade outside 1 to 12 and a country that is not a two-letter code are refused with one plain sentence (`OwnWorkspaceError`)
+ * and nothing is written. A failure after the school was made removes the school again (everything under it goes with it). The caller has checked
+ * that `parentId` is a parent who is signed in, and that `country` is one the app knows.
+ */
+export async function addChildAlone(db: JemmaDb, input: { parentId: string; firstName: unknown; grade: unknown; country: unknown }, now: Date = new Date()): Promise<AddedChild> {
+  const firstName = checkFirstName(input.firstName)
+  if (!isGrade(input.grade)) throw new OwnWorkspaceError(`Pick a grade from ${OWN_GRADES.from} to ${OWN_GRADES.to}.`)
+  const grade = input.grade
+  const country = typeof input.country === 'string' && /^[A-Z]{2}$/.test(input.country) ? input.country : null
+  if (!country) throw new OwnWorkspaceError('Pick the country.')
+
+  const [profile, sandboxId] = await Promise.all([
+    maybe(db.from('profiles').select('display_name').eq('user_id', input.parentId).maybeSingle()),
+    sandboxOfParent(db, input.parentId),
+  ])
+  const parentFirst = squash(profile?.display_name ?? '').split(' ')[0] || null
+
+  const school = await ok(
+    db.from('schools').insert({ name: `${firstName}'s own`, country, region: null, grades: null, sandbox_id: sandboxId, kind: 'private' }).select('id').single(),
+  )
+  try {
+    const child = await ok(
+      db
+        .from('children')
+        .insert({ school_id: school.id, first_name: firstName, last_name: null, grade, user_id: null, private_of: null, parent_first_name: parentFirst, parent_relation: null })
+        .select('id')
+        .single(),
+    )
+    const added = await addGradeToWorkspace(db, { schoolId: school.id, childId: child.id, country }, grade, input.parentId, now)
+    await ok(
+      db
+        .from('parent_links')
+        .insert({ parent_id: input.parentId, child_id: child.id, class_id: added.classId, status: 'approved', consent: { guardian: true, teach: true, improve: false }, decided_at: now.toISOString() })
+        .select('id'),
+    )
+    return { childId: child.id, schoolId: school.id, classId: added.classId, grade, topics: added.topics }
+  } catch (e) {
+    // Nothing is left half made: the personal school goes, and the child, the class, the map and the enrolment with it.
+    await db.from('schools').delete().eq('id', school.id)
+    throw new Error(`could not add the child: ${e instanceof Error ? e.message : String(e)}`)
+  }
 }
 
 const sum = (scores: Score[]): Score => ({ right: scores.reduce((n, s) => n + s.right, 0), asked: scores.reduce((n, s) => n + s.asked, 0) })

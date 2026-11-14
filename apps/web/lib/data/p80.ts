@@ -1,4 +1,5 @@
 import type { MyMaths } from '@jemma/profiling/logic'
+import { isOwnRecord } from '@jemma/profiling/own-names'
 import { defaultOwnClass } from '@/lib/own-workspace'
 import { loadLearnerSessions, myChild, myMathsOf, newestPracticeEvent, tonightFrom } from './p27'
 
@@ -27,7 +28,7 @@ export type MyMathsView = { firstName: string; initial: string; maths: MyMaths; 
 export async function getMyMaths(classId?: string): Promise<MyMathsView> {
   const { supabase, child } = await myChild()
   const now = new Date()
-  const shown = classId ?? (child.private_of ? ((await defaultOwnClass(child.id)) ?? undefined) : undefined)
+  const shown = classId ?? (isOwnRecord(child) ? ((await defaultOwnClass(child.id)) ?? undefined) : undefined)
   const [sessions, asked, maths] = await Promise.all([loadLearnerSessions(supabase, child.id), newestPracticeEvent(child.id), myMathsOf(child.id, now, shown)])
   const tonight = await tonightFrom(supabase, sessions, asked, now.toISOString().slice(0, 10))
   return {

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { AloneForm } from './AloneForm'
 import { Bullet, body, ink, line, list, primaryButton } from './_parts'
 
 export type FoundCard = { className: string; teacherName: string; grade: number; schoolName: string }
@@ -88,6 +89,13 @@ export function AddChildForm({ code, child, surname, needsSurname, found, error 
           No code? Add your child yourself
         </Link>
       </div>
+
+      <div aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ flex: 1, height: 1, background: line }} />
+        <span style={{ fontSize: 13, color: body }}>Or</span>
+        <span style={{ flex: 1, height: 1, background: line }} />
+      </div>
+      <AloneForm defaultName={child} />
     </>
   )
 }

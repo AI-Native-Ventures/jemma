@@ -47,7 +47,7 @@ export default async function ChildToday() {
       <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans leading-[normal] lg:min-h-dvh">
         <AppHeader firstName={firstName} />
         <div className="flex flex-1 flex-col gap-5 px-5 pt-[18px] pb-[22px]">
-          <WorkspaceSwitch current={today.workspace} />
+          <WorkspaceSwitch current={today.workspace} alone={today.alone} />
           <div className="flex items-start gap-2.5">
             <Diamond size={16} className="mt-3 flex-none" />
             <h1 className="m-0 text-[30px] leading-[1.14] font-bold tracking-[-0.02em] text-pretty">
@@ -76,7 +76,7 @@ export default async function ChildToday() {
     <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans leading-[normal] lg:min-h-dvh">
       <AppHeader firstName={firstName} />
       <div className="flex flex-1 flex-col gap-[22px] px-5 pt-[18px] pb-[22px]">
-        <WorkspaceSwitch current={today.workspace} />
+        <WorkspaceSwitch current={today.workspace} alone={today.alone} />
         <div className="flex items-start gap-2.5">
           <Diamond size={16} className="mt-3 flex-none" />
           <h1 className="m-0 text-[31px] leading-[1.14] font-bold tracking-[-0.02em] text-pretty">

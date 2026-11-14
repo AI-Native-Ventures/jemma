@@ -41,6 +41,7 @@
     "./notify": "./src/notify.ts",
     "./orchestrator": "./src/orchestrator.ts",
     "./caps": "./src/curriculum/caps.ts",
-    "./own": "./src/own-workspace.ts"
+    "./own": "./src/own-workspace.ts",
+    "./own-names": "./src/own-class-names.ts"
   }
 }
