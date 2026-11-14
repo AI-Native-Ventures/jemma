@@ -40,8 +40,35 @@ async function mkUser(key: string, role: 'teacher' | 'parent' | 'learner', schoo
 }
 
 const consent = { guardian: true, teach: true, improve: false }
-const idsOf = async (client: JemmaDb, table: 'children' | 'sessions' | 'classes' | 'schools' | 'topics' | 'curriculum_maps') =>
-  (await ok(client.from(table).select('id'))).map((r: { id: string }) => r.id)
+// Every read under row level security names the rows this file made. A read of a whole table asks the policy about every row of every test of the
+// shared database and runs into the statement timeout; the same read filtered by id (or by map) is cheap, and says the same thing about our rows.
+type Scoped = 'children' | 'sessions' | 'classes' | 'schools' | 'topics'
+const scope = (table: Scoped): [column: string, values: () => string[]] => {
+  const known = (...keys: string[]) => () => keys.map((k) => ids[k]).filter((v): v is string => !!v)
+  switch (table) {
+    case 'children':
+      return ['id', known('amina', 'thabo', 'zola', 'twin', 'thaboTwin')]
+    case 'sessions':
+      return ['child_id', known('amina', 'thabo', 'zola', 'twin', 'thaboTwin')]
+    case 'classes':
+      return ['id', known('cA', 'cB', 'g6', 'g7')]
+    case 'schools':
+      return ['id', known('sA', 'sB', 'twinSchool', 'thaboSchool')]
+    case 'topics':
+      return ['map_id', known('map6', 'map7')]
+  }
+}
+const idsOf = async (client: JemmaDb, table: Scoped): Promise<string[]> => {
+  const [column, values] = scope(table)
+  const rows = await ok(client.from(table).select('id').in(column, values()))
+  return rows.map((r: { id: string }) => r.id)
+}
+/** The children (id and whether they are a twin) this file made that the client can read. */
+const childrenOf = async (client: JemmaDb, onlySchool = false) => {
+  const [column, values] = scope('children')
+  const query = client.from('children').select('id, private_of').in(column, values())
+  return ok(onlySchool ? query.is('private_of', null) : query)
+}
 
 beforeAll(async () => {
   const [sA] = await ok(service.from('schools').insert({ name: `${tag} School A`, country: 'ZA' }).select('id'))
@@ -83,6 +110,8 @@ beforeAll(async () => {
   const g7 = await addOwnGrade(service, ids.twin!, 7, kid, NOW)
   Object.assign(ids, { g6: g6.classId, g7: g7.classId })
   const map6 = await ok(service.from('curriculum_maps').select('id').eq('class_id', g6.classId).eq('status', 'approved'))
+  const map7 = await ok(service.from('curriculum_maps').select('id').eq('class_id', g7.classId).eq('status', 'approved'))
+  Object.assign(ids, { map6: map6[0]!.id, map7: map7[0]!.id })
   const topic = (await ok(service.from('topics').select('id, name').eq('map_id', map6[0]!.id).eq('name', 'Common fractions')))[0]!
   Object.assign(ids, { topic: topic.id })
   const [session] = await ok(
@@ -146,6 +175,7 @@ describe('the migration', () => {
     const made = await ensureOwnWorkspace(service, ids.thabo!, users.strangerParent!.id)
     expect(await twinOfChild(service, ids.thabo!)).toEqual({ id: made })
     ids.thaboTwin = made
+    ids.thaboSchool = (await ok(service.from('children').select('school_id').eq('id', made).single())).school_id
   })
 
   test('each grade is a private class with its own approved CAPS map', async () => {
@@ -176,7 +206,7 @@ describe('the migration', () => {
 describe('who reads the twin', () => {
   test('the learner reads the twin, its school, its classes, its topics and its sessions, beside the school child', async () => {
     const learner = users.learner!.client
-    const children = await ok(learner.from('children').select('id, private_of'))
+    const children = await childrenOf(learner)
     expect(children.map((c) => c.id).sort()).toEqual([ids.amina!, ids.twin!].sort())
     expect(await idsOf(learner, 'sessions')).toContain(ids.session)
     expect((await idsOf(learner, 'classes'))).toEqual(expect.arrayContaining([ids.cA!, ids.g6!, ids.g7!]))
@@ -186,9 +216,9 @@ describe('who reads the twin', () => {
 
   test('an approved parent reads the twin and its sessions, as they read the school child', async () => {
     const parent = users.parent!.client
-    const children = await ok(parent.from('children').select('id, private_of'))
+    const children = await childrenOf(parent)
     expect(children.map((c) => c.id).sort()).toEqual([ids.amina!, ids.twin!].sort())
-    expect(await ok(parent.from('children').select('id').is('private_of', null))).toEqual([{ id: ids.amina }])
+    expect((await childrenOf(parent, true)).map((c) => c.id)).toEqual([ids.amina])
     expect(await idsOf(parent, 'sessions')).toContain(ids.session)
     expect((await idsOf(parent, 'schools')).length).toBe(2)
   })
