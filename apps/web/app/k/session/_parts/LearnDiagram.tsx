@@ -5,6 +5,7 @@ import type { DiagramSpec } from '@jemma/profiling/schemas'
 import { DiagramView } from '@/components/diagrams'
 import type { LessonForChild } from '../[sessionId]/types'
 import { BarRows, rowFills, type Fill, type RowSpec } from './Bars'
+import { FractionText } from './Frac'
 import { DIAGRAM_ICON, LearnBadge } from './LearnCards'
 
 type Step = NonNullable<LessonForChild['diagram']>['steps'][number]
@@ -65,7 +66,9 @@ export function LearnDiagram({ lesson, onReady }: LearnDiagramProps) {
         <p className="m-0 text-[15px] font-semibold text-body">Learn</p>
         <LearnBadge icon={DIAGRAM_ICON}>Diagram</LearnBadge>
       </div>
-      <h1 className="m-0 text-[28px] leading-[1.15] font-bold tracking-[-0.015em]">{lesson.title}</h1>
+      <h1 className="m-0 text-[28px] leading-[1.15] font-bold tracking-[-0.015em]">
+        <FractionText text={lesson.title} size={34} rule={3} gap={4} side={4} />
+      </h1>
       <figure key={plays} className="m-0 flex flex-col gap-3.5 rounded-[24px] border border-line bg-card px-4 py-[18px]">
         <figcaption className="sr-only">{d.caption}</figcaption>
         {d.steps.map((step, i) => (
@@ -76,7 +79,7 @@ export function LearnDiagram({ lesson, onReady }: LearnDiagramProps) {
           >
             <span className="flex gap-2 text-[15px] font-semibold">
               <span className="flex size-[22px] flex-none items-center justify-center rounded-pill bg-ink text-[12px] text-white">{i + 1}</span>
-              {step.caption}
+              <FractionText text={step.caption} size={20} rule={2} gap={3} side={3} />
             </span>
             <Picture step={step} previous={d.steps[i - 1]} />
           </div>

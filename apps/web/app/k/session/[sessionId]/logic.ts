@@ -1,4 +1,4 @@
-import { nextDifficulty, nextStage, type Stage } from '@jemma/profiling/logic'
+import { markAnswer, missingPart, nextDifficulty, nextStage, type MissingPart, type Stage } from '@jemma/profiling/logic'
 import type { Question } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
@@ -107,6 +107,62 @@ export function adaptedOf(results: boolean[]): 'easier' | 'harder' | null {
   return now < before ? 'easier' : now > before ? 'harder' : null
 }
 
+/** What the child is asked to type for one question: it decides the boxes, the line under them and the keyboard. */
+export type AnswerShape =
+  | { kind: 'choice' }
+  /** One number is missing from a fraction in the question ("3/5 = ?/15"): the child types it where it is missing. */
+  | { kind: 'missing'; part: MissingPart }
+  | { kind: 'fraction' | 'mixed' | 'whole' | 'decimal' | 'money' | 'text' }
+
+export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices'>): AnswerShape {
+  if (q.choices?.length) return { kind: 'choice' }
+  const part = missingPart(q.prompt)
+  if (part) return { kind: 'missing', part }
+  return { kind: q.answerKind === 'choice' ? 'text' : q.answerKind }
+}
+
+/** What the child typed for a missing part, put back into its fraction: 9 with a known bottom of 15 is "9/15". */
+export const fillMissing = (part: MissingPart, typed: string) => (part.unknown === 'top' ? `${typed}/${part.known}` : `${part.known}/${typed}`)
+
+export type AnswerBoxes = { whole: string; top: string; bottom: string; text: string }
+
+/**
+ * The text sent for what the boxes on screen hold, or '' while a box that is shown is still empty.
+ * It is the text `markAnswer` already reads: "top/bottom", "whole top/bottom", "R12,50".
+ */
+export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
+  const [whole, top, bottom] = [boxes.whole.trim(), boxes.top.trim(), boxes.bottom.trim()]
+  // "12," is a number the child stopped typing: the comma at the end is not part of it.
+  const text = shape.kind === 'missing' || shape.kind === 'text' ? boxes.text.trim() : boxes.text.trim().replace(/[.,]+$/, '')
+  switch (shape.kind) {
+    case 'missing':
+      return text ? fillMissing(shape.part, text) : ''
+    case 'fraction':
+      return top && bottom ? `${top}/${bottom}` : ''
+    case 'mixed':
+      return whole && top && bottom ? `${whole} ${top}/${bottom}` : ''
+    case 'money':
+      return text ? `R${text}` : ''
+    default:
+      return text
+  }
+}
+
+/**
+ * Finishes what the child typed from the stored question, and marks it. A number typed for a missing part goes back
+ * into its fraction, and counts as right when the fraction OR the bare number matches the key (a key can be "9/15" or "9").
+ * A whole fraction, and every other question, is marked as typed. The server does this again whatever the browser sent.
+ */
+export function completeAnswer(q: Pick<Question, 'prompt' | 'answer' | 'choices'>, typed: string): { stored: string; correct: boolean } {
+  const text = typed.trim()
+  const part = q.choices?.length ? null : missingPart(q.prompt)
+  if (part && /^\d+$/.test(text)) {
+    const stored = fillMissing(part, text)
+    return { stored, correct: markAnswer(stored, q.answer).correct || markAnswer(text, q.answer).correct }
+  }
+  return { stored: text, correct: markAnswer(text, q.answer).correct }
+}
+
 /** The text of an answer: a choice letter becomes the choice itself. */
 export function answerText(q: Question, value: string): string {
   const letter = /^\(?([a-d])\)?\.?$/i.exec(value.trim())
@@ -123,7 +179,8 @@ export function missedOf(items: StoredItem[]): MissedQuestion[] {
       prompt: item.question.prompt,
       render: item.question.render,
       ...(item.question.terms ? { terms: item.question.terms } : {}),
-      wrote: answerText(item.question, item.answer),
+      // An answer saved before the missing number was put back into its fraction is shown completed too.
+      wrote: answerText(item.question, completeAnswer(item.question, item.answer).stored),
       right: answerText(item.question, item.question.answer),
       why: item.question.why,
       rightWay: item.question.rightWay,

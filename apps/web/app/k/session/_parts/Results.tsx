@@ -1,14 +1,23 @@
 'use client'
 
-import { Frac, isFraction } from './Frac'
+import { Frac, FractionText, isFraction, withFractions } from './Frac'
 import { Bar, type Fill } from './Bars'
 import { Gem } from './Gems'
 import type { MissedQuestion } from '../[sessionId]/logic'
 
+/** An answer as the child reads it: a fraction stacked, a mixed number as its whole number and a stacked fraction. */
 function Stacked({ value, size, rule, gap, side }: { value: string; size: number; rule: number; gap: number; side: number }) {
-  if (!isFraction(value)) return <span style={{ fontSize: size }} className="font-bold">{value}</span>
-  const [n, d] = value.split('/')
-  return <Frac top={n!} bottom={d!} size={size} rule={rule} gap={gap} side={side} />
+  if (isFraction(value)) {
+    const [n, d] = value.split('/')
+    return <Frac top={n!} bottom={d!} size={size} rule={rule} gap={gap} side={side} />
+  }
+  const parts = withFractions(value, (n, d, k) => <Frac key={k} top={n} bottom={d} size={size} rule={rule} gap={gap} side={side} />)
+  if (parts.every((p) => typeof p === 'string')) return <span style={{ fontSize: size }} className="font-bold">{value}</span>
+  return (
+    <span className="flex items-center gap-1.5 font-bold" style={{ fontSize: size }}>
+      {parts.map((part, i) => (typeof part === 'string' ? (part.trim() ? <span key={`t${i}`}>{part.trim()}</span> : null) : part))}
+    </span>
+  )
 }
 
 /** The right answer drawn as bars: the first amount converted in coral, the second added in ink. */
@@ -45,15 +54,15 @@ export function Results({ firstName, missed }: { firstName: string; missed: Miss
       </div>
       {missed.map((m) => (
         <article key={m.n} aria-labelledby={`r${m.n}`} className="flex flex-col gap-3.5 rounded-[24px] border border-line bg-card p-[18px]">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <h2 id={`r${m.n}`} className="m-0 text-[14px] font-semibold text-body">Question {m.n}</h2>
-            <span className="flex items-center gap-2 text-[24px] font-bold">
+            <span data-question="true" className="flex items-center justify-end gap-2 text-right text-[24px] font-bold">
               {m.terms && m.terms.length === 2 ? (
                 <>
                   <Stacked value={m.terms[0]!} size={24} rule={2.5} gap={3} side={3} />+<Stacked value={m.terms[1]!} size={24} rule={2.5} gap={3} side={3} />
                 </>
               ) : (
-                m.prompt
+                <FractionText text={m.prompt} size={26} rule={2.5} gap={3} side={3} />
               )}
             </span>
           </div>
@@ -67,10 +76,10 @@ export function Results({ firstName, missed }: { firstName: string; missed: Miss
               <Stacked value={m.right} size={20} rule={2} gap={2} side={3} />
             </span>
           </div>
-          <p className="m-0 text-[16px] leading-[1.5]"><strong className="font-bold">Why:</strong> {m.why}</p>
+          <p className="m-0 text-[16px] leading-[1.5]"><strong className="font-bold">Why:</strong> <FractionText text={m.why} size={22} rule={2} gap={3} side={3} /></p>
           <div className="flex flex-col gap-2 rounded-[16px] bg-[#F7F6FB] p-3.5">
             <span className="text-[15px] font-bold">The right way</span>
-            <span className="text-[16px] leading-[1.5]">{m.rightWay}</span>
+            <span className="text-[16px] leading-[1.5]"><FractionText text={m.rightWay} size={22} rule={2} gap={3} side={3} /></span>
             <RightBar m={m} />
           </div>
         </article>

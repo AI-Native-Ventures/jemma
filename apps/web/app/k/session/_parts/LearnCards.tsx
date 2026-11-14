@@ -4,6 +4,7 @@ import type { DiagramSpec } from '@jemma/profiling/schemas'
 import { DiagramView } from '@/components/diagrams'
 import type { LessonForChild } from '../[sessionId]/types'
 import { BarRows, rowFills } from './Bars'
+import { FractionText } from './Frac'
 
 export function LearnBadge({ children, icon }: { children: string; icon: React.ReactNode }) {
   return (
@@ -64,11 +65,17 @@ function CardBody({ text }: { text: string }) {
     return (
       <p className="m-0 text-[19px] leading-[1.5]">
         {m[1]}
-        <strong className="font-bold whitespace-nowrap">{m[2]}</strong>
+        <strong className="font-bold whitespace-nowrap">
+          <FractionText text={m[2]!} size={26} rule={2.5} gap={3} side={3} />
+        </strong>
       </p>
     )
   }
-  return <p className="m-0 text-[19px] leading-[1.5]">{text}</p>
+  return (
+    <p className="m-0 text-[19px] leading-[1.5]">
+      <FractionText text={text} size={26} rule={2.5} gap={3} side={3} />
+    </p>
+  )
 }
 
 export type LearnCardsProps = { lesson: LessonForChild; card: number; onBack: () => void; onNext: () => void }
@@ -84,7 +91,9 @@ export function LearnCards({ lesson, card, onBack, onNext }: LearnCardsProps) {
         <LearnBadge icon={CARDS_ICON}>Reading cards</LearnBadge>
       </div>
       <article className="flex flex-1 flex-col gap-[18px] rounded-[28px] border border-line bg-card px-[22px] py-6 shadow-[0_10px_30px_rgba(31,29,54,0.07)]">
-        <h1 className="m-0 text-[28px] leading-[1.15] font-bold tracking-[-0.015em]">{current.heading}</h1>
+        <h1 className="m-0 text-[28px] leading-[1.15] font-bold tracking-[-0.015em]">
+          <FractionText text={current.heading} size={34} rule={3} gap={4} side={4} />
+        </h1>
         <CardBody text={current.body} />
         {current.diagram ? <CardPicture spec={current.diagram} /> : null}
       </article>
