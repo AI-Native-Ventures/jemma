@@ -70,14 +70,14 @@ async function isHeld(db: JemmaDb, testId: string): Promise<boolean> {
  * The learner's planned session for today or earlier, the one the home starts (the latest that is due), and whether its lesson has
  * questions yet. Null when there is none. The plan and the postcondition of `practice.requested` both ask it.
  */
-async function dueSession(db: JemmaDb, childId: string, now: Date): Promise<{ written: boolean } | null> {
+async function dueSession(db: JemmaDb, childId: string, now: Date): Promise<{ id: string; written: boolean } | null> {
   const today = now.toISOString().slice(0, 10)
   const due = await ok(db.from('sessions').select('id, lesson_id, planned_for').eq('child_id', childId).eq('status', 'planned').lte('planned_for', today).order('planned_for'))
   const latest = due[due.length - 1]
   if (!latest) return null
   const lesson = latest.lesson_id ? await maybe(db.from('lessons').select('content').eq('id', latest.lesson_id).maybeSingle()) : null
   const questions = (lesson?.content as { questions?: unknown } | null)?.questions
-  return { written: Array.isArray(questions) && questions.length > 0 }
+  return { id: latest.id, written: Array.isArray(questions) && questions.length > 0 }
 }
 
 /**
@@ -123,8 +123,11 @@ export async function jobPlan(event: JemmaEvent, db: JemmaDb, now: Date = new Da
       // write it. None: plan one for today (code picks the topic), then write its lesson.
       const due = await dueSession(db, event.childId, now)
       if (due?.written) return []
-      const write: JobStep = { job: 'write_lesson', ids: { childId: event.childId } }
-      return due ? [write] : [{ job: 'plan_next_session', ids: { childId: event.childId, practice: '1' } }, write]
+      // The lesson is written for THIS session: the learner may have another one planned for a later day, and write_lesson takes the latest.
+      const write: JobStep = { job: 'write_lesson', ids: due ? { childId: event.childId, sessionId: due.id } : { childId: event.childId } }
+      // What the learner chose rides on the plan step (a choice is only planned when it is theirs to make: see `resolveChoice`).
+      const choice = { ...(event.topicName ? { topicName: event.topicName } : {}), ...(event.topicId && event.topicName ? { topicId: event.topicId } : {}) }
+      return due ? [write] : [{ job: 'plan_next_session', ids: { childId: event.childId, practice: '1', ...choice } }, write]
     }
     case 'test.shared':
       // The teacher shared the results: now each learner with a marked paper gets the next session, the lesson and the guidance.

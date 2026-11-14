@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { pickPractice, type PracticeInput } from '../../src/logic'
+import { orderOpenGaps, pickPractice, resolveChoice, type ChoiceRules, type PracticeInput } from '../../src/logic'
 
 // What a learner practises when nothing is planned: a fixed gap kept fixed, else the weakest strand of the past records, else the first topic
 // of the term. One pure function: no database, no clock but the `now` it is given. An open gap never comes here (the planner plans it).
@@ -195,5 +195,84 @@ describe('map: the first topic of the current term', () => {
 describe('nothing', () => {
   test('no fixed gap, no marks and no map gives null', () => {
     expect(pickPractice(base)).toBeNull()
+  })
+})
+
+describe('orderOpenGaps: the order the planner takes open gaps in', () => {
+  const g = (name: string, stage: 'new' | 'practising', created: string, id: string | null = null) => ({ topic_id: id, name, stage, created_at: created })
+  const none = () => [] as string[]
+
+  test('lowest stage first, then the oldest', () => {
+    const gaps = [g('B', 'practising', '2026-10-01'), g('C', 'new', '2026-10-05'), g('A', 'new', '2026-10-02')]
+    expect(orderOpenGaps(gaps, none).map((x) => x.name)).toEqual(['A', 'C', 'B'])
+  })
+
+  test('the basic a gap needs comes first when it is a gap too, down the chain, and the rest keep their order', () => {
+    const gaps = [g('Add', 'new', '2026-10-01', 't-add'), g('Equiv', 'practising', '2026-10-09', 't-equiv'), g('Dec', 'new', '2026-10-03', 't-dec'), g('Pieces', 'practising', '2026-10-10', 't-pieces')]
+    const needs: Record<string, string[]> = { 't-add': ['t-equiv'], 't-equiv': ['t-pieces'] }
+    expect(orderOpenGaps(gaps, (id) => needs[id] ?? []).map((x) => x.name)).toEqual(['Pieces', 'Add', 'Dec', 'Equiv'])
+  })
+
+  test('a loop of prerequisites ends, and no gap is lost or repeated', () => {
+    const gaps = [g('A', 'new', '2026-10-01', 'a'), g('B', 'new', '2026-10-02', 'b')]
+    const out = orderOpenGaps(gaps, (id) => (id === 'a' ? ['b'] : ['a']))
+    expect(out.map((x) => x.name).sort()).toEqual(['A', 'B'])
+  })
+
+  test('it does not change the list it is given, and no gap gives no order', () => {
+    const gaps = [g('B', 'practising', '2026-10-01'), g('A', 'new', '2026-10-02')]
+    orderOpenGaps(gaps, none)
+    expect(gaps.map((x) => x.name)).toEqual(['B', 'A'])
+    expect(orderOpenGaps([], none)).toEqual([])
+  })
+})
+
+describe('resolveChoice: the learner\'s choice is theirs to make', () => {
+  const rules: ChoiceRules = {
+    mapTopics: [
+      { id: 't-add', name: 'Adding fractions', family: 'fractions' },
+      { id: 't-dec', name: 'Adding decimals', family: 'decimals' },
+    ],
+    gaps: [
+      { topicId: 't-add', topicName: 'Adding fractions' },
+      { topicId: null, topicName: 'Mental sums' },
+    ],
+    subject: 'Mathematics',
+  }
+  const choose = (topicName: string, topicId?: string | null, over: Partial<ChoiceRules> = {}) => resolveChoice({ topicName, topicId }, { ...rules, ...over })
+
+  test('a topic of the map is accepted by id, or by name (case and spaces do not matter), and comes back in the map\'s own words', () => {
+    expect(choose('anything', 't-dec')).toEqual({ topicName: 'Adding decimals', topicId: 't-dec', family: 'decimals', kind: 'map' })
+    expect(choose('  adding DECIMALS ')).toEqual({ topicName: 'Adding decimals', topicId: 't-dec', family: 'decimals', kind: 'map' })
+    expect(choose('Adding decimals', 'some-other-id')).toMatchObject({ topicId: 't-dec', kind: 'map' })
+  })
+
+  test('the name of one of the learner\'s gaps is accepted, with the topic id and family of the map when it has them', () => {
+    expect(choose('mental sums')).toEqual({ topicName: 'Mental sums', topicId: null, family: '', kind: 'gap' })
+    expect(choose('Mental sums', null, { gaps: [{ topicId: null, topicName: 'Adding decimals' }, ...rules.gaps] })).toMatchObject({ kind: 'gap' })
+    expect(choose('Old topic', null, { gaps: [{ topicId: null, topicName: 'Old topic' }] })).toMatchObject({ topicName: 'Old topic', topicId: null, kind: 'gap' })
+  })
+
+  test('the label of a strand of the learner\'s subject is accepted, with its key as the family and no topic id', () => {
+    expect(choose('Fractions')).toEqual({ topicName: 'Fractions', topicId: null, family: 'fractions', kind: 'strand' })
+    expect(choose('shapes and SPACE')).toEqual({ topicName: 'Shapes and space', topicId: null, family: 'shapes', kind: 'strand' })
+    expect(choose('Whole numbers', null, { mapTopics: [] })).toMatchObject({ family: 'whole_numbers', kind: 'strand' })
+  })
+
+  test('a topic of another class\'s map, a name nobody knows and an empty name are refused', () => {
+    expect(choose('Angles', 't-of-another-class')).toBeNull()
+    expect(choose('Quadratic equations')).toBeNull()
+    expect(choose('')).toBeNull()
+    expect(choose('   ', 't-add')).toBeNull()
+  })
+
+  test('a strand of another subject is refused, and with no subject no strand is offered', () => {
+    expect(choose('Reading')).toBeNull()
+    expect(choose('Fractions', null, { subject: null })).toBeNull()
+    expect(choose('Reading', null, { subject: 'English' })).toMatchObject({ kind: 'strand', family: 'reading' })
+  })
+
+  test('the key of a strand is not its label: only the label is accepted', () => {
+    expect(choose('whole_numbers')).toBeNull()
   })
 })

@@ -2,7 +2,8 @@
 // A learner with an open gap never comes here: the planner plans the gap.
 
 import { termOf } from './long-view'
-import { canonicalFamily } from './strands'
+import { canonicalFamily, canonicalSubject, strandLabel, strandOrder } from './strands'
+import type { Stage } from './types'
 
 export type PracticePick = {
   topicName: string
@@ -92,5 +93,63 @@ export function pickPractice(input: PracticeInput): PracticePick | null {
   }
 
   // d. Nothing to practise.
+  return null
+}
+
+/**
+ * The open gaps in the order the planner takes them: lowest stage first (new, then practising), then the oldest; the first is the
+ * basic it needs when that is a gap too (and so on down the prerequisites). The planner plans the first. `prerequisitesOf` gives the topic
+ * ids a topic needs. Fixed gaps are not open: leave them out before asking.
+ */
+export function orderOpenGaps<G extends { topic_id: string | null; stage: Stage; created_at: string }>(open: G[], prerequisitesOf: (topicId: string) => readonly string[]): G[] {
+  const rank: Record<Stage, number> = { new: 0, practising: 1, fixed: 2 }
+  const gaps = [...open].sort((a, b) => rank[a.stage] - rank[b.stage] || a.created_at.localeCompare(b.created_at))
+  const gapAt = (id: string | null) => (id ? gaps.find((g) => g.topic_id === id) : undefined)
+  let first = gaps[0]
+  for (const seen = new Set<string>(); first && first.topic_id && !seen.has(first.topic_id); ) {
+    seen.add(first.topic_id)
+    const basic = prerequisitesOf(first.topic_id).map(gapAt).find((g) => g)
+    if (!basic) break
+    first = basic
+  }
+  return first ? [first, ...gaps.filter((g) => g !== first)] : []
+}
+
+/** What a learner asks to practise: a topic of the map by id or name, a gap by name, or a strand by its label. */
+export type PracticeChoice = { topicId?: string | null; topicName: string }
+
+/** The choice as the planner plans it, in the words of what it found (never the words the learner typed). */
+export type ChosenTopic = { topicName: string; topicId: string | null; family: string; kind: 'map' | 'gap' | 'strand' }
+
+export type ChoiceRules = {
+  /** The topics of the approved maps of the classes the learner is in. */
+  mapTopics: { id: string; name: string; family: string }[]
+  /** The learner's gaps, open or fixed. */
+  gaps: { topicId: string | null; topicName: string }[]
+  /** The subject of the learner's class, or null when there is none. */
+  subject: string | null
+}
+
+/**
+ * Whether a choice is the learner's to make, and what it is: a topic of an approved map of a class the learner is in (by id, or by name),
+ * or the name of one of the learner's gaps, or the label of a strand of the learner's subject. Anything else, and an empty name, is
+ * refused (null). The planner and the server action that asks for a practice both use it, so they refuse the same things.
+ */
+export function resolveChoice(choice: PracticeChoice, rules: ChoiceRules): ChosenTopic | null {
+  const name = choice.topicName.trim()
+  if (!name) return null
+  const byName = (t: { name: string }) => same(t.name, name)
+  const mapTopic = (rules.mapTopics.find((t) => !!choice.topicId && t.id === choice.topicId) ?? rules.mapTopics.find(byName)) ?? null
+  if (mapTopic) return { topicName: mapTopic.name, topicId: mapTopic.id, family: mapTopic.family, kind: 'map' }
+  const gap = rules.gaps.find((g) => same(g.topicName, name))
+  if (gap) {
+    const topic = rules.mapTopics.find((t) => (gap.topicId !== null && t.id === gap.topicId) || same(t.name, gap.topicName))
+    return { topicName: gap.topicName, topicId: gap.topicId ?? topic?.id ?? null, family: topic?.family ?? '', kind: 'gap' }
+  }
+  if (rules.subject) {
+    const subject = canonicalSubject(rules.subject)
+    const family = strandOrder(subject).find((f) => same(strandLabel(subject, f), name))
+    if (family) return { topicName: strandLabel(subject, family), topicId: null, family, kind: 'strand' }
+  }
   return null
 }
