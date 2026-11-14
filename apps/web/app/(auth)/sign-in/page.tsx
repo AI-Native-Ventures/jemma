@@ -2,11 +2,14 @@ import Link from 'next/link'
 import { IconLabel } from '@/components/ui/IconLabel'
 import { Wordmark } from '@/components/install'
 import { colors } from '../_parts'
+import { CodeSignInForm } from './CodeSignInForm'
 import { SignInForm } from './SignInForm'
 
 export const metadata = { title: 'Sign in · Jemma' }
 
-export default function SignInPage() {
+/** `?method=code` is the link "Email me a code instead". `?email=` is the email the sign-up page found already has an account. */
+export default async function SignInPage({ searchParams }: { searchParams: Promise<{ method?: string | string[]; email?: string | string[] }> }) {
+  const { method, email } = await searchParams
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '72px 24px 36px' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -16,7 +19,7 @@ export default function SignInPage() {
         </p>
       </div>
 
-      <SignInForm />
+      {method === 'code' ? <CodeSignInForm /> : <SignInForm email={typeof email === 'string' ? email.slice(0, 254) : undefined} />}
 
       <div aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '28px 0 20px' }}>
         <span style={{ flex: 1, height: 1, background: colors.line }} />
