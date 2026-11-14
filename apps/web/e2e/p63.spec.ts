@@ -156,6 +156,7 @@ test.describe('a teacher in the demo school', () => {
     try {
       const kid = await learner.newPage()
       await kid.goto('/k/sign-in')
+      await check(kid.getByText('0 of 4 digits typed')).toBeAttached()
       await kid.getByLabel('Your code').fill(code)
       for (const d of '4821') await kid.getByRole('button', { name: d, exact: true }).click()
       await kid.getByRole('button', { name: 'Sign in' }).click()

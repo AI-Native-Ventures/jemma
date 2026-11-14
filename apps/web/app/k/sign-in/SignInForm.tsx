@@ -2,7 +2,7 @@
 
 import { PendingButton } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
-import { useState, useTransition, type CSSProperties } from 'react'
+import { useEffect, useState, useTransition, type CSSProperties } from 'react'
 import { signInChild } from '@/lib/auth'
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'] as const
@@ -23,6 +23,10 @@ const keyStyle: CSSProperties = {
 }
 
 const hidden: CSSProperties = { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }
+/** The line shown in place of the digit count until the form is ready: seen, not only heard. */
+const gettingReady: CSSProperties = { fontSize: 16, fontWeight: 600, lineHeight: 1.3, color: '#5D5A73' }
+/** The kit's disabled look (the same class the kit's Button uses): the keypad and Sign in are dimmed until the form is ready. */
+const DIM = 'disabled:opacity-50'
 
 const MESSAGES = {
   wrong: 'That code or PIN is not right. Check it and try again.',
@@ -30,13 +34,19 @@ const MESSAGES = {
   failed: 'Jemma could not sign you in. Try again.',
 } as const
 
-/** Board `child-sign-in`: the family code and a 4-digit PIN keypad. */
+/**
+ * Board `child-sign-in`: the family code and a 4-digit PIN keypad.
+ * The keys do nothing until React has hydrated the page, so until then (the server's HTML) the keypad and Sign in are drawn disabled and dimmed,
+ * with "Getting ready..." in place of the digit count. The moment the form has mounted they wake up. A tap is never silently lost.
+ */
 export function SignInForm() {
   const router = useRouter()
   const [code, setCode] = useState('')
   const [pin, setPin] = useState('')
   const [error, setError] = useState<keyof typeof MESSAGES | null>(null)
   const [pending, start] = useTransition()
+  const [ready, setReady] = useState(false)
+  useEffect(() => setReady(true), [])
 
   const press = (d: string) => setPin((p) => (p.length < 4 ? p + d : p))
 
@@ -90,21 +100,21 @@ export function SignInForm() {
               />
             ))}
           </span>
-          <span role="status" style={hidden}>
-            {pin.length} of 4 digits typed
+          <span role="status" style={ready ? hidden : gettingReady}>
+            {ready ? `${pin.length} of 4 digits typed` : 'Getting ready...'}
           </span>
         </span>
         <span style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
           {KEYS.map((d) => (
-            <button key={d} type="button" onClick={() => press(d)} style={keyStyle}>
+            <button key={d} type="button" disabled={!ready} className={DIM} onClick={() => press(d)} style={keyStyle}>
               {d}
             </button>
           ))}
           <span aria-hidden="true" />
-          <button type="button" onClick={() => press('0')} style={keyStyle}>
+          <button type="button" disabled={!ready} className={DIM} onClick={() => press('0')} style={keyStyle}>
             0
           </button>
-          <button type="button" aria-label="Delete" onClick={() => setPin((p) => p.slice(0, -1))} style={keyStyle}>
+          <button type="button" aria-label="Delete" disabled={!ready} className={DIM} onClick={() => setPin((p) => p.slice(0, -1))} style={keyStyle}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7z" />
               <path d="m12.5 9.5 5 5M17.5 9.5l-5 5" />
@@ -119,8 +129,9 @@ export function SignInForm() {
       )}
       <PendingButton pending={pending}
         type="submit"
-        disabled={pending}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 64, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 20, border: 'none', background: '#FF6A4D', color: '#1F1D36', fontSize: 20, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', opacity: pending ? 0.6 : 1 }}
+        disabled={pending || !ready}
+        className={DIM}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 64, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 20, border: 'none', background: '#FF6A4D', color: '#1F1D36', fontSize: 20, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', opacity: pending ? 0.6 : undefined }}
       >
         Sign in
       </PendingButton>

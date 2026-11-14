@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import type { CoordinatePlaneSpec } from '@jemma/profiling/schemas'
 import { BODY, CORAL, CORAL_TEXT, INK, Line, Svg, WHITE, fmt, type Variant } from './shared'
 import { defaultStep, graphEquation, sampleGraph, ticksOf, type Pt } from './plane-math'
@@ -78,6 +79,20 @@ function Num(p: { x: number; y: number; anchor: 'start' | 'middle' | 'end'; size
 
 const pathOf = (piece: Pt[], px: (x: number) => number, py: (y: number) => number) => piece.map((p, i) => `${i ? 'L' : 'M'}${r1(px(p.x))} ${r1(py(p.y))}`).join(' ')
 
+/** About how wide one letter of a graph label is (bold, 14 px), with the halo: enough to keep the words inside the grid, not a measurement. */
+const LABEL_LETTER = 8.7
+const LABEL_HALO = 6
+/** Where the label of a graph goes: beside the end of the curve, inside the grid. It is first put to the right of the end (or to the left, near the right side), then moved so that all of its words are inside. */
+function graphLabelAt(end: { x: number; y: number }, text: string) {
+  const left = LEFT + 3
+  const right = LEFT + PLOT_W - 3
+  const width = text.length * LABEL_LETTER + LABEL_HALO
+  const flip = end.x > LEFT + PLOT_W * 0.7 || end.x + 6 + width > right
+  const x = flip ? Math.min(right, Math.max(left + width, end.x - 6)) : Math.max(left, end.x + 6)
+  const y = Math.min(TOP + PLOT_H - 4, Math.max(TOP + 12, end.y + (end.y < TOP + 20 ? 14 : -8)))
+  return { x, y, anchor: flip ? ('end' as const) : ('start' as const) }
+}
+
 /**
  * Graphs on a grid. The model gives the frame, the graphs by their constants and a few points; this draws it all: a light grid, the axes with
  * numbers every `step` (at most 10 numbers an axis when the step is not given), x and y named at the ends. Each graph is sampled here, and a
@@ -93,9 +108,22 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
   const xTicks = ticksOf(xMin, xMax, defaultStep(xMin, xMax, props.step))
   const yTicks = ticksOf(yMin, yMax, defaultStep(yMin, yMax, props.step))
   const origin = xMin <= 0 && xMax >= 0 && yMin <= 0 && yMax >= 0
+  /** One id for each drawing, so that two planes on one page never share a clipPath. */
+  const clipId = `${useId()}-plot`
+  const graphs = (props.graphs ?? []).map((g, i) => {
+    const pieces = sampleGraph(g, frame)
+    const longest = pieces.reduce<Pt[] | null>((best, p) => (!best || p.length > best.length ? p : best), null)
+    return { g, i, pieces, end: longest?.at(-1), colour: GRAPH[Math.min(i, GRAPH.length - 1)]! }
+  })
+  const points = (props.points ?? []).filter((p) => p.x >= xMin && p.x <= xMax && p.y >= yMin && p.y <= yMax)
 
   return (
     <Svg width={W} height={H} label={describeCoordinatePlane(props, variant)}>
+      <defs>
+        <clipPath id={clipId}>
+          <rect x={LEFT} y={TOP} width={PLOT_W} height={PLOT_H} />
+        </clipPath>
+      </defs>
       <rect x={LEFT} y={TOP} width={PLOT_W} height={PLOT_H} fill={WHITE} stroke={GRID} strokeWidth={1} />
       {xTicks.map((v) => (
         <line key={`gx${v}`} data-grid="x" x1={r1(px(v))} y1={TOP} x2={r1(px(v))} y2={TOP + PLOT_H} stroke={GRID} strokeWidth={1} />
@@ -106,34 +134,14 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
       <line data-axis-line="x" x1={LEFT} y1={r1(xAxisY)} x2={LEFT + PLOT_W} y2={r1(xAxisY)} stroke={INK} strokeWidth={1.5} strokeLinecap="round" />
       <line data-axis-line="y" x1={r1(yAxisX)} y1={TOP} x2={r1(yAxisX)} y2={TOP + PLOT_H} stroke={INK} strokeWidth={1.5} strokeLinecap="round" />
       {xTicks.filter((v) => v !== 0).map((v) => (
-        <g key={`tx${v}`}>
-          <Line x1={r1(px(v))} y1={r1(xAxisY - 3)} x2={r1(px(v))} y2={r1(xAxisY + 3)} stroke={INK} w={1.4} />
-          <Num x={px(v)} y={xAxisY + 17} anchor="middle" extra={{ 'data-tick': 'x' }}>{numeral(v)}</Num>
-        </g>
+        <Line key={`tx${v}`} x1={r1(px(v))} y1={r1(xAxisY - 3)} x2={r1(px(v))} y2={r1(xAxisY + 3)} stroke={INK} w={1.4} />
       ))}
       {yTicks.filter((v) => v !== 0).map((v) => (
-        <g key={`ty${v}`}>
-          <Line x1={r1(yAxisX - 3)} y1={r1(py(v))} x2={r1(yAxisX + 3)} y2={r1(py(v))} stroke={INK} w={1.4} />
-          <Num x={yAxisX - 7} y={py(v) + 4} anchor="end" extra={{ 'data-tick': 'y' }}>{numeral(v)}</Num>
-        </g>
+        <Line key={`ty${v}`} x1={r1(yAxisX - 3)} y1={r1(py(v))} x2={r1(yAxisX + 3)} y2={r1(py(v))} stroke={INK} w={1.4} />
       ))}
-      {origin && (
-        <Num x={yAxisX - 7} y={xAxisY + 17} anchor="end" extra={{ 'data-zero': '' }}>
-          0
-        </Num>
-      )}
-      <text data-axis="x" x={LEFT + PLOT_W + 9} y={r1(xAxisY + 5)} fontSize={15} fontStyle="italic" fontWeight={600} fill={INK} textAnchor="start">
-        x
-      </text>
-      <text data-axis="y" x={r1(yAxisX)} y={TOP - 8} fontSize={15} fontStyle="italic" fontWeight={600} fill={INK} textAnchor="middle">
-        y
-      </text>
-      {(props.graphs ?? []).map((g, i) => {
-        const colour = GRAPH[Math.min(i, GRAPH.length - 1)]!
-        const pieces = sampleGraph(g, frame)
-        const longest = pieces.reduce<Pt[] | null>((best, p) => (!best || p.length > best.length ? p : best), null)
-        const end = longest?.at(-1)
-        return (
+      {/* The graphs and the markers are clipped to the plot area, so that nothing is drawn past the grid (the end of a line is as wide as its stroke). */}
+      <g clipPath={`url(#${clipId})`}>
+        {graphs.map(({ i, pieces, colour }) => (
           <g key={`g${i}`}>
             {pieces.map((piece, k) => (
               <path
@@ -148,37 +156,48 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
                 strokeLinejoin="round"
               />
             ))}
-            {g.label && end && (
-              <Num
-                x={px(end.x) + (px(end.x) > LEFT + PLOT_W * 0.7 ? -6 : 6)}
-                y={Math.max(TOP + 12, py(end.y) + (py(end.y) < TOP + 20 ? 14 : -8))}
-                anchor={px(end.x) > LEFT + PLOT_W * 0.7 ? 'end' : 'start'}
-                size={14}
-                weight={700}
-                fill={colour.text}
-                extra={{ 'data-graph-label': String(i) }}
-              >
-                {g.label}
-              </Num>
-            )}
           </g>
+        ))}
+        {points.map((p, i) => (
+          <circle key={`p${i}`} data-point={i} cx={r1(px(p.x))} cy={r1(py(p.y))} r={4.8} fill={INK} stroke={WHITE} strokeWidth={1.6} />
+        ))}
+      </g>
+      {/* The numbers, the axis names and the labels are not clipped, and sit over the graphs (their white halo keeps them readable where a line crosses). */}
+      {xTicks.filter((v) => v !== 0).map((v) => (
+        <Num key={`nx${v}`} x={px(v)} y={xAxisY + 17} anchor="middle" extra={{ 'data-tick': 'x' }}>{numeral(v)}</Num>
+      ))}
+      {yTicks.filter((v) => v !== 0).map((v) => (
+        <Num key={`ny${v}`} x={yAxisX - 7} y={py(v) + 4} anchor="end" extra={{ 'data-tick': 'y' }}>{numeral(v)}</Num>
+      ))}
+      {origin && (
+        <Num x={yAxisX - 7} y={xAxisY + 17} anchor="end" extra={{ 'data-zero': '' }}>
+          0
+        </Num>
+      )}
+      <text data-axis="x" x={LEFT + PLOT_W + 9} y={r1(xAxisY + 5)} fontSize={15} fontStyle="italic" fontWeight={600} fill={INK} textAnchor="start">
+        x
+      </text>
+      <text data-axis="y" x={r1(yAxisX)} y={TOP - 8} fontSize={15} fontStyle="italic" fontWeight={600} fill={INK} textAnchor="middle">
+        y
+      </text>
+      {graphs.map(({ g, i, end, colour }) => {
+        if (!g.label || !end) return null
+        const at = graphLabelAt({ x: px(end.x), y: py(end.y) }, g.label)
+        return (
+          <Num key={`gl${i}`} x={at.x} y={at.y} anchor={at.anchor} size={14} weight={700} fill={colour.text} extra={{ 'data-graph-label': String(i) }}>
+            {g.label}
+          </Num>
         )
       })}
-      {(props.points ?? [])
-        .filter((p) => p.x >= xMin && p.x <= xMax && p.y >= yMin && p.y <= yMax)
-        .map((p, i) => {
-          const near = px(p.x) > LEFT + PLOT_W - 44
-          return (
-            <g key={`p${i}`}>
-              <circle data-point={i} cx={r1(px(p.x))} cy={r1(py(p.y))} r={4.8} fill={INK} stroke={WHITE} strokeWidth={1.6} />
-              {p.label && (
-                <Num x={px(p.x) + (near ? -8 : 8)} y={py(p.y) - 8} anchor={near ? 'end' : 'start'} size={14} weight={700} fill={INK} extra={{ 'data-point-label': String(i) }}>
-                  {p.label}
-                </Num>
-              )}
-            </g>
-          )
-        })}
+      {points.map((p, i) => {
+        if (!p.label) return null
+        const near = px(p.x) > LEFT + PLOT_W - 44
+        return (
+          <Num key={`pl${i}`} x={px(p.x) + (near ? -8 : 8)} y={py(p.y) - 8} anchor={near ? 'end' : 'start'} size={14} weight={700} fill={INK} extra={{ 'data-point-label': String(i) }}>
+            {p.label}
+          </Num>
+        )
+      })}
     </Svg>
   )
 }
