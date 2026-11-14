@@ -14,6 +14,8 @@ export type LessonForChild = {
   tryCount: number
   /** The next unanswered question: warm-up 1 on a fresh run, or where the child left off. */
   first: QuestionForChild | null
+  /** The five questions of a practice answered on paper, numbered 1 to 5, without answers. Empty (or missing) when the lesson cannot put five on paper. */
+  paper?: QuestionForChild[]
 }
 
 export type FinishedSession = {

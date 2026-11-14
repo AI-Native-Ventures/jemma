@@ -1,5 +1,5 @@
-/** The functions the two upload routes (app/t/upload, app/p/upload) will call. The names are the routes' own, not the server's. */
-export type UploadAction = 'uploadCurriculum' | 'uploadMemo' | 'addPaper' | 'uploadScans' | 'addPage' | 'retakePaper' | 'snapHomework'
+/** The functions the three upload routes (app/t/upload, app/p/upload, app/k/upload) will call. The names are the routes' own, not the server's. */
+export type UploadAction = 'uploadCurriculum' | 'uploadMemo' | 'addPaper' | 'uploadScans' | 'addPage' | 'retakePaper' | 'snapHomework' | 'snapPractice'
 
 /**
  * Sends files to the server. Every screen that sends file bytes uses this, never a form action: Cloudflare's edge refuses a
@@ -13,7 +13,7 @@ export type UploadAction = 'uploadCurriculum' | 'uploadMemo' | 'addPaper' | 'upl
  * A form action refreshed the screen by itself when it called `revalidatePath`. A fetch does not: the caller calls
  * `router.refresh()` where the screen relied on that.
  */
-export async function postFiles<T>(space: 't' | 'p', action: UploadAction, args: string[], form: FormData): Promise<T> {
+export async function postFiles<T>(space: 't' | 'p' | 'k', action: UploadAction, args: string[], form: FormData): Promise<T> {
   const body = new FormData()
   for (const [key, value] of form) body.append(key, value)
   body.set('__action', action)

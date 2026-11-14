@@ -27,11 +27,15 @@ export async function verifyHandover(value: string | undefined, now = Date.now()
   return { sessionId, childId }
 }
 
-/** True when the cookie covers this path: the session it was signed for, or the hand-back screen. */
+/**
+ * True when the cookie covers this path: the session it was signed for, the hand-back screen, or the learner's upload route (the child may answer
+ * on paper on the parent's phone: `snapPractice` checks the child and the session itself).
+ */
 export async function handoverAllows(cookie: string | undefined, pathname: string): Promise<{ sessionId: string; childId: string } | null> {
   const h = await verifyHandover(cookie)
   if (!h) return null
   if (pathname === '/k/done' || pathname.startsWith('/k/done/')) return h
+  if (pathname === '/k/upload') return h
   if (pathname === `/k/session/${h.sessionId}` || pathname.startsWith(`/k/session/${h.sessionId}/`)) return h
   return null
 }

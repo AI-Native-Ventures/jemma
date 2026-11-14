@@ -11,6 +11,12 @@ type Result = { data: unknown; error: { message: string } | null }
  */
 export type MemoryDb = JemmaDb & { tables: Record<string, Row[]>; files: Record<string, Record<string, Uint8Array>>; users: Set<string> }
 
+/** A column, or a field of a JSON column the way PostgREST writes it: `payload->>sessionId`. */
+const valueOf = (r: Row, key: string): unknown => {
+  const [column, ...path] = key.split('->>')
+  return path.reduce<unknown>((v, field) => (v && typeof v === 'object' ? (v as Row)[field] : undefined), r[column!])
+}
+
 export function memoryDb(seed: Record<string, Row[]> = {}, files: Record<string, Record<string, Uint8Array>> = {}): MemoryDb {
   const tables: Record<string, Row[]> = Object.fromEntries(Object.entries(seed).map(([name, rows]) => [name, rows.map((r) => ({ ...r }))]))
   let tick = 0
@@ -59,7 +65,7 @@ export function memoryDb(seed: Record<string, Row[]> = {}, files: Record<string,
         op = 'delete'
         return q
       },
-      eq: (key: string, value: unknown) => (filters.push((r) => r[key] === value), q),
+      eq: (key: string, value: unknown) => (filters.push((r) => valueOf(r, key) === value), q),
       neq: (key: string, value: unknown) => (filters.push((r) => r[key] !== value), q),
       in: (key: string, values: unknown[]) => (filters.push((r) => values.includes(r[key])), q),
       is: (key: string, value: null) => (filters.push((r) => (r[key] ?? null) === value), q),

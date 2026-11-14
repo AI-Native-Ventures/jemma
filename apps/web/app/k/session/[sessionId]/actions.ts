@@ -1,9 +1,10 @@
 'use server'
 
-import type { Stage } from '@jemma/profiling/logic'
+import { PAPER_QUESTION_COUNT, type Stage } from '@jemma/profiling/logic'
 import { LessonSchema, QuestionSchema, type Lesson, type Question } from '@jemma/profiling/schemas'
 import type { JemmaDb, Json } from '@jemma/profiling/db'
 import { sendEvent } from '@/lib/agent'
+import { myChild } from '@/lib/data/p27'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import { loadShortLabels } from '@/lib/topics'
@@ -13,11 +14,13 @@ import {
   DEFAULT_TRY_COUNT,
   missedOf,
   nextInSequence,
+  paperQuestions,
   stageAfter,
   stripQuestion,
   type QuestionForChild,
   type StoredItem,
 } from './logic'
+import { newestSnap, progressOf, type PaperProgress } from './paper'
 import type { FinishedSession, LessonForChild } from './types'
 
 type Run = {
@@ -71,7 +74,9 @@ async function loadRun(sessionId: string): Promise<Run> {
   for (const row of rows ?? []) {
     const q = QuestionSchema.safeParse(row.question)
     if (q.success) {
-      items.push({ phase: row.phase, position: row.position, question: q.data, answer: row.answer, correct: row.correct, difficulty: row.difficulty, seconds: row.seconds })
+      // A paper answer that could not be read carries `unread: true` inside the stored question (the question schema does not keep it, so it is read from the row).
+      const unread = typeof row.question === 'object' && row.question !== null && (row.question as { unread?: unknown }).unread === true
+      items.push({ phase: row.phase, position: row.position, question: q.data, answer: row.answer, correct: row.correct, difficulty: row.difficulty, seconds: row.seconds, ...(unread ? { unread } : {}) })
     }
   }
   const sessionWarmup = QuestionSchema.array().safeParse(session.warmup)
@@ -93,10 +98,14 @@ const stripNext = (run: Run, items: StoredItem[]): QuestionForChild | null => {
   return next ? stripQuestion(next.question, next) : null
 }
 
-/** Starts (or resumes) a session and hands the child the lesson without any answers. */
-export async function beginSession(sessionId: string): Promise<{ lesson: LessonForChild }> {
+/**
+ * Starts (or resumes) a session and hands the child the lesson without any answers. `paper` says where a practice answered on paper stands:
+ * a session closed after a photo was read is handed back too (its results are shown), any other finished session is not.
+ */
+export async function beginSession(sessionId: string): Promise<{ lesson: LessonForChild; paper: PaperProgress }> {
   const run = await loadRun(sessionId)
-  if (run.session.status === 'done') throw new Error('This session is finished')
+  const snap = await newestSnap(run.admin, sessionId)
+  if (run.session.status === 'done' && !snap) throw new Error('This session is finished')
   if (run.session.status === 'planned') {
     const { error } = await run.admin.from('sessions').update({ status: 'in_progress' }).eq('id', sessionId)
     if (error) throw new Error(error.message)
@@ -107,7 +116,9 @@ export async function beginSession(sessionId: string): Promise<{ lesson: LessonF
     url = signed.data?.signedUrl ?? null
   }
   const { lesson } = run
+  const onPaper = paperQuestions(lesson)
   return {
+    paper: progressOf(run.session, snap),
     lesson: {
       title: lesson.title,
       format: lesson.format,
@@ -119,6 +130,11 @@ export async function beginSession(sessionId: string): Promise<{ lesson: LessonF
       warmupCount: run.warmup.length,
       tryCount: Math.min(run.tryCount, lesson.questions.length),
       first: stripNext(run, run.items),
+      // The five questions of a practice answered on paper, as the sheet numbers them. None when the lesson cannot put five on paper.
+      paper:
+        onPaper.length === PAPER_QUESTION_COUNT
+          ? onPaper.map((index, i) => stripQuestion(lesson.questions[index]!, { position: i + 1, phase: 'try', index: i + 1, of: onPaper.length }))
+          : [],
     },
   }
 }
@@ -236,4 +252,78 @@ export async function finishSession(sessionId: string): Promise<FinishedSession>
     topicName,
     next: next ? { day: dayOf(next.planned_for), topic: next.topic_name ?? '' } : null,
   }
+}
+
+const MAX_PHOTO_BYTES = 4_000_000
+const UNREACHED = 'Jemma could not be reached. Try again in a minute.'
+
+export type SnapResult = { ok: true } | { ok: false; message: string }
+const refuse = (message: string): SnapResult => ({ ok: false, message })
+
+/**
+ * The learner sends one photo of a practice answered on paper (reached through the upload route /k/upload, never as a form action: see
+ * lib/upload-route.ts). Who may send: the learner whose session it is, or a parent's phone after hand-over, found the way the session actions
+ * find them (`loadRun`, row-level security) and by `myChild` (the child of the sign-in or of the hand-over cookie): a teacher, or another child's
+ * session, throws. What may be sent: a session with no try answer yet, exactly one image. The photo goes to the private `papers` bucket under
+ * the learner, the session starts if it was planned, and `practice.snapped` is sent with the path and the five questions (`paperQuestions`).
+ * A second tap while a photo is being read does nothing. An event the agent was not told about is closed as failed at once, so the screen
+ * shows the retry.
+ */
+export async function snapPractice(sessionId: string, files: File[]): Promise<SnapResult> {
+  const { child } = await myChild()
+  const run = await loadRun(sessionId)
+  if (run.session.child_id !== child.id) throw new Error('Session not found')
+  if (run.session.status === 'done' || run.items.some((i) => i.phase === 'try')) return refuse('You already answered these questions.')
+
+  const photos = files.filter((f) => f instanceof File && f.size > 0)
+  if (photos.length !== 1) return refuse('Send one photo of your answers.')
+  const photo = photos[0]!
+  if (!photo.type.startsWith('image/') || photo.size > MAX_PHOTO_BYTES) return refuse('That photo is too big. Try again.')
+  const questions = paperQuestions(run.lesson)
+  if (questions.length !== PAPER_QUESTION_COUNT) return refuse('These questions cannot be answered on paper.')
+
+  const newest = await newestSnap(run.admin, sessionId)
+  if (newest?.status === 'queued' || newest?.status === 'running') return { ok: true }
+
+  const { data: kid, error: kidError } = await run.admin.from('children').select('school_id').eq('id', child.id).single()
+  if (kidError || !kid) throw new Error('Session not found')
+  const path = `${kid.school_id}/${child.id}/practice/${sessionId}-${Date.now()}.jpg`
+  const up = await run.admin.storage.from('papers').upload(path, photo, { upsert: true, contentType: photo.type })
+  if (up.error) {
+    console.error(`practice photo not saved: ${up.error.message}`)
+    return refuse('Could not save your photo. Try again.')
+  }
+  if (run.session.status === 'planned') {
+    const { error } = await run.admin.from('sessions').update({ status: 'in_progress' }).eq('id', sessionId)
+    if (error) throw new Error(error.message)
+  }
+
+  const asked = new Date().toISOString()
+  try {
+    await sendEvent('practice.snapped', { sessionId, path, questions })
+  } catch (e) {
+    console.error(`practice.snapped for ${sessionId} not delivered: ${e instanceof Error ? e.message : String(e)}`)
+    await run.admin
+      .from('events')
+      .update({ status: 'failed', error: e instanceof Error ? e.message : String(e), finished_at: new Date().toISOString() })
+      .eq('type', 'practice.snapped')
+      .eq('status', 'queued')
+      .eq('payload->>sessionId', sessionId)
+      .gte('created_at', asked)
+    return refuse(UNREACHED)
+  }
+  return { ok: true }
+}
+
+/**
+ * Where the learner's paper answer stands, asked every 3 seconds while Jemma reads the photo (the way the practice card asks). The session is
+ * proven the learner's by row-level security before the event is read with the service client by its id.
+ */
+export async function paperProgress(sessionId: string): Promise<PaperProgress> {
+  const supabase = await createSupabaseServer()
+  const { data: auth } = await supabase.auth.getUser()
+  if (!auth.user) throw new Error('Not signed in')
+  const { data: session } = await supabase.from('sessions').select('id, status').eq('id', sessionId).maybeSingle()
+  if (!session) throw new Error('Session not found')
+  return progressOf(session, await newestSnap(createSupabaseAdmin(), sessionId))
 }

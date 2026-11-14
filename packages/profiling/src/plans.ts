@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { JemmaDb } from './db'
 import type { JemmaEvent } from './schemas/events'
-import { pickPractice } from './logic'
+import { PAPER_QUESTION_COUNT, pickPractice } from './logic'
 import { maybe, ok } from './tools/context'
 import { loadPracticeInput } from './tools/read/practice-input'
 
@@ -80,6 +80,22 @@ async function dueSession(db: JemmaDb, childId: string, now: Date): Promise<{ id
   return { id: latest.id, written: Array.isArray(questions) && questions.length > 0 }
 }
 
+/** What follows a finished session, however its answers came: the profile moves, the next session is planned, its lesson is written. */
+async function afterSession(db: JemmaDb, sessionId: string): Promise<JobStep[]> {
+  const session = await ok(db.from('sessions').select('child_id').eq('id', sessionId).single())
+  const childId = session.child_id
+  return [
+    { job: 'update_learner_profile', ids: { childId, sessionId } },
+    { job: 'plan_next_session', ids: { childId } },
+    { job: 'write_lesson', ids: { childId } },
+  ]
+}
+
+/** The try answers a session has stored so far. A paper is only read while there are none. */
+async function tryAnswers(db: JemmaDb, sessionId: string): Promise<number> {
+  return (await ok(db.from('session_items').select('id').eq('session_id', sessionId).eq('phase', 'try'))).length
+}
+
 /**
  * The job plan for an event, from the current database state. The cloud consumer re-plans after every job,
  * so a paper that lands in "Needs you" drops the tail and a finished read_paper is not planned again.
@@ -97,14 +113,12 @@ export async function jobPlan(event: JemmaEvent, db: JemmaDb, now: Date = new Da
     }
     case 'paper.checked':
       return testTail(db, event.paperId, true)
-    case 'session.finished': {
-      const session = await ok(db.from('sessions').select('child_id').eq('id', event.sessionId).single())
-      const childId = session.child_id
-      return [
-        { job: 'update_learner_profile', ids: { childId, sessionId: event.sessionId } },
-        { job: 'plan_next_session', ids: { childId } },
-        { job: 'write_lesson', ids: { childId } },
-      ]
+    case 'session.finished':
+      return afterSession(db, event.sessionId)
+    case 'practice.snapped': {
+      // The photo is read while the session has no try answer; `read_paper` stores all five and closes the session. After that, the same steps as a session finished on the screen.
+      const read: JobStep[] = (await tryAnswers(db, event.sessionId)) === 0 ? [{ job: 'read_paper', ids: { sessionId: event.sessionId } }] : []
+      return [...read, ...(await afterSession(db, event.sessionId))]
     }
     case 'observation.added':
     case 'activity.added':
@@ -161,6 +175,13 @@ export async function postconditions(event: JemmaEvent, db: JemmaDb, now: Date =
       if (!planned.has(childId)) missing.push(`no planned session for child ${childId}`)
     }
   }
+  /** A learner with an open gap needs a planned session once a session is finished. */
+  const nextSessionPlanned = async (sessionId: string) => {
+    const session = await ok(db.from('sessions').select('child_id').eq('id', sessionId).single())
+    const next = await ok(db.from('sessions').select('id').eq('child_id', session.child_id).eq('status', 'planned').limit(1))
+    const gaps = await ok(db.from('gaps').select('stage').eq('child_id', session.child_id))
+    if (next.length === 0 && gaps.some((g) => g.stage !== 'fixed')) missing.push(`no planned session for child ${session.child_id}`)
+  }
   const tail = async (paperId: string) => {
     const paper = await ok(db.from('papers').select('id, test_id, status').eq('id', paperId).single())
     if (paper.status === 'failed') return missing.push(`paper ${paperId} failed to read`)
@@ -198,11 +219,15 @@ export async function postconditions(event: JemmaEvent, db: JemmaDb, now: Date =
       if (UNREAD.includes(paper.status)) missing.push(`homework ${event.paperId} is not read yet`)
       break
     }
-    case 'session.finished': {
-      const session = await ok(db.from('sessions').select('child_id').eq('id', event.sessionId).single())
-      const next = await ok(db.from('sessions').select('id').eq('child_id', session.child_id).eq('status', 'planned').limit(1))
-      const gaps = await ok(db.from('gaps').select('stage').eq('child_id', session.child_id))
-      if (next.length === 0 && gaps.some((g) => g.stage !== 'fixed')) missing.push(`no planned session for child ${session.child_id}`)
+    case 'session.finished':
+      await nextSessionPlanned(event.sessionId)
+      break
+    case 'practice.snapped': {
+      // The paper was read: the session is closed with its five try answers. Then it is held to the rule of a session finished on the screen.
+      const session = await ok(db.from('sessions').select('status').eq('id', event.sessionId).single())
+      if (session.status !== 'done') missing.push(`session ${event.sessionId} is not done`)
+      if ((await tryAnswers(db, event.sessionId)) < PAPER_QUESTION_COUNT) missing.push(`session ${event.sessionId} has fewer than ${PAPER_QUESTION_COUNT} try answers`)
+      await nextSessionPlanned(event.sessionId)
       break
     }
     case 'test.shared':

@@ -69,7 +69,7 @@ Phone (390 px wide) has a bottom tab bar. A laptop (1024 px wide and up) has a l
 
 ## Where the MCP server fits
 
-Everything the agent does goes through Jemma's own MCP server (25 tools). You can connect your own MCP client to a local copy if you create a token. See [mcp-server.md](mcp-server.md). Tokens are created by whoever runs the server, not by the app.
+Everything the agent does goes through Jemma's own MCP server (27 tools). You can connect your own MCP client to a local copy if you create a token. See [mcp-server.md](mcp-server.md). Tokens are created by whoever runs the server, not by the app.
 
 ## Known limits
 
