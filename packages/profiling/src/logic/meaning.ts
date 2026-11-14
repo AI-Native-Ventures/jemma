@@ -288,6 +288,8 @@ const close = (a: number, b: number) => Math.abs(a - b) <= 1e-9 * Math.max(1, Ma
 /** The value of a text made of numbers only (no letter), or null. `suffix` drops a % or a ° at the end. A mixed number "1 1/2" is one and a half. */
 const numeric = (text: string, suffix: boolean): number | null => {
   let s = text.replace(MINUS_SIGNS, '-').trim()
+  // A long text is not read at all (no pattern below is run on it).
+  if (!s || s.length > MEANING_MAX_LENGTH) return null
   if (suffix) s = s.replace(SUFFIX, '')
   const mixed = /^(-?)\s*(\d+)\s+(\d+)\s*\/\s*(\d+)$/.exec(s)
   if (mixed) {
@@ -347,6 +349,7 @@ const agreeAtPoints = (key: MathNode, answer: MathNode): boolean => {
 
 // ---- The form of an expression ------------------------------------------------------------------------------------------------
 
+const MAX_FACTORS = 48
 const unwrap = (n: MathNode): MathNode => (n.t === 'group' ? unwrap(n.a) : n)
 const constant = (n: MathNode): number | null => (lettersOf(n).size === 0 ? valueOf(n, {}) : null)
 
@@ -364,7 +367,11 @@ const factorsOf = (n: MathNode): MathNode[] => {
       return [...factorsOf(n.a), ...factorsOf(n.b)]
     case 'pow': {
       const e = constant(n.b)
-      if (e !== null && Number.isInteger(e) && e >= 2 && e <= 8) return Array.from({ length: e }, () => factorsOf(n.a)).flat()
+      if (e !== null && Number.isInteger(e) && e >= 2 && e <= 8) {
+        const base = factorsOf(n.a)
+        // A power of a power of a power would name thousands of factors: past a few dozen it is one factor.
+        return base.length * e > MAX_FACTORS ? [n] : Array.from({ length: e }, () => base).flat()
+      }
       return [n]
     }
     default:

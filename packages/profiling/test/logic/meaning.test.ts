@@ -280,6 +280,28 @@ describe('what cannot be read is wrong, and never throws', () => {
   })
 })
 
+describe('a text made to be slow is not slow', () => {
+  test('a power of a power of a power with a form asked for ends at once', () => {
+    const nest = '(((((((x^8)^8)^8)^8)^8)^8)^8)^8'
+    expect(nest.length).toBeLessThanOrEqual(60)
+    const t = Date.now()
+    expect(() => markByMeaning('expression', nest, nest, 'factorised')).not.toThrow()
+    expect(markByMeaning('expression', 'x', nest, 'expanded').correct).toBe(false)
+    expect(Date.now() - t).toBeLessThan(2000)
+  })
+
+  test('a very long text, with many spaces or digits, is refused before any pattern runs on it', () => {
+    const t = Date.now()
+    for (const kind of ['number', 'expression', 'equation', 'point'] as const) {
+      expect(markByMeaning(kind, '5', ` ${'1 '.repeat(50000)}`).correct).toBe(false)
+      expect(markByMeaning(kind, '5', `${' '.repeat(100000)}%`).correct).toBe(false)
+      expect(markByMeaning(kind, '5', `1${' '.repeat(100000)}2/`).correct).toBe(false)
+    }
+    expect(markReadAnswer('5', ' '.repeat(100000))).toBe(false)
+    expect(Date.now() - t).toBeLessThan(2000)
+  })
+})
+
 describe('comparable says whether both texts could be read', () => {
   test('a wrong but readable answer is comparable', () => {
     expect(markByMeaning('expression', '2x + 3', '2x + 4')).toEqual({ correct: false, comparable: true })
