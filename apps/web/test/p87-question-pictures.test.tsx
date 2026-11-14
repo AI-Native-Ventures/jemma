@@ -3,6 +3,7 @@ import type { Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 import { describe, expect, it } from 'vitest'
 import { PaperSheet } from '../app/k/session/_parts/Paper'
 import { QuestionScreen } from '../app/k/session/_parts/QuestionScreen'
+import { PreviewBars } from '../app/k/session/_parts/PreviewBars'
 import { Results } from '../app/k/session/_parts/Results'
 import { missedOf, stripQuestion, type MissedQuestion, type QuestionForChild, type StoredItem } from '../app/k/session/[sessionId]/logic'
 
@@ -170,5 +171,23 @@ describe('the picture travels with the question', () => {
     const [a, b] = missedOf(items)
     expect(a!.diagram).toEqual(TRIANGLE)
     expect(b).not.toHaveProperty('diagram')
+  })
+})
+
+describe('the small picture on the Today card', () => {
+  const preview = (spec: SeniorDiagramSpec) => renderToStaticMarkup(<PreviewBars spec={spec} />)
+
+  it('a graph or a triangle is kept small, and drawn', () => {
+    for (const spec of [LINE, TRIANGLE]) {
+      const html = preview(spec)
+      expect(html).toContain('[&amp;_svg]:max-h-[180px]')
+      expect(picAt(html)).toBeGreaterThan(-1)
+    }
+  })
+
+  it('the other kinds keep the classes they had', () => {
+    const html = preview({ kind: 'area_model', rows: 3, cols: 4, shaded: 12 })
+    expect(html).toContain('class="rounded-[16px] bg-[#F7F6FB] p-3.5 [border-radius:16px]"')
+    expect(html).not.toContain('max-h-')
   })
 })
