@@ -68,7 +68,7 @@ export default async function ParentHandoverPage({ params }: { params: Promise<{
         <form action={start} className="contents">
           <PendingButton
             type="submit"
-            className="flex h-[52px] items-center justify-center gap-2 rounded-14 border-0 bg-ink text-[17px] font-semibold text-white"
+            className="flex min-h-14 items-center justify-center gap-2 rounded-14 border-0 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white"
           >
             {name} has the phone
           </PendingButton>

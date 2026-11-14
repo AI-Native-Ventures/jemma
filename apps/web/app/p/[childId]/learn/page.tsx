@@ -109,9 +109,9 @@ export default async function ParentLearnPage({ params }: { params: Promise<{ ch
         </ol>
         <Link
           href={`/p/${childId}/learn/handover`}
-          className="flex h-14 items-center justify-center gap-2.5 rounded-[16px] bg-coral text-[17px] font-bold text-ink no-underline"
+          className="flex min-h-14 items-center justify-center gap-2.5 rounded-[16px] bg-coral px-5 py-3 text-center text-[17px] font-bold text-balance text-ink no-underline"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="#1F1D36" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#1F1D36" aria-hidden="true" className="flex-none"><path d="M8 5.5v13l11-6.5z" /></svg>
           Start, then hand {name} the phone
         </Link>
         <p className="m-0 text-center text-[13px] leading-[1.4] text-body">

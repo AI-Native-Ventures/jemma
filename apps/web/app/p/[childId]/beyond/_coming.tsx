@@ -13,7 +13,7 @@ export function ComingButton({ style, children }: { style: CSSProperties; childr
         {children}
       </button>
       <Sheet open={open} onClose={() => setOpen(false)} title="Coming after the challenge" description="This part of Jemma is not in this version yet.">
-        <Button variant="primary" onClick={() => setOpen(false)}>
+        <Button variant="primary" className="!h-auto min-h-14 !px-5 py-3 text-center text-balance" onClick={() => setOpen(false)}>
           Got it
         </Button>
       </Sheet>

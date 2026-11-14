@@ -69,7 +69,7 @@ export function ErrorScreen({ problem, photoUrl, retakeHref }: { problem: string
       </section>
 
       <div className="flex flex-col gap-2">
-        <Link href={retakeHref} className="flex h-[52px] items-center justify-center gap-2 rounded-14 bg-ink text-[17px] font-semibold text-white no-underline">
+        <Link href={retakeHref} className="flex min-h-14 items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white no-underline">
           <CameraGlyph color="#FFFFFF" />
           Retake photo
         </Link>

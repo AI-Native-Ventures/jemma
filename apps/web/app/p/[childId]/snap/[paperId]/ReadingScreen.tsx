@@ -125,7 +125,7 @@ export function ReadingScreen({
       </p>
       <Link
         href="?"
-        className="flex h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card text-[17px] font-semibold text-ink no-underline"
+        className="flex min-h-14 items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-5 py-3 text-center text-[17px] font-semibold text-balance text-ink no-underline"
       >
         See what I read
       </Link>

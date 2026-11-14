@@ -22,7 +22,7 @@ export default async function ParentFlagMarkPage({
   const back = `/p/${childId}/papers/${paperId}`
   const send = sendFlag.bind(null, childId, paperId, result.id)
   const teacher = paper.child.teacherName
-  const btn = { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: 14, fontSize: 17, fontWeight: 600, textDecoration: 'none' } as const
+  const btn = { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, fontSize: 17, fontWeight: 600, textDecoration: 'none' } as const
 
   return (
     <div data-p24-detail style={{ position: 'fixed', inset: 0, zIndex: 50, background: '#F7F7FA', overflow: 'hidden', lineHeight: 'normal' }}>
