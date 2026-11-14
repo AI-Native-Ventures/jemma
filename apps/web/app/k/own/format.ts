@@ -92,8 +92,11 @@ export const GRADE_CHOICES: number[] = Array.from({ length: 12 }, (_, i) => i + 
 /** The longest name a learner can give an own curriculum. */
 export const NAME_MAX = 60
 
-/** Where "Done" points: My maths at the grade. The address carries the grade, as the grade chips of My own do. */
-export const myMathsHref = (grade: number): string => `/k/maths?grade=${grade}`
+/**
+ * Where "Done" points: My maths at the class of the own curriculum. The address names the class, as the chips of My own do: a grade can have the
+ * CAPS class and the learner's own curriculum, and `?grade=` means the CAPS one.
+ */
+export const myMathsHref = (classId: string): string => `/k/maths?class=${classId}`
 
 /**
  * The state of an own curriculum from its map (null when it has none), how many documents it has, whether its draft can be read, and whether its

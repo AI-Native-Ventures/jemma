@@ -7,7 +7,7 @@ import { createSupabaseServer } from '@/lib/supabase/server'
 // bypasses row level security, so every function here checks who is asking: the learner's own login or an approved parent for the writes, the
 // class's own teacher for the teacher's read-only view. The cookie that says which workspace is on screen is in `./workspace`.
 
-export { OwnWorkspaceError, OWN_GRADES } from '@jemma/profiling/own'
+export { capsClassName, isCapsClassName, OwnWorkspaceError, OWN_GRADES } from '@jemma/profiling/own'
 export type { AddedGrade, OwnClass, OwnGrade, OwnGap, OwnPractised, OwnSummary } from '@jemma/profiling/own'
 
 /**

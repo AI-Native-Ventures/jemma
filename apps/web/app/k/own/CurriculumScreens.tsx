@@ -42,7 +42,7 @@ export function CurriculumScreen({ view, firstName }: { view: OwnCurriculumView;
         <Poll active={false} />
         <Title>Done. Find it in My maths.</Title>
         <p className="m-0 text-[17px] leading-[1.45] text-body">{`${view.name} · Grade ${view.grade}`}</p>
-        <Link href={myMathsHref(view.grade)} className={bigLink}>Open My maths</Link>
+        <Link href={myMathsHref(view.classId)} className={bigLink}>Open My maths</Link>
         <Link href="/k/own" className={linkButton}>Back</Link>
       </Shell>
     )

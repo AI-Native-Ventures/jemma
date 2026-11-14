@@ -125,6 +125,15 @@ describe('uploadOwnCurriculum: a learner in My own adds their own curriculum', (
     nothingHappened()
   })
 
+  it('refuses a name a CAPS class has ("Grade 6 (my own)", in any capitals, of any grade): it would be taken for the CAPS class of My own (P95c)', async () => {
+    for (const name of ['Grade 6 (my own)', 'grade 9 (MY OWN)', '  Grade 12 (my own) ']) {
+      expect(await uploadOwnCurriculum(6, name, [pdf()]), name).toEqual({ ok: false, message: 'Use another name.' })
+    }
+    nothingHappened()
+    // A name that only looks like one is fine.
+    expect((await uploadOwnCurriculum(6, 'Grade 6 (my own) plan', [pdf()])).ok).toBe(true)
+  })
+
   it('takes only what the teacher\'s upload takes: a PDF, a JPG or a PNG read from its first bytes, and no document over its size', async () => {
     const text = new File(['hello'], 'notes.txt', { type: 'text/plain' })
     expect(await uploadOwnCurriculum(6, 'Plan', [pdf(), text])).toEqual({ ok: false, message: '"notes.txt" is not a PDF, JPG or PNG file. Jemma can only read those three kinds.' })

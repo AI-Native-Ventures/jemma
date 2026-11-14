@@ -50,9 +50,10 @@ export default async function OwnPracticePage({ params }: { params: Promise<{ cl
 
         {own.grades.length === 0 ? <p style={quiet}>{name} has not added a grade yet.</p> : null}
         {own.grades.map((g) => (
-          <section key={g.classId} aria-labelledby={`grade-${g.grade}`} style={{ ...card(20), gap: 10, padding: 16 }}>
+          <section key={g.classId} aria-labelledby={`class-${g.classId}`} style={{ ...card(20), gap: 10, padding: 16 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
-              <h2 id={`grade-${g.grade}`} style={sectionTitle}>Grade {g.grade}</h2>
+              {/* The CAPS class of a grade is "Grade 6"; a curriculum of the learner's own is "Grade 6 \u00b7 {their name for it}". */}
+              <h2 id={`class-${g.classId}`} style={sectionTitle}>{g.caps ? `Grade ${g.grade}` : `Grade ${g.grade} \u00b7 ${g.name}`}</h2>
               <span style={{ fontSize: 14, color: '#5D5A73' }}>{scoreText(g.score)}</span>
             </div>
             {g.practised.length === 0 ? (

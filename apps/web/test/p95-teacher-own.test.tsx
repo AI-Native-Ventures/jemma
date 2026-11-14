@@ -31,7 +31,7 @@ import OwnPracticePage from '../app/t/[classId]/learners/[childId]/own/page'
 import LearnerPage from '../app/t/[classId]/learners/[childId]/page'
 
 const grade = (g: number, practised: OwnSummary['grades'][number]['practised'] = [], score = { right: 0, asked: 0 }) => ({
-  classId: `c${g}`, grade: g, name: `Grade ${g} (my own)`, topics: 40, score, practised,
+  classId: `c${g}`, grade: g, name: `Grade ${g} (my own)`, caps: true, topics: 40, score, practised,
 })
 const summary = (over: Partial<OwnSummary> = {}): OwnSummary => ({
   firstName: 'Amina',
@@ -82,6 +82,19 @@ describe('the read-only page', () => {
     expect(six.getByText('Whole numbers to 1 000 000')).toBeTruthy()
     expect(six.getByText('2 of 5 right')).toBeTruthy()
     expect(six.getByText('6 of 10 right')).toBeTruthy()
+  })
+
+  it('a learner\'s own curriculum of a grade is a section of its own, named with the learner\'s name for it, beside the CAPS class of that grade (P95c)', async () => {
+    const own = { ...grade(6, [{ topicId: 't9', name: 'Term 1 fractions', term: 1, score: { right: 3, asked: 4 } }], { right: 3, asked: 4 }), classId: 'own6', name: "My school's Term 1 plan", caps: false }
+    state.summary = summary({ grades: [grade(6), own, grade(7)] })
+    await page()
+    expect(screen.getByRole('region', { name: 'Grade 6' })).toBeTruthy()
+    const section = within(screen.getByRole('region', { name: "Grade 6 \u00b7 My school's Term 1 plan" }))
+    expect(section.getByText('Term 1 fractions')).toBeTruthy()
+    expect(section.getAllByText('3 of 4 right')).toHaveLength(2) // the class's own count, and the topic's
+    // Two sections of one grade do not share an id (a heading names its own section).
+    const ids = [...document.querySelectorAll('section[aria-labelledby]')].map((el) => el.getAttribute('aria-labelledby'))
+    expect(new Set(ids).size).toBe(ids.length)
   })
 
   it('says a grade with nothing practised has nothing practised, and shows no empty list', async () => {

@@ -3,9 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MyMathsView } from '../lib/data/p80'
 import type { ScreenShape } from '../lib/data/own-screens'
 
-// "My maths" when the workspace is My own (P95): the switch on top, a row of grade chips (one for each grade the learner added, the chosen one
-// filled, and "+ Another grade"), one plain line above a grade higher than the learner's own, "No topics yet" for a grade with no map, and the
-// links into a part that keep the grade. In My school the screen is as it always was. The data, the router and the actions are doubles.
+// "My maths" when the workspace is My own (P95, P95c): the switch on top, a row of chips (one for each CLASS of the learner's private workspace: the
+// CAPS class of a grade reads "Grade 6", a curriculum of the learner's own reads "Grade 6 \u00b7 {its name}"; the chosen one filled; and "+ Another
+// grade"), one plain line above a class of a grade higher than the learner's own, "No topics yet" for a class with no map, and the links into a part
+// that keep the class. The address is `?class=<id>`; `?grade=N` is the old form and means the CAPS class of that grade. In My school the screen is as
+// it always was. The data, the router and the actions are doubles.
 
 const state = vi.hoisted(() => ({ view: null as unknown, shape: null as unknown, asked: [] as (string | undefined)[], gradeParams: [] as unknown[] }))
 vi.mock('next/navigation', () => ({
@@ -23,8 +25,8 @@ vi.mock('../lib/data/p80', () => ({
   },
 }))
 vi.mock('../lib/data/own-screens', () => ({
-  getScreenShape: async (grade?: unknown) => {
-    state.gradeParams.push(grade)
+  getScreenShape: async (query?: unknown) => {
+    state.gradeParams.push(query)
     return state.shape
   },
 }))
@@ -45,15 +47,20 @@ const noTopics = [
 const view = (strands: unknown[], suggestions: unknown[] = []): MyMathsView =>
   ({ firstName: 'Amina', initial: 'A', status: 'free', maths: { subject: 'Mathematics', strands, gaps: [], suggestions } }) as unknown as MyMathsView
 
-const own = (picked: number | null, grades = [6, 7], schoolGrade = 6): ScreenShape => ({
-  workspace: 'own',
-  schoolGrade,
-  grades: grades.map((g) => ({ classId: `c${g}`, grade: g })),
-  picked: picked === null ? null : { classId: `c${picked}`, grade: picked },
-})
+const OWN_NAME = "My school's Term 1 plan"
+/** The CAPS classes of `grades`, then the learner's own curricula `extra` (grade, class id, name), in the order the list gives them: by grade, CAPS first. */
+const own = (picked: number | string | null, grades = [6, 7], schoolGrade = 6, extra: { grade: number; classId: string; name: string }[] = []): ScreenShape => {
+  const chips = [...grades.map((g) => ({ classId: `c${g}`, grade: g, caps: true, name: `Grade ${g} (my own)` })), ...extra.map((e) => ({ ...e, caps: false }))].sort(
+    (a, b) => a.grade - b.grade || Number(b.caps) - Number(a.caps),
+  )
+  const found = typeof picked === 'string' ? chips.find((c) => c.classId === picked) : chips.find((c) => c.caps && c.grade === picked)
+  return { workspace: 'own', schoolGrade, grades: chips, picked: picked === null ? null : (found ?? null) }
+}
 
-const page = async (grade?: string) => render(await MyMathsPage({ searchParams: Promise.resolve(grade ? { grade } : {}) }))
-const part = async (family: string, grade?: string) => render(await MyMathsPartPage({ params: Promise.resolve({ family }), searchParams: Promise.resolve(grade ? { grade } : {}) }))
+type Query = { grade?: string; class?: string }
+const queryOf = (q?: string | Query): Query => (typeof q === 'string' ? { grade: q } : (q ?? {}))
+const page = async (query?: string | Query) => render(await MyMathsPage({ searchParams: Promise.resolve(queryOf(query)) }))
+const part = async (family: string, query?: string | Query) => render(await MyMathsPartPage({ params: Promise.resolve({ family }), searchParams: Promise.resolve(queryOf(query)) }))
 
 beforeEach(() => {
   state.view = view(withTopics, [{ topicId: 't1', topicName: 'Whole numbers to 1 000 000', family: 'numbers', why: 'practising', reason: 'Practising', score: score(6, 10) }])
@@ -87,7 +94,7 @@ describe('the grade chips', () => {
     const nav = screen.getByRole('navigation', { name: 'Grades' })
     const links = within(nav).getAllByRole('link')
     expect(links.map((a) => a.textContent)).toEqual(['Grade 6', 'Grade 7', '+ Another grade'])
-    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/k/maths?grade=6', '/k/maths?grade=7', '/k/maths/grades'])
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/k/maths?class=c6', '/k/maths?class=c7', '/k/maths/grades'])
   })
 
   it('the chosen grade is the filled one, and only that one is marked as the current page', async () => {
@@ -100,11 +107,14 @@ describe('the grade chips', () => {
     expect(nav.getByRole('link', { name: '+ Another grade' }).getAttribute('aria-current')).toBeNull()
   })
 
-  it('asks for the address\'s grade and shows the map of the chosen class', async () => {
+  it('hands the address (the class and the grade in it) to the server and shows the map of the chosen class', async () => {
     state.shape = own(7)
     await page('7')
-    expect(state.gradeParams).toEqual(['7'])
+    expect(state.gradeParams).toEqual([{ grade: '7' }])
     expect(state.asked).toEqual(['c7'])
+    state.gradeParams = []
+    await page({ class: 'c7' })
+    expect(state.gradeParams).toEqual([{ class: 'c7' }])
   })
 
   it('the chips wrap (no sideways scroll) and each has room and a minimum height', async () => {
@@ -133,6 +143,78 @@ describe('the grade chips', () => {
     const nav = within(screen.getByRole('navigation', { name: 'Grades' }))
     expect(nav.getAllByRole('link').map((a) => a.textContent)).toEqual(['+ Another grade'])
     expect(screen.getByText('Add a grade to start.')).toBeTruthy()
+  })
+})
+
+describe('the chips of a learner who has their own curriculum of a grade (P95c)', () => {
+  const extra = [{ grade: 6, classId: 'own6', name: OWN_NAME }]
+
+  it('has a chip for each class: "Grade 6" for the CAPS class and "Grade 6 \u00b7 {name}" for the own curriculum, in grade order', async () => {
+    state.shape = own('c6', [6, 7], 6, extra)
+    await page()
+    const nav = screen.getByRole('navigation', { name: 'Grades' })
+    const links = within(nav).getAllByRole('link')
+    expect(links.map((a) => a.textContent)).toEqual(['Grade 6', `Grade 6 \u00b7 ${OWN_NAME}`, 'Grade 7', '+ Another grade'])
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/k/maths?class=c6', '/k/maths?class=own6', '/k/maths?class=c7', '/k/maths/grades'])
+  })
+
+  it('a long name is cut with an ellipsis in the chip and whole in the aria-label', async () => {
+    const long = 'My school curriculum for the whole of the year, all four terms'
+    state.shape = own('c6', [6], 6, [{ grade: 6, classId: 'own6', name: long }])
+    await page()
+    const chip = within(screen.getByRole('navigation', { name: 'Grades' })).getByRole('link', { name: `Grade 6 \u00b7 ${long}` })
+    expect(chip.textContent!.endsWith('\u2026')).toBe(true)
+    expect(chip.textContent).not.toContain('all four terms')
+    expect(chip.getAttribute('aria-label')).toBe(`Grade 6 \u00b7 ${long}`)
+  })
+
+  it('the chosen class is the filled one: the own curriculum when it is chosen, never the CAPS class of its grade as well', async () => {
+    state.shape = own('own6', [6, 7], 6, extra)
+    await page({ class: 'own6' })
+    const nav = within(screen.getByRole('navigation', { name: 'Grades' }))
+    const current = nav.getAllByRole('link').filter((a) => a.getAttribute('aria-current') === 'page')
+    expect(current.map((a) => a.getAttribute('href'))).toEqual(['/k/maths?class=own6'])
+    expect(current[0]!.className).toContain('bg-ink')
+    expect(nav.getByRole('link', { name: 'Grade 6' }).className).not.toContain('bg-ink')
+  })
+
+  it('opens the own curriculum: the map asked for is the own class\'s, and its parts keep ?class= of it', async () => {
+    state.shape = own('own6', [6, 7], 6, extra)
+    await page({ class: 'own6' })
+    expect(state.asked).toEqual(['own6'])
+    const all = within(screen.getByRole('region', { name: 'All of Mathematics' }))
+    expect(all.getByRole('link', { name: /Numbers and operations/ }).getAttribute('href')).toBe('/k/maths/numbers?class=own6')
+  })
+
+  it('a part of the own curriculum goes back to the own curriculum', async () => {
+    state.shape = own('own6', [6, 7], 6, extra)
+    await part('numbers', { class: 'own6' })
+    expect(state.asked).toEqual(['own6'])
+    expect(document.querySelector('main a[href="/k/maths?class=own6"]')).toBeTruthy()
+  })
+
+  it('the old address ?grade=6 is handed to the server as it came (it means the CAPS class), and shows that class\'s map', async () => {
+    state.shape = own(6, [6, 7], 6, extra)
+    await page({ grade: '6' })
+    expect(state.gradeParams).toEqual([{ grade: '6' }])
+    expect(state.asked).toEqual(['c6'])
+  })
+
+  it('the line "Take your time" follows the grade of the class: an own curriculum of a higher grade has it, of the learner\'s grade has not', async () => {
+    state.shape = own('own9', [6], 6, [{ grade: 9, classId: 'own9', name: 'Grade 9 plan' }])
+    await page({ class: 'own9' })
+    expect(screen.getByText('This is Grade 9 work. Take your time.')).toBeTruthy()
+    cleanup()
+    state.shape = own('own6', [6], 6, extra)
+    await page({ class: 'own6' })
+    expect(screen.queryByText(/Take your time/)).toBeNull()
+  })
+
+  it('an own class with no topics says "No topics yet for Grade N."', async () => {
+    state.shape = own('own6', [6], 6, extra)
+    state.view = view(noTopics)
+    await page({ class: 'own6' })
+    expect(screen.getByText('No topics yet for Grade 6.')).toBeTruthy()
   })
 })
 
@@ -214,11 +296,11 @@ describe('a grade above the learner\'s own', () => {
 })
 
 describe('the topics of a grade', () => {
-  it('lists the parts of the grade\'s own map with the learner\'s count, and each part keeps the grade in its link', async () => {
+  it('lists the parts of the class\'s own map with the learner\'s count, and each part keeps the class in its link', async () => {
     await page('7')
     const all = within(screen.getByRole('region', { name: 'All of Mathematics' }))
-    expect(all.getByRole('link', { name: /Numbers and operations/ }).getAttribute('href')).toBe('/k/maths/numbers?grade=7')
-    expect(all.getByRole('link', { name: /Patterns and algebra/ }).getAttribute('href')).toBe('/k/maths/patterns?grade=7')
+    expect(all.getByRole('link', { name: /Numbers and operations/ }).getAttribute('href')).toBe('/k/maths/numbers?class=c7')
+    expect(all.getByRole('link', { name: /Patterns and algebra/ }).getAttribute('href')).toBe('/k/maths/patterns?class=c7')
     expect(all.getByText('6 of 10 right')).toBeTruthy()
   })
 
@@ -246,12 +328,12 @@ describe('the topics of a grade', () => {
 })
 
 describe('one part of Mathematics in My own', () => {
-  it('shows the part of the grade in the address and goes back to that grade', async () => {
-    await part('numbers', '7')
-    expect(state.gradeParams).toEqual(['7'])
+  it('shows the part of the class in the address and goes back to that class', async () => {
+    await part('numbers', { class: 'c7' })
+    expect(state.gradeParams).toEqual([{ class: 'c7' }])
     expect(state.asked).toEqual(['c7'])
     expect(screen.getByRole('heading', { level: 1, name: 'Numbers and operations' })).toBeTruthy()
-    expect(document.querySelector('main a[href="/k/maths?grade=7"]')).toBeTruthy()
+    expect(document.querySelector('main a[href="/k/maths?class=c7"]')).toBeTruthy()
   })
 
   it('in My school the way back is the plain My maths link', async () => {

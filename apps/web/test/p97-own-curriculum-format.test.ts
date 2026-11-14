@@ -75,8 +75,8 @@ describe('the words and the choices', () => {
     expect(NAME_MAX).toBe(60)
   })
 
-  it('"Done" points to My maths at the grade (the address carries it, as the grade chips of My own do)', () => {
-    expect(myMathsHref(6)).toBe('/k/maths?grade=6')
-    expect(myMathsHref(12)).toBe('/k/maths?grade=12')
+  it('"Done" points to My maths at the class of the own curriculum (P95c: the address names the class, as the chips of My own do, never the grade)', () => {
+    expect(myMathsHref('3f6c1a52-0b1e-4c43-9a71-2d8f5e1c9b10')).toBe('/k/maths?class=3f6c1a52-0b1e-4c43-9a71-2d8f5e1c9b10')
+    expect(myMathsHref('class-1')).toBe('/k/maths?class=class-1')
   })
 })

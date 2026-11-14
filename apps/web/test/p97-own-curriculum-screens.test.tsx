@@ -68,7 +68,7 @@ describe('the screen of one own curriculum', () => {
     const view: OwnCurriculumView = { state: 'approved', mapId: 'map-1', name: "My school's Term 1 plan", grade: 7, classId: 'class-1' }
     render(<CurriculumScreen view={view} />)
     expect(screen.getByRole('heading', { level: 1, name: 'Done. Find it in My maths.' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Open My maths' }).getAttribute('href')).toBe('/k/maths?grade=7')
+    expect(screen.getByRole('link', { name: 'Open My maths' }).getAttribute('href')).toBe('/k/maths?class=class-1')
     expect(screen.getByRole('link', { name: 'Back' }).getAttribute('href')).toBe('/k/own')
     expect(poll.calls.at(-1)).toEqual({ ms: 3000, active: false })
   })

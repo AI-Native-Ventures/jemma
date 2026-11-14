@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // The page where a learner adds another grade (/k/maths/grades): the 12 grades as large chips, the learner's school grade marked "your grade", the
-// grades already added marked "added". A tap calls `addMyGrade`, says "Loading Grade N..." while it works, then opens My maths at that grade.
+// grades already added marked "added". A tap calls `addMyGrade`, says "Loading Grade N..." while it works, then opens My maths at the class it made (its address names the class).
 // The data, the router and the action are doubles.
 
 const state = vi.hoisted(() => ({ sheet: null as unknown, push: vi.fn(), refresh: vi.fn() }))
@@ -80,7 +80,7 @@ describe('the grade sheet', () => {
 })
 
 describe('a tap on a grade', () => {
-  it('calls addMyGrade with the number, says "Loading Grade 9..." while it works, then opens My maths at that grade', async () => {
+  it('calls addMyGrade with the number, says "Loading Grade 9..." while it works, then opens My maths at the class it made (its address names the class)', async () => {
     let finish: (v: ReturnType<typeof ok>) => void = () => {}
     vi.mocked(addMyGrade).mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)))
     await page()
@@ -90,7 +90,7 @@ describe('a tap on a grade', () => {
     expect(status.textContent).toBe('Loading Grade 9...')
     expect(state.push).not.toHaveBeenCalled()
     finish(ok('c9'))
-    await waitFor(() => expect(state.push).toHaveBeenCalledWith('/k/maths?grade=9'))
+    await waitFor(() => expect(state.push).toHaveBeenCalledWith('/k/maths?class=c9'))
   })
 
   it('blocks a second tap while the first one works', async () => {
@@ -104,21 +104,21 @@ describe('a tap on a grade', () => {
     expect(addMyGrade).toHaveBeenCalledTimes(1)
     // The first one finishes, so no unfinished action is left to hold up the next test (React waits for every action of a transition).
     finish(ok('c9'))
-    await waitFor(() => expect(state.push).toHaveBeenCalledWith('/k/maths?grade=9'))
+    await waitFor(() => expect(state.push).toHaveBeenCalledWith('/k/maths?class=c9'))
   })
 
   it('a grade that was added before opens My maths at that grade too', async () => {
     vi.mocked(addMyGrade).mockResolvedValueOnce(ok('c7', false, 38))
     await page()
     fireEvent.click(screen.getByRole('button', { name: 'Grade 7' }))
-    await waitFor(() => expect(state.push).toHaveBeenCalledWith('/k/maths?grade=7'))
+    await waitFor(() => expect(state.push).toHaveBeenCalledWith('/k/maths?class=c7'))
   })
 
   it('a grade outside South Africa that has no map is still added: it opens My maths at that grade', async () => {
     vi.mocked(addMyGrade).mockResolvedValueOnce(ok('c11', true, 0))
     await page()
     fireEvent.click(screen.getByRole('button', { name: 'Grade 11' }))
-    await waitFor(() => expect(state.push).toHaveBeenCalledWith('/k/maths?grade=11'))
+    await waitFor(() => expect(state.push).toHaveBeenCalledWith('/k/maths?class=c11'))
   })
 
   it('a refusal is said in the action\'s plain words, the learner stays, and can tap again', async () => {

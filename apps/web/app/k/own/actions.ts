@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import type { JemmaDb } from '@jemma/profiling/db'
+import { isCapsClassName } from '@jemma/profiling/own'
 import { checkDocument, sizeProblem } from '@/app/t/[classId]/curriculum/upload-checks'
 import { readDraft, removeTopicIn, toRaw, topicCount } from '@/app/t/[classId]/curriculum/format'
 import { retryEvent, sendEvent } from '@/lib/agent'
@@ -179,6 +180,8 @@ export async function uploadOwnCurriculum(grade: number, name: string, files: Fi
   const title = typeof name === 'string' ? name.trim().replace(/\s+/g, ' ') : ''
   if (!title) return refuse('Give your curriculum a name.')
   if (title.length > NAME_MAX) return refuse('Use a shorter name.')
+  // The name "Grade {N} (my own)" says which class is the CAPS class of a grade, so an own curriculum may not take it.
+  if (isCapsClassName(title)) return refuse('Use another name.')
   const documents = files.filter((f) => f instanceof File)
   if (documents.length === 0) return refuse('Add a file, or take photos of the pages.')
   const tooBig = sizeProblem(documents)

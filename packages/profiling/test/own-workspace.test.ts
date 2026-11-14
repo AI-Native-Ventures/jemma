@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { MemoryStore } from '../src/ai/stores'
 import { capsMapOf } from '../src/curriculum/caps-map'
-import { addOwnGrade, ensureOwnWorkspace, getOwnOverview, getOwnWorkspaceForTeacher, OwnWorkspaceError, twinOfChild } from '../src/own-workspace'
+import { addOwnGrade, capsClassName, defaultOwnClass, ensureOwnWorkspace, getOwnOverview, getOwnWorkspaceForTeacher, isCapsClassName, listOwnClasses, OwnWorkspaceError, twinOfChild } from '../src/own-workspace'
 import type { ToolContext } from '../src/tools/context'
 import { planNextSession, type SessionPlan } from '../src/tools/save/plan-next-session'
 import { memoryDb, type MemoryDb } from './helpers/memory-db'
@@ -366,5 +366,129 @@ describe('practising in My own', () => {
     const refused = (await planNextSession.run(ctx(db, personal), { childId: twinId, practice: true, choice: { topicId: 'school-topic', topicName: 'Adding decimals' } })) as SessionPlan
     expect(refused.planned).toBe(false)
     expect(db.tables.sessions).toHaveLength(0)
+  })
+})
+
+// ---- P95c: a learner's own curriculum is a second private class of a grade ---------------------------------------------------------------
+
+describe('which class is the CAPS one (one rule, in one place)', () => {
+  test('a CAPS class is named exactly "Grade {N} (my own)"', () => {
+    expect(capsClassName(6)).toBe('Grade 6 (my own)')
+    expect(capsClassName(12)).toBe('Grade 12 (my own)')
+    expect(isCapsClassName('Grade 6 (my own)', 6)).toBe(true)
+    expect(isCapsClassName('Grade 6 (my own)', 7)).toBe(false)
+    expect(isCapsClassName("My school's Term 1 plan", 6)).toBe(false)
+  })
+
+  test('isCapsClassName without a grade is true for any name a CAPS class could have, so a learner cannot give an own curriculum such a name', () => {
+    expect(isCapsClassName('Grade 9 (my own)')).toBe(true)
+    expect(isCapsClassName('grade 9 (MY OWN)')).toBe(true)
+    expect(isCapsClassName('  Grade 11 (my own) ')).toBe(true)
+    expect(isCapsClassName('Grade 9 (my own) plan')).toBe(false)
+    expect(isCapsClassName('Grade 13 (my own)')).toBe(false)
+    expect(isCapsClassName('My own')).toBe(false)
+  })
+})
+
+describe('a grade that has an own curriculum of the same grade', () => {
+  async function withOwnClass(grade: number, name = "My school's Term 1 plan", over: Record<string, Row[]> = {}) {
+    const db = world('ZA', over)
+    const twinId = await ensureOwnWorkspace(db, AMINA, LEARNER)
+    const personal = privateSchools(db)[0]!.id as string
+    // What P97's upload makes: a private class named by the learner, with the learner enrolled. Its map is the learner's own.
+    const id = 'own-curriculum-class'
+    db.tables.classes!.push({ id, school_id: personal, teacher_id: LEARNER, name, grade, subject: 'Mathematics', year: 2026, join_code: 'OWNC11', created_at: '2026-11-01T08:00:00.000Z' })
+    db.tables.enrolments!.push({ class_id: id, child_id: twinId })
+    db.tables.curriculum_maps!.push({ id: 'own-map', class_id: id, status: 'approved', draft: { name }, approved_at: '2026-11-01T09:00:00.000Z', created_at: '2026-11-01T08:30:00.000Z' })
+    return { db, twinId, personal, ownClassId: id }
+  }
+
+  test('adding that grade makes the CAPS class: the own class never blocks it and never gets a CAPS map', async () => {
+    const { db, twinId, personal, ownClassId } = await withOwnClass(6)
+    const out = await addOwnGrade(db, twinId, 6, LEARNER, NOW)
+    expect(out.created).toBe(true)
+    expect(out.classId).not.toBe(ownClassId)
+    const mine = db.tables.classes!.filter((c) => c.school_id === personal)
+    expect(mine.map((c) => c.name).sort()).toEqual(["My school's Term 1 plan", 'Grade 6 (my own)'].sort())
+    expect(mine.find((c) => c.id === out.classId)).toMatchObject({ name: 'Grade 6 (my own)', grade: 6 })
+    // The CAPS map is on the CAPS class only; the own class keeps its one map, untouched.
+    expect(db.tables.curriculum_maps!.filter((m) => m.class_id === ownClassId)).toEqual([expect.objectContaining({ id: 'own-map', draft: { name: "My school's Term 1 plan" } })])
+    const capsMaps = db.tables.curriculum_maps!.filter((m) => m.class_id === out.classId)
+    expect(capsMaps).toHaveLength(1)
+    expect(capsMaps[0]).toMatchObject({ status: 'approved', draft: capsMapOf(6)!.stored })
+    expect(out.topics).toBe(capsMapOf(6)!.rows.length)
+    expect(db.tables.enrolments!.filter((e) => e.child_id === twinId).map((e) => e.class_id).sort()).toEqual([ownClassId, out.classId].sort())
+  })
+
+  test('a second call for the grade finds the CAPS class, not the own class, and adds nothing', async () => {
+    const { db, twinId, ownClassId } = await withOwnClass(6)
+    const first = await addOwnGrade(db, twinId, 6, LEARNER, NOW)
+    const again = await addOwnGrade(db, twinId, 6, LEARNER, NOW)
+    expect(again).toEqual({ ...first, created: false })
+    expect(again.classId).not.toBe(ownClassId)
+    expect(db.tables.classes!.filter((c) => c.grade === 6 && c.school_id !== SCHOOL)).toHaveLength(2)
+    expect(db.tables.curriculum_maps!.filter((m) => m.class_id === first.classId)).toHaveLength(1)
+  })
+
+  test('the CAPS class made first and the own class made after it do not meet either: the grade adds nothing', async () => {
+    const { db, twinId } = await started6()
+    const first = await addOwnGrade(db, twinId, 6, LEARNER, NOW)
+    db.tables.classes!.push({ id: 'later-own', school_id: privateSchools(db)[0]!.id, teacher_id: LEARNER, name: 'Term 2 plan', grade: 6, subject: 'Mathematics', year: 2026, join_code: 'OWNC22', created_at: '2026-11-13T08:00:00.000Z' })
+    db.tables.enrolments!.push({ class_id: 'later-own', child_id: twinId })
+    expect(await addOwnGrade(db, twinId, 6, LEARNER, NOW)).toEqual({ ...first, created: false })
+    expect(db.tables.curriculum_maps!.filter((m) => m.class_id === 'later-own')).toHaveLength(0)
+  })
+
+  async function started6() {
+    const db = world()
+    return { db, twinId: await ensureOwnWorkspace(db, AMINA, LEARNER) }
+  }
+
+  test('an own curriculum of one grade does not stop another grade from being added', async () => {
+    const { db, twinId } = await withOwnClass(6)
+    const out = await addOwnGrade(db, twinId, 9, LEARNER, NOW)
+    expect(out).toMatchObject({ grade: 9, created: true })
+    expect(db.tables.classes!.find((c) => c.id === out.classId)).toMatchObject({ name: 'Grade 9 (my own)' })
+  })
+
+  test('listOwnClasses says which class is the CAPS one, in grade order with the CAPS class before an own class of the same grade', async () => {
+    const { db, twinId, ownClassId } = await withOwnClass(6)
+    const caps7 = await addOwnGrade(db, twinId, 7, LEARNER, NOW)
+    const caps6 = await addOwnGrade(db, twinId, 6, LEARNER, NOW)
+    const classes = await listOwnClasses(db, twinId)
+    expect(classes).toEqual([
+      { id: caps6.classId, name: 'Grade 6 (my own)', grade: 6, caps: true },
+      { id: ownClassId, name: "My school's Term 1 plan", grade: 6, caps: false },
+      { id: caps7.classId, name: 'Grade 7 (my own)', grade: 7, caps: true },
+    ])
+  })
+
+  test('with no CAPS class of that grade the own class is listed alone, and is not a CAPS class', async () => {
+    const { db, twinId, ownClassId } = await withOwnClass(9)
+    expect(await listOwnClasses(db, twinId)).toEqual([{ id: ownClassId, name: "My school's Term 1 plan", grade: 9, caps: false }])
+  })
+
+  test('the class My maths shows first is the CAPS class of the learner\'s grade, even when an own class of that grade is older', async () => {
+    const { db, twinId, ownClassId } = await withOwnClass(6)
+    expect(await defaultOwnClass(db, twinId)).toBe(ownClassId)
+    const caps6 = await addOwnGrade(db, twinId, 6, LEARNER, NOW)
+    expect(await defaultOwnClass(db, twinId)).toBe(caps6.classId)
+  })
+
+  test('getOwnOverview answers every class with caps, an own class too, with its own name', async () => {
+    const { db, twinId, ownClassId } = await withOwnClass(6)
+    const caps6 = await addOwnGrade(db, twinId, 6, LEARNER, NOW)
+    const overview = await getOwnOverview(db, twinId, NOW)
+    expect(overview.map((g) => [g.classId, g.caps, g.name])).toEqual([
+      [caps6.classId, true, 'Grade 6 (my own)'],
+      [ownClassId, false, "My school's Term 1 plan"],
+    ])
+  })
+
+  test('the teacher\'s read-only view lists the own class as a class of its own, with caps false', async () => {
+    const { db, twinId, ownClassId } = await withOwnClass(6)
+    const caps6 = await addOwnGrade(db, twinId, 6, LEARNER, NOW)
+    const summary = await getOwnWorkspaceForTeacher(db, { teacherId: TEACHER, classId: HOME_CLASS, childId: AMINA, now: NOW })
+    expect(summary!.grades.map((g) => [g.classId, g.caps])).toEqual([[caps6.classId, true], [ownClassId, false]])
   })
 })
