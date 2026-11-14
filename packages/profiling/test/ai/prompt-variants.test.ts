@@ -345,3 +345,17 @@ describe('the reader of a practice answered on paper, for a senior class', () =>
     expect(createHash('sha256').update(md('read_paper')).digest('hex')).toBe(SHA256.read_paper)
   })
 })
+
+describe('the prompt that reads a marked test of the learner', () => {
+  /** The sha256 of `read_marked_test.md` (P96, 14 Nov 2026). It has no rendered variants: it is not told a class, and a learner's own test is Mathematics only. */
+  const MARKED_TEST_SHA256 = 'f11339af388ca6bcfcc6f4a172c5799a7da9b646d30de07d73afa57ddb0c0ae4'
+
+  test('read_marked_test.md has the sha256 it was written with, so an edit of the file cannot go unnoticed', () => {
+    const text = readFileSync(join(dir, 'read_marked_test.md'), 'utf8')
+    expect(createHash('sha256').update(text).digest('hex')).toBe(MARKED_TEST_SHA256)
+  })
+
+  test('it is not one of the jobs with a rendered prompt', () => {
+    expect(PROMPT_JOBS).not.toContain('read_marked_test')
+  })
+})

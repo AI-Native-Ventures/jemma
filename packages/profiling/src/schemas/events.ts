@@ -24,6 +24,12 @@ export const EventSchema = z.discriminatedUnion('type', [
    * are the indexes into the lesson's questions that went on paper, in order, numbered 1 to 5 on the sheet (`paperQuestions` picks them).
    */
   z.object({ type: z.literal('practice.snapped'), sessionId: z.string(), path: z.string(), questions: z.array(z.number().int().min(0)) }),
+  /**
+   * A learner took a photo of a test of their own that came back already marked (ticks and crosses), in their private workspace. `paperId` is a
+   * paper of no test (`papers.test_id` null) whose `child_id` is `childId`, with its photos in `paper_pages`. Jemma reads the teacher's marks into
+   * `question_results` (`read_marked_test`), then finds gaps from them. It never marks the answers itself and changes nothing in the school's record.
+   */
+  z.object({ type: z.literal('own_test.snapped'), childId: z.string(), paperId: z.string() }),
 ])
 export type JemmaEvent = z.infer<typeof EventSchema>
 export type EventType = JemmaEvent['type']
