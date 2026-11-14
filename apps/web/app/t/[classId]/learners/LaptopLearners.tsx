@@ -75,7 +75,7 @@ function StageGlyph({ stage }: { stage: string }) {
 
 const card = 'flex min-w-0 flex-col gap-2.5 rounded-18 bg-ground p-4'
 
-function Detail({ view, profile, extras, base }: { view: LearnerView; profile: ChildProfileView; extras: LearnerDetailExtras; base: string }) {
+function Detail({ view, profile, extras, base, hasOwn }: { view: LearnerView; profile: ChildProfileView; extras: LearnerDetailExtras; base: string; hasOwn: boolean }) {
   const heading =
     profile.average === null
       ? `${view.name} has no marked test yet.`
@@ -104,6 +104,11 @@ function Detail({ view, profile, extras, base }: { view: LearnerView; profile: C
           <Link href={`${base}/learners/${view.id}/long-view`} className="flex h-[46px] flex-none items-center justify-center rounded-14 border-[1.5px] border-ink bg-card px-[18px] text-[15px] font-semibold text-ink no-underline">
             Long view
           </Link>
+          {hasOwn ? (
+            <Link href={`${base}/learners/${view.id}/own`} className="flex h-[46px] flex-none items-center justify-center rounded-14 border-[1.5px] border-ink bg-card px-[18px] text-[15px] font-semibold text-ink no-underline">
+              {view.name}&apos;s own practice
+            </Link>
+          ) : null}
           <Link href={paperHref} className="flex h-[46px] flex-none items-center justify-center gap-2 rounded-14 bg-ink px-[18px] text-[15px] font-semibold text-white no-underline">
             <svg width="15" height="15" viewBox="0 0 24 24" strokeWidth="1.9" {...svg} stroke="#FFFFFF">
               <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
@@ -249,12 +254,15 @@ export function LaptopLearners({
   selected,
   detail,
   madeUp,
+  hasOwn = false,
 }: {
   v: LearnersView
   classId: string
   selected: string
   madeUp?: ReactNode
   detail: { view: LearnerView; profile: ChildProfileView; extras: LearnerDetailExtras } | null
+  /** The chosen learner has a private workspace ("My own"): the pane links to the read-only page of what they practised on their own. */
+  hasOwn?: boolean
 }) {
   const base = `/t/${classId}`
   return (
@@ -318,7 +326,7 @@ export function LaptopLearners({
               })}
             </ul>
           </section>
-          {detail ? <Detail {...detail} base={base} /> : null}
+          {detail ? <Detail {...detail} base={base} hasOwn={hasOwn} /> : null}
         </div>
       </div>
     </div>

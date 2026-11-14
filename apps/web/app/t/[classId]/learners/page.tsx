@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { getChildProfileView, getLearnerView, getLearnersView } from '@/lib/data/p19'
 import { getLearnerDetailExtras } from '@/lib/data/p33'
 import { isDemoClass } from '@/lib/demo'
+import { twinOfChild } from '@/lib/own-workspace'
 import { Only } from '../Only'
 import { Avatar, Chevron, Diamond, Page, card, font } from './_parts'
 import { LaptopLearners } from './LaptopLearners'
@@ -22,16 +23,16 @@ export default async function LearnersPage({
   // "Add made-up learners" is offered in a demo sandbox school only. The server action checks the sandbox again.
   const madeUp = (await isDemoClass(classId)) ? <MadeUpLearners classId={classId} /> : null
   const selected = v.learners.find((l) => l.id === child)?.id ?? v.learners[0]?.id ?? ''
-  const [view, profile, extras] = selected
-    ? await Promise.all([getLearnerView(classId, selected), getChildProfileView(classId, selected), getLearnerDetailExtras(selected)])
-    : [null, null, null]
+  const [view, profile, extras, twin] = selected
+    ? await Promise.all([getLearnerView(classId, selected), getChildProfileView(classId, selected), getLearnerDetailExtras(selected), twinOfChild(selected)])
+    : [null, null, null, null]
   return (
     <>
       <Only on="phone">
         <Phone classId={classId} v={v} madeUp={madeUp} />
       </Only>
       <Only on="laptop">
-        <LaptopLearners v={v} classId={classId} selected={selected} madeUp={madeUp} detail={view && profile && extras ? { view, profile, extras } : null} />
+        <LaptopLearners v={v} classId={classId} selected={selected} madeUp={madeUp} detail={view && profile && extras ? { view, profile, extras } : null} hasOwn={twin !== null} />
       </Only>
     </>
   )
