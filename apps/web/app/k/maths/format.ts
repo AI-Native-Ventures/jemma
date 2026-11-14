@@ -25,12 +25,13 @@ export type StrandScreen =
 
 /**
  * What the screen of one part shows: this year's topics of the part, or, when the class has no approved map or the map has no topic of this
- * part, one line and one button to practise the part itself (the part's label is the choice).
+ * part, one line and one button to practise the part itself (the part's label is the choice). The line is `NO_MAP_LINE` unless the caller says
+ * another one: in "My own" there is no teacher to wait for ("No topics yet for Grade 9.").
  */
-export function strandScreen(strand: MyMathsStrand): StrandScreen {
+export function strandScreen(strand: MyMathsStrand, noMapLine: string = NO_MAP_LINE): StrandScreen {
   const score = rowScore(strand.score)
   if (strand.topics.length > 0) return { kind: 'topics', title: strand.label, score, topics: strand.topics }
-  return { kind: 'no-topics', title: strand.label, score, line: NO_MAP_LINE, button: `Practise ${strand.label}`, choice: { topicName: strand.label } }
+  return { kind: 'no-topics', title: strand.label, score, line: noMapLine, button: `Practise ${strand.label}`, choice: { topicName: strand.label } }
 }
 
 /** Where nothing should be offered to practise: tonight's lesson waits, or a practice is being written. */

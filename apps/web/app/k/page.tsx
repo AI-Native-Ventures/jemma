@@ -63,7 +63,7 @@ export default async function ChildToday() {
               </span>
             </section>
           ) : null}
-          <PracticeCard state={today.practice} suggestion={today.suggestion} />
+          <PracticeCard state={today.practice} suggestion={today.suggestion} workspace={today.workspace} />
           <GapsCard today={today} tone="rest" />
         </div>
       </div>

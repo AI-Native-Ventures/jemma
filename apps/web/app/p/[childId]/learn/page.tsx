@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { GemIcon } from '@/components/ui/icons'
 import { Only } from '../_only'
 import { LearnLaptop } from './_laptop'
+import { OwnPracticeCard } from './OwnPracticeCard'
 import {
   dayNumber,
   decimalComma,
@@ -50,6 +51,7 @@ export default async function ParentLearnPage({ params }: { params: Promise<{ ch
       <div className="flex flex-col gap-5 px-5 pt-3.5 pb-5 leading-[normal] lg:max-w-3xl lg:px-10 lg:pt-8">
         <p className="m-0 text-[14px] font-semibold text-body">Learn</p>
         <p className="m-0 text-[17px] text-body">Nothing is planned yet. Jemma plans the next lesson after the next marked test.</p>
+        <OwnPracticeCard childId={childId} name={name} />
       </div>
     )
   }
@@ -120,6 +122,8 @@ export default async function ParentLearnPage({ params }: { params: Promise<{ ch
           {name} sees how she did at the end, never a score. You see everything.
         </p>
       </section>
+
+      <OwnPracticeCard childId={childId} name={name} />
 
       <section aria-labelledby="week" className="flex flex-col rounded-20 border border-line bg-card px-4 pt-3.5 pb-2">
         <h2 id="week" className={`${sectionTitle} mb-1.5`}>

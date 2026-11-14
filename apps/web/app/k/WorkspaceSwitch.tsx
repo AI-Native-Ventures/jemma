@@ -1,59 +1,55 @@
 'use client'
 
+import { PendingButton } from '@/components/ui/Button'
+import { OWN_NOTE } from '@/lib/own-grades'
+import type { Workspace } from '@/lib/workspace'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { PendingButton } from '@/components/ui/Button'
-import type { Workspace } from '@/lib/workspace'
 import { setWorkspace } from './own-actions'
 
-const choices: { workspace: Workspace; label: string }[] = [
+// Two equal buttons with room around their words (the P90 rule): the cell sets the width, the words may take a second line.
+const base = 'flex min-h-11 w-full cursor-pointer items-center justify-center rounded-14 px-5 py-3 text-center text-[17px] leading-[1.25] font-semibold text-balance disabled:opacity-60'
+const filled = `${base} border-[1.5px] border-ink bg-ink text-white`
+const outline = `${base} border-[1.5px] border-ink bg-card text-ink`
+
+const CHOICES: { workspace: Workspace; label: string }[] = [
   { workspace: 'school', label: 'My school' },
   { workspace: 'own', label: 'My own' },
 ]
 
-const base = 'flex min-h-11 flex-1 cursor-pointer items-center justify-center rounded-pill border px-4 py-2 text-center text-[16px] leading-[1.2] font-semibold text-balance disabled:opacity-60'
-const on = 'border-ink bg-ink text-white'
-const off = 'border-line bg-card text-ink'
-
 /**
- * The switch at the top of the learner's home: "My school" (the child of the school) and "My own" (the learner's private workspace). The one that
- * is on is marked pressed. A tap on the other one asks the server (`setWorkspace`, which opens "My own" the first time), then the screen looks
- * again, so the home, "My maths" and practice all show that workspace. A tap on the one that is on does nothing.
+ * The switch at the top of the learner's home and of My maths: "My school" or "My own", the current one filled and marked with aria-pressed.
+ * In My own, one short line under it says nothing here goes to the school. A tap on the other one calls `setWorkspace` (it writes the cookie that
+ * every learner screen reads) and the same screen is drawn again for the new workspace: home stays home, My maths stays My maths. A tap on the one
+ * that is on screen does nothing. A refusal is said in the action's own plain words.
  */
 export function WorkspaceSwitch({ current }: { current: Workspace }) {
   const router = useRouter()
   const [message, setMessage] = useState<string | null>(null)
-  const [asked, setAsked] = useState<Workspace | null>(null)
+  const [wanted, setWanted] = useState<Workspace | null>(null)
   const [pending, start] = useTransition()
 
-  const choose = (workspace: Workspace) => {
-    if (workspace === current || pending) return
-    setAsked(workspace)
+  const choose = (next: Workspace) => {
+    if (next === current || pending) return
+    setWanted(next)
     start(async () => {
-      const res = await setWorkspace(workspace)
+      const res = await setWorkspace(next)
       setMessage(res.ok ? null : res.message)
-      router.refresh()
+      if (res.ok) router.refresh()
     })
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div role="group" aria-label="Where you practise" className="flex gap-2">
-        {choices.map(({ workspace, label }) => (
-          <PendingButton
-            key={workspace}
-            type="button"
-            aria-pressed={current === workspace}
-            pending={pending && asked === workspace}
-            disabled={pending}
-            onClick={() => choose(workspace)}
-            className={`${base} ${current === workspace ? on : off}`}
-          >
+    <div className="flex flex-col gap-2.5">
+      <div role="group" aria-label="Where you practise" className="grid grid-cols-2 gap-2.5">
+        {CHOICES.map(({ workspace: ws, label }) => (
+          <PendingButton key={ws} type="button" aria-label={label} aria-pressed={current === ws} pending={pending && wanted === ws} disabled={pending} onClick={() => choose(ws)} className={current === ws ? filled : outline}>
             {label}
           </PendingButton>
         ))}
       </div>
-      {message ? <p role="alert" className="m-0 text-center text-[14px] text-coral-text">{message}</p> : null}
+      {current === 'own' ? <p className="m-0 px-1 text-[15px] leading-[1.4] text-body">{OWN_NOTE}</p> : null}
+      {message ? <p role="alert" className="m-0 px-1 text-[14px] text-coral-text">{message}</p> : null}
     </div>
   )
 }
