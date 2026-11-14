@@ -43,6 +43,8 @@ test.describe('child-sign-in', () => {
       const creds = await learnerCreds(sb.sandboxId)
       await page.context().clearCookies()
       await page.goto('/k/sign-in')
+      // P92: the keypad is disabled ("Getting ready...") until the page is ready; wait for it, then tap.
+      await expect(page.getByText('0 of 4 digits typed')).toBeAttached()
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hi! Sign in to your Jemma.')
       await expect(page.getByText('Your code', { exact: true })).toBeVisible()
       await expect(page.getByText('Your PIN', { exact: true })).toBeVisible()
@@ -69,6 +71,7 @@ test.describe('child-sign-in', () => {
       const creds = await learnerCreds(sb.sandboxId)
       await page.context().clearCookies()
       await page.goto('/k/sign-in')
+      await expect(page.getByText('0 of 4 digits typed')).toBeAttached()
       const wrong = creds.pin === '0000' ? '1111' : '0000'
       await page.getByLabel('Your code').fill(creds.code)
       await typePin(page, wrong)
