@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, test, vi } from 'vitest'
 import { z } from 'zod'
+import { renderPrompt } from '../src/ai/prompt-variants'
 import { isSeniorMaths, makeClassContext } from '../src/ai/subject-profile'
 import { PrimaryLessonSchema, SeniorLessonSchema } from '../src/schemas/lesson'
 import { askedFor, CHILD_INFO } from './helpers/write-lesson-world'
@@ -54,6 +55,24 @@ describe('the schema the model is given', () => {
     const seen = await askedFor(spec, PROMPT)
     expect(schemaOf(seen.system)).toBe(schemaText(PrimaryLessonSchema))
     for (const word of ['"expression"', '"equation"', '"point"', '"form"']) expect(seen.system).not.toContain(word)
+  })
+})
+
+describe('the system text', () => {
+  const klass = (subject: string, grade: number, country: string) => makeClassContext({ classId: 'c', subject, grade, country })
+
+  test('a Grade 10 South African class: the senior prompt, then the senior schema', async () => {
+    const seen = await askedFor({ subject: 'Mathematics', grade: 10, country: 'ZA', family: 'algebra' }, PROMPT)
+    expect(seen.system).toBe(`${renderPrompt('write_lesson', PROMPT, klass('Mathematics', 10, 'ZA'))}${SCHEMA_INTRO}${schemaText(SeniorLessonSchema)}`)
+    expect(seen.system).toContain('for a Grade 10 learner')
+    expect(seen.system).toContain('`point` (`(2; -3)`)')
+  })
+
+  test('a Grade 4 class: no senior rule, the primary schema', async () => {
+    const seen = await askedFor({ subject: 'Mathematics', grade: 4, country: 'ZA' }, PROMPT)
+    expect(seen.system).toBe(`${renderPrompt('write_lesson', PROMPT, klass('Mathematics', 4, 'ZA'))}${SCHEMA_INTRO}${schemaText(PrimaryLessonSchema)}`)
+    expect(seen.system).toContain('for a Grade 4 child')
+    expect(seen.system).not.toContain('`expression`')
   })
 })
 

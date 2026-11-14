@@ -137,7 +137,11 @@ export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices
 // One rule for the screen and for paper: the agent's `save_practice_answers` finishes and marks a written answer with the same functions.
 export { completeAnswer, fillMissing, finishAnswer, paperQuestions }
 
-export type AnswerBoxes = { whole: string; top: string; bottom: string; text: string }
+/** What the boxes hold. `x` and `y` are the two boxes of a point (a senior class). */
+export type AnswerBoxes = { whole: string; top: string; bottom: string; text: string; x?: string; y?: string }
+
+/** A number as the child typed it holds a digit: a minus alone, or a comma alone, is not a number yet. */
+const hasDigit = (s: string) => /\d/.test(s)
 
 /**
  * The text sent for what the boxes on screen hold, or '' while a box that is shown is still empty.
@@ -146,7 +150,10 @@ export type AnswerBoxes = { whole: string; top: string; bottom: string; text: st
 export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
   const [whole, top, bottom] = [boxes.whole.trim(), boxes.top.trim(), boxes.bottom.trim()]
   // "12," is a number the child stopped typing: the comma at the end is not part of it.
-  const text = shape.kind === 'missing' || shape.kind === 'text' ? boxes.text.trim() : boxes.text.trim().replace(/[.,]+$/, '')
+  const text =
+    shape.kind === 'missing' || shape.kind === 'text' || shape.kind === 'expression' || shape.kind === 'equation'
+      ? boxes.text.trim()
+      : boxes.text.trim().replace(/[.,]+$/, '')
   switch (shape.kind) {
     case 'missing':
       return text ? fillMissing(shape.part, text) : ''
@@ -156,6 +163,12 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
       return whole && top && bottom ? `${whole} ${top}/${bottom}` : ''
     case 'money':
       return text ? `R${text}` : ''
+    case 'number':
+      return hasDigit(text) ? text : ''
+    case 'point': {
+      const [x, y] = [(boxes.x ?? '').trim().replace(/[.,]+$/, ''), (boxes.y ?? '').trim().replace(/[.,]+$/, '')]
+      return hasDigit(x) && hasDigit(y) ? `(${x}; ${y})` : ''
+    }
     default:
       return text
   }

@@ -1,6 +1,6 @@
 import { generateText, Output, type LanguageModel } from 'ai'
 import { getModel } from '../../ai'
-import { renderPrompt } from '../../ai/prompt-variants'
+import { renderPrompt, type PromptPlace } from '../../ai/prompt-variants'
 import { classContext, type ClassContext } from '../../ai/subject-profile'
 import { PaperReadSchema } from '../../schemas/papers'
 import { contextFor, ok, type ToolContext, type ToolImage } from '../../tools/context'
@@ -21,13 +21,13 @@ const LETTERS = ['A', 'B', 'C', 'D']
 async function askModel(
   ctx: ToolContext,
   deps: ReadPaperDeps,
-  input: { roster: string[]; questions: string; none: string; images: ToolImage[]; klass: ClassContext | null },
+  input: { roster: string[]; questions: string; none: string; images: ToolImage[]; klass: ClassContext | null; place?: PromptPlace },
 ) {
-  const { roster, questions, none, images, klass } = input
+  const { roster, questions, none, images, klass, place } = input
   const result = await generateText({
     model: deps.model ?? getModel('vision', ctx.env),
     // The Worker bundles the .md as text (wrangler rule); tests and the desktop runner pass the text in.
-    system: renderPrompt('read_paper', deps.prompt ?? ((await import('../read_paper.md' as string)) as { default: string }).default, klass),
+    system: renderPrompt('read_paper', deps.prompt ?? ((await import('../read_paper.md' as string)) as { default: string }).default, klass, place),
     output: Output.object({ schema: PaperReadSchema }),
     messages: [
       {
@@ -58,7 +58,8 @@ async function readPractice(base: ToolContext, sessionId: string, deps: ReadPape
     .map((q) => `${q.n}. ${q.prompt}${q.choices?.length ? ` (${q.choices.map((c, i) => `${LETTERS[i]}. ${c}`).join('  ')})` : ''}`)
     .join('\n')
   const klass = await classContext(ctx.db, { sessionId, eventId: ctx.eventId })
-  const read = await askModel(ctx, deps, { roster: [], questions, none: 'none', images, klass })
+  // `place: 'practice'`: a senior class's reader is also told to keep algebra as written (a class test or a homework photo is asked as before).
+  const read = await askModel(ctx, deps, { roster: [], questions, none: 'none', images, klass, place: 'practice' })
   await savePracticeAnswers.run(ctx, { sessionId, read })
 }
 

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { answerShape, answerValue, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
 import { PendingButton } from '@/components/ui/Button'
-import { Frac, FractionText, withFractions } from './Frac'
+import { Frac, FractionText, MathText, withFractions } from './Frac'
 
 const CHOICE_LETTERS = ['A', 'B', 'C', 'D']
 const noteClass = 'm-0 flex items-start gap-2.5 text-[15px] leading-[1.45] text-body'
@@ -68,12 +68,146 @@ function FractionBoxes({ top, bottom, onTop, onBottom }: { top: string; bottom: 
   )
 }
 
+// ---- The four kinds of a senior class (P86): an expression, an equation, a point and a number that may be negative ------------------------------------------
+
+const MINUS = '\u2212'
+/** The longest answer the server takes. */
+const MAX_TEXT = 40
+
+/** A number as it is typed with a minus: digits, a comma or a point, and a minus in front. A phone's number pad has no minus, so there is a key for it. */
+const signedNumber = (s: string, max: number) => {
+  const kept = s.replace(/\u2212/g, '-').replace(/[^\d.,-]/g, '')
+  return ((kept.startsWith('-') ? '-' : '') + kept.replace(/-/g, '')).slice(0, max)
+}
+const toggleMinus = (v: string, max: number) => (v.startsWith('-') ? v.slice(1) : `-${v}`.slice(0, max))
+
+type MathKey = { text: string; insert: string; label: string }
+const KEY_X: MathKey = { text: 'x', insert: 'x', label: 'x' }
+const KEY_MINUS: MathKey = { text: MINUS, insert: MINUS, label: 'minus' }
+const KEY_ROOT: MathKey = { text: '\u221a', insert: '\u221a', label: 'square root' }
+const EXPRESSION_KEYS: MathKey[] = [
+  KEY_X,
+  { text: 'y', insert: 'y', label: 'y' },
+  { text: '\u00b2', insert: '\u00b2', label: 'squared' },
+  { text: '^', insert: '^', label: 'to the power of' },
+  { text: '(', insert: '(', label: 'open bracket' },
+  { text: ')', insert: ')', label: 'close bracket' },
+  KEY_MINUS,
+  KEY_ROOT,
+]
+const EQUATION_KEYS: MathKey[] = [KEY_X, { text: '=', insert: ' = ', label: 'equals' }, KEY_MINUS, KEY_ROOT, { text: 'or', insert: ' or ', label: 'or' }]
+
+const FORM_HINTS = {
+  any: 'Type an expression, like 2x + 3.',
+  factorised: 'Type it as a product of brackets, like (x + 2)(x - 2).',
+  expanded: 'Type it with no brackets, like x\u00b2 + 4x + 4.',
+} as const
+const EQUATION_HINT = 'Type the answer, like x = 4. Two answers: x = 3 or x = -1.'
+
+const keyClass = 'flex h-12 min-w-12 cursor-pointer items-center justify-center rounded-14 border-2 border-edge bg-card px-3 text-[22px] font-bold text-ink'
+
+/**
+ * One text box for an answer made of letters, and under it one row of maths keys that put their sign where the cursor is. Under the keys the answer
+ * is drawn as it will be read ("It reads: 2x\u00b2 + 7x"). A key never takes the keyboard away from the box.
+ */
+function TypedMath({ value, onChange, keys, hint }: { value: string; onChange: (v: string) => void; keys: MathKey[]; hint: string }) {
+  const input = useRef<HTMLInputElement>(null)
+  const caret = useRef<number | null>(null)
+  // The box is given its new text by React, which puts the cursor at the end: it is put back after the sign that was inserted.
+  useEffect(() => {
+    if (caret.current !== null && input.current) {
+      input.current.setSelectionRange(caret.current, caret.current)
+      caret.current = null
+    }
+  }, [value])
+  const insert = (sign: string) => {
+    const el = input.current
+    const from = el?.selectionStart ?? value.length
+    const to = el?.selectionEnd ?? from
+    const next = value.slice(0, from) + sign + value.slice(to)
+    if (next.length > MAX_TEXT) return
+    caret.current = from + sign.length
+    onChange(next)
+    el?.focus()
+  }
+  return (
+    <div className="flex w-full flex-col items-center gap-3.5">
+      <label htmlFor="answer" className="sr-only">Your answer</label>
+      <input
+        id="answer"
+        ref={input}
+        type="text"
+        inputMode="text"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
+        maxLength={MAX_TEXT}
+        value={value}
+        onChange={(e) => onChange(e.target.value.slice(0, MAX_TEXT))}
+        className="mx-auto block h-[64px] w-full max-w-[360px] rounded-18 border-[3px] border-coral bg-card px-3 text-center text-[28px] font-bold text-ink outline-none"
+      />
+      <div data-keys="true" className="flex flex-wrap justify-center gap-2">
+        {keys.map((k) => (
+          <button key={k.label} type="button" aria-label={k.label} onMouseDown={(e) => e.preventDefault()} onClick={() => insert(k.insert)} className={keyClass}>
+            {k.text}
+          </button>
+        ))}
+      </div>
+      {value.trim() ? (
+        <p data-reads="true" className="m-0 text-center text-[16px] leading-[1.4] text-body">
+          It reads: <span className="text-[22px] font-bold text-ink"><MathText text={value.trim()} size={22} rule={2} gap={3} side={3} className="mx-0.5 align-middle" /></span>
+        </p>
+      ) : null}
+      <Hint>{hint}</Hint>
+    </div>
+  )
+}
+
+/** The minus key of a number: a phone's number pad has none. It puts a minus in front of the number, and takes it away again. */
+function MinusKey({ label, onPress, className = 'h-[76px] w-14 text-[34px]' }: { label: string; onPress: () => void; className?: string }) {
+  return (
+    <button type="button" aria-label={label} onMouseDown={(e) => e.preventDefault()} onClick={onPress} className={`flex flex-none cursor-pointer items-center justify-center rounded-18 border-2 border-edge bg-card font-bold text-ink ${className}`}>
+      {MINUS}
+    </button>
+  )
+}
+
+/** One coordinate of a point: the minus key, the box, and under them which one it is. */
+function Coordinate({ axis, value, onChange }: { axis: 'x' | 'y'; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div className="flex items-center gap-1">
+        <MinusKey label={`Minus sign for ${axis}`} onPress={() => onChange(toggleMinus(value, 10))} className="h-14 w-9 text-[26px]" />
+        <Box
+          id={axis}
+          label={`${axis} of the point`}
+          value={value}
+          onChange={(v) => onChange(signedNumber(v, 10))}
+          mode="decimal"
+          className="h-14 w-[80px] border-[3px] border-coral text-[26px]"
+        />
+      </div>
+      <span aria-hidden="true" className="text-[14px] font-semibold text-body">{axis}</span>
+    </div>
+  )
+}
+
 type Boxes = {
   whole: string
   top: string
   bottom: string
   text: string
-  set: { whole: (v: string) => void; top: (v: string) => void; bottom: (v: string) => void; text: (v: string) => void }
+  x: string
+  y: string
+  set: {
+    whole: (v: string) => void
+    top: (v: string) => void
+    bottom: (v: string) => void
+    text: (v: string) => void
+    x: (v: string) => void
+    y: (v: string) => void
+  }
 }
 
 /** The boxes and the line for every answer that is typed, by what kind of answer it is. A missing number is not here: it is typed in the question. */
@@ -121,6 +255,33 @@ function AnswerArea({ shape, b }: { shape: AnswerShape; b: Boxes }) {
         <div className="flex flex-col items-center gap-3.5">
           <Box id="answer" label="Your answer" value={b.text} onChange={(v) => b.set.text(numberText(v))} className="h-[76px] w-48 border-[3px] border-coral text-[40px]" />
           <Hint>Type a whole number.</Hint>
+        </div>
+      )
+    case 'expression':
+      return <TypedMath value={b.text} onChange={b.set.text} keys={EXPRESSION_KEYS} hint={FORM_HINTS[shape.form]} />
+    case 'equation':
+      return <TypedMath value={b.text} onChange={b.set.text} keys={EQUATION_KEYS} hint={EQUATION_HINT} />
+    case 'point':
+      return (
+        <div className="flex flex-col items-center gap-3.5">
+          <div data-point="true" className="flex items-start justify-center gap-1">
+            <span aria-hidden="true" className="pt-1 text-[40px] leading-[1] font-bold text-ink">(</span>
+            <Coordinate axis="x" value={b.x} onChange={b.set.x} />
+            <span aria-hidden="true" className="pt-1 text-[40px] leading-[1] font-bold text-ink">;</span>
+            <Coordinate axis="y" value={b.y} onChange={b.set.y} />
+            <span aria-hidden="true" className="pt-1 text-[40px] leading-[1] font-bold text-ink">)</span>
+          </div>
+          <Hint>Type the x and the y of the point.</Hint>
+        </div>
+      )
+    case 'number':
+      return (
+        <div className="flex flex-col items-center gap-3.5">
+          <div className="flex items-center gap-2.5">
+            <MinusKey label="Minus sign" onPress={() => b.set.text(toggleMinus(b.text, 12))} />
+            <Box id="answer" label="Your answer" value={b.text} onChange={(v) => b.set.text(signedNumber(v, 12))} mode="decimal" className="h-[76px] w-44 border-[3px] border-coral text-[40px]" />
+          </div>
+          <Hint>Type a number. It may be negative, like -3.</Hint>
         </div>
       )
     default:
@@ -212,6 +373,8 @@ export function QuestionScreen({ q, busy, onAnswer }: QuestionScreenProps) {
   const [top, setTop] = useState('')
   const [bottom, setBottom] = useState('')
   const [text, setText] = useState('')
+  const [x, setX] = useState('')
+  const [y, setY] = useState('')
   const shown = useRef(Date.now())
   useEffect(() => {
     shown.current = Date.now()
@@ -219,9 +382,9 @@ export function QuestionScreen({ q, busy, onAnswer }: QuestionScreenProps) {
 
   const warm = q.phase === 'warmup'
   const shape = answerShape(q)
-  const value = shape.kind === 'choice' ? (picked ?? '') : answerValue(shape, { whole, top, bottom, text })
+  const value = shape.kind === 'choice' ? (picked ?? '') : answerValue(shape, { whole, top, bottom, text, x, y })
   const submit = () => value && !busy && onAnswer(value, (Date.now() - shown.current) / 1000)
-  const boxes: Boxes = { whole, top, bottom, text, set: { whole: setWhole, top: setTop, bottom: setBottom, text: setText } }
+  const boxes: Boxes = { whole, top, bottom, text, x, y, set: { whole: setWhole, top: setTop, bottom: setBottom, text: setText, x: setX, y: setY } }
   const nextButton = (
     <PendingButton type="button" pending={busy} disabled={!value || busy} onClick={submit} className={nextClass}>Next</PendingButton>
   )
