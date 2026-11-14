@@ -1,15 +1,15 @@
-import grade1 from '../../../../fixtures/curriculum/caps/grade-1.json'
-import grade2 from '../../../../fixtures/curriculum/caps/grade-2.json'
-import grade3 from '../../../../fixtures/curriculum/caps/grade-3.json'
-import grade4 from '../../../../fixtures/curriculum/caps/grade-4.json'
-import grade5 from '../../../../fixtures/curriculum/caps/grade-5.json'
-import grade6 from '../../../../fixtures/curriculum/caps/grade-6.json'
-import grade7 from '../../../../fixtures/curriculum/caps/grade-7.json'
-import grade8 from '../../../../fixtures/curriculum/caps/grade-8.json'
-import grade9 from '../../../../fixtures/curriculum/caps/grade-9.json'
-import grade10 from '../../../../fixtures/curriculum/caps/grade-10.json'
-import grade11 from '../../../../fixtures/curriculum/caps/grade-11.json'
-import grade12 from '../../../../fixtures/curriculum/caps/grade-12.json'
+import grade1 from '../../../../fixtures/curriculum/caps/grade-1.json' with { type: 'json' }
+import grade2 from '../../../../fixtures/curriculum/caps/grade-2.json' with { type: 'json' }
+import grade3 from '../../../../fixtures/curriculum/caps/grade-3.json' with { type: 'json' }
+import grade4 from '../../../../fixtures/curriculum/caps/grade-4.json' with { type: 'json' }
+import grade5 from '../../../../fixtures/curriculum/caps/grade-5.json' with { type: 'json' }
+import grade6 from '../../../../fixtures/curriculum/caps/grade-6.json' with { type: 'json' }
+import grade7 from '../../../../fixtures/curriculum/caps/grade-7.json' with { type: 'json' }
+import grade8 from '../../../../fixtures/curriculum/caps/grade-8.json' with { type: 'json' }
+import grade9 from '../../../../fixtures/curriculum/caps/grade-9.json' with { type: 'json' }
+import grade10 from '../../../../fixtures/curriculum/caps/grade-10.json' with { type: 'json' }
+import grade11 from '../../../../fixtures/curriculum/caps/grade-11.json' with { type: 'json' }
+import grade12 from '../../../../fixtures/curriculum/caps/grade-12.json' with { type: 'json' }
 import type { TopicMapDraft } from '../schemas/curriculum'
 
 // The official South African Mathematics curriculum (CAPS), Grades 1 to 12, as a draft topic map. The 12 files are in
