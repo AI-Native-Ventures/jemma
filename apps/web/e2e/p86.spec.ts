@@ -1,4 +1,5 @@
 import { mkdirSync } from 'node:fs'
+import { createServer, type Server } from 'node:http'
 import { resolve } from 'node:path'
 import { createServiceClient, type Json } from '@jemma/profiling/db'
 import { LessonSchema, type Lesson, type Question } from '@jemma/profiling/schemas'
@@ -15,11 +16,12 @@ import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 //   Question 5  an expression, key (x+2)(x-2), factorised   typed x^2 - 4                      missed
 // The results screen then shows only Question 3 and Question 5, and the stored rows say the same.
 //
-// WRITTEN, NOT RUN (the database of the preview was switched off when this was written). Run it against a production build, phone project:
+// RUNS IN CI on every push (job "Feature specs in a browser", .github/workflows/ci.yml), on CI's own local database, phone project. There the stand-in
+// below takes port 8787 (STAND_IN_AGENT_PORT), where the web app posts. Never run it against the hosted preview database. By hand, against a production build:
 //   pnpm --filter web build
 //   AGENT_URL=http://127.0.0.1:8786 pnpm --filter web exec next start --port 3286        (own terminal, stop it by its pid after)
 //   P86_PROOF=1 PREVIEW_URL=http://localhost:3286 pnpm --filter web exec playwright test p86 --project=phone --workers=1
-// Screenshots are written only when P86_PROOF is set, to design/proof/p86 (390 wide). No agent runs: the end of a session is best effort.
+// Screenshots are written only when P86_PROOF is set, to design/proof/p86 (390 wide). No agent runs: the stand-in only takes the posts, and the end of a session is best effort.
 
 const check = expect.configure({ timeout: 45_000 })
 const admin = () => createServiceClient({ SUPABASE_URL: process.env.SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY! })
@@ -39,10 +41,27 @@ async function proof(page: Page, name: string) {
   await page.setViewportSize(size)
 }
 
-const opened: OpenedSandbox[] = []
+/** The agent's stand-in: accepts every post to /events, so the web app believes the agent took the event. It runs no job. */
+let agent: Server
+// The port the web app posts to (its AGENT_URL). CI frees 8787 (the real agent's) and sets STAND_IN_AGENT_PORT=8787.
+const STAND_IN_PORT = Number(process.env.STAND_IN_AGENT_PORT ?? 8786)
+base.beforeAll(async () => {
+  agent = createServer((req, res) => {
+    if (req.url === '/health') return void res.writeHead(200).end('ok')
+    req.resume()
+    req.on('end', () => res.writeHead(202, { 'content-type': 'application/json' }).end('{"queued":true}'))
+  })
+  await new Promise<void>((done) => agent.listen(STAND_IN_PORT, done))
+})
 base.afterAll(async () => {
-  base.setTimeout(240_000)
-  await Promise.all(opened.map((s) => s.cleanup().catch(() => undefined)))
+  await new Promise((done) => agent.close(done))
+})
+
+const opened: OpenedSandbox[] = []
+// A copy is removed as soon as its test is over: every copy adds topics that each screen reads through row level security, so copies left
+// standing until the end of the file make every screen slower (seen on CI).
+base.afterEach(async () => {
+  await Promise.all(opened.splice(0).map((s) => s.cleanup().catch(() => undefined)))
 })
 
 const test = base
