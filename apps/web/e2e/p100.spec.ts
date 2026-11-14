@@ -39,6 +39,12 @@ async function noSidewaysScroll(page: Page) {
   expect(wide, 'the page scrolls sideways').toBeLessThanOrEqual(0)
 }
 
+/** Ticks the agreement box the way a person does: a tap on its words. (The drawn box covers the real one, so a click on the real one is blocked.) */
+async function tickAgreement(page: Page) {
+  await page.getByText("I agree to Jemma's terms and privacy policy").click()
+  await expect(page.getByLabel("I agree to Jemma's terms and privacy policy")).toBeChecked()
+}
+
 /** The form's own line. Filtered by its words, because the framework's route announcer is an alert too. */
 const alertWith = (page: Page, words: string) => page.getByRole('alert').filter({ hasText: words })
 
@@ -77,7 +83,7 @@ test('a teacher signs up with an email and a password, signs out, and signs in a
   await check(password).toHaveValue(PASSWORD)
   await page.getByRole('button', { name: 'Hide' }).click()
   await check(password).toHaveAttribute('type', 'password')
-  await page.getByLabel("I agree to Jemma's terms and privacy policy").check()
+  await tickAgreement(page)
   await page.getByRole('button', { name: 'Make my account' }).click()
 
   // A good sign-up goes where a good code goes: the role picker.
@@ -122,7 +128,7 @@ test('a short password and an email that already has an account are refused in p
   await page.getByLabel('Your name').fill('Mr Dube')
   await page.getByLabel('Email').fill(`p100-short-${stamp}@example.test`)
   await page.getByLabel(PASSWORD_LABEL).fill('short')
-  await page.getByLabel("I agree to Jemma's terms and privacy policy").check()
+  await tickAgreement(page)
   await page.getByRole('button', { name: 'Make my account' }).click()
   await check(alertWith(page, 'Use at least 8')).toHaveText('Use at least 8 characters.')
   // What was typed comes back, except the password.
