@@ -144,7 +144,7 @@ export function CodeForm({ email, length: LENGTH }: { email: string; length: num
             </svg>
             Send a new code
           </PendingButton>
-          <Link href="/sign-in" style={{ display: 'flex', alignItems: 'center', minHeight: 44, padding: '0 10px', fontSize: 15, fontWeight: 600, color: colors.ink, textDecoration: 'underline', textUnderlineOffset: 3 }}>
+          <Link href="/sign-in?method=code" style={{ display: 'flex', alignItems: 'center', minHeight: 44, padding: '0 10px', fontSize: 15, fontWeight: 600, color: colors.ink, textDecoration: 'underline', textUnderlineOffset: 3 }}>
             Use a different email
           </Link>
         </div>

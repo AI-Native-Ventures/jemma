@@ -65,8 +65,10 @@ test('sign-in matches the board', async ({ page }, testInfo) => {
   await expect(page.getByText("Each child's own tutor. Snap a test, Jemma finds the gaps and teaches them.")).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
   await expect(page.getByLabel('Email')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Send me a sign-in code' })).toBeVisible()
-  await expect(page.getByText('We email you a 6 digit code. No password to remember.')).toBeVisible()
+  await expect(page.getByLabel('Password')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible()
+  await expect(page.getByText("Forgot your password? Ask the person who set up your school's Jemma.")).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Email me a code instead' })).toHaveAttribute('href', '/sign-in?method=code')
   await expect(page.getByText('New to Jemma?')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Create an account' })).toHaveAttribute('href', '/sign-up')
   await expect(page.getByRole('link', { name: 'Judging the challenge? Try the demo' })).toHaveAttribute('href', '/demo')
@@ -74,7 +76,7 @@ test('sign-in matches the board', async ({ page }, testInfo) => {
   await shot(page, testInfo, 'shared-sign-in')
 })
 
-test('sign-up matches the board and needs the agreement before sending a code', async ({ page }, testInfo) => {
+test('sign-up matches the board and needs the agreement before making the account', async ({ page }, testInfo) => {
   await page.goto('/sign-up')
   await expect(page.getByRole('heading', { name: "Make your Jemma account. It's free for families." })).toBeVisible()
   await expect(
@@ -82,6 +84,7 @@ test('sign-up matches the board and needs the agreement before sending a code', 
   ).toBeVisible()
   await expect(page.getByLabel('Your name')).toBeVisible()
   await expect(page.getByLabel('Email')).toBeVisible()
+  await expect(page.getByLabel('Make a password, at least 8 characters')).toBeVisible()
   await expect(page.getByText("I agree to Jemma's terms and privacy policy")).toBeVisible()
   await expect(page.getByRole('link', { name: 'Read it in plain words' })).toHaveAttribute('href', '/privacy')
   await expect(page.getByText('Already have an account?')).toBeVisible()
@@ -91,8 +94,9 @@ test('sign-up matches the board and needs the agreement before sending a code', 
 
   await page.getByLabel('Your name').fill('Test Person')
   await page.getByLabel('Email').fill('someone@example.test')
-  await page.getByRole('button', { name: 'Send me a code' }).click()
-  await expect(page.getByText('Tick the box to agree before we send a code.')).toBeVisible()
+  await page.getByLabel('Make a password, at least 8 characters').fill('not-a-real-password-1')
+  await page.getByRole('button', { name: 'Make my account' }).click()
+  await expect(page.getByText('Tick the box to agree to the terms.')).toBeVisible()
   await expect(page).toHaveURL(/\/sign-up$/)
 })
 
@@ -105,7 +109,7 @@ test('code screen matches the board', async ({ page }, testInfo) => {
   await expect(page.getByRole('heading', { name: "Didn't get it?" })).toBeVisible()
   await expect(page.getByText('Check your spam folder. A new code can take a minute.')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Send a new code' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Use a different email' })).toHaveAttribute('href', '/sign-in')
+  await expect(page.getByRole('link', { name: 'Use a different email' })).toHaveAttribute('href', '/sign-in?method=code')
   await noHorizontalScroll(page)
   await page.locator('body').click({ position: { x: 2, y: 2 } })
   await shot(page, testInfo, 'shared-code')

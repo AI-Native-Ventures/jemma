@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import type { AuthError } from '@supabase/supabase-js'
 import type { Tables } from '@jemma/profiling/db'
 import { HOMES, type Role } from '@/components/blocks/nav'
 import { attemptChildSignIn, type ChildSignInResult } from './child-login'
@@ -37,6 +38,12 @@ export async function sendSignInCode(email: string): Promise<{ ok: true } | { ok
   return error ? { ok: false, reason: error.message } : { ok: true }
 }
 
+/** Where a person who has just signed in goes: their home, or the role picker when they have no profile yet. Every way in ends here. */
+async function nextPathFor(supabase: Awaited<ReturnType<typeof createSupabaseServer>>, userId: string): Promise<string> {
+  const { data: profile } = await supabase.from('profiles').select('role').eq('user_id', userId).maybeSingle()
+  return profile ? HOMES[profile.role] : ROLE_PATH
+}
+
 /** Checks the emailed code. `next` is the user's home, or the role picker when they have no profile yet. */
 export async function verifySignInCode(
   email: string,
@@ -49,8 +56,55 @@ export async function verifySignInCode(
     type: 'email',
   })
   if (error || !data.user) return { ok: false }
-  const { data: profile } = await supabase.from('profiles').select('role').eq('user_id', data.user.id).maybeSingle()
-  return { ok: true, next: profile ? HOMES[profile.role] : ROLE_PATH }
+  return { ok: true, next: await nextPathFor(supabase, data.user.id) }
+}
+
+/** Why a sign-up with a password did not work. `confirm`: the project wants the email confirmed first, so no session came back. */
+export type PasswordSignUpFailure = 'taken' | 'short' | 'easy' | 'email' | 'confirm' | 'other'
+
+function signUpFailure(error: Pick<AuthError, 'code' | 'message'> & { reasons?: unknown }): PasswordSignUpFailure {
+  if (error.code === 'user_already_exists' || error.code === 'email_exists') return 'taken'
+  if (error.code === 'weak_password') {
+    const reasons = Array.isArray(error.reasons) ? error.reasons : []
+    return reasons.includes('pwned') || reasons.includes('characters') ? 'easy' : 'short'
+  }
+  if (error.code === 'email_address_invalid') return 'email'
+  return 'other'
+}
+
+/**
+ * Makes an account with an email and a password, no email sent (the project confirms new email sign-ups by itself, so a session comes
+ * back at once). The name is kept as the user data the profile's display name is read from. `next` is where a good code goes too.
+ */
+export async function createPasswordAccount(input: {
+  email: string
+  password: string
+  name: string
+}): Promise<{ ok: true; next: string } | { ok: false; why: PasswordSignUpFailure }> {
+  const supabase = await createSupabaseServer()
+  const name = input.name.trim()
+  const { data, error } = await supabase.auth.signUp({
+    email: input.email.trim().toLowerCase(),
+    password: input.password,
+    options: { data: { full_name: name, name } },
+  })
+  if (error) return { ok: false, why: signUpFailure(error) }
+  // A project that wants a confirmed email hides an email already in use as a user with no identities, and gives a new user no session.
+  if (data.user && data.user.identities?.length === 0) return { ok: false, why: 'taken' }
+  if (!data.user || !data.session) return { ok: false, why: 'confirm' }
+  return { ok: true, next: await nextPathFor(supabase, data.user.id) }
+}
+
+/** Checks an email and a password. `wrong`: the pair does not match (or the email has no password, as an account made with a code). */
+export async function checkPassword(
+  email: string,
+  password: string,
+): Promise<{ ok: true; next: string } | { ok: false; why: 'wrong' | 'other' }> {
+  const supabase = await createSupabaseServer()
+  const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password })
+  if (error) return { ok: false, why: error.code === 'invalid_credentials' ? 'wrong' : 'other' }
+  if (!data.user) return { ok: false, why: 'other' }
+  return { ok: true, next: await nextPathFor(supabase, data.user.id) }
 }
 
 /** First sign-in: pick teacher or parent. A user who already has a role keeps it. Learners are made by `createChildLogin`. */
