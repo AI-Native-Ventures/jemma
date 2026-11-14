@@ -14,7 +14,8 @@ import { describe, expect, it } from 'vitest'
 // is a fault: its words touch the edges and a long label cannot take a second line.
 
 const webRoot = resolve(import.meta.dirname, '..')
-const files = ['app/k/**/*.{ts,tsx}', 'app/p/**/*.{ts,tsx}', 'app/t/**/*.{ts,tsx}', 'app/(auth)/**/*.{ts,tsx}', 'app/demo/**/*.{ts,tsx}'].flatMap((p) => globSync(p, { cwd: webRoot })).sort()
+// P98 widened it once more, to the landing page at the root address: apps/web/app/page.tsx and apps/web/app/_landing.
+const files = ['app/k/**/*.{ts,tsx}', 'app/p/**/*.{ts,tsx}', 'app/t/**/*.{ts,tsx}', 'app/(auth)/**/*.{ts,tsx}', 'app/demo/**/*.{ts,tsx}', 'app/_landing/**/*.{ts,tsx}', 'app/page.tsx'].flatMap((p) => globSync(p, { cwd: webRoot })).sort()
 
 /**
  * Elements left as they are on purpose. An element is let through when its opening tag holds `needle`. Each one says why.
@@ -220,6 +221,13 @@ describe('the guard reads the right files', () => {
     expect(files).toContain('app/(auth)/_parts.tsx')
     expect(files).toContain('app/demo/page.tsx')
     expect(files).toContain('app/demo/reset/page.tsx')
+  })
+
+  it('finds the landing page at the root address (P98): its buttons and links are held to the same rule', () => {
+    for (const f of ['app/page.tsx', 'app/_landing/Hero.tsx', 'app/_landing/Footer.tsx', 'app/_landing/Audiences.tsx']) {
+      expect(files, f).toContain(f)
+      expect(scan(f), f).toEqual([])
+    }
   })
 
   it('catches the fault it is looking for, and lets a button with room through', () => {
