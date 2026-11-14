@@ -152,3 +152,85 @@ export const ownItemRows = (p: OwnPractice, sessionId: string) => [
     session_id: sessionId, position: i + 1, phase: 'try' as const, question: json(t.q), difficulty: t.difficulty, answer: t.answer, correct: t.correct, seconds: t.seconds, adapted: t.adapted,
   })),
 ]
+
+// ---- The marked test ----------------------------------------------------------------------------
+
+/**
+ * One test Amina got back marked, already read (P97): 8 questions on two topics of the Grade 6 map, 6 ticks and 2 crosses, the two crosses on the
+ * same fractions topic. The topics are not the two the practices above count (3 of 5 in "Common fractions" and in the whole numbers topic), so
+ * those counts stay as they are. The answers that are wrong are the kind a learner writes (the tops added, the bottoms added).
+ */
+export type OwnMarkedResult = { prompt: string; answer: string; correct: boolean; topicName: string; confidence: number }
+export type OwnMarkedTest = { results: OwnMarkedResult[]; /** The topic of the two wrong answers: the topic of the one open gap. */ gapTopicName: string }
+
+const FRACTIONS = 'Common fractions (Term 4)'
+const DECIMALS = 'Decimal fractions'
+
+export function ownMarkedTest(): OwnMarkedTest {
+  const q = (n: number, words: string, answer: string, correct: boolean, topicName: string, confidence: number): OwnMarkedResult => ({ prompt: `${n}. ${words}`, answer, correct, topicName, confidence })
+  return {
+    gapTopicName: FRACTIONS,
+    results: [
+      q(1, 'Simplify 6/8', '3/4', true, FRACTIONS, 0.95),
+      q(2, 'Write 2/3 with 9 as the bottom number', '6/9', true, FRACTIONS, 0.92),
+      q(3, 'Add 1/2 and 1/3', '2/5', false, FRACTIONS, 0.9),
+      q(4, 'Add 3/4 and 1/8', '4/12', false, FRACTIONS, 0.88),
+      q(5, 'Write 3/10 as a decimal', '0,3', true, DECIMALS, 0.94),
+      q(6, 'Write 0,25 as a fraction', '1/4', true, DECIMALS, 0.93),
+      q(7, 'Which is bigger, 0,4 or 0,35?', '0,4', true, DECIMALS, 0.9),
+      q(8, 'Round 3,68 to one decimal place', '3,7', true, DECIMALS, 0.91),
+    ],
+  }
+}
+
+/** The paper: the twin's own, no test, marked, the ticks as its total (the whole numbers `papers.total` holds), read 3 days before the copy was made. */
+export const ownPaperRow = (childId: string, now: Date) => ({
+  test_id: null,
+  child_id: childId,
+  owner: 'parent' as const,
+  kind: 'test' as const,
+  status: 'marked' as const,
+  name_read: null,
+  total: ownMarkedTest().results.filter((r) => r.correct).length,
+  error: null,
+  created_at: new Date(now.getTime() - 3 * DAY).toISOString(),
+})
+
+/** One `question_results` row for each question, numbered 1 to 8 in the order read: a tick is mark 1, a cross mark 0. The topic id comes from the Grade 6 map. */
+export const ownResultRows = (test: OwnMarkedTest, ids: { paperId: string; childId: string; topicIdOf: (topicName: string) => string }) =>
+  test.results.map((r, i) => ({
+    paper_id: ids.paperId,
+    child_id: ids.childId,
+    n: i + 1,
+    prompt: r.prompt,
+    answer_read: r.answer,
+    read_confidence: r.confidence,
+    correct: r.correct,
+    mark: r.correct ? 1 : 0,
+    crop: null,
+    topic_id: ids.topicIdOf(r.topicName),
+    topic_name: r.topicName,
+    misconception: null,
+  }))
+
+/** The one open private gap: the topic of the wrong answers, with those answers as its evidence. */
+export const ownGapRow = (input: { childId: string; topicId: string; topicName: string; wrongResultIds: string[] }) => ({
+  child_id: input.childId,
+  topic_id: input.topicId,
+  topic_name: input.topicName,
+  stage: 'new' as const,
+  evidence: input.wrongResultIds,
+})
+
+/** The line of "What Jemma did" the reader writes for this test (none left out), so the copy reads the same as one the reader made. */
+export const ownTestLogRow = (input: { schoolId: string; childId: string; at: string }) => {
+  const results = ownMarkedTest().results
+  return {
+    school_id: input.schoolId,
+    child_id: input.childId,
+    class_id: null,
+    at: input.at,
+    text: `Read your marked test: ${results.filter((r) => r.correct).length} of ${results.length} right`,
+    tool: 'save_own_test_results',
+  }
+}
