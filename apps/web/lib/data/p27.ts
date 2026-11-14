@@ -4,6 +4,7 @@ import { buildMyMaths, type MyMaths, type MyMathsSuggestion } from '@jemma/profi
 import { loadMyMathsInput } from '@jemma/profiling/orchestrator'
 import { LessonSchema, QuestionSchema, type Lesson, type SeniorDiagramSpec } from '@jemma/profiling/schemas'
 import { notFound } from 'next/navigation'
+import { cache } from 'react'
 import { stripQuestion, type QuestionForChild } from '@/app/k/session/[sessionId]/logic'
 import { defaultOwnClass } from '@/lib/own-workspace'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
@@ -102,8 +103,10 @@ async function findLearner() {
  * `private_of`; a learner who has no twin yet is still in "My school". A hand-over of one of the twin's own sessions names the twin, and the
  * signed cookie wins over the device's choice (it is the child of that one session). Every learner screen and action goes through here, so
  * home, "My maths", practice, sessions and paper answers work the same in both workspaces and never mix them.
+ * Wrapped in React's `cache`: the layout, the page and the data loaders of one request ask who the learner is many times, and they all get the
+ * first answer (three trips to the database once, not once for each ask). Nothing is kept from one request to the next.
  */
-export async function myChild() {
+export const myChild = cache(async () => {
   const { supabase, named } = await findLearner()
   if (named.private_of) return { supabase, child: named }
   if ((await workspaceChosen()) === 'own') {
@@ -111,7 +114,7 @@ export async function myChild() {
     if (twin) return { supabase, child: twin }
   }
   return { supabase, child: named }
-}
+})
 
 /**
  * The school child and the person acting, whichever workspace is on screen: what the switch needs to open or add to the private workspace.
