@@ -32,7 +32,7 @@ export default async function KeyDraftPage({ params }: { params: Promise<{ class
   return shell(
     <div className="flex flex-col gap-[18px] px-5 pt-3 pb-6 leading-[normal]">
       <DraftKey classId={classId} testId={testId} items={key.items} unsure={unsure} approved={key.status === 'approved'}>
-        <WhatJemmaDid entries={log} variant="parent" />
+        {log.length > 0 ? <WhatJemmaDid entries={log} variant="parent" /> : null}
       </DraftKey>
     </div>,
   )
