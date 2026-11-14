@@ -114,8 +114,9 @@ test.describe('Add your own work', () => {
     await check(page.getByRole('heading', { level: 1, name: '6 of 8 right.' })).toBeVisible()
     const questions = page.getByRole('list', { name: 'Your questions' })
     await expect(questions.getByRole('listitem')).toHaveCount(8)
-    await expect(questions.getByRole('img', { name: 'Right' })).toHaveCount(6)
-    await expect(questions.getByRole('img', { name: 'Not right' })).toHaveCount(2)
+    // exact: "Not right" holds "right", and a name is matched as a part of the words unless it is exact
+    await expect(questions.getByRole('img', { name: 'Right', exact: true })).toHaveCount(6)
+    await expect(questions.getByRole('img', { name: 'Not right', exact: true })).toHaveCount(2)
     await expect(questions.getByText('You wrote: 2/5')).toBeVisible()
     // the gap of the two wrong answers, with its Practise button
     await expect(page.getByRole('heading', { level: 2, name: 'What to practise' })).toBeVisible()
