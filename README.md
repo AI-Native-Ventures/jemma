@@ -123,7 +123,7 @@ Use this if you want a hosted Supabase project instead of the local database. Yo
 
 Set up a fresh project in this order:
 
-1. **The migrations.** Apply every file in `supabase/migrations` in order (0001 to 0023), for example with `psql` and the project's connection string (`SUPABASE_DB_URL` in `.env.example`) on each file in turn. The migrations also make the five private storage buckets.
+1. **The migrations.** Apply every file in `supabase/migrations` in order (0001 to 0024), for example with `psql` and the project's connection string (`SUPABASE_DB_URL` in `.env.example`) on each file in turn. The migrations also make the five private storage buckets.
 2. **The sign-in settings.** Set the site address to the address of your web app and add that address to the allowed redirect addresses. Turn email confirmation off: the demo makes its own users and signs them in with a password, and sends no email. The local values are in `supabase/config.toml` (`[auth]` and `[auth.email]`).
 3. **The settings of the app.** Fill in `.env.local` and copy it to `apps/agent/.dev.vars`, as below.
 4. **The recorded answers.** Load them with the script named below, before you use `AI_MODE=replay`.

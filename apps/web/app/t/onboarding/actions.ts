@@ -12,7 +12,7 @@ export async function searchSchools(query: string): Promise<SchoolHit[]> {
   const { admin, schoolId } = await requireTeacher()
   const q = query.trim().replace(/[%,()]/g, '')
   if (q.length < 2) return []
-  const { data } = await admin.from('schools').select('id, name, region, grades, sandbox_id').ilike('name', `%${q}%`).limit(8)
+  const { data } = await admin.from('schools').select('id, name, region, grades, sandbox_id').eq('kind', 'school').ilike('name', `%${q}%`).limit(8)
   return (data ?? []).filter((s) => !s.sandbox_id || s.id === schoolId).slice(0, 5).map((s) => ({ id: s.id, name: s.name, blurb: schoolBlurb(s) }))
 }
 

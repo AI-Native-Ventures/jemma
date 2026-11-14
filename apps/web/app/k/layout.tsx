@@ -1,8 +1,9 @@
 import { cookies, headers } from 'next/headers'
-import { notFound, redirect } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { Sidebar, TabBar } from '@/components/blocks'
 import { requireRole } from '@/lib/auth'
+import { myChild } from '@/lib/data/p27'
 import { initialsOf } from '@/lib/initials'
 import { HANDOVER_COOKIE, handoverAllows } from '@/lib/handover'
 import { isPublicPath } from '@/lib/public-paths'
@@ -34,17 +35,14 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
     return <main className="min-h-dvh bg-ground">{children}</main>
   }
 
-  const { userId, profile } = await requireRole('learner')
-  const { data: child } = await supabase
-    .from('children')
-    .select('first_name, grade, schools(name)')
-    .eq('user_id', userId)
-    .maybeSingle()
-  if (!child) notFound()
+  const { profile } = await requireRole('learner')
+  // The child of the workspace on screen: the school child, or the private twin when the learner chose "My own" (a learner with a private
+  // workspace has two children with the one login).
+  const { child } = await myChild()
 
   const active = await activeTab('learner', '/k')
   const name = `${child.first_name}'s Jemma`
-  const subtitle = `Grade ${child.grade} · ${child.schools?.name ?? ''}`
+  const subtitle = `Grade ${child.grade} · ${child.private_of ? 'My own' : (child.schools?.name ?? '')}`
   const bare = isBare(pathname)
 
   return (

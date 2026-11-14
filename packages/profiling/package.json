@@ -40,6 +40,7 @@
     "./import-tools": "./src/tools/import-tools.ts",
     "./notify": "./src/notify.ts",
     "./orchestrator": "./src/orchestrator.ts",
-    "./caps": "./src/curriculum/caps.ts"
+    "./caps": "./src/curriculum/caps.ts",
+    "./own": "./src/own-workspace.ts"
   }
 }

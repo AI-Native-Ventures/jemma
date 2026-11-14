@@ -50,6 +50,8 @@ export async function createChildLogin(admin: JemmaDb, childId: string, pin: str
           .from('profiles')
           .insert({ user_id: userId, role: 'learner', display_name: child.data.first_name, school_id: child.data.school_id }),
       () => admin.from('children').update({ user_id: userId }).eq('id', childId),
+      // The learner's private workspace (their "My own" twin, when they have opened one) has the same login as the school child.
+      () => admin.from('children').update({ user_id: userId }).eq('private_of', childId),
       () => admin.from('child_logins').insert({ code, child_id: childId, user_id: userId }),
     ]
     for (const step of steps) {

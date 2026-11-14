@@ -3,10 +3,13 @@ import { canonicalSubject, DEFAULT_SUBJECT, sameSubject, type ChoiceRules, type 
 import { ok } from '../context'
 import { loadHistory } from './get-learner-history'
 
-/** The classes the learner is in, with their subject, and the topics of their approved maps (with the topics each one needs). */
-export async function loadLearnerMap(db: JemmaDb, childId: string) {
+/**
+ * The classes the learner is in, with their subject, and the topics of their approved maps (with the topics each one needs). With `only`, just
+ * that class (a learner's own workspace has one class for each grade): a class the learner is not in gives no class and no topic.
+ */
+export async function loadLearnerMap(db: JemmaDb, childId: string, only?: string) {
   const enrolments = await ok(db.from('enrolments').select('class_id').eq('child_id', childId))
-  const classIds = [...new Set(enrolments.map((e) => e.class_id))]
+  const classIds = [...new Set(enrolments.map((e) => e.class_id))].filter((id) => !only || id === only)
   const [classes, maps] = await Promise.all([
     classIds.length ? ok(db.from('classes').select('id, subject, grade').in('id', classIds)) : Promise.resolve([]),
     classIds.length ? ok(db.from('curriculum_maps').select('id').eq('status', 'approved').in('class_id', classIds)) : Promise.resolve([]),
@@ -64,15 +67,24 @@ export async function loadChoiceRules(db: JemmaDb, childId: string): Promise<Cho
  * Everything `buildMyMaths` needs for one learner, read by this learner's id only: the topics of this year's approved maps, the gaps, the
  * marked answers (with the state of their paper and whether their test is still held), the sessions with their items, and the strands of
  * the past records (used only to pick a suggestion). The child must already be checked with `assertInSchool`, or be the signed-in learner.
+ * With `opts.classId` the input is that one class's: its map, and only the gaps, answers and sessions on a topic of that map (a learner's own
+ * workspace has a class for each grade and shows one grade at a time). Without it nothing changes.
  */
-export async function loadMyMathsInput(db: JemmaDb, childId: string, now: Date): Promise<MyMathsInput> {
-  const [{ classes, topics }, practice, gaps, sessions, results] = await Promise.all([
-    loadLearnerMap(db, childId),
+export async function loadMyMathsInput(db: JemmaDb, childId: string, now: Date, opts: { classId?: string } = {}): Promise<MyMathsInput> {
+  const [{ classes, topics }, practice, allGaps, allSessions, allResults] = await Promise.all([
+    loadLearnerMap(db, childId, opts.classId),
     loadPracticeInput(db, childId, now),
     ok(db.from('gaps').select('topic_id, topic_name, stage, created_at, fixed_at').eq('child_id', childId)),
     ok(db.from('sessions').select('id, topic_id, topic_name, status, finished_at').eq('child_id', childId)),
     ok(db.from('question_results').select('topic_id, topic_name, correct, paper_id').eq('child_id', childId)),
   ])
+  // One class: a row belongs to it when its topic is on the class's map (by id, else by the same name when the row has no topic id).
+  const mapIds = new Set(topics.map((t) => t.id))
+  const mapNames = new Set(topics.map((t) => t.name.trim().toLowerCase()))
+  const onMap = (topicId: string | null, name: string | null) => !opts.classId || (topicId ? mapIds.has(topicId) : !!name && mapNames.has(name.trim().toLowerCase()))
+  const gaps = allGaps.filter((g) => onMap(g.topic_id, g.topic_name))
+  const sessions = allSessions.filter((s) => onMap(s.topic_id, s.topic_name))
+  const results = allResults.filter((r) => onMap(r.topic_id, r.topic_name))
   const doneIds = sessions.filter((s) => s.status === 'done').map((s) => s.id)
   const paperIds = [...new Set(results.map((r) => r.paper_id))]
   const [items, papers] = await Promise.all([

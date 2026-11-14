@@ -23,19 +23,35 @@ async function removeFolder(admin: JemmaDb, bucket: string, prefix: string): Pro
   ])
 }
 
-/** Cancels running events, deletes the school (cascade), then its auth users and stored files. */
+/**
+ * The personal schools of the learners' private workspaces ("My own") made in this school's sandbox: they carry the sandbox id of the school they
+ * belong to, so they go with it. A school with no sandbox (a real one) has none: its learners' personal schools are theirs to keep.
+ */
+async function personalSchoolsOf(admin: JemmaDb, schoolId: string): Promise<string[]> {
+  const home = await admin.from('schools').select('sandbox_id').eq('id', schoolId).maybeSingle()
+  const sandboxId = home.data?.sandbox_id
+  if (!sandboxId) return []
+  const same = await admin.from('schools').select('id').eq('sandbox_id', sandboxId).eq('kind', 'private')
+  return (same.data ?? []).map((r) => r.id).filter((id) => id !== schoolId)
+}
+
+/** Cancels running events, deletes the school (cascade), its learners' personal schools, then its auth users and stored files. */
 export async function teardown(admin: JemmaDb, schoolId: string | null, userIds: string[]): Promise<void> {
   if (schoolId) {
     // A learner's login is made when someone picks that learner, long after the sandbox was made. The school knows them: read them
-    // before the school goes, so no auth user is left behind.
-    const [learners, staff] = await Promise.all([
+    // before the school goes, so no auth user is left behind. A learner's private workspace has the same login, so it adds no one.
+    const [learners, staff, personal] = await Promise.all([
       admin.from('children').select('user_id').eq('school_id', schoolId).not('user_id', 'is', null),
       admin.from('profiles').select('user_id').eq('school_id', schoolId),
+      personalSchoolsOf(admin, schoolId),
     ])
     userIds = [...new Set([...userIds, ...(learners.data ?? []).map((r) => r.user_id!), ...(staff.data ?? []).map((r) => r.user_id)])]
-    await admin.from('events').update({ status: 'cancelled', finished_at: new Date().toISOString() }).eq('school_id', schoolId).in('status', ['queued', 'running'])
+    for (const id of [schoolId, ...personal]) {
+      await admin.from('events').update({ status: 'cancelled', finished_at: new Date().toISOString() }).eq('school_id', id).in('status', ['queued', 'running'])
+    }
     await admin.from('schools').delete().eq('id', schoolId)
-    await Promise.all(STORAGE_BUCKETS.map((b) => removeFolder(admin, b, schoolId).catch(() => undefined)))
+    for (const id of personal) await admin.from('schools').delete().eq('id', id)
+    await Promise.all([schoolId, ...personal].flatMap((id) => STORAGE_BUCKETS.map((b) => removeFolder(admin, b, id).catch(() => undefined))))
   }
   await Promise.all(userIds.map((id) => admin.auth.admin.deleteUser(id)))
 }

@@ -330,6 +330,7 @@ export type Database = {
           last_name: string | null
           parent_first_name: string | null
           parent_relation: string | null
+          private_of: string | null
           school_id: string
           user_id: string | null
         }
@@ -342,6 +343,7 @@ export type Database = {
           last_name?: string | null
           parent_first_name?: string | null
           parent_relation?: string | null
+          private_of?: string | null
           school_id: string
           user_id?: string | null
         }
@@ -353,10 +355,18 @@ export type Database = {
           last_name?: string | null
           parent_first_name?: string | null
           parent_relation?: string | null
+          private_of?: string | null
           school_id?: string
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "children_private_of_fkey"
+            columns: ["private_of"]
+            isOneToOne: true
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "children_school_id_fkey"
             columns: ["school_id"]
@@ -1613,6 +1623,7 @@ export type Database = {
           created_at: string
           grades: string | null
           id: string
+          kind: string
           name: string
           region: string | null
           sandbox_id: string | null
@@ -1624,6 +1635,7 @@ export type Database = {
           created_at?: string
           grades?: string | null
           id?: string
+          kind?: string
           name: string
           region?: string | null
           sandbox_id?: string | null
@@ -1634,6 +1646,7 @@ export type Database = {
           created_at?: string
           grades?: string | null
           id?: string
+          kind?: string
           name?: string
           region?: string | null
           sandbox_id?: string | null

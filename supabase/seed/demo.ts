@@ -8,7 +8,8 @@ import { LessonSchema, ReteachSchema, GuidanceSchema, TopicMapDraftSchema, Answe
 import { classTest1Results, classTest1Roster, classTest1Scores, classTest1ScoresBeforeFix, classTest1Wrong, siphoQ7BeforeFix } from './fixtures/class-test-1'
 import { AMINA_ACTIVITIES, AWAY_DAY_INDEX, CAST, CHILD_PIN, EMPTY_SCHOOL, EMPTY_TEACHER, NOTES, SCHOOL, lastSchoolDays } from './fixtures/cast'
 import { FIXED_GAPS, FORMAT_FAMILY, FORMAT_TRIALS, TERM3_ROWS } from './fixtures/history'
-import { capsClassMaps, type TopicRow } from './fixtures/caps-maps'
+import { writeApprovedMap } from '../../packages/profiling/src/curriculum/caps-map'
+import { capsClassMaps } from './fixtures/caps-maps'
 import { HILLVIEW_CLASSES, HILLVIEW_LINKS, awayOnDay, HILLVIEW_PARENTS, HILLVIEW_TEACHERS, madeUpClasses, madeUpLearner } from './fixtures/hillview'
 import { longHistory } from './fixtures/long-history'
 import { PATTERN_LEARNERS, wordPatterns } from './fixtures/long-view-wording'
@@ -376,22 +377,6 @@ type MarkedCtx = {
   childId: Record<string, string>
   aminaId: string
   withSession: boolean
-}
-
-/**
- * An approved topic map of a class and its topic rows, as the seed writes them: the map first, then every topic in one insert. The marked
- * stage writes 6B's map this way, and so does each made-up class that starts from the CAPS map.
- */
-async function writeApprovedMap(
-  admin: JemmaDb,
-  input: { classId: string; stored: unknown; approvedAt: string; rows: TopicRow[] },
-): Promise<{ map: { id: string }; topicRows: { id: string; name: string }[] }> {
-  const map = await ok(
-    admin.from('curriculum_maps').insert({ class_id: input.classId, status: 'approved', draft: json(input.stored), approved_at: input.approvedAt }).select('id').single(),
-    'map',
-  )
-  const topicRows = await ok(admin.from('topics').insert(input.rows.map((r) => ({ map_id: map.id, ...r }))).select('id, name'), 'topics')
-  return { map, topicRows }
 }
 
 async function buildMarked(c: MarkedCtx): Promise<void> {

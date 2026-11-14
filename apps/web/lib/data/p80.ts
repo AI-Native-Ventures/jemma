@@ -1,4 +1,5 @@
 import type { MyMaths } from '@jemma/profiling/logic'
+import { defaultOwnClass } from '@/lib/own-workspace'
 import { loadLearnerSessions, myChild, myMathsOf, newestPracticeEvent, tonightFrom } from './p27'
 
 /**
@@ -20,11 +21,14 @@ export type MyMathsView = { firstName: string; initial: string; maths: MyMaths; 
  * What the learner sees on "My maths": their own count in each part of Mathematics, from the answers of THIS learner only (read with the
  * service client by this learner's id: a learner's own session cannot read marked answers), and what may be offered now.
  * The learner is found the way the home finds them: their own session, or a parent's device after hand-over.
+ * With a `classId` it is that one class's map only: in "My own" a learner has a class for each grade and sees one grade at a time. In "My own"
+ * with no `classId` the grade shown is the learner's own grade, else the lowest they have. "My school" is as it always was.
  */
-export async function getMyMaths(): Promise<MyMathsView> {
+export async function getMyMaths(classId?: string): Promise<MyMathsView> {
   const { supabase, child } = await myChild()
   const now = new Date()
-  const [sessions, asked, maths] = await Promise.all([loadLearnerSessions(supabase, child.id), newestPracticeEvent(child.id), myMathsOf(child.id, now)])
+  const shown = classId ?? (child.private_of ? ((await defaultOwnClass(child.id)) ?? undefined) : undefined)
+  const [sessions, asked, maths] = await Promise.all([loadLearnerSessions(supabase, child.id), newestPracticeEvent(child.id), myMathsOf(child.id, now, shown)])
   const tonight = await tonightFrom(supabase, sessions, asked, now.toISOString().slice(0, 10))
   return {
     firstName: child.first_name,
