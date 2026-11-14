@@ -131,7 +131,9 @@ export type AnswerBoxes = { whole: string; top: string; bottom: string; text: st
  * It is the text `markAnswer` already reads: "top/bottom", "whole top/bottom", "R12,50".
  */
 export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
-  const [whole, top, bottom, text] = [boxes.whole.trim(), boxes.top.trim(), boxes.bottom.trim(), boxes.text.trim()]
+  const [whole, top, bottom] = [boxes.whole.trim(), boxes.top.trim(), boxes.bottom.trim()]
+  // "12," is a number the child stopped typing: the comma at the end is not part of it.
+  const text = shape.kind === 'missing' || shape.kind === 'text' ? boxes.text.trim() : boxes.text.trim().replace(/[.,]+$/, '')
   switch (shape.kind) {
     case 'missing':
       return text ? fillMissing(shape.part, text) : ''

@@ -157,6 +157,13 @@ describe('answerValue: the text sent for what the boxes hold', () => {
     expect(answerValue(answerShape({ prompt: 'p', answerKind: 'money' }), boxes)).toBe('')
   })
 
+  test('a comma or a point left at the end is dropped, so "12," is read as 12', () => {
+    expect(answerValue(answerShape({ prompt: 'p', answerKind: 'whole' }), { ...boxes, text: '12,' })).toBe('12')
+    expect(answerValue(answerShape({ prompt: 'p', answerKind: 'decimal' }), { ...boxes, text: '0,' })).toBe('0')
+    expect(answerValue(answerShape({ prompt: 'p', answerKind: 'money' }), { ...boxes, text: '5.' })).toBe('R5')
+    expect(answerValue(answerShape({ prompt: 'p', answerKind: 'decimal' }), { ...boxes, text: ',' })).toBe('')
+  })
+
   test('the text built is exactly what markAnswer already reads (its own cases)', () => {
     const fraction = answerShape({ prompt: 'p', answerKind: 'fraction' })
     expect(markAnswer(answerValue(fraction, { ...boxes, top: '6', bottom: '8' }), '3/4').correct).toBe(true)
