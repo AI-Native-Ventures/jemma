@@ -187,6 +187,7 @@ describe('the guard reads the right files', () => {
   it('finds the screens of "My own" (P95): the switch, the grade chips and sheet, the parent\'s button and the teacher\'s read-only page', () => {
     for (const f of [
       'app/k/WorkspaceSwitch.tsx',
+      'app/k/OwnWorkLink.tsx',
       'app/k/maths/GradeChips.tsx',
       'app/k/maths/grades/GradePicker.tsx',
       'app/k/maths/grades/page.tsx',

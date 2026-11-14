@@ -48,14 +48,14 @@ describe('the two buttons', () => {
 })
 
 describe('a tap', () => {
-  it('on the other workspace asks the server for it, then looks again', async () => {
+  it('on the other workspace asks the server for it (P95b: the action draws the page again itself, so the router is not asked to refresh)', async () => {
     render(<WorkspaceSwitch current="school" />)
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'My own' }))
     })
     expect(setWorkspace).toHaveBeenCalledTimes(1)
     expect(setWorkspace).toHaveBeenCalledWith('own')
-    expect(refresh).toHaveBeenCalled()
+    expect(refresh).not.toHaveBeenCalled()
   })
 
   it('on "My school" from "My own" asks for "school"', async () => {
@@ -85,24 +85,23 @@ describe('a tap', () => {
     expect(screen.getByRole('button', { name: 'My school' }).getAttribute('aria-pressed')).toBe('true')
   })
 
-  it('shows it is working and does not take a second tap while the first is not answered', async () => {
+  it('shows the new state at once, says it is working without a spinner in a button, and does not ask twice for the same thing', async () => {
     let finish: (v: { ok: true }) => void = () => undefined
     vi.mocked(setWorkspace).mockImplementation(() => new Promise((resolve) => (finish = resolve as typeof finish)))
     render(<WorkspaceSwitch current="school" />)
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'My own' }))
     })
-    // While it works the kit's spinner is inside the button that was tapped, and both buttons are blocked.
-    const own = screen.getByRole('button', { name: /^My own/ })
-    expect(own.hasAttribute('disabled')).toBe(true)
-    expect(own.querySelector('[role="status"]')).not.toBeNull()
-    expect(screen.getByRole('button', { name: /^My school/ }).hasAttribute('disabled')).toBe(true)
+    // P95b: the tapped button is the pressed one before the server has answered; the busy cue is a line under the buttons, not a spinner in one.
+    const own = screen.getByRole('button', { name: 'My own' })
+    expect(own.getAttribute('aria-pressed')).toBe('true')
+    expect(own.querySelector('[role="status"]')).toBeNull()
+    expect(screen.getByRole('status').textContent).toBe('Opening My own')
     await act(async () => {
       fireEvent.click(own)
     })
     expect(setWorkspace).toHaveBeenCalledTimes(1)
     await act(async () => finish({ ok: true }))
-    expect(screen.getByRole('button', { name: 'My own' }).hasAttribute('disabled')).toBe(false)
     expect(document.querySelector('[role="status"]')).toBeNull()
   })
 })

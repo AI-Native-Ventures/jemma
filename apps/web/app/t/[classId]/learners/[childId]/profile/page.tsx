@@ -3,6 +3,7 @@ import { IconLabel } from '@/components/ui/IconLabel'
 import { notFound } from 'next/navigation'
 import { getChildProfileView, dayLabel } from '@/lib/data/p19'
 import { getLongViewSummary } from '@/lib/data/p52'
+import { twinOfChild } from '@/lib/own-workspace'
 import { BackHeader, Chevron, Diamond, EyeIcon, Page, card, font } from '../../_parts'
 
 const docIcon = (
@@ -33,7 +34,7 @@ export default async function ChildProfilePage({ params }: { params: Promise<{ c
   const { classId, childId } = await params
   const v = await getChildProfileView(classId, childId)
   if (!v) notFound()
-  const longView = await getLongViewSummary(childId)
+  const [longView, twin] = await Promise.all([getLongViewSummary(childId), twinOfChild(childId)])
   const base = `/t/${classId}`
   const heading =
     v.average === null
@@ -157,6 +158,22 @@ export default async function ChildProfilePage({ params }: { params: Promise<{ c
           </span>
           <Chevron />
         </Link>
+
+        {twin ? (
+          <Link
+            href={`${base}/learners/${v.id}/own`}
+            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 12px 14px 14px', background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 18, textDecoration: 'none', color: '#1F1D36' }}
+          >
+            <span aria-hidden="true" style={{ width: 38, height: 38, flex: 'none', borderRadius: 12, background: '#EEEDF5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <EyeIcon size={20} stroke={1.9} />
+            </span>
+            <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2, lineHeight: 1.3 }}>
+              <span style={{ fontSize: 16, fontWeight: 600 }}>{v.name}&apos;s own practice</span>
+              <span style={{ fontSize: 14, color: '#5D5A73' }}>What {v.name} practises on their own. Read only.</span>
+            </span>
+            <Chevron />
+          </Link>
+        ) : null}
 
         <section aria-labelledby="tnotes" style={{ ...card(20), gap: 12, padding: 16 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>

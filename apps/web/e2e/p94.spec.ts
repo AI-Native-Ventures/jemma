@@ -33,6 +33,12 @@ async function noSidewaysScroll(page: Page) {
   expect(wide, 'the page scrolls sideways').toBeLessThanOrEqual(0)
 }
 
+/**
+ * The switch shows the tapped workspace at once and asks the server afterwards (P95b), so "pressed" no longer says the cookie is set: wait for the
+ * cookie before going on, or the next page is drawn for the old workspace.
+ */
+const workspaceCookie = (page: Page) => async () => (await page.context().cookies()).find((c) => c.name === 'jemma_ws')?.value
+
 const opened: OpenedSandbox[] = []
 const made: string[] = []
 // A copy is removed as soon as its test is over, so the copies do not pile up on CI's database.
@@ -73,7 +79,7 @@ test.describe('My own', () => {
     await page.getByRole('button', { name: 'My own' }).click()
     await check(page.getByRole('button', { name: 'My own' })).toHaveAttribute('aria-pressed', 'true')
     await expect(page.getByRole('button', { name: 'My school' })).toHaveAttribute('aria-pressed', 'false')
-    expect((await page.context().cookies()).find((c) => c.name === 'jemma_ws')?.value).toBe('own')
+    await expect.poll(workspaceCookie(page), { timeout: 45_000 }).toBe('own')
     await noSidewaysScroll(page)
     await proof(page, 'switch-own')
 
@@ -100,7 +106,7 @@ test.describe('My own', () => {
     await page.goto('/k')
     await page.getByRole('button', { name: 'My school' }).click()
     await check(page.getByRole('button', { name: 'My school' })).toHaveAttribute('aria-pressed', 'true')
-    expect((await page.context().cookies()).find((c) => c.name === 'jemma_ws')?.value).toBe('school')
+    await expect.poll(workspaceCookie(page), { timeout: 45_000 }).toBe('school')
 
     // The data: the twin is in a personal school of its own, with a class and a CAPS map for Grade 6 and for Grade 7, and the two practices. The school
     // child has no session, and 6B has exactly its five learners.

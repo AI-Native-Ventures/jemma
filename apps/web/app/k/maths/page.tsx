@@ -7,6 +7,7 @@ import { PracticeRow } from '../Practise'
 import { AppHeader } from '../session/_parts/AppHeader'
 import { ChevronRight } from '../session/_parts/Chips'
 import { Diamond } from '../session/_parts/Gems'
+import { OwnWorkLink } from '../OwnWorkLink'
 import { WorkspaceSwitch } from '../WorkspaceSwitch'
 import { GradeChips } from './GradeChips'
 import { gapLine, lockOf, rowScore } from './format'
@@ -45,6 +46,7 @@ export default async function MyMathsPage({ searchParams }: { searchParams?: Pro
         </div>
 
         {own ? <GradeChips grades={own.grades} current={grade} /> : null}
+        {own ? <OwnWorkLink /> : null}
         {own && grade === null ? <p className="m-0 text-[16px] leading-[1.45] text-body">{ADD_A_GRADE}</p> : null}
         {higher ? <p className="m-0 text-[16px] leading-[1.45] text-body">{higher}</p> : null}
         {empty && grade !== null ? <p className="m-0 rounded-20 border border-line bg-card p-4 text-[16px] leading-[1.45] text-body">{noTopicsLine(grade)}</p> : null}
