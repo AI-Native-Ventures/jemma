@@ -59,9 +59,10 @@ base.afterAll(async () => {
 })
 
 const opened: OpenedSandbox[] = []
-base.afterAll(async () => {
-  base.setTimeout(240_000)
-  await Promise.all(opened.map((s) => s.cleanup().catch(() => undefined)))
+// A copy is removed as soon as its test is over: every copy adds topics that each screen reads through row level security, so copies left
+// standing until the end of the file make every screen slower (seen on CI).
+base.afterEach(async () => {
+  await Promise.all(opened.splice(0).map((s) => s.cleanup().catch(() => undefined)))
 })
 async function sandbox(page: Page, role: 'learner' | 'teacher' = 'learner') {
   const s = await openSandbox(page, { stage: 'marked', role })
