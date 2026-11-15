@@ -47,7 +47,7 @@ function GapCard({ gap, index, on, base }: { gap: ClassGapView; index: number; o
         </span>
       </span>
       {gap.mistake ? (
-        <span className="ml-10 rounded-12 bg-soft-2 px-3 py-[9px] text-[14px]">
+        <span className="ml-10 rounded-12 bg-soft-2 px-3 py-[9px] text-[14px] [overflow-wrap:anywhere]">
           {mistakeTitle(gap.mistake.label)}:{' '}
           <strong className="font-bold">{gap.mistake.example.strong}</strong>
         </span>
@@ -115,7 +115,7 @@ function Detail({ detail, base }: { detail: GapDetail; base: string }) {
                 <span className="text-[12px] font-semibold text-body">
                   Q{r.n} · {r.learners} learners
                 </span>
-                <span className="text-[17px] font-bold">{r.text}</span>
+                <span className="text-[17px] font-bold [overflow-wrap:anywhere]">{r.text}</span>
               </span>
             ))}
           </div>

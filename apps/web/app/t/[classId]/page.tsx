@@ -50,6 +50,8 @@ function Glyph({ stage, size }: { stage: GapStage | null; size: number }) {
 const gapCard =
   'flex flex-col gap-3 rounded-18 border border-line bg-card py-4 pr-3 pl-4 text-ink no-underline'
 
+// The example in a gap card is the learner's own question and answer, so it can be long: it wraps, and a word longer than the line is broken, so the
+// page is never wider than the screen (it used to be kept on one line, and the page was 23 px too wide on a 390 px phone).
 function HomeGap({ gap, index, base, hideDots }: { gap: ClassGapView; index: number; base: string; hideDots: boolean }) {
   return (
     <Link href={`${base}/gaps/${gap.key}`} className={gapCard}>
@@ -65,9 +67,9 @@ function HomeGap({ gap, index, base, hideDots }: { gap: ClassGapView; index: num
         <ChevronRightIcon className="mt-1 flex-none" />
       </span>
       {gap.mistake ? (
-        <span className="ml-10 rounded-12 bg-soft-2 px-3 py-2.5 text-[14px] leading-[1.45]">
+        <span className="ml-10 rounded-12 bg-soft-2 px-3 py-2.5 text-[14px] leading-[1.45] [overflow-wrap:anywhere]">
           {mistakeTitle(gap.mistake.label)}: {gap.mistake.example.pre}
-          <strong className="font-bold whitespace-nowrap">{gap.mistake.example.strong}</strong>
+          <strong className="font-bold">{gap.mistake.example.strong}</strong>
         </span>
       ) : null}
     </Link>

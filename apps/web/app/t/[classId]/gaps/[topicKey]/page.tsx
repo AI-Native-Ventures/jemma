@@ -102,7 +102,7 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
               {gap.mistake.rows.map((r) => (
                 <li key={r.n} className="flex items-center justify-between gap-2.5 rounded-12 bg-soft-2 px-3 py-2.5">
                   <span className="w-7 text-[13px] font-semibold text-body">Q{r.n}</span>
-                  <span className="flex-1 text-[16px] font-semibold">{r.text}</span>
+                  <span className="min-w-0 flex-1 text-[16px] font-semibold [overflow-wrap:anywhere]">{r.text}</span>
                   <span className="text-[13px] text-body">{r.learners} learners</span>
                 </li>
               ))}

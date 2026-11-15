@@ -49,9 +49,9 @@ export function GuidanceNeedItem({ guidance, wide = false }: { guidance: Guidanc
     })
 
   // Plain block layout, with no nested flex columns: the text of a card can be long (a headline, three reasons, what is coming), and the button under
-  // it must sit below its last line however long it is.
+  // it must sit below its last line however long it is. A word longer than the line is broken, so the card never makes the page wider than the screen.
   return (
-    <section aria-labelledby={titleId} className={`rounded-14 bg-card p-3 text-ink ${wide ? 'flex-[1_1_100%]' : ''}`}>
+    <section aria-labelledby={titleId} className={`rounded-14 bg-card p-3 text-ink [overflow-wrap:anywhere] ${wide ? 'flex-[1_1_100%]' : ''}`}>
       <div className="flex items-start gap-3">
         <span aria-hidden="true" className="flex size-10 flex-none items-center justify-center rounded-12 bg-coral-tint">
           <ReviewDocIcon />
