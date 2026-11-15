@@ -80,7 +80,7 @@ Every approval a person gives in the web app is saved in `approvals` with the na
 | `update_learner_profile` | Updates the profile. Takes a diagnosis of wrong answers and opens or updates gaps. Or takes a finished session, records the format trial and moves a gap (`new`, `practising`, `fixed`). |
 | `class_gap_report` | Analyses a whole class after a test. Computes class gaps and the most common mistake in code and saves the reteach plan. |
 | `plan_next_session` | Analyses one profile (open gaps, stage, format trials, activities) and plans the next session. |
-| `subject_guidance` | Writes the guidance card on the profile. Drops focus items that have no marked answers as evidence. |
+| `subject_guidance` | Saves the guidance card. For a school child it is a draft that only the teacher reads, and the family sees it after the teacher taps Send to family. Drops focus items that have no marked answers as evidence. |
 | `mark_paper` | Adds marked answers (`question_results`) that the profile's marks come from. |
 | `save_practice_answers` | Stores the five try answers of a practice a learner wrote on paper and closes the session. `update_learner_profile` then moves the gap, exactly as for a session finished on the screen. |
 | `save_own_test_results` | Stores the teacher's marks on a test a learner got back already marked (`question_results` of the learner's own paper), under the topics of the learner's approved map. `update_learner_profile` then opens gaps from the wrong ones, as for any marked paper. |
@@ -211,6 +211,8 @@ Save the answer key read from a memo as a draft and ask the teacher to approve i
 ### `subject_guidance`
 
 Save a learner's guidance card: headline, what to focus on next with the marked answers that prove each item, and what is coming. Focus items without evidence are dropped.
+
+For a child of a school the card is saved as a draft (`guidance_drafts`): only the child's class teachers can read it, and the family reads it after the teacher taps Send to family. A learner's own record (My own, or a child added alone) has no teacher, and its card is saved to `guidance_cards` at once. The answer is the same in both cases.
 
 - Kind: save
 - Input: `{ childId: string, guidance: { headline: string, focus: { title: string, why: string, evidence?: { label: string, resultIds: string[] }[] }[], lookingAhead: string } }`
