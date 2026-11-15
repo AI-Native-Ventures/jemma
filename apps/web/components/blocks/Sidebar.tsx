@@ -1,10 +1,14 @@
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { BellIcon, CameraIcon, GearIcon, SwapIcon } from '../ui/icons'
-import { HOMES, TABS, tabHref } from './nav'
+import { HOMES, TABS, markedTab, tabHref } from './nav'
 import type { Role, TabId } from './nav'
 
 export type SidebarProps = {
   role: Role
+  /** The tab the server marked for the first paint. In the browser the sidebar marks the tab of the address it is in (see `markedTab`). */
   active: TabId
   /** Accessible name of the nav, for example the class name. */
   label: string
@@ -37,7 +41,7 @@ function Wordmark() {
 /** Laptop navigation: same tabs, same order as the phone bar. Shown from width 1024. */
 export function Sidebar({
   role,
-  active,
+  active: first,
   label,
   name,
   subtitle,
@@ -49,6 +53,7 @@ export function Sidebar({
   base = HOMES[role],
   only,
 }: SidebarProps) {
+  const active = markedTab(role, base, usePathname(), first)
   const tabs = only ? TABS[role].filter((t) => only.includes(t.id)) : TABS[role]
   return (
     <aside className="hidden w-[254px] leading-[normal] flex-none flex-col gap-[22px] border-r border-line bg-card px-3.5 pt-[22px] pb-[18px] lg:flex">

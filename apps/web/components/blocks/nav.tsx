@@ -50,6 +50,43 @@ export const TABS: Record<Role, TabDef[]> = {
 
 export const HOMES: Record<Role, string> = { teacher: '/t', parent: '/p', learner: '/k' }
 
+/** Screens outside a tab's own folder that the boards show under that tab. */
+const ALIASES: Record<Role, Record<string, TabId>> = {
+  teacher: { '/register': 'learners' },
+  // A marked paper is a test, a session is a lesson: the screens a parent opens from the Tests and the Learn tab (they draw their own bar with that tab marked).
+  parent: { '/papers': 'tests', '/sessions': 'learn' },
+  learner: {},
+}
+
+const trimEnd = (path: string) => (path.length > 1 ? path.replace(/\/+$/, '') : path)
+const inside = (path: string, folder: string) => path === folder || path.startsWith(`${folder}/`)
+
+/** Is `pathname` the space at `base` or a screen inside it? */
+export function isInSpace(base: string, pathname: string): boolean {
+  return inside(trimEnd(pathname), trimEnd(base))
+}
+
+/**
+ * The tab to mark for an address: the tab whose folder the address is in, the tab an alias names, else the first tab. A pure function of
+ * (role, base, pathname), used by the server for the first paint and by the bar in the browser (`usePathname`), so a tap on another tab moves the mark
+ * at once, without a new page from the server.
+ */
+export function activeTabFor(role: Role, base: string, pathname: string): TabId {
+  const tabs = TABS[role]
+  const root = trimEnd(base)
+  const full = trimEnd(pathname)
+  const rest = inside(full, root) ? full.slice(root.length) : ''
+  const alias = Object.entries(ALIASES[role]).find(([path]) => inside(rest, path))
+  if (alias) return alias[1]
+  const match = tabs.find((tab) => tab.path !== '' && inside(rest, tab.path))
+  return (match ?? tabs[0]!).id
+}
+
+/** The tab a bar marks: the one for the address it is in, or `first` (what the server passed) where the address cannot be read or is not in the space. */
+export function markedTab(role: Role, base: string, pathname: string | null, first: TabId): TabId {
+  return pathname !== null && isInSpace(base, pathname) ? activeTabFor(role, base, pathname) : first
+}
+
 export function tabHref(role: Role, tab: TabDef, base?: string): string {
   return `${base ?? HOMES[role]}${tab.path}` || '/'
 }
