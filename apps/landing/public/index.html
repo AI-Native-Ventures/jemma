@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jemma: follows one learner across years</title>
+<meta name="description" content="Jemma reads class tests from a photo, finds what each learner is missing, and gives them a short lesson to practise at home.">
+<meta name="theme-color" content="#F7F7FA">
+<link rel="canonical" href="https://getjemma.ainative.ventures/">
+<link rel="icon" href="/jemma-app-icon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Jemma">
+<meta property="og:url" content="https://getjemma.ainative.ventures/">
+<meta property="og:title" content="Jemma: follows one learner across years">
+<meta property="og:description" content="Jemma reads class tests from a photo, finds what each learner is missing, and gives them a short lesson to practise at home.">
+<style>
+@font-face{font-family:'Outfit';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/outfit-400.woff2) format('woff2')}
+@font-face{font-family:'Outfit';font-style:normal;font-weight:500;font-display:swap;src:url(/fonts/outfit-500.woff2) format('woff2')}
+@font-face{font-family:'Outfit';font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/outfit-600.woff2) format('woff2')}
+@font-face{font-family:'Outfit';font-style:normal;font-weight:700;font-display:swap;src:url(/fonts/outfit-700.woff2) format('woff2')}
+body{margin:0}
+</style>
+</head>
+<body>
+<div style="container-type:inline-size;width:100%;box-sizing:border-box;background:#F7F7FA;color:#1F1D36;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;line-height:1.5;overflow-x:clip">
+
+  <header style="padding:16px max(24px, calc((100% - 1280px) / 2)) 0;display:flex;align-items:center;justify-content:space-between;gap:16px;box-sizing:border-box">
+    <a href="/" aria-label="jemma home" style="display:inline-flex;align-items:center;min-height:52px;color:#1F1D36"><svg viewBox="4 12 236 92" role="img" aria-label="jemma" style="display:block;width:clamp(112px, 1.5cqi + 106px, 128px);height:auto;aspect-ratio:236 / 92"><path d="M32 46 V80 C32 91 24 95 13 93" fill="none" stroke="#1F1D36" stroke-width="9.5" stroke-linecap="round"/>
+  <polygon points="32,19 40,27 32,35 24,27" fill="#FF6A4D"/>
+  <path d="M62.4 80.73Q57.19 80.73 53.13 78.58Q49.07 76.44 46.76 72.61Q44.45 68.78 44.45 63.96Q44.45 59.14 46.73 55.35Q49.01 51.55 52.9 49.38Q56.79 47.2 61.68 47.2Q66.43 47.2 70.06 49.24Q73.69 51.29 75.77 54.92Q77.85 58.55 77.85 63.24Q77.85 64.09 77.75 65.05Q77.65 66.01 77.39 67.26L54.42 67.33Q54.62 68.05 55.01 68.71Q56 70.76 57.88 71.85Q59.76 72.94 62.34 72.94Q64.71 72.94 66.63 72.11Q68.54 71.29 69.99 69.64L75.54 75.18Q73.16 77.95 69.8 79.34Q66.43 80.73 62.4 80.73ZM54.42 60.4 68.41 60.33Q68.21 59.41 67.88 58.62Q67.09 56.83 65.54 55.88Q63.99 54.92 61.74 54.92Q59.37 54.92 57.62 56.01Q55.87 57.1 54.95 59.08Q54.62 59.67 54.42 60.4ZM82.73 80V47.92H92.83V50.3Q93.82 49.38 95.07 48.72Q97.91 47.26 101.48 47.26Q104.84 47.26 107.55 48.78Q109.46 49.9 110.85 51.62Q112.3 49.97 114.35 48.85Q117.32 47.26 121.08 47.26Q124.77 47.26 127.65 48.81Q130.52 50.37 132.2 53.24Q133.88 56.11 133.88 60.13V80H123.78V61.26Q123.78 58.81 122.3 57.46Q120.81 56.11 118.64 56.11Q117.12 56.11 115.93 56.73Q114.74 57.36 114.05 58.48Q113.36 59.61 113.36 61.26V80H103.26V61.26Q103.26 58.81 101.77 57.46Q100.29 56.11 98.11 56.11Q96.59 56.11 95.4 56.73Q94.22 57.36 93.52 58.48Q92.83 59.61 92.83 61.26V80ZM140.35 80V47.92H150.45V50.3Q151.44 49.38 152.69 48.72Q155.53 47.26 159.09 47.26Q162.46 47.26 165.17 48.78Q167.08 49.9 168.47 51.62Q169.92 49.97 171.96 48.85Q174.93 47.26 178.7 47.26Q182.39 47.26 185.26 48.81Q188.13 50.37 189.82 53.24Q191.5 56.11 191.5 60.13V80H181.4V61.26Q181.4 58.81 179.92 57.46Q178.43 56.11 176.25 56.11Q174.74 56.11 173.55 56.73Q172.36 57.36 171.67 58.48Q170.97 59.61 170.97 61.26V80H160.88V61.26Q160.88 58.81 159.39 57.46Q157.91 56.11 155.73 56.11Q154.21 56.11 153.02 56.73Q151.83 57.36 151.14 58.48Q150.45 59.61 150.45 61.26V80ZM211.37 80.66Q206.94 80.66 203.48 78.48Q200.01 76.3 198 72.54Q195.99 68.78 195.99 63.96Q195.99 59.14 198 55.38Q200.01 51.62 203.48 49.44Q206.94 47.26 211.37 47.26Q214.6 47.26 217.24 48.52Q218.89 49.31 220.21 50.56V47.92H230.11V80H220.21V77.43Q218.96 78.61 217.24 79.41Q214.6 80.66 211.37 80.66ZM213.41 71.55Q216.65 71.55 218.63 69.41Q220.61 67.26 220.61 63.96Q220.61 61.72 219.72 60Q218.82 58.29 217.21 57.33Q215.59 56.37 213.48 56.37Q211.37 56.37 209.75 57.33Q208.13 58.29 207.18 60Q206.22 61.72 206.22 63.96Q206.22 66.14 207.14 67.86Q208.07 69.57 209.72 70.56Q211.37 71.55 213.41 71.55Z" fill="#1F1D36"/></svg></a>
+    <a href="https://jemma.ainative.ventures/sign-in" style="display:inline-flex;align-items:center;min-height:44px;padding:0 4px;font-size:16px;font-size:clamp(16px, 0.1cqi + 15.6px, 17px);font-weight:600;color:#1F1D36;text-decoration:none">Sign in</a>
+  </header>
+
+  <main>
+    <section aria-labelledby="hero-title" style="padding:clamp(20px, 3.4cqi + 7px, 64px) max(24px, calc((100% - 1280px) / 2)) clamp(64px, 5.3cqi + 43px, 120px);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:48px 64px;box-sizing:border-box">
+      <div style="flex:2 1 600px;max-width:780px;min-width:0;display:flex;flex-direction:column;align-items:flex-start">
+        <span style="display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:0 14px 0 12px;border-radius:999px;background:#FFFFFF;border:1px solid #E7E6EF;font-size:14px;font-weight:600;box-sizing:border-box"><svg width="11" height="11" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>Maths · CAPS Grades 1 to 12</span>
+        <h1 id="hero-title" style="margin:clamp(22px, 1cqi + 18px, 32px) 0 0;font-size:38px;font-size:max(min(9.8cqi, 60px), min(5.85cqi, 84px));line-height:1.06;font-weight:700;letter-spacing:-0.025em">Follows one learner <span style="position:relative;white-space:nowrap">across years,<svg aria-hidden="true" viewBox="0 0 300 24" preserveAspectRatio="none" style="position:absolute;left:0;bottom:-0.05em;width:94%;height:0.2em;overflow:visible"><path d="M3 15C70 6 160 2 296 8c3 0 4 5 1 6C170 12 82 15 7 22c-5 1-7-6-4-7z" fill="#FF6A4D"/></svg></span> <span style="white-space:nowrap">not one term.</span></h1>
+        <p style="margin:clamp(22px, 0.6cqi + 20px, 28px) 0 0;max-width:30em;font-size:18px;font-size:clamp(18px, 0.57cqi + 15.8px, 24px);line-height:1.5;color:#5D5A73">Jemma reads class tests from a photo, finds what each learner is missing, and gives them a short lesson to practise at home.</p>
+        <div style="margin-top:clamp(32px, 0.8cqi + 29px, 40px);display:flex;flex-wrap:wrap;gap:20px;width:100%;max-width:520px">
+          <a href="https://jemma.ainative.ventures/demo" style="display:flex;align-items:center;justify-content:center;gap:10px;flex:1 1 200px;min-height:58px;min-height:clamp(58px, 0.57cqi + 55.8px, 64px);padding:0 28px;border-radius:18px;font-size:18px;font-size:clamp(18px, 0.19cqi + 17.3px, 20px);font-weight:600;line-height:1.2;text-decoration:none;box-sizing:border-box;background:#FF6A4D;color:#1F1D36">Try the demo<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a href="https://jemma.ainative.ventures/sign-in" style="display:flex;align-items:center;justify-content:center;gap:10px;flex:1 1 200px;min-height:58px;min-height:clamp(58px, 0.57cqi + 55.8px, 64px);padding:0 28px;border-radius:18px;font-size:18px;font-size:clamp(18px, 0.19cqi + 17.3px, 20px);font-weight:600;line-height:1.2;text-decoration:none;box-sizing:border-box;background:#FFFFFF;color:#1F1D36;border:1.5px solid #1F1D36">Sign in</a>
+        </div>
+        <p style="margin:22px 0 0;display:flex;align-items:center;gap:10px;font-size:15px;font-size:clamp(15px, 0.1cqi + 14.6px, 16px);color:#5D5A73"><svg width="10" height="10" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#1F1D36"/></svg>Every learner in the demo is made up.</p>
+      </div>
+      <div style="flex:1 1 380px;min-width:0;display:flex;justify-content:center">
+        <div style="position:relative;flex:none;width:calc(clamp(240px, 69cqi, 340px) * 1.24);height:calc(clamp(240px, 69cqi, 340px) * 2.3)">
+          <span aria-hidden="true" style="position:absolute;left:0;top:calc(clamp(240px, 69cqi, 340px) * 0.3);width:calc(clamp(240px, 69cqi, 340px) * 1.08);height:calc(clamp(240px, 69cqi, 340px) * 1.08);border-radius:50%;background:#FFE3DA"></span>
+          <svg viewBox="0 0 16 16" aria-hidden="true" style="position:absolute;left:calc(clamp(240px, 69cqi, 340px) * 0.08);top:calc(clamp(240px, 69cqi, 340px) * 0.1);width:calc(clamp(240px, 69cqi, 340px) * 0.1);height:calc(clamp(240px, 69cqi, 340px) * 0.1)"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+          <svg viewBox="0 0 16 16" aria-hidden="true" style="position:absolute;left:calc(clamp(240px, 69cqi, 340px) * 0.0);top:calc(clamp(240px, 69cqi, 340px) * 0.27);width:calc(clamp(240px, 69cqi, 340px) * 0.065);height:calc(clamp(240px, 69cqi, 340px) * 0.065)"><polygon points="8,1.5 14.5,8 8,14.5 1.5,8" fill="none" stroke="#1F1D36" stroke-width="2.2" stroke-linejoin="round"/></svg>
+          <svg viewBox="0 0 16 16" aria-hidden="true" style="position:absolute;left:calc(clamp(240px, 69cqi, 340px) * 0.21);top:calc(clamp(240px, 69cqi, 340px) * 0.03);width:calc(clamp(240px, 69cqi, 340px) * 0.04);height:calc(clamp(240px, 69cqi, 340px) * 0.04)"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#1F1D36"/></svg>
+          <div style="position:absolute;right:0;top:calc(clamp(240px, 69cqi, 340px) * 0.05)">
+            <div style="width:clamp(240px, 69cqi, 340px);flex:none;padding:calc(clamp(240px, 69cqi, 340px) * 0.03);border-radius:calc(clamp(240px, 69cqi, 340px) * 0.16);background:#1F1D36;box-shadow:0 44px 64px -34px rgba(31,29,54,0.5), 0 16px 28px -18px rgba(31,29,54,0.35);box-sizing:border-box"><div style="aspect-ratio:390 / 844;border-radius:calc(clamp(240px, 69cqi, 340px) * 0.13);overflow:hidden;background:#F7F7FA"><img src="/img/hero-lesson.png" alt="Amina's lesson on Jemma: an audio memo on adding and subtracting fractions with different denominators, with the words to read along." width="390" height="844" decoding="async" style="display:block;width:100%;height:100%;object-fit:cover;object-position:top"></div></div>
+          </div>
+          <div aria-hidden="true" style="position:absolute;left:0;top:calc(clamp(240px, 69cqi, 340px) * 1.7);width:calc(clamp(240px, 69cqi, 340px) * 0.56);box-sizing:border-box;padding:15px 12px 10px;background:#FFFFFF;border-radius:14px;box-shadow:0 22px 40px -22px rgba(31,29,54,0.45), 0 2px 6px rgba(31,29,54,0.06);transform:rotate(-4deg)">
+            <span style="position:absolute;top:-9px;left:50%;width:56px;height:18px;margin-left:-28px;background:rgba(255,106,77,0.34);transform:rotate(4deg)"></span>
+            <span style="display:block;font-size:12px;font-weight:700;line-height:1.3">Amina · Fractions</span>
+            <span style="display:block;font-size:11px;font-weight:500;color:#5D5A73;line-height:1.3;margin:2px 0 8px">Grade 4 to Grade 6</span>
+            <span style="display:flex;align-items:center;gap:6px;height:20px"><span style="width:30px;flex:none;font-size:11px;font-weight:600;line-height:1">Gr 4</span><svg width="71" height="14" viewBox="0 0 71 14" aria-hidden="true" style="flex:none"><circle cx="7" cy="7" r="5.3" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.4"/><path d="M7 1.7a5.3 5.3 0 0 0 0 10.6z" fill="#1F1D36"/><circle cx="26" cy="7" r="6" fill="#1F1D36"/><circle cx="45" cy="7" r="6" fill="#1F1D36"/><circle cx="64" cy="7" r="5.3" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.4"/><path d="M64 1.7a5.3 5.3 0 0 0 0 10.6z" fill="#1F1D36"/></svg></span>
+            <span style="display:flex;align-items:center;gap:6px;height:20px"><span style="width:30px;flex:none;font-size:11px;font-weight:600;line-height:1">Gr 5</span><svg width="71" height="14" viewBox="0 0 71 14" aria-hidden="true" style="flex:none"><circle cx="7" cy="7" r="6" fill="#1F1D36"/><circle cx="26" cy="7" r="5.3" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.4"/><path d="M26 1.7a5.3 5.3 0 0 0 0 10.6z" fill="#1F1D36"/><circle cx="45" cy="7" r="5.3" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.4"/><circle cx="64" cy="7" r="5.3" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.4"/></svg></span>
+            <span style="display:flex;align-items:center;gap:6px;height:20px"><span style="width:30px;flex:none;font-size:11px;font-weight:600;line-height:1">Gr 6</span><svg width="71" height="14" viewBox="0 0 71 14" aria-hidden="true" style="flex:none"><circle cx="7" cy="7" r="5.3" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.4"/><circle cx="26" cy="7" r="5.3" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.4"/><circle cx="45" cy="7" r="5.3" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.4"/><path d="M45 1.7a5.3 5.3 0 0 0 0 10.6z" fill="#1F1D36"/><circle cx="64" cy="7" r="6" fill="#1F1D36"/></svg></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="how-title" style="padding:clamp(64px, 6.1cqi + 40px, 128px) max(24px, calc((100% - 1280px) / 2));background:#FFFFFF;box-sizing:border-box">
+      <h2 id="how-title" style="margin:0;font-size:32px;font-size:clamp(32px, 2.67cqi + 21.6px, 60px);line-height:1.08;font-weight:700;letter-spacing:-0.02em;text-wrap:balance"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;display:inline-block;width:0.4em;height:0.4em;margin-right:0.3em;vertical-align:0.1em"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>How it works</h2>
+      <ol style="list-style:none;margin:clamp(28px, 2.7cqi + 17.5px, 56px) 0 0;padding:0;display:flex;flex-wrap:wrap;gap:36px 28px">
+      <li style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:22px">
+        <div style="border-radius:clamp(22px, 0.6cqi + 20px, 28px);overflow:hidden"><svg viewBox="0 0 360 240" aria-hidden="true" style="display:block;width:100%;height:auto">
+  <rect width="360" height="240" fill="#FFF1EC"/>
+  <g transform="rotate(-2 110 128)"><rect x="40" y="22" width="152" height="196" rx="6" fill="#FFFFFF" stroke="#C9C6DA" stroke-width="2"/></g>
+  <g transform="rotate(-12 110 128)"><rect x="30" y="28" width="152" height="196" rx="6" fill="#FFFFFF" stroke="#C9C6DA" stroke-width="2"/></g>
+  <g transform="rotate(-7 110 128)">
+    <rect x="31" y="24" width="152" height="196" rx="6" fill="#FFFFFF" stroke="#1F1D36" stroke-width="2"/>
+    <text x="45" y="50" font-family="Outfit, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F1D36">Class Test 1</text>
+    <path d="M45 60h124" stroke="#E4E2EE" stroke-width="2"/>
+    <circle cx="48" cy="82" r="2.4" fill="#8C89A3"/>
+<rect x="56" y="79" width="52" height="6" rx="3" fill="#D6D3E4"/>
+<rect x="118" y="73" width="38" height="18" rx="3" fill="#FFFFFF" stroke="#8C89A3" stroke-width="1.4"/>
+<path transform="translate(124 81) scale(0.92 1)" d="M0 2c2-5 4-5 5 0s3 4 5-1 3-4 5 0 4 3 6-1 3-2 5 0" stroke="#3A3856" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<circle cx="48" cy="108" r="2.4" fill="#8C89A3"/>
+<rect x="56" y="105" width="40" height="6" rx="3" fill="#D6D3E4"/>
+<rect x="118" y="99" width="38" height="18" rx="3" fill="#FFFFFF" stroke="#8C89A3" stroke-width="1.4"/>
+<path transform="translate(124 107) scale(0.92 1)" d="M0 3c1-6 5-7 6-2s-4 6-2 2 5-5 7-1 2 4 4 0M17 -2c2 2 3 4 4 6" stroke="#3A3856" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<circle cx="48" cy="134" r="2.4" fill="#8C89A3"/>
+<rect x="56" y="131" width="58" height="6" rx="3" fill="#D6D3E4"/>
+<rect x="118" y="125" width="38" height="18" rx="3" fill="#FFFFFF" stroke="#8C89A3" stroke-width="1.4"/>
+<path transform="translate(124 133) scale(0.92 1)" d="M0 0c3-3 7-2 5 2s-5 4 0 4 5-6 8-6 4 5 7 3" stroke="#3A3856" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<circle cx="48" cy="160" r="2.4" fill="#8C89A3"/>
+<rect x="56" y="157" width="46" height="6" rx="3" fill="#D6D3E4"/>
+<rect x="118" y="151" width="38" height="18" rx="3" fill="#FFFFFF" stroke="#8C89A3" stroke-width="1.4"/>
+<path transform="translate(124 159) scale(0.92 1)" d="M0 2c3-6 6-4 4 0s1 3 4-2 2 5 5 1M14 4l8-7" stroke="#3A3856" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<circle cx="48" cy="186" r="2.4" fill="#8C89A3"/>
+<rect x="56" y="183" width="50" height="6" rx="3" fill="#D6D3E4"/>
+<rect x="118" y="177" width="38" height="18" rx="3" fill="#FFFFFF" stroke="#8C89A3" stroke-width="1.4"/>
+<path transform="translate(124 185) scale(0.92 1)" d="M0 1c2 3 5 3 6-1s3-3 4 1 3 3 5-1 3-2 6 1" stroke="#3A3856" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+  </g>
+  <g transform="rotate(-28 78 214)">
+    <rect x="34" y="209" width="80" height="10" rx="5" fill="#FF6A4D"/>
+    <rect x="34" y="209" width="16" height="10" rx="5" fill="#1F1D36"/>
+    <path d="M113 209.5l11 4.5-11 4.5z" fill="#1F1D36"/>
+  </g>
+  <g transform="rotate(9 252 140)">
+    <rect x="283" y="116" width="19" height="13" rx="6.5" fill="#744A2F"/>
+    <rect x="283" y="134" width="19" height="13" rx="6.5" fill="#744A2F"/>
+    <path d="M232 212c10 22 30 40 54 56l44-40c-20-12-38-26-50-40z" fill="#8A5A3B"/>
+    <ellipse cx="256" cy="206" rx="40" ry="26" fill="#8A5A3B"/>
+    <path d="M262 252c20 16 40 28 58 38l52-50c-18-10-36-22-52-36z" fill="#FF6A4D"/>
+    <rect x="198" y="32" width="96" height="178" rx="16" fill="#1F1D36"/>
+    <rect x="204" y="42" width="84" height="158" rx="10" fill="#45435F"/>
+    <g transform="rotate(-7 246 106)">
+      <rect x="219" y="62" width="54" height="80" rx="3" fill="#FFFFFF"/>
+      <path d="M226 73h24" stroke="#1F1D36" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M226 86h18M226 98h22M226 110h16M226 122h20M226 133h14" stroke="#C9C6DA" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M252 86h12M252 98h12M252 110h12M252 122h12M252 133h12" stroke="#8C89A3" stroke-width="2" stroke-linecap="round"/>
+    </g>
+    <path d="M212 60v-9h9M271 51h9v9M212 150v9h9M271 159h9v-9" stroke="#FF6A4D" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="246" cy="182" r="11" fill="#FFFFFF"/>
+    <circle cx="246" cy="182" r="7.5" fill="#FF6A4D"/>
+    <rect x="189" y="160" width="19" height="46" rx="9.5" transform="rotate(-24 198.5 183)" fill="#9C6A49"/>
+  </g>
+</svg></div>
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <span aria-hidden="true" style="width:38px;height:38px;flex:none;border-radius:50%;background:#1F1D36;color:#FFFFFF;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center">1</span>
+          <p style="margin:0;font-size:19px;font-size:clamp(19px, 0.48cqi + 17.1px, 24px);line-height:1.35;font-weight:600;padding-top:3px;text-wrap:pretty">A teacher snaps a class test.</p>
+        </div>
+      </li>
+      <li style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:22px">
+        <div style="border-radius:clamp(22px, 0.6cqi + 20px, 28px);overflow:hidden"><svg viewBox="0 0 360 240" aria-hidden="true" style="display:block;width:100%;height:auto">
+  <rect width="360" height="240" fill="#EEEDF5"/>
+  <rect x="35" y="27" width="160" height="196" rx="6" fill="#1F1D36" opacity="0.07"/>
+  <rect x="30" y="20" width="160" height="196" rx="6" fill="#FFFFFF" stroke="#1F1D36" stroke-width="2"/>
+  <text x="44" y="46" font-family="Outfit, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F1D36">Class Test 1</text>
+  <circle cx="166" cy="41" r="15" fill="none" stroke="#FF6A4D" stroke-width="2.5"/>
+  <text x="166" y="45.5" text-anchor="middle" font-family="Outfit, system-ui, sans-serif" font-size="11" font-weight="700" fill="#C2391C">7/10</text>
+  <path d="M44 62h132" stroke="#E4E2EE" stroke-width="2"/>
+  <rect x="38" y="120" width="144" height="28" rx="8" fill="#FF6A4D" fill-opacity="0.08" stroke="#FF6A4D" stroke-width="2.5"/>
+  <circle cx="46" cy="82" r="2.4" fill="#8C89A3"/>
+<rect x="54" y="79" width="52" height="6" rx="3" fill="#D6D3E4"/>
+<rect x="110" y="73" width="38" height="18" rx="3" fill="#FFFFFF" stroke="#8C89A3" stroke-width="1.4"/>
+<path transform="translate(116 81) scale(0.92 1)" d="M0 2c2-5 4-5 5 0s3 4 5-1 3-4 5 0 4 3 6-1 3-2 5 0" stroke="#3A3856" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M156 81l5.0 5.5 10.0-12.0" stroke="#FF6A4D" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="46" cy="108" r="2.4" fill="#8C89A3"/>
+<rect x="54" y="105" width="40" height="6" rx="3" fill="#D6D3E4"/>
+<rect x="110" y="99" width="38" height="18" rx="3" fill="#FFFFFF" stroke="#8C89A3" stroke-width="1.4"/>
+<path transform="translate(116 107) scale(0.92 1)" d="M0 3c1-6 5-7 6-2s-4 6-2 2 5-5 7-1 2 4 4 0M17 -2c2 2 3 4 4 6" stroke="#3A3856" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M156 107l5.0 5.5 10.0-12.0" stroke="#FF6A4D" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="46" cy="134" r="2.4" fill="#8C89A3"/>
+<rect x="54" y="131" width="58" height="6" rx="3" fill="#D6D3E4"/>
+<rect x="110" y="125" width="38" height="18" rx="3" fill="#FFFFFF" stroke="#8C89A3" stroke-width="1.4"/>
+<path transform="translate(116 133) scale(0.92 1)" d="M0 0c3-3 7-2 5 2s-5 4 0 4 5-6 8-6 4 5 7 3" stroke="#3A3856" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M157 129.0l10.0 10.0M167.0 129.0l-10.0 10.0" stroke="#FF6A4D" stroke-width="3" fill="none" stroke-linecap="round"/>
+<circle cx="46" cy="160" r="2.4" fill="#8C89A3"/>
+<rect x="54" y="157" width="46" height="6" rx="3" fill="#D6D3E4"/>
+<rect x="110" y="151" width="38" height="18" rx="3" fill="#FFFFFF" stroke="#8C89A3" stroke-width="1.4"/>
+<path transform="translate(116 159) scale(0.92 1)" d="M0 2c3-6 6-4 4 0s1 3 4-2 2 5 5 1M14 4l8-7" stroke="#3A3856" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M156 159l5.0 5.5 10.0-12.0" stroke="#FF6A4D" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="46" cy="186" r="2.4" fill="#8C89A3"/>
+<rect x="54" y="183" width="50" height="6" rx="3" fill="#D6D3E4"/>
+<rect x="110" y="177" width="38" height="18" rx="3" fill="#FFFFFF" stroke="#8C89A3" stroke-width="1.4"/>
+<path transform="translate(116 185) scale(0.92 1)" d="M0 1c2 3 5 3 6-1s3-3 4 1 3 3 5-1 3-2 6 1" stroke="#3A3856" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M156 185l5.0 5.5 10.0-12.0" stroke="#FF6A4D" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="rotate(3 272 134)">
+    <rect x="214" y="80" width="128" height="114" rx="14" fill="#1F1D36" opacity="0.08"/>
+    <rect x="209" y="73" width="128" height="114" rx="14" fill="#FFFFFF" stroke="#1F1D36" stroke-width="2"/>
+    <text x="222" y="98" font-family="Outfit, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#1F1D36">Adding fractions</text>
+    <circle cx="226" cy="114" r="4.5" fill="#1F1D36"/><circle cx="238" cy="114" r="4.5" fill="#1F1D36"/>
+    <circle cx="250" cy="114" r="4.5" fill="#1F1D36"/><circle cx="262" cy="114" r="4.5" fill="#1F1D36"/>
+    <circle cx="274" cy="114" r="3.8" fill="none" stroke="#1F1D36" stroke-width="1.5"/>
+    <text x="285" y="118" font-family="Outfit, system-ui, sans-serif" font-size="10.5" font-weight="500" fill="#5D5A73">4 of 5</text>
+    <rect x="221" y="130" width="104" height="42" rx="8" fill="#F1F0F6"/>
+    <text x="230" y="156" font-family="Outfit, system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#1F1D36">1/2 + 1/4 = 2/6</text>
+  </g>
+  <path d="M184 134c10 0 16-4 22-10" stroke="#FF6A4D" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <polygon points="318,31 327,40 318,49 309,40" fill="#FF6A4D"/>
+  <polygon points="340,56.5 345.5,62 340,67.5 334.5,62" fill="none" stroke="#1F1D36" stroke-width="1.8" stroke-linejoin="round"/>
+  <polygon points="296,22.5 299.5,26 296,29.5 292.5,26" fill="#1F1D36"/>
+</svg></div>
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <span aria-hidden="true" style="width:38px;height:38px;flex:none;border-radius:50%;background:#1F1D36;color:#FFFFFF;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center">2</span>
+          <p style="margin:0;font-size:19px;font-size:clamp(19px, 0.48cqi + 17.1px, 24px);line-height:1.35;font-weight:600;padding-top:3px;text-wrap:pretty">Jemma reads it, code marks it and finds the gaps.</p>
+        </div>
+      </li>
+      <li style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:22px">
+        <div style="border-radius:clamp(22px, 0.6cqi + 20px, 28px);overflow:hidden"><svg viewBox="0 0 360 240" aria-hidden="true" style="display:block;width:100%;height:auto">
+  <rect width="360" height="240" fill="#E4E1F0"/>
+  <circle cx="178" cy="136" r="122" fill="#EFEDF6"/>
+  <path d="M262 9a14 14 0 1 0 12 23 11.5 11.5 0 1 1-12-23z" fill="#FFFFFF"/>
+  <polygon points="236,14 240,18 236,22 232,18" fill="#FFFFFF"/>
+  <polygon points="292,13 295,16 292,19 289,16" fill="#FF6A4D"/>
+  <rect x="49" y="36" width="100" height="180" rx="16" fill="#1F1D36" opacity="0.08" transform="translate(5 6)"/>
+  <rect x="49" y="36" width="100" height="180" rx="16" fill="#1F1D36"/>
+  <rect x="55" y="46" width="88" height="160" rx="10" fill="#F7F7FA"/>
+  <text x="65" y="69" font-family="Outfit, system-ui, sans-serif" font-size="8.5" font-weight="700" fill="#B8381F">Tonight</text>
+  <text x="65" y="85" font-family="Outfit, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F1D36">Fractions</text>
+  <rect x="65" y="94" width="68" height="12" rx="3" fill="#FFFFFF" stroke="#1F1D36" stroke-width="1.6"/>
+  <rect x="65.8" y="94.8" width="33.2" height="10.4" rx="2" fill="#FF6A4D"/>
+  <path d="M99 94v12" stroke="#1F1D36" stroke-width="1.6"/>
+  <rect x="65" y="114" width="31" height="10" rx="5" fill="#E4E2EE"/>
+  <rect x="100" y="114" width="33" height="10" rx="5" fill="#E4E2EE"/>
+  <rect x="65" y="132" width="68" height="22" rx="8" fill="#FF6A4D"/>
+  <path d="M95 138l8 5-8 5z" fill="#1F1D36"/>
+  <rect x="63" y="164" width="72" height="30" rx="7" fill="#FFFFFF" stroke="#E4E2EE" stroke-width="1.2"/>
+  <polygon points="75,174.8 79.2,179 75,183.2 70.8,179" fill="#FF6A4D"/><polygon points="87,174.8 91.2,179 87,183.2 82.8,179" fill="#FF6A4D"/><polygon points="99,174.8 103.2,179 99,183.2 94.8,179" fill="#FF6A4D"/>
+  <circle cx="180" cy="128" r="17" fill="#FFFFFF" stroke="#D6D3E4" stroke-width="1.5"/>
+  <text x="180" y="132.5" text-anchor="middle" font-family="Outfit, system-ui, sans-serif" font-size="13" font-weight="600" fill="#5D5A73">or</text>
+  <g transform="rotate(5 262 126)">
+    <rect x="214" y="52" width="104" height="150" rx="4" fill="#1F1D36" opacity="0.08"/>
+    <rect x="209" y="46" width="104" height="150" rx="4" fill="#FFFFFF" stroke="#1F1D36" stroke-width="2"/>
+    <path d="M221 64h46" stroke="#1F1D36" stroke-width="3" stroke-linecap="round"/>
+    <path d="M221 88h26M221 112h20M221 136h28M221 160h22" stroke="#D6D3E4" stroke-width="5" stroke-linecap="round"/>
+    <path transform="translate(258 87) scale(1.15 1)" d="M0 2c2-5 4-5 5 0s3 4 5-1 3-4 5 0 4 3 6-1 3-2 5 0" stroke="#3A3856" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <path transform="translate(258 111) scale(1.00 1)" d="M0 3c1-6 5-7 6-2s-4 6-2 2 5-5 7-1 2 4 4 0M17 -2c2 2 3 4 4 6" stroke="#3A3856" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <path transform="translate(258 135) scale(1.15 1)" d="M0 0c3-3 7-2 5 2s-5 4 0 4 5-6 8-6 4 5 7 3" stroke="#3A3856" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <circle cx="310" cy="49" r="15" fill="#FF6A4D"/>
+    <rect x="302" y="44" width="16" height="11" rx="2.5" fill="none" stroke="#1F1D36" stroke-width="1.8"/>
+    <path d="M307 44l1.5-2.5h3l1.5 2.5" fill="none" stroke="#1F1D36" stroke-width="1.8" stroke-linejoin="round"/>
+    <circle cx="310" cy="49.5" r="2.8" fill="none" stroke="#1F1D36" stroke-width="1.8"/>
+  </g>
+  <g transform="rotate(-34 292 196)">
+    <rect x="246" y="191" width="80" height="10" rx="2" fill="#FF6A4D"/>
+    <rect x="238" y="191" width="10" height="10" rx="2.5" fill="#FFC9BB"/>
+    <rect x="246" y="191" width="5" height="10" fill="#C9C6DA"/>
+    <path d="M326 191l12 5-12 5z" fill="#F2D3B6"/>
+    <path d="M334 194.3l4 1.7-4 1.7z" fill="#1F1D36"/>
+  </g>
+</svg></div>
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <span aria-hidden="true" style="width:38px;height:38px;flex:none;border-radius:50%;background:#1F1D36;color:#FFFFFF;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center">3</span>
+          <p style="margin:0;font-size:19px;font-size:clamp(19px, 0.48cqi + 17.1px, 24px);line-height:1.35;font-weight:600;padding-top:3px;text-wrap:pretty">Each learner gets a short lesson tonight, on screen or on paper.</p>
+        </div>
+      </li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="lv-title" style="padding:clamp(64px, 6.1cqi + 40px, 128px) max(24px, calc((100% - 1280px) / 2));box-sizing:border-box">
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;max-width:860px;margin:0 auto">
+        <span style="display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:0 14px 0 12px;border-radius:999px;background:#FFFFFF;border:1px solid #E7E6EF;font-size:14px;font-weight:600;box-sizing:border-box"><svg width="11" height="11" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>The Long view</span>
+        <h2 id="lv-title" style="margin:0;font-size:32px;font-size:clamp(32px, 2.67cqi + 21.6px, 60px);line-height:1.08;font-weight:700;letter-spacing:-0.02em;text-wrap:balance;margin-top:20px">See what held for three terms or more.</h2>
+        <p style="margin:18px 0 0;max-width:26em;font-size:18px;font-size:clamp(18px, 0.57cqi + 15.8px, 24px);line-height:1.5;color:#5D5A73">Each finding links to the tests behind it.</p>
+      </div>
+      <div style="max-width:1120px;margin:clamp(28px, 2.7cqi + 17.5px, 56px) auto 0;display:flex;flex-direction:column">
+        <div style="width:100%">
+            <div style="width:88%;margin:0 auto;padding:clamp(6px, 0.7cqi + 3px, 14px);border-radius:clamp(10px, 1.1cqi + 6px, 22px) clamp(10px, 1.1cqi + 6px, 22px) 6px 6px;background:#1F1D36;box-sizing:border-box">
+              <div style="aspect-ratio:1440 / 900;border-radius:4px;overflow:hidden;background:#F7F7FA">
+                <img src="/img/longview-laptop.png" alt="Ms Banda's Long view of Amina on a laptop: six parts of Mathematics across ten terms, Grade 4 to Grade 6, and what Jemma found." width="1440" height="900" loading="lazy" decoding="async" style="display:block;width:100%;height:100%;object-fit:cover;object-position:top">
+              </div>
+            </div>
+            <div aria-hidden="true" style="position:relative;height:clamp(10px, 1.1cqi + 6px, 22px);border-radius:0 0 clamp(10px, 1.1cqi + 6px, 22px) clamp(10px, 1.1cqi + 6px, 22px);background:#D9D7E4;box-shadow:0 34px 44px -32px rgba(31,29,54,0.45)">
+              <span style="position:absolute;left:43%;top:0;width:14%;height:42%;border-radius:0 0 10px 10px;background:#C4C1D3"></span>
+            </div>
+          </div>
+        <div style="align-self:flex-end;margin-right:clamp(0px, 4cqi - 16px, 48px);margin-top:calc(-1 * min(1.1 * clamp(186px, 11cqi + 143px, 300px), 0.327 * min(100cqi - 48px, 1120px)))">
+          <div style="width:clamp(186px, 11cqi + 143px, 300px);flex:none;padding:calc(clamp(186px, 11cqi + 143px, 300px) * 0.03);border-radius:calc(clamp(186px, 11cqi + 143px, 300px) * 0.16);background:#1F1D36;box-shadow:0 44px 64px -34px rgba(31,29,54,0.5), 0 16px 28px -18px rgba(31,29,54,0.35);box-sizing:border-box"><div style="aspect-ratio:390 / 844;border-radius:calc(clamp(186px, 11cqi + 143px, 300px) * 0.13);overflow:hidden;background:#F7F7FA"><img src="/img/longview-phone.png" alt="The same Long view on a phone: marks by strand and term, and a struggle that held for four terms." width="390" height="844" loading="lazy" decoding="async" style="display:block;width:100%;height:100%;object-fit:cover;object-position:top"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="who-title" style="padding:0 max(24px, calc((100% - 1280px) / 2)) clamp(64px, 6.1cqi + 40px, 128px);box-sizing:border-box">
+      <h2 id="who-title" style="margin:0;font-size:32px;font-size:clamp(32px, 2.67cqi + 21.6px, 60px);line-height:1.08;font-weight:700;letter-spacing:-0.02em;text-wrap:balance"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;display:inline-block;width:0.4em;height:0.4em;margin-right:0.3em;vertical-align:0.1em"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>Who it's for</h2>
+      <div style="margin-top:clamp(28px, 2.7cqi + 17.5px, 56px);display:flex;flex-direction:column;gap:clamp(20px, 1.15cqi + 15.5px, 32px)">
+      <article style="display:flex;flex-wrap:wrap;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:clamp(28px, 1.15cqi + 23.5px, 40px);overflow:hidden;box-sizing:border-box">
+        <div style="flex:1 1 380px;min-width:0;padding:clamp(28px, 3.4cqi + 15px, 64px);display:flex;flex-direction:column;justify-content:center;gap:clamp(18px, 0.75cqi + 15px, 26px);box-sizing:border-box">
+          <span aria-hidden="true" style="width:56px;height:56px;flex:none;border-radius:18px;background:#FFE3DA;display:flex;align-items:center;justify-content:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><rect x="5" y="7.5" width="14" height="13.5" rx="4"/><path d="M9 7.5V6a3 3 0 0 1 6 0v1.5"/><path d="M8.5 14.5h7v3a1.5 1.5 0 0 1-1.5 1.5h-4a1.5 1.5 0 0 1-1.5-1.5z"/></svg></span>
+          <h3 style="margin:0;font-size:30px;font-size:clamp(30px, 1.7cqi + 23.4px, 48px);line-height:1.08;font-weight:700;letter-spacing:-0.02em">For learners</h3>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px">
+            <li style="display:flex;gap:14px;align-items:flex-start;font-size:18px;font-size:clamp(18px, 0.38cqi + 16.5px, 22px);line-height:1.45"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:0.42em"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg><span>Practise any grade, at school and on your own.</span></li>
+            <li style="display:flex;gap:14px;align-items:flex-start;font-size:18px;font-size:clamp(18px, 0.38cqi + 16.5px, 22px);line-height:1.45"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:0.42em"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg><span>Answer on paper with one photo.</span></li>
+            <li style="display:flex;gap:14px;align-items:flex-start;font-size:18px;font-size:clamp(18px, 0.38cqi + 16.5px, 22px);line-height:1.45"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:0.42em"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg><span>Add a test you got back marked.</span></li>
+          </ul>
+        </div>
+        <div style="flex:1 1 380px;min-width:0;height:340px;height:clamp(340px, 20.9cqi + 258.5px, 560px);background:#FFE3DA;display:flex;justify-content:center;padding-top:clamp(36px, 1.9cqi + 28.6px, 56px);overflow:hidden;box-sizing:border-box">
+          <div style="width:clamp(250px, 6.3cqi + 225px, 316px);flex:none;padding:calc(clamp(250px, 6.3cqi + 225px, 316px) * 0.03);border-radius:calc(clamp(250px, 6.3cqi + 225px, 316px) * 0.16);background:#1F1D36;box-shadow:0 44px 64px -34px rgba(31,29,54,0.5), 0 16px 28px -18px rgba(31,29,54,0.35);box-sizing:border-box"><div style="aspect-ratio:390 / 844;border-radius:calc(clamp(250px, 6.3cqi + 225px, 316px) * 0.13);overflow:hidden;background:#F7F7FA"><img src="/img/learner-my-own.png" alt="Amina's My own on a phone: Grade 6 and Grade 7 to practise, another grade to add, and her own work." width="390" height="844" loading="lazy" decoding="async" style="display:block;width:100%;height:100%;object-fit:cover;object-position:top"></div></div>
+        </div>
+      </article>
+      <article style="display:flex;flex-wrap:wrap;flex-direction:row-reverse;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:clamp(28px, 1.15cqi + 23.5px, 40px);overflow:hidden;box-sizing:border-box">
+        <div style="flex:1 1 380px;min-width:0;padding:clamp(28px, 3.4cqi + 15px, 64px);display:flex;flex-direction:column;justify-content:center;gap:clamp(18px, 0.75cqi + 15px, 26px);box-sizing:border-box">
+          <span aria-hidden="true" style="width:56px;height:56px;flex:none;border-radius:18px;background:#EEEDF5;display:flex;align-items:center;justify-content:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.8 9.4V20h12.4V9.4"/><path d="M12 17.4s-3-1.8-3-3.7a1.55 1.55 0 0 1 3-.7 1.55 1.55 0 0 1 3 .7c0 1.9-3 3.7-3 3.7z"/></svg></span>
+          <h3 style="margin:0;font-size:30px;font-size:clamp(30px, 1.7cqi + 23.4px, 48px);line-height:1.08;font-weight:700;letter-spacing:-0.02em">For parents</h3>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px">
+            <li style="display:flex;gap:14px;align-items:flex-start;font-size:18px;font-size:clamp(18px, 0.38cqi + 16.5px, 22px);line-height:1.45"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:0.42em"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg><span>See results once the teacher shares them.</span></li>
+            <li style="display:flex;gap:14px;align-items:flex-start;font-size:18px;font-size:clamp(18px, 0.38cqi + 16.5px, 22px);line-height:1.45"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:0.42em"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg><span>Practise at home with your child.</span></li>
+          </ul>
+        </div>
+        <div style="flex:1 1 380px;min-width:0;height:340px;height:clamp(340px, 20.9cqi + 258.5px, 560px);background:#EEEDF5;display:flex;justify-content:center;padding-top:clamp(36px, 1.9cqi + 28.6px, 56px);overflow:hidden;box-sizing:border-box">
+          <div style="width:clamp(250px, 6.3cqi + 225px, 316px);flex:none;padding:calc(clamp(250px, 6.3cqi + 225px, 316px) * 0.03);border-radius:calc(clamp(250px, 6.3cqi + 225px, 316px) * 0.16);background:#1F1D36;box-shadow:0 44px 64px -34px rgba(31,29,54,0.5), 0 16px 28px -18px rgba(31,29,54,0.35);box-sizing:border-box"><div style="aspect-ratio:390 / 844;border-radius:calc(clamp(250px, 6.3cqi + 225px, 316px) * 0.13);overflow:hidden;background:#F7F7FA"><img src="/img/parent-tests.png" alt="Thandi's view of Amina once Ms Banda shared the test: what to work on this week and marks by topic." width="390" height="844" loading="lazy" decoding="async" style="display:block;width:100%;height:100%;object-fit:cover;object-position:top"></div></div>
+        </div>
+      </article>
+      <article style="display:flex;flex-wrap:wrap;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:clamp(28px, 1.15cqi + 23.5px, 40px);overflow:hidden;box-sizing:border-box">
+        <div style="flex:1 1 380px;min-width:0;padding:clamp(28px, 3.4cqi + 15px, 64px);display:flex;flex-direction:column;justify-content:center;gap:clamp(18px, 0.75cqi + 15px, 26px);box-sizing:border-box">
+          <span aria-hidden="true" style="width:56px;height:56px;flex:none;border-radius:18px;background:#FFE3DA;display:flex;align-items:center;justify-content:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8.5 20l2-4M15.5 20l-2-4M7 8.5h6M7 11.5h4"/></svg></span>
+          <h3 style="margin:0;font-size:30px;font-size:clamp(30px, 1.7cqi + 23.4px, 48px);line-height:1.08;font-weight:700;letter-spacing:-0.02em">For teachers</h3>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px">
+            <li style="display:flex;gap:14px;align-items:flex-start;font-size:18px;font-size:clamp(18px, 0.38cqi + 16.5px, 22px);line-height:1.45"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:0.42em"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg><span>Marks from a photo.</span></li>
+            <li style="display:flex;gap:14px;align-items:flex-start;font-size:18px;font-size:clamp(18px, 0.38cqi + 16.5px, 22px);line-height:1.45"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:0.42em"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg><span>The gaps of the class.</span></li>
+            <li style="display:flex;gap:14px;align-items:flex-start;font-size:18px;font-size:clamp(18px, 0.38cqi + 16.5px, 22px);line-height:1.45"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:0.42em"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg><span>The Long view of three terms or more.</span></li>
+            <li style="display:flex;gap:14px;align-items:flex-start;font-size:18px;font-size:clamp(18px, 0.38cqi + 16.5px, 22px);line-height:1.45"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;margin-top:0.42em"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg><span>You approve every step.</span></li>
+          </ul>
+        </div>
+        <div style="flex:1 1 380px;min-width:0;height:340px;height:clamp(340px, 20.9cqi + 258.5px, 560px);background:#FFE3DA;display:flex;justify-content:center;padding-top:clamp(36px, 1.9cqi + 28.6px, 56px);overflow:hidden;box-sizing:border-box">
+          <div style="width:clamp(250px, 6.3cqi + 225px, 316px);flex:none;padding:calc(clamp(250px, 6.3cqi + 225px, 316px) * 0.03);border-radius:calc(clamp(250px, 6.3cqi + 225px, 316px) * 0.16);background:#1F1D36;box-shadow:0 44px 64px -34px rgba(31,29,54,0.5), 0 16px 28px -18px rgba(31,29,54,0.35);box-sizing:border-box"><div style="aspect-ratio:390 / 844;border-radius:calc(clamp(250px, 6.3cqi + 225px, 316px) * 0.13);overflow:hidden;background:#F7F7FA"><img src="/img/teacher-class.png" alt="Ms Banda's class page: what three of five learners do not get yet, the papers it comes from, and results waiting to be shared with parents." width="390" height="844" loading="lazy" decoding="async" style="display:block;width:100%;height:100%;object-fit:cover;object-position:top"></div></div>
+        </div>
+      </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="maths-title" style="padding:clamp(64px, 6.1cqi + 40px, 128px) max(24px, calc((100% - 1280px) / 2));background:#FFFFFF;box-sizing:border-box">
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 48px">
+        <h2 id="maths-title" style="margin:0;font-size:32px;font-size:clamp(32px, 2.67cqi + 21.6px, 60px);line-height:1.08;font-weight:700;letter-spacing:-0.02em;text-wrap:balance;flex:1 1 420px;min-width:0"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;display:inline-block;width:0.4em;height:0.4em;margin-right:0.3em;vertical-align:0.1em"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>Maths for <span style="white-space:nowrap">Grade 1</span> to <span style="white-space:nowrap">Grade 12.</span></h2>
+        <p style="margin:0;flex:0 1 25em;min-width:0;font-size:18px;font-size:clamp(18px, 0.57cqi + 15.8px, 24px);line-height:1.5;color:#5D5A73">CAPS is built in. Lessons draw the diagrams, graphs and shapes.</p>
+      </div>
+      <ul style="list-style:none;margin:clamp(28px, 2.7cqi + 17.5px, 56px) 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit, minmax(136px, 1fr));gap:clamp(14px, 1cqi + 10px, 24px)">
+        <li style="min-width:0;display:flex;flex-direction:column;border-radius:clamp(18px, 0.8cqi + 15px, 26px);background:#F7F7FA;border:1px solid #E7E6EF;overflow:hidden">
+          <span style="padding:clamp(12px, 0.6cqi + 10px, 18px) clamp(12px, 0.8cqi + 9px, 20px) 0;font-size:15px;font-size:clamp(15px, 0.19cqi + 14.3px, 17px);font-weight:700;line-height:1.3">Fractions</span>
+          <img src="/img/tile-fractions.png" alt="A fractions question: add one half and one third, with a box for the top number and one for the bottom number." width="374" height="406" loading="lazy" decoding="async" style="display:block;width:100%;height:auto;margin-top:6px">
+        </li>
+        <li style="min-width:0;display:flex;flex-direction:column;border-radius:clamp(18px, 0.8cqi + 15px, 26px);background:#F7F7FA;border:1px solid #E7E6EF;overflow:hidden">
+          <span style="padding:clamp(12px, 0.6cqi + 10px, 18px) clamp(12px, 0.8cqi + 9px, 20px) 0;font-size:15px;font-size:clamp(15px, 0.19cqi + 14.3px, 17px);font-weight:700;line-height:1.3">Graphs</span>
+          <img src="/img/tile-graphs.png" alt="A lesson on straight-line graphs: the graph of y = 2x + 3 is drawn and the y-intercept is marked." width="374" height="406" loading="lazy" decoding="async" style="display:block;width:100%;height:auto;margin-top:6px">
+        </li>
+        <li style="min-width:0;display:flex;flex-direction:column;border-radius:clamp(18px, 0.8cqi + 15px, 26px);background:#F7F7FA;border:1px solid #E7E6EF;overflow:hidden">
+          <span style="padding:clamp(12px, 0.6cqi + 10px, 18px) clamp(12px, 0.8cqi + 9px, 20px) 0;font-size:15px;font-size:clamp(15px, 0.19cqi + 14.3px, 17px);font-weight:700;line-height:1.3">Trigonometry</span>
+          <img src="/img/tile-trigonometry.png" alt="A trigonometry question: sin θ = 0,6 and the hypotenuse is 10 cm; find the opposite side." width="374" height="406" loading="lazy" decoding="async" style="display:block;width:100%;height:auto;margin-top:6px">
+        </li>
+        <li style="min-width:0;display:flex;flex-direction:column;border-radius:clamp(18px, 0.8cqi + 15px, 26px);background:#F7F7FA;border:1px solid #E7E6EF;overflow:hidden">
+          <span style="padding:clamp(12px, 0.6cqi + 10px, 18px) clamp(12px, 0.8cqi + 9px, 20px) 0;font-size:15px;font-size:clamp(15px, 0.19cqi + 14.3px, 17px);font-weight:700;line-height:1.3">Algebra</span>
+          <img src="/img/tile-algebra.png" alt="An algebra question: expand (x + 2)(x + 3), typed with the maths keys and read back as it will be marked." width="374" height="406" loading="lazy" decoding="async" style="display:block;width:100%;height:auto;margin-top:6px">
+        </li>
+      </ul>
+      <ul aria-label="Some of the topics" style="list-style:none;margin:clamp(22px, 1.1cqi + 18px, 34px) 0 0;padding:0;display:flex;flex-wrap:wrap;gap:10px">
+        <li style="display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:999px;background:#F7F7FA;border:1px solid #E7E6EF;font-size:14px;font-size:clamp(14px, 0.1cqi + 13.6px, 15px);font-weight:600;box-sizing:border-box">Numbers</li><li style="display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:999px;background:#F7F7FA;border:1px solid #E7E6EF;font-size:14px;font-size:clamp(14px, 0.1cqi + 13.6px, 15px);font-weight:600;box-sizing:border-box">Fractions</li><li style="display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:999px;background:#F7F7FA;border:1px solid #E7E6EF;font-size:14px;font-size:clamp(14px, 0.1cqi + 13.6px, 15px);font-weight:600;box-sizing:border-box">Algebra</li><li style="display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:999px;background:#F7F7FA;border:1px solid #E7E6EF;font-size:14px;font-size:clamp(14px, 0.1cqi + 13.6px, 15px);font-weight:600;box-sizing:border-box">Functions and graphs</li><li style="display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:999px;background:#F7F7FA;border:1px solid #E7E6EF;font-size:14px;font-size:clamp(14px, 0.1cqi + 13.6px, 15px);font-weight:600;box-sizing:border-box">Geometry</li><li style="display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:999px;background:#F7F7FA;border:1px solid #E7E6EF;font-size:14px;font-size:clamp(14px, 0.1cqi + 13.6px, 15px);font-weight:600;box-sizing:border-box">Trigonometry</li><li style="display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:999px;background:#F7F7FA;border:1px solid #E7E6EF;font-size:14px;font-size:clamp(14px, 0.1cqi + 13.6px, 15px);font-weight:600;box-sizing:border-box">Data handling</li><li style="display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:999px;background:#F7F7FA;border:1px solid #E7E6EF;font-size:14px;font-size:clamp(14px, 0.1cqi + 13.6px, 15px);font-weight:600;box-sizing:border-box">Financial maths</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="rules-title" style="padding:clamp(64px, 6.1cqi + 40px, 128px) max(24px, calc((100% - 1280px) / 2));background:#FFF4F1;box-sizing:border-box">
+      <div style="position:relative;max-width:880px;margin:0 auto;background:#FFFFFF;border-radius:10px;box-shadow:0 1px 2px rgba(31,29,54,0.06), 0 28px 50px -30px rgba(31,29,54,0.3);transform:rotate(-0.7deg);padding:clamp(36px, 1.9cqi + 28.6px, 56px) clamp(18px, 3cqi + 6px, 56px) clamp(24px, 1.5cqi + 18px, 40px);box-sizing:border-box">
+        <span aria-hidden="true" style="position:absolute;top:-12px;left:clamp(20px, 3.4cqi + 7px, 56px);width:clamp(84px, 1.5cqi + 78px, 100px);height:26px;background:rgba(255,106,77,0.3);transform:rotate(-5deg)"></span>
+        <span aria-hidden="true" style="position:absolute;top:-12px;right:clamp(20px, 3.4cqi + 7px, 56px);width:clamp(84px, 1.5cqi + 78px, 100px);height:26px;background:rgba(255,106,77,0.3);transform:rotate(4deg)"></span>
+        <h2 id="rules-title" style="margin:0;font-size:32px;font-size:clamp(32px, 2.67cqi + 21.6px, 60px);line-height:1.08;font-weight:700;letter-spacing:-0.02em;text-wrap:balance;padding-left:clamp(4px, 0.6cqi + 2px, 12px)"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;display:inline-block;width:0.4em;height:0.4em;margin-right:0.3em;vertical-align:0.1em"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>The rules it keeps</h2>
+        <div style="position:relative;margin-top:clamp(20px, 1.15cqi + 15.5px, 32px)">
+          <span aria-hidden="true" style="position:absolute;top:0;bottom:0;left:clamp(44px, 1.9cqi + 36.6px, 64px);width:2px;background:#FFB4A4"></span>
+          <ul style="list-style:none;margin:0;padding:0">
+          <li style="display:flex;align-items:center;min-height:76px;min-height:clamp(76px, 1.5cqi + 70px, 92px);border-top:1.5px solid #E3E1EE;">
+            <span aria-hidden="true" style="width:clamp(44px, 1.9cqi + 36.6px, 64px);flex:none;display:flex;justify-content:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg></span>
+            <span style="flex:1;min-width:0;padding:14px 8px 14px clamp(16px, 1.15cqi + 11.5px, 28px);font-size:18px;font-size:clamp(18px, 0.76cqi + 15px, 26px);line-height:1.3;font-weight:600">A profile, never a label.</span>
+            <svg viewBox="0 0 30 30" aria-hidden="true" style="flex:none;width:clamp(26px, 0.6cqi + 24px, 32px);height:clamp(26px, 0.6cqi + 24px, 32px);transform:rotate(-4deg)"><path d="M4 16.5c2.5 1.6 4.6 3.8 6.6 6.8C14 15 19 8.6 26.5 4.5" fill="none" stroke="#FF6A4D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </li>
+          <li style="display:flex;align-items:center;min-height:76px;min-height:clamp(76px, 1.5cqi + 70px, 92px);border-top:1.5px solid #E3E1EE;">
+            <span aria-hidden="true" style="width:clamp(44px, 1.9cqi + 36.6px, 64px);flex:none;display:flex;justify-content:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M14 3v5h5v2.5"/><circle cx="16.5" cy="16.5" r="3"/><path d="m18.7 18.7 2.3 2.3"/></svg></span>
+            <span style="flex:1;min-width:0;padding:14px 8px 14px clamp(16px, 1.15cqi + 11.5px, 28px);font-size:18px;font-size:clamp(18px, 0.76cqi + 15px, 26px);line-height:1.3;font-weight:600">Every claim has a source.</span>
+            <svg viewBox="0 0 30 30" aria-hidden="true" style="flex:none;width:clamp(26px, 0.6cqi + 24px, 32px);height:clamp(26px, 0.6cqi + 24px, 32px);transform:rotate(3deg)"><path d="M4 16.5c2.5 1.6 4.6 3.8 6.6 6.8C14 15 19 8.6 26.5 4.5" fill="none" stroke="#FF6A4D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </li>
+          <li style="display:flex;align-items:center;min-height:76px;min-height:clamp(76px, 1.5cqi + 70px, 92px);border-top:1.5px solid #E3E1EE;">
+            <span aria-hidden="true" style="width:clamp(44px, 1.9cqi + 36.6px, 64px);flex:none;display:flex;justify-content:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5 1.6 0 3 .6 4 1.6"/><path d="m15 17.5 2 2 4-4.5"/></svg></span>
+            <span style="flex:1;min-width:0;padding:14px 8px 14px clamp(16px, 1.15cqi + 11.5px, 28px);font-size:18px;font-size:clamp(18px, 0.76cqi + 15px, 26px);line-height:1.3;font-weight:600">The teacher goes first.</span>
+            <svg viewBox="0 0 30 30" aria-hidden="true" style="flex:none;width:clamp(26px, 0.6cqi + 24px, 32px);height:clamp(26px, 0.6cqi + 24px, 32px);transform:rotate(-2deg)"><path d="M4 16.5c2.5 1.6 4.6 3.8 6.6 6.8C14 15 19 8.6 26.5 4.5" fill="none" stroke="#FF6A4D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </li>
+          <li style="display:flex;align-items:center;min-height:76px;min-height:clamp(76px, 1.5cqi + 70px, 92px);border-top:1.5px solid #E3E1EE;border-bottom:1.5px solid #E3E1EE;">
+            <span aria-hidden="true" style="width:clamp(44px, 1.9cqi + 36.6px, 64px);flex:none;display:flex;justify-content:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M6 20v-5M11 20V9M16 20v-7"/><path d="M4 5l15.5 15.5"/></svg></span>
+            <span style="flex:1;min-width:0;padding:14px 8px 14px clamp(16px, 1.15cqi + 11.5px, 28px);font-size:18px;font-size:clamp(18px, 0.76cqi + 15px, 26px);line-height:1.3;font-weight:600">Never ranked against classmates.</span>
+            <svg viewBox="0 0 30 30" aria-hidden="true" style="flex:none;width:clamp(26px, 0.6cqi + 24px, 32px);height:clamp(26px, 0.6cqi + 24px, 32px);transform:rotate(5deg)"><path d="M4 16.5c2.5 1.6 4.6 3.8 6.6 6.8C14 15 19 8.6 26.5 4.5" fill="none" stroke="#FF6A4D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="About Jemma" style="padding:clamp(44px, 2.3cqi + 35px, 68px) max(24px, calc((100% - 1280px) / 2));box-sizing:border-box">
+      <ul style="list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:24px 72px">
+        <li style="display:flex;align-items:center;gap:16px;min-width:0">
+          <span aria-hidden="true" style="width:56px;height:56px;flex:none;border-radius:50%;background:#FFFFFF;border:1px solid #E7E6EF;display:flex;align-items:center;justify-content:center;box-sizing:border-box"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.5 7 21l5-2.5 5 2.5-1.5-7.5"/></svg></span>
+          <span style="min-width:0"><span style="display:block;font-size:16px;font-size:clamp(16px, 0.38cqi + 14.5px, 20px);font-weight:600;line-height:1.35">Built for the African Agentic AI Design Challenge</span><span style="display:block;font-size:14px;font-size:clamp(14px, 0.19cqi + 13.3px, 16px);color:#5D5A73;line-height:1.4">Education track · The Long View</span></span>
+        </li>
+        <li style="display:flex;align-items:center;gap:16px">
+          <span aria-hidden="true" style="width:56px;height:56px;flex:none;border-radius:50%;background:#FFFFFF;border:1px solid #E7E6EF;display:flex;align-items:center;justify-content:center;box-sizing:border-box"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg></span>
+          <span style="font-size:16px;font-size:clamp(16px, 0.38cqi + 14.5px, 20px);font-weight:600;line-height:1.35">Open source</span>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <footer style="padding:0 max(24px, calc((100% - 1280px) / 2)) 40px;box-sizing:border-box">
+    <div style="position:relative;overflow:hidden;border-radius:clamp(28px, 1.15cqi + 23.5px, 40px);background:#FFE3DA;padding:clamp(40px, 3.8cqi + 25px, 80px) clamp(24px, 4.6cqi + 6px, 72px);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:28px 56px;box-sizing:border-box">
+      <svg viewBox="0 0 16 16" aria-hidden="true" style="position:absolute;left:calc(100% - 66px);top:24px;width:28px;height:28px"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D"/></svg>
+      <svg viewBox="0 0 16 16" aria-hidden="true" style="position:absolute;left:calc(100% - 98px);top:54px;width:16px;height:16px"><polygon points="8,1.5 14.5,8 8,14.5 1.5,8" fill="none" stroke="#1F1D36" stroke-width="2.2" stroke-linejoin="round"/></svg>
+      <svg viewBox="0 0 16 16" aria-hidden="true" style="position:absolute;left:calc(100% - 42px);top:66px;width:10px;height:10px"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#1F1D36"/></svg>
+      <div style="flex:1 1 420px;min-width:0;max-width:calc(100% - 64px)">
+        <h2 style="margin:0;font-size:32px;font-size:clamp(32px, 2.3cqi + 23px, 56px);line-height:1.06;font-weight:700;letter-spacing:-0.02em;text-wrap:balance">See it with a <span style="white-space:nowrap">made-up</span> class.</h2>
+        <p style="margin:12px 0 0;font-size:17px;font-size:clamp(17px, 0.29cqi + 15.9px, 20px);color:#5D5A73">About 10 minutes.</p>
+      </div>
+      <div style="flex:1 1 300px;max-width:520px;display:flex;flex-wrap:wrap;gap:20px">
+        <a href="https://jemma.ainative.ventures/demo" style="display:flex;align-items:center;justify-content:center;gap:10px;flex:1 1 200px;min-height:58px;min-height:clamp(58px, 0.57cqi + 55.8px, 64px);padding:0 28px;border-radius:18px;font-size:18px;font-size:clamp(18px, 0.19cqi + 17.3px, 20px);font-weight:600;line-height:1.2;text-decoration:none;box-sizing:border-box;background:#FF6A4D;color:#1F1D36">Try the demo<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a href="https://jemma.ainative.ventures/sign-in" style="display:flex;align-items:center;justify-content:center;gap:10px;flex:1 1 200px;min-height:58px;min-height:clamp(58px, 0.57cqi + 55.8px, 64px);padding:0 28px;border-radius:18px;font-size:18px;font-size:clamp(18px, 0.19cqi + 17.3px, 20px);font-weight:600;line-height:1.2;text-decoration:none;box-sizing:border-box;background:#FFFFFF;color:#1F1D36;border:1.5px solid #1F1D36">Sign in</a>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 40px;padding:36px 4px 0">
+      <a href="/" aria-label="jemma home" style="display:inline-flex;align-items:center;min-height:48px;color:#1F1D36"><svg viewBox="4 12 236 92" role="img" aria-label="jemma" style="display:block;width:96px;height:auto;aspect-ratio:236 / 92"><path d="M32 46 V80 C32 91 24 95 13 93" fill="none" stroke="#1F1D36" stroke-width="9.5" stroke-linecap="round"/>
+  <polygon points="32,19 40,27 32,35 24,27" fill="#FF6A4D"/>
+  <path d="M62.4 80.73Q57.19 80.73 53.13 78.58Q49.07 76.44 46.76 72.61Q44.45 68.78 44.45 63.96Q44.45 59.14 46.73 55.35Q49.01 51.55 52.9 49.38Q56.79 47.2 61.68 47.2Q66.43 47.2 70.06 49.24Q73.69 51.29 75.77 54.92Q77.85 58.55 77.85 63.24Q77.85 64.09 77.75 65.05Q77.65 66.01 77.39 67.26L54.42 67.33Q54.62 68.05 55.01 68.71Q56 70.76 57.88 71.85Q59.76 72.94 62.34 72.94Q64.71 72.94 66.63 72.11Q68.54 71.29 69.99 69.64L75.54 75.18Q73.16 77.95 69.8 79.34Q66.43 80.73 62.4 80.73ZM54.42 60.4 68.41 60.33Q68.21 59.41 67.88 58.62Q67.09 56.83 65.54 55.88Q63.99 54.92 61.74 54.92Q59.37 54.92 57.62 56.01Q55.87 57.1 54.95 59.08Q54.62 59.67 54.42 60.4ZM82.73 80V47.92H92.83V50.3Q93.82 49.38 95.07 48.72Q97.91 47.26 101.48 47.26Q104.84 47.26 107.55 48.78Q109.46 49.9 110.85 51.62Q112.3 49.97 114.35 48.85Q117.32 47.26 121.08 47.26Q124.77 47.26 127.65 48.81Q130.52 50.37 132.2 53.24Q133.88 56.11 133.88 60.13V80H123.78V61.26Q123.78 58.81 122.3 57.46Q120.81 56.11 118.64 56.11Q117.12 56.11 115.93 56.73Q114.74 57.36 114.05 58.48Q113.36 59.61 113.36 61.26V80H103.26V61.26Q103.26 58.81 101.77 57.46Q100.29 56.11 98.11 56.11Q96.59 56.11 95.4 56.73Q94.22 57.36 93.52 58.48Q92.83 59.61 92.83 61.26V80ZM140.35 80V47.92H150.45V50.3Q151.44 49.38 152.69 48.72Q155.53 47.26 159.09 47.26Q162.46 47.26 165.17 48.78Q167.08 49.9 168.47 51.62Q169.92 49.97 171.96 48.85Q174.93 47.26 178.7 47.26Q182.39 47.26 185.26 48.81Q188.13 50.37 189.82 53.24Q191.5 56.11 191.5 60.13V80H181.4V61.26Q181.4 58.81 179.92 57.46Q178.43 56.11 176.25 56.11Q174.74 56.11 173.55 56.73Q172.36 57.36 171.67 58.48Q170.97 59.61 170.97 61.26V80H160.88V61.26Q160.88 58.81 159.39 57.46Q157.91 56.11 155.73 56.11Q154.21 56.11 153.02 56.73Q151.83 57.36 151.14 58.48Q150.45 59.61 150.45 61.26V80ZM211.37 80.66Q206.94 80.66 203.48 78.48Q200.01 76.3 198 72.54Q195.99 68.78 195.99 63.96Q195.99 59.14 198 55.38Q200.01 51.62 203.48 49.44Q206.94 47.26 211.37 47.26Q214.6 47.26 217.24 48.52Q218.89 49.31 220.21 50.56V47.92H230.11V80H220.21V77.43Q218.96 78.61 217.24 79.41Q214.6 80.66 211.37 80.66ZM213.41 71.55Q216.65 71.55 218.63 69.41Q220.61 67.26 220.61 63.96Q220.61 61.72 219.72 60Q218.82 58.29 217.21 57.33Q215.59 56.37 213.48 56.37Q211.37 56.37 209.75 57.33Q208.13 58.29 207.18 60Q206.22 61.72 206.22 63.96Q206.22 66.14 207.14 67.86Q208.07 69.57 209.72 70.56Q211.37 71.55 213.41 71.55Z" fill="#1F1D36"/></svg></a>
+      <nav aria-label="Footer">
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:0 32px">
+          <li><a href="https://jemma.ainative.ventures/sign-up" style="display:inline-flex;align-items:center;min-height:44px;font-size:16px;font-size:clamp(16px, 0.1cqi + 15.6px, 17px);font-weight:500;color:#1F1D36;text-decoration:none">Start</a></li>
+          <li><a href="https://jemma.ainative.ventures/privacy" style="display:inline-flex;align-items:center;min-height:44px;font-size:16px;font-size:clamp(16px, 0.1cqi + 15.6px, 17px);font-weight:500;color:#1F1D36;text-decoration:none">Privacy</a></li>
+          <li><a href="https://jemma.ainative.ventures/help" style="display:inline-flex;align-items:center;min-height:44px;font-size:16px;font-size:clamp(16px, 0.1cqi + 15.6px, 17px);font-weight:500;color:#1F1D36;text-decoration:none">Help</a></li>
+          <li><a href="https://github.com/AI-Native-Ventures/jemma" style="display:inline-flex;align-items:center;min-height:44px;font-size:16px;font-size:clamp(16px, 0.1cqi + 15.6px, 17px);font-weight:500;color:#1F1D36;text-decoration:none">Source on GitHub</a></li>
+        </ul>
+      </nav>
+    </div>
+    <p style="margin:12px 4px 0;display:flex;flex-wrap:wrap;gap:4px 20px;font-size:14px;color:#5D5A73"><span>Mathematics, CAPS Grades 1 to 12.</span><span>MIT licence</span></p>
+  </footer>
+</div>
+</body>
+</html>

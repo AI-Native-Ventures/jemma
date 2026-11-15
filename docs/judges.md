@@ -1,6 +1,6 @@
 # For judges
 
-This page is the shortest path through Jemma on the live link: https://jemma-web.horizonsystems.workers.dev/demo. The code is at https://github.com/AI-Native-Ventures/jemma and the licence is MIT. To run it on your own machine instead, see the README ("Run it").
+This page is the shortest path through Jemma on the live link: https://jemma.ainative.ventures/demo. The code is at https://github.com/AI-Native-Ventures/jemma and the licence is MIT. To run it on your own machine instead, see the README ("Run it").
 
 Every person, school and paper in the demo is made up. Please do not type real information about real children.
 

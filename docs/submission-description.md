@@ -1,6 +1,6 @@
 # Jemma: text description
 
-Sub-theme: Longitudinal strength tracking. Repository: https://github.com/AI-Native-Ventures/jemma. Live demo: https://jemma-web.horizonsystems.workers.dev/demo. Licence: MIT.
+Sub-theme: Longitudinal strength tracking. Repository: https://github.com/AI-Native-Ventures/jemma. Live demo: https://jemma.ainative.ventures/demo. Licence: MIT.
 
 Jemma follows one learner across years, not one term, so a pattern that is invisible one term at a time can reach the family early.
 

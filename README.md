@@ -4,7 +4,7 @@
 
 Jemma follows one learner across years, not one term. It marks each class test, keeps a sourced record for every child, and shows the teacher what held for three terms or more, so the teacher can raise it with the family. It builds a profile, never a label. A parent sees nothing about a child until the teacher has said yes to the link. A class test, its marks and its gaps reach a parent only after the teacher taps Share with parents, and a Long view pattern only after the teacher has talked to the family. The short guidance card has no such tap: Jemma writes it for the family without a teacher's check, and never while one of the learner's tests is held.
 
-Built for the African Agentic AI Design Challenge, Education track (The Long View), sub-theme Longitudinal strength tracking. Licence: MIT. Live demo: https://jemma-web.horizonsystems.workers.dev/demo.
+Built for the African Agentic AI Design Challenge, Education track (The Long View), sub-theme Longitudinal strength tracking. Licence: MIT. Live demo: https://jemma.ainative.ventures/demo. Landing page: https://getjemma.ainative.ventures.
 
 ## The rules it keeps
 
@@ -233,6 +233,7 @@ More detail is in [docs/architecture.md](docs/architecture.md) (what is not buil
 | Path | What is in it |
 | --- | --- |
 | `apps/web` | The web app: Next.js on Cloudflare Workers (OpenNext). Teacher `/t`, parent `/p`, learner `/k`, and `/demo`. |
+| `apps/landing` | The landing page: one static page with its font and screenshots, on Cloudflare Workers at getjemma.ainative.ventures. A visitor who is not signed in at the front door of the app is sent there. |
 | `apps/agent` | The agent worker: `/events`, `/mcp`, `/health`, the Queue consumer and the cron. |
 | `packages/profiling` | The MCP tools, zod schemas, job prompts, learning logic, model layer, orchestrator. |
 | `packages/runner` and `apps/desktop` | The runners: Jemma Desktop (the user's Claude Code or Codex; pair it by entering the six-character code shown in the signed-in Jemma web app; build the unsigned Mac app with `CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter desktop dist`), the goose runner, and the operator runner (`pnpm operator`). |
