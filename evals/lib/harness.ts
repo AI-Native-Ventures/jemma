@@ -8,20 +8,23 @@ import { jobPlan } from '../../packages/profiling/src/plans'
 import { EventSchema } from '../../packages/profiling/src/schemas/events'
 import {
   ensureReportsDir,
+  gooseEnv,
   gooseModels,
   parseTranscript,
   runJob,
   startRunner,
   type AgentName,
   type GooseAttempt,
+  type OllamaAddress,
   type RunOptions,
   type RunResult,
 } from '../../packages/runner/src/index'
 import { createSandbox, deleteSandbox, type Sandbox } from '../../supabase/seed/demo'
 import { sendEvent } from '../../apps/web/lib/agent'
-import { appendLedger } from './ledger'
+import { appendLedger, ledgerLine } from './ledger'
 import { hookFinish, settledEvent } from './hook'
 import { measureRoundTrip, readOneSchool } from './line'
+import { localFacts, scrubPlan } from './local'
 import { providerErrorOf } from './provider'
 import { baseName, RESULT_VERSION, type ResultFile } from './result'
 import { saveResult } from './save'
@@ -51,6 +54,13 @@ export type Shared = {
   timeoutMs?: number
   /** The database round trip in milliseconds (median of three reads). Default: three small reads through `admin`. */
   measureRoundTrip?: () => Promise<number>
+  /**
+   * Where goose gets its model: OpenRouter (default) or a model on this computer through Ollama. A local run holds no
+   * OpenRouter key, takes every cloud model key out of goose's environment, and records what it ran on in the result.
+   */
+  provider?: 'openrouter' | 'ollama'
+  /** A local run: the Ollama tag and the address of Ollama (this computer). */
+  local?: { model: string; host: OllamaAddress }
 }
 
 type Logins = { teacher: { userId: string; email: string; password: string }; parent: { userId: string } }
@@ -91,8 +101,12 @@ export async function runOnce(task: Task, n: number, shared: Shared): Promise<Re
   const { admin, env } = shared
   const wallStart = Date.now()
   const startedAt = new Date().toISOString()
-  const key = env.OPENROUTER_API_KEY ?? (shared.rehearsal ? 'rehearsal-key' : required(env, 'OPENROUTER_API_KEY'))
-  const secrets = [key]
+  const local = shared.provider === 'ollama' ? shared.local ?? null : null
+  if (shared.provider === 'ollama' && !local) throw new Error('a local run needs its model and the address of Ollama')
+  // A local run holds no OpenRouter key at all. Every other run needs one (a fake goose in a rehearsal gets a stand-in).
+  const key = local ? null : (env.OPENROUTER_API_KEY ?? (shared.rehearsal ? 'rehearsal-key' : required(env, 'OPENROUTER_API_KEY')))
+  const secrets: string[] = key ? [key] : []
+  let childEnvSeen: Record<string, string | undefined> | null = null
   const sandboxes: Sandbox[] = []
   const cleanup: string[] = []
   const attemptsRaw: GooseAttempt[] = []
@@ -166,7 +180,7 @@ export async function runOnce(task: Task, n: number, shared: Shared): Promise<Re
     const step = prepared.ids ? { ...found, ids: prepared.ids } : found
     const jobText = readFileSync(new URL(`../../packages/profiling/src/jobs/${task.job}.md`, import.meta.url), 'utf8')
     const text = prepared.promptSuffix ? `${jobText}\n\n${prepared.promptSuffix}` : jobText
-    const models = prepared.models ?? gooseModels(process.env)
+    const models = prepared.models ?? (local ? [local.model] : gooseModels(process.env))
 
     let runResult: RunResult | null = null
     let reported: boolean | null = null
@@ -189,19 +203,26 @@ export async function runOnce(task: Task, n: number, shared: Shared): Promise<Re
       loadPrompt: async () => text,
       run: async (job, agent: AgentName, target, options?: RunOptions) => {
         const list = shared.rehearsal ? models : models.slice(0, Math.max(0, shared.liveLeft()))
-        const result = await withScrubbedEnv({ OPENROUTER_API_KEY: key }, () =>
-          runJob(job, agent, target, {
-            ...options,
-            models: list,
-            reportsDir,
-            onAttempt: (a) => {
-              attemptsRaw.push(a)
-              shared.spend(1)
-            },
-            onReport: (logged) => {
-              reported = logged
-            },
-          }),
+        const scrub = scrubPlan(local, key)
+        const result = await withScrubbedEnv(
+          scrub.values,
+          () => {
+            // what goose will be started with, for the record (names only are read)
+            if (local) childEnvSeen = gooseEnv(process.env, 'probe', 'probe', 'ollama')
+            return runJob(job, agent, target, {
+              ...options,
+              models: list,
+              reportsDir,
+              onAttempt: (a) => {
+                attemptsRaw.push(a)
+                shared.spend(1)
+              },
+              onReport: (logged) => {
+                reported = logged
+              },
+            })
+          },
+          scrub.keepOut,
         )
         runResult = result
         return result
@@ -302,8 +323,10 @@ export async function runOnce(task: Task, n: number, shared: Shared): Promise<Re
     stream: `${baseName(task.id, n)}.jsonl`,
     scrubbed: false,
     cleanup,
+    ...(local ? localFacts({ model: local.model, host: local.host, attempts: attemptsRaw.map((a) => ({ model: a.model, stdout: a.stdout, stderr: a.stderr })), childEnv: childEnvSeen ?? {} }) : {}),
   }
   // A rehearsal (fake goose) is not a live run: it is not counted, and it leaves nothing in the committed ledger.
-  if (!shared.rehearsal) appendLedger({ at: new Date().toISOString(), runId: shared.runId, taskId: task.id, n, attempts: attemptsRaw.length, rehearsal: false })
+  // A local run is counted apart (provider ollama): it never eats into the OpenRouter cap.
+  if (!shared.rehearsal) appendLedger(ledgerLine({ at: new Date().toISOString(), runId: shared.runId, taskId: task.id, n, attempts: attemptsRaw.length, local: !!local }))
   return saveResult(result, attemptsRaw, secrets, shared.outDir, [[reportsDir, '<reports>'], [evalRoot ?? '', '<run>']])
 }

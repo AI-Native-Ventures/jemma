@@ -54,6 +54,21 @@ export type ResultFile = {
   scrubbed: boolean
   /** Cleanup problems, if any. */
   cleanup: string[]
+  /** Which service gave goose its model. Missing means OpenRouter, as in every result saved before the local option. */
+  provider?: 'openrouter' | 'ollama'
+  /** Local runs only: the Ollama tag the run asked for. */
+  model?: string
+  /** Local runs only: the host Ollama answered on (this computer: 127.0.0.1) and its port. */
+  host?: string
+  port?: number
+  /**
+   * Local runs only: true when nothing in the run points at a cloud model (every attempt ran on the local tag, goose's
+   * environment held no cloud key, the transcript names no cloud service, the host is this computer). False when something
+   * did, and `cloudEvidence` says what. Null when no attempt ran, so nothing can be said.
+   */
+  noCloudModelCalled?: boolean | null
+  /** Local runs only: what pointed at a cloud model, one plain line each. Empty when nothing did. */
+  cloudEvidence?: string[]
 }
 
 export const baseName = (taskId: string, n: number) => `${taskId}-${n}`
@@ -79,6 +94,11 @@ export function parseResult(text: string, where: string): ResultFile {
   if (!Array.isArray(raw.checks) || !raw.checks.every((c) => isObj(c) && typeof c.name === 'string' && typeof c.pass === 'boolean' && typeof c.detail === 'string')) throw bad('checks are malformed')
   if (!Array.isArray(raw.attempts) || !Array.isArray(raw.toolCalls)) throw bad('attempts or toolCalls are missing')
   if (!isObj(raw.extras)) throw bad('extras are missing')
+  if (raw.provider !== undefined && raw.provider !== 'openrouter' && raw.provider !== 'ollama') throw bad('provider is not openrouter or ollama')
+  for (const key of ['model', 'host'] as const) if (raw[key] !== undefined && typeof raw[key] !== 'string') throw bad(`${key} is not text`)
+  if (raw.port !== undefined && typeof raw.port !== 'number') throw bad('port is not a number')
+  if (raw.noCloudModelCalled !== undefined && raw.noCloudModelCalled !== null && typeof raw.noCloudModelCalled !== 'boolean') throw bad('noCloudModelCalled is not true, false or null')
+  if (raw.cloudEvidence !== undefined && (!Array.isArray(raw.cloudEvidence) || !raw.cloudEvidence.every((l) => typeof l === 'string'))) throw bad('cloudEvidence is not a list of lines')
   return raw as unknown as ResultFile
 }
 
