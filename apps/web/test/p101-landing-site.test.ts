@@ -105,6 +105,44 @@ describe('the page body', () => {
   })
 })
 
+describe("the taped card in the hero (Amina's Fractions row of the real Long view)", () => {
+  // The legend of the Long view: full = 80 percent or more, half = 50 to 79, empty = below 50, dashed outline = no results that term.
+  // The real row, Grade 4 to Grade 6: two terms with no results then two half, two half then two empty, and two empty so far in Grade 6.
+  type Level = 'full' | 'half' | 'empty' | 'dashed'
+
+  /** The dots of each "Gr N" row, read from the drawing: a dash pattern is dashed, a solid disc is full, a ring with a half disc is half, a plain ring is empty. */
+  function rows(): Record<string, Level[]> {
+    const found: Record<string, Level[]> = {}
+    for (const row of html.matchAll(/<span[^>]*>(Gr \d+)<\/span>(<svg[\s\S]*?<\/svg>)/g)) {
+      found[row[1]!] = [...row[2]!.matchAll(/<circle\b([^>]*)\/>(<path d="[^"]*" fill="#1F1D36"\/>)?/g)].map((dot): Level => {
+        const attrs = dot[1]!
+        if (/stroke-dasharray=/.test(attrs)) return 'dashed'
+        if (/\br="6"/.test(attrs) && /fill="#1F1D36"/.test(attrs)) return 'full'
+        return dot[2] ? 'half' : 'empty'
+      })
+    }
+    return found
+  }
+
+  it('names the learner, the topic and the grades', () => {
+    expect(textOf(html)).toContain('Amina · Fractions Grade 4 to Grade 6')
+  })
+
+  it('draws the real dots: Grade 4 and Grade 5 four terms, Grade 6 the two terms it has so far', () => {
+    expect(rows()).toEqual({
+      'Gr 4': ['dashed', 'dashed', 'half', 'half'],
+      'Gr 5': ['half', 'half', 'empty', 'empty'],
+      'Gr 6': ['empty', 'empty'],
+    })
+  })
+
+  it('draws a dashed dot as a ring with a dash pattern, in the muted colour of the app legend', () => {
+    const dashed = [...html.matchAll(/<circle\b[^>]*stroke-dasharray="[^"]*"[^>]*\/>/g)].map((m) => m[0])
+    expect(dashed.length).toBe(2)
+    for (const dot of dashed) expect(dot).toMatch(/r="5\.3"[^>]*fill="#FFFFFF"[^>]*stroke="#8C89A3"|fill="#FFFFFF"[^>]*stroke="#8C89A3"[^>]*r="5\.3"/)
+  })
+})
+
 describe('the links', () => {
   const links = [...html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => {
     const attrs = m[1]!
