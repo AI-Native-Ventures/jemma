@@ -1,4 +1,5 @@
 import { defaultExtraDirs, exec, findBin } from './exec'
+import { gooseProvider, type GooseProvider } from './goose'
 
 export type AgentName = 'claude' | 'codex' | 'goose'
 export type AgentStatus = { installed: boolean; version: string | null; signedIn: boolean | 'unknown' }
@@ -39,13 +40,21 @@ async function codexStatus(bin: string): Promise<AgentStatus> {
 
 /**
  * Goose has no login of its own: it talks to OpenRouter with a key from the environment. So "signed in" means
- * `OPENROUTER_API_KEY` is set. No prompt is sent.
+ * `OPENROUTER_API_KEY` is set. On a model on this computer (`JEMMA_GOOSE_PROVIDER=ollama`) there is nothing to sign in
+ * to, so it counts as signed in. A provider value that is not one of the two is not signed in. No prompt is sent.
  */
 export async function detectGoose(opts: DetectOptions = {}): Promise<AgentStatus> {
   const bin = findBin('goose', opts.extraDirs ?? defaultExtraDirs())
   if (!bin) return NOT_INSTALLED
   const v = await exec(bin, ['--version'])
-  return { installed: true, version: parseVersion(v.stdout), signedIn: Boolean(process.env.OPENROUTER_API_KEY?.trim()) }
+  let provider: GooseProvider | null = 'openrouter'
+  try {
+    provider = gooseProvider(process.env)
+  } catch {
+    provider = null
+  }
+  const signedIn = provider === 'ollama' ? true : provider === 'openrouter' ? Boolean(process.env.OPENROUTER_API_KEY?.trim()) : false
+  return { installed: true, version: parseVersion(v.stdout), signedIn }
 }
 
 export async function detectAgent(name: AgentName, opts: DetectOptions = {}): Promise<AgentStatus> {
