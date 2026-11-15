@@ -3,6 +3,7 @@ import type { NeedsYouItem } from '@/components/blocks'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import { gapSentence, whyLine } from '@/lib/mistake-words'
 import { loadShortLabels } from '@/lib/topics'
+import { getGuidanceNeeds } from './guidance'
 import { getShareCard, type ShareCardData } from './p50b'
 
 export type GapStage = 'new' | 'practising' | 'fixed'
@@ -381,6 +382,10 @@ export async function getClassHome(classId: string): Promise<ClassHome | null> {
           detail: n.detail,
         },
   )
+  // A guidance card Jemma wrote waits here until the teacher sends it to the family: one item for each learner.
+  for (const g of await getGuidanceNeeds(classId)) {
+    needsYou.push({ href: `${base}/learners/${g.childId}`, title: `Guidance for ${g.firstName}'s family`, detail: g.headline, guidance: g })
+  }
   const lastDone = d.needs.find((n) => n.status === 'done' && n.kind === 'check_answer' && n.child_id)
   const doneName = lastDone?.child_id ? (d.names.get(lastDone.child_id) ?? null) : null
 

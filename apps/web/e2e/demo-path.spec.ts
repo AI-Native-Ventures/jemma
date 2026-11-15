@@ -233,6 +233,27 @@ test('the whole demo path', async ({ page }) => {
     expect(bell.data![0]).toMatchObject({ body: expect.stringMatching(/^\d+ out of 10$/), href: `/p/${sb.childId}/tests` })
     const lessons = await admin.from('sessions').select('id').eq('child_id', sb.childId).eq('status', 'planned').not('lesson_id', 'is', null)
     expect(lessons.data!.length).toBeGreaterThan(0)
+
+    // 3c. Jemma wrote a guidance card for each learner. Each is a draft that only the teacher reads: until Ms Banda sends it, the family (checked through
+    // Thandi's own session, still linked to Amina for a moment) reads no card. She sends Amina's before Thandi looks. Sending copies the draft into
+    // guidance_cards, removes the draft and records who sent it. Amina's card must be sent here: the next guidance job (step 8) reads it as part of her profile.
+    const familyCards = async () => (await thandi.client.from('guidance_cards').select('child_id').eq('child_id', sb.childId)).data?.length ?? -1
+    const aminaDrafts = await admin.from('guidance_drafts').select('child_id').eq('child_id', sb.childId)
+    expect(aminaDrafts.data).toHaveLength(1)
+    expect((await admin.from('guidance_cards').select('child_id').eq('child_id', sb.childId)).data).toEqual([])
+    expect(await familyCards()).toBe(0)
+    expect((await thandi.client.from('guidance_drafts').select('child_id')).data ?? []).toEqual([]) // a parent cannot read a draft, not even her child's
+    await page.goto(base)
+    const guidanceItem = page.getByRole('region', { name: "Guidance for Amina's family" })
+    await expect(guidanceItem).toBeVisible()
+    await expect(guidanceItem.getByText(/^Looking ahead: /)).toBeVisible()
+    await guidanceItem.getByRole('button', { name: 'Send to family' }).click()
+    await expect(guidanceItem).toBeHidden({ timeout: 60_000 })
+    expect((await admin.from('guidance_cards').select('child_id').eq('child_id', sb.childId)).data).toHaveLength(1)
+    expect((await admin.from('guidance_drafts').select('child_id').eq('child_id', sb.childId)).data).toEqual([])
+    expect(await familyCards()).toBe(1)
+    const sentApproval = await admin.from('approvals').select('decided_by_name, decision, child_id').eq('kind', 'guidance').eq('ref_id', sb.childId)
+    expect(sentApproval.data).toEqual([{ decided_by_name: 'Ms Banda', decision: 'shared', child_id: sb.childId }])
     await admin.from('parent_links').delete().eq('id', link0.data!.id)
 
     // 4. Teacher fixes Sipho Q7: through Needs you when Jemma was unsure, else on the marked paper.
@@ -333,9 +354,12 @@ test('the whole demo path', async ({ page }) => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Amina')
     await expect(page.getByText(`${tries - 2} of ${tries}`)).toBeVisible()
 
-    // 8. Teacher adds a note and marks the register; Thandi adds an activity; the guidance card updates.
-    const card = async () => (await admin.from('guidance_cards').select('updated_at').eq('child_id', sb.childId).maybeSingle()).data?.updated_at ?? ''
-    const before = await card()
+    // 8. Teacher adds a note and marks the register; Thandi adds an activity; Jemma writes a newer guidance card. It is a draft for Ms Banda: the card the
+    // family reads is the one she sent in step 3c, and it does not change until she sends this one.
+    const draftAt = async () => (await admin.from('guidance_drafts').select('updated_at').eq('child_id', sb.childId).maybeSingle()).data?.updated_at ?? ''
+    const sentAt = async () => (await admin.from('guidance_cards').select('updated_at').eq('child_id', sb.childId).maybeSingle()).data?.updated_at ?? ''
+    const before = await draftAt()
+    const sentBefore = await sentAt()
     seen = await eventCount(schoolId)
     await signInAs(page, logins, 'teacher')
     await page.goto(`${base}/learners/${sb.childId}`)
@@ -362,7 +386,8 @@ test('the whole demo path', async ({ page }) => {
     await page.getByRole('button', { name: 'Save activity' }).click()
     await expect(page).toHaveURL(`/p/${sb.childId}`, { timeout: 30_000 })
     await agentIdle(schoolId, 'updating the guidance card', seen + 1)
-    expect(await card()).not.toBe(before)
+    expect(await draftAt()).not.toBe(before)
+    expect(await sentAt()).toBe(sentBefore)
     const logged = await admin.from('activity_log').select('text').eq('school_id', schoolId).eq('tool', 'subject_guidance')
     expect(logged.data!.length).toBeGreaterThan(0)
     // The teacher's note also asked for a Long view update for Amina, and the agent finished it.

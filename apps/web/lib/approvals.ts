@@ -13,6 +13,7 @@ export type ApprovalKind =
   | 'long_view_pattern'
   | 'long_view_talk'
   | 'share_results'
+  | 'guidance'
 
 export type ApprovalDecision = 'approved' | 'declined' | 'edited' | 'confirmed' | 'shared'
 
