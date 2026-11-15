@@ -8,6 +8,7 @@ import { ShareCard } from './ShareCard'
 import { PrintButton } from './gaps/LaptopPrintButton'
 import { numberWord, type ClassGapView, type ClassHome, type GapDetail } from '@/lib/data/p18'
 import { emptyGapsLine, emptyLogLine } from '@/lib/empty-boxes'
+import { mistakeTitle } from '@/lib/mistake-words'
 
 const diamond = (size: number, mt: string) => (
   <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" className={`flex-none ${mt}`}>
@@ -47,7 +48,7 @@ function GapCard({ gap, index, on, base }: { gap: ClassGapView; index: number; o
       </span>
       {gap.mistake ? (
         <span className="ml-10 rounded-12 bg-soft-2 px-3 py-[9px] text-[14px]">
-          {gap.mistake.label}:{' '}
+          {mistakeTitle(gap.mistake.label)}:{' '}
           <strong className="font-bold">{gap.mistake.example.strong}</strong>
         </span>
       ) : null}

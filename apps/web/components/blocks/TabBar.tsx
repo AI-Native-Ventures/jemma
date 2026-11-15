@@ -1,10 +1,14 @@
+'use client'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { CameraIcon } from '../ui/icons'
-import { HOMES, TABS, tabHref } from './nav'
+import { HOMES, TABS, markedTab, tabHref } from './nav'
 import type { Role, TabId } from './nav'
 
 export type TabBarProps = {
   role: Role
+  /** The tab the server marked for the first paint. In the browser the bar marks the tab of the address it is in (see `markedTab`). */
   active: TabId
   /** Accessible name of the bar: the class name, or the child's name. */
   label: string
@@ -15,7 +19,9 @@ export type TabBarProps = {
 }
 
 /** Phone bottom bar. Hidden from width 1024, where `Sidebar` takes over. */
-export function TabBar({ role, active, label, base = HOMES[role], only }: TabBarProps) {
+export function TabBar({ role, active: first, label, base = HOMES[role], only }: TabBarProps) {
+  // A layout is not drawn again when a child taps a tab, so the mark follows the address in the browser, not the value the layout passed.
+  const active = markedTab(role, base, usePathname(), first)
   const tabs = only ? TABS[role].filter((t) => only.includes(t.id)) : TABS[role]
   if (tabs.length === 0) return null
   const learner = role === 'learner'

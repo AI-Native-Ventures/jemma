@@ -1,6 +1,7 @@
 import { ReteachSchema, type Reteach } from '@jemma/profiling/schemas'
 import type { NeedsYouItem } from '@/components/blocks'
 import { createSupabaseServer } from '@/lib/supabase/server'
+import { gapSentence, whyLine } from '@/lib/mistake-words'
 import { loadShortLabels } from '@/lib/topics'
 import { getShareCard, type ShareCardData } from './p50b'
 
@@ -109,16 +110,6 @@ export const slug = (name: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
-
-const lowerFirst = (s: string) => (s ? s[0]!.toLowerCase() + s.slice(1) : s)
-
-/** `Adds the tops` becomes `add the tops`, `Thinks bigger` becomes `think bigger`. */
-function baseVerb(label: string): string {
-  const [first = '', ...rest] = label.split(' ')
-  const lower = first.toLowerCase()
-  const base = /(ch|sh|x|s|z)es$/.test(lower) ? lower.slice(0, -2) : lower.endsWith('s') ? lower.slice(0, -1) : lower
-  return [base, ...rest].join(' ')
-}
 
 const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
 const numberWord = (n: number) => NUMBER_WORDS[n] ?? String(n)
@@ -355,12 +346,6 @@ const reteachOf = (d: Loaded, topicName: string): ReteachView | null => {
   }
 }
 
-function gapSentence(g: ClassGapView): string {
-  return g.mistake
-    ? `${g.count} of ${g.total} learners ${baseVerb(g.mistake.label)} when ${lowerFirst(g.shortName)}.`
-    : `${g.count} of ${g.total} learners are stuck on ${lowerFirst(g.shortName)}.`
-}
-
 /** The "Jemma Desktop is off" card: what is waiting for the desktop runner and when it was snapped. */
 async function waitingForDesktop(): Promise<{ title: string; detail: string } | null> {
   const supabase = await createSupabaseServer()
@@ -479,7 +464,7 @@ export async function getGapDetail(classId: string, key: string): Promise<GapDet
   if (index < 0) return null
   const gap = gaps[index]!
   const reteach = reteachOf(d, gap.topicName)
-  const why = reteach?.why ?? (gap.mistake ? `${gap.count} of ${gap.total} ${baseVerb(gap.mistake.label)}.` : `${gap.count} of ${gap.total} are stuck on this.`)
+  const why = reteach?.why ?? whyLine(gap.count, gap.total, gap.mistake)
   return { index, of: gaps.length, gap, testTitle: d.test?.title ?? null, why, reteach }
 }
 
