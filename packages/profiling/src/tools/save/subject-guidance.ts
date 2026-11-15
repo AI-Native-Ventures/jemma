@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
+import { isOwnRecord } from '../../own-class-names'
 import { GuidanceSchema } from '../../schemas/guidance'
 import { LabelDropSchema, type LabelDrop } from '../../schemas/no-labels'
 import { assertInSchool, contextFor, defineTool, logActivity, ok } from '../context'
@@ -62,7 +63,7 @@ export const subjectGuidance = defineTool({
     await assertInSchool(ctx, 'children', [childId])
     const own = await contextFor(ctx, 'children', childId)
     const results = await ok(own.db.from('question_results').select('id, topic_name').eq('child_id', childId))
-    const child = await ok(own.db.from('children').select('first_name').eq('id', childId).single())
+    const child = await ok(own.db.from('children').select('first_name, school_id, private_of').eq('id', childId).single())
     const { guidance, dropped } = screenGuidance(draft, { people: [child.first_name], exempt: results.map((r) => r.topic_name) })
     const real = new Set(results.map((r) => r.id))
     const focus = guidance.focus
@@ -75,15 +76,28 @@ export const subjectGuidance = defineTool({
       .filter((f) => f.evidence.length > 0)
 
     const content = GuidanceSchema.parse({ ...guidance, focus })
-    const previous = await own.db.from('guidance_cards').select('created_at').eq('child_id', childId).maybeSingle()
-    if (previous.error) throw new Error(previous.error.message)
-    const now = own.now().toISOString()
-    const { error } = await own.db
-      .from('guidance_cards')
-      .upsert({ child_id: childId, content, created_at: previous.data?.created_at ?? now, updated_at: now }, { onConflict: 'child_id' })
-    if (error) throw new Error(`guidance_cards write failed: ${error.message}`)
 
-    const since = previous.data?.created_at ?? '1970-01-01T00:00:00Z'
+    // A school child's card is a draft: only the child's teachers can read it, and the family sees it after the teacher sends it (it is copied to
+    // `guidance_cards`). A learner's own record (a twin, or a child whose school does not use Jemma) has no teacher: its card is written at once.
+    // The card that is saved is the screened one (`content`), in both cases.
+    const school = await ok(own.db.from('schools').select('kind').eq('id', child.school_id).single())
+    const target = isOwnRecord({ private_of: child.private_of, schools: { kind: school.kind } }) ? 'guidance_cards' : 'guidance_drafts'
+
+    const [card, waiting] = await Promise.all([
+      own.db.from('guidance_cards').select('created_at').eq('child_id', childId).maybeSingle(),
+      target === 'guidance_drafts' ? own.db.from('guidance_drafts').select('created_at').eq('child_id', childId).maybeSingle() : Promise.resolve(null),
+    ])
+    if (card.error) throw new Error(card.error.message)
+    if (waiting?.error) throw new Error(waiting.error.message)
+    const now = own.now().toISOString()
+    // The new row keeps when its own table's row was first made. "Newer notes" count from the first card or draft there was.
+    const previous = (target === 'guidance_cards' ? card.data : waiting?.data)?.created_at
+    const { error } = await own.db
+      .from(target)
+      .upsert({ child_id: childId, content, created_at: previous ?? now, updated_at: now }, { onConflict: 'child_id' })
+    if (error) throw new Error(`${target} write failed: ${error.message}`)
+
+    const since = card.data?.created_at ?? waiting?.data?.created_at ?? '1970-01-01T00:00:00Z'
     const newer = await own.db.from('observations').select('id').eq('child_id', childId).gt('created_at', since).limit(1)
     if (newer.error) throw new Error(newer.error.message)
     if (newer.data.length > 0) {

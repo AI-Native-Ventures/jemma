@@ -115,6 +115,7 @@ const APPROVAL_WORDS: Record<string, Partial<Record<string, string | ((note: str
   long_view_pattern: { approved: 'said a Long view pattern looks right', declined: 'set a Long view pattern aside' },
   long_view_talk: { confirmed: 'talked to a parent about a Long view pattern' },
   share_results: { shared: (note) => `shared the results of ${note?.trim() || 'a test'} with parents` },
+  guidance: { shared: (note) => `sent ${note?.trim() ? `${note.trim()}'s` : 'a'} guidance card to the family` },
   record_import: { approved: (note) => `approved adding the past records in ${note?.trim() || 'a file'}` },
 }
 

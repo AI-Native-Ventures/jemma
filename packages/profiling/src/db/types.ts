@@ -786,6 +786,36 @@ export type Database = {
           },
         ]
       }
+      guidance_drafts: {
+        Row: {
+          child_id: string
+          content: NonNullable<Json>
+          created_at: string
+          updated_at: string
+        }
+        ComputedFields: never
+        Insert: {
+          child_id: string
+          content: NonNullable<Json>
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          child_id?: string
+          content?: NonNullable<Json>
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guidance_drafts_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: true
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       learner_records: {
         Row: {
           added_by: string | null

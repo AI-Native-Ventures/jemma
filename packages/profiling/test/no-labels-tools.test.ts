@@ -64,16 +64,19 @@ describe('subject_guidance leaves out a sentence with a label and keeps the rest
   const world = (firstName = 'Amina', topicName = 'Adding fractions') =>
     withUpsert(
       memoryDb({
+        schools: [{ id: SCHOOL, kind: 'school' }],
         children: [{ id: CHILD, school_id: SCHOOL, first_name: firstName }],
         question_results: [{ id: RESULT, child_id: CHILD, topic_name: topicName }],
         guidance_cards: [],
+        guidance_drafts: [],
         observations: [],
         activity_log: [],
         tool_calls: [],
       }),
     )
   const item = (title: string, why: string) => ({ title, why, evidence: [{ label: 'Test 2 Q1', resultIds: [RESULT] }] })
-  const saved = (db: MemoryDb) => db.tables.guidance_cards![0]!.content as { headline: string; focus: { title: string; why: string }[]; lookingAhead: string }
+  // A school child's card is a draft until the teacher sends it (P106); a learner's own record has its card written at once.
+  const saved = (db: MemoryDb, table: 'guidance_drafts' | 'guidance_cards' = 'guidance_drafts') => db.tables[table]![0]!.content as { headline: string; focus: { title: string; why: string }[]; lookingAhead: string }
 
   test('it drops "gifted", "slow learner" and "should become an engineer", saves the rest, and says what it left out', async () => {
     const db = world()
@@ -131,6 +134,7 @@ describe('subject_guidance leaves out a sentence with a label and keeps the rest
       plain(subjectGuidance, ctxOf(db), { childId: CHILD, guidance: { headline: 'A gifted child.', focus: [], lookingAhead: 'Next is subtracting fractions.' } }),
     ).rejects.toThrow(/Not saved: the headline had nothing left after leaving out a sentence that uses the word "gifted"/)
     expect(db.tables.guidance_cards).toEqual([])
+    expect(db.tables.guidance_drafts).toEqual([])
     const row = lastCall(db, 'subject_guidance')
     expect(row.ok).toBe(false)
     expect(row.error).toMatch(/uses the word "gifted"/)
@@ -170,7 +174,8 @@ describe('subject_guidance leaves out a sentence with a label and keeps the rest
       childId: CHILD,
       guidance: { headline: 'Amina is doing well. She is the top of the class.', focus: [], lookingAhead: 'Next is subtracting fractions.' },
     })
-    expect(saved(db).headline).toBe('Amina is doing well.')
+    expect(saved(db, 'guidance_cards').headline).toBe('Amina is doing well.')
+    expect(db.tables.guidance_drafts).toEqual([])
     expect(out.dropped).toHaveLength(1)
   })
 })

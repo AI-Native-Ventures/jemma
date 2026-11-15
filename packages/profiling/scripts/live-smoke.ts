@@ -246,7 +246,8 @@ async function main() {
 
   await step('guidance', async () => {
     await runGuidance(ctx(), eid, { childId: state.children!.amina! })
-    const g = await call(db.from('guidance_cards').select('content').eq('child_id', state.children!.amina!).single())
+    // A school child's new card is a draft until the teacher sends it (P106).
+    const g = await call(db.from('guidance_drafts').select('content').eq('child_id', state.children!.amina!).single())
     const c = g.content as { headline: string; focus: unknown[] }
     return `"${c.headline}" with ${c.focus.length} focus items`
   })

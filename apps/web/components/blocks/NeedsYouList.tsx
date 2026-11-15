@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { DesktopOffActions, DesktopOffIcon } from './DesktopOff'
+import { GuidanceNeedItem, type GuidanceNeed } from './GuidanceNeed'
 import { CheckDocIcon, ChevronRightIcon, ReviewDocIcon } from '../ui/icons'
 
 export type NeedsYouItem = {
@@ -10,6 +11,8 @@ export type NeedsYouItem = {
   icon?: 'review' | 'check'
   /** The "Jemma Desktop is off" card: two buttons instead of a link. */
   desktopOff?: boolean
+  /** A guidance card waiting for the teacher to send it to the family: the card's text and one button instead of a link. */
+  guidance?: GuidanceNeed
 }
 
 export type NeedsYouListProps = {
@@ -39,6 +42,7 @@ export function NeedsYouList({ items, wide = false }: NeedsYouListProps) {
         </span>
       </div>
       {items.map((item) => {
+        if (item.guidance) return <GuidanceNeedItem key={`guidance-${item.guidance.childId}`} guidance={item.guidance} wide={wide} />
         if (item.desktopOff) {
           return (
             <div key={item.href + item.title} className="flex flex-col gap-3.5 rounded-14 bg-card p-3 text-ink">

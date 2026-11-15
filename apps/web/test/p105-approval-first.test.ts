@@ -240,6 +240,7 @@ describe('no caller keeps the old order', () => {
       'app/t/[classId]/snap/actions.ts',
       'lib/curriculum-map.ts',
       'lib/long-view.ts',
+      'lib/send-guidance.ts',
       'lib/share-results.ts',
     ])
     for (const f of callers) expect(readFileSync(resolve(root, f), 'utf8'), f).toMatch(/import \{[^}]*\bwithApproval\b[^}]*\} from '(@\/lib|\.)\/approvals'/)
