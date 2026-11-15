@@ -30,7 +30,7 @@ export default async function ParentDataPage() {
         <Section id="consents" title="Your consents" gap={2}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, minHeight: 64, padding: '8px 0' }}>
             <span style={{ ...rowText, lineHeight: 1.35 }}>
-              <span style={{ fontSize: 16, fontWeight: 500 }}>{name}&apos;s schoolwork is used to teach her</span>
+              <span style={{ fontSize: 16, fontWeight: 500 }}>{name}&apos;s schoolwork is used to teach them</span>
               <span style={{ fontSize: 13, color: '#5D5A73' }}>Agreed {privacy?.agreedOn} · needed for Jemma to work</span>
             </span>
             <span style={{ flex: 'none', padding: '3px 10px', borderRadius: 999, background: '#EEEDF5', fontSize: 12, fontWeight: 700 }}>Required</span>
@@ -51,7 +51,7 @@ export default async function ParentDataPage() {
         <Section id="del" title="Delete" gap={10}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <ComingButton style={dangerButton}>Delete {name}&apos;s data</ComingButton>
-            <p style={{ margin: '0 0 8px', fontSize: 14, lineHeight: 1.45, color: '#5D5A73' }}>Her photos, marks and lessons leave Jemma within 30 days.</p>
+            <p style={{ margin: '0 0 8px', fontSize: 14, lineHeight: 1.45, color: '#5D5A73' }}>{name}&apos;s photos, marks and lessons leave Jemma within 30 days.</p>
             <ComingButton style={dangerButton}>Delete my account</ComingButton>
           </div>
         </Section>

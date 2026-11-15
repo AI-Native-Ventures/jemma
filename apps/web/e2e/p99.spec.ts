@@ -189,7 +189,7 @@ test.describe('a family whose school does not use Jemma', () => {
     await noSidewaysScroll(page)
   })
 
-  test('Zanele M on the demo page: Kagiso on his own in Grade 8, Practise at home, Grade 8 and Grade 9, and his marked test', async ({ page }) => {
+  test('Zanele M on the demo page: Kagiso on their own in Grade 8, Practise at home, Grade 8 and Grade 9, and the marked test', async ({ page }) => {
     const db = admin()
     const sandbox = await createSandbox(db, { stage: 'start' })
     cleanups.push(() => deleteSandbox(db, sandbox.sandboxId))
@@ -209,7 +209,7 @@ test.describe('a family whose school does not use Jemma', () => {
     await page.goto('/demo')
     await check(page.getByRole('heading', { name: 'More people at Hillview' })).toBeVisible()
     const zanele = page.getByRole('button', { name: /Zanele M/ })
-    await expect(zanele).toContainText('Parent · Kagiso (on his own, Grade 8)')
+    await expect(zanele).toContainText('Parent · Kagiso (on their own, Grade 8)')
     await noSidewaysScroll(page)
     await proof(page, 'demo-zanele')
     await zanele.click()

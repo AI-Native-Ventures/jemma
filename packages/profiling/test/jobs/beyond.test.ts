@@ -140,6 +140,6 @@ test('guidance uses the newest note', async () => {
   expect(prompt).toContain('untrusted')
   expect(prompt).toContain('never careers')
   const log = await db.from('activity_log').select('text, school_id, child_id').eq('child_id', a.aminaId).eq('tool', 'subject_guidance')
-  expect(log.data!.map((l) => l.text)).toContain('Used your note on Amina in her guidance card')
+  expect(log.data!.map((l) => l.text)).toContain('Used your note on Amina in the guidance card')
   expect(log.data![0]!.school_id).toBe(a.schoolId)
 })

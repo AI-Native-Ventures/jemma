@@ -287,25 +287,25 @@ async function pendingLink(sandbox: OpenedSandbox) {
 }
 
 test.describe('teacher-link-request', () => {
-  test('shows who is asking and keeps "Message her first" as a sheet', async ({ page }, testInfo) => {
+  test('shows who is asking and keeps "Message {parent} first" as a sheet', async ({ page }, testInfo) => {
     sb = await openSandbox(page, { stage: 'marked', role: 'teacher' })
     const { linkId } = await pendingLink(sb)
     await page.goto(`/t/${sb.classId}/link-requests/${linkId}`)
     await expect(page.getByText('6B Mathematics · Needs you')).toBeVisible()
     await expect(page.getByText('New parent', { exact: true })).toBeVisible()
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText("Thandi M wants to see Amina's work. Is she Amina's parent?")
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText("Thandi M wants to see Amina's work. Is Thandi M Amina's parent?")
     // The sandbox address carries a tag; the screen shows the seeded parent's own address.
     await expect(page.getByText('thandi@example.com', { exact: true })).toBeVisible()
     await expect(page.getByText(new RegExp(`^Entered code ${sb.joinCode} and the name Amina at \\d\\d:\\d\\d$`))).toBeVisible()
     await expect(page.getByText('No other parent is linked to Amina.')).toBeVisible()
-    await expect(page.getByRole('heading', { name: "She'll see" })).toBeVisible()
+    await expect(page.getByRole('heading', { name: "They'll see" })).toBeVisible()
     await expect(page.getByText("Amina's marks and papers")).toBeVisible()
-    await expect(page.getByText('Her gaps and lessons')).toBeVisible()
+    await expect(page.getByText("Amina's gaps and lessons")).toBeVisible()
     await expect(page.getByText('Your notes and attendance')).toBeVisible()
-    await expect(page.getByText('She sees nothing until you say yes.')).toBeVisible()
+    await expect(page.getByText('They see nothing until you say yes.')).toBeVisible()
     await noHorizontalScroll(page)
     await shot(page, testInfo, 'teacher-link-request')
-    await page.getByRole('button', { name: 'Not sure? Message her first' }).click()
+    await page.getByRole('button', { name: 'Not sure? Message Thandi M first' }).click()
     await expect(page.getByRole('dialog')).toContainText('Coming after the challenge')
     await page.keyboard.press('Escape')
     await expect(page.getByRole('button', { name: 'Yes, approve' })).toBeVisible()

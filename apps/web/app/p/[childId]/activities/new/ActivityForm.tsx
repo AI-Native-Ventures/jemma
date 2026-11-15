@@ -140,7 +140,7 @@ export function ActivityForm({ childId, name }: { childId: string; name: string 
         <span style={css('flex:none;margin-top:1px;display:flex')}>
           <Icon name="eye" size={18} width={1.8} color="#1F1D36" />
         </span>
-        {`Ms Banda sees activities on ${name}'s profile. Jemma uses them in the guidance card, never to mark her.`}
+        {`Ms Banda sees activities on ${name}'s profile. Jemma uses them in the guidance card, never to mark ${name}.`}
       </p>
 
       {error ? (

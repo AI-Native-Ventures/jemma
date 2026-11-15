@@ -119,7 +119,7 @@ export default async function ParentLearnPage({ params }: { params: Promise<{ ch
           </IconLabel>
         </Link>
         <p className="m-0 text-center text-[13px] leading-[1.4] text-body">
-          {name} sees how she did at the end, never a score. You see everything.
+          {name} sees how it went at the end, never a score. You see everything.
         </p>
       </section>
 

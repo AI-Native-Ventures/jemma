@@ -100,7 +100,7 @@ test('learners: list beside the selected learner', async ({ page }) => {
 
   const detail = page.getByRole('region', { name: 'Amina' })
   await expect(detail.getByText('Grade 6 · linked to Thandi')).toBeVisible()
-  await expect(detail.getByRole('link', { name: 'See her paper or fix a mark' })).toBeVisible()
+  await expect(detail.getByRole('link', { name: 'See the paper or fix a mark' })).toBeVisible()
   await expect(detail.getByText('Same profile Thandi sees. You can fix marks.')).toBeVisible()
   await expect(detail.getByRole('heading', { name: 'Marks by topic' })).toBeVisible()
   await expect(detail.getByText('Change since Term 3')).toBeVisible()

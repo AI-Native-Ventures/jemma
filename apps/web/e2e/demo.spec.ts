@@ -51,7 +51,7 @@ test('Try the demo signs in as Ms Banda', async ({ page }) => {
   await page.goto('/demo')
   await expect(page.getByRole('heading', { name: 'Try the demo', level: 1 })).toBeVisible()
   // No copy yet: step 3 names the code in words, not "class code the class code".
-  await expect(page.locator('li', { hasText: "link Amina with Ms Banda's class code, then open her profile." })).toBeVisible()
+  await expect(page.locator('li', { hasText: "link Amina with Ms Banda's class code, then open Amina's profile." })).toBeVisible()
   await page.getByRole('button', { name: /Ms Banda/ }).click()
   await expect(page).toHaveURL(/\/t\/[0-9a-f-]{36}\/curriculum$/, { timeout: 60_000 })
   await cookieSandbox(page)
@@ -69,7 +69,7 @@ test('Main shows the copy and this sandbox join code', async ({ page }) => {
   await expect(page.getByText(s.joinCode)).toBeVisible()
   // The guide tells the judge to share, and ends on the Long view.
   await expect(page.getByText('Then tap Share with parents.', { exact: false })).toBeVisible()
-  await expect(page.locator('li', { hasText: `link Amina with class code ${s.joinCode}, then open her profile.` })).toBeVisible()
+  await expect(page.locator('li', { hasText: `link Amina with class code ${s.joinCode}, then open Amina's profile.` })).toBeVisible()
   await expect(page.getByText("see the result, the updated gaps and Amina's Long view.")).toBeVisible()
   await expect(page.getByText(/Your copy started today at \d\d:\d\d\./)).toBeVisible()
   await expect(page.getByText('Every person and paper here is made up.')).toBeVisible()

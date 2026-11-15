@@ -38,7 +38,7 @@ const log = [
 
 const parentLog = [
   { at: '14:14', text: "Built tonight's 12-minute lesson on adding fractions, with fraction bars" },
-  { at: '14:13', text: "Updated Amina's gaps: adding fractions is now her first focus" },
+  { at: '14:13', text: "Updated Amina's gaps: adding fractions is now the first focus" },
   { at: '14:12', text: "Marked Class Test 1 against Ms Banda's memo: 6 out of 10" },
   { at: 'Sun 18:40', text: 'Read the homework you snapped. 1 answer was too faint to be sure' },
 ]

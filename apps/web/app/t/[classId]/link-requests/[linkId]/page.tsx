@@ -18,7 +18,7 @@ export default async function TeacherLinkRequestPage({ params }: { params: Promi
       <BackHeader href={`/t/${classId}`} label="Close" sub={`${v.cls.name} · Needs you`} title="New parent" close />
       <main className="flex flex-1 flex-col gap-4 px-5 pt-3 pb-7">
         <Title>
-          {v.parentName} wants to see {v.childName}&apos;s work. Is she {v.childName}&apos;s parent?
+          {v.parentName} wants to see {v.childName}&apos;s work. Is {v.parentName} {v.childName}&apos;s parent?
         </Title>
 
         <section aria-label="Who is asking" className="flex flex-col gap-3 rounded-20 border border-line bg-card p-4">
@@ -50,10 +50,10 @@ export default async function TeacherLinkRequestPage({ params }: { params: Promi
 
         <section aria-labelledby="see" className="flex flex-col gap-2.5 rounded-20 border border-line bg-card p-4">
           <h2 id="see" className="m-0 text-[17px] font-semibold">
-            She&apos;ll see
+            They&apos;ll see
           </h2>
           <ul className="m-0 flex list-none flex-col gap-[9px] p-0">
-            {[`${v.childName}'s marks and papers`, 'Her gaps and lessons', 'Your notes and attendance'].map((t) => (
+            {[`${v.childName}'s marks and papers`, `${v.childName}'s gaps and lessons`, 'Your notes and attendance'].map((t) => (
               <li key={t} className={item}>
                 <GemIcon size={11} className="mt-[5px] flex-none" />
                 <span>{t}</span>
@@ -62,11 +62,11 @@ export default async function TeacherLinkRequestPage({ params }: { params: Promi
           </ul>
         </section>
 
-        <Decision classId={classId} linkId={linkId} />
+        <Decision classId={classId} linkId={linkId} parentName={v.parentName} />
 
         <p className="m-0 flex gap-2.5 text-[14px] leading-[1.45] text-body">
           <GemIcon size={12} className="mt-1 flex-none" />
-          <span>She sees nothing until you say yes.</span>
+          <span>They see nothing until you say yes.</span>
         </p>
         <div className="flex-1" />
       </main>

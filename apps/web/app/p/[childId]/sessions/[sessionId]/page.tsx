@@ -118,7 +118,7 @@ export default async function ParentSessionPage({ params }: { params: Promise<{ 
             <StageNode state={state(2)} label={nodes[2]} />
           </div>
           <p className="m-0 text-[14px] leading-[1.45] text-body">
-            It counts as fixed after she gets 4 or 5 right on a later check.
+            It counts as fixed after {name} gets 4 or 5 right on a later check.
             {r.nextCheckDay ? ` Next check: ${r.nextCheckDay}.` : ''}
           </p>
         </section>

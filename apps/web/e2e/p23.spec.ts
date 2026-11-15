@@ -99,8 +99,8 @@ test.describe('parent-beyond', () => {
     await expect(page.getByText('Sport · Tuesdays and Thursdays')).toBeVisible()
     await expect(page.getByText('Music · Fridays')).toBeVisible()
     await expect(page.getByText('Ms Banda\'s notes go into the guidance on Amina\'s profile.')).toBeVisible()
-    await expect(page.getByText('If Amina misses a day, Jemma checks what the class covered and adds it to her lessons.')).toBeVisible()
-    await expect(page.getByText('Activities help pick lesson times and shape the guidance card. None of this changes her marks.')).toBeVisible()
+    await expect(page.getByText('If Amina misses a day, Jemma checks what the class covered and adds it to Amina\'s lessons.')).toBeVisible()
+    await expect(page.getByText('Activities help pick lesson times and shape the guidance card. None of this changes Amina\'s marks.')).toBeVisible()
     await expect(page.getByText('Activities only help pick lesson times.')).toHaveCount(0)
     await expect(page.getByRole('link', { name: 'Add an activity' })).toHaveAttribute('href', `/p/${s.childId}/activities/new`)
     await noHorizontalScroll(page)
@@ -119,7 +119,7 @@ test.describe('parent-report', () => {
   test('headline, glance, week by week, gaps and what is next', async ({ page }, testInfo) => {
     const s = await open(page, 'session_done')
     await page.goto(`/p/${s.childId}/report`)
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Amina is steady at 60% and fixing her gaps one at a time.')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Amina is steady at 60% and fixing gaps one at a time.')
     await expect(page.getByText(/^Term 4 so far · \d+ to \d+ \w+$/)).toBeVisible()
     await expect(page.getByRole('button', { name: 'Download PDF' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Share a copy' })).toBeVisible()
@@ -150,7 +150,7 @@ test.describe('parent-activity', () => {
     const s = await open(page, 'marked')
     await page.goto(`/p/${s.childId}/activities/new`)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('What does Amina do outside class?')
-    await expect(page.getByText("Ms Banda sees activities on Amina's profile. Jemma uses them in the guidance card, never to mark her.")).toBeVisible()
+    await expect(page.getByText("Ms Banda sees activities on Amina's profile. Jemma uses them in the guidance card, never to mark Amina.")).toBeVisible()
 
     await page.getByRole('button', { name: 'Club' }).click()
     await page.getByLabel('What is it called?').fill('Chess club')

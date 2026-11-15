@@ -4,6 +4,7 @@ import { useId, useState, useTransition } from 'react'
 import { SelectBox } from '@/app/t/new/SelectBox'
 import { COUNTRIES, GRADES } from '@/lib/subjects'
 import { addChildAlone } from './actions'
+import { ALONE_ID, ALONE_LABEL } from './alone'
 
 const field = 'min-h-[52px] w-full rounded-14 border border-muted-2 bg-card px-3.5 py-2 text-[17px] text-ink'
 const label = 'text-[15px] font-medium'
@@ -20,9 +21,9 @@ const NO_GRADE = 'Pick a grade from 1 to 12.'
  * the grade (1 to 12) and the country (South Africa first, then the countries a school can be in). The parent adds the child alone, with no school and no
  * teacher: the child practises in their own space, and the parent lands on the child's page. The words are checked here first and again on the server.
  */
-export function AloneForm({ defaultName = '' }: { defaultName?: string }) {
+export function AloneForm({ defaultName = '', defaultOpen = false }: { defaultName?: string; /** Open at once: the parent came from a link to this form. */ defaultOpen?: boolean }) {
   const id = useId()
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(defaultOpen)
   const [name, setName] = useState(defaultName)
   const [grade, setGrade] = useState('')
   const [country, setCountry] = useState('ZA')
@@ -42,9 +43,9 @@ export function AloneForm({ defaultName = '' }: { defaultName?: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-3.5">
+    <div id={ALONE_ID} className="flex scroll-mt-4 flex-col gap-3.5">
       <button type="button" aria-expanded={open} aria-controls={`${id}-form`} onClick={() => setOpen((o) => !o)} className={outline}>
-        My child&apos;s school doesn&apos;t use Jemma
+        {ALONE_LABEL}
       </button>
       {open ? (
         <form

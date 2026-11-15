@@ -87,7 +87,7 @@ function PaperFigure({ paper, highlightN }: { paper: PaperDetail; highlightN?: n
           </div>
         </div>
         <figcaption style={css('font-size:14px;line-height:1.45;color:#5D5A73')}>
-          {`${paper.child.teacherName} snapped ${name}'s paper at ${paper.snappedAt}. Jemma marked it against her memo at ${paper.markedAt}. Coral marks are the ones ${name} missed.`}
+          {`${paper.child.teacherName} snapped ${name}'s paper at ${paper.snappedAt}. Jemma marked it against the memo at ${paper.markedAt}. Coral marks are the ones ${name} missed.`}
         </figcaption>
       </figure>
     </section>
@@ -111,7 +111,7 @@ function Missed({ childId, paper, highlightN }: { childId: string; paper: PaperD
   const flag = (id?: string) => `/p/${childId}/papers/${paper.paperId}/flag${id ? `?q=${id}` : ''}`
   return (
     <section aria-labelledby="lt-missed" style={css('flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:6px;padding:18px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px')}>
-      <h2 id="lt-missed" style={css('margin:0;font-size:18px;font-weight:600')}>{`The ${paper.missed.length} she missed`}</h2>
+      <h2 id="lt-missed" style={css('margin:0;font-size:18px;font-weight:600')}>{`The ${paper.missed.length} ${paper.child.firstName} missed`}</h2>
       <ul style={css('list-style:none;margin:0;padding:0')}>
         {paper.missed.map((r) => (
           <li key={r.id} style={css('border-top:1px solid #EFEEF4')}>
@@ -138,7 +138,7 @@ function Missed({ childId, paper, highlightN }: { childId: string; paper: PaperD
         <Link href={`/p/${childId}/topics/${paper.topGap.id}`} style={css('display:flex;align-items:center;gap:12px;min-height:56px;padding:10px 12px;border-radius:14px;border:1px solid #E7E6EF;text-decoration:none;color:#1F1D36')}>
           <span style={css('flex:1;display:flex;flex-direction:column;line-height:1.3')}>
             <span style={css('font-size:15px;font-weight:600')}>{`${paper.topGap.topicName.split(' with ')[0]}: how to help`}</span>
-            <span style={css('font-size:13px;color:#5D5A73')}>{`Her biggest gap, and tonight's lesson`}</span>
+            <span style={css('font-size:13px;color:#5D5A73')}>{`${paper.child.firstName}'s biggest gap, and tonight's lesson`}</span>
           </span>
           <ChevronSvg />
         </Link>

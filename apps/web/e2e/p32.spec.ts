@@ -92,7 +92,7 @@ test('parent-snap-type: four kinds, Homework picked, Mathematics, Take the photo
   for (const [name, hint] of [
     ['Test', 'Marked or not yet'],
     ['Homework', 'A worksheet or exercise book page'],
-    ['Textbook page', 'So lessons use her own book'],
+    ['Textbook page', 'So lessons use their own book'],
     ['Report card', 'Term marks from school'],
   ]) {
     await expect(page.getByRole('button', { name: new RegExp(`^${name}`) })).toContainText(hint!)

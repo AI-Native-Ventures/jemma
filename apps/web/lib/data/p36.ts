@@ -55,7 +55,7 @@ const stripDate = (line: string) => line.replace(/ on [A-Z][a-z]{2} \d+ [A-Z][a-
 export function paperHeadline(paper: PaperDetail): string {
   const word = sharedTopicWord(paper.missed)
   return `${paper.total} out of ${paper.outOf} on ${paper.shortTitle}.${
-    word ? ` Every mark she lost was on ${word}.` : paper.missed.length ? ` She lost marks on ${paper.missed.length} questions.` : ' She got every mark.'
+    word ? ` Every mark ${paper.child.firstName} lost was on ${word}.` : paper.missed.length ? ` ${paper.child.firstName} lost marks on ${paper.missed.length} questions.` : ` ${paper.child.firstName} got every mark.`
   }`
 }
 

@@ -59,7 +59,7 @@ export function LearnLaptop({ childId, data, tonight }: { childId: string; data:
               </li>
             ))}
           </ol>
-          <p style={css('margin:0;font-size:14px;line-height:1.45;color:#5D5A73')}>{name} sees how she did at the end, never a score. You see everything.</p>
+          <p style={css('margin:0;font-size:14px;line-height:1.45;color:#5D5A73')}>{name} sees how it went at the end, never a score. You see everything.</p>
           <Link href={`/p/${childId}/learn/handover`} style={css('display:flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 18px;border-radius:14px;background:#1F1D36;color:#FFFFFF;font-size:15px;font-weight:600;text-decoration:none;flex:none')}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true">
               <path d="M7 4.5v15l13-7.5z" />

@@ -53,7 +53,7 @@ test.describe('parent-learn (stage marked)', () => {
     await expect(page.getByText('5 questions', { exact: true }).first()).toBeVisible()
     await expect(page.getByText('Class Test 1, questions 1, 2 and 4')).toBeVisible()
     await expect(page.getByRole('link', { name: 'Start, then hand Amina the phone' })).toBeVisible()
-    await expect(page.getByText('Amina sees how she did at the end, never a score. You see everything.')).toBeVisible()
+    await expect(page.getByText('Amina sees how it went at the end, never a score. You see everything.')).toBeVisible()
 
     const week = page.getByRole('region', { name: 'This week' })
     await expect(week.getByText('Adding fractions', { exact: true })).toHaveCount(1)
@@ -86,10 +86,10 @@ test.describe('parent-handover (stage marked)', () => {
     await page.waitForURL(`**/p/${box.childId}/learn/handover`)
 
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Pass the phone to Amina.')
-    await expect(page.getByText('Her lesson takes about 12 minutes. She sees how she did at the end, never a score.')).toBeVisible()
+    await expect(page.getByText("Amina's lesson takes about 12 minutes. Amina sees how it went at the end, never a score.")).toBeVisible()
     await expect(page.getByText('Adding fractions with fraction bars')).toBeVisible()
     await expect(page.getByText('Diagram · 12 minutes · 5 questions')).toBeVisible()
-    await expect(page.getByText("When she's done she passes it back, and you see how it went.")).toBeVisible()
+    await expect(page.getByText('When Amina is done, the phone comes back to you and you see how it went.')).toBeVisible()
     await expect(page.getByRole('link', { name: 'Not now' })).toHaveAttribute('href', `/p/${box.childId}/learn`)
     await noHorizontalScroll(page)
     await shot(page, testInfo, 'parent-handover', 844)
@@ -115,7 +115,7 @@ test.describe('parent-session (stage session_done)', () => {
     const sessionId = await tonightSessionId(box.childId)
     await page.goto(`/p/${box.childId}/sessions/${sessionId}`)
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Amina got halves and quarters. Sixths and eighths still trip her up.')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Amina got halves and quarters. Sixths and eighths still trip Amina up.')
     await expect(page.getByText("Tonight's session")).toBeVisible()
     await expect(page.getByText(/^Amina · \w{3} \d{1,2} \w{3}, \d{2}:\d{2}$/)).toBeVisible()
     await expect(page.getByText('3 of 5')).toBeVisible()
@@ -126,7 +126,7 @@ test.describe('parent-session (stage session_done)', () => {
     const { data: later } = await admin().from('sessions').select('planned_for').eq('child_id', box.childId).eq('status', 'planned').eq('planned_minutes', 6).single()
     const day = new Date(`${later!.planned_for}T00:00:00Z`)
     const long = day.toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'UTC' })
-    await expect(page.getByText(`It counts as fixed after she gets 4 or 5 right on a later check. Next check: ${long}.`)).toBeVisible()
+    await expect(page.getByText(`It counts as fixed after Amina gets 4 or 5 right on a later check. Next check: ${long}.`)).toBeVisible()
     await expect(page.getByText('Warm-up: 2 of 2')).toBeVisible()
 
     const rows = page.getByRole('region', { name: 'Each question' }).getByRole('listitem')

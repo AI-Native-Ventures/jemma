@@ -34,7 +34,7 @@ const KINDS: { kind: SnapKind; title: string; hint: string; icon: ReactNode }[] 
   {
     kind: 'textbook',
     title: 'Textbook page',
-    hint: 'So lessons use her own book',
+    hint: 'So lessons use their own book',
     icon: (
       <>
         <path d="M4 5.5C4 4.7 4.7 4 5.5 4H10c1.1 0 2 .9 2 2v14c0-1.1-.9-2-2-2H4z" />

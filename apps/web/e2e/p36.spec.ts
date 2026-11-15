@@ -118,7 +118,7 @@ test('laptop-parent-learn: tonight beside this week and what helps', async ({ pa
   const steps = page.getByRole('list', { name: 'How the lesson goes' })
   await expect(steps).toContainText('Step 1')
   await expect(steps).toContainText('Results')
-  await expect(tonight.getByText('Amina sees how she did at the end, never a score. You see everything.')).toBeVisible()
+  await expect(tonight.getByText('Amina sees how it went at the end, never a score. You see everything.')).toBeVisible()
   await expect(tonight.getByRole('link', { name: 'Start, then hand the phone to Amina' })).toHaveAttribute('href', `/p/${box.childId}/learn/handover`)
 
   const week = page.getByRole('region', { name: 'This week' })
@@ -149,7 +149,7 @@ test('laptop-parent-tests: list, marked paper and missed questions side by side'
     return
   }
 
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('6 out of 10 on Class Test 1. Every mark she lost was on adding.', SLOW)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('6 out of 10 on Class Test 1. Every mark Amina lost was on adding.', SLOW)
   await expect(page.getByText('Tests · Amina')).toBeVisible()
   const list = page.getByRole('region', { name: "Amina's tests" })
   await expect(list.getByText('Needs you')).toBeVisible()
@@ -162,10 +162,10 @@ test('laptop-parent-tests: list, marked paper and missed questions side by side'
   const paper = page.getByRole('region', { name: "Amina's marked paper" })
   await expect(paper.getByText('Section A: Fractions')).toBeVisible()
   await expect(paper.getByText('Section B: Decimals')).toBeVisible()
-  await expect(paper.getByText(/Ms Banda snapped Amina's paper at \d\d:\d\d\. Jemma marked it against her memo at \d\d:\d\d\. Coral marks are the ones Amina missed\./)).toBeVisible()
-  const missed = page.getByRole('region', { name: 'The 4 she missed' })
+  await expect(paper.getByText(/Ms Banda snapped Amina's paper at \d\d:\d\d\. Jemma marked it against the memo at \d\d:\d\d\. Coral marks are the ones Amina missed\./)).toBeVisible()
+  const missed = page.getByRole('region', { name: 'The 4 Amina missed' })
   await expect(missed.getByText('Wrote 0,30, right is 0,75')).toBeVisible()
-  await expect(missed.getByText('One slip behind all 4: she adds the tops and the bottoms, and lines up the last digits in decimals.')).toBeVisible()
+  await expect(missed.getByText('One slip behind all 4: Amina adds the tops and the bottoms, and lines up the last digits in decimals.')).toBeVisible()
   await expect(missed.getByText('Adding fractions: how to help')).toBeVisible()
   await expect(missed.getByRole('link', { name: 'Think a mark is wrong?' })).toBeVisible()
 

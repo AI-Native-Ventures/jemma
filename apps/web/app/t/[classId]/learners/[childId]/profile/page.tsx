@@ -112,7 +112,7 @@ export default async function ChildProfilePage({ params }: { params: Promise<{ c
             <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2, lineHeight: 1.3 }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: '#5D5A73' }}>Papers</span>
               <span style={{ fontSize: 16, fontWeight: 600 }}>{v.paper.title} · {dayLabel(v.paper.writtenOn)}</span>
-              <span style={{ fontSize: 14, color: '#5D5A73' }}>See her paper or fix a mark</span>
+              <span style={{ fontSize: 14, color: '#5D5A73' }}>See the paper or fix a mark</span>
             </span>
             <Chevron />
           </Link>

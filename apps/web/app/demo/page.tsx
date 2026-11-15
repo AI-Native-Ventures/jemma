@@ -49,7 +49,7 @@ function MorePeople({ year }: { year: number }) {
         {parents.map((p) => (
           <form key={p.key} action={tryDemoAction} className="contents">
             <input type="hidden" name="person" value={`parent:${p.key}`} />
-            <PersonChip variant="row" name={p.displayName} detail={`Parent · ${p.children.map((c) => (c.alone ? `${c.name} (on his own, Grade ${c.grade})` : `${c.name} (Grade ${c.grade})`)).join(', ')}`} />
+            <PersonChip variant="row" name={p.displayName} detail={`Parent · ${p.children.map((c) => (c.alone ? `${c.name} (on their own, Grade ${c.grade})` : `${c.name} (Grade ${c.grade})`)).join(', ')}`} />
           </form>
         ))}
       </div>
@@ -60,7 +60,7 @@ function MorePeople({ year }: { year: number }) {
           const names = g.names.filter((n) => !BIG_THREE.has(n))
           return (
             <div key={g.classKey} className="flex flex-col gap-2">
-              <p className="m-0 text-[14px] text-body">{g.classKey === '6b-maths' ? '6B Mathematics: Amina is above, with her four classmates' : g.className}</p>
+              <p className="m-0 text-[14px] text-body">{g.classKey === '6b-maths' ? '6B Mathematics: Amina is above, with four classmates' : g.className}</p>
               <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
                 {names.map((n) => (
                   <li key={n}>
@@ -167,7 +167,7 @@ export default async function DemoPage() {
                       ) : (
                         "Ms Banda's class code"
                       )}
-                      , then open her profile.
+                      , then open Amina&apos;s profile.
                     </>
                   ) : null}
                 </span>

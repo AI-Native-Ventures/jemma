@@ -46,7 +46,7 @@ export default async function DemoSwitchPage() {
   // The three people the demo page puts first are listed first here too, then everyone else.
   const more: { person: string; initials: string; name: string; detail: string; avatar: string }[] = [
     ...people.teachers.filter((t) => t.key !== 'banda').map((t) => ({ person: `teacher:${t.key}`, initials: t.displayName.split(' ').map((w) => w.charAt(0)).join(''), name: t.displayName, detail: `Teacher · ${t.classes.join(', ')}`, avatar: 'bg-soft-3' })),
-    ...people.parents.filter((p) => p.key !== 'thandi').map((p) => ({ person: `parent:${p.key}`, initials: p.displayName.split(' ').map((w) => w.charAt(0)).join(''), name: p.displayName, detail: `Parent · ${p.children.map((c) => (c.alone ? `${c.name} (on his own)` : c.name)).join(' and ')}`, avatar: 'bg-coral-tint' })),
+    ...people.parents.filter((p) => p.key !== 'thandi').map((p) => ({ person: `parent:${p.key}`, initials: p.displayName.split(' ').map((w) => w.charAt(0)).join(''), name: p.displayName, detail: `Parent · ${p.children.map((c) => (c.alone ? `${c.name} (on their own)` : c.name)).join(' and ')}`, avatar: 'bg-coral-tint' })),
     ...people.learners.flatMap((g) => g.names.filter((n) => n !== 'Amina').map((n) => ({ person: `learner:${n}`, initials: n.charAt(0), name: n, detail: `Learner · ${g.className.split(' ')[0]}`, avatar: 'bg-coral-soft' }))),
   ]
 

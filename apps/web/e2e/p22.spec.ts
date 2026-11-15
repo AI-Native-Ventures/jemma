@@ -41,8 +41,11 @@ test.describe('parent start, add child, consent, waiting', () => {
     await expect(page.getByRole('heading', { name: 'Got a class code from a teacher?' })).toBeVisible()
     await expect(page.getByLabel('Class code')).toBeVisible()
     await expect(page.getByText("Ms Banda's class code is")).toContainText(sb.joinCode)
-    await expect(page.getByRole('button', { name: /Add your child without a code/ })).toBeVisible()
-    await expect(page.getByText('You can link their teacher later')).toBeVisible()
+    // The way for a child whose school does not use Jemma opens the add-a-child page with its form open (P99b): the one wording, the one path.
+    const alone = page.getByRole('link', { name: /My child's school doesn't use Jemma/ })
+    await expect(alone).toBeVisible()
+    await expect(alone).toContainText('Add your child yourself. No class code needed.')
+    await expect(alone).toHaveAttribute('href', '/p/add?alone=1#alone')
     await expect(page.getByRole('heading', { name: "What you'll see" })).toBeVisible()
     for (const line of ['Marks and gaps from every test', 'The paper behind each gap', 'A short lesson to do together at home']) {
       await expect(page.getByText(line)).toBeVisible()
@@ -70,7 +73,9 @@ test.describe('parent start, add child, consent, waiting', () => {
     await expect(page.getByText("Tonight's lesson, ready to hand to Amina")).toBeVisible()
     await expect(page.getByText('Ms Banda says yes before you see anything.')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Link Amina' })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'No code? Add your child yourself' })).toBeVisible()
+    // The old link under the Link button went to this same page and did nothing; the button under "Or" is the way (P99b).
+    await expect(page.getByRole('link', { name: 'No code? Add your child yourself' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: "My child's school doesn't use Jemma" })).toBeVisible()
     await shot(page, info, 'parent-add-child')
 
     // A code that matches no class says so and shows no class.
@@ -95,14 +100,14 @@ test.describe('parent start, add child, consent, waiting', () => {
     await expect(page.getByText('Amina · 6B Mathematics')).toBeVisible()
     await expect(page.getByText('Before you link')).toBeVisible()
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      "Jemma keeps Amina's schoolwork so it can teach her. Is that okay with you?",
+      "Jemma keeps Amina's schoolwork so it can teach Amina. Is that okay with you?",
     )
     await expect(page.getByRole('heading', { name: 'What Jemma keeps' })).toBeVisible()
-    await expect(page.getByText('Photos of her tests and homework')).toBeVisible()
+    await expect(page.getByText("Photos of Amina's tests and homework")).toBeVisible()
     await expect(page.getByText('Only you, Ms Banda and Amina see it.')).toBeVisible()
     const guardian = page.getByLabel("I'm Amina's parent or legal guardian")
-    const teach = page.getByLabel("Jemma can use Amina's schoolwork to teach her")
-    const improve = page.getByLabel('Use her work, name removed, to make Jemma better')
+    const teach = page.getByLabel("Jemma can use Amina's schoolwork to teach Amina")
+    const improve = page.getByLabel('Use their work, name removed, to make Jemma better')
     await expect(guardian).toBeChecked()
     await expect(teach).toBeChecked()
     await expect(improve).not.toBeChecked()
@@ -125,7 +130,7 @@ test.describe('parent start, add child, consent, waiting', () => {
     await expect(page.getByText('6B Mathematics · Hillview Primary')).toBeVisible()
     await expect(page.getByText(/^Asked at \d\d:\d\d · Ms Banda$/)).toBeVisible()
     await expect(page.getByText("Ms Banda checks that you're Amina's parent. Most teachers answer within a school day.")).toBeVisible()
-    await expect(page.getByText("Her answer shows up in Needs you on Amina's profile.")).toBeVisible()
+    await expect(page.getByText("Ms Banda's answer shows up in Needs you on Amina's profile.")).toBeVisible()
     await expect(page.getByRole('link', { name: "Snap Amina's homework meanwhile" })).toBeVisible()
     await expect(page.getByText('In the demo you are Ms Banda too.')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Switch to Ms Banda to approve' })).toBeVisible()

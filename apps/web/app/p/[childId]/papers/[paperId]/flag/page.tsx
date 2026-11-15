@@ -62,12 +62,12 @@ export default async function ParentFlagMarkPage({
           <form action={send} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <label htmlFor="what" style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.35 }}>{`Think this mark is wrong? Tell ${teacher} what you see`}</label>
-              <textarea id="what" name="what" rows={3} required placeholder="For example: the photo cuts off her answer" style={{ minHeight: 96, padding: '12px 14px', borderRadius: 14, border: '1px solid #8C89A3', background: '#FFFFFF', color: '#1F1D36', font: 'inherit', fontSize: 16, lineHeight: 1.4, resize: 'none' }} />
+              <textarea id="what" name="what" rows={3} required placeholder="For example: the photo cuts off the answer" style={{ minHeight: 96, padding: '12px 14px', borderRadius: 14, border: '1px solid #8C89A3', background: '#FFFFFF', color: '#1F1D36', font: 'inherit', fontSize: 16, lineHeight: 1.4, resize: 'none' }} />
               {error ? <span role="alert" style={{ fontSize: 14, color: '#B8381F' }}>{error}</span> : null}
             </div>
             <p style={{ margin: 0, display: 'flex', gap: 10, fontSize: 14, lineHeight: 1.45, color: '#5D5A73' }}>
               <Diamond size={12} mt={4} />
-              <span>{`${teacher} decides. If she changes it, you'll see the new mark and her name.`}</span>
+              <span>{`${teacher} decides. If the mark changes, you'll see the new mark and who changed it.`}</span>
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.4fr)', gap: 8 }}>
               <Link href={back} style={{ ...btn, border: '1.5px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36' }}>Cancel</Link>

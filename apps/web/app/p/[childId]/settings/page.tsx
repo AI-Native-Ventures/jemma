@@ -12,7 +12,7 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
   const child = await getChildSettings(childId)
   if (!child) notFound()
   const name = child.firstName
-  const loginTitle = child.loginCode ? `Code ${child.loginCode} and her own PIN` : 'Set up her sign-in'
+  const loginTitle = child.loginCode ? `Code ${child.loginCode} and ${name}'s own PIN` : `Set up ${name}'s sign-in`
 
   return (
     <>
@@ -38,7 +38,7 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
           <Link href={`/p/${childId}/settings/login`} style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, padding: '6px 0', textDecoration: 'none', color: '#1F1D36' }}>
             <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <span style={{ fontSize: 16, fontWeight: 500 }}>{loginTitle}</span>
-              <span style={{ fontSize: 13, lineHeight: 1.35, color: '#5D5A73' }}>She signs in without an email</span>
+              <span style={{ fontSize: 13, lineHeight: 1.35, color: '#5D5A73' }}>{name} signs in without an email</span>
             </span>
             <Chevron />
           </Link>
@@ -68,9 +68,9 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
 
         <Section id="lessons" title="During lessons" gap={14}>
           <Segmented legend="Right or wrong shows" options={['At the end', 'After each question']} initial={0} />
-          <Segmented legend={`${name} sees her score`} options={['Hidden', 'Shown']} initial={0} />
+          <Segmented legend={`${name} sees the score`} options={['Hidden', 'Shown']} initial={0} />
           <p style={{ margin: 0, fontSize: 14, lineHeight: 1.45, color: '#5D5A73' }}>
-            {child.teachers[0]?.name ?? 'The teacher'}&apos;s class tests follow her settings.
+            {child.teachers[0]?.name ?? 'The teacher'}&apos;s class tests follow {name}&apos;s settings.
           </p>
         </Section>
 

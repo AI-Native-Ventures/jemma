@@ -214,7 +214,7 @@ export async function getTopicDetail(childId: string, gapId: string): Promise<To
   const slipText = missed.find((r) => r.misconception)?.misconception ?? null
   const withSlip = missed.filter((r) => r.misconception === slipText).length
   const slip = slipText
-    ? `${child.firstName} ${lowerFirst(slipText)}. ${withSlip === missed.length ? 'She did it in all' : `She did it in ${withSlip} of`} ${missed.length} questions that needed it.`
+    ? `${child.firstName} ${lowerFirst(slipText)}. ${withSlip === missed.length ? 'It happened in all' : `It happened in ${withSlip} of`} ${missed.length} questions that needed it.`
     : null
 
   const { data: sessionRows } = await supabase
@@ -304,7 +304,7 @@ function sectionsOf(rows: ResultRow[]): PaperSection[] {
   ]
 }
 
-function slipLineOf(missed: ResultRow[]): string | null {
+function slipLineOf(name: string, missed: ResultRow[]): string | null {
   const slips = new Map<string, Set<string>>()
   for (const r of missed) {
     if (!r.misconception) continue
@@ -318,7 +318,7 @@ function slipLineOf(missed: ResultRow[]): string | null {
     const decimals = [...topics].every((t) => /decimal/i.test(t)) && !/decimal/i.test(text)
     return decimals ? `${text} in decimals` : text
   })
-  return `One slip behind all ${missed.length}: she ${parts.join(', and ')}.`
+  return `One slip behind all ${missed.length}: ${name} ${parts.join(', and ')}.`
 }
 
 /** One marked test paper with its questions, marks and photo URLs. Null when the paper is not the child's marked test. */
@@ -369,13 +369,13 @@ export async function getPaperDetail(childId: string, paperId: string): Promise<
     markedAt: fmtTime(log?.at ?? paper.created_at),
     sections: sectionsOf(results),
     missed,
-    slipLine: slipLineOf(missed),
+    slipLine: slipLineOf(child.firstName, missed),
     topGap: topGap ? { id: topGap.id, topicName: topGap.topic_name } : null,
     photoUrls,
   }
 }
 
-/** Lowercase first word of the topic shared by every missed question, for "Every mark she lost was on adding". */
+/** Lowercase first word of the topic shared by every missed question, for "Every mark Amina lost was on adding". */
 export function sharedTopicWord(missed: ResultRow[]): string | null {
   const words = new Set(missed.map((r) => r.topicName.split(' ')[0]!.toLowerCase()))
   return words.size === 1 ? [...words][0]! : null

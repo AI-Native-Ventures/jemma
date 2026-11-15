@@ -7,7 +7,7 @@ import { CheckIcon } from '@/components/ui/icons'
 import { ComingSheet } from '../../../_p21-client'
 import { decideLink } from '../actions'
 
-export function Decision({ classId, linkId }: { classId: string; linkId: string }) {
+export function Decision({ classId, linkId, parentName }: { classId: string; linkId: string; parentName: string }) {
   const [pending, start] = useTransition()
   const [open, setOpen] = useState(false)
   const decide = (d: 'approved' | 'declined') => start(() => decideLink(classId, linkId, d))
@@ -22,7 +22,7 @@ export function Decision({ classId, linkId }: { classId: string; linkId: string 
         No, decline
       </PendingButton>
       <button type="button" onClick={() => setOpen(true)} className="flex min-h-11 items-center self-center border-0 bg-transparent px-2 text-[15px] font-semibold text-ink underline underline-offset-[3px]">
-        Not sure? Message her first
+        Not sure? Message {parentName} first
       </button>
       <ComingSheet open={open} onClose={() => setOpen(false)} />
     </div>

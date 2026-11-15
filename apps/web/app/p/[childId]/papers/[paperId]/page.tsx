@@ -40,7 +40,7 @@ export default async function ParentPaperPage({
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
               <Diamond size={14} mt={10} />
               <h1 style={{ margin: 0, fontSize: 27, lineHeight: 1.18, fontWeight: 600, letterSpacing: '-0.015em', textWrap: 'pretty' }}>
-                {`${paper.total} out of ${paper.outOf}.${word ? ` Every mark she lost was on ${word}.` : paper.missed.length ? ` She lost marks on ${paper.missed.length} questions.` : ' She got every mark.'}`}
+                {`${paper.total} out of ${paper.outOf}.${word ? ` Every mark ${name} lost was on ${word}.` : paper.missed.length ? ` ${name} lost marks on ${paper.missed.length} questions.` : ` ${name} got every mark.`}`}
               </h1>
             </div>
           </div>
@@ -48,7 +48,7 @@ export default async function ParentPaperPage({
           <figure style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <PaperSheet paper={paper} highlightN={highlightN} />
             <figcaption style={{ fontSize: 14, lineHeight: 1.45, color: '#5D5A73' }}>
-              {`${paper.child.teacherName} snapped ${name}'s paper at ${paper.snappedAt}. Jemma marked it against her memo. Coral marks are the ones ${name} missed.`}
+              {`${paper.child.teacherName} snapped ${name}'s paper at ${paper.snappedAt}. Jemma marked it against the memo. Coral marks are the ones ${name} missed.`}
             </figcaption>
           </figure>
 
@@ -64,7 +64,7 @@ export default async function ParentPaperPage({
 
           {paper.missed.length ? (
             <section aria-labelledby="missed" style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: 16, background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 20 }}>
-              <h2 id="missed" style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>{`The ${paper.missed.length} she missed`}</h2>
+              <h2 id="missed" style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>{`The ${paper.missed.length} ${name} missed`}</h2>
               <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                 {paper.missed.map((r) => (
                   <li key={r.id} style={{ borderTop: '1px solid #EFEEF4' }}>
@@ -95,7 +95,7 @@ export default async function ParentPaperPage({
             >
               <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <span style={{ fontSize: 16, fontWeight: 600 }}>{`${paper.topGap.topicName.split(' with ')[0]}: how to help`}</span>
-                <span style={{ fontSize: 14, color: '#5D5A73' }}>{`Her biggest gap, and tonight's lesson`}</span>
+                <span style={{ fontSize: 14, color: '#5D5A73' }}>{`${name}'s biggest gap, and tonight's lesson`}</span>
               </span>
               <ChevronRight />
             </Link>
