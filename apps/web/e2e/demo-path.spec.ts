@@ -56,6 +56,36 @@ async function agentIdle(schoolId: string, what: string, since: number): Promise
   throw new Error(`the agent did not finish ${what} in ${AGENT_WAIT / 1000} seconds`)
 }
 
+/**
+ * The page is not wider than the screen: `document.documentElement.scrollWidth <= document.documentElement.clientWidth`. On a phone a wider page is
+ * zoomed out, and a tap far down it can miss its button. When it is wider, the failure names the elements that reach past the edge.
+ */
+async function expectNotWiderThanScreen(page: Page, where: string): Promise<void> {
+  const widths = await page.evaluate(() => {
+    const clientWidth = document.documentElement.clientWidth
+    const past = [...document.body.querySelectorAll('*')].filter((el) => el.getBoundingClientRect().right > clientWidth + 0.5)
+    return {
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth,
+      past: past.slice(0, 6).map((el) => `${el.tagName} ${String(el.getAttribute('class') ?? '').slice(0, 90)} right=${Math.round(el.getBoundingClientRect().right)}`),
+    }
+  })
+  expect(widths.scrollWidth, `${where} is wider than the screen: ${JSON.stringify(widths)}`).toBeLessThanOrEqual(widths.clientWidth)
+}
+
+/** The same check on the phone at its own width and on the narrowest phone teachers use (360 px); the window goes back to its own width after. */
+async function expectNotWiderOnPhones(page: Page, where: string): Promise<void> {
+  const own = page.viewportSize()
+  await expectNotWiderThanScreen(page, `${where}${own ? ` at ${own.width} px` : ''}`)
+  if (!own || own.width >= 1024 || own.width <= 360) return
+  await page.setViewportSize({ width: 360, height: own.height })
+  try {
+    await expectNotWiderThanScreen(page, `${where} at 360 px`)
+  } finally {
+    await page.setViewportSize(own)
+  }
+}
+
 /** A client signed in as one of the sandbox people, with the anon key and their own session: it reads what row level security lets that person read. */
 async function readAs(login: { email: string; password: string }) {
   const client = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!, { auth: { persistSession: false, autoRefreshToken: false } })
@@ -210,6 +240,7 @@ test('the whole demo path', async ({ page }) => {
       await expect(shareCard.getByText(`${stillNeedYou} still ${stillNeedYou === 1 ? 'needs' : 'need'} you. You can share now and those follow when you have checked them.`)).toBeVisible()
     }
     seen = await eventCount(schoolId)
+    await expectNotWiderOnPhones(page, 'the class home before Share with parents')
     await shareCard.getByRole('button', { name: 'Share with parents' }).click()
     await expect(shareCard).toBeHidden({ timeout: 60_000 })
     // Jemma now plans each learner's session, lesson and guidance. Every job must finish before Sipho's fix changes what they read:
@@ -250,24 +281,11 @@ test('the whole demo path', async ({ page }) => {
       const guidanceItem = page.getByRole('region', { name: "Guidance for Amina's family" })
       await expect(guidanceItem).toBeVisible()
       await expect(guidanceItem.getByText(/^Looking ahead: /)).toBeVisible()
-      const sendButton = guidanceItem.getByRole('button', { name: 'Send to family' })
-      // A pointer tap far down this long page was refused on the phone: the browser said text above the button was on top of it, though in the page
-      // itself the button is the element at its own centre (CI run of 15 November). The class home is also wider than the screen there (the browser
-      // reports a width of 413 for a 390 screen, because of one line that does not wrap), which makes it zoom out. If a tap is blocked, say where
-      // things are, then press the button with the keyboard. That is the same click.
-      await sendButton.click({ timeout: 10_000 }).catch(async () => {
-        const where = await page.evaluate(() => {
-          const out = [...document.body.querySelectorAll('*')].filter((el) => el.getBoundingClientRect().right > 391).slice(0, 6)
-          return {
-            scrollWidth: document.documentElement.scrollWidth,
-            innerWidth: window.innerWidth,
-            wider: out.map((el) => `${el.tagName} ${String(el.getAttribute('class') ?? '').slice(0, 90)} right=${Math.round(el.getBoundingClientRect().right)}`),
-          }
-        })
-        console.log(`Send to family was blocked for a pointer: ${JSON.stringify(where)}`)
-        await sendButton.focus()
-        await page.keyboard.press('Enter')
-      })
+      // A page wider than the screen makes the phone zoom out, and a tap far down the page then misses its button (this was the case on 15 November:
+      // one example line in a gap card did not wrap). The width is checked first, so a wide page fails here with the elements that reach past the edge,
+      // and the button is then pressed with a plain tap.
+      await expectNotWiderOnPhones(page, 'the class home before Send to family')
+      await guidanceItem.getByRole('button', { name: 'Send to family' }).click()
       await expect(guidanceItem).toBeHidden({ timeout: 60_000 })
     }
     await sendAminasGuidance()
