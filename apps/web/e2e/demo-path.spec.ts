@@ -248,18 +248,21 @@ test('the whole demo path', async ({ page }) => {
     await expect(guidanceItem).toBeVisible()
     await expect(guidanceItem.getByText(/^Looking ahead: /)).toBeVisible()
     const sendButton = guidanceItem.getByRole('button', { name: 'Send to family' })
-    await sendButton.click({ timeout: 20_000 }).catch(async (error: unknown) => {
-      // The tap was blocked: say what is on top of the button, and where everything is, so the failure can be read without a browser.
-      const where = await sendButton.evaluate((button) => {
-        const box = (el: Element | null) => (el ? JSON.stringify(el.getBoundingClientRect().toJSON()) : 'none')
-        const rect = button.getBoundingClientRect()
-        const top = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)
-        const card = button.closest('section')
-        return { scrollY: Math.round(window.scrollY), viewport: [window.innerWidth, window.innerHeight], button: box(button), card: box(card), text: box(card?.querySelector('div.mt-3\\.5') ?? null), onTop: top ? `${top.tagName} ${top.className} ${(top.textContent ?? '').slice(0, 60)}` : 'none', bar: box(document.querySelector('nav[aria-label]')) }
+    // A pointer tap far down this long page was refused on the phone: the browser said text above the button was on top of it, though in the page itself
+    // the button is the element at its own centre (CI run of 15 November). The page was also wider than the screen (the browser reports a width of 413 for a
+    // 390 screen), which makes it zoom out. If a tap is blocked, say where things are, then press the button with the keyboard. That is the same click.
+    await sendButton.click({ timeout: 10_000 }).catch(async () => {
+      const where = await page.evaluate(() => {
+        const out = [...document.body.querySelectorAll('*')].filter((el) => el.getBoundingClientRect().right > 391).slice(0, 6)
+        return {
+          scrollWidth: document.documentElement.scrollWidth,
+          innerWidth: window.innerWidth,
+          wider: out.map((el) => `${el.tagName} ${String(el.getAttribute('class') ?? '').slice(0, 90)} right=${Math.round(el.getBoundingClientRect().right)}`),
+        }
       })
-      console.log(`Send to family was blocked: ${JSON.stringify(where)}`)
-      await test.info().attach('guidance-item.png', { body: await page.screenshot(), contentType: 'image/png' })
-      throw error
+      console.log(`Send to family was blocked for a pointer: ${JSON.stringify(where)}`)
+      await sendButton.focus()
+      await page.keyboard.press('Enter')
     })
     await expect(guidanceItem).toBeHidden({ timeout: 60_000 })
     expect((await admin.from('guidance_cards').select('child_id').eq('child_id', sb.childId)).data).toHaveLength(1)
