@@ -14,6 +14,23 @@ export function destinationFor(signedIn: boolean, role: Role | null): string | n
   return role ? HOMES[role] : ROLE_PATH
 }
 
+/**
+ * Where a visitor who is not signed in is sent from "/", or null to show the built-in landing page. The landing page is its own site
+ * (LANDING_URL, https://getjemma.ainative.ventures in production). When LANDING_URL is not set, or is not a web address, there is no
+ * redirect: local runs and CI show the built-in page as before. Only an http or https address is taken, so a wrong value never sends a
+ * visitor somewhere odd. Returns the full address (`https://host/`).
+ */
+export function landingRedirectUrl(raw: string | null | undefined): string | null {
+  const value = raw?.trim()
+  if (!value) return null
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : null
+  } catch {
+    return null
+  }
+}
+
 /** The Supabase session cookie (`sb-<project>-auth-token`, in chunks `.0`, `.1` when it is long). Not the PKCE `...-code-verifier` cookie. */
 export function hasSessionCookie(names: readonly string[]): boolean {
   return names.some((name) => /^sb-.+-auth-token(\.\d+)?$/.test(name))
