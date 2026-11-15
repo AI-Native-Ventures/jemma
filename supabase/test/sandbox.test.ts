@@ -325,6 +325,8 @@ describe('sandboxes', () => {
     const [card] = await ok(admin.from('guidance_cards').select('content').eq('child_id', aminaId))
     const guidance = GuidanceSchema.parse(card!.content)
     expect(guidance.focus).toHaveLength(2)
+    // The demo copy's card is already sent (P106): it is in guidance_cards, the family reads it, and no draft waits for the teacher.
+    expect(await ok(admin.from('guidance_drafts').select('child_id').in('child_id', kids.map((k) => k.id)))).toEqual([])
     const links = await ok(admin.from('parent_links').select('status, consent').eq('class_id', s.classId))
     expect(links).toHaveLength(1)
     expect(links[0]!.status).toBe('approved')

@@ -32,7 +32,7 @@ function readCard(content: unknown): { headline: string; focus: Focus[]; looking
 
 /**
  * Stage `marked`, learner Amina. The real event is `observation.added`, which plans the `guidance` job. The seed already
- * has a guidance card for Amina, so "saved" means saved again during this run.
+ * has a guidance card for Amina (already sent to the family), so "saved" means a draft written during this run (P106).
  */
 export const guidanceSourced: Task<GuidanceState, GuidanceFacts> = {
   id: 'guidance-sourced',
@@ -45,15 +45,20 @@ export const guidanceSourced: Task<GuidanceState, GuidanceFacts> = {
   },
   async collect(ctx, prepared) {
     const { childId } = prepared.state
-    const [card, results] = await Promise.all([
+    const [draft, card, results] = await Promise.all([
+      ctx.admin.from('guidance_drafts').select('content, updated_at').eq('child_id', childId).maybeSingle(),
       ctx.admin.from('guidance_cards').select('content, updated_at').eq('child_id', childId).maybeSingle(),
       ctx.admin.from('question_results').select('id').eq('child_id', childId),
     ])
+    if (draft.error) throw new Error(`could not read the guidance draft: ${draft.error.message}`)
     if (card.error) throw new Error(`could not read the guidance card: ${card.error.message}`)
     if (results.error) throw new Error(`could not read the results: ${results.error.message}`)
+    // A school child's new card is a draft until the teacher sends it (P106): the draft is what this run saved, and the card in `guidance_cards`
+    // is the seeded one that the family already reads.
+    const saved = draft.data ?? card.data
     return {
       startedAt: ctx.startedAt,
-      card: card.data ? { updatedAt: card.data.updated_at, content: card.data.content } : null,
+      card: saved ? { updatedAt: saved.updated_at, content: saved.content } : null,
       resultIds: (results.data ?? []).map((r) => r.id),
     }
   },

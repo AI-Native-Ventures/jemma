@@ -650,7 +650,8 @@ async function buildMarked(c: MarkedCtx): Promise<void> {
   })
   const savedGaps = await ok(admin.from('gaps').insert(gapRows).select('id, child_id, topic_name'), 'gaps')
 
-  // Reteach, lesson, planned session, guidance card, link, Needs you, log.
+  // Reteach, lesson, planned session, guidance card, link, Needs you, log. The guidance card is already sent to the family (P106): it is a row of
+  // `guidance_cards`, which is what the family reads, not a draft in `guidance_drafts` that the teacher still has to send.
   const reteach = ReteachSchema.parse(RETEACH)
   const lesson = LessonSchema.parse(AMINA_LESSON)
   const aminaResults = results.filter((r) => r.child_id === aminaId)

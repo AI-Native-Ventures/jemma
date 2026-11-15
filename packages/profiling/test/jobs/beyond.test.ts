@@ -120,13 +120,15 @@ test('guidance cites evidence for every focus item', async () => {
   })
   expect(res.isError).toBeFalsy()
   expect(res.structuredContent).toEqual({ updated: true })
-  const card = await db.from('guidance_cards').select('content').eq('child_id', a.aminaId).single()
+  // A school child's card is a draft until the teacher sends it (P106): the family's card table has nothing yet.
+  const card = await db.from('guidance_drafts').select('content').eq('child_id', a.aminaId).single()
   const content = card.data!.content as { focus: { title: string }[] }
   expect(content.focus.map((f) => f.title)).toEqual(['Adding fractions'])
+  expect((await db.from('guidance_cards').select('child_id').eq('child_id', a.aminaId)).data).toEqual([])
 })
 
 test('guidance uses the newest note', async () => {
-  await db.from('guidance_cards').update({ created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' }).eq('child_id', a.aminaId)
+  await db.from('guidance_drafts').update({ created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' }).eq('child_id', a.aminaId)
   await db.from('observations').insert({ child_id: a.aminaId, author_id: a.teacherId, kind: 'effort', text: 'Stayed after class to redo fractions' })
   const [rid] = await resultIds()
   const model = mockModel({
