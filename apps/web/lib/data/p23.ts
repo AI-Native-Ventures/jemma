@@ -338,7 +338,7 @@ export async function getBeyond(childId: string): Promise<BeyondData | null> {
   const present = att.filter((a) => a.status !== 'away').length
   const explains = (notes.data ?? []).find((n) => /explain/i.test(n.text))
   const headline = explains
-    ? `${teacher} says ${name} explains her thinking well. She's been at school ${present} of ${att.length} days.`
+    ? `${teacher} says ${name} explains their thinking well. ${name} has been at school ${present} of ${att.length} days.`
     : `${name} has been at school ${present} of ${att.length} days.`
 
   return {
@@ -525,7 +525,7 @@ export async function getReport(childId: string): Promise<ReportData | null> {
   return {
     childName: name,
     grade: child.data.grade,
-    headline: `${name} is steady at ${percent ?? 0}% and fixing her gaps one at a time.`,
+    headline: `${name} is steady at ${percent ?? 0}% and fixing gaps one at a time.`,
     period: periodLabel,
     term,
     stats: { percent, testTitle: latest?.tests?.title ?? null, fixed: fixed.length, lessons },

@@ -47,7 +47,7 @@ export const subjectGuidance = defineTool({
     const newer = await own.db.from('observations').select('id').eq('child_id', childId).gt('created_at', since).limit(1)
     if (newer.error) throw new Error(newer.error.message)
     if (newer.data.length > 0) {
-      await logActivity(own, { text: `Used your note on ${child.first_name} in her guidance card`, tool: 'subject_guidance', childId })
+      await logActivity(own, { text: `Used your note on ${child.first_name} in the guidance card`, tool: 'subject_guidance', childId })
     }
     return { updated: true as const }
   },

@@ -227,7 +227,7 @@ export type SessionResult = {
 
 /**
  * Headline: what she got is the smaller bottom of each question she got right,
- * what trips her up is the bigger bottom of each question she missed.
+ * what trips them up is the bigger bottom of each question they missed.
  */
 function headline(name: string, items: SessionItemView[]): { text: string; weak: string[] } {
   const strong = [...new Set(items.filter((i) => i.correct).flatMap((i) => Math.min(...denominators(i.prompt))))].filter(Number.isFinite)
@@ -236,7 +236,7 @@ function headline(name: string, items: SessionItemView[]): { text: string; weak:
   const weakNames = weak.sort((a, b) => a - b).map(denominatorName)
   if (weakNames.length === 0) return { text: `${name} got every question right.`, weak: [] }
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
-  const tail = `${cap(sentenceList(weakNames))} still ${weakNames.length > 1 ? 'trip' : 'trips'} her up.`
+  const tail = `${cap(sentenceList(weakNames))} still ${weakNames.length > 1 ? 'trip' : 'trips'} ${name} up.`
   return { text: strongNames.length ? `${name} got ${sentenceList(strongNames)}. ${tail}` : tail, weak: weakNames }
 }
 

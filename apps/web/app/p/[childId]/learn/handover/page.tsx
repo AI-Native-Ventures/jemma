@@ -43,7 +43,7 @@ export default async function ParentHandoverPage({ params }: { params: Promise<{
           </svg>
           <h1 className="m-0 text-[32px] leading-[1.15] font-semibold tracking-[-0.02em]">Pass the phone to {name}.</h1>
           <p className="m-0 text-pretty text-[17px] leading-[1.5] text-body">
-            Her lesson takes about {tonight.minutes} minutes. She sees how she did at the end, never a score.
+            {name}&apos;s lesson takes about {tonight.minutes} minutes. {name} sees how it went at the end, never a score.
           </p>
         </div>
 
@@ -63,7 +63,7 @@ export default async function ParentHandoverPage({ params }: { params: Promise<{
         </section>
         <p className="m-0 flex gap-2.5 text-[14px] leading-[1.45] text-body">
           <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" className="mt-1 flex-none"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" /></svg>
-          <span>When she&apos;s done she passes it back, and you see how it went.</span>
+          <span>When {name} is done, the phone comes back to you and you see how it went.</span>
         </p>
         <form action={start} className="contents">
           <PendingButton

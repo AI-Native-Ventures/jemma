@@ -50,7 +50,7 @@ export default async function ConsentPage({ searchParams }: { searchParams: Prom
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
             <Gem />
             <h1 style={{ margin: 0, fontSize: 25, lineHeight: 1.18, fontWeight: 600, letterSpacing: '-0.015em', textWrap: 'pretty' }}>
-              Jemma keeps {name}&apos;s schoolwork so it can teach her. Is that okay with you?
+              Jemma keeps {name}&apos;s schoolwork so it can teach {name}. Is that okay with you?
             </h1>
           </div>
         </div>
@@ -62,8 +62,8 @@ export default async function ConsentPage({ searchParams }: { searchParams: Prom
             </div>
           </div>
           <ul style={{ ...list, gap: 9 }}>
-            <Bullet size={11} top={5}>Photos of her tests and homework</Bullet>
-            <Bullet size={11} top={5}>Her marks, gaps and lessons</Bullet>
+            <Bullet size={11} top={5}>Photos of {name}&apos;s tests and homework</Bullet>
+            <Bullet size={11} top={5}>{name}&apos;s marks, gaps and lessons</Bullet>
             <Bullet size={11} top={5}>{cls.teacherName}&apos;s notes and the class register</Bullet>
           </ul>
           <p style={{ margin: 0, fontSize: 14, lineHeight: 1.45, color: body }}>Only you, {cls.teacherName} and {name} see it.</p>
@@ -76,8 +76,8 @@ export default async function ConsentPage({ searchParams }: { searchParams: Prom
           <fieldset style={{ border: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
             <legend style={{ padding: 0, marginBottom: 8, fontSize: 16, fontWeight: 600 }}>Your OK</legend>
             <Tick name="guardian" title={`I'm ${name}'s parent or legal guardian`} note="Needed" checked required />
-            <Tick name="teach" title={`Jemma can use ${name}'s schoolwork to teach her`} note="Needed" checked required />
-            <Tick name="improve" title="Use her work, name removed, to make Jemma better" note="Optional" checked={false} />
+            <Tick name="teach" title={`Jemma can use ${name}'s schoolwork to teach ${name}`} note="Needed" checked required />
+            <Tick name="improve" title="Use their work, name removed, to make Jemma better" note="Optional" checked={false} />
           </fieldset>
         </form>
 

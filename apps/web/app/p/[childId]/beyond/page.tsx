@@ -108,8 +108,8 @@ export default async function ParentBeyondPage({ params }: { params: Promise<{ c
           <ul style={css('list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px')}>
             {[
               `${data.teacher}'s notes go into the guidance on ${name}'s profile.`,
-              `If ${name} misses a day, Jemma checks what the class covered and adds it to her lessons.`,
-              'Activities help pick lesson times and shape the guidance card. None of this changes her marks.',
+              `If ${name} misses a day, Jemma checks what the class covered and adds it to ${name}'s lessons.`,
+              `Activities help pick lesson times and shape the guidance card. None of this changes ${name}'s marks.`,
             ].map((t) => (
               <li key={t} style={css('display:flex;gap:10px;font-size:15px;line-height:1.45')}>
                 <Diamond size={11} style={css('flex:none;margin-top:5px')} />

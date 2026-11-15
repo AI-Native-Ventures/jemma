@@ -14,7 +14,7 @@ const CARDS: readonly Card[] = [
     ],
     shot: {
       src: '/landing/learner-marked-test.png',
-      alt: 'A marked test Amina added from a photo, on a phone: 4 of 6 right, each question with what she wrote and a tick or a cross.',
+      alt: 'A marked test Amina added from a photo, on a phone: 4 of 6 right, each question with what Amina wrote and a tick or a cross.',
       width: 390,
       height: 628,
     },
@@ -29,7 +29,7 @@ const CARDS: readonly Card[] = [
     ],
     shot: {
       src: '/landing/parent-profile.png',
-      alt: "A parent's view of Amina on a phone: how she is doing this week, a note to check her homework, and her marks by topic.",
+      alt: "A parent's view of Amina on a phone: how Amina is doing this week, a note to check the homework, and the marks by topic.",
       width: 390,
       height: 856,
     },
@@ -44,7 +44,7 @@ const CARDS: readonly Card[] = [
     ],
     shot: {
       src: '/landing/teacher-long-view.png',
-      alt: "A teacher's Long view of Amina on a phone: her marks in six parts of Mathematics, term by term from Grade 4 to Grade 6.",
+      alt: "A teacher's Long view of Amina on a phone: Amina's marks in six parts of Mathematics, term by term from Grade 4 to Grade 6.",
       width: 390,
       height: 504,
     },

@@ -107,7 +107,8 @@ describe('the way in for a child whose school does not use Jemma', () => {
     render(<AddChildForm code="" child="" surname="" needsSurname={false} found={null} error={null} />)
     const classCode = screen.getByLabelText('Class code')
     const alone = screen.getByRole('button', { name: "My child's school doesn't use Jemma" })
-    expect(screen.getByRole('link', { name: 'No code? Add your child yourself' })).toBeTruthy()
+    // The old link under the Link button went to this very page and did nothing: it is gone (P99b), and the button under "Or" is the way.
+    expect(screen.queryByRole('link', { name: 'No code? Add your child yourself' })).toBeNull()
     expect(classCode.compareDocumentPosition(alone) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 })

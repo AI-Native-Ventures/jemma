@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { AloneForm } from './AloneForm'
@@ -11,7 +10,7 @@ export type FoundCard = { className: string; teacherName: string; grade: number;
 const input = { fontFamily: 'inherit', background: '#FFFFFF', color: ink, borderRadius: 14, padding: '0 16px' } as const
 
 /** Code, class card and the child's name. Leaving the code box looks the class up again. */
-export function AddChildForm({ code, child, surname, needsSurname, found, error }: { code: string; child: string; surname: string; needsSurname: boolean; found: FoundCard | null; error: string | null }) {
+export function AddChildForm({ code, child, surname, needsSurname, found, error, aloneOpen = false }: { code: string; child: string; surname: string; needsSurname: boolean; found: FoundCard | null; error: string | null; /** The parent came from the link to "My child's school doesn't use Jemma": its form is open. */ aloneOpen?: boolean }) {
   const router = useRouter()
   const [name, setName] = useState(child)
   const [last, setLast] = useState(surname)
@@ -85,9 +84,6 @@ export function AddChildForm({ code, child, surname, needsSurname, found, error 
       <div style={{ flex: 1 }} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <button type="submit" form="add" style={primaryButton}>Link {kid}</button>
-        <Link href="/p/add" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, color: ink, fontSize: 15, fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3 }}>
-          No code? Add your child yourself
-        </Link>
       </div>
 
       <div aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -95,7 +91,7 @@ export function AddChildForm({ code, child, surname, needsSurname, found, error 
         <span style={{ fontSize: 13, color: body }}>Or</span>
         <span style={{ flex: 1, height: 1, background: line }} />
       </div>
-      <AloneForm defaultName={child} />
+      <AloneForm defaultName={child} defaultOpen={aloneOpen} />
     </>
   )
 }

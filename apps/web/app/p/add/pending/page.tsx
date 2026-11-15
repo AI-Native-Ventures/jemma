@@ -48,7 +48,7 @@ export default async function LinkPendingPage() {
           <p style={{ margin: 0, fontSize: 15, lineHeight: 1.5 }}>
             {teacherName} checks that you&apos;re {childName}&apos;s parent. Most teachers answer within a school day.
           </p>
-          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.45, color: body }}>Her answer shows up in Needs you on {childName}&apos;s profile.</p>
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.45, color: body }}>{teacherName}&apos;s answer shows up in Needs you on {childName}&apos;s profile.</p>
         </section>
 
         <a href={`/p/${pending.childId}/snap`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: `1.5px solid ${ink}`, background: '#FFFFFF', color: ink, fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>

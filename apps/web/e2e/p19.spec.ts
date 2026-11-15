@@ -117,7 +117,7 @@ test('child profile: summary, marks by topic, notes, attendance', async ({ page 
   await expect(page.getByText('Maths · change since Term 3')).toBeVisible()
   await expect(page.getByText('Adding fractions').first()).toBeVisible()
   await expect(page.getByText('Papers', { exact: true })).toBeVisible()
-  await expect(page.getByText('See her paper or fix a mark')).toBeVisible()
+  await expect(page.getByText('See the paper or fix a mark')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'What Jemma has noticed' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Your notes' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Add a note' })).toBeVisible()

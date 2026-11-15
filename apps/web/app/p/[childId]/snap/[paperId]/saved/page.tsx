@@ -43,7 +43,7 @@ export default async function SnapSavedPage({ params }: { params: Promise<{ chil
         <ul className="m-0 flex list-none flex-col gap-[9px] p-0">
           {slip?.misconception ? (
             <GemLine>
-              Question{nums.length === 1 ? '' : 's'} {joinNumbers(nums)}: she {lower(slip.misconception)}, like {slip.prompt} = {slip.answer_read}.
+              Question{nums.length === 1 ? '' : 's'} {joinNumbers(nums)}: {paper.childFirstName} {lower(slip.misconception)}, like {slip.prompt} = {slip.answer_read}.
             </GemLine>
           ) : null}
           {earlier ? (

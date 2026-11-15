@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
 import { getDemoState } from '@/lib/demo'
 import { getParentHome, greeting, initialsOf, type ChildCard } from '@/lib/data/p22'
+import { ALONE_HINT, ALONE_HREF, ALONE_LABEL } from './add/alone'
 import { AccountLink, BrandHeader, DemoTag, Gem, Main, Page, body, ink, line, list, Bullet } from './add/_parts'
 
 export const metadata = { title: 'Your children · Jemma' }
@@ -63,9 +64,9 @@ async function Start({ first, initials }: { first: string; initials: string }) {
           <span style={{ fontSize: 13, color: body }}>No code yet?</span>
           <span style={{ flex: 1, height: 1, background: line }} />
         </div>
-        <Link href="/p/add" role="button" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, minHeight: 60, borderRadius: 14, border: `1.5px solid ${ink}`, background: '#FFFFFF', color: ink, textDecoration: 'none' }}>
-          <span style={{ fontSize: 16, fontWeight: 600 }}>Add your child without a code</span>
-          <span style={{ fontSize: 13, color: body }}>You can link their teacher later</span>
+        <Link href={ALONE_HREF} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, minHeight: 60, padding: '10px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: `1.5px solid ${ink}`, background: '#FFFFFF', color: ink, textDecoration: 'none' }}>
+          <span style={{ fontSize: 16, fontWeight: 600 }}>{ALONE_LABEL}</span>
+          <span style={{ fontSize: 13, color: body }}>{ALONE_HINT}</span>
         </Link>
 
         <section aria-labelledby="get" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '4px 2px 0' }}>

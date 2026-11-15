@@ -20,7 +20,7 @@ export default async function ParentChildLoginPage({ params }: { params: Promise
     <>
       <BoardHeader href={`/p/${childId}/settings`} label={`Back to ${name}'s settings`} small={name} title={`${name}'s sign-in`} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 18, padding: '12px 20px 28px', minHeight: 0 }}>
-        <BoardHeadline size={26}>{name} signs in with her own code and PIN. No email needed.</BoardHeadline>
+        <BoardHeadline size={26}>{name} signs in with a code and a PIN. No email needed.</BoardHeadline>
 
         <section aria-labelledby="card" style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: 20, background: '#FFFFFF', border: '2px dashed #CFCDDC', borderRadius: 22 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -39,7 +39,7 @@ export default async function ParentChildLoginPage({ params }: { params: Promise
               <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
             </svg>
             <span>
-              <strong style={{ fontWeight: 600 }}>PIN:</strong> {name} picks it the first time she signs in.
+              <strong style={{ fontWeight: 600 }}>PIN:</strong> {name} picks it the first time they sign in.
             </span>
           </p>
         </section>

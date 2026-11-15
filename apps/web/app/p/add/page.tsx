@@ -5,7 +5,7 @@ import { BackHeader, Main, Page } from './_parts'
 
 export const metadata = { title: 'Add a child · Jemma' }
 
-export default async function AddChildPage({ searchParams }: { searchParams: Promise<{ code?: string; child?: string; surname?: string; needsSurname?: string; error?: string }> }) {
+export default async function AddChildPage({ searchParams }: { searchParams: Promise<{ code?: string; child?: string; surname?: string; needsSurname?: string; error?: string; alone?: string }> }) {
   await requireRole('parent')
   const q = await searchParams
   const code = cleanCode(q.code)
@@ -25,6 +25,7 @@ export default async function AddChildPage({ searchParams }: { searchParams: Pro
           surname={q.surname ?? ''}
           needsSurname={q.needsSurname === '1'}
           error={q.error ?? null}
+          aloneOpen={q.alone === '1'}
           found={found && { className: found.className, teacherName: found.teacherName, grade: found.grade, schoolName: found.schoolName }}
         />
       </Main>

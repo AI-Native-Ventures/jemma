@@ -53,7 +53,7 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
           <section aria-labelledby="missed" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
               <h2 id="missed" style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>
-                The questions she missed
+                The questions {name} missed
               </h2>
               {topic.missedSource ? <span style={{ fontSize: 13, color: '#5D5A73' }}>{topic.missedSource}</span> : null}
             </div>
@@ -89,7 +89,7 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
             Lessons
           </h2>
           <p style={{ margin: 0, fontSize: 15, color: '#5D5A73' }}>
-            {doneCount > 0 ? `${doneCount} done.${first && !first.done ? ' The next one is ready.' : ''}` : first ? 'None done yet. The first one is ready.' : 'None yet. Jemma plans one when she has the time.'}
+            {doneCount > 0 ? `${doneCount} done.${first && !first.done ? ' The next one is ready.' : ''}` : first ? 'None done yet. The first one is ready.' : `None yet. Jemma plans one when ${name} has the time.`}
           </p>
           {first ? (
             <Link

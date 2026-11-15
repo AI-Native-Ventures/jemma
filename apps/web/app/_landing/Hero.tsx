@@ -36,7 +36,7 @@ export function Hero() {
         <div className="min-w-0">
           <Shot
             src="/landing/learner-my-own.png"
-            alt="Amina's home in Jemma on a phone: My maths for Grade 6, a card to add her own work, and a suggested topic to practise, Fractions."
+            alt="Amina's home in Jemma on a phone: My maths for Grade 6, a card to add their own work, and a suggested topic to practise, Fractions."
             width={390}
             height={656}
             priority
