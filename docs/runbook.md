@@ -18,7 +18,7 @@ Do not run the test suite or the browser specs against a small hosted Supabase p
 - It never overwrites an `.env.local` that points anywhere but the local stack. The Docker check comes first: without a running Docker it stops at step 1.
 - The Supabase command line is only ever called as `start`, `stop`, `status -o env` and `db reset --local`, through one helper in `start.sh`, with `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_ID` and `SUPABASE_DB_PASSWORD` unset and `DO_NOT_TRACK=1` set (the CLI otherwise uses a stored login and reads those from dotenv files). `start.sh` stops before calling it if an env file sets one of them, if `.env.local` holds a `SUPABASE_URL` that is not localhost or 127.0.0.1, or if `supabase/.temp` links a hosted project. A test (`packages/profiling/test/one-command.test.ts`) fails if `start.sh` uses any other subcommand. Do not run other `supabase` commands in this repo on a machine that holds a Supabase login.
 - `db reset --local` rebuilds the local tables when `supabase/migrations` changed since the last run (the hash is in `.jemma/migrations.sha`). The recorded answers are loaded again after it.
-- The GitHub workflow `.github/workflows/ci.yml` runs `./start.sh --ci`, `pnpm typecheck`, `pnpm test` and the phone demo-path test on a clean Ubuntu machine, on every push.
+- The GitHub workflow `.github/workflows/ci.yml` runs `./start.sh --ci`, `pnpm typecheck`, `pnpm test` and the phone demo-path test on a clean Ubuntu machine, on every push. A second job, "Feature specs in a browser", starts the same stack and runs the browser specs of the newer features (`apps/web/e2e`) on the local database, some with the real agent and the recorded answers and some with a stand-in agent that runs no job.
 - To refresh the recorded answers after a new recording on the team's hosted project: `pnpm --filter @jemma/profiling exec tsx ../../scripts/export-replays.ts` (read only, writes the fixture), then commit `fixtures/ai-replays.json.gz`. Check the size (under 40 MB) and that no real email or key is in it: a test does this.
 - Scripts that use the service key (`export-replays`, `live-smoke`, `proof/run-real-job`) run only against the local stack or a project whose address contains `JEMMA_ALLOWED_SUPABASE_REF`. Set it to the ref of your project: the built-in default is the team's earlier dev project, which is no longer in use.
 
@@ -37,6 +37,7 @@ Copy `.env.example` to `.env.local` at the repo root. `apps/web` reads it, and `
 | `AI_ROUTE` | `cloud` (default): the agent does the AI work as above. `operator`: each job tries recorded answers first, then the owner's laptop (the operator runner below), and only when no laptop is online the agent's own model. |
 | `AI_ROUTE_TAG` | Routing tag of this stack, default `default`. A hand-off carries it and only an operator runner with the same `OPERATOR_TAG` takes the event, so two stacks that share one database never take each other's events. |
 | `DEMO_SANDBOX_DAYS` | Agent only. An unused demo copy older than this many days is removed by the agent's hourly cron. Default 7, `0` switches the sweep off. |
+| `LANDING_URL` | Web app only (the live app sets it in `apps/web/wrangler.jsonc`). The address of the landing site: when it is set, a visitor who is not signed in at `/` is sent there. Not set on a run of your own, so `/` shows the built-in landing page. |
 | `OPENROUTER_API_KEY` | Key for the free models. |
 | `AGENT_URL` | Where the web app posts events, `http://localhost:8787` locally. |
 | `EVENTS_SECRET` | Shared secret between web and agent for `POST /events`. |
@@ -130,6 +131,7 @@ It makes a fresh demo school, runs the job live on the text model, prints what t
 - Every run makes its own sandbox and MCP token on the database and deletes both when it ends, also when it fails. The command ends with a sweep for leftovers and prints what it found.
 - `pnpm evals --rehearse done --task class-report --runs 1` tests the flow with a fake goose: no model, nothing counted. Use it after any harness change.
 - Live goose runs are counted in `evals/results/ledger.jsonl` (cap 45 for the eval packet). Free models are slow and busy at times: if the model is down, wait and run again.
+- `pnpm evals --provider ollama` runs the same tasks on a Gemma 4 model served by Ollama on this computer (its own cap of 6 runs, its run folder starts with `local-`). It has only been tried with a fake goose and was never run on a model: the steps are in `docs/proof/local-model-2026-11-15.md`.
 - Details, the task list and how a task is built: `evals/README.md`.
 
 ## Run the operator runner
@@ -170,4 +172,4 @@ Try it on one machine: put `AI_ROUTE=operator` and your own `AI_ROUTE_TAG` (for 
 
 ## Deploy a preview
 
-Not part of P37 (Task 22 step 4). See the plan.
+The live preview runs on Cloudflare Workers, as three Workers named in their `wrangler.jsonc` files: the web app `jemma-web` at https://jemma.ainative.ventures (`apps/web`, built with `pnpm --filter web build:cf`), the agent `jemma-agent` (`apps/agent`) and the landing site `jemma-landing` at https://getjemma.ainative.ventures (`apps/landing`, static files, deployed with its own script: `pnpm --filter landing run deploy`). The web app's `LANDING_URL` variable sends a visitor who is not signed in at `/` to the landing site; a run on your own machine has none, so `/` shows a built-in landing page. The old workers.dev address of the web app still answers. The settings of the deployed agent (for example `AI_MODE=cache`) are not recorded in this repository, and the deploy commands were not run for this document.

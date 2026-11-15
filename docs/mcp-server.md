@@ -54,6 +54,7 @@ Three things follow from this:
 - Marks are decided by code. `mark_paper` receives what the model read from the paper and marks it against the answer key with `markAnswer`. `save_practice_answers` does the same for a practice a learner answered on paper, with the rule the practice screen uses. The model never sets a mark. The one place nobody marks in Jemma is `save_own_test_results`: a learner's own test came back already marked by a teacher, so the tool keeps the teacher's tick or cross as it was read, and neither the model nor code decides anything about the answer.
 - Gaps are computed by code. `class_gap_report` computes the class gaps itself and only takes the "why" sentence and the reteach plan from the model.
 - `plan_next_session` is code only.
+- Text the model wrote about a learner passes one word check in code before it is saved, in four save tools: `save_long_view`, `subject_guidance`, `class_gap_report` and `save_lesson` (`packages/profiling/src/logic/no-labels.ts`). It is a fixed list of words and phrases (labels, rankings, comparisons, career talk), not meaning, so a label in other words gets through. Other model text about a learner, such as the misconception that `update_learner_profile` stores for a wrong answer, has no word check.
 
 One exception to know about. `save_lesson` turns the script of an audio lesson into speech once, through a text-to-speech synthesizer that the agent worker registers (Workers AI, `@cf/deepgram/aura-2-en` in `apps/agent/wrangler.jsonc`). It is speech output only. It does not read the learner's data, and if it fails the lesson is still saved and the player uses browser speech. The code is in `packages/profiling/src/tools/save/save-lesson.ts`.
 
@@ -214,9 +215,11 @@ Save a learner's guidance card: headline, what to focus on next with the marked 
 
 For a child of a school the card is saved as a draft (`guidance_drafts`): only the child's class teachers can read it, and the family reads it after the teacher taps Send to family. A learner's own record (My own, or a child added alone) has no teacher, and its card is saved to `guidance_cards` at once. The answer is the same in both cases.
 
+The words of the card pass the word check before anything is saved (`screenGuidance` in `packages/profiling/src/tools/save/subject-guidance.ts`). A sentence of the headline, of a focus item's title or reason, or of the line about what comes next that uses a label, a ranking or career talk is left out and the rest is kept. A focus item with nothing left of its title or its reason is dropped. A headline or a line about what comes next with nothing left refuses the card with a plain error. The learner's first name is never a label (Clever, Bright and Smart are first names), and the topics of the learner's marks are not read as labels. The card that is saved, in both cases, is the screened one.
+
 - Kind: save
 - Input: `{ childId: string, guidance: { headline: string, focus: { title: string, why: string, evidence?: { label: string, resultIds: string[] }[] }[], lookingAhead: string } }`
-- Output: `{ updated: true }`
+- Output: `{ updated: true, dropped?: { field: string, text: string, reason: string }[] }`. `dropped` is missing when nothing was left out; otherwise it lists each sentence left out, so the tool log keeps it with the call.
 
 ### `save_long_view`
 
@@ -300,9 +303,11 @@ Save the diagnosis of a learner's wrong answers { childId, testId or paperId, di
 
 Save the class report for one test. The gaps are computed in code; you send the why sentence and the Reteach for gap 1 (plus the missing basic and a short explanation if useful).
 
+The lines about learners pass the word check before the report is saved (`screenClassReport` in `packages/profiling/src/tools/save/class-gap-report.ts`): the why line, the explanation, and who the reteach is for (`reteach.audience`). A sentence that uses a label, a ranking or career talk is left out and the rest is kept. An explanation with nothing left is saved empty. A why line or an audience with nothing left refuses the report with a plain error. The steps, the materials and the exit question are maths and are not read.
+
 - Kind: save
 - Input: `{ classId: string, testId: string, why: string, reteach: Reteach, missingBasic?: string | null, explanation?: string | null }`
-- Output: `{ gaps: { topicName: string, topicId: string | null, learners: { childId: string, wrote: string[] }[], mistake: { label: string, example: string, count: number } }[], reteachId: string | null }`
+- Output: `{ gaps: { topicName: string, topicId: string | null, learners: { childId: string, wrote: string[] }[], mistake: { label: string, example: string, count: number } }[], reteachId: string | null, dropped?: { field: string, text: string, reason: string }[] }`. `dropped` is missing when nothing was left out.
 
 ### `plan_next_session`
 
@@ -316,9 +321,11 @@ Plan the next home session for one child (code only, no model): the open gap wit
 
 Save the lesson for a planned session. Every answer is checked with parseAnswer; a bad answer is rejected with its question number so you can regenerate once, then call again with dropInvalid true to drop it (each level keeps at least 4). A lesson that already exists is returned as is. Audio lessons get speech once.
 
+The lines that speak to or about the learner pass the word check before the lesson is saved (`screenLesson` in `packages/profiling/src/tools/save/save-lesson.ts`): the spoken script, the reading cards, and the why and the right way under each question of the warm-up and of the questions. A lesson is full of maths ("a clever trick", "the top and bottom of one half"), so only a sentence that names the learner, says you or your, or speaks of learners in general is read, and a question, an answer, a choice, a title and a picture are never read. A sentence with a label, a ranking or career talk is left out and the rest is kept. A card with nothing left goes. A script, a why or a right way with nothing left refuses the lesson with a plain error.
+
 - Kind: save
 - Input: `{ sessionId: string, lesson: Lesson, dropInvalid?: boolean }`
-- Output: `{ lessonId: string, format: "reading" | "diagram" | "audio" }`
+- Output: `{ lessonId: string, format: "reading" | "diagram" | "audio", dropped?: { field: string, text: string, reason: string }[] }`. `dropped` is missing when nothing was left out.
 
 ### `log_external_calls`
 

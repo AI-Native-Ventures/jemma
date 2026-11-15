@@ -10,7 +10,7 @@ Read this first, so nothing on the video is a surprise.
 
 - The open-job script (shot 2) prints nothing while goose works. At the end it prints one line, `RUN_RESULT {...}`, that holds the tool calls in order. A short command (below) lays them out one per line. While you wait, the agent worker's terminal prints a `POST /mcp` line for each request goose makes, so something moves on screen.
 - The goose run happens in its own made-up school. Its calls are saved in that school's tool log, which you cannot open in the app. So the full log in shot 3 is the log of the demo school you are signed in to, and the narration says so. It is the same kind of log, with the same fields.
-- The Long view was opened on the deployed demo on 11, 12 and 13 November 2026, and the "Share with parents" card has screenshots in `design/proof/p50b` and a spec of its own that ran on 11 November. Rehearse shots 3 and 4 on the exact site you will record.
+- The Long view was opened on the deployed demo on 11, 12 and 13 November 2026, and the "Share with parents" card has screenshots in `design/proof/p50b` and a spec of its own that ran on 11 November. The demo-path spec, which taps **Share with parents** and **Send to family**, ran against the deployed app twice on 15 November 2026, at 23:39 and at 23:56. Its builder did not see **Send to family** in a browser, so watch it once in the rehearsal. Rehearse shots 3 and 4 on the exact site you will record.
 
 ## Timing
 
@@ -19,7 +19,7 @@ Read this first, so nothing on the video is a surprise.
 | 0:00 to 0:15 | 1. What Jemma is | Browser: the repository page |
 | 0:15 to 1:25 | 2. A live open-weights agent run | Terminal: open-job, then the report file |
 | 1:25 to 1:50 | 3. The full log | Browser: "The full log" screen |
-| 1:50 to 2:30 | 4. Share, the Long view, the talk | Browser: teacher, parent, learner |
+| 1:50 to 2:30 | 4. Share, send, the Long view, the talk | Browser: teacher, parent, learner |
 | 2:30 to 2:50 | 5. Where it fails | Terminal: a saved transcript from the evals |
 | 2:50 to 3:00 | 6. Runs from one command | Terminal and browser: `./start.sh` and the green check |
 
@@ -40,6 +40,7 @@ Checklist:
 - [ ] In folder B, `./start.sh` has finished at least once and is still running in its own terminal tab. Do not start it live: the first start takes minutes. Scroll that tab so its last line, `Jemma is running. Open http://localhost:3000/demo`, is visible.
 - [ ] The browser is on the site you will record: the live demo, https://jemma.ainative.ventures/demo, or `http://localhost:3000/demo` from folder B. Open `/demo/reset` first for a fresh sandbox (about 10 seconds), then follow `docs/judges.md` steps 1 to 4 as Ms Banda and Thandi: approve the map, snap the memo and five papers, link Amina and say yes to the link. Stop before you tap **Share with parents**. Open Amina's Long view once, so its patterns are ready, then go back to the class home.
 - [ ] The repository page, https://github.com/AI-Native-Ventures/jemma, is open in a second browser tab. Its Actions tab shows the latest run green.
+- [ ] Optional: the landing page, https://getjemma.ainative.ventures, is open in a third browser tab, if you want to show it before the repository page. Its button "Try the demo" opens `/demo` of the app.
 - [ ] Rehearse shot 2 once, 10 minutes before, with `--out` pointing at a scratch folder. It uses one live model run.
 - [ ] Close mail, chat and notifications. Nothing with a real child's name may be on screen.
 
@@ -87,21 +88,22 @@ Browser, signed in as Ms Banda, on the class home. Tap **See the full log**. Ope
 
 Say: "Every tool call is logged with what went in, what came out and the time. Each approval is saved with the name of the person. The goose run you just saw made its calls in its own made-up school, so they are in that school's log, with the engine and model on each row. This is the log of this school."
 
-### 4. Share, the Long view, the talk (1:50 to 2:30)
+### 4. Share, send, the Long view, the talk (1:50 to 2:30)
 
 Browser, as Ms Banda:
 
 1. On the class home tap **Share with parents** on the card "Results are ready. Parents see nothing yet."
-2. Open Learners, then Amina, then **Long view**. Show the grid of terms and the pattern cards.
-3. Under "Where this comes from" tap one source (a quiz or a teacher note). It opens with the teacher, the date and the marks. Close it.
-4. Tap **Looks right**. The card says "Not shared. Talk to Thandi first."
-5. Tap **We have talked**. The card says it was shared after the talk.
+2. Jemma then writes a guidance card for each learner. Each waits in Needs you on the class home as "Guidance for Amina's family", with its text in plain view. Tap **Send to family** on Amina's. Until you do, her parent sees no guidance card. The card appears when Jemma has finished writing it, so check in the rehearsal how long that takes. If it is not there when you reach this step, carry on with step 3 and come back to it.
+3. Open Learners, then Amina, then **Long view**. Show the grid of terms and the pattern cards.
+4. Under "Where this comes from" tap one source (a quiz or a teacher note). It opens with the teacher, the date and the marks. Close it.
+5. Tap **Looks right**. The card says "Not shared. Talk to Thandi first."
+6. Tap **We have talked**. The card says it was shared after the talk.
 
 Then open `/demo/switch` and choose Thandi M. Her profile has a card, "From your talk with Ms Banda". Open it: it shows the words and where they come from. Then choose Amina. Show Today and My maths: her own count in each part of Mathematics, and no Long view anywhere.
 
-Say: "Code found these patterns and a model only worded them. The teacher opens a source, says it looks right, and shares it only after talking to the family. The parent sees it now. The child never sees it."
+Say: "Nothing reaches the family until the teacher taps: Share with parents for the results, Send to family for the guidance card. Code found these patterns and a model only worded them. The teacher opens a source, says it looks right, and shares it only after talking to the family. The parent sees it now. The child never sees it."
 
-This is the tightest shot. If it runs long, drop the learner part (the last sentence) rather than rush the teacher part.
+This is the tightest shot, and the Send to family tap makes it tighter. If it runs long, drop the learner part (the last sentence) rather than rush the teacher part.
 
 ### 5. Where it fails (2:30 to 2:50)
 
