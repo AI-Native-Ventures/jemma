@@ -81,7 +81,7 @@ These are screenshots from the running app at 390 px, taken by the builders of e
 2. Each AI job is one run. Goose on an open-weights model, Claude Code on the owner's laptop and the operator runner read and save through Jemma's own MCP server (29 tools). The hosted app's own runner calls the same tool functions in code, and its model gets no tools: it only fills in what the save tool asks for.
 3. The run must finish through a save tool. Save tools enforce the rules in code: marks, sources, school scope, and banned words for Long view patterns only.
 4. Code checks that the event produced what it had to, retries, falls back to another model, or hands the item to the teacher.
-5. A person decides at every gate. Every tool call is logged, and so is each approval with the person's name (saved after the change, on a best effort: if that write fails the tap still stands), and teachers read both on the full log screen. Notifications and event status are plain writes, not tool calls.
+5. A person decides at every gate. Every tool call is logged, and so is each approval with the person's name (saved before the change: if it cannot be saved, nothing changes and the teacher sees one plain line), and teachers read both on the full log screen. Notifications and event status are plain writes, not tool calls.
 
 One page: [ARCHITECTURE.md](ARCHITECTURE.md). The long version: [docs/architecture.md](docs/architecture.md).
 

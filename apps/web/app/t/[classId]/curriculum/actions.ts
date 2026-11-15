@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { capsDraft, capsSource } from '@jemma/profiling/caps'
+import { isApprovalNotSaved } from '@/lib/approvals'
 import { requireRole } from '@/lib/auth'
 import { approveDraftMap, draftMapFor, fireCurriculumUploaded } from '@/lib/curriculum-map'
 import { retryEvent } from '@/lib/agent'
@@ -199,10 +200,18 @@ export async function removeTopic(mapId: string, name: string): Promise<void> {
   await editDraft(mapId, (r) => ({ ...r, draft: removeTopicIn(r.draft, name) }))
 }
 
-/** Saves the draft as the class's topics, tags past results to them and closes the Needs you item (the work is in `approveDraftMap`, which a learner's own curriculum uses too). */
-export async function approveMap(mapId: string): Promise<void> {
+/**
+ * Saves the draft as the class's topics, tags past results to them and closes the Needs you item (the work is in `approveDraftMap`, which a learner's own curriculum uses too).
+ * The approval is saved first. When it cannot be saved nothing changes and the answer is the one plain line for the screen to show; on success the teacher is sent on.
+ */
+export async function approveMap(mapId: string): Promise<{ ok: false; message: string }> {
   const map = await ownMap(mapId)
-  await approveDraftMap(createSupabaseAdmin(), map, (await requireRole('teacher')).userId)
+  try {
+    await approveDraftMap(createSupabaseAdmin(), map, (await requireRole('teacher')).userId)
+  } catch (e) {
+    if (isApprovalNotSaved(e)) return { ok: false, message: e.message }
+    throw e
+  }
   revalidatePath(`/t/${map.class_id}/curriculum`, 'layout')
   redirect(`/t/${map.class_id}/curriculum`)
 }

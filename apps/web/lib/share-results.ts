@@ -1,7 +1,7 @@
 import type { JemmaDb } from '@jemma/profiling/db'
 import { notify } from '@jemma/profiling/notify'
 import { sendEvent } from './agent'
-import { recordApproval } from './approvals'
+import { isApprovalNotSaved, withApproval } from './approvals'
 
 // "Share with parents": the one tap that lets a parent and a learner see a class test. Until then the test is held:
 // row level security hides its marks, gaps and log lines from the family, and Jemma plans no lesson from it.
@@ -24,10 +24,11 @@ const log = (what: string, e: unknown) => console.error(`share results: ${what}:
 
 /**
  * Shares a test's results with parents. The teacher's own session must teach the class and see the test, and at least one paper
- * must be marked. The write names `held = true`, so sharing twice (or two taps at once) does it once: the second call answers
- * `shared: false` and does nothing more. After the three fields are written, the rest is done on a best effort and never fails the share:
- * the approval (with the teacher's name), one message for each approved parent of each learner with a marked paper, then
- * `test.shared` (Jemma plans each learner's next session, lesson and guidance).
+ * must be marked. The teacher's approval (with their name) is saved FIRST (`withApproval`): when it cannot be saved nothing is shared and the
+ * answer is the one plain line. Then the write names `held = true`, so sharing twice (or two taps at once) does it once: the second call
+ * takes its approval back, answers `shared: false` and does nothing more; a write that fails takes the approval back too. After the three
+ * fields are written, the rest is done on a best effort and never fails the share: one message for each approved parent of each learner
+ * with a marked paper, then `test.shared` (Jemma plans each learner's next session, lesson and guidance).
  */
 export async function shareResults(deps: ShareDeps, classId: string, testId: string): Promise<ShareResult> {
   const { teacher, admin, userId } = deps
@@ -52,16 +53,20 @@ export async function shareResults(deps: ShareDeps, classId: string, testId: str
   const childIds = [...marked.keys()]
   if (childIds.length === 0) return refuse('No paper of this test is marked yet.')
 
-  const opened = await admin
-    .from('tests')
-    .update({ held: false, shared_at: now.toISOString(), shared_by: userId })
-    .eq('id', testId)
-    .eq('held', true)
-    .select('id')
+  let opened
+  try {
+    opened = await withApproval(
+      admin,
+      { schoolId, kind: 'share_results', refId: testId, decision: 'shared', userId, note: title },
+      async () => admin.from('tests').update({ held: false, shared_at: now.toISOString(), shared_by: userId }).eq('id', testId).eq('held', true).select('id'),
+      { happened: (r) => !r.error && (r.data?.length ?? 0) > 0 },
+    )
+  } catch (e) {
+    if (isApprovalNotSaved(e)) return refuse(e.message)
+    throw e
+  }
   if (opened.error) return refuse('Could not share the results. Try again.')
   if ((opened.data?.length ?? 0) === 0) return { ok: true, shared: false, childIds } // someone shared it already: nothing more to do
-
-  await recordApproval(admin, { schoolId, kind: 'share_results', refId: testId, decision: 'shared', userId, note: title })
 
   try {
     const links = await admin.from('parent_links').select('parent_id, child_id').in('child_id', childIds).eq('status', 'approved')

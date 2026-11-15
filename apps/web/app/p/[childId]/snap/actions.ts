@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import type { EventPayload, EventType } from '@jemma/profiling/schemas'
 import { sendEvent } from '@/lib/agent'
-import { recordApproval } from '@/lib/approvals'
+import { withApproval } from '@/lib/approvals'
 import { requireRole } from '@/lib/auth'
 import { asKind, getReadAnswers, getSnapPaper, SNAP_KINDS } from '@/lib/data/p32'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
@@ -85,20 +85,22 @@ export async function confirmScan(
     if (!paper) return fail('That snap is not yours.')
     if (paper.status !== 'needs_you') return fail('That snap is not waiting for you.')
     const rows = await getReadAnswers(paperId)
-    for (const row of rows) {
-      const fixed = edits[row.n]?.trim()
-      const sure = confirmed.includes(row.n)
-      if (!fixed && !sure) continue
-      const patch = fixed && fixed !== row.answer_read
-        ? { answer_read: fixed, previous_answer: row.answer_read, changed_by: userId, read_confidence: 1 }
-        : { changed_by: userId, read_confidence: 1 }
-      const upd = await admin.from('question_results').update(patch).eq('id', row.id)
-      if (upd.error) return fail(upd.error.message)
-    }
-    const done = await admin.from('papers').update({ status: 'marked', error: null }).eq('id', paperId)
-    if (done.error) return fail(done.error.message)
-    await admin.from('needs_you_items').update({ status: 'done' }).eq('ref_id', paperId).eq('kind', 'confirm_scan')
-    await recordApproval(admin, { schoolId, kind: 'homework_scan', refId: paperId, childId, decision: 'confirmed', userId })
+    // The approval is saved first (`withApproval`): without it the scan is not saved, and if the scan cannot be saved the approval is taken back.
+    await withApproval(admin, { schoolId, kind: 'homework_scan', refId: paperId, childId, decision: 'confirmed', userId }, async () => {
+      for (const row of rows) {
+        const fixed = edits[row.n]?.trim()
+        const sure = confirmed.includes(row.n)
+        if (!fixed && !sure) continue
+        const patch = fixed && fixed !== row.answer_read
+          ? { answer_read: fixed, previous_answer: row.answer_read, changed_by: userId, read_confidence: 1 }
+          : { changed_by: userId, read_confidence: 1 }
+        const upd = await admin.from('question_results').update(patch).eq('id', row.id)
+        if (upd.error) throw new Error(upd.error.message)
+      }
+      const done = await admin.from('papers').update({ status: 'marked', error: null }).eq('id', paperId)
+      if (done.error) throw new Error(done.error.message)
+      await admin.from('needs_you_items').update({ status: 'done' }).eq('ref_id', paperId).eq('kind', 'confirm_scan')
+    })
     await notifyAgent('homework.snapped', { paperId })
     revalidatePath(`/p/${childId}`)
     return { ok: true }

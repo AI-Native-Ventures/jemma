@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { ChevronRightIcon, ClockIcon, GemIcon } from '@/components/ui/icons'
 import { getGapDetail, joinNames, numberWord, type GapLearner } from '@/lib/data/p18'
 import { getClassInfo } from '@/lib/data/p21'
-import { markReteachDone } from '../actions'
+import { ReteachDoneForm } from '../ReteachDoneForm'
 import { PrintButton } from './PrintButton'
 
 const avatar = 'flex size-[34px] flex-none items-center justify-center rounded-pill text-[13px] font-bold'
@@ -145,7 +145,7 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
               ))}
             </ol>
             <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-              <form action={markReteachDone.bind(null, reteach.id)} className="contents">
+              <ReteachDoneForm reteachId={reteach.id} errorClassName="col-span-full m-0 text-[14px] font-semibold text-coral-text">
                 <PendingButton
                   type="submit"
                   disabled={done}
@@ -162,7 +162,7 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
                     {done ? 'Reteach done' : 'Mark reteach done'}
                   </IconLabel>
                 </PendingButton>
-              </form>
+              </ReteachDoneForm>
               <PrintButton />
             </div>
             <p className="m-0 text-[13px] leading-[1.4] text-body">Jemma checks this gap again in each learner&apos;s next session.</p>
