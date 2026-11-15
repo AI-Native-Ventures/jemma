@@ -125,11 +125,33 @@ describe('docs/submission-description.md', () => {
       'Longitudinal strength tracking',
       'Hillview Primary',
       'https://github.com/AI-Native-Ventures/jemma',
-      'https://jemma-web.horizonsystems.workers.dev/demo',
+      'https://jemma.ainative.ventures/demo',
       'MIT',
     ]) {
       expect(text, needle).toContain(needle)
     }
+  })
+})
+
+describe('the live addresses', () => {
+  // P101: the app is at jemma.ainative.ventures and the landing page is its own site, getjemma.ainative.ventures. The old workers.dev
+  // address of the app still answers, but the documents name the new ones.
+  const oldApp = ['jemma-web', '.horizonsystems', '.workers.dev'].join('')
+
+  test('the README names the live demo and the landing page', () => {
+    const text = read('README.md')
+    expect(text).toContain('https://jemma.ainative.ventures/demo')
+    expect(text).toContain('https://getjemma.ainative.ventures')
+  })
+
+  test('the judges page, the text description and the shot list name the live demo', () => {
+    for (const file of ['docs/judges.md', 'docs/submission-description.md', 'docs/video-shot-list.md']) {
+      expect(read(file), file).toContain('https://jemma.ainative.ventures/demo')
+    }
+  })
+
+  test('no submission document names the old address of the app', () => {
+    for (const file of SUBMISSION_DOCS) expect(read(file).includes(oldApp), file).toBe(false)
   })
 })
 

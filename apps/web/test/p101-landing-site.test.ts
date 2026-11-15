@@ -20,7 +20,7 @@ const GITHUB = 'https://github.com/AI-Native-Ventures/jemma'
 function textOf(markup: string): string {
   return markup
     .replace(/<svg\b[\s\S]*?<\/svg>/g, '')
-    .replace(/<[^>]+>/g, '')
+    .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 }

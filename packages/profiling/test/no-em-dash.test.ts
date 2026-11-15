@@ -8,6 +8,9 @@ const repoRoot = resolve(import.meta.dirname, '../../..')
 test('no em dash in source or docs', () => {
   const patterns = [
     'apps/**/*.{ts,tsx,css,md}',
+    // P101: the landing site is static files (a page, a font licence, its two configs, its headers)
+    'apps/landing/**/*.{html,json,jsonc,txt,svg}',
+    'apps/landing/public/_headers',
     'packages/**/*.{ts,tsx,md}',
     'docs/**/*.md',
     'supabase/**/*.{ts,sql}',
