@@ -1,12 +1,14 @@
-# Proof note: one task on a model on this machine, 15 November 2026
+# One task on a model on this machine: not run, and how to run it
 
-Status: **not run yet.** The code is written and its unit tests use a fake goose. This note holds the steps and the empty result lines. Every line marked "to be filled by the coordinator" stays empty until the run has been done and read back.
+Status: **not run.** The goose path for a model on this machine (Ollama) is built and unit-tested with a fake goose. No local model was run on 15 November 2026, and there is no result. The reason: the model download is too slow on the connection we have, about 0.5 MB/s. That is about 10 hours for `gemma4:26b` (18.7 GB) and about 4.5 hours for `gemma4:12b` (8 GB). We chose to skip the run before the deadline. Nothing in this repository claims that a local run happened.
 
-What this run is for: the compliance row "Learner records ... often cannot leave the country" says we never ran an open-weights model on local hardware. This run does that for the model: goose drives a Gemma 4 model served by Ollama on the same Mac, and nothing in the run may point at a cloud model.
+What a run would be for: the compliance row "Learner records ... often cannot leave the country" says we never ran an open-weights model on local hardware. A run would do that for the model: goose drives a Gemma 4 model served by Ollama on the same Mac, and nothing in the run may point at a cloud model.
 
-What it can show: the model path stays on this Mac. Goose talks to Ollama at `127.0.0.1`, there is no OpenRouter key in the process, no cloud tag is accepted, and there is no fallback to another model.
+What it would show: the model path stays on this Mac. Goose talks to Ollama at `127.0.0.1`, there is no OpenRouter key in the process, no cloud tag is accepted, and there is no fallback to another model.
 
-What it cannot show on its own: the records themselves. The task reads a made-up school from the database the run points at. On the local stack that database is on this Mac too. On the deployed preview project (`--allow-preview`) the made-up school is held by a hosted database, so only the model path is local. Say which one the run used in the result lines below.
+What it would not show on its own: the records themselves. The task reads a made-up school from the database the run points at. On the local stack that database is on this Mac too. On the deployed preview project (`--allow-preview`) the made-up school is held by a hosted database, so only the model path would be local.
+
+The steps below are how to run it. They were never followed, so the commands, the sizes and the 32768 context are from documentation, not from a run.
 
 ## 1. Check the machine and the tools
 
@@ -63,31 +65,13 @@ lsof -nP -iTCP -sTCP:ESTABLISHED | grep -E 'goose|ollama'
 
 Expected: connections to `127.0.0.1:11434` (Ollama) and `127.0.0.1:8756` (the agent worker) only. The run switches goose's anonymous usage data off with `GOOSE_TELEMETRY_OFF=1`, but that variable name was taken from third-party copies of goose's guide and not checked against goose 1.45.0: if the list shows another address, write it down and name it. The first run may also fetch the pinned file server package (`@modelcontextprotocol/server-filesystem`) from npm, which carries no record.
 
-## 6. Where the results land
+## 6. Where the results would land
 
 - `evals/results/local-2026-11-15/class-report-<n>.json`: the checks, the event, the attempts and `provider`, `model`, `host`, `port`, `noCloudModelCalled`, `cloudEvidence`.
 - `evals/results/local-2026-11-15/class-report-<n>.jsonl`: goose's own stream, with the token and local paths taken out.
 - `evals/results/ledger.jsonl`: one line per run with `provider: "ollama"`. These never count against the 45 free-model runs.
 - `pnpm evals:report` adds the section "On this machine" to `EVALS.md` (task, model, pass or fail, minutes). The main table does not change.
 
-## 7. Result lines
+## 7. If someone runs it
 
-| Line | Value |
-| --- | --- |
-| Date and time of the run | to be filled by the coordinator |
-| Machine, memory | to be filled by the coordinator |
-| `ollama --version` and `goose --version` | to be filled by the coordinator |
-| Model tag, size on disk (`ollama list`) | to be filled by the coordinator |
-| Context length the server was started with | to be filled by the coordinator |
-| Database used (local stack or preview project) | to be filled by the coordinator |
-| Exact command run | to be filled by the coordinator |
-| Run folder | to be filled by the coordinator |
-| Run 1: pass or fail, minutes, `noCloudModelCalled` | to be filled by the coordinator |
-| Run 2: pass or fail, minutes, `noCloudModelCalled` | to be filled by the coordinator |
-| Run 3: pass or fail, minutes, `noCloudModelCalled` | to be filled by the coordinator |
-| Ledger lines added (`provider: "ollama"`) | to be filled by the coordinator |
-| What the connection list showed during a run | to be filled by the coordinator |
-| Failures, and what the saved notes said | to be filled by the coordinator |
-| What this run did not show | to be filled by the coordinator |
-
-When the lines are filled, the two rows of `docs/compliance.md` that name this note ("One full task on an open-weights model" and "Learner records ...") get their status and limit rewritten from what the lines say, and the line in `ARCHITECTURE.md` about running the same path on a school's own machine stays only if the run passed.
+Write what happened (date, versions, model tag, database used, each run's pass or fail and minutes, what the connection list showed, failures) in a new proof note, then rewrite the two rows of `docs/compliance.md` that mention the Ollama path ("One full task on an open-weights model" and "Learner records ... often cannot leave the country") and the line in `ARCHITECTURE.md` from that note. Until then the status above stands.

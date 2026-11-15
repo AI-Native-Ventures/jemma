@@ -75,7 +75,9 @@ This runs the whole flow (sandbox, worker, event, runner loop, cleanup) with the
 
 ## On a model on this computer
 
-The same tasks can run on an open-weights model served by Ollama on the same Mac, so a run can show that no record leaves the machine:
+Status: this path is built and unit-tested with a fake goose. It was never run on a real local model: the download was too slow on the connection we had, so we skipped it (`docs/proof/local-model-2026-11-15.md`). No local result exists.
+
+The same tasks can run on an open-weights model served by Ollama on the same Mac, so that a run could show that the model path stays on the machine:
 
 ```bash
 pnpm evals --task class-report --runs 3 --provider ollama                    # the default tag, gemma4:26b
@@ -91,7 +93,7 @@ You need goose, Ollama running (`ollama serve`) with the model pulled (`ollama p
 - **Report.** `pnpm evals:report` adds the section "On this machine" to `EVALS.md` (task, model, pass or fail, minutes), only when such results exist. A `local-` folder is never the main run and never a "second model" row.
 - **Database.** Only the local stack or the dev project, as always. `--allow-preview` accepts the deployed preview project as well, on purpose; without it that project stays refused.
 
-The steps and the empty result lines are in `docs/proof/local-model-2026-11-15.md`.
+The steps to run it are in `docs/proof/local-model-2026-11-15.md`.
 
 ## The live cap
 
