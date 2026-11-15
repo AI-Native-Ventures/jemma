@@ -25,7 +25,7 @@ Why borrowed: sandboxed, allow-listed file access with path-escape protection is
 
 ## Models
 
-Open weights (`packages/runner/src/goose.ts`): `nvidia/nemotron-3.5-super-vl`, `nvidia/nemotron-3.5-lightning`, `nvidia/nemotron-3-ultra-550b-a55b`, `google/gemma-4-31b-it`. They run on OpenRouter's free tier, nothing local. Claude Code is the frontier model alongside (`pnpm operator`); the operator can also drive goose, proven live on seven jobs.
+Open weights (`packages/runner/src/goose.ts`): `nvidia/nemotron-3.5-super-vl`, `nvidia/nemotron-3.5-lightning`, `nvidia/nemotron-3-ultra-550b-a55b`, `google/gemma-4-31b-it`. They run on OpenRouter's free tier, or on a school's own machine with Ollama. Claude Code is the frontier model alongside (`pnpm operator`), which can also drive goose.
 
 ## Where a person decides
 

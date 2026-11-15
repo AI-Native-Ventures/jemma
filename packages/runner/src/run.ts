@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { AgentName } from './agents'
 import { defaultExtraDirs, findBin, killTree, spawn } from './exec'
-import { ensureReportsDir, gooseArgs, gooseEnv, gooseHome, gooseJobPrompt, gooseModels, writeGooseRecipe } from './goose'
+import { ensureReportsDir, gooseArgs, gooseEnv, gooseHome, gooseJobPrompt, gooseModels, gooseProvider, localSetupProblem, ollamaHost, writeGooseRecipe, type GooseProvider } from './goose'
 import { externalCalls, reportCalls } from './report-calls'
 import { parseTranscript, savedSomething, type Transcript, type TranscriptCall, type TranscriptUsage } from './transcript'
 
@@ -164,10 +164,15 @@ async function reportRun(
 }
 
 /**
- * Goose on OpenRouter, one model at a time. The first model that finishes the job wins. A run that fails before any
+ * Goose on OpenRouter (the default) or on a model on this computer through Ollama (`JEMMA_GOOSE_PROVIDER=ollama`), one
+ * model at a time. The first model that finishes the job wins. A run that fails before any
  * Jemma save tool succeeded (a provider error, a model that only read, no `complete_job`) moves on to the next model,
  * once through the list. A run after which a save tool had succeeded is never repeated, so nothing is written twice.
  * The timeout is for the whole job and ends it.
+ *
+ * On Ollama the list is the one local model (or the models the caller names, all checked), so a failed attempt is a
+ * failed attempt and no cloud model is ever tried. Goose is not started when the provider value, the address or a model
+ * would send the job off this computer.
  */
 async function runGoose(job: RunnerJob, bin: string, mcp: McpTarget, dir: string, timeoutMs: number, opts: RunOptions): Promise<RunResult> {
   let reportsDir: string
@@ -176,7 +181,18 @@ async function runGoose(job: RunnerJob, bin: string, mcp: McpTarget, dir: string
   } catch (err) {
     return { status: 'failed', note: plain(`goose could not open the reports folder: ${err instanceof Error ? err.message : String(err)}`) }
   }
-  const models = opts.models?.length ? opts.models : gooseModels()
+  let provider: GooseProvider
+  let models: string[]
+  try {
+    provider = gooseProvider(process.env)
+    models = opts.models?.length ? opts.models : gooseModels()
+    if (provider === 'ollama') {
+      const problem = localSetupProblem(ollamaHost(process.env), models)
+      if (problem) return { status: 'failed', note: plain(`goose was not started: ${problem}`) }
+    }
+  } catch (err) {
+    return { status: 'failed', note: plain(`goose was not started: ${err instanceof Error ? err.message : String(err)}`) }
+  }
   const prompt = gooseJobPrompt(job.prompt, reportsDir)
   const deadline = Date.now() + timeoutMs
   const calls: TranscriptCall[] = []
@@ -193,10 +209,10 @@ async function runGoose(job: RunnerJob, bin: string, mcp: McpTarget, dir: string
     }
     model = next
     const started = Date.now()
-    const file = writeGooseRecipe(dir, { prompt, mcp, reportsDir, model })
+    const file = writeGooseRecipe(dir, { prompt, mcp, reportsDir, model, provider })
     const ran = await spawnAgent(bin, gooseArgs(file), {
       cwd: dir,
-      env: gooseEnv(process.env, mcp.token, gooseHome(dir)),
+      env: gooseEnv(process.env, mcp.token, gooseHome(dir), provider),
       stdin: null,
       timeoutMs: left,
       onStdout: opts.onStdout,

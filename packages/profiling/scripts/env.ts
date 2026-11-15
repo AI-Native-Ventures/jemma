@@ -30,11 +30,18 @@ export function isAllowedSupabaseUrl(url: string | undefined, allowedRef?: strin
 }
 
 /**
- * Refuses to run against any Supabase project but the local stack and the allowed one: the team's dev project,
- * or the ref in JEMMA_ALLOWED_SUPABASE_REF.
+ * The project the deployed preview runs on. Refused like any other project, unless the caller passes `allowPreview` on
+ * purpose (the evals do, with `--allow-preview`).
  */
-export function assertDevProject(env: Record<string, string | undefined>): void {
+export const PREVIEW_SUPABASE_REF = 'bpajgrjkbvyeeeyvixwf'
+
+/**
+ * Refuses to run against any Supabase project but the local stack and the allowed one: the team's dev project,
+ * or the ref in JEMMA_ALLOWED_SUPABASE_REF. With `allowPreview` the preview project is allowed too, and nothing else.
+ */
+export function assertDevProject(env: Record<string, string | undefined>, options: { allowPreview?: boolean } = {}): void {
   if (isAllowedSupabaseUrl(env.SUPABASE_URL, env.JEMMA_ALLOWED_SUPABASE_REF)) return
+  if (options.allowPreview === true && isAllowedSupabaseUrl(env.SUPABASE_URL, PREVIEW_SUPABASE_REF)) return
   const ref = env.JEMMA_ALLOWED_SUPABASE_REF?.trim() || DEFAULT_ALLOWED_SUPABASE_REF
   throw new Error(
     `SUPABASE_URL must be the local stack (localhost or 127.0.0.1) or a project whose address contains "${ref}". ` +

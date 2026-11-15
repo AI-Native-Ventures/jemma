@@ -18,7 +18,7 @@ You need:
 
 A full pass is 33 runs of 15 to 60 seconds of setup plus the model time. The saved pass added up to about 84 minutes of run time on a good line (a slow database line adds minutes to every run): expect one and a half to two hours with a free model that is not busy. If the model is down, wait and run it again. Results that already exist for a run id are skipped, so an interrupted run continues where it stopped (`--force` redoes them).
 
-Options: `--task a,b` (some tasks), `--runs N`, `--run-id NAME` (the folder in `evals/results`), `--cap N` (live goose runs allowed in all, default 45), `--rehearse MODE` (see below), `--reuse-worker`, `--no-report`, `--no-line-wait`, `--timeout-minutes N`.
+Options: `--task a,b` (some tasks), `--runs N`, `--run-id NAME` (the folder in `evals/results`), `--cap N` (live goose runs allowed in all, default 45), `--rehearse MODE` (see below), `--reuse-worker`, `--no-report`, `--no-line-wait`, `--timeout-minutes N`, and for a model on this computer `--provider ollama`, `--model TAG` and `--allow-preview` (see "On a model on this computer").
 
 Two guards for slow or small machines. Before each run the command measures the database round trip (the median of three small reads) and saves it in the result file as `dbRoundTripMs`; EVALS.md reports the median, lowest and highest. Before the first run, when that median is above 3000 ms it waits 10 minutes and measures again, for one hour at most, then goes on anyway (`--no-line-wait` skips the waiting). On a Mac, each run also waits until at least 30 percent of memory is free (`memory_pressure`).
 
@@ -72,6 +72,26 @@ pnpm evals --rehearse jemma_down --task class-report --runs 1
 ```
 
 This runs the whole flow (sandbox, worker, event, runner loop, cleanup) with the fake goose from `packages/runner/test/fakes`. No model is called and nothing counts against the cap. The fake does not really write anything, so most checks fail, which is the point: they must not pass by accident. Rehearsal results go to `evals/results/rehearsal-*` (not committed, see `evals/results/.gitignore`), are not written to the ledger, and are never used for `EVALS.md`.
+
+## On a model on this computer
+
+The same tasks can run on an open-weights model served by Ollama on the same Mac, so a run can show that no record leaves the machine:
+
+```bash
+pnpm evals --task class-report --runs 3 --provider ollama                    # the default tag, gemma4:26b
+pnpm evals --task class-report --runs 3 --provider ollama --model gemma4:12b # another tag
+```
+
+You need goose, Ollama running (`ollama serve`) with the model pulled (`ollama pull gemma4:26b`), and the database values in `.env.local` as for any run. No OpenRouter key is needed, and none is used.
+
+- **Provider.** `--provider ollama` sets `JEMMA_GOOSE_PROVIDER=ollama` for the run. The model is `--model`, else `JEMMA_OPEN_MODEL` from the shell, else `gemma4:26b`. Ollama is at `OLLAMA_HOST` (default `http://127.0.0.1:11434`). Outside the evals the same three variables switch goose to Ollama; with none of them set, nothing changes (OpenRouter).
+- **No cloud, no fallback.** The run is refused before goose starts when the address is not this computer, or the model is an Ollama cloud tag (a tag that ends in `cloud`, served by Ollama's own servers), or an OpenRouter id. OpenRouter's key, Ollama's cloud keys and every other `*_API_KEY` are taken out of the process and out of goose's environment. The model list is the one model: a failed attempt is a failed attempt, and no other model is tried after it. Before the first run the command asks Ollama for its list of models (`/api/tags`, no model runs) and stops with a plain message when Ollama is not running or the tag is not pulled.
+- **Cap.** Local runs have a cap of 6 (`--cap` changes it), counted in `ledger.jsonl` with `provider: "ollama"` and never against the 45 of the free OpenRouter models. A local job gets 30 minutes (`--timeout-minutes` changes it). The wait for free memory is 10 percent, not 30, because the model already holds its memory.
+- **Results.** The run folder starts with `local-` (it is added when missing). Each result file records `provider`, `model`, `host` and `port`, and `noCloudModelCalled` with `cloudEvidence`: true only when every attempt ran on the local tag, goose's environment held no cloud key, the transcript names no cloud service and the host is this computer. It is null when no attempt ran.
+- **Report.** `pnpm evals:report` adds the section "On this machine" to `EVALS.md` (task, model, pass or fail, minutes), only when such results exist. A `local-` folder is never the main run and never a "second model" row.
+- **Database.** Only the local stack or the dev project, as always. `--allow-preview` accepts the deployed preview project as well, on purpose; without it that project stays refused.
+
+The steps and the empty result lines are in `docs/proof/local-model-2026-11-15.md`.
 
 ## The live cap
 

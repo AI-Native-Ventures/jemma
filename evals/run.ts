@@ -5,20 +5,29 @@
  *   pnpm evals                       every task, 3 runs each, then writes EVALS.md
  *   pnpm evals --task class-report   one task (comma list allowed)
  *   pnpm evals --rehearse done       the same flow with a FAKE goose: no model, nothing counted, for testing the harness
+ *   pnpm evals --task class-report --runs 3 --provider ollama [--model gemma4:26b]
+ *                                    the same task on a model on THIS computer through Ollama: no cloud model, no cloud key
  *
  * Needs goose, OPENROUTER_API_KEY (a free key is enough) and a database in `.env.local` (the local stack from
  * ./start.sh, or the team's jemma-dev). Starts its own agent worker on port 8756 and stops it at the end.
  * Live AI exception for this packet: free OpenRouter open-weights models only, synthetic data only, at most 45 goose runs
  * in total (`--cap`, counted in evals/results/ledger.jsonl).
+ *
+ * A local run (`--provider ollama`) needs goose and Ollama running with the model pulled, and no OpenRouter key (any
+ * that is set is taken out of this process). It has its own cap of 6 runs (`provider: "ollama"` in the ledger, never counted
+ * against the 45), its run folder starts with `local-`, and EVALS.md lists it in the section "On this machine". The
+ * database must still be the local stack or the dev project; `--allow-preview` accepts the deployed preview project too, on purpose.
  */
 import { existsSync, mkdirSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import { createServiceClient } from '../packages/profiling/src/db'
-import { detectGoose } from '../packages/runner/src/index'
-import { assertAllowedDatabase, loadEnv, required } from './lib/env'
+import { DEFAULT_LOCAL_MODEL, detectGoose, localSetupProblem, ollamaHost, type OllamaAddress } from '../packages/runner/src/index'
+import { parseArgs } from './lib/args'
+import { CLOUD_MODEL_KEYS, assertAllowedDatabase, loadEnv, required } from './lib/env'
 import { runOnce, type Shared } from './lib/harness'
 import { liveSpent } from './lib/ledger'
+import { checkOllamaReady } from './lib/local'
 import { measureRoundTrip, readOneSchool, waitForCalmLine } from './lib/line'
 import { readFreePercent, waitForMemory } from './lib/memory'
 import { baseName, RESULTS_ROOT, readResultFile } from './lib/result'
@@ -26,28 +35,11 @@ import { startWorker, WORKER_URL, type Worker } from './lib/worker'
 import { RUNS_PER_TASK, TASKS, taskById } from './tasks'
 import { writeReport } from './lib/render'
 
-const LIVE_CAP = 45
 const FAKES = fileURLToPath(new URL('../packages/runner/test/fakes', import.meta.url))
+/** The free-memory wait of a run on a model on this computer: the model holds its memory already, so 30 percent free would never come. */
+const LOCAL_MEMORY_START_AT = 10
 
-function args() {
-  const argv = process.argv.slice(2)
-  const value = (flag: string) => (argv.includes(flag) ? argv[argv.indexOf(flag) + 1] : undefined)
-  const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')
-  return {
-    runs: Number(value('--runs') ?? RUNS_PER_TASK),
-    tasks: value('--task')?.split(',').map((s) => s.trim()).filter(Boolean),
-    runId: value('--run-id') ?? `${argv.includes('--rehearse') ? 'rehearsal-' : ''}${stamp}`,
-    cap: Number(value('--cap') ?? LIVE_CAP),
-    usedOffset: Number(value('--live-used') ?? 0),
-    rehearse: value('--rehearse') ?? null,
-    reuseWorker: argv.includes('--reuse-worker'),
-    force: argv.includes('--force'),
-    /** Skip the wait for a calm line to the database (a slow line is still measured and saved). */
-    noLineWait: argv.includes('--no-line-wait'),
-    report: !argv.includes('--no-report'),
-    timeoutMinutes: value('--timeout-minutes') ? Number(value('--timeout-minutes')) : undefined,
-  }
-}
+const args = () => parseArgs(process.argv.slice(2), { runsPerTask: RUNS_PER_TASK })
 
 /** Sandboxes and tokens that a run left behind (there should be none). */
 async function sweep(admin: ReturnType<typeof createServiceClient>, sandboxIds: string[]): Promise<string[]> {
@@ -67,8 +59,10 @@ async function sweep(admin: ReturnType<typeof createServiceClient>, sandboxIds: 
 async function main(): Promise<void> {
   const a = args()
   const env = loadEnv()
-  assertAllowedDatabase(env)
+  assertAllowedDatabase(env, { allowPreview: a.allowPreview })
   const rehearsal = a.rehearse !== null
+  const local = a.provider === 'ollama'
+  let localSetup: { model: string; host: OllamaAddress } | undefined
   const admin = createServiceClient({ SUPABASE_URL: required(env, 'SUPABASE_URL'), SUPABASE_SERVICE_ROLE_KEY: required(env, 'SUPABASE_SERVICE_ROLE_KEY') })
 
   const picked = a.tasks ? a.tasks.map((id) => taskById(id) ?? (() => { throw new Error(`no task called ${id}. Tasks: ${TASKS.map((t) => t.id).join(', ')}`) })()) : TASKS
@@ -76,16 +70,41 @@ async function main(): Promise<void> {
     process.env.PATH = `${FAKES}:${process.env.PATH ?? ''}`
     process.env.FAKE_MODE = a.rehearse!
     console.log(`REHEARSAL: a fake goose (mode ${a.rehearse}) runs instead of the real one. No model is called.`)
-  } else {
+  } else if (!local) {
     required(env, 'OPENROUTER_API_KEY')
     const goose = await detectGoose()
     console.log(`goose_installed=${goose.installed}; goose_version=${goose.version}; key_set=${goose.signedIn}`)
     if (!goose.installed || goose.signedIn !== true) throw new Error('goose is not installed, or OPENROUTER_API_KEY is missing')
   }
+  if (local) {
+    // A model on this computer: no cloud model key anywhere in this process (not in goose, not in the agent worker, not here).
+    for (const key of CLOUD_MODEL_KEYS) {
+      delete process.env[key]
+      delete env[key]
+    }
+    const host = ollamaHost(process.env)
+    const model = a.model ?? (process.env.JEMMA_OPEN_MODEL?.trim() || DEFAULT_LOCAL_MODEL)
+    const problem = localSetupProblem(host, [model])
+    if (problem) throw new Error(problem)
+    process.env.JEMMA_GOOSE_PROVIDER = 'ollama'
+    process.env.JEMMA_OPEN_MODEL = model
+    delete process.env.JEMMA_OPEN_MODEL_FALLBACKS
+    process.env.OLLAMA_HOST = host.url
+    localSetup = { model, host }
+    console.log(`LOCAL RUN: goose on Ollama at ${host.url}, model ${model}. No OpenRouter key, no cloud model, no fallback.`)
+    if (!rehearsal) {
+      const goose = await detectGoose()
+      console.log(`goose_installed=${goose.installed}; goose_version=${goose.version}`)
+      if (!goose.installed) throw new Error('goose is not installed')
+      const notReady = await checkOllamaReady({ host, model })
+      if (notReady) throw new Error(notReady)
+      console.log(`ollama answers and has ${model}`)
+    }
+  }
 
-  const spentAtStart = liveSpent() + a.usedOffset
+  const spentAtStart = liveSpent(undefined, 'goose', undefined, a.provider) + a.usedOffset
   let spentNow = 0
-  console.log(`live goose runs spent so far: ${spentAtStart} of ${a.cap}`)
+  console.log(`${local ? 'local' : 'live'} goose runs spent so far: ${spentAtStart} of ${a.cap}`)
 
   const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
   const roundTrip = () => measureRoundTrip(() => readOneSchool(admin))
@@ -123,6 +142,8 @@ async function main(): Promise<void> {
       },
       timeoutMs: a.timeoutMinutes ? a.timeoutMinutes * 60_000 : undefined,
       measureRoundTrip: roundTrip,
+      provider: a.provider,
+      local: localSetup,
     }
     for (const task of picked) {
       for (let n = 1; n <= a.runs; n++) {
@@ -134,10 +155,10 @@ async function main(): Promise<void> {
           continue
         }
         if (!rehearsal && shared.liveLeft() <= 0) {
-          console.log(`the live cap of ${a.cap} goose runs is reached: stopping before ${task.id} run ${n}`)
+          console.log(`the ${local ? 'local' : 'live'} cap of ${a.cap} goose runs is reached: stopping before ${task.id} run ${n}`)
           throw new Error('live cap reached')
         }
-        await waitForMemory({ read: readFreePercent, sleep, log: (l) => console.log(l) })
+        await waitForMemory({ read: readFreePercent, sleep, log: (l) => console.log(l), ...(local ? { startAt: LOCAL_MEMORY_START_AT } : {}) })
         const t0 = Date.now()
         console.log(`RUN ${task.id} ${n}/${a.runs} ...`)
         const result = await runOnce(task, n, shared)
@@ -151,11 +172,12 @@ async function main(): Promise<void> {
     await stopWorker()
     const left = await sweep(admin, sandboxIds).catch((err) => [`sweep failed: ${err instanceof Error ? err.message : String(err)}`])
     console.log(left.length ? `leftovers: ${left.join('; ')}` : 'leftovers: none (no token, no sandbox row)')
-    console.log(`live_goose_runs_this_session=${spentNow}; total_so_far=${spentAtStart + spentNow} of ${a.cap}`)
+    console.log(`${local ? 'local' : 'live'}_goose_runs_this_session=${spentNow}; total_so_far=${spentAtStart + spentNow} of ${a.cap}`)
     console.log(`passes=${summary.filter((s) => s.pass).length}; fails=${summary.filter((s) => !s.pass).length}; of ${summary.length} runs`)
   }
 
-  if (a.report && !rehearsal && !a.tasks) {
+  if (local && !rehearsal) console.log(`local results are in ${outDir}. \`pnpm evals:report\` adds them to EVALS.md under "On this machine" (they never replace the main run).`)
+  if (a.report && !rehearsal && !a.tasks && !local) {
     const done = readdirSync(outDir).filter((f) => f.endsWith('.json')).length
     console.log(`${done} result file(s) in ${outDir}`)
     await writeReport({ runId: a.runId })

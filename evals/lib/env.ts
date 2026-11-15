@@ -23,9 +23,12 @@ export function required(env: Env, key: string): string {
   return value
 }
 
-/** Only the local stack or the team's dev project, never anything else. */
-export function assertAllowedDatabase(env: Env): void {
-  assertDevProject(env)
+/**
+ * Only the local stack or the team's dev project, never anything else. The deployed preview project is accepted only
+ * when the caller says so on purpose (`allowPreview`, the evals' `--allow-preview`).
+ */
+export function assertAllowedDatabase(env: Env, options: { allowPreview?: boolean } = {}): void {
+  assertDevProject(env, options)
 }
 
 /** Everything the goose child must not see. OPENROUTER_API_KEY is the one secret it needs, so it is not in this list. */
@@ -37,14 +40,21 @@ export const KEEP_OUT = [
   'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_BEARER_TOKEN_BEDROCK', 'GOOGLE_APPLICATION_CREDENTIALS', 'ANTHROPIC_VERTEX_PROJECT_ID',
 ]
 
+/** The keys of cloud model services that a run on a model on this computer must not hold: OpenRouter's, and the two names Ollama uses for its cloud service. */
+export const CLOUD_MODEL_KEYS = ['OPENROUTER_API_KEY', 'OLLAMA_API_KEY', 'OLLAMA_CLOUD_API_KEY']
+
+/** What goose must not see in a run on a model on this computer: everything in `KEEP_OUT`, and every cloud model key. */
+export const LOCAL_KEEP_OUT = [...KEEP_OUT, ...CLOUD_MODEL_KEYS]
+
 /**
- * Runs `work` with `values` in `process.env` and the secrets goose must not see taken out, then puts everything back.
+ * Runs `work` with `values` in `process.env` and the secrets goose must not see taken out (`keepOut`, `KEEP_OUT` by
+ * default), then puts everything back.
  * The runner copies `process.env` when it starts goose, so this has to wrap the whole agent run.
  */
-export async function withScrubbedEnv<T>(values: Record<string, string>, work: () => Promise<T>): Promise<T> {
+export async function withScrubbedEnv<T>(values: Record<string, string>, work: () => Promise<T>, keepOut: readonly string[] = KEEP_OUT): Promise<T> {
   const saved = new Map<string, string | undefined>()
-  for (const key of [...KEEP_OUT, ...Object.keys(values)]) saved.set(key, process.env[key])
-  for (const key of KEEP_OUT) delete process.env[key]
+  for (const key of [...keepOut, ...Object.keys(values)]) saved.set(key, process.env[key])
+  for (const key of keepOut) delete process.env[key]
   for (const [key, value] of Object.entries(values)) process.env[key] = value
   try {
     return await work()
