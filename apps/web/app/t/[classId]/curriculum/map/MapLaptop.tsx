@@ -38,6 +38,14 @@ export function MapLaptop({ view }: { view: MapView }) {
   const all: Topic[] = view.terms.flatMap((t) => t.topics.map((x, index) => ({ ...x, term: t.term, index })))
   const [sel, setSel] = useState<string>(() => view.terms.find((t) => t.term === view.initialTerm)?.topics[0]?.name ?? all[0]?.name ?? '')
   const run = (fn: () => Promise<unknown>) => start(async () => void (await fn()))
+  const [approveError, setApproveError] = useState<string | null>(null)
+  /** "Approve map": the teacher is sent on when it is saved. When the approval could not be saved nothing changed and the line is shown. */
+  const approve = () =>
+    start(async () => {
+      setApproveError(null)
+      const res = await approveMap(view.mapId)
+      if (res && !res.ok) setApproveError(res.message)
+    })
 
   const topic = all.find((t) => t.name === sel) ?? null
   const leftOut = topic ? null : (view.leftOut.find((l) => l.name === sel) ?? null)
@@ -97,12 +105,13 @@ export function MapLaptop({ view }: { view: MapView }) {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5" /><path d="M5 15v3.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V15" /></svg>
               Documents
             </Link>
-            <PendingButton pending={pending} type="button" disabled={pending} onClick={() => run(() => approveMap(view.mapId))} style={{ display: 'flex', alignItems: 'center', gap: 8, height: 46, padding: '0 18px', borderRadius: 14, border: 'none', background: '#1F1D36', color: '#FFFFFF', fontSize: 15, fontWeight: 600 }}>
+            <PendingButton pending={pending} type="button" disabled={pending} onClick={approve} style={{ display: 'flex', alignItems: 'center', gap: 8, height: 46, padding: '0 18px', borderRadius: 14, border: 'none', background: '#1F1D36', color: '#FFFFFF', fontSize: 15, fontWeight: 600 }}>
               {TICK}
               Approve map
             </PendingButton>
           </div>
         </div>
+        {approveError ? <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#B8381F' }}>{approveError}</p> : null}
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'flex-start' }}>
           <section aria-label="Topic map" style={{ flex: '1 1 640px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>

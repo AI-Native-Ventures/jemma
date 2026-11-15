@@ -4,7 +4,7 @@
 
 export type Row = Record<string, unknown>
 export type Tables = Record<string, Row[]>
-export type Call = { table: string; verb: 'insert' | 'update' | 'delete'; values?: Row | Row[]; filters: string[] }
+export type Call = { table: string; verb: 'insert' | 'update' | 'delete' | 'rpc'; values?: Row | Row[]; filters: string[] }
 
 export type FakeAdmin = ReturnType<typeof fakeAdmin>
 
@@ -27,7 +27,13 @@ function valueAt(row: Row, column: string): unknown {
 
 export function fakeAdmin(
   tables: Tables = {},
-  options: { uploadError?: (path: string) => string | null; insertError?: (table: string) => string | null; rpcError?: string | null } = {},
+  options: {
+    uploadError?: (path: string) => string | null
+    insertError?: (table: string) => string | null
+    rpcError?: string | null
+    /** P105: makes one kind of write fail, to test what a caller does when its step fails. Nothing is written. */
+    writeError?: (table: string, verb: 'insert' | 'update' | 'delete') => string | null
+  } = {},
 ) {
   const calls: Call[] = []
   const uploads: { bucket: string; path: string; type: string; size: number }[] = []
@@ -42,6 +48,7 @@ export function fakeAdmin(
     const filters: Filter[] = []
     const described: string[] = []
     let inserted: Row[] = []
+    let updated: Row[] = []
     let ran = false
     const matches = (r: Row) => filters.every((f) => f(r))
 
@@ -49,8 +56,11 @@ export function fakeAdmin(
       if (verb === 'insert') {
         if (!ran) {
           ran = true
-          const failure = options.insertError?.(table) ?? null
-          if (failure) return { data: [], error: { message: failure } }
+          const failure = options.insertError?.(table) ?? options.writeError?.(table, 'insert') ?? null
+          if (failure) {
+            calls.push({ table, verb, values, filters: described })
+            return { data: [], error: { message: failure } }
+          }
           const list = Array.isArray(values) ? values : [values!]
           inserted = list.map((v) => ({ id: `${table}-${++counter}`, created_at: new Date(1_700_000_000_000 + counter).toISOString(), ...v }))
           rows(table).push(...inserted)
@@ -61,18 +71,24 @@ export function fakeAdmin(
       if (verb === 'update') {
         if (!ran) {
           ran = true
-          for (const r of rows(table).filter(matches)) Object.assign(r, values)
           calls.push({ table, verb, values, filters: described })
+          const failure = options.writeError?.(table, 'update') ?? null
+          if (failure) return { data: [], error: { message: failure } }
+          // The rows that matched BEFORE the change are the ones answered, as the database does (`update ... where status = 'draft'` answers the row it changed).
+          updated = rows(table).filter(matches)
+          for (const r of updated) Object.assign(r, values)
         }
-        return { data: rows(table).filter(matches), error: null }
+        return { data: updated, error: null }
       }
       if (verb === 'delete') {
         if (!ran) {
           ran = true
+          calls.push({ table, verb, filters: described })
+          const failure = options.writeError?.(table, 'delete') ?? null
+          if (failure) return { data: [], error: { message: failure } }
           const gone = rows(table).filter(matches)
           tables[table] = rows(table).filter((r) => !gone.includes(r))
           for (const [child, column] of CASCADES[table] ?? []) tables[child] = rows(child).filter((r) => !gone.some((g) => g.id === r[column]))
-          calls.push({ table, verb, filters: described })
         }
         return { data: [], error: null }
       }
@@ -149,6 +165,7 @@ export function fakeAdmin(
 
   const rpc = async (name: string, args: unknown) => {
     rpcs.push({ name, args })
+    calls.push({ table: name, verb: 'rpc', values: args as Row, filters: [] })
     return { data: null, error: options.rpcError ? { message: options.rpcError } : null }
   }
 

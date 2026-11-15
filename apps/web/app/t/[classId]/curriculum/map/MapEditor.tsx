@@ -59,6 +59,14 @@ function MapPhone({ view }: { view: MapView }) {
   const [editTerm, setEditTerm] = useState(term)
   const current = view.terms.find((t) => t.term === term)!
   const run = (fn: () => Promise<unknown>) => start(async () => void (await fn()))
+  const [approveError, setApproveError] = useState<string | null>(null)
+  /** "Approve map": the teacher is sent on when it is saved. When the approval could not be saved nothing changed and the line is shown. */
+  const approve = () =>
+    start(async () => {
+      setApproveError(null)
+      const res = await approveMap(view.mapId)
+      if (res && !res.ok) setApproveError(res.message)
+    })
   const move = (name: string, to: number, position: number) => run(() => moveTopic(view.mapId, name, to, position))
   const leftOut = view.leftOut.filter((l) => l.term === term)
 
@@ -207,13 +215,14 @@ function MapPhone({ view }: { view: MapView }) {
         <PendingButton pending={pending}
           type="button"
           disabled={pending}
-          onClick={() => run(() => approveMap(view.mapId))}
+          onClick={approve}
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: 'none', background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600 }}
         >
           <IconLabel gap={8} icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>}>
             Approve map
           </IconLabel>
         </PendingButton>
+        {approveError ? <p role="alert" style={{ margin: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: '#B8381F' }}>{approveError}</p> : null}
         <p style={{ margin: 0, textAlign: 'center', fontSize: 13, color: '#5D5A73' }}>You can edit the map any time. Jemma re-tags past results.</p>
       </div>
 

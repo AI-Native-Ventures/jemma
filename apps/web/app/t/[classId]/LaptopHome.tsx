@@ -2,7 +2,7 @@ import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { EmptyLine, NeedsYouList } from '@/components/blocks'
 import { Headline } from '@/components/blocks'
-import { markReteachDone } from './gaps/actions'
+import { ReteachDoneForm } from './gaps/ReteachDoneForm'
 import { FullLogLink } from './log/FullLogLink'
 import { ShareCard } from './ShareCard'
 import { PrintButton } from './gaps/LaptopPrintButton'
@@ -139,7 +139,7 @@ function Detail({ detail, base }: { detail: GapDetail; base: string }) {
             ))}
           </ol>
           <div className="flex flex-wrap gap-2">
-            <form action={markReteachDone.bind(null, reteach.id)} className="contents">
+            <ReteachDoneForm reteachId={reteach.id} errorClassName="m-0 w-full text-[14px] font-semibold text-coral-text">
               <PendingButton
                 type="submit"
                 disabled={done}
@@ -150,7 +150,7 @@ function Detail({ detail, base }: { detail: GapDetail; base: string }) {
                 </svg>
                 {done ? 'Reteach done' : 'Mark reteach done'}
               </PendingButton>
-            </form>
+            </ReteachDoneForm>
             <PrintButton />
           </div>
         </div>

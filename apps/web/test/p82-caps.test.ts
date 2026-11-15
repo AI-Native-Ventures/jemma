@@ -21,7 +21,7 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 vi.mock('next/navigation', () => ({ redirect: (to: string) => state.redirected.push(to), notFound: vi.fn() }))
 vi.mock('@/lib/auth', () => ({ requireRole: async () => ({ userId: 'teacher-a', profile: {} }) }))
 vi.mock('@/lib/agent', () => ({ sendEvent: async () => void state.events++, retryEvent: vi.fn() }))
-vi.mock('@/lib/approvals', () => ({ recordApproval: vi.fn() }))
+vi.mock('@/lib/approvals', () => ({ withApproval: vi.fn(async (_admin: unknown, _approval: unknown, step: () => Promise<unknown>) => step()), isApprovalNotSaved: () => false }))
 
 function chainFor(table: string) {
   const filters: Record<string, unknown> = {}
