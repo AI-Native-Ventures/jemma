@@ -1,8 +1,10 @@
 import { z } from 'zod'
 import { parseAnswer } from '../../logic/answers'
 import { isMeaningKind, meaningKeyProblem } from '../../logic/meaning'
+import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { pictureProblem } from '../../logic/picture'
 import { FormatSchema, LessonSchema, type Format, type Lesson, type Question } from '../../schemas/lesson'
+import { LabelDropSchema, type LabelDrop } from '../../schemas/no-labels'
 import { resolveSpeech } from '../../speech'
 import { assertInSchool, contextFor, defineTool, logActivity, ok, type ToolContext } from '../context'
 import type { Json } from '../../db'
@@ -57,6 +59,58 @@ function how(lesson: Lesson): string {
   return `with ${(kind && DIAGRAM_WORDS[kind]) ?? 'diagrams'}`
 }
 
+/**
+ * "A profile, never a label": the lines of a lesson that speak to or about the learner pass the word check before the lesson is saved. No database.
+ * A lesson is full of maths, and a maths line may say "a clever trick", "the top and bottom of one half" or "the track is 3/4 km": that is not a
+ * label on a child. So only a sentence that names the learner, says you or your, or names learners in general is read, and only in the lines a
+ * learner is spoken to in: the spoken script, the reading cards, and the "why" and "right way" under each question. A question, an answer, a
+ * choice, a title and a picture are never read.
+ * A sentence with a label, a ranking or career talk is left out and the rest is kept. A card with nothing left goes. A script, a "why" or a
+ * "right way" with nothing left refuses the lesson.
+ * `check.people` is the learner's first name (Clever, Bright and Smart are first names).
+ */
+export function screenLesson(lesson: Lesson, check: Pick<LabelCheck, 'people'> = {}): { lesson: Lesson; dropped: LabelDrop[] } {
+  const dropped: LabelDrop[] = []
+  const read = (text: string, field: string) => {
+    const kept = leaveOutLabels(text, field, { ...check, aboutLearnerOnly: true })
+    dropped.push(...kept.dropped)
+    return kept
+  }
+  const required = (text: string, field: string, what: string) => {
+    const kept = read(text, field)
+    if (text.trim() && !kept.text) throw labelsRefused(what, kept.dropped)
+    return kept.text
+  }
+  const feedback = (questions: Question[], group: string): Question[] =>
+    questions.map((q, i) => ({
+      ...q,
+      why: required(q.why, `${group} ${i + 1} why`, `the "why" of ${group} ${i + 1}`),
+      rightWay: required(q.rightWay, `${group} ${i + 1} right way`, `the "right way" of ${group} ${i + 1}`),
+    }))
+
+  const audio = lesson.audio ? { ...lesson.audio, script: required(lesson.audio.script, 'spoken script', 'the spoken script') } : undefined
+  const cards = lesson.cards?.flatMap((card, i) => {
+    const heading = read(card.heading, `card ${i + 1} heading`)
+    const body = read(card.body, `card ${i + 1} text`)
+    if ((card.heading.trim() && !heading.text) || (card.body.trim() && !body.text)) {
+      dropped.push({ field: `card ${i + 1}`, text: card.heading.trim(), reason: 'left out whole: nothing was left of its heading or its text' })
+      return []
+    }
+    return [{ ...card, heading: heading.text, body: body.text }]
+  })
+  if (lesson.format === 'reading' && lesson.cards?.length && !cards?.length) {
+    throw labelsRefused('every reading card', dropped.filter((d) => /^card \d+ (heading|text)$/.test(d.field)))
+  }
+  const warmup = feedback(lesson.warmup, 'warm-up')
+  const questions = feedback(lesson.questions, 'question')
+  if (dropped.length === 0) return { lesson, dropped }
+  const screened: Lesson = { ...lesson, warmup, questions }
+  if (audio) screened.audio = audio
+  if (cards?.length) screened.cards = cards
+  else delete screened.cards
+  return { lesson: screened, dropped }
+}
+
 const hasQuestions = (content: unknown) =>
   typeof content === 'object' && content !== null && Array.isArray((content as { questions?: unknown }).questions) && (content as { questions: unknown[] }).questions.length > 0
 
@@ -65,8 +119,13 @@ export const saveLesson = defineTool({
   description:
     "Save the lesson for a planned session. Every answer is checked with parseAnswer; a bad answer is rejected with its question number so you can regenerate once, then call again with dropInvalid true to drop it (each level keeps at least 4). A lesson that already exists is returned as is. Audio lessons get speech once.",
   input: z.object({ sessionId: z.string(), lesson: LessonSchema, dropInvalid: z.boolean().optional() }),
-  output: z.object({ lessonId: z.string(), format: FormatSchema }),
-  async run(base: ToolContext, { sessionId, lesson, dropInvalid }) {
+  output: z.object({
+    lessonId: z.string(),
+    format: FormatSchema,
+    /** What the word check left out of the lines that speak to or about the learner (a label, a ranking or career talk). Missing when nothing was left out. */
+    dropped: z.array(LabelDropSchema).optional(),
+  }),
+  async run(base: ToolContext, { sessionId, lesson: written, dropInvalid }) {
     await assertInSchool(base, 'sessions', [sessionId])
     const ctx = await contextFor(base, 'sessions', sessionId)
     const db = ctx.db
@@ -85,7 +144,10 @@ export const saveLesson = defineTool({
     const row = await ok(db.from('lessons').select('id, format, topic_name, content, audio_path').eq('id', lessonId).single())
     if (hasQuestions(row.content)) return { lessonId: row.id, format: row.format }
 
-    if (lesson.format !== row.format) throw new Error(`this session is planned as ${row.format}, not ${lesson.format}`)
+    if (written.format !== row.format) throw new Error(`this session is planned as ${row.format}, not ${written.format}`)
+    // The lines that speak to or about the learner pass the word check first. The learner's name is not a label, whatever it is.
+    const learner = await ok(db.from('children').select('first_name').eq('id', session.child_id).single())
+    const { lesson, dropped } = screenLesson(written, { people: [learner.first_name] })
     if (lesson.format === 'diagram' && !lesson.diagram) throw new Error('a diagram lesson needs a diagram')
     if (lesson.format === 'reading' && !lesson.cards?.length) throw new Error('a reading lesson needs cards')
     if (lesson.format === 'audio' && !lesson.audio?.script) throw new Error('an audio lesson needs an audio script')
@@ -134,6 +196,6 @@ export const saveLesson = defineTool({
       tool: 'save_lesson',
       text: `Built tonight's ${kept.minutes}-minute lesson on ${topic}, ${how(kept)}`,
     })
-    return { lessonId: row.id, format: kept.format satisfies Format }
+    return dropped.length ? { lessonId: row.id, format: kept.format satisfies Format, dropped } : { lessonId: row.id, format: kept.format satisfies Format }
   },
 })

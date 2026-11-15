@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { classGaps, type ClassGap, type DiagnosedResult } from '../../logic'
+import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { ReteachSchema } from '../../schemas/diagnosis'
+import { LabelDropSchema, type LabelDrop } from '../../schemas/no-labels'
 import { assertInSchool, contextFor, defineTool, logActivity, maybe, ok, type ToolContext } from '../context'
 
 const lowerFirst = (s: string) => (s ? s[0]!.toLowerCase() + s.slice(1) : s)
@@ -58,6 +60,35 @@ export async function computeClassGaps(
   return { gaps, names: new Map(roster.map((r) => [r.id, r.name])) }
 }
 
+/**
+ * "A profile, never a label": the lines of a class report that are about learners pass the word check before the report is saved. No database.
+ * They are the why line, the short explanation, and who the reteach is for (`audience`, which names learners). The steps, the materials and the
+ * exit question are maths and are not read. A sentence with a label, a ranking or career talk is left out and the rest is kept. An explanation
+ * with nothing left is empty (it is optional). A why line or an audience with nothing left refuses the report.
+ * `check.people` are the first names of the class (Clever, Bright and Smart are first names) and `check.exempt` the topic of the gap.
+ */
+export function screenClassReport(
+  lines: { why: string; explanation?: string | null; audience: string },
+  check: LabelCheck = {},
+): { why: string; explanation: string | null | undefined; audience: string; dropped: LabelDrop[] } {
+  const dropped: LabelDrop[] = []
+  const required = (text: string, field: string, what: string) => {
+    const kept = leaveOutLabels(text, field, check)
+    dropped.push(...kept.dropped)
+    if (text.trim() && !kept.text) throw labelsRefused(what, kept.dropped)
+    return kept.text
+  }
+  const why = required(lines.why, 'why', 'the why line')
+  let explanation = lines.explanation
+  if (explanation) {
+    const kept = leaveOutLabels(explanation, 'explanation', check)
+    dropped.push(...kept.dropped)
+    explanation = kept.text || null
+  }
+  const audience = required(lines.audience, 'audience', 'the line about who the reteach is for')
+  return { why, explanation, audience, dropped }
+}
+
 export const classGapReport = defineTool({
   name: 'class_gap_report',
   description:
@@ -70,25 +101,34 @@ export const classGapReport = defineTool({
     missingBasic: z.string().nullish(),
     explanation: z.string().nullish(),
   }),
-  output: z.object({ gaps: z.array(ClassGapSchema), reteachId: z.string().nullable() }),
+  output: z.object({
+    gaps: z.array(ClassGapSchema),
+    reteachId: z.string().nullable(),
+    /** What the word check left out of the lines about learners (a label, a ranking or career talk). Missing when nothing was left out. */
+    dropped: z.array(LabelDropSchema).optional(),
+  }),
   async run(ctx, input) {
     const here = await contextFor(ctx, 'classes', input.classId)
-    const { gaps } = await computeClassGaps(ctx, input.classId, input.testId)
+    const { gaps, names } = await computeClassGaps(ctx, input.classId, input.testId)
     const n = gaps.length
     if (n === 0) {
       await logActivity(here, { text: 'Found no class gaps', tool: 'class_gap_report', classId: input.classId })
       return { gaps, reteachId: null }
     }
     const top = gaps[0]!
+    const screened = screenClassReport(
+      { why: input.why, explanation: input.explanation, audience: input.reteach.audience },
+      { people: [...names.values()], exempt: [top.topicName] },
+    )
     const fields = {
       class_id: input.classId,
       test_id: input.testId,
       topic_id: top.topicId,
       topic_name: top.topicName,
-      content: input.reteach,
-      why: input.why,
+      content: screened.dropped.length ? { ...input.reteach, audience: screened.audience } : input.reteach,
+      why: screened.why,
       missing_basic: input.missingBasic ?? null,
-      explanation: input.explanation ?? null,
+      explanation: screened.explanation ?? null,
     }
     const prior = await maybe(
       ctx.db.from('reteach_plans').select('id').eq('class_id', input.classId).eq('test_id', input.testId).order('created_at').limit(1).maybeSingle(),
@@ -111,6 +151,6 @@ export const classGapReport = defineTool({
       tool: 'class_gap_report',
       classId: input.classId,
     })
-    return { gaps, reteachId }
+    return screened.dropped.length ? { gaps, reteachId, dropped: screened.dropped } : { gaps, reteachId }
   },
 })
