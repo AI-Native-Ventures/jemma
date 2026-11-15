@@ -161,11 +161,15 @@ describe('the pictures', () => {
     ])
   })
 
-  it('are files in the folder, and real PNG files', () => {
+  it('are files in the folder, and real PNG files, with the shape the page gives them', () => {
     for (const i of imgs) {
       const file = join(publicDir, i.src!)
       expect(existsSync(file), `${i.src} is missing`).toBe(true)
-      expect(readFileSync(file).subarray(0, 8).toString('hex'), `${i.src} is not a PNG`).toBe('89504e470d0a1a0a')
+      const bytes = readFileSync(file)
+      expect(bytes.subarray(0, 8).toString('hex'), `${i.src} is not a PNG`).toBe('89504e470d0a1a0a')
+      // The size is in the first chunk (IHDR): width and height, four bytes each. A phone capture may be 2x: the shape must be the same.
+      const shape = bytes.readUInt32BE(16) / bytes.readUInt32BE(20)
+      expect(Math.abs(shape / (Number(i.width) / Number(i.height)) - 1), `${i.src} is not the shape ${i.width}x${i.height}`).toBeLessThan(0.01)
     }
   })
 
