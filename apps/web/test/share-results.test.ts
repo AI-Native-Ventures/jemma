@@ -1,6 +1,7 @@
 import type { JemmaDb } from '@jemma/profiling/db'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { shareResults, type ShareDeps } from '@/lib/share-results'
+import { APPROVAL_NOT_SAVED } from '@/lib/approvals'
 
 // "Share with parents": what the action does, with the database as an in-memory double. The real rows are checked in
 // supabase/test/share-gate.actions.test.ts. Nothing here talks to an agent or a model.
@@ -40,7 +41,7 @@ function fresh(over: Partial<State> = {}): State {
 }
 
 /** The few calls `shareResults` makes. `update` on `tests` only changes rows that match every filter, like the database does. */
-function memoryDb(state: State, opts: { teaches?: boolean; failNotify?: boolean } = {}) {
+function memoryDb(state: State, opts: { teaches?: boolean; failNotify?: boolean; failApproval?: boolean; failOpen?: boolean } = {}) {
   const calls: string[] = []
   const query = (table: keyof State) => {
     // Filters are applied when the query runs, not when it is built, so two updates at once cannot both match.
@@ -48,6 +49,7 @@ function memoryDb(state: State, opts: { teaches?: boolean; failNotify?: boolean 
     const matching = () => state[table].filter((r) => filters.every((f) => f(r)))
     let patch: Row | null = null
     let inserted: Row[] | null = null
+    let deleting = false
     const q = {
       select: () => q,
       order: () => q,
@@ -67,16 +69,27 @@ function memoryDb(state: State, opts: { teaches?: boolean; failNotify?: boolean 
         inserted = Array.isArray(r) ? r : [r]
         return q
       },
+      delete: () => {
+        deleting = true
+        return q
+      },
       maybeSingle: async () => ({ data: matching()[0] ?? null, error: null }),
       then: (resolve: (v: unknown) => unknown, reject: (e: unknown) => unknown) => {
         if (inserted) {
+          if (table === 'approvals' && opts.failApproval) return Promise.resolve({ data: null, error: { message: 'approvals are down' } }).then(resolve, reject)
           if (table === 'notifications' && opts.failNotify) return Promise.resolve({ data: null, error: { message: 'notifications are down' } }).then(resolve, reject)
           calls.push(`insert ${table} x${inserted.length}`)
           state[table].push(...inserted)
           return Promise.resolve({ data: null, error: null }).then(resolve, reject)
         }
         const rows = matching()
+        if (deleting) {
+          calls.push(`delete ${table}`)
+          for (const r of rows) state[table].splice(state[table].indexOf(r), 1)
+          return Promise.resolve({ data: null, error: null }).then(resolve, reject)
+        }
         if (patch) {
+          if (table === 'tests' && opts.failOpen) return Promise.resolve({ data: null, error: { message: 'the pool is full' } }).then(resolve, reject)
           calls.push(`update ${table}`)
           for (const r of rows) Object.assign(r, patch)
         }
@@ -92,7 +105,7 @@ function memoryDb(state: State, opts: { teaches?: boolean; failNotify?: boolean 
   return { db: db as unknown as JemmaDb, calls }
 }
 
-function setup(state = fresh(), opts: { teaches?: boolean; failNotify?: boolean } = {}, over: Partial<ShareDeps> = {}) {
+function setup(state = fresh(), opts: { teaches?: boolean; failNotify?: boolean; failApproval?: boolean; failOpen?: boolean } = {}, over: Partial<ShareDeps> = {}) {
   const teacher = memoryDb(state, opts)
   const admin = memoryDb(state, opts)
   const send = vi.fn(async () => 'event-1')
@@ -113,8 +126,37 @@ describe('shareResults', () => {
     const { state, deps } = setup()
     await shareResults(deps, CLASS, TEST)
     expect(state.approvals).toEqual([
-      { school_id: SCHOOL, kind: 'share_results', ref_id: TEST, child_id: null, decision: 'shared', decided_by: TEACHER, decided_by_name: 'Ms Banda', note: 'Class Test 1' },
+      { id: expect.any(String), school_id: SCHOOL, kind: 'share_results', ref_id: TEST, child_id: null, decision: 'shared', decided_by: TEACHER, decided_by_name: 'Ms Banda', note: 'Class Test 1' },
     ])
+  })
+
+  it('saves the approval first, then opens the test, then tells the parents', async () => {
+    const { deps, admin } = setup()
+    await shareResults(deps, CLASS, TEST)
+    expect(admin.calls).toEqual(['insert approvals x1', 'update tests', 'insert notifications x1', 'insert notifications x1'])
+  })
+
+  it('when the approval cannot be saved nothing is shared: the test stays held, nobody is told, and the teacher reads one plain line', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { state, deps, send, admin } = setup(fresh(), { failApproval: true })
+    expect(await shareResults(deps, CLASS, TEST)).toEqual({ ok: false, message: 'Could not save your approval. Nothing changed. Try again.' })
+    expect(APPROVAL_NOT_SAVED).toBe('Could not save your approval. Nothing changed. Try again.')
+    expect(state.tests[0]).toMatchObject({ held: true, shared_at: null, shared_by: null })
+    expect(state.approvals).toEqual([])
+    expect(state.notifications).toEqual([])
+    expect(send).not.toHaveBeenCalled()
+    expect(admin.calls).toEqual([]) // not one write
+  })
+
+  it('when the test cannot be opened the approval is taken back, so the log shows no approval for a share that did not happen', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { state, deps, send, admin } = setup(fresh(), { failOpen: true })
+    expect(await shareResults(deps, CLASS, TEST)).toEqual({ ok: false, message: 'Could not share the results. Try again.' })
+    expect(state.tests[0]).toMatchObject({ held: true })
+    expect(state.approvals).toEqual([])
+    expect(admin.calls).toEqual(['insert approvals x1', 'delete approvals'])
+    expect(state.notifications).toEqual([])
+    expect(send).not.toHaveBeenCalled()
   })
 
   it('tells approved parents of learners with a marked paper, one message per learner, with that learner mark', async () => {
@@ -137,7 +179,7 @@ describe('shareResults', () => {
     expect(result).toEqual({ ok: true, shared: true, childIds: [AMINA, THABO] })
   })
 
-  it('sharing twice does nothing the second time: no approval, no message, no event', async () => {
+  it('sharing twice does nothing the second time: no second approval (it is taken back), no message, no event', async () => {
     const { state, deps, send } = setup()
     await shareResults(deps, CLASS, TEST)
     const again = await shareResults(deps, CLASS, TEST)

@@ -5,7 +5,7 @@ import { brief, median } from './checks'
 import { readLedger } from './ledger'
 import { baseName, parseResult, RESULTS_ROOT, type ResultFile } from './result'
 import { refusalOf } from './provider'
-import { listRunFolders, loadSecondRun } from './second'
+import { isLocalRunFolder, listLocalRunFolders, listRunFolders, loadLocalRun, loadSecondRun } from './second'
 import { DOCUMENT_IDS, OTHER_SUBJECT_IDS, UNSEEN_FOLDER, countRepeats, finalTries, isLiveRun, loadTruth, medianSeconds, parseUnseenResult, repeatedUnderOtherNames, whatWentWrong, type UnseenResult } from './unseen'
 import { countryName } from '../../packages/profiling/src/ai/subject-profile'
 import { strandOrder } from '../../packages/profiling/src/logic/strands'
@@ -57,6 +57,8 @@ export type UnseenRun = {
 
 /** Another run folder: a different model, usually one task. Shown in its own section, never mixed into the main run. */
 export type SecondRun = { runId: string; results: ResultFile[]; pricing: PricingInfo | null }
+/** A run on a model on this computer (Ollama). Shown in the section "On this machine" only, never in the main run or the second-model section. */
+export type LocalRun = { runId: string; results: ResultFile[] }
 export type ReportInput = {
   runId: string
   results: ResultFile[]
@@ -70,6 +72,8 @@ export type ReportInput = {
   changes?: Change[] | null
   /** Other run folders, in name order. The section is written only when there is at least one. */
   others?: SecondRun[]
+  /** Runs on a model on this computer. The section "On this machine" is written only when there is at least one result. */
+  local?: LocalRun[]
   /** The newest run of the curriculum reader on unseen documents. The section is written only when there is one. */
   unseen?: UnseenRun | null
   /** Goose runs spent for the whole packet, from the ledger (harness tuning included). Null when unknown. */
@@ -323,6 +327,33 @@ function secondSection(others: SecondRun[]): string[] {
   return out
 }
 
+/**
+ * The section for runs on a model on this computer: one row per run, with the task, the model, pass or fail, the minutes and
+ * what the result file says about a cloud model. Nothing here is counted in the main set. Every value comes from the result files.
+ */
+function localSection(local: LocalRun[]): string[] {
+  const rows = local
+    .flatMap((o) => o.results.map((r) => ({ runId: o.runId, r })))
+    .sort((a, b) => a.runId.localeCompare(b.runId) || a.r.taskId.localeCompare(b.r.taskId) || a.r.n - b.r.n)
+  const out: string[] = ['## On this machine', '']
+  const hosts = [...new Set(rows.map((x) => x.r.host).filter((h): h is string => !!h))].sort()
+  out.push(
+    `The runs below used a model on this computer, served by Ollama${hosts.length ? ` (host ${hosts.join(', ')})` : ''}, with the same harness. Each result file records the model, the host, and whether anything points at a cloud model (every attempt on the local tag, no cloud key in goose's environment, no cloud service named in the transcript). They are not part of the main set above, and they do not count against the cap of 45 free-model runs.`,
+    '',
+  )
+  out.push('| Run id | Task | Model | Run | Result | Minutes | No cloud model called |', '| --- | --- | --- | ---: | --- | ---: | --- |')
+  for (const { runId, r } of rows) {
+    const called = r.noCloudModelCalled === true ? 'yes' : r.noCloudModelCalled === false ? 'no' : 'not known'
+    out.push(`| \`${runId}\` | \`${r.taskId}\` | \`${r.model ?? r.finalModel ?? 'unknown'}\` | ${r.n} | ${r.pass ? 'pass' : 'fail'} | ${Number((r.seconds / 60).toFixed(1))} | ${called} |`)
+  }
+  out.push('')
+  const failed = rows.filter((x) => !x.r.pass)
+  if (failed.length > 0) out.push(`Failed: ${failed.map(({ runId, r }) => `\`${runId}\` ${r.taskId} run ${r.n} (${failureReason(r)})`).join('; ')}.`, '')
+  const flagged = rows.filter((x) => (x.r.cloudEvidence?.length ?? 0) > 0)
+  if (flagged.length > 0) out.push(`Pointing at a cloud model: ${flagged.map(({ runId, r }) => `\`${runId}\` ${r.taskId} run ${r.n} (${r.cloudEvidence!.map(cell).join('; ')})`).join('; ')}.`, '')
+  return out
+}
+
 /** Which way the runs read their documents, in words: "vision", or "vision 2, text 1". */
 const readBy = (runs: UnseenResult[]): string => {
   const counts = new Map<string, number>()
@@ -510,6 +541,7 @@ export function renderReport(input: ReportInput): string {
   }
 
   if (input.others?.length) push(...secondSection(input.others))
+  if (input.local?.some((o) => o.results.length > 0)) push(...localSection(input.local.filter((o) => o.results.length > 0)))
   if (input.unseen && (input.unseen.tries.length > 0 || (input.unseen.outside?.tries.length ?? 0) > 0)) push(...unseenSection(input.unseen))
 
   // cost
@@ -656,6 +688,7 @@ async function pricingFor(dir: string, results: ResultFile[], opts: WriteOptions
 
 /** Loads the run, reads or fetches the price, and writes EVALS.md. Fails when an expected result file is missing. */
 export async function writeReport(opts: WriteOptions): Promise<string> {
+  if (isLocalRunFolder(opts.runId)) throw new Error(`${opts.runId} is a local run (a model on this computer). It is shown in the section "On this machine" and cannot be the main run.`)
   const dir = join(opts.resultsRoot ?? RESULTS_ROOT, opts.runId)
   const tasks = TASKS.map((t) => ({ id: t.id, proves: t.proves }))
   const results = loadResults(dir, tasks, RUNS_PER_TASK)
@@ -677,8 +710,9 @@ export async function writeReport(opts: WriteOptions): Promise<string> {
     const otherResults = loadSecondRun(otherDir, folder.name)
     others.push({ runId: folder.name, results: otherResults, pricing: (await pricingFor(otherDir, otherResults, opts)).pricing })
   }
-  const ledger = readLedger(opts.ledgerFile)
-  const text = renderReport({ runId: opts.runId, results, tasks, runs: RUNS_PER_TASK, pricing, pricingError, analysis, changes, others, unseen: loadUnseen(opts.unseenRoot ?? join(opts.resultsRoot ?? RESULTS_ROOT, UNSEEN_FOLDER)), packetLiveRuns: ledger.length ? ledger.filter((l) => !l.rehearsal && (l.kind ?? 'goose') === 'goose').reduce((n, l) => n + l.attempts, 0) : null })
+  const local: LocalRun[] = listLocalRunFolders(root).map((name) => ({ runId: name, results: loadLocalRun(join(root, name), name) }))
+  const ledger = readLedger(opts.ledgerFile).filter((l) => (l.provider ?? 'openrouter') === 'openrouter')
+  const text = renderReport({ runId: opts.runId, results, tasks, runs: RUNS_PER_TASK, pricing, pricingError, analysis, changes, others, local, unseen: loadUnseen(opts.unseenRoot ?? join(opts.resultsRoot ?? RESULTS_ROOT, UNSEEN_FOLDER)), packetLiveRuns: ledger.length ? ledger.filter((l) => !l.rehearsal && (l.kind ?? 'goose') === 'goose').reduce((n, l) => n + l.attempts, 0) : null })
   writeFileSync(opts.outFile ?? EVALS_FILE, text)
   return text
 }

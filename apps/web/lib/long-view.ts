@@ -2,7 +2,7 @@ import type { JemmaDb } from '@jemma/profiling/db'
 import { notify } from '@jemma/profiling/notify'
 import type { LongViewStatus } from '@jemma/profiling/schemas'
 import { sendEvent } from './agent'
-import { recordApproval } from './approvals'
+import { isApprovalNotSaved, withApproval, type ApprovalKind } from './approvals'
 import { OPEN_UPDATE_GAP_MS, STALE_AFTER_MS } from './data/p52'
 import { createSupabaseAdmin } from './supabase/admin'
 
@@ -118,8 +118,19 @@ const refuse = (reason: string): DecideResult => ({ ok: false, reason })
  * The teacher's own session must see the pattern and teach the child before anything is written. The write names the status it
  * expects, so two taps at once cannot decide twice. After approve, dismiss or restore the open `review_long_view` item is closed
  * when no draft is left.
+ * The approval of approve, dismiss and discuss is saved FIRST (`withApproval`): when it cannot be saved nothing is written and the answer is the
+ * one plain line for the screen; when the write then matches no row (someone decided first) or fails, the approval is taken back.
  */
 export async function decidePattern(deps: DecideDeps, decision: Decision, patternId: string): Promise<DecideResult> {
+  try {
+    return await decide(deps, decision, patternId)
+  } catch (e) {
+    if (isApprovalNotSaved(e)) return refuse(e.message)
+    throw e
+  }
+}
+
+async function decide(deps: DecideDeps, decision: Decision, patternId: string): Promise<DecideResult> {
   const { teacher, admin, userId } = deps
   const stamp = (deps.now ?? (() => new Date()))().toISOString()
 
@@ -144,19 +155,21 @@ export async function decidePattern(deps: DecideDeps, decision: Decision, patter
     return !done.error && (done.data?.length ?? 0) > 0
   }
 
+  /** The write of a decision with its approval saved first. False when it did not happen: the write matched no row, or failed (the approval is taken back). */
+  const moveApproved = (kind: ApprovalKind, approvalDecision: 'approved' | 'declined' | 'confirmed', from: LongViewStatus[], patch: Record<string, unknown>): Promise<boolean> =>
+    withApproval(admin, { ...approval, kind, decision: approvalDecision }, () => move(from, patch), { happened: (moved) => moved })
+
   let status: LongViewStatus
   if (decision === 'approve') {
     if (!p.active) return refuse('This no longer shows in the results.')
     if (p.status !== 'draft') return refuse('This pattern was already decided.')
     status = 'approved'
-    if (!(await move(['draft'], { status, approved_by: userId, approved_by_name: teacherName, approved_at: stamp }))) return refuse('This pattern was already decided.')
-    await recordApproval(admin, { ...approval, kind: 'long_view_pattern', decision: 'approved' })
+    if (!(await moveApproved('long_view_pattern', 'approved', ['draft'], { status, approved_by: userId, approved_by_name: teacherName, approved_at: stamp }))) return refuse('This pattern was already decided.')
   } else if (decision === 'dismiss') {
     if (p.status === 'discussed') return refuse('You have shared this pattern, so it cannot be set aside.')
     if (p.status !== 'draft' && p.status !== 'approved') return refuse('This pattern was already set aside.')
     status = 'dismissed'
-    if (!(await move(['draft', 'approved'], { status, dismissed_by: userId, dismissed_at: stamp }))) return refuse('This pattern was already decided.')
-    await recordApproval(admin, { ...approval, kind: 'long_view_pattern', decision: 'declined' })
+    if (!(await moveApproved('long_view_pattern', 'declined', ['draft', 'approved'], { status, dismissed_by: userId, dismissed_at: stamp }))) return refuse('This pattern was already decided.')
   } else if (decision === 'restore') {
     if (!p.active) return refuse('This no longer shows in the results.')
     if (p.status !== 'dismissed') return refuse('Only a pattern you set aside can be brought back.')
@@ -170,8 +183,7 @@ export async function decidePattern(deps: DecideDeps, decision: Decision, patter
     const parents = [...new Set((links.data ?? []).map((l) => l.parent_id))]
     if (links.error || parents.length === 0) return refuse('No parent is linked yet. This stays with you.')
     status = 'discussed'
-    if (!(await move(['approved'], { status, discussed_by: userId, discussed_by_name: teacherName, discussed_at: stamp }))) return refuse('This pattern was already shared.')
-    await recordApproval(admin, { ...approval, kind: 'long_view_talk', decision: 'confirmed' })
+    if (!(await moveApproved('long_view_talk', 'confirmed', ['approved'], { status, discussed_by: userId, discussed_by_name: teacherName, discussed_at: stamp }))) return refuse('This pattern was already shared.')
     try {
       await notify(admin, parents, {
         title: `${teacherName} shared something from your talk`,

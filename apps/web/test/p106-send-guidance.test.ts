@@ -1,5 +1,6 @@
 import type { JemmaDb } from '@jemma/profiling/db'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { APPROVAL_NOT_SAVED } from '@/lib/approvals'
 import { approvalText } from '@/lib/data/p50'
 import { sendGuidance, type SendGuidanceDeps } from '@/lib/send-guidance'
 
@@ -118,8 +119,14 @@ describe('sendGuidance', () => {
     const { state, deps } = setup()
     await sendGuidance(deps, CLASS, AMINA)
     expect(state.approvals).toEqual([
-      { school_id: SCHOOL, kind: 'guidance', ref_id: AMINA, child_id: AMINA, decision: 'shared', decided_by: TEACHER, decided_by_name: 'Ms Banda', note: 'Amina' },
+      { id: expect.any(String), school_id: SCHOOL, kind: 'guidance', ref_id: AMINA, child_id: AMINA, decision: 'shared', decided_by: TEACHER, decided_by_name: 'Ms Banda', note: 'Amina' },
     ])
+  })
+
+  it('saves the approval FIRST, then copies the card, then removes the draft', async () => {
+    const { deps, admin } = setup()
+    await sendGuidance(deps, CLASS, AMINA)
+    expect(admin.calls.filter((c) => /approvals|guidance_cards|guidance_drafts/.test(c))).toEqual(['insert approvals', 'upsert guidance_cards', 'delete guidance_drafts x1'])
   })
 
   it('says it in the log in plain words', () => {
@@ -142,18 +149,21 @@ describe('sendGuidance', () => {
     ])
   })
 
-  it('sending twice does it once: the second tap finds nothing waiting, and adds no approval', async () => {
-    const { state, deps } = setup()
+  it('sending twice does it once: the second tap finds nothing waiting, saves no approval and changes nothing', async () => {
+    const { state, deps, admin } = setup()
     await sendGuidance(deps, CLASS, AMINA)
+    const before = admin.calls.length
     expect(await sendGuidance(deps, CLASS, AMINA)).toEqual({ ok: true, sent: false })
+    expect(admin.calls.slice(before).filter((c) => /^(insert|upsert|delete)/.test(c))).toEqual([])
     expect(state.approvals).toHaveLength(1)
     expect(state.guidance_cards).toHaveLength(1)
   })
 
-  it('two taps at the same moment record one approval', async () => {
+  it('two taps at the same moment leave one approval: the tap that did not remove the draft takes its own back', async () => {
     const { state, deps } = setup()
     const [a, b] = await Promise.all([sendGuidance(deps, CLASS, AMINA), sendGuidance(deps, CLASS, AMINA)])
     expect([a, b].filter((r) => r.ok && r.sent)).toHaveLength(1)
+    expect([a, b].filter((r) => r.ok && !r.sent)).toHaveLength(1)
     expect(state.approvals).toHaveLength(1)
     expect(state.guidance_cards).toHaveLength(1)
     expect(state.guidance_drafts).toEqual([])
@@ -172,11 +182,12 @@ describe('sendGuidance', () => {
     expect(state.approvals).toHaveLength(1)
   })
 
-  it('does nothing when no draft is waiting', async () => {
-    const { state, deps } = setup(fresh({ guidance_drafts: [] }))
+  it('does nothing when no draft is waiting: no approval is saved either', async () => {
+    const { state, deps, admin } = setup(fresh({ guidance_drafts: [] }))
     expect(await sendGuidance(deps, CLASS, AMINA)).toEqual({ ok: true, sent: false })
     expect(state.guidance_cards).toEqual([])
     expect(state.approvals).toEqual([])
+    expect(admin.calls.filter((c) => c === 'insert approvals')).toEqual([])
   })
 
   it('sends only the draft of the learner it was asked for', async () => {
@@ -220,19 +231,27 @@ describe('when something is wrong', () => {
     expect(state.approvals).toEqual([])
   })
 
-  it('a card that cannot be saved leaves the draft waiting and records nothing', async () => {
-    const { state, deps } = setup(fresh(), { failUpsert: true })
+  it('a card that cannot be saved leaves the draft waiting and takes the approval back', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const { state, deps, admin } = setup(fresh(), { failUpsert: true })
     expect(await sendGuidance(deps, CLASS, AMINA)).toEqual({ ok: false, message: 'Could not send the card. Try again.' })
     expect(state.guidance_drafts).toHaveLength(1)
+    expect(state.guidance_cards).toEqual([])
     expect(state.approvals).toEqual([])
+    expect(admin.calls).toContain('insert approvals') // it was saved first, then taken back
+    expect(admin.calls).toContain('delete approvals x1')
+    expect(error).toHaveBeenCalled()
   })
 
-  it('an approval that cannot be saved does not undo the send: the card is sent and the failure is only logged', async () => {
+  it('an approval that cannot be saved stops everything: nothing is sent, the draft stays, and the teacher reads the one plain line', async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined)
-    const { state, deps } = setup(fresh(), { failApproval: true })
-    expect(await sendGuidance(deps, CLASS, AMINA)).toEqual({ ok: true, sent: true })
-    expect(state.guidance_cards).toHaveLength(1)
-    expect(state.guidance_drafts).toEqual([])
+    const { state, deps, admin } = setup(fresh(), { failApproval: true })
+    expect(await sendGuidance(deps, CLASS, AMINA)).toEqual({ ok: false, message: APPROVAL_NOT_SAVED })
+    expect(APPROVAL_NOT_SAVED).toBe('Could not save your approval. Nothing changed. Try again.')
+    expect(state.guidance_cards).toEqual([])
+    expect(state.guidance_drafts).toHaveLength(1)
+    expect(state.approvals).toEqual([])
+    expect(admin.calls.filter((c) => /guidance_cards|guidance_drafts/.test(c))).toEqual([])
     expect(error).toHaveBeenCalled()
   })
 })

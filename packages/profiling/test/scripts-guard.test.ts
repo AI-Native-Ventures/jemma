@@ -1,7 +1,7 @@
 import { globSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, expect, test } from 'vitest'
-import { assertDevProject, isAllowedSupabaseUrl } from '../scripts/env'
+import { PREVIEW_SUPABASE_REF, assertDevProject, isAllowedSupabaseUrl } from '../scripts/env'
 
 const DEV_REF = 'ayxgctbemuvozwktstaa'
 const root = resolve(import.meta.dirname, '../../..')
@@ -44,6 +44,20 @@ describe('the Supabase guard for scripts', () => {
     expect(isAllowedSupabaseUrl('')).toBe(false)
     expect(isAllowedSupabaseUrl('not a url')).toBe(false)
     expect(() => assertDevProject({})).toThrow(/SUPABASE_URL/)
+  })
+
+  test('the deployed preview project is refused, unless the caller asks for it on purpose with allowPreview', () => {
+    const preview = `https://${PREVIEW_SUPABASE_REF}.supabase.co`
+    expect(PREVIEW_SUPABASE_REF).toBe('bpajgrjkbvyeeeyvixwf')
+    expect(isAllowedSupabaseUrl(preview)).toBe(false)
+    expect(() => assertDevProject({ SUPABASE_URL: preview })).toThrow(/JEMMA_ALLOWED_SUPABASE_REF/)
+    expect(() => assertDevProject({ SUPABASE_URL: preview }, { allowPreview: false })).toThrow(/JEMMA_ALLOWED_SUPABASE_REF/)
+    expect(() => assertDevProject({ SUPABASE_URL: preview }, { allowPreview: true })).not.toThrow()
+    // the flag opens that one project and nothing else
+    expect(() => assertDevProject({ SUPABASE_URL: 'https://someotherprojectref.supabase.co' }, { allowPreview: true })).toThrow(/JEMMA_ALLOWED_SUPABASE_REF/)
+    expect(() => assertDevProject({}, { allowPreview: true })).toThrow(/SUPABASE_URL/)
+    expect(() => assertDevProject({ SUPABASE_URL: 'http://127.0.0.1:54321' }, { allowPreview: true })).not.toThrow()
+    expect(() => assertDevProject({ SUPABASE_URL: `https://${DEV_REF}.supabase.co` }, { allowPreview: true })).not.toThrow()
   })
 })
 

@@ -38,6 +38,10 @@ log({
   key: process.env.OPENROUTER_API_KEY ?? null,
   keyring: process.env.GOOSE_DISABLE_KEYRING ?? null,
   home: process.env.GOOSE_PATH_ROOT ?? null,
+  // the local-model path: where goose would find Ollama, and the names (never the values) of what the child can see
+  ollamaHost: process.env.OLLAMA_HOST ?? null,
+  gooseProvider: process.env.GOOSE_PROVIDER ?? null,
+  envNames: Object.keys(process.env).sort(),
 })
 
 let clock = 1794290000

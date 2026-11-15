@@ -22,7 +22,7 @@ vi.mock('@/lib/agent', () => ({
   }),
   retryEvent: vi.fn(),
 }))
-vi.mock('@/lib/approvals', () => ({ recordApproval: vi.fn() }))
+vi.mock('@/lib/approvals', () => ({ withApproval: vi.fn(async (_admin: unknown, _approval: unknown, step: () => Promise<unknown>) => step()), isApprovalNotSaved: () => false }))
 vi.mock('next/cache', () => ({ revalidatePath: (path: string) => state.revalidated.push(path) }))
 vi.mock('@/lib/data/p27', () => ({
   myChild: async () => {

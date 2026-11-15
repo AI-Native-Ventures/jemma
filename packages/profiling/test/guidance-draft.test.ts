@@ -52,9 +52,9 @@ const world = (over: Record<string, Record<string, unknown>[]> = {}) =>
         { id: KAGISO, school_id: ALONE_SCHOOL, first_name: 'Kagiso', grade: 8, private_of: null },
       ],
       question_results: [
-        { id: 'r-amina-1', child_id: AMINA },
-        { id: 'r-twin-1', child_id: TWIN },
-        { id: 'r-kagiso-1', child_id: KAGISO },
+        { id: 'r-amina-1', child_id: AMINA, topic_name: 'Adding fractions' },
+        { id: 'r-twin-1', child_id: TWIN, topic_name: 'Adding fractions' },
+        { id: 'r-kagiso-1', child_id: KAGISO, topic_name: 'Adding fractions' },
       ],
       guidance_cards: [],
       guidance_drafts: [],
@@ -92,6 +92,14 @@ describe('a school child', () => {
     const db = world()
     await subjectGuidance.run(ctxFor(db, SCHOOL), { childId: AMINA, guidance: card('r-amina-1') })
     expect(contentOf(db, 'guidance_drafts', AMINA)?.focus.map((f) => f.title)).toEqual(['Adding fractions'])
+  })
+
+  test('the draft is the card after the word check: a label is left out of it, and the answer says so', async () => {
+    const db = world()
+    const out = await subjectGuidance.run(ctxFor(db, SCHOOL), { childId: AMINA, guidance: card('r-amina-1', 'Amina is doing well. She is a gifted child.') })
+    expect(contentOf(db, 'guidance_drafts', AMINA)?.headline).toBe('Amina is doing well.')
+    expect(rowsOf(db, 'guidance_cards')).toEqual([])
+    expect(out).toEqual({ updated: true, dropped: [{ field: 'headline', text: 'She is a gifted child.', reason: 'uses the word "gifted"' }] })
   })
 
   test('the answer to the model is the same words as before', async () => {
