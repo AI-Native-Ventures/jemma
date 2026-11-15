@@ -29,7 +29,7 @@ Open weights (`packages/runner/src/goose.ts`): `nvidia/nemotron-3.5-super-vl`, `
 
 ## Where a person decides
 
-Each is a tap by a named teacher. The change is made first, then the name and time go to `approvals`. If that write fails, the tap stands and a log line says so. Past records are refused without it.
+Each is a tap by a named teacher. The name and time go to `approvals` first, then the change. If that save fails, nothing changes. If the change fails, the row is deleted. Past records are refused without it.
 
 - Topic map: Approve map.
 - Answer key: Approve key.
