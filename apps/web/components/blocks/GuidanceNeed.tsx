@@ -48,38 +48,40 @@ export function GuidanceNeedItem({ guidance, wide = false }: { guidance: Guidanc
       router.refresh()
     })
 
+  // Plain block layout, with no nested flex columns: the text of a card can be long (a headline, three reasons, what is coming), and the button under
+  // it must sit below its last line however long it is.
   return (
-    <section aria-labelledby={titleId} className={`flex flex-col gap-3.5 rounded-14 bg-card p-3 text-ink ${wide ? 'flex-[1_1_100%]' : ''}`}>
+    <section aria-labelledby={titleId} className={`rounded-14 bg-card p-3 text-ink ${wide ? 'flex-[1_1_100%]' : ''}`}>
       <div className="flex items-start gap-3">
         <span aria-hidden="true" className="flex size-10 flex-none items-center justify-center rounded-12 bg-coral-tint">
           <ReviewDocIcon />
         </span>
-        <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
+        <div className="min-w-0 flex-1">
           <h3 id={titleId} className="m-0 text-[16px] leading-[1.3] font-semibold">
             {words.title}
           </h3>
-          <p className="m-0 text-[14px] leading-[1.4] text-body">{words.note}</p>
-        </span>
+          <p className="m-0 mt-[3px] text-[14px] leading-[1.4] text-body">{words.note}</p>
+        </div>
       </div>
-      <div className="flex flex-col gap-2.5 text-[15px] leading-[1.45]">
-        <p className="m-0 font-semibold text-pretty">{guidance.headline}</p>
+      <div className="mt-3.5 text-[15px] leading-[1.45]">
+        <p className="m-0 font-semibold">{guidance.headline}</p>
         {guidance.focus.length > 0 ? (
-          <ol className="m-0 flex list-none flex-col gap-2 p-0">
-            {guidance.focus.map((f) => (
-              <li key={f.title} className="flex flex-col gap-0.5">
-                <span className="font-semibold text-pretty">{f.title}</span>
-                <span className="text-body text-pretty">{f.why}</span>
+          <ol className="m-0 mt-2.5 list-none p-0">
+            {guidance.focus.map((f, i) => (
+              <li key={f.title} className={i > 0 ? 'mt-2' : ''}>
+                <span className="block font-semibold">{f.title}</span>
+                <span className="block text-body">{f.why}</span>
               </li>
             ))}
           </ol>
         ) : null}
-        <p className="m-0 text-body text-pretty">{words.lookingAhead}</p>
+        <p className="m-0 mt-2.5 text-body">{words.lookingAhead}</p>
       </div>
-      <Button size="md" pending={pending} onClick={send} className="w-full !h-auto min-h-[52px] !px-5 py-3">
+      <Button size="md" pending={pending} onClick={send} className="mt-3.5 w-full !h-auto min-h-[52px] !px-5 py-3">
         {words.button}
       </Button>
       {error ? (
-        <p role="alert" className="m-0 text-[14px] leading-[1.4] text-[#B3261E]">
+        <p role="alert" className="m-0 mt-2 text-[14px] leading-[1.4] text-[#B3261E]">
           {error}
         </p>
       ) : null}

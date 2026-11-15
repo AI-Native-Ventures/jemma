@@ -247,7 +247,20 @@ test('the whole demo path', async ({ page }) => {
     const guidanceItem = page.getByRole('region', { name: "Guidance for Amina's family" })
     await expect(guidanceItem).toBeVisible()
     await expect(guidanceItem.getByText(/^Looking ahead: /)).toBeVisible()
-    await guidanceItem.getByRole('button', { name: 'Send to family' }).click()
+    const sendButton = guidanceItem.getByRole('button', { name: 'Send to family' })
+    await sendButton.click({ timeout: 20_000 }).catch(async (error: unknown) => {
+      // The tap was blocked: say what is on top of the button, and where everything is, so the failure can be read without a browser.
+      const where = await sendButton.evaluate((button) => {
+        const box = (el: Element | null) => (el ? JSON.stringify(el.getBoundingClientRect().toJSON()) : 'none')
+        const rect = button.getBoundingClientRect()
+        const top = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)
+        const card = button.closest('section')
+        return { scrollY: Math.round(window.scrollY), viewport: [window.innerWidth, window.innerHeight], button: box(button), card: box(card), text: box(card?.querySelector('div.mt-3\\.5') ?? null), onTop: top ? `${top.tagName} ${top.className} ${(top.textContent ?? '').slice(0, 60)}` : 'none', bar: box(document.querySelector('nav[aria-label]')) }
+      })
+      console.log(`Send to family was blocked: ${JSON.stringify(where)}`)
+      await test.info().attach('guidance-item.png', { body: await page.screenshot(), contentType: 'image/png' })
+      throw error
+    })
     await expect(guidanceItem).toBeHidden({ timeout: 60_000 })
     expect((await admin.from('guidance_cards').select('child_id').eq('child_id', sb.childId)).data).toHaveLength(1)
     expect((await admin.from('guidance_drafts').select('child_id').eq('child_id', sb.childId)).data).toEqual([])
