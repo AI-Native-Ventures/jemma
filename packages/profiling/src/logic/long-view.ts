@@ -444,57 +444,5 @@ export function findPatterns(table: FamilyTable[]): PatternCandidate[] {
   return out
 }
 
-/** Words and phrases a Long view never uses: labels, rankings, comparisons and career talk. Matched as whole words. */
-export const BANNED_WORDS = [
-  'gifted',
-  'genius',
-  'clever',
-  'bright',
-  'smart',
-  'slow',
-  'lazy',
-  'weak learner',
-  'stupid',
-  'dull',
-  'average learner',
-  'top of',
-  'best in',
-  'bottom of',
-  'ranked',
-  'rank',
-  'than the class',
-  'than other learners',
-  'than her classmates',
-  'than his classmates',
-  'career',
-  'job one day',
-  'engineer',
-  'doctor',
-  'scientist',
-  'should study',
-  'should take',
-  'should choose',
-  'stream',
-  'track',
-] as const
-
-const BANNED_PATTERNS = BANNED_WORDS.map((w) => ({ word: w, re: new RegExp(`\\b${w.split(' ').join('\\s+')}\\b`, 'i') }))
-
-const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
-/**
- * The banned words found in `text`, each once, in the order they first appear. Case-insensitive.
- * `exempt` are names that come from the data (the subject, a strand, a topic, the title of a piece of work). Each is taken out of the
- * text, whole and in any case, before the check, so a topic called "Rank and file" or a quiz called "Track and field" never drops a pattern.
- * A name that is itself a banned word is not exempt: "Track" as a topic would otherwise hide "on track".
- */
-export function bannedWords(text: string, exempt: readonly string[] = []): string[] {
-  const names = [...new Set(exempt.map((n) => n.trim()).filter((n) => n && !BANNED_WORDS.some((w) => w === n.toLowerCase())))].sort((a, b) => b.length - a.length)
-  const clean = names.reduce((out, name) => out.replace(new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(name)}(?![\\p{L}\\p{N}])`, 'giu'), ' '), text)
-  return BANNED_PATTERNS.flatMap(({ word, re }) => {
-    const hit = re.exec(clean)
-    return hit ? [{ word, at: hit.index }] : []
-  })
-    .sort((a, b) => a.at - b.at)
-    .map((h) => h.word)
-}
+/** The words a Long view never uses (labels, rankings, comparisons, career talk) and the check for them: one module, shared with every other text the AI writes about a learner. */
+export { BANNED_WORDS, bannedWords } from './no-labels'
