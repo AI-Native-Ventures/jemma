@@ -252,6 +252,23 @@ describe('the answer area of a question', () => {
   })
 })
 
+describe('the keyboard is shown once', () => {
+  it('on a phone the editor shows its own keyboard after a touch, so the screen does not show it a second time', async () => {
+    const real = window.matchMedia
+    window.matchMedia = ((query: string) => ({ matches: query.includes('coarse'), media: query, addEventListener: () => undefined, removeEventListener: () => undefined })) as unknown as typeof window.matchMedia
+    try {
+      render(<MathAnswerField kind="expression" prompt="Simplify" value="" onChange={() => {}} hint="Type an expression." />)
+      await waitFor(() => expect(theKeyboard().layouts).toHaveLength(1))
+      await waitFor(() => expect(theField().mathVirtualKeyboardPolicy).toBe('auto'))
+      theKeyboard().show.mockClear()
+      act(() => theField().dispatchEvent(new Event('focusin')))
+      expect(theKeyboard().show).not.toHaveBeenCalled()
+    } finally {
+      window.matchMedia = real
+    }
+  })
+})
+
 describe('the room for the keyboard', () => {
   it('while the keyboard is up the page has room under its last button, and it is given back when the keyboard goes or the question does', async () => {
     const { unmount } = render(<MathAnswerField kind="expression" prompt="Simplify" value="" onChange={() => {}} hint="Type an expression." />)

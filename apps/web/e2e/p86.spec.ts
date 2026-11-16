@@ -153,6 +153,8 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     expect(layoutId).toMatch(/^jemma-expression-/)
     // The keyboard is tabs by kind of symbol and opens on 123 for this question; each key is at least 44 px and the page does not slide sideways.
     const visibleLayer = () => page.locator('.MLK__layer.is-visible').first().getAttribute('id')
+    // The editor shows its keyboard a moment after the touch (300 ms) and builds it once more then: it is measured when it has settled.
+    await page.waitForTimeout(900)
     expect(await visibleLayer()).toBe('jemma-numbers')
     const keycap = page.locator('.MLK__layer.is-visible .MLK__keycap').first()
     await expect(keycap).toBeVisible()
@@ -162,9 +164,13 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await noHorizontalScroll(page)
     // The row of tabs: five tabs and the key that hides the keyboard. Each face is one line, readable (16 px text, a 22 px drawing), and inside its key,
     // at 390 px and at 360 px.
-    const showKeyboard = () => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { show(): void } }).mathVirtualKeyboard.show())
+    const showKeyboard = async () => {
+      // A change of the window size may put the keyboard away: it is brought back if it went, and measured when it has settled.
+      const up = await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible)
+      if (!up) await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { show(): void } }).mathVirtualKeyboard.show())
+      await page.waitForTimeout(900)
+    }
     const tabFaces = async (label: string) => {
-      // A change of the window size may put the keyboard away: it is brought back, and measured when it is on the screen.
       await showKeyboard()
       const tabs = page.locator('.MLK__layer.is-visible .tab')
       await expect(tabs).toHaveCount(5)
