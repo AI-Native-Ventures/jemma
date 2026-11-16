@@ -54,7 +54,7 @@ export function Sidebar({
   only,
 }: SidebarProps) {
   const active = markedTab(role, base, usePathname(), first)
-  const tabs = only ? TABS[role].filter((t) => only.includes(t.id)) : TABS[role]
+  const tabs = (only ? TABS[role].filter((t) => only.includes(t.id)) : TABS[role]).filter((t) => !t.phoneOnly)
   return (
     <aside className="hidden w-[254px] leading-[normal] flex-none flex-col gap-[22px] border-r border-line bg-card px-3.5 pt-[22px] pb-[18px] lg:flex">
       <Wordmark />
