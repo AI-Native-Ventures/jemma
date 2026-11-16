@@ -107,7 +107,8 @@ describe('an expression', () => {
 
   it('two rows of maths keys: x y, the little 2, the caret, the fraction, two brackets, the minus, the plus and the root (P125 added the fraction and the plus)', () => {
     show(EXPRESSION)
-    expect(keyNames()).toEqual(['x', 'y', '²', '^', 'a/b', '(', ')', MINUS, '+', '√'])
+    // P129: the power key is drawn as x with a raised n, and the fraction key as a over b, so their text is xn and ab
+    expect(keyNames()).toEqual(['x', 'y', '²', 'xn', 'ab', '(', ')', MINUS, '+', '√'])
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-keys] button')) {
       expect(b.type).toBe('button')
       expect(b.getAttribute('aria-label') ?? '').not.toBe('')
@@ -189,7 +190,7 @@ describe('an equation', () => {
     show(EQUATION)
     expect(screen.getAllByRole('textbox')).toHaveLength(1)
     expect(box('Your answer').maxLength).toBe(40)
-    expect(keyNames()).toEqual(['x', '=', MINUS, 'or', '±', 'a/b', '√', '²', '(', ')'])
+    expect(keyNames()).toEqual(['x', '=', MINUS, 'or', '±', 'ab', '√', '²', '(', ')'])
     expect(screen.getByText('Type the answer, like x = 4. Two answers: x = 3 or x = -1.')).toBeTruthy()
   })
 

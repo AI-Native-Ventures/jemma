@@ -30,7 +30,8 @@ const boxes = (el: Element) => {
   return { wrote, right, grid: wrote.parentElement! }
 }
 /** The pieces of an answer that cannot be cut: what the child reads, one string for each. */
-const pieces = (box: Element) => [...box.querySelectorAll('.whitespace-nowrap')].map((p) => (p.textContent ?? '').trim())
+// P129: a term with algebra in it is typeset, so its plain words are kept for a screen reader (`.sr-only`); that is the text of the piece as it was written.
+const pieces = (box: Element) => [...box.querySelectorAll('.whitespace-nowrap')].map((p) => (p.querySelector('.sr-only')?.textContent ?? p.textContent ?? '').trim())
 
 describe('results: an algebra answer keeps its terms whole', () => {
   it('the two boxes stack when an answer is longer than a short number', () => {
@@ -53,9 +54,11 @@ describe('results: an algebra answer keeps its terms whole', () => {
     const { wrote, right } = boxes(page({}))
     expect(pieces(wrote)).toEqual(['3x', '+ 12', '+ 0'])
     expect(pieces(right)).toEqual(['3x', '+ 12'])
-    // the words are the answer as it was written
-    expect(wrote.textContent).toBe('You wrote3x + 12 + 0')
-    expect(right.textContent).toBe('Right answer3x + 12')
+    // the words kept for a screen reader are the answer as it was written (P129: the drawing of each term is typeset)
+    const written = (box: Element) => [...box.querySelectorAll('.sr-only')].map((e) => e.textContent).join(' ')
+    expect(written(wrote)).toBe('3x + 12 + 0')
+    expect(written(right)).toBe('3x + 12')
+    expect(wrote.textContent).toContain('You wrote')
   })
 
   it('a power keeps its raised number inside its term', () => {
