@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { LibraryEntry, TeachingLessonForChild } from '../lib/teaching'
 import type { Delivery } from '../app/k/learn/_parts/delivery'
@@ -48,7 +48,7 @@ const reader = (initialDelivery: Delivery, over: Partial<Parameters<typeof Lesso
 const kinds = (container: HTMLElement) => [...container.querySelectorAll('[data-block]')].map((el) => el.getAttribute('data-block'))
 const pictures = (container: HTMLElement) => container.querySelectorAll('[data-picture]').length
 
-const spoken = vi.hoisted(() => ({ said: [] as string[] }))
+const spoken = vi.hoisted(() => ({ said: [] as string[], utterances: [] as { text: string; onend: (() => void) | null; onerror: (() => void) | null }[] }))
 function giveVoice() {
   class Utterance {
     text: string
@@ -61,7 +61,7 @@ function giveVoice() {
     }
   }
   vi.stubGlobal('SpeechSynthesisUtterance', Utterance)
-  vi.stubGlobal('speechSynthesis', { speak: vi.fn((u: Utterance) => spoken.said.push(u.text)), cancel: vi.fn() })
+  vi.stubGlobal('speechSynthesis', { speak: vi.fn((u: Utterance) => (spoken.said.push(u.text), spoken.utterances.push(u))), cancel: vi.fn() })
   Object.defineProperty(window, 'speechSynthesis', { value: (globalThis as { speechSynthesis: unknown }).speechSynthesis, configurable: true })
 }
 
@@ -69,6 +69,7 @@ beforeEach(() => {
   window.localStorage.clear()
   window.scrollTo = vi.fn() as unknown as typeof window.scrollTo
   spoken.said = []
+  spoken.utterances = []
   actions.answerLessonQuestion.mockReset()
   actions.startTopicLesson.mockClear()
   actions.finishTopicLesson.mockClear()
@@ -175,12 +176,30 @@ describe('Listen', () => {
     }
   })
 
-  it('Play all reads the blocks from the first, and the button then says Stop', async () => {
+  it('Play all reads the blocks from the first, goes on to the next block when one is finished, and the button says Stop', async () => {
     giveVoice()
     reader('listen')
     fireEvent.click(await screen.findByRole('button', { name: 'Play all' }))
     expect(spoken.said).toEqual(['A fraction is part of a whole, said in words.'])
     expect(screen.getByRole('button', { name: 'Stop reading' }).getAttribute('aria-pressed')).toBe('true')
+    // the first text ends: the voice goes on with the second block, and then the third (a worked example)
+    act(() => spoken.utterances[0]!.onend?.())
+    expect(spoken.said).toEqual(['A fraction is part of a whole, said in words.', 'One part of four is shaded.'])
+    act(() => spoken.utterances[1]!.onend?.())
+    expect(spoken.said[2]).toBe('Worked speech in words.')
+  })
+
+  it('a block read on its own stops at its end, and a voice that fails stops Play all', async () => {
+    giveVoice()
+    reader('listen')
+    const buttons = await screen.findAllByRole('button', { name: 'Read this part aloud' })
+    fireEvent.click(buttons[0]!)
+    act(() => spoken.utterances[0]!.onend?.())
+    expect(spoken.said).toHaveLength(1)
+    fireEvent.click(screen.getByRole('button', { name: 'Play all' }))
+    expect(spoken.said).toHaveLength(2)
+    act(() => spoken.utterances[1]!.onerror?.())
+    expect(screen.getByRole('button', { name: 'Play all' }).getAttribute('aria-pressed')).toBe('false')
   })
 
   it('on a phone that cannot speak shows all the words and says so, with no voice button', async () => {
@@ -225,6 +244,11 @@ describe('the lesson around the blocks', () => {
     expect(screen.getByRole('link', { name: 'See the original' }).getAttribute('href')).toBe('https://www.siyavula.com/read/za/mathematics/grade-6/fractions')
   })
 
+  it('counts the lessons by the highest number, so a lesson that failed its checks leaves a gap and never "Lesson 3 of 2"', () => {
+    reader('read', { entry: { ...entry, position: 3 }, count: 3 })
+    expect(screen.getByText('Lesson 3 of 3 · 12 min')).toBeTruthy()
+  })
+
   it('tells the server the lesson was opened', async () => {
     reader('read')
     await waitFor(() => expect(actions.startTopicLesson).toHaveBeenCalledWith('lesson-1'))
@@ -233,6 +257,22 @@ describe('the lesson around the blocks', () => {
   it('goes back to the lessons of the topic, and to the practice it came from', () => {
     reader('read', { session: '0b2c6e0e-1111-4222-8333-444455556666' })
     expect(screen.getByRole('link', { name: 'Close the lesson' }).getAttribute('href')).toBe('/k/learn/topic-1?session=0b2c6e0e-1111-4222-8333-444455556666')
+  })
+})
+
+describe('a try block with a missing number in a fraction', () => {
+  const missing: TeachingLessonForChild = {
+    ...lesson,
+    blocks: lesson.blocks.map((b) => (b.kind === 'try' ? { ...b, question: { prompt: 'Complete: 1/2 = ?/4', render: 'text' as const, answerKind: 'fraction' as const } } : b)),
+  }
+
+  it('shows the question as words until the learner opens it, and only then the box inside the fraction', () => {
+    const { container } = reader('read', { lesson: missing })
+    const block = within(container.querySelector('[data-block="try"]') as HTMLElement)
+    expect(block.queryByLabelText('Missing number')).toBeNull()
+    expect(block.getByText('Complete: 1/2 = ?/4')).toBeTruthy()
+    fireEvent.click(block.getByRole('button', { name: 'Answer this one' }))
+    expect(block.getByLabelText('Missing number')).toBeTruthy()
   })
 })
 
@@ -317,6 +357,15 @@ describe('the practice at the end', () => {
     expect(screen.queryByText('way 1')).toBeNull()
     expect(screen.getByRole('link', { name: 'Next lesson: Subtracting fractions' }).getAttribute('href')).toBe('/k/learn/topic-1/2')
     expect(screen.getByRole('link', { name: 'Back to the lessons' }).getAttribute('href')).toBe('/k/learn/topic-1')
+  })
+
+  it('has no delivery switch in the practice: it changes nothing there', async () => {
+    reader('read')
+    expect(screen.getByRole('radiogroup', { name: 'How you want to learn' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Start the practice' }))
+    await screen.findByText('Question 1 of 3')
+    expect(screen.queryByRole('radiogroup')).toBeNull()
+    expect(screen.getByRole('progressbar', { name: 'How far you are in the practice' })).toBeTruthy()
   })
 
   it('offers to save again when the score could not be saved', async () => {

@@ -11,11 +11,11 @@ export const dynamic = 'force-dynamic'
 
 export default async function SessionPage({ params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = await params
-  const page = await getSessionPage(sessionId)
+  // P142: a topic that has lessons in the teaching library opens its Learn step as "Learn it first" (asked beside the page's own read, so the page is not slower).
+  const [page, library] = await Promise.all([getSessionPage(sessionId), sessionLibrary(sessionId)])
   // A finished session goes home, except one whose answers came from a photo: the child may be waiting on this very screen for its results.
   if (page.status === 'done' && !(await newestSnap(createSupabaseAdmin(), sessionId))) redirect('/k')
-  // P142: a topic that has lessons in the teaching library opens its Learn step as "Learn it first". No lessons, or a read that fails: the Learn step as it always was.
-  const library = await sessionLibrary(sessionId)
+  // No lessons, or a read that fails: the Learn step as it always was.
   return (
     <SessionFlow
       sessionId={sessionId}

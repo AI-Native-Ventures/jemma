@@ -1,3 +1,4 @@
+import { libraryKey } from '@jemma/profiling/schemas'
 import Link from 'next/link'
 import { entryButton, nextEntry, type LibraryEntry } from '@/lib/teaching'
 
@@ -20,7 +21,7 @@ export function LearnFirstPanel({ library, topicId, sessionId, topic, onSkip }: 
       <p className="m-0 text-[15px] font-semibold text-body">Learn</p>
       <div className="flex flex-col gap-1.5">
         <h1 className="m-0 text-[28px] leading-[1.15] font-bold tracking-[-0.015em]">Learn it first</h1>
-        <p className="m-0 text-[17px] font-semibold">{topic}</p>
+        <p className="m-0 text-[17px] font-semibold">{libraryKey(topic)}</p>
         <p className="m-0 text-[16px] leading-[1.45] text-body">Short lessons with worked examples. Each one ends with a few questions.</p>
       </div>
       {go ? (

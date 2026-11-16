@@ -24,11 +24,10 @@ export async function resolveTopic(topicId: string): Promise<LearnTopic | null> 
   try {
     const { supabase, child } = await myChild()
     const admin = createSupabaseAdmin()
-    const { data: topic } = await admin.from('topics').select('id, name, family, map_id').eq('id', topicId).maybeSingle()
+    const [{ data: topic }, classIds] = await Promise.all([admin.from('topics').select('id, name, family, map_id').eq('id', topicId).maybeSingle(), classIdsOfChild(supabase, child.id)])
     if (!topic) return null
     const { data: map } = await admin.from('curriculum_maps').select('class_id').eq('id', topic.map_id).maybeSingle()
-    if (!map) return null
-    if (!(await classIdsOfChild(supabase, child.id)).includes(map.class_id)) return null
+    if (!map || !classIds.includes(map.class_id)) return null
     const { data: cls } = await admin.from('classes').select('grade').eq('id', map.class_id).maybeSingle()
     return cls ? { id: topic.id, name: topic.name, family: topic.family, grade: cls.grade } : null
   } catch {
@@ -129,7 +128,7 @@ export async function trialsFor(family: string): Promise<{ format: 'reading' | '
 }
 
 /** True when this request is a parent's hand-over of ONE session: that cookie covers the session and the hand-back screen only, so the lessons cannot be opened. */
-async function underSessionHandover(): Promise<boolean> {
+export async function underSessionHandover(): Promise<boolean> {
   try {
     const handover = await verifyHandover((await cookies()).get(HANDOVER_COOKIE)?.value)
     return handover !== null && !isOwnHandover(handover)

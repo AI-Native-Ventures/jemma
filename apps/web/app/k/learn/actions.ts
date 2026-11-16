@@ -2,7 +2,7 @@
 
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { myChild } from '@/lib/data/p27'
-import { storedLesson } from '@/lib/data/teaching'
+import { storedLesson, underSessionHandover } from '@/lib/data/teaching'
 import { markLessonQuestion, questionAt, type LessonAnswerResult, type LessonWhere } from '@/lib/teaching'
 import { ANSWER_MAX_LENGTH } from '../session/[sessionId]/logic'
 
@@ -12,6 +12,8 @@ import { ANSWER_MAX_LENGTH } from '../session/[sessionId]/logic'
 
 /** A lesson that is there and ready, whole, or an error the screen says in plain words. Also proves the person asking is a signed-in learner (`myChild`). */
 async function lessonOf(topicLessonId: string) {
+  // A parent's hand-over of ONE session covers that session only (the lesson screens are not opened for it), so no answer or progress is taken for it either.
+  if (await underSessionHandover()) throw new Error('This lesson is not available')
   const { child } = await myChild()
   const stored = await storedLesson(topicLessonId)
   if (!stored) throw new Error('This lesson is not available')

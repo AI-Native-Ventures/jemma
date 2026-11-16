@@ -111,11 +111,13 @@ describe('speechOf: the voice reads the words of the block and nothing else', ()
     expect(speechOf(blocks.try!)).toBe('spoken')
   })
 
-  it('never carries the written maths of a block: a worked line or a caption is not in it', () => {
-    for (const b of Object.values(blocks)) {
-      expect(speechOf(b)).not.toContain('2/4')
-      expect(speechOf(b)).not.toContain('\\')
-    }
+  it('is never the written text or the maths of a block, even where the two differ a lot', () => {
+    const written: BlockForChild = { kind: 'explain', text: 'Solve \\frac{x}{2} + 3 = 5 with x^2', speech: 'Solve x over two plus three equals five.' }
+    expect(speechOf(written)).toBe('Solve x over two plus three equals five.')
+    const worked: BlockForChild = { kind: 'worked', problem: 'x^2 = 9', steps: [{ line: 'x = \\pm 3', reason: 'Take the root.' }, { line: 'x = 3 or x = -3', reason: 'Both signs.' }], answer: 'x = 3 or x = -3', answerKind: 'equation', speech: 'Take the square root of both sides.' }
+    expect(speechOf(worked)).toBe('Take the square root of both sides.')
+    expect(speechOf(worked)).not.toContain('pm')
+    expect(speechOf(worked)).not.toContain('x = 3')
   })
 })
 

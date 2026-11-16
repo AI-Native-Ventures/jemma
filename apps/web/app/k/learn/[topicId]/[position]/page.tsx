@@ -24,7 +24,7 @@ export default async function LessonPage({ params, searchParams }: { params: Pro
   const entries = await libraryFor(topic.grade, topic.name)
   const entry = entries.find((e) => e.position === at)
   if (!entry) notFound()
-  const found = await topicLesson(entry.id)
+  const [found, trials] = await Promise.all([topicLesson(entry.id), trialsFor(topic.family)])
   if (!found) notFound()
   const after = entries[entries.indexOf(entry) + 1]
   return (
@@ -34,12 +34,12 @@ export default async function LessonPage({ params, searchParams }: { params: Pro
       topicName={libraryKey(topic.name)}
       grade={topic.grade}
       entry={found.entry}
-      count={entries.length}
+      count={Math.max(...entries.map((e) => e.position))}
       lesson={found.lesson}
       source={found.source}
       next={after ? { position: after.position, title: after.title } : null}
       session={session}
-      initialDelivery={defaultDelivery(await trialsFor(topic.family))}
+      initialDelivery={defaultDelivery(trials)}
     />
   )
 }

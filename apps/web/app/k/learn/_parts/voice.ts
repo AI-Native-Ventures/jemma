@@ -2,6 +2,8 @@
 // block, which holds words only. A phone that cannot speak is told so by `canSpeak`, and the lesson then shows the words.
 
 let current = 0
+/** The utterances being said. Chrome drops the end signal of one that nothing refers to any more, so they are kept until they are done or stopped. */
+let queued: SpeechSynthesisUtterance[] = []
 
 /** True in a browser that can read aloud. False on the server and in a browser without speech. */
 export const canSpeak = (): boolean => typeof window !== 'undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined'
@@ -9,6 +11,7 @@ export const canSpeak = (): boolean => typeof window !== 'undefined' && 'speechS
 /** Stops whatever is being said. What was said before never calls back after this. */
 export function stopSpeaking(): void {
   current++
+  queued = []
   try {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel()
   } catch {
@@ -38,8 +41,20 @@ export function speakText(text: string, on: { onEnd?: () => void; onError?: () =
     const utterance = new SpeechSynthesisUtterance(chunk)
     utterance.lang = 'en-ZA'
     utterance.rate = 0.95
-    if (i === chunks.length - 1) utterance.onend = () => mine === current && on.onEnd?.()
-    utterance.onerror = () => mine === current && on.onError?.()
+    if (i === chunks.length - 1) {
+      utterance.onend = () => {
+        if (mine !== current) return
+        queued = []
+        on.onEnd?.()
+      }
+    }
+    // A sentence that cannot be said ends the whole text: the ones after it are stopped, so nothing carries on (or starts "Play all" again) behind it.
+    utterance.onerror = () => {
+      if (mine !== current) return
+      stopSpeaking()
+      on.onError?.()
+    }
+    queued.push(utterance)
     window.speechSynthesis.speak(utterance)
   })
 }

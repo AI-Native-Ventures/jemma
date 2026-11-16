@@ -34,6 +34,15 @@ export function defaultDelivery(trials: { format: 'reading' | 'diagram' | 'audio
   return best ? FORMAT_DELIVERY[best] : 'read'
 }
 
+/** The device's storage, or null where even touching it fails (some private browsing modes). */
+export function deviceStorage(): Storage | null {
+  try {
+    return typeof window === 'undefined' ? null : window.localStorage
+  } catch {
+    return null
+  }
+}
+
 /** The saved choice of this device, or null when nothing (or something this version does not know) is saved, or the store cannot be read. */
 export function readDelivery(store: Pick<Storage, 'getItem'> | null): Delivery | null {
   try {

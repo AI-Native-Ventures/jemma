@@ -7,7 +7,7 @@ import { sourceHref, type LibraryEntry, type TeachingLessonForChild } from '@/li
 import { startTopicLesson } from '../actions'
 import { LessonBlock } from './Block'
 import { DeliverySwitch } from './DeliverySwitch'
-import { readDelivery, saveDelivery, speechOf, type Delivery } from './delivery'
+import { deviceStorage, readDelivery, saveDelivery, speechOf, type Delivery } from './delivery'
 import { LessonPractice } from './LessonPractice'
 import { LessonText, typesetFor } from './LessonText'
 import { canSpeak, speakText, stopSpeaking } from './voice'
@@ -47,6 +47,25 @@ function Bar({ value, label }: { value: number; label: string }) {
 }
 
 /**
+ * The bar of the lesson part: how far down the page the learner is. It holds its own scroll state, so a scroll draws this bar and nothing else (the
+ * blocks, with their typeset maths, are not drawn again at every scroll event).
+ */
+function ReadBar() {
+  const [read, setRead] = useState(0)
+  useEffect(() => {
+    const onScroll = () => {
+      const page = document.documentElement
+      const room = page.scrollHeight - page.clientHeight
+      setRead(room > 0 ? Math.min(1, window.scrollY / room) : 1)
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+  return <Bar value={read} label="How far you have read" />
+}
+
+/**
  * One lesson: what it covers and its key words, then the blocks in order (an idea, a picture, a worked example, a question for the learner, the usual
  * mistake), a summary, the credit of the source, and then its practice. The delivery switch at the top (Read, Pictures, Listen) changes how the blocks are
  * shown, never which blocks there are. The choice is kept on this device; with none kept, the learner's best format opens the lesson.
@@ -54,9 +73,9 @@ function Bar({ value, label }: { value: number; label: string }) {
 export function LessonReader({ topicId, topicName, grade, entry, count, lesson, source, next, session, initialDelivery }: LessonReaderProps) {
   const [delivery, setDelivery] = useState<Delivery>(initialDelivery)
   const [phase, setPhase] = useState<'learn' | 'practice'>('learn')
-  const [read, setRead] = useState(0)
   const [practiced, setPracticed] = useState(0)
-  const [voiceOk, setVoiceOk] = useState(false)
+  // Until the browser has been asked, a voice is taken to be there (most phones have one): the page does not say "cannot read aloud" for a moment first.
+  const [voiceOk, setVoiceOk] = useState<boolean | null>(null)
   const [speaking, setSpeaking] = useState<number | null>(null)
   const [playAll, setPlayAll] = useState(false)
   const [activeTry, setActiveTry] = useState<number | null>(null)
@@ -67,25 +86,12 @@ export function LessonReader({ topicId, topicName, grade, entry, count, lesson, 
 
   // On the device: the choice kept, whether it can speak, and the first open of the lesson (so the list says "Continue").
   useEffect(() => {
-    const saved = readDelivery(window.localStorage)
+    const saved = readDelivery(deviceStorage())
     if (saved) setDelivery(saved)
     setVoiceOk(canSpeak())
     startTopicLesson(entry.id).catch(() => {})
     return stopSpeaking
   }, [entry.id])
-
-  // How far down the lesson the learner is.
-  useEffect(() => {
-    if (phase !== 'learn') return
-    const onScroll = () => {
-      const page = document.documentElement
-      const room = page.scrollHeight - page.clientHeight
-      setRead(room > 0 ? Math.min(1, window.scrollY / room) : 1)
-    }
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [phase])
 
   const stopAll = () => {
     stopSpeaking()
@@ -96,7 +102,7 @@ export function LessonReader({ topicId, topicName, grade, entry, count, lesson, 
   const choose = (d: Delivery) => {
     stopAll()
     setDelivery(d)
-    saveDelivery(window.localStorage, d)
+    saveDelivery(deviceStorage(), d)
   }
 
   function speakAt(i: number, chain: boolean) {
@@ -126,7 +132,6 @@ export function LessonReader({ topicId, topicName, grade, entry, count, lesson, 
     window.scrollTo?.(0, 0)
   }
 
-  const progress = phase === 'learn' ? read : practiced
   return (
     <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans leading-[normal] lg:min-h-dvh">
       <header className="sticky top-0 z-10 border-b border-line bg-ground">
@@ -139,8 +144,8 @@ export function LessonReader({ topicId, topicName, grade, entry, count, lesson, 
             </Link>
             <p className="m-0 min-w-0 flex-1 truncate text-[15px] font-semibold">{topicName}</p>
           </div>
-          <Bar value={progress} label={phase === 'learn' ? 'How far you have read' : 'How far you are in the practice'} />
-          <DeliverySwitch value={delivery} onChange={choose} />
+          {phase === 'learn' ? <ReadBar /> : <Bar value={practiced} label="How far you are in the practice" />}
+          {phase === 'learn' ? <DeliverySwitch value={delivery} onChange={choose} /> : null}
         </div>
       </header>
 
@@ -184,7 +189,7 @@ export function LessonReader({ topicId, topicName, grade, entry, count, lesson, 
           ) : null}
 
           {delivery === 'listen' ? (
-            voiceOk ? (
+            voiceOk !== false ? (
               <button type="button" aria-pressed={playAll} onClick={() => (playAll ? stopAll() : speakAt(0, true))} className={playAllButton}>
                 {playAll ? 'Stop reading' : 'Play all'}
               </button>
@@ -200,7 +205,7 @@ export function LessonReader({ topicId, topicName, grade, entry, count, lesson, 
               block={block}
               delivery={delivery}
               typeset={typeset}
-              voice={{ ok: voiceOk, playing: speaking === i, onToggle: () => toggle(i) }}
+              voice={{ ok: voiceOk !== false, playing: speaking === i, onToggle: () => toggle(i) }}
               topicLessonId={entry.id}
               topic={topicName}
               activeTry={activeTry}

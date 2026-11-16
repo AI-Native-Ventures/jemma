@@ -34,6 +34,12 @@ describe('LearnFirstPanel', () => {
     expect(rows.map((r) => r.textContent)).toEqual(['1Lesson title 111 min\u203a', '2Lesson title 212 min\u203a', '3Lesson title 313 min\u203a'])
   })
 
+  it('names the topic without "(Term N)": the lessons are the same for both teachings', () => {
+    render(<LearnFirstPanel library={[entry(1)]} topicId="topic-1" sessionId={SESSION} topic="Common fractions (Term 4)" onSkip={vi.fn()} />)
+    expect(screen.getByText('Common fractions')).toBeTruthy()
+    expect(screen.queryByText(/Term 4/)).toBeNull()
+  })
+
   it('offers "Start lesson 1" when nothing was opened, and opens it from this practice', () => {
     panel([entry(1), entry(2)])
     const start = screen.getByRole('link', { name: 'Start lesson 1' })

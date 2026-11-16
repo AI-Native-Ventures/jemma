@@ -4,10 +4,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 // P142: the three server actions of a teaching lesson, with the learner, the stored lesson and the database as doubles: an answer is marked on the server,
 // a lesson that is not there says so, the progress a learner writes is held to what the lesson allows. No database, no router, no model.
 
-const state = vi.hoisted(() => ({ lesson: null as unknown, writes: [] as { table: string; row: Record<string, unknown>; options: unknown }[], fail: false }))
+const state = vi.hoisted(() => ({ lesson: null as unknown, writes: [] as { table: string; row: Record<string, unknown>; options: unknown }[], fail: false, sessionHandover: false }))
 
 vi.mock('../lib/data/p27', () => ({ myChild: async () => ({ supabase: {}, child: { id: 'child-1' } }) }))
-vi.mock('../lib/data/teaching', () => ({ storedLesson: async () => (state.lesson ? { lesson: state.lesson, source: { kind: 'none', title: '', credit: '' } } : null) }))
+vi.mock('../lib/data/teaching', () => ({
+  storedLesson: async () => (state.lesson ? { lesson: state.lesson, source: { kind: 'none', title: '', credit: '' } } : null),
+  underSessionHandover: async () => state.sessionHandover,
+}))
 vi.mock('../lib/supabase/admin', () => ({
   createSupabaseAdmin: () => ({
     from: (table: string) => ({
@@ -48,6 +51,7 @@ beforeEach(() => {
   state.lesson = lesson()
   state.writes = []
   state.fail = false
+  state.sessionHandover = false
 })
 
 describe('answerLessonQuestion', () => {
@@ -106,5 +110,15 @@ describe('finishTopicLesson', () => {
   it('says so when the write fails', async () => {
     state.fail = true
     await expect(finishTopicLesson('lesson-1', 3, 6)).rejects.toThrow('write failed')
+  })
+})
+
+describe('a parent\'s hand-over of one session', () => {
+  it('does not open the lessons: no answer is marked and no progress is written for it', async () => {
+    state.sessionHandover = true
+    await expect(answerLessonQuestion('lesson-1', { kind: 'practice', index: 0 }, '1')).rejects.toThrow('not available')
+    await expect(startTopicLesson('lesson-1')).rejects.toThrow('not available')
+    await expect(finishTopicLesson('lesson-1', 3, 6)).rejects.toThrow('not available')
+    expect(state.writes).toEqual([])
   })
 })

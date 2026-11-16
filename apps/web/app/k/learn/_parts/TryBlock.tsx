@@ -82,7 +82,7 @@ export function TryBlock({ index, question, hint, topicLessonId, topic, typeset,
   return (
     <div className="flex flex-col gap-4">
       {pictureFirst ? picture : null}
-      {shape.kind === 'missing' && !result ? (
+      {shape.kind === 'missing' && open && !result ? (
         <MissingQuestion q={q} shape={shape} value={text} onChange={setText} />
       ) : (
         <CardQuestion prompt={q.prompt} typeset={typeset} />
