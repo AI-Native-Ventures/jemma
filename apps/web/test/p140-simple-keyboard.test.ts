@@ -280,7 +280,7 @@ describe('the keyboard is responsive: the CSS of a layer', () => {
     expect(style).toMatch(/--keycap-gap: 4px/)
     expect(style).toMatch(/--keycap-max-width: 64px/)
     expect(style).toMatch(/--keycap-font-size: clamp\(16px, 5\.2vw, 24px\)/)
-    expect(style).toMatch(/--keycap-small-font-size: clamp\(11px, 3\.4vw, 16px\)/)
+    expect(style).toMatch(/--keycap-small-font-size: clamp\(10\.5px, 3\.1vw, 16px\)/)
     expect(Number(/--keycap-height: (\d+)px/.exec(style)![1])).toBeGreaterThanOrEqual(44)
   })
 
@@ -288,25 +288,30 @@ describe('the keyboard is responsive: the CSS of a layer', () => {
     expect(style).toMatch(/\.MLK__keycap \{[^}]*padding: 0 !important/)
     expect(style).toMatch(/\.MLK__keycap \{[^}]*min-width: 0/)
     expect(style).toMatch(/\.MLK__keycap \{[^}]*align-items: center; justify-content: center/)
+    // The action keys (the tabs, backspace, the arrows) are not drawn with the keycap class: they have no padding either (MathLive gives them 12 px each side).
+    expect(style).toMatch(/\.action \{[^}]*padding: 0 !important/)
+    expect(style).toMatch(/\.action \{[^}]*min-width: 0/)
   })
 
-  it('the small text keys (sin, cos with a power, d/dx, f prime, lim, log) are 11 to 16 px and on one line', () => {
-    expect(style).toMatch(/\.MLK__keycap\.small \{[^}]*font-size: clamp\(11px, 3\.4vw, 16px\) !important/)
+  it('the small text keys (sin, cos with a power, d/dx, f prime, lim, log) are 10.5 to 16 px and on one line', () => {
+    expect(style).toMatch(/\.MLK__keycap\.small \{[^}]*font-size: clamp\(10\.5px, 3\.1vw, 16px\) !important/)
     expect(style).toMatch(/\.MLK__keycap\.small \{[^}]*white-space: nowrap/)
     for (const cap of [CAPS.sin, CAPS.cos, CAPS.tan, CAPS.asin, CAPS.acos, CAPS.atan, CAPS.ddx, CAPS.fPrime, CAPS.limit, CAPS.log, CAPS.ln, CAPS.fx]) expect(cap.class, cap.tooltip).toContain('small')
   })
 
-  it('the two tall faces (the fraction, 1.87 em high, and the integral, 2.23 em) have a smaller font so they stay inside a 46 px key even on a laptop', () => {
+  it('the tall faces (the fraction, 1.87 em high, the integral, 2.23 em, and the sum, 1.61 em) have a smaller font so they stay inside a 46 px key even on a laptop', () => {
     expect(CAPS.fraction.class).toContain('stack')
     expect(CAPS.integral.class).toContain('tall')
+    expect(CAPS.sum.class).toContain('tall')
     expect(style).toMatch(/\.MLK__keycap\.stack \{[^}]*font-size: clamp\(13px, 4vw, 16px\) !important/)
-    expect(style).toMatch(/\.MLK__keycap\.tall \{[^}]*font-size: clamp\(13px, 4vw, 17px\) !important/)
+    expect(style).toMatch(/\.MLK__keycap\.tall \{[^}]*font-size: clamp\(12px, 3\.6vw, 15px\) !important/)
     // measured with the editor's own renderer: a fraction is 1.87 times its font size high, an integral 2.23 times; a 46 px key has 44 px inside its border
     expect(1.87 * 16).toBeLessThanOrEqual(32)
-    expect(2.23 * 17).toBeLessThanOrEqual(44)
+    expect(2.23 * 15).toBeLessThanOrEqual(36)
     for (const width of [320, 360, 390, 430, 1440]) {
       expect(1.87 * Math.min(16, Math.max(13, 0.04 * width)), `fraction at ${width}`).toBeLessThanOrEqual(32)
-      expect(2.23 * Math.min(17, Math.max(13, 0.04 * width)), `integral at ${width}`).toBeLessThanOrEqual(44)
+      expect(2.23 * Math.min(15, Math.max(12, 0.036 * width)), `integral at ${width}`).toBeLessThanOrEqual(36)
+      expect(1.61 * Math.min(15, Math.max(12, 0.036 * width)), `sum at ${width}`).toBeLessThanOrEqual(36)
       // every other maths face is at most 1.21 em high (a root), and the biggest font is 1.25 times 24 px for the signs
       expect(1.21 * Math.min(24, Math.max(16, 0.052 * width))).toBeLessThanOrEqual(44)
     }
@@ -337,8 +342,9 @@ describe('the keyboard is responsive: the CSS of a layer', () => {
       const tab = fontPx(11, 3.3, 15, width)
       expect(8 * 0.62 * tab, `Calculus at ${width}`).toBeLessThanOrEqual(key(2))
       // the longest small key in one unit: the inverse sine, "sin" and a small raised "-1": about 1.6 of the font size for the three letters and 0.9 for the power
-      const small = fontPx(11, 3.4, 16, width)
-      expect(2.5 * small, `sin^-1 at ${width}`).toBeLessThanOrEqual(key(1))
+      const small = fontPx(10.5, 3.1, 16, width)
+      // the widest small key: tan with its raised -1, about 2.36 times the font size; the key has its border (2 px) inside its width
+      expect(2.36 * small, `tan^-1 at ${width}`).toBeLessThanOrEqual(key(1) - 2 - 1)
     }
   })
 })

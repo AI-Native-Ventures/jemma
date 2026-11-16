@@ -100,7 +100,7 @@ export const CAPS = {
   fPrime: cap('f prime of x', { latex: "f'(x)", insert: 'f^{\\prime}\\left(x\\right)', class: 'small' }),
   integral: cap('integral', { latex: '\\int', class: 'tall' }),
   limit: cap('limit', { latex: '\\lim', class: 'small' }),
-  sum: cap('sum', { latex: '\\sum' }),
+  sum: cap('sum', { latex: '\\sum', class: 'tall' }),
   infinity: cap('infinity', { latex: '\\infty' }),
   arrow: cap('tends to', { latex: '\\to' }),
 } as const satisfies Record<string, Keycap>
@@ -202,17 +202,19 @@ const rowsOf = (tab: TabId, kind: TypedKind): (string | Keycap)[][] => [...topRo
  * The CSS of a layer, so that the keyboard is responsive: the size of the keys and of what is written on them follows the width of the screen, and nothing
  * sticks out of a key. A key is a flex column with 12 px of padding on an action key, which left no room for a word: every key has no padding, its content
  * centred, and its text on one line. MathLive's own variables set the height (46 px, so a key is at least 44 px tall), the gap (4 px, so ten keys fit a 320 px
- * screen), the widest a key grows on a laptop (64 px, a row is 640 px) and the sizes of the maths faces (16 to 24 px) and of the small text keys (11 to 16 px).
+ * screen), the widest a key grows on a laptop (64 px, a row is 640 px) and the sizes of the maths faces (16 to 24 px) and of the small text keys (10.5 to 16 px).
  * The word of a tab is 11 to 15 px. The tab you are on is dark. Two faces are taller than the rest, measured with the editor's own renderer: the fraction is
  * 1.87 times its font size high and the integral 2.23 times, which would not fit a 46 px key at the full 24 px, so the `stack` and `tall` keys have a smaller
- * font (at most 16 px and 17 px: at most 30 px and 38 px high). The vertical lists a fraction is drawn with are taller than the face (a browser measured a
+ * font (at most 16 px and 15 px: at most 30 px and 34 px high). The inverse sine, cosine and tangent are the widest small keys (2.3 times their font size, a
+ * unit wide), so the small text is 10.5 to 16 px and not 11 to 16. The vertical lists a fraction is drawn with are taller than the face (a browser measured a
  * 18.7 px fraction as sticking out of a 46 px key), so the fraction has more room than the others.
  */
-const LAYER_STYLE = `.MLK__rows { --keycap-height: 46px; --keycap-gap: 4px; --keycap-max-width: 64px; --keycap-font-size: clamp(16px, 5.2vw, 24px); --keycap-small-font-size: clamp(11px, 3.4vw, 16px); }
+const LAYER_STYLE = `.MLK__rows { --keycap-height: 46px; --keycap-gap: 4px; --keycap-max-width: 64px; --keycap-font-size: clamp(16px, 5.2vw, 24px); --keycap-small-font-size: clamp(10.5px, 3.1vw, 16px); }
 .MLK__rows > .MLK__row .MLK__keycap { padding: 0 !important; min-width: 0; align-items: center; justify-content: center; overflow: hidden; }
-.MLK__rows > .MLK__row .MLK__keycap.small { font-size: clamp(11px, 3.4vw, 16px) !important; line-height: 1; white-space: nowrap; }
+.MLK__rows > .MLK__row .action { padding: 0 !important; min-width: 0; align-items: center; justify-content: center; }
+.MLK__rows > .MLK__row .MLK__keycap.small { font-size: clamp(10.5px, 3.1vw, 16px) !important; line-height: 1; white-space: nowrap; }
 .MLK__rows > .MLK__row .MLK__keycap.stack { font-size: clamp(13px, 4vw, 16px) !important; }
-.MLK__rows > .MLK__row .MLK__keycap.tall { font-size: clamp(13px, 4vw, 17px) !important; }
+.MLK__rows > .MLK__row .MLK__keycap.tall { font-size: clamp(12px, 3.6vw, 15px) !important; }
 .MLK__rows > .MLK__row .tab { padding: 0 !important; font-size: clamp(11px, 3.3vw, 15px) !important; font-weight: 700; line-height: 1 !important; white-space: nowrap; overflow: hidden; text-overflow: clip; }
 .MLK__rows > .MLK__row .tab .tab-face { display: inline-flex; align-items: center; justify-content: center; max-width: 100%; white-space: nowrap; line-height: 1; }
 .MLK__rows > .MLK__row .tab.is-current-tab { background: #1f1d36 !important; color: #ffffff !important; border-color: #1f1d36 !important; }`

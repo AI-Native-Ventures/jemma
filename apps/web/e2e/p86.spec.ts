@@ -192,7 +192,9 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     // Each key is at least 44 px tall (and at least 30 px wide from 360 px up: a tenth of the width less the gap), and nothing sticks out of any key.
     const checkKeys = async (label: string, width: number) => {
       await showKeyboard()
-      await expect.poll(async () => (await measureKeys()).length, { timeout: 10_000 }).toBeGreaterThanOrEqual(40)
+      // The keys drawn with the keycap class: every key but the blanks and the action keys (the five tabs, backspace and the two arrows, which are
+      // measured below). That is 31 on the tab with the fewest keys (Compare: 32), 43 on Letters.
+      await expect.poll(async () => (await measureKeys()).length, { timeout: 10_000 }).toBeGreaterThanOrEqual(30)
       const keys = await measureKeys()
       // Soft checks: a failure at one width does not hide the others (the test still fails at the end).
       expect.soft(keys.filter((k) => k.height < 44).map((k) => `${k.name} ${k.height}`), `${label}: keys under 44 px tall`).toEqual([])
@@ -211,6 +213,7 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
         const key = await boxOf(tabs.nth(i))
         const face = await boxOf(tabs.nth(i).locator('.tab-face'))
         expect(key.width, at).toBeGreaterThanOrEqual(44)
+        expect(key.height, at).toBeGreaterThanOrEqual(44)
         expect(face.height, at).toBeLessThanOrEqual(20)
         expect(face.x, at).toBeGreaterThanOrEqual(key.x - 0.5)
         expect(face.x + face.width, at).toBeLessThanOrEqual(key.x + key.width + 0.5)
