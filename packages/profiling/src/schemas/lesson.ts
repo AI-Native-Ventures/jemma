@@ -26,14 +26,21 @@ const Difficulty = z.union([z.literal(1), z.literal(2), z.literal(3)])
 export const PRIMARY_ANSWER_KINDS = ['fraction', 'mixed', 'decimal', 'whole', 'money', 'choice'] as const
 /** The four kinds of a senior class that code marks by meaning (logic/meaning.ts). */
 export const MEANING_ANSWER_KINDS = ['number', 'expression', 'equation', 'point'] as const
-export const ANSWER_KINDS = [...PRIMARY_ANSWER_KINDS, ...MEANING_ANSWER_KINDS] as const
+/** P150: the three kinds that are several values (logic/answers/lists.ts): a list, an order the learner puts items in, and a table with empty cells. */
+export const LIST_ANSWER_KINDS = ['list', 'order', 'table'] as const
+export const ANSWER_KINDS = [...PRIMARY_ANSWER_KINDS, ...MEANING_ANSWER_KINDS, ...LIST_ANSWER_KINDS] as const
 export type AnswerKind = (typeof ANSWER_KINDS)[number]
 export type MeaningKind = (typeof MEANING_ANSWER_KINDS)[number]
+export type ListKind = (typeof LIST_ANSWER_KINDS)[number]
 
 /** The form an `expression` answer must be in: `factorised` (a product of brackets), `expanded` (no brackets, like terms gathered) or `any` (the same value is enough). */
 export const FORMS = ['any', 'factorised', 'expanded'] as const
 export const FormSchema = z.enum(FORMS)
 export type Form = z.infer<typeof FormSchema>
+
+/** A small table of a question (P150): `null` is a cell the learner fills. The key of the question holds the filled values, left to right and top to bottom. */
+export const TableSchema = z.object({ columns: z.array(z.string()), rows: z.array(z.array(z.string().nullable())) })
+export type TableSpec = z.infer<typeof TableSchema>
 
 export const PrimaryQuestionSchema = z.object({
   prompt: z.string(),
@@ -66,6 +73,14 @@ const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
     answerKind: z.enum(ANSWER_KINDS),
     choices: z.array(z.string()).optional(),
     form: FormSchema.optional(),
+    /** A `list` question: true when the order of the values matters (the next three terms), false or left out when it does not (all the factors of 24). Labels make it true. */
+    ordered: z.boolean().optional(),
+    /** A `list` question: a short label over each box (`["min", "Q1", "median", "Q3", "max"]`), one for each value of the answer. */
+    labels: z.array(z.string()).optional(),
+    /** How many decimal places the question asks the answer to be rounded to ("correct to 1 decimal place" is 1): a value that rounds to the key's there is right. 0 to 6, checked by the save gate. */
+    round: z.number().int().optional(),
+    /** A `table` question: the table, with `null` in each cell the learner fills. */
+    table: TableSchema.optional(),
     /** A picture the question needs (a graph to read, a triangle with an angle to find). It never holds the answer. Senior classes only. */
     diagram: SeniorDiagramSpecSchema.optional(),
     difficulty: Difficulty,
