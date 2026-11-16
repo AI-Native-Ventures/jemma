@@ -1,5 +1,6 @@
 import { MEANING_ANSWER_KINDS, type Form, type MeaningKind } from '../schemas/lesson'
 import { markAnswer } from './answers'
+import { equationFamilyReadable, expandPlusMinus, isLetteredPairKey, isSetKey, markEquationFamily, type EquationTools } from './answers/equation-family'
 import { completeAnswer } from './complete-answer'
 
 /**
@@ -24,6 +25,10 @@ import { completeAnswer } from './complete-answer'
  * P132: the cube root sign \u221b (and cbrt). P132b: Euler's number (the letter e on its own), ln and log (base 10), asin acos atan (arcsin too: the answer is
  * in degrees for a plain number), abs for |x|, the Greek letters alpha beta gamma delta phi lambda omega as letters, and in an equation the relations
  * < > <= >= != (and the signs of them): "x <= 3", "3 > x", "-2 < x <= 5", "x < -1 or x > 4" are the same when the same numbers are on the line.
+ *
+ * P147: an equation answer may also be an interval ((-inf; 3] is x <= 3, (-inf; -1) U (4; inf) is x < -1 or x > 4), a domain or a range (x in R, all real numbers),
+ * a plus or minus with a root or a fraction (x = 1 +- sqrt(3)), a pair (x = 2 and y = 3, (2; 3)) or an equation of two letters or more (a circle, a line). That
+ * reader is `answers/equation-family.ts`; this file calls it when the key or the answer is one of those, and reads everything else as it always did.
  */
 
 export const MEANING_MAX_LENGTH = 60
@@ -710,7 +715,25 @@ const pieces = (text: string): string[] => {
   return out
 }
 
+/** The values of several readings of an equation put together: they must all read, and name the same letter (or none). */
+const mergeEquations = (parts: (Equation | null)[]): Equation | null => {
+  let letter: string | null = null
+  const values: number[] = []
+  for (const part of parts) {
+    if (!part) return null
+    if (part.letter !== null) {
+      if (letter !== null && letter !== part.letter) return null
+      letter = part.letter
+    }
+    values.push(...part.values)
+  }
+  return { letter, values }
+}
+
 const readEquation = (text: string): Equation | null => {
+  // P147: x = 1 ± √3 is two values. Each text that sign stands for is read, and the values of all of them are the values of the equation.
+  const expanded = expandPlusMinus(text)
+  if (expanded) return mergeEquations(expanded.map(readEquation))
   const s = text.replace(MINUS_SIGNS, '-').trim()
   if (!s || s.length > MEANING_MAX_LENGTH) return null
   let letter: string | null = null
@@ -837,6 +860,30 @@ const readPoint = (text: string): [number, number] | null => {
   return x === null || y === null ? null : [x, y]
 }
 
+// ---- The harder equation answers (P147) --------------------------------------------------------------------------------------
+
+/** What `answers/equation-family.ts` reads with: it imports nothing from this file at run time, this file hands it these. */
+const EQUATION_TOOLS: EquationTools = {
+  max: MEANING_MAX_LENGTH,
+  numeric,
+  readMath,
+  valueOf,
+  lettersOf,
+  letterValue,
+  close,
+  readInequality,
+  readEquation,
+}
+
+/**
+ * True when a key of the equation kind is an inequality: x < 4, -2 <= x < 3, x < -1 or x > 4, an interval ((-inf; 3], [2; inf), (1; 4), a union), x in R, all real
+ * numbers. The screen is told this (and only this, never the values) to say "Type the answer, like x < 4 or -2 ≤ x < 3.".
+ */
+export const isInequalityKey = (key: string): boolean => readInequality(key, true) !== null || isSetKey(key, EQUATION_TOOLS)
+
+/** True when a key of the equation kind is a pair written with its letters (x = 2 and y = 3): one answer, not two to choose from. */
+export const isPairKey = (key: string): boolean => isLetteredPairKey(key, EQUATION_TOOLS)
+
 // ---- Marking -----------------------------------------------------------------------------------------------------------------
 
 export type MeaningMark = { correct: boolean; comparable: boolean }
@@ -866,6 +913,9 @@ export function markByMeaning(kind: MeaningKind, key: string, answer: string, fo
       return { correct: agreeAtPoints(k, a) && inForm(a, form), comparable: true }
     }
     case 'equation': {
+      // P147: an interval, a set of numbers, a pair or an equation of two letters, on either side: the reader of answers/equation-family.ts marks it.
+      const family = markEquationFamily(key, answer, EQUATION_TOOLS)
+      if (family) return family
       // An inequality (x <= 3, -2 < x < 5, x != 0): the same numbers must be on it. An answer that is not one (x = 3) is a different answer.
       const ki = readInequality(key, true)
       if (ki) {
@@ -923,7 +973,7 @@ export function meaningKeyProblem(kind: MeaningKind, key: string): string | null
         // A plain number, or pi alone, is the number kind's.
         return lettersOf(tree).size > 0 || (hasRoot(tree) && !Number.isNaN(valueOf(tree, {})))
       })()
-    : kind === 'equation' ? readEquation(key) !== null || readInequality(key, true) !== null
+    : kind === 'equation' ? readEquation(key) !== null || readInequality(key, true) !== null || equationFamilyReadable(key, EQUATION_TOOLS, true)
     : readPoint(key) !== null
   return fine ? null : `answer "${key}" is not ${ARTICLE[kind]}`
 }
@@ -938,7 +988,9 @@ const isPlainWord = (text: string) => /^[A-Za-z\s]+$/.test(text.trim()) && text.
  */
 export function markReadAnswer(key: string, answer: string): boolean {
   for (const kind of ['number', 'point', 'equation', 'expression'] as const) {
-    if (meaningKeyProblem(kind, key) !== null) continue
+    // An equation of two letters ("y = 2x + 3") is read by the expression reader here, which takes the name in front off: a teacher's key has always been marked so.
+    if (kind === 'equation' && readEquation(key) === null && readInequality(key, true) === null && !equationFamilyReadable(key, EQUATION_TOOLS, false)) continue
+    if (kind !== 'equation' && meaningKeyProblem(kind, key) !== null) continue
     if (kind === 'expression' && isPlainWord(key)) return false
     return markByMeaning(kind, key, answer).correct
   }

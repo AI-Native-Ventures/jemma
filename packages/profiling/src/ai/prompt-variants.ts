@@ -40,6 +40,42 @@ const numberFormat = (c: ClassContext) => notSouthAfrica(c) || notMaths(c)
 const outsidePrimary = (c: ClassContext) => c.grade < 1 || c.grade > 7
 
 /**
+ * The forms an `equation` answer takes, each as the writer is shown it (P147). Every one is read by the save gate and marked right when typed back; a test checks
+ * both, and that each is in the prompt. A learner may type an inequality as an interval and the other way round, and an equation in any equivalent form.
+ */
+export const SENIOR_EQUATION_EXAMPLES = [
+  'x = 4',
+  'x = 2 or x = 3',
+  'x = 1 \u00b1 \u221a3',
+  'x = (5 \u00b1 \u221a17)/4',
+  'x < -1 or x > 4',
+  '-2 \u2264 x < 3',
+  'y \u2265 -4',
+  'x \u2260 2',
+  '(-\u221e; 3]',
+  '[2; \u221e)',
+  '(1; 4)',
+  '(-\u221e; -1) \u222a (4; \u221e)',
+  'x \u2208 \u211d',
+  'x = 2 and y = 3',
+  'y = 2x + 3',
+  '(x - 1)^2 + (y + 2)^2 = 9',
+  'x^2 + y^2 = 25',
+] as const
+
+/** When to use each form of an `equation` answer: the sentence that follows the kind lines for a senior class. */
+const SENIOR_EQUATION_FORMS =
+  'An `equation` answer is one of these, so use the one the question asks for: ' +
+  `one value (\`${SENIOR_EQUATION_EXAMPLES[0]}\`); ` +
+  `several values joined with \`or\` (\`${SENIOR_EQUATION_EXAMPLES[1]}\`), and \`${SENIOR_EQUATION_EXAMPLES[2]}\` or \`${SENIOR_EQUATION_EXAMPLES[3]}\` for the two values of a root; ` +
+  `an inequality when the question asks which values work (\`${SENIOR_EQUATION_EXAMPLES[4]}\`, \`${SENIOR_EQUATION_EXAMPLES[5]}\`, \`${SENIOR_EQUATION_EXAMPLES[6]}\`, \`${SENIOR_EQUATION_EXAMPLES[7]}\`); ` +
+  `an interval, the same answer as its inequality, when the question asks for interval notation (\`${SENIOR_EQUATION_EXAMPLES[8]}\`, \`${SENIOR_EQUATION_EXAMPLES[9]}\`, \`${SENIOR_EQUATION_EXAMPLES[10]}\`, \`${SENIOR_EQUATION_EXAMPLES[11]}\`; write \`\u221e\` for infinity and \`\u222a\` for a union), ` +
+  `and \`${SENIOR_EQUATION_EXAMPLES[12]}\` for a domain or a range over all numbers; ` +
+  `a pair, one letter and its value each, when the question has two unknowns (\`${SENIOR_EQUATION_EXAMPLES[13]}\`); ` +
+  `the equation of a line or a circle when the question asks for the equation itself (\`${SENIOR_EQUATION_EXAMPLES[14]}\`, \`${SENIOR_EQUATION_EXAMPLES[15]}\`, \`${SENIOR_EQUATION_EXAMPLES[16]}\`). ` +
+  'Use `point` for coordinates and `number` for one value. '
+
+/**
  * What a senior class's lesson writer is told about answers: the six old kinds and the four that code marks by meaning, one example each, and the `form`
  * of an expression. Decimals use a comma and money is in rand in South Africa only; elsewhere a decimal is written the way the class writes it.
  */
@@ -58,8 +94,9 @@ const seniorAnswers = (c: ClassContext) => {
     `The kinds: ${old}. For algebra and signed numbers there are four more: ` +
     '`number` (`-3`, `15%` or `30°`: a number that may be negative, with a % or a ° at the end), ' +
     '`expression` (`2x^2 + 7x`: write powers with `^` and roots with `sqrt()`), ' +
-    '`equation` (`x = 3 or x = -1`: one letter and its value or values) and ' +
+    '`equation` (`x = 3 or x = -1`: one letter and its value or values, or one of the forms below) and ' +
     '`point` (`(2; -3)`). ' +
+    SENIOR_EQUATION_FORMS +
     'When a question asks for the answer factorised or expanded, set `form` to `factorised` or `expanded`.' +
     (za ? ' Money is in rand, decimals use a comma.' : '')
   )

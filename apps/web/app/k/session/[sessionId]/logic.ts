@@ -1,4 +1,4 @@
-import { completeAnswer, fillMissing, finishAnswer, missingPart, nextDifficulty, nextStage, paperQuestions, type MissingPart, type Stage } from '@jemma/profiling/logic'
+import { completeAnswer, fillMissing, finishAnswer, isInequalityKey, isPairKey, missingPart, nextDifficulty, nextStage, paperQuestions, type MissingPart, type Stage } from '@jemma/profiling/logic'
 import type { Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
@@ -29,6 +29,8 @@ export type QuestionForChild = {
   form?: Form
   /** The picture the question needs, drawn between its words and the answer box (a senior class only). It never holds the answer. */
   diagram?: SeniorDiagramSpec
+  /** P147: the SHAPE of the answer when its key is an inequality or an interval ('inequality') or two letters with a value each ('pair'), so the screen can say how to type it. Never the key itself. */
+  answerShape?: 'inequality' | 'pair'
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -84,6 +86,7 @@ export function stripQuestion(
     ...(q.choices ? { choices: q.choices } : {}),
     ...(q.form ? { form: q.form } : {}),
     ...(q.diagram ? { diagram: q.diagram } : {}),
+    ...(q.answerKind === 'equation' && isInequalityKey(q.answer) ? { answerShape: 'inequality' as const } : q.answerKind === 'equation' && isPairKey(q.answer) ? { answerShape: 'pair' as const } : {}),
   }
 }
 
@@ -136,11 +139,15 @@ export type AnswerShape =
   | { kind: 'missing'; part: MissingPart }
   | { kind: 'fraction' | 'mixed' | 'whole' | 'decimal' | 'money' | 'text' }
   /** The four kinds of a senior class, marked by meaning: a number that may be negative, an expression, an equation, a point. */
-  | { kind: 'number' | 'equation' | 'point' }
+  | { kind: 'number' | 'point' }
+  /** An equation answer; `inequality` when its key is an inequality or an interval, `pair` when it is two letters with a value each (P147): they change the line under the box. */
+  | { kind: 'equation'; inequality?: true; pair?: true }
   | { kind: 'expression'; form: Form }
 
-export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'>): AnswerShape {
+export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> & Pick<QuestionForChild, 'answerShape'>): AnswerShape {
   if (q.choices?.length) return { kind: 'choice' }
+  if (q.answerKind === 'equation' && q.answerShape === 'inequality') return { kind: 'equation', inequality: true }
+  if (q.answerKind === 'equation' && q.answerShape === 'pair') return { kind: 'equation', pair: true }
   // A question marked by meaning is never a missing number in a fraction, whatever its prompt holds.
   if (q.answerKind === 'expression') return { kind: 'expression', form: q.form ?? 'any' }
   if (q.answerKind === 'number' || q.answerKind === 'equation' || q.answerKind === 'point') return { kind: q.answerKind }
