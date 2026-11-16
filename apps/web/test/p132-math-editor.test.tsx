@@ -128,8 +128,11 @@ describe('the fonts and the page', () => {
     const source = readFileSync(resolve(web, 'app/k/session/_parts/MathAnswerField.tsx'), 'utf8')
     expect(source).toContain("'/mathlive/fonts'")
     expect(source).not.toMatch(/https?:\/\/(?!www\.w3\.org)/)
-    expect(source).toContain("import('mathlive')")
-    expect(source).not.toMatch(/^import [^t].*from 'mathlive'/m)
+    // The editor is loaded on demand, never at the top of the file. P146: the load is one shared function (load-mathlive.ts) so two boxes ask for the module once.
+    const loader = readFileSync(resolve(web, 'app/k/session/_parts/load-mathlive.ts'), 'utf8')
+    expect(source).toContain('loadMathlive()')
+    expect(loader).toContain("import('mathlive')")
+    for (const file of [source, loader]) expect(file).not.toMatch(/^import [^t].*from 'mathlive'/m)
   })
 
   it('the editor is styled in the app css: the box of the old answer, a menu button that is hidden', () => {

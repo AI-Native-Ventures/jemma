@@ -14,6 +14,7 @@ import { equationShapeHint } from './answers/hints'
 import { isValuesShape, ValuesAnswer } from './answers/ValuesAnswer'
 import { YoungSize } from './answers/YoungSize'
 import { MathAnswerField } from './MathAnswerField'
+import { equationCountHint, MULTI_HINT, MultiAnswer } from './answers/MultiAnswer'
 import { promptLayout } from './prompt-layout'
 import { QuestionContext, QuestionHeading } from './QuestionPrompt'
 import { QuestionPicture } from './QuestionPicture'
@@ -103,7 +104,6 @@ const FORM_HINTS = {
   factorised: 'Type it as a product of brackets, like (x + 2)(x - 2).',
   expanded: 'Type it with no brackets, like x\u00b2 + 4x + 4.',
 } as const
-const EQUATION_HINT = 'Type the answer, like x = 4. Two answers: x = 3 or x = -1.'
 
 /** The minus key of a number: a phone's number pad has none. It puts a minus in front of the number, and takes it away again. */
 function MinusKey({ label, onPress, className = 'h-[76px] w-14 text-[34px]' }: { label: string; onPress: () => void; className?: string }) {
@@ -204,7 +204,14 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
     case 'expression':
       return <MathAnswerField kind="expression" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={FORM_HINTS[shape.form]} />
     case 'equation':
-      return <MathAnswerField kind="equation" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={equationShapeHint(shape, EQUATION_HINT)} />
+      return <MathAnswerField kind="equation" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={equationShapeHint(shape, equationCountHint(shape.count))} />
+    case 'answers':
+      return (
+        <div className="flex w-full flex-col items-center gap-3.5">
+          <MultiAnswer count={shape.count} letter={shape.letter} topic={topic} prompt={prompt} onChange={b.set.text} />
+          <Hint>{MULTI_HINT}</Hint>
+        </div>
+      )
     case 'point':
       return (
         <div className="flex flex-col items-center gap-3.5">
@@ -365,6 +372,7 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
     shape.kind === 'number' ||
     shape.kind === 'expression' ||
     shape.kind === 'equation' ||
+    shape.kind === 'answers' ||
     shape.kind === 'point' ||
     shape.kind === 'truefalse' ||
     shape.kind === 'reason' ||

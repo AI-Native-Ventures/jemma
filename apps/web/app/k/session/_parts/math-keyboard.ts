@@ -1,7 +1,7 @@
 import { strandOf, type Strand, type TypedKind } from './maths-keys'
 
 // P132: the keyboard of the maths editor. P140 made it simpler: every tab has the same three rows on top, so the numbers, the signs and the fraction, root
-// and power keys are always there, and five word tabs (Letters, Trig, Compare, Shapes, Calculus) change only the two rows under them. The last row is the strip
+// and power keys are always there, and four word tabs (Letters, Trig, Compare, Calculus) change only the two rows under them. The last row is the strip
 // of tabs. A letter never looks like a sign: the letters are italic maths letters, and the times key is the cross. Pure functions: MathLive is given the object
 // they return (its custom layout format, one layer for each tab); nothing here touches the editor or the page.
 //
@@ -12,11 +12,15 @@ import { strandOf, type Strand, type TypedKind } from './maths-keys'
 // Rows 4 and 5 depend on the tab (blank keys fill a row, so every tab is as tall as the others):
 //   Letters   x y z a b c k m n p / d f g h q r s t u v
 //   Trig      sin cos tan and their inverses, the degree sign, theta, alpha, beta / pi, gamma, delta, phi
-//   Compare   < > <= >= != plus-or-minus |x| % R / [ ] ; infinity union element-of the-real-numbers (P147: intervals and sets)
-//   Shapes    angle, triangle, perpendicular, parallel, congruent, similar, the degree sign, theta, pi
-//   Calculus  d/dx, f'(x), the integral, lim, the sum, infinity, to, e / ln, log, f(x), x, y
-// Row 6 is the tabs, one key for each tab of this kind of answer (the one you are on is dark). A number has no letters and no calculus, so it has Trig, Compare
-// and Shapes, then blanks, then the key that hides the keyboard. The faces of the keys are textbook maths (LaTeX drawn by the editor), never text with a slash
+//   Compare   < > <= >= != plus-or-minus |x| % R, and the word or (an expression or an equation: 3 answers, or x < -1 or x > 4, in one box) /
+//             [ ] ; infinity union element-of the-real-numbers (P147: intervals and sets)
+//   Calculus  d/dx, f'(x), infinity, e / ln, log, f(x), x, y
+// P146: the signs of geometry and calculus that the marking can never read (angle, triangle, perpendicular, parallel, congruent, similar, the integral, lim,
+// the sum, to) are not on any key: an answer written with one could only be marked unreadable. They are still defined in CAPS, so a key comes back when the
+// marking learns its sign. Infinity stays. The Shapes tab is gone: with those keys off it held the degree sign, theta and pi, which the Trig tab already has, and a
+// tab with fewer than 6 keys of its own is not a tab.
+// Row 6 is the tabs, one key for each tab of this kind of answer (the one you are on is dark). An expression or an equation has four tabs and the key that hides the
+// keyboard. A number has no letters and no calculus, so it has Trig and Compare, then blanks, then the key that hides the keyboard. The faces of the keys are textbook maths (LaTeX drawn by the editor), never text with a slash
 // or a caret. The size of everything follows the width of the screen (LAYER_STYLE).
 
 /** One key, in the shape the editor takes: `latex` is its face and what it types unless `insert` says more (#@ is what is before the cursor, #? an empty box). */
@@ -114,7 +118,7 @@ export const CAPS = {
 
 // ---- The tabs ----------------------------------------------------------------------------------------------------------------
 
-export type TabId = 'letters' | 'trig' | 'compare' | 'shapes' | 'calculus'
+export type TabId = 'letters' | 'trig' | 'compare' | 'calculus'
 type Tab = { id: TabId; face: string; tooltip: string; kinds: TypedKind[] }
 
 /**
@@ -128,7 +132,6 @@ export const TABS: Tab[] = [
   { id: 'letters', face: face('Letters'), tooltip: 'letters', kinds: ['expression', 'equation'] },
   { id: 'trig', face: face('Trig'), tooltip: 'trigonometry and Greek letters', kinds: ['number', 'expression', 'equation'] },
   { id: 'compare', face: face('Compare'), tooltip: 'comparing and other signs', kinds: ['number', 'expression', 'equation'] },
-  { id: 'shapes', face: face('Shapes'), tooltip: 'shapes and angles', kinds: ['number', 'expression', 'equation'] },
   { id: 'calculus', face: face('Calculus'), tooltip: 'calculus', kinds: ['expression', 'equation'] },
 ]
 
@@ -138,14 +141,14 @@ export const layerId = (tab: TabId): string => `jemma-${tab}`
 export const tabsFor = (kind: TypedKind): Tab[] => TABS.filter((t) => t.kinds.includes(kind))
 
 /**
- * The tab a question opens on: Calculus for a derivative, Trig for trigonometry, Shapes for angles and shapes, otherwise Letters (Compare for an answer that is
+ * The tab a question opens on: Calculus for a derivative, Trig for trigonometry and for angles and shapes (the degree sign, theta and pi are there), otherwise Letters (Compare for an answer that is
  * a number, which has no letters). A tab this kind of answer does not have is replaced by the first tab it has.
  */
 export function openingTab(kind: TypedKind, strand: Strand): TabId {
   const wanted: TabId =
     strand === 'calculus' ? 'calculus'
     : strand === 'trigonometry' ? 'trig'
-    : strand === 'geometry' ? 'shapes'
+    : strand === 'geometry' ? 'trig'
     : kind === 'number' ? 'compare'
     : 'letters'
   const tabs = tabsFor(kind)
@@ -164,12 +167,12 @@ const wide = (key: Keycap, width: NonNullable<Keycap['width']>): Keycap => ({ ..
 /** A row of exactly ten units: the keys, then blank keys to fill it. */
 const filled = (keys: (string | Keycap)[]): (string | Keycap)[] => [...keys, ...Array.from({ length: Math.max(0, ROW_WIDTH - rowUnits(keys)) }, () => BLANK)]
 
-/** The strip of tabs, the last row of every tab: one key for each tab of this kind of answer, the tab you are on dark. A number has three tabs, then blanks, and the key that hides the keyboard. */
+/** The strip of tabs, the last row of every tab: one key for each tab of this kind of answer, the tab you are on dark. The key that hides the keyboard ends the row: after the four tabs of an expression or an equation, or after the two tabs of a number and some blanks. */
 function tabRow(kind: TypedKind, current: TabId): (string | Keycap)[] {
   const keys: Keycap[] = tabsFor(kind).map((t) =>
     cap(t.tooltip, { label: t.face, command: ['switchKeyboardLayer', layerId(t.id)], class: `action tab${t.id === current ? ' is-current-tab' : ''}`, width: 2 }),
   )
-  // The five tabs fill the row. With fewer, the hide key is the last key of the row.
+  // Four tabs are eight units, so the hide key (two units) fills the row. With fewer tabs, blanks come before it.
   return keys.length >= 5 ? keys : filled([...keys, ...Array.from({ length: Math.max(0, ROW_WIDTH - 2 - rowUnits(keys)) }, () => BLANK), CAPS.hide])
 }
 
@@ -180,8 +183,8 @@ const topRows = (): (string | Keycap)[][] => [
   [wide(CAPS.fraction, 2), wide(CAPS.sqrt, 1.5), wide(CAPS.cbrt, 1.5), wide(CAPS.squared, 1.5), wide(CAPS.power, 1.5), CAPS.left, CAPS.right],
 ]
 
-/** The two rows under the top rows: they are what a tab changes. */
-function tabRows(tab: TabId): [(string | Keycap)[], (string | Keycap)[]] {
+/** The two rows under the top rows: they are what a tab changes. A number answer has no word or between answers (it is one number). */
+function tabRows(tab: TabId, kind: TypedKind): [(string | Keycap)[], (string | Keycap)[]] {
   switch (tab) {
     case 'letters':
       return [['x', 'y', 'z', 'a', 'b', 'c', 'k', 'm', 'n', 'p'].map(letter), ['d', 'f', 'g', 'h', 'q', 'r', 's', 't', 'u', 'v'].map(letter)]
@@ -192,21 +195,16 @@ function tabRows(tab: TabId): [(string | Keycap)[], (string | Keycap)[]] {
       ]
     case 'compare':
       return [
-        filled([CAPS.less, CAPS.greater, CAPS.lessEqual, CAPS.greaterEqual, CAPS.notEqual, CAPS.plusMinus, CAPS.abs, CAPS.percent, CAPS.rand]),
+        filled([CAPS.less, CAPS.greater, CAPS.lessEqual, CAPS.greaterEqual, CAPS.notEqual, CAPS.plusMinus, CAPS.abs, CAPS.percent, CAPS.rand, ...(kind === 'number' ? [] : [CAPS.or])]),
         filled([CAPS.openSquare, CAPS.closeSquare, CAPS.semicolon, CAPS.infinity, CAPS.union, CAPS.element, CAPS.reals]),
       ]
-    case 'shapes':
-      return [filled([CAPS.angle, CAPS.triangle, CAPS.perpendicular, CAPS.parallel, CAPS.congruent, CAPS.similar, CAPS.degree, CAPS.theta, CAPS.pi]), filled([])]
     case 'calculus':
-      return [
-        [wide(CAPS.ddx, 2), wide(CAPS.fPrime, 2), CAPS.integral, CAPS.limit, CAPS.sum, CAPS.infinity, CAPS.arrow, CAPS.e],
-        filled([CAPS.ln, CAPS.log, CAPS.fx, letter('x'), letter('y')]),
-      ]
+      return [filled([wide(CAPS.ddx, 2), wide(CAPS.fPrime, 2), CAPS.infinity, CAPS.e]), filled([CAPS.ln, CAPS.log, CAPS.fx, letter('x'), letter('y')])]
   }
 }
 
 /** The rows of one tab for one kind of answer: the three rows every tab has, the two of the tab, and the strip of tabs. Six rows, whatever the tab. */
-const rowsOf = (tab: TabId, kind: TypedKind): (string | Keycap)[][] => [...topRows(), ...tabRows(tab), tabRow(kind, tab)]
+const rowsOf = (tab: TabId, kind: TypedKind): (string | Keycap)[][] => [...topRows(), ...tabRows(tab, kind), tabRow(kind, tab)]
 
 /**
  * The CSS of a layer, so that the keyboard is responsive: the size of the keys and of what is written on them follows the width of the screen, and nothing

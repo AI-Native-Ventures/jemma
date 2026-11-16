@@ -186,7 +186,7 @@ describe('an equation', () => {
     await ready()
     expect(screen.getByLabelText('Your answer')).toBe(theField())
     expect((theKeyboard().layouts[0] as { id: string }).id).toBe('jemma-equation-algebra')
-    expect(screen.getByText('Type the answer, like x = 4. Two answers: x = 3 or x = -1.')).toBeTruthy()
+    expect(screen.getByText('Type the answer, like x = 4.')).toBeTruthy()
   })
 
   it('two answers with the word between them are sent as typed: x = 3 or x = -1', async () => {
@@ -315,7 +315,8 @@ describe('rendering on the server', () => {
       expect(out).toContain('aria-label="Your answer"')
     }
     expect(html(EXPRESSION)).toContain('Type an expression, like 2x + 3.')
-    expect(html(EQUATION)).toContain('Type the answer, like x = 4. Two answers: x = 3 or x = -1.')
+    expect(html(EQUATION)).toContain('Type the answer, like x = 4.')
+    expect(html(EQUATION)).not.toContain('Two answers')
     expect(html(POINT)).toContain('>x of the point</label>')
     expect(html(POINT)).toContain('>y of the point</label>')
     expect(html(POINT)).not.toContain('<math-field')
@@ -339,7 +340,7 @@ describe('the paper sheet writes the same lines, for a pencil', () => {
     expect(writeLine({ kind: 'expression', form: 'any' })).toBe('Write an expression, like 2x + 3.')
     expect(writeLine({ kind: 'expression', form: 'factorised' })).toBe('Write it as a product of brackets, like (x + 2)(x - 2).')
     expect(writeLine({ kind: 'expression', form: 'expanded' })).toBe('Write it with no brackets, like x\u00b2 + 4x + 4.')
-    expect(writeLine({ kind: 'equation' })).toBe('Write the answer, like x = 4. Two answers: x = 3 or x = -1.')
+    expect(writeLine({ kind: 'equation' })).toBe('Write the answer, like x = 4.')
     expect(writeLine({ kind: 'point' })).toBe('Write the x and the y of the point, like (2; 3).')
     expect(writeLine({ kind: 'number' })).toBe('Write a number. It may be negative, like -3.')
     expect(writeLine({ kind: 'whole' })).toBe('Write a whole number.')

@@ -53,6 +53,14 @@ describe('the saved lesson', () => {
     for (const q of TOUR_QUESTIONS) expect(q.steps?.length, q.prompt).toBeGreaterThanOrEqual(2)
   })
 
+  it('P146: Question 1 is told it has two answers (and the letter x), the other equation has one, and no value is sent', () => {
+    const [q1, q2, ...rest] = tourQuestionsForChild()
+    expect(q1).toMatchObject({ answerKind: 'equation', answerCount: 2, answerLetter: 'x' })
+    expect(q2).toMatchObject({ answerKind: 'equation', answerCount: 1, answerLetter: 'x' })
+    for (const q of rest) expect(q).not.toHaveProperty('answerCount')
+    expect(JSON.stringify(q1)).not.toMatch(/x = 2|x = 3/)
+  })
+
   it('hands the screen questions with no answer in them', () => {
     for (const q of tourQuestionsForChild()) {
       expect(q).not.toHaveProperty('answer')
@@ -184,8 +192,15 @@ describe('the way the learner goes through the tour', () => {
     await flush()
 
     expect(screen.getByText('Question 1 of 5')).toBeTruthy()
-    fireEvent.change(screen.getByLabelText('Your answer'), { target: { value: 'x = 3 or x = 2' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    // P146: the quadratic has two answers, so it has two boxes (each with "x =" in front of it), and Next waits for both
+    await flush()
+    const next = () => screen.getByRole('button', { name: 'Next' }) as HTMLButtonElement
+    expect(screen.queryByLabelText('Your answer')).toBeNull()
+    fireEvent.change(screen.getByLabelText('Answer 1'), { target: { value: '3' } })
+    expect(next().disabled).toBe(true)
+    fireEvent.change(screen.getByLabelText('Answer 2'), { target: { value: '2' } })
+    expect(next().disabled).toBe(false)
+    fireEvent.click(next())
     await flush()
 
     for (const n of [2, 3, 4, 5]) {
@@ -202,6 +217,28 @@ describe('the way the learner goes through the tour', () => {
     expect(JSON.parse(sessionStorage.getItem(TOUR_RESULT_KEY) ?? 'null')).toEqual([true, false, false, false, false])
     const toTeacher = screen.getByRole('link', { name: /teacher/i })
     expect(toTeacher.getAttribute('href')).toBe('/tour/teacher')
+  })
+
+  it('P146: Question 1 shows two boxes, Answer 1 and Answer 2, each with "x =" in front, and the line under them says one box for each', async () => {
+    render(<TourSession />)
+    fireEvent.click(screen.getByRole('button', { name: /ready/i }))
+    await flush()
+    expect(screen.getByText('Question 1 of 5')).toBeTruthy()
+    expect(screen.getAllByRole('textbox').map((b) => b.getAttribute('id'))).toEqual(['answer-1', 'answer-2'])
+    expect(Array.from(document.querySelectorAll('[data-answer-label]')).map((e) => e.textContent)).toEqual(['Answer 1', 'Answer 2'])
+    expect(Array.from(document.querySelectorAll('[data-letter]')).map((e) => e.textContent)).toEqual(['x =', 'x ='])
+    expect(screen.getByText('Type each answer in its own box.')).toBeTruthy()
+    expect(document.body.textContent).not.toContain('Two answers')
+    // the owner's own answer: the other order, with "x =" typed too
+    fireEvent.change(screen.getByLabelText('Answer 1'), { target: { value: 'x = 3' } })
+    fireEvent.change(screen.getByLabelText('Answer 2'), { target: { value: 'x = 2' } })
+    expect((screen.getByRole('button', { name: 'Next' }) as HTMLButtonElement).disabled).toBe(false)
+    // the second question has one answer: one box
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    await flush()
+    expect(screen.getByText('Question 2 of 5')).toBeTruthy()
+    expect(screen.getAllByRole('textbox')).toHaveLength(1)
+    expect(screen.getByLabelText('Your answer')).toBeTruthy()
   })
 
   it('shows the right answer for a moment on Skip, then the next question, and skipping the first question counts as wrong', async () => {

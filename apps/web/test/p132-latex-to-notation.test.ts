@@ -300,3 +300,61 @@ describe('an argument without braces is the one token after the command', () => 
     expect(mark('expression', 'x^2', 'x^2')).toBe(true)
   })
 })
+
+describe('P146: two answers typed in one box', () => {
+  const table: [latex: string, plain: string][] = [
+    // the word from the "or" key
+    ['x=3\\text{ or }x=2', 'x = 3 or x = 2'],
+    // the word typed with the letter keys: the editor gives the italic letters o and r
+    ['x=3orx=2', 'x = 3 or x = 2'],
+    ['x=-1orx=3', 'x = -1 or x = 3'],
+    ['x<-1orx>4', 'x < -1 or x > 4'],
+    ['x=3or2', 'x = 3 or 2'],
+    ['x=\\frac{1}{2}orx=3', 'x = 1/2 or x = 3'],
+    ['x=\\sqrt{2}orx=-\\sqrt{2}', `x = ${ROOT}2 or x = -${ROOT}2`],
+    ['x=3\\%orx=5\\%', 'x = 3% or x = 5%'],
+    ['x=(1+2)orx=4', 'x = (1 + 2) or x = 4'],
+    // the editor turns the letters "or" and "and" into the signs of logic as they are typed (its inline shortcuts: or is a backslash and lor, and is a backslash and land)
+    ['x=3\\lor x=2', 'x = 3 or x = 2'],
+    ['x=3\\vee x=2', 'x = 3 or x = 2'],
+    ['x<-1\\lor x>4', 'x < -1 or x > 4'],
+    ['x>1\\land x<5', 'x > 1 and x < 5'],
+    // a semicolon between the values
+    ['x=3;x=2', 'x = 3; x = 2'],
+    ['x=3;2', 'x = 3; 2'],
+    ['3;5;7', '3; 5; 7'],
+    ['(2;-3)', '(2; -3)'],
+  ]
+  it.each(table)('%s', (latex, plain) => expect(latexToNotation(latex)).toBe(plain))
+
+  it('the letters o and r are only the word between two parts: next to a sign or alone they stay letters', () => {
+    // alone, or at the start or the end, there is no part on one side
+    expect(latexToNotation('or')).toBe('or')
+    expect(latexToNotation('3or')).toBe('3or')
+    expect(latexToNotation('or3')).toBe(`or ${TIMES} 3`)
+    // after a sign there is no part to end, so the letters are a product, as before
+    expect(latexToNotation('2+orx')).toBe('2 + orx')
+    // a single o or a single r is a letter
+    expect(latexToNotation('x=3ox=2')).toBe('x = 3ox = 2')
+    expect(latexToNotation('2r')).toBe('2r')
+  })
+
+  it('what comes out is marked as two answers, in any order', () => {
+    const mark = (key: string, latex: string) => markByMeaning('equation', key, latexToNotation(latex) ?? '').correct
+    expect(mark('x = 2 or x = 3', 'x=3orx=2')).toBe(true)
+    expect(mark('x = 2 or x = 3', 'x=3\\text{ or }x=2')).toBe(true)
+    expect(mark('x = 2 or x = 3', 'x=3;x=2')).toBe(true)
+    expect(mark('x = 2 or x = 3', 'x=3\\lor x=2')).toBe(true)
+    expect(mark('-2 < x <= 5', '-2<x\\land x\\leq5')).toBe(true)
+    expect(mark('x = 2 or x = 3', 'x=3;2')).toBe(true)
+    expect(mark('x = 2 or x = 3', 'x=3orx=4')).toBe(false)
+    expect(mark('x = 2 or x = 3', 'x=3')).toBe(false)
+    expect(mark('x < -1 or x > 4', 'x>4orx<-1')).toBe(true)
+    expect(mark('x = 1 or x = 2 or x = 3', 'x=3orx=1orx=2')).toBe(true)
+  })
+
+  it('a semicolon with nothing after it is not finished', () => {
+    expect(latexToNotation('x=3;')).toBeNull()
+    expect(latexToNotation(';')).toBeNull()
+  })
+})

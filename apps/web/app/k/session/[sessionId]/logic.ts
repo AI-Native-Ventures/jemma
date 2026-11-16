@@ -1,4 +1,5 @@
 import {
+  answerCountOf,
   choiceLabel,
   completeAnswer,
   fillMissing,
@@ -63,6 +64,13 @@ export type QuestionForChild = {
   form?: Form
   /** The picture the question needs, drawn between its words and the answer box (a senior class only). It never holds the answer. */
   diagram?: SeniorDiagramSpec
+  /**
+   * An equation question only (P146): how many values its key has (2 for "x = 2 or x = 3", 1 for one value). The screen shows that many boxes. An inequality
+   * ("x < -1 or x > 4") is one answer, not a list, so it has none. Only the count goes to the browser, never the values.
+   */
+  answerCount?: number
+  /** An equation question only: the letter of the key ("x"), so a box can start with "x =". */
+  answerLetter?: string
   /** P148: the unit of the answer, shown after the box ("cm²"). A number, a whole or a decimal answer of a senior class. */
   unit?: string
   /** P148: how a `time` answer is asked for (a shape hint from the key, never its value): the hours and minutes of a 24 hour clock, of a 12 hour clock with am and pm, or of a length of time. */
@@ -166,6 +174,7 @@ export function stripQuestion(
     ...(q.answerKind === 'reason' && reasonKeyHasValue(q.answer) ? { withValue: true } : {}),
     ...(q.form ? { form: q.form } : {}),
     ...(q.diagram ? { diagram: q.diagram } : {}),
+    ...answerFactsOf(q),
     // A learner of Grade 1 to 6 never gets the minus key (P151), whatever the question holds: they work with whole numbers and measures.
     ...(at.young ? withoutSign(quantityHints(q)) : quantityHints(q)),
     ...(q.answerKind === 'equation' && isInequalityKey(q.answer) ? { answerShape: 'inequality' as const } : q.answerKind === 'equation' && isPairKey(q.answer) ? { answerShape: 'pair' as const } : {}),
@@ -174,6 +183,16 @@ export function stripQuestion(
     ...(isListKind(q.answerKind) && q.round !== undefined ? { round: q.round } : {}),
     ...(at.young ? { young: true as const } : {}),
   }
+}
+
+/**
+ * The count and the letter of an equation question's key (P146), the only facts about the key the browser gets. A key that is an inequality (count 0) or does
+ * not read (a pair, an interval) has none: it is one answer, in one box.
+ */
+function answerFactsOf(q: Question): Pick<QuestionForChild, 'answerCount' | 'answerLetter'> {
+  // An inequality, an interval and a pair (P147) are one answer in one box, whatever the pieces of their key look like.
+  const facts = q.answerKind === 'equation' && !isInequalityKey(q.answer) && !isPairKey(q.answer) ? answerCountOf(q.answer) : null
+  return facts && facts.count > 0 ? { answerCount: facts.count, ...(facts.letter ? { answerLetter: facts.letter } : {}) } : {}
 }
 
 const sorted = (items: StoredItem[], phase: Phase) =>
@@ -228,8 +247,10 @@ export type AnswerShape =
   | ({ kind: 'number' | 'whole' | 'decimal' } & QuantityExtras)
   /** A point of a senior class, marked by meaning. */
   | { kind: 'point' }
-  /** An equation answer; `inequality` when its key is an inequality or an interval, `pair` when it is two letters with a value each (P147): they change the line under the box. */
-  | { kind: 'equation'; inequality?: true; pair?: true }
+  /** An equation answer. `count` is how many values its key has when the screen was told (P146, one answer: one field); `inequality` when its key is an inequality or an interval, `pair` when it is two letters with a value each (P147): they change the line under the box. */
+  | { kind: 'equation'; count?: number; inequality?: true; pair?: true }
+  /** An equation with 2 to 4 answers (P146): one box for each, "Answer 1", "Answer 2", sent as "x = a or x = b". */
+  | { kind: 'answers'; count: number; letter?: string }
   | { kind: 'expression'; form: Form }
   /** P148: a time (the hours and minutes, and am or pm when the key needs it) and a ratio (a box for each part). */
   | { kind: 'time'; style: TimeStyle; young?: true }
@@ -251,13 +272,16 @@ const quantityExtras = (q: QuantityExtras): QuantityExtras => ({
   ...(q.signed ? { signed: true as const } : {}),
 })
 
+/** The most boxes the screen gives an equation (P146). An equation with more values than this is typed in one field, with the word or between them. */
+export const MAX_ANSWER_BOXES = 4
+
 /** What `answerShape` reads besides the old four fields: the parts the server sent (a whole `Question` fits too: its table has no `plain`, so its boxes are the full keyboard). */
 type ShapeParts = { list?: ListParts['list']; items?: string[]; table?: { columns: string[]; rows: (string | null)[][]; plain?: boolean }; round?: number; young?: true }
 
 export function answerShape(
   q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> &
     QuantityExtras &
-    Pick<QuestionForChild, 'timeStyle' | 'ratioParts' | 'answerShape'> &
+    Pick<QuestionForChild, 'timeStyle' | 'ratioParts' | 'answerShape' | 'answerCount' | 'answerLetter'> &
     ShapeParts & { withValue?: boolean },
 ): AnswerShape {
   if (q.answerKind === 'truefalse') return { kind: 'truefalse' }
@@ -276,8 +300,13 @@ export function answerShape(
   if (q.answerKind === 'time') return { kind: 'time', style: q.timeStyle ?? 'clock24', ...(q.young ? { young: true as const } : {}) }
   if (q.answerKind === 'ratio') return { kind: 'ratio', parts: q.ratioParts ?? 2 }
   if (q.answerKind === 'expression') return { kind: 'expression', form: q.form ?? 'any' }
+  if (q.answerKind === 'equation') {
+    const count = q.answerCount
+    if (count !== undefined && count >= 2 && count <= MAX_ANSWER_BOXES) return { kind: 'answers', count, ...(q.answerLetter ? { letter: q.answerLetter } : {}) }
+    return { kind: 'equation', ...(count !== undefined ? { count } : {}) }
+  }
   if (q.answerKind === 'number') return { kind: 'number', ...quantityExtras(q) }
-  if (q.answerKind === 'equation' || q.answerKind === 'point') return { kind: q.answerKind }
+  if (q.answerKind === 'point') return { kind: 'point' }
   const part = missingPart(q.prompt)
   if (part) return { kind: 'missing', part }
   if (q.answerKind === 'whole' || q.answerKind === 'decimal') return { kind: q.answerKind, ...quantityExtras(q) }
@@ -301,7 +330,7 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
   const [whole, top, bottom] = [boxes.whole.trim(), boxes.top.trim(), boxes.bottom.trim()]
   // "12," is a number the child stopped typing: the comma at the end is not part of it.
   const text =
-    shape.kind === 'missing' || shape.kind === 'text' || shape.kind === 'expression' || shape.kind === 'equation'
+    shape.kind === 'missing' || shape.kind === 'text' || shape.kind === 'expression' || shape.kind === 'equation' || shape.kind === 'answers'
       ? boxes.text.trim()
       : boxes.text.trim().replace(/[.,]+$/, '')
   switch (shape.kind) {

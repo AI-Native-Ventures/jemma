@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ANSWER_MAX_LENGTH } from '../[sessionId]/logic'
 import { FractionText } from './Frac'
 import { latexToNotation } from './latex-to-notation'
+import { loadMathlive } from './load-mathlive'
 import { keyboardLayout } from './math-keyboard'
 import { MathPreview } from './MathPreview'
 import type { TypedKind } from './maths-keys'
@@ -20,8 +21,11 @@ export type MathAnswerFieldProps = {
   prompt: string
   value: string
   onChange: (plain: string) => void
-  /** The line under the box that says what goes in it. */
-  hint: string
+  /** The line under the box that says what goes in it. A question with several boxes (P146) says it once under all of them, so it is left out here. */
+  hint?: string
+  /** The id of the box and its label for a screen reader. A question with several boxes gives each its own ("answer-1", "Answer 1"). */
+  id?: string
+  label?: string
 }
 
 const FONTS = '/mathlive/fonts'
@@ -79,7 +83,7 @@ function Hint({ children }: { children: string }) {
   )
 }
 
-export function MathAnswerField({ kind, topic, prompt, value, onChange, hint }: MathAnswerFieldProps) {
+export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id = 'answer', label = 'Your answer' }: MathAnswerFieldProps) {
   const field = useRef<MathfieldElement | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading')
   const [problem, setProblem] = useState<'empty-box' | 'sign' | 'long' | null>(null)
@@ -94,7 +98,7 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint }: 
     let frame = 0
     // The layer that scrolls the box on a phone, while it has the keyboard's room at its bottom.
     let padded: HTMLElement | null = null
-    import('mathlive')
+    loadMathlive()
       .then(({ MathfieldElement }) => {
         if (gone) return
         MathfieldElement.fontsDirectory = FONTS
@@ -202,9 +206,9 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint }: 
   if (status === 'failed') {
     return (
       <div data-fallback="true" className="flex w-full flex-col items-center gap-3.5">
-        <label htmlFor="answer" className="sr-only">Your answer</label>
+        <label htmlFor={id} className="sr-only">{label}</label>
         <input
-          id="answer"
+          id={id}
           type="text"
           inputMode="text"
           autoComplete="off"
@@ -221,7 +225,7 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint }: 
             It reads: <span className="text-[22px] font-bold text-ink"><MathPreview text={value.trim()} size={22} rule={2} gap={3} side={3} className="mx-0.5 align-middle" /></span>
           </p>
         ) : null}
-        <Hint>{hint}</Hint>
+        {hint ? <Hint>{hint}</Hint> : null}
       </div>
     )
   }
@@ -230,8 +234,8 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint }: 
     <div className="flex w-full flex-col items-center gap-3.5">
       <math-field
         ref={field}
-        id="answer"
-        aria-label="Your answer"
+        id={id}
+        aria-label={label}
         className="jemma-answer"
         default-mode="math"
         placeholder="\text{Tap here to write}"
@@ -245,7 +249,7 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint }: 
               : 'Jemma cannot read that sign yet. Write it another way.'}
         </p>
       ) : null}
-      <Hint>{hint}</Hint>
+      {hint ? <Hint>{hint}</Hint> : null}
     </div>
   )
 }

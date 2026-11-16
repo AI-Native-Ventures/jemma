@@ -117,6 +117,28 @@ function lex(src: string): Tok[] {
   return out
 }
 
+/**
+ * The word or typed with the two letter keys (P146): on a laptop a learner types "x=3orx=2", and the editor gives the italic letters o and r. Between the end
+ * of one part (a number, a letter, a closing bracket, a percent) and the start of the next, those two letters are the word, as if \text{ or } had been typed.
+ */
+function orWords(toks: Tok[]): Tok[] {
+  const endsPart = (t: Tok | undefined): boolean =>
+    !!t && (t.k === 'num' || t.k === 'letter' || (t.k === 'sym' && (t.c === ')' || t.c === '}' || t.c === ']')) || (t.k === 'cmd' && ['%', 'pi', 'theta', 'circ'].includes(t.name)))
+  const startsPart = (t: Tok | undefined): boolean =>
+    !!t && (t.k === 'num' || t.k === 'letter' || (t.k === 'sym' && (t.c === '(' || t.c === '-' || t.c === '{')) || (t.k === 'cmd' && ['pi', 'theta', 'sqrt', 'frac', 'dfrac', 'left'].includes(t.name)))
+  const out: Tok[] = []
+  for (let i = 0; i < toks.length; i++) {
+    const [a, b] = [toks[i]!, toks[i + 1]]
+    if (a.k === 'letter' && a.text === 'o' && b?.k === 'letter' && b.text === 'r' && endsPart(out[out.length - 1]) && startsPart(toks[i + 2])) {
+      out.push({ k: 'cmd', name: 'or' })
+      i++
+    } else {
+      out.push(a)
+    }
+  }
+  return out
+}
+
 // ---- The tree ------------------------------------------------------------------------------------------------------------------
 
 type Node =
@@ -250,6 +272,14 @@ function read(toks: Tok[]): Node {
       } else if (t && t.k === 'cmd' && RELATIONS[t.name]) {
         pos++
         ops.push(RELATIONS[t.name]!)
+      } else if (isCmd(t, 'or')) {
+        // the word typed as the letters o and r (see orWords)
+        pos++
+        ops.push('or')
+      } else if (isCmd(t, 'lor', 'vee', 'land', 'wedge')) {
+        // The editor turns the letters "or" and "and" into the signs of logic as they are typed (its inline shortcuts): they are the words between two answers.
+        pos++
+        ops.push(isCmd(t, 'lor', 'vee') ? 'or' : 'and')
       } else if (t && t.k === 'sym' && (t.c === ',' || t.c === ';')) {
         // P147: the semicolon or comma between the two ends of an interval, or between two answers (x = 2; y = 3). It is written as a semicolon.
         pos++
@@ -600,7 +630,7 @@ export function latexToNotation(latex: string): string | null {
   if (!src) return ''
   if (/\\placeholder|\\mathbb\{\}/.test(src)) return null
   try {
-    return write(read(lex(LEIBNIZ(unicodeSigns(src))))).s
+    return write(read(orWords(lex(LEIBNIZ(unicodeSigns(src)))))).s
   } catch (e) {
     if (e instanceof Unreadable) return null
     throw e

@@ -11,7 +11,7 @@ import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 // The sandbox's class is made Grade 10 and the learner's planned session gets a lesson written here with the service client (no model is called):
 // five typed questions in a fixed order (the order of the levels, see `QUESTIONS`), one of each new kind and one with a form.
 //   Question 1  an expression, key 2x + 3        typed 3 + 2 and the x key: 3 + 2x            right
-//   Question 2  an equation, key x = 3 or x = -1  typed with the keys: x = -1 or x = 3         right
+//   Question 2  an equation, key x = 3 or x = -1  typed in its two boxes (P146): x = -1 or x = 3  right
 //   Question 3  a point, key (2; -3)             typed (-3; 2) with the minus key              missed
 //   Question 4  a number, key -3                 typed 3 and the minus key                     right
 //   Question 5  an expression, key (x+2)(x-2), factorised   typed x^2 - 4                      missed
@@ -162,7 +162,7 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await expect.poll(() => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible)).toBe(true)
     const layoutId = await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { layouts: { id: string }[] } }).mathVirtualKeyboard.layouts[0]!.id)
     expect(layoutId).toMatch(/^jemma-expression-/)
-    // The numbers, signs and fraction keys are on every tab; five word tabs change the two rows under them. This question ("Simplify x + x + 3") is algebra,
+    // The numbers, signs and fraction keys are on every tab; four word tabs change the two rows under them. This question ("Simplify x + x + 3") is algebra,
     // so the keyboard opens on Letters.
     const visibleLayer = () => page.locator('.MLK__layer.is-visible').first().getAttribute('id')
     // The editor shows its keyboard a moment after the touch (300 ms) and builds it once more then: it is measured when it has settled.
@@ -208,8 +208,9 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     // Each key is at least 44 px tall (and at least 30 px wide from 360 px up: a tenth of the width less the gap), and nothing sticks out of any key.
     const checkKeys = async (label: string, width: number) => {
       await showKeyboard()
-      // The keys drawn with the keycap class: every key but the blanks and the action keys (the five tabs, backspace and the two arrows, which are
-      // measured below). That is 31 on the tab with the fewest keys (Compare: 32), 43 on Letters.
+      // The keys drawn with the keycap class: every key but the blanks and the action keys (the four tabs, backspace, the two arrows and the key that hides the
+      // keyboard, which are measured below). That is 32 on the tab with the fewest keys (Calculus: P146 took off the signs the marking cannot read), 33 on
+      // Compare (with the word or), 37 on Trig, 43 on Letters.
       await expect.poll(async () => (await measureKeys()).length, { timeout: 10_000 }).toBeGreaterThanOrEqual(30)
       const keys = await measureKeys()
       // Soft checks: a failure at one width does not hide the others (the test still fails at the end).
@@ -217,14 +218,14 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
       if (width >= 360) expect.soft(keys.filter((k) => k.width < 30).map((k) => `${k.name} ${k.width}`), `${label}: keys under 30 px wide`).toEqual([])
       expect.soft(keys.filter((k) => k.overflowX || k.overflowY).map((k) => `${k.name}: ${k.detail}`), `${label}: keys with something sticking out`).toEqual([])
     }
-    // The row of tabs: five words, each one line, 11 to 15 px, and inside its key.
+    // The row of tabs: four words (P146 took the Shapes tab away), each one line, 11 to 15 px, and inside its key.
     const tabFaces = async (label: string) => {
       await showKeyboard()
       const tabs = page.locator('.MLK__layer.is-visible .tab')
-      await expect(tabs).toHaveCount(5)
+      await expect(tabs).toHaveCount(4)
       await expect(tabs.first()).toBeVisible()
-      expect((await tabs.allTextContents()).map((t) => t.trim())).toEqual(['Letters', 'Trig', 'Compare', 'Shapes', 'Calculus'])
-      for (let i = 0; i < 5; i++) {
+      expect((await tabs.allTextContents()).map((t) => t.trim())).toEqual(['Letters', 'Trig', 'Compare', 'Calculus'])
+      for (let i = 0; i < 4; i++) {
         const at = `${label}, tab ${i}`
         const key = await boxOf(tabs.nth(i))
         const face = await boxOf(tabs.nth(i).locator('.tab-face'))
@@ -253,7 +254,7 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await proof(page, 'expression-keyboard')
     // Each tab is opened by clicking its word, and the digits row is there on every one of them.
     const tab = (word: string) => page.locator('.MLK__layer.is-visible .tab', { hasText: word }).first()
-    const TABS: [string, string][] = [['Trig', 'jemma-trig'], ['Compare', 'jemma-compare'], ['Shapes', 'jemma-shapes'], ['Calculus', 'jemma-calculus'], ['Letters', 'jemma-letters']]
+    const TABS: [string, string][] = [['Trig', 'jemma-trig'], ['Compare', 'jemma-compare'], ['Calculus', 'jemma-calculus'], ['Letters', 'jemma-letters']]
     for (const [word, id] of TABS) {
       await tab(word).click()
       await expect.poll(visibleLayer).toBe(id)
@@ -303,11 +304,18 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await proof(page, 'expression')
     await next(page).click()
 
-    // Question 2: an equation, with two answers and the word between them.
+    // Question 2: an equation with two answers (P146): one box for each, "Answer 1" and "Answer 2", each with "x =" written in front of it. Next waits for both.
     await check(page.getByText('Question 2 of 5')).toBeVisible()
-    await expect(page.getByText('Type the answer, like x = 4. Two answers: x = 3 or x = -1.')).toBeVisible()
+    await expect(page.getByText('Type each answer in its own box.')).toBeVisible()
+    await expect(page.locator('math-field')).toHaveCount(2)
+    // (The editor draws its own element with the same label inside it, so the label is read off the editors themselves.)
+    await expect(page.locator('math-field#answer-1')).toHaveAttribute('aria-label', 'Answer 1')
+    await expect(page.locator('math-field#answer-2')).toHaveAttribute('aria-label', 'Answer 2')
+    await expect(page.locator('[data-letter="x"]')).toHaveCount(2)
     await expect(next(page)).toBeDisabled()
-    await writeAnswer(page, 'x=-1\\text{ or }x=3')
+    await writeAnswer(page, '-1', 'answer-1')
+    await expect(next(page)).toBeDisabled()
+    await writeAnswer(page, '3', 'answer-2')
     await expect(next(page)).toBeEnabled()
     await noHorizontalScroll(page)
     await proof(page, 'equation')
