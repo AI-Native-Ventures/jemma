@@ -74,8 +74,8 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
     case 'time':
       when(
         young
-          ? '- `time`: the answer is a time of day or how long something takes. Use o\'clock and half past only: the `answer` is `3:00` or `3:30` (hours, a colon, minutes), and a length of time is whole hours like `2 h`. Write the question in words: "The film starts at 2:00 and lasts 1 hour. What time does it end?" or "School starts at 8:00 and ends at 1:00. How many hours is that?"'
-          : '- `time`: the answer is a time of day or how long something takes. The `answer` is `3:15` (hours, a colon, minutes: `9:05`, `12:40`) or a length of time like `2 h 15 min`. Use quarter past, half past, quarter to and the minutes in between. Write the question in words: "A film starts at 2:15 and lasts 1 hour 30 minutes. What time does it end?" or "How long is it from 9:00 to 11:15?"',
+          ? '- `time`: the answer is a time of day or how long something takes. Use o\'clock and half past only: the `answer` is `3:00` or `3:30` (hours, a colon, minutes, never am or pm), and a length of time is whole hours like `2 h`. Write the question in words: "The film starts at 2:00 and lasts 1 hour. What time does it end?" or "School starts at 8:00 and ends at 1:00. How many hours is that?"'
+          : '- `time`: the answer is a time of day or how long something takes. The `answer` is `3:15` (hours, a colon, minutes: `9:05`, `12:40`) or a length of time like `2 h 15 min`. Use quarter past, half past, quarter to and the minutes in between. Write am or pm after a time of day (`2:30 pm`) only when the question needs it. Write the question in words: "A film starts at 2:15 and lasts 1 hour 30 minutes. What time does it end?" or "How long is it from 9:00 to 11:15?"',
       )
       when(
         '- There is no clock picture, so never ask the learner to read a clock face. When you want that, ask it as a `choice` question: "Which time is half past 3?" with the times as choices.',
@@ -84,8 +84,8 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
     case 'measure':
       when(
         young
-          ? '- `unit`: for length, mass, capacity and temperature a question may have `unit`, the unit as it is written (`cm`, `m`, `g`, `kg`, `ml`, `l`, `°C`). The `prompt` then asks for the number only ("How long is the pencil, in cm?"), the `answer` is the whole number without its unit (`12`) and the learner sees the unit after the answer box. Keep one unit all through a question: no changing between units.'
-          : '- `unit`: for length, mass, capacity, volume, perimeter, area and temperature a question may have `unit`, the unit as it is written (`cm`, `m`, `km`, `g`, `kg`, `ml`, `l`, `°C`, `cm²`, `m²`). The `prompt` then asks for the number only ("How long is the pencil, in cm?"), the `answer` is the number without its unit (`12`) and the learner sees the unit after the answer box. A question may ask to change one unit to another ("How many cm are in 3 m?"): `unit` is then the unit of the answer.',
+          ? '- `unit`: for length, mass, capacity and temperature a question may have `unit`, the unit as it is written (`cm`, `m`, `g`, `kg`, `ml`, `l`, `°C`). The `answerKind` is then `whole`, the `prompt` asks for the number only ("How long is the pencil, in cm?"), the `answer` is the whole number without its unit (`12`) and the learner sees the unit after the answer box. Keep one unit all through a question: no changing between units.'
+          : '- `unit`: for length, mass, capacity, volume, perimeter, area and temperature a question may have `unit`, the unit as it is written (`cm`, `m`, `km`, `g`, `kg`, `ml`, `l`, `°C`, `cm²`, `m²`). The `answerKind` is then `whole` or `decimal`, the `prompt` asks for the number only ("How long is the pencil, in cm?"), the `answer` is the number without its unit (`12`) and the learner sees the unit after the answer box. A question may ask to change one unit to another ("How many cm are in 3 m?"): `unit` is then the unit of the answer.',
       )
       break
     case 'order':
@@ -98,7 +98,7 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
     case 'patterns':
       when(
         young
-          ? '- `list`: several numbers in a row, with a semicolon between them. Use it for the next numbers of a pattern ("What are the next three numbers? 2, 4, 6, 8, ..."): at most 3 numbers, the `answer` is `10; 12; 14` and `ordered` is `true`.'
+          ? '- `list`: several numbers in a row, with a semicolon between them. Use it for the next numbers of a pattern ("What are the next three numbers? 2, 4, 6, 8, ..."): 2 or 3 numbers, the `answer` is `10; 12; 14` and `ordered` is `true`.'
           : '- `list`: several values in a row, with a semicolon between them (a comma is part of a decimal, so never cut a list at a comma). Use it for the next terms of a number pattern ("What are the next three numbers? 3, 7, 11, 15, ..."): the `answer` is `19; 23; 27` and `ordered` is `true`.',
       )
       break
