@@ -105,7 +105,11 @@ function RightBar({ m }: { m: MissedQuestion }) {
 /** "You wrote" and "Right answer" sit side by side, unless one answer is longer than a short number: then they stack, each as wide as the screen. */
 const stack = (m: MissedQuestion) => !m.unread && (isLong(m.wrote) || isLong(m.right))
 
-export function Results({ firstName, missed }: { firstName: string; missed: MissedQuestion[] }) {
+/**
+ * The results of a practice: each question that was missed with what was written, the right answer, why and the right way. After a practice it greets the
+ * learner; opened again later (P120) the page passes `heading` (the topic) and `note` (the day and the count) in place of the greeting.
+ */
+export function Results({ firstName, missed, heading, note }: { firstName: string; missed: MissedQuestion[]; heading?: string; note?: string }) {
   const lead =
     missed.length === 0
       ? 'Nice work. There is nothing to go over this time.'
@@ -120,7 +124,8 @@ export function Results({ firstName, missed }: { firstName: string; missed: Miss
           <svg width="18" height="18" viewBox="0 0 16 16"><polygon points="8,1 15,8 8,15 1,8" fill="#1F1D36" /></svg>
           <Gem kind="full" size={18} />
         </span>
-        <h1 className="m-0 text-[32px] leading-[1.1] font-bold tracking-[-0.02em]">You finished, {firstName}!</h1>
+        <h1 className="m-0 text-[32px] leading-[1.1] font-bold tracking-[-0.02em]">{heading ?? `You finished, ${firstName}!`}</h1>
+        {note ? <p data-note="true" className="m-0 text-[16px] leading-[1.45] font-semibold text-body">{note}</p> : null}
         <p className="m-0 text-[18px] leading-[1.45]">{lead}</p>
       </div>
       {missed.map((m) => (

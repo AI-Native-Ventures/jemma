@@ -10,6 +10,8 @@ const state = vi.hoisted(() => ({
   email: 'naledi@example.test' as string | null,
   signedOut: 0,
   handback: null as unknown,
+  // P120: where the hold goes (the hand-back target) and the link to read the answers again.
+  next: null as unknown,
 }))
 
 vi.mock('next/navigation', () => ({
@@ -31,6 +33,8 @@ vi.mock('@/lib/supabase/server', () => ({
 }))
 vi.mock('@/lib/data/p28', () => ({ getChildName: async () => ({ firstName: 'Naledi', initial: 'N' }) }))
 vi.mock('@/lib/data/p27', () => ({ getHandback: async () => state.handback }))
+vi.mock('@/lib/data/p120', () => ({ getHandbackNext: async () => state.next }))
+vi.mock('../app/k/done/actions', () => ({ handBackToDemoParent: async () => undefined }))
 vi.mock('../app/k/me/actions', () => ({ signOutChild: async () => undefined }))
 // P114's "Link a parent" card is an async server part of the same page; this test is about the PIN line only.
 vi.mock('../app/k/me/LinkParent', () => ({ LinkParent: () => null }))
@@ -45,6 +49,7 @@ beforeEach(() => {
   state.email = 'naledi@example.test'
   state.signedOut = 0
   state.handback = { firstName: 'Naledi', minutes: 12, relation: 'your grown-up', parentName: 'your grown-up', alone: true }
+  state.next = { target: { kind: 'home', href: '/k' }, seeAnswersHref: null }
 })
 
 describe('isCodeLoginEmail', () => {
@@ -118,6 +123,7 @@ describe('the hand-back screen', () => {
 
   it('for a child whose grown-up has the phone it is as it always was: pass the phone back, and the hold button', async () => {
     state.handback = { firstName: 'Amina', minutes: 10, relation: 'your mum', parentName: 'Zanele', alone: false }
+    state.next = { target: { kind: 'open', href: '/p/c1/sessions/s1' }, seeAnswersHref: null }
     render(await HandbackPage())
     expect(document.body.textContent).toContain('Now pass the phone back to your mum.')
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('For Zanele')

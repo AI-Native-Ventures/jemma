@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getScreenShape } from '@/lib/data/own-screens'
+import { getPastPractice } from '@/lib/data/p120'
 import { getMyMaths } from '@/lib/data/p80'
 import { ADD_A_GRADE, higherGradeLine, noTopicsLine } from '@/lib/own-grades'
 import { PracticeRow } from '../Practise'
@@ -8,6 +9,7 @@ import { AppHeader } from '../session/_parts/AppHeader'
 import { ChevronRight } from '../session/_parts/Chips'
 import { Diamond } from '../session/_parts/Gems'
 import { OwnWorkLink } from '../OwnWorkLink'
+import { PastPractice } from '../PastPractice'
 import { WorkspaceSwitch } from '../WorkspaceSwitch'
 import { GradeChips } from './GradeChips'
 import { gapLine, lockOf, rowScore } from './format'
@@ -27,7 +29,7 @@ const list = 'm-0 flex list-none flex-col rounded-20 border border-line bg-card 
 export default async function MyMathsPage({ searchParams }: { searchParams?: Promise<{ class?: string | string[]; grade?: string | string[] }> } = {}) {
   const shape = await getScreenShape((await searchParams) ?? {})
   const own = shape.workspace === 'own' ? shape : null
-  const { firstName, maths, status } = await getMyMaths(own?.picked?.classId)
+  const [{ firstName, maths, status }, past] = await Promise.all([getMyMaths(own?.picked?.classId), getPastPractice()])
   const lock = lockOf(status)
   const locked = lock !== null
   const grade = own?.picked?.grade ?? null
@@ -80,6 +82,8 @@ export default async function MyMathsPage({ searchParams }: { searchParams?: Pro
             </ul>
           </section>
         ) : null}
+
+        <PastPractice rows={past} />
 
         {empty ? null : (
           <section aria-labelledby="all" className="flex flex-col gap-2.5">
