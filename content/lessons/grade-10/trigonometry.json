@@ -400,48 +400,43 @@
       ],
       "keyWords": [
         {
+          "word": "right-angled triangle",
+          "meaning": "A triangle with one angle of 90 degrees."
+        },
+        {
           "word": "hypotenuse",
-          "meaning": "The side of a right-angled triangle opposite the right angle, and the longest side."
+          "meaning": "The side opposite the right angle, and the longest side of a right-angled triangle."
         },
         {
           "word": "opposite side",
-          "meaning": "The side of the triangle that is across from the angle you are working with and does not touch it."
+          "meaning": "For a chosen angle, the side across from that angle that does not touch it."
         },
         {
           "word": "adjacent side",
-          "meaning": "The side that touches the angle you are working with and is not the hypotenuse."
+          "meaning": "For a chosen angle, the side that touches that angle and is not the hypotenuse."
         },
         {
-          "word": "trigonometric ratio",
-          "meaning": "A fixed ratio of two sides of a right-angled triangle, fixed by the size of the angle."
+          "word": "theta",
+          "meaning": "A Greek letter often used for an unknown angle."
         },
         {
           "word": "sine",
-          "meaning": "Written sin, the ratio of the side opposite the angle to the hypotenuse."
+          "meaning": "The ratio sine theta equals opposite over hypotenuse."
         },
         {
           "word": "cosine",
-          "meaning": "Written cos, the ratio of the side adjacent to the angle to the hypotenuse."
+          "meaning": "The ratio cosine theta equals adjacent over hypotenuse."
         },
         {
           "word": "tangent",
-          "meaning": "Written tan, the ratio of the side opposite the angle to the side adjacent to the angle."
-        },
-        {
-          "word": "SOH CAH TOA",
-          "meaning": "A memory aid that pairs each ratio with the two sides it uses."
+          "meaning": "The ratio tangent theta equals opposite over adjacent."
         }
       ],
       "blocks": [
         {
           "kind": "explain",
-          "text": "Last lesson you saw that similar right-angled triangles keep the same ratio between two sides. That is the idea behind trigonometry: once the angles of a right-angled triangle are fixed, the ratio of any two of its sides is fixed as well.\n\nTrigonometry gives those fixed ratios names: sine, cosine and tangent. With a name you can write the ratio as a formula, and a formula lets you work out sides and angles you cannot measure directly.",
-          "speech": "Last lesson you saw that similar right angled triangles keep the same ratio between two sides. That is the idea behind trigonometry. Once the angles of a right angled triangle are fixed, the ratio of any two of its sides is fixed as well. Trigonometry gives those fixed ratios names. They are called sine, cosine and tangent. With a name you can write the ratio as a formula, and a formula lets you work out sides and angles you cannot measure directly."
-        },
-        {
-          "kind": "explain",
-          "text": "A right-angled triangle has three sides. The hypotenuse is the side opposite the right angle, and it is always the longest side. The other two sides are named according to the angle you are working with. The opposite side is the side across from that angle and it does not touch the angle. The adjacent side is the side that touches the angle but is not the hypotenuse.",
-          "speech": "A right angled triangle has three sides. The hypotenuse is the side opposite the right angle, and it is always the longest side. The other two sides are named according to the angle you are working with. The opposite side is the side across from that angle, and it does not touch the angle. The adjacent side is the side that touches the angle but is not the hypotenuse."
+          "text": "Trigonometry connects the angles of a right-angled triangle to the lengths of its sides. The ratios of two sides depend only on the size of the angle, not on how big the triangle is.\n\nIn this lesson you learn the names of the three sides and the three ratios sine, cosine and tangent. These names must always be used with respect to one chosen acute angle.",
+          "speech": "Trigonometry connects the angles of a right-angled triangle to the lengths of its sides. The ratio of two sides depends only on the size of the angle, not on how big the triangle is. In this lesson you learn the names of the three sides and the three ratios sine, cosine and tangent. These names are always used with respect to one chosen acute angle."
         },
         {
           "kind": "diagram",
@@ -451,26 +446,21 @@
               "A",
               "B",
               "C"
-            ],
-            "sides": [
-              "opposite",
-              "adjacent",
-              "hypotenuse"
             ],
             "angleLabels": [
               "θ",
-              "",
-              "90°"
+              "90°",
+              ""
             ],
-            "rightAngleAt": 2
+            "rightAngleAt": 1
           },
-          "caption": "The right angle is at C. The angle θ is at A, so BC is the opposite side, AC is the adjacent side and AB is the hypotenuse.",
-          "speech": "A right angled triangle A B C with the right angle at C. The angle theta is marked at A. The side across from the right angle, A B, is labelled hypotenuse. The side across from theta, B C, is labelled opposite. The side that touches theta and is not the hypotenuse, A C, is labelled adjacent."
+          "caption": "Right angle at B. The angle θ is at A. AC is the hypotenuse, BC is opposite θ, and AB is adjacent to θ.",
+          "speech": "The picture shows a right-angled triangle A B C with the right angle at B and the angle theta at A. The side A C is opposite the right angle, so it is the hypotenuse. The side B C is across from theta and does not touch it, so B C is opposite theta. The side A B touches theta and is not the hypotenuse, so A B is adjacent to theta."
         },
         {
           "kind": "explain",
-          "text": "The hypotenuse never changes, because the right angle never moves. But opposite and adjacent belong to the angle you choose. If you move to the other acute angle, the opposite and adjacent sides swap. The hypotenuse stays the same side: it is always the side opposite the right angle, and it is always the longest side.",
-          "speech": "The hypotenuse never changes, because the right angle never moves. But opposite and adjacent belong to the angle you choose. If you move to the other acute angle, the opposite and adjacent sides swap. The hypotenuse stays the same side. It is always the side opposite the right angle, and it is always the longest side."
+          "text": "The hypotenuse is always the side opposite the right angle. It is the longest side and its position does not change when you choose a different angle.\n\nFor a chosen angle θ, the opposite side is the side across from θ and does not touch θ. The adjacent side is the side that touches θ and is not the hypotenuse. If you choose the other acute angle, opposite and adjacent swap, but the hypotenuse stays the same.",
+          "speech": "The hypotenuse is always the side opposite the right angle. It is the longest side and its position does not change when you choose a different angle. For a chosen angle theta, the opposite side is the side across from theta and does not touch theta. The adjacent side is the side that touches theta and is not the hypotenuse. If you choose the other acute angle, opposite and adjacent swap, but the hypotenuse stays the same."
         },
         {
           "kind": "diagram",
@@ -481,192 +471,182 @@
               "B",
               "C"
             ],
-            "sides": [
-              "adjacent",
-              "opposite",
-              "hypotenuse"
-            ],
             "angleLabels": [
               "",
-              "α",
-              "90°"
+              "90°",
+              "α"
             ],
-            "rightAngleAt": 2
+            "rightAngleAt": 1
           },
-          "caption": "The same triangle, but now the angle is α at B. The labels opposite and adjacent have swapped; the hypotenuse is still AB.",
-          "speech": "The same triangle, but now the angle alpha is at B. The side across from alpha is A C, so A C is now the opposite side. The side that touches alpha and is not the hypotenuse is B C, so B C is now the adjacent side. The hypotenuse is still A B, the side opposite the right angle."
+          "caption": "Same triangle, now using angle α at C. AC is still the hypotenuse. AB is opposite α, and BC is adjacent to α.",
+          "speech": "The picture shows the same right-angled triangle A B C with the right angle at B, but now the chosen angle is alpha at C. The side A C is still opposite the right angle, so it is still the hypotenuse. The side A B is across from alpha and does not touch it, so A B is opposite alpha. The side B C touches alpha and is not the hypotenuse, so B C is adjacent to alpha."
         },
         {
           "kind": "explain",
-          "text": "For the angle θ:\n\nsin θ = opposite/hypotenuse\ncos θ = adjacent/hypotenuse\ntan θ = opposite/adjacent\n\nRemember SOH CAH TOA: S-O-H, sine is opposite over hypotenuse; C-A-H, cosine is adjacent over hypotenuse; T-O-A, tangent is opposite over adjacent. A ratio is a number, so it has no unit, and it does not change when the triangle is drawn bigger or smaller.",
-          "speech": "For the angle theta, sine theta is the opposite side over the hypotenuse. Cosine theta is the adjacent side over the hypotenuse. Tangent theta is the opposite side over the adjacent side. Remember SOH CAH TOA. S O H means sine is opposite over hypotenuse. C A H means cosine is adjacent over hypotenuse. T O A means tangent is opposite over adjacent. A ratio is a number, so it has no unit, and it does not change when the triangle is drawn bigger or smaller."
+          "text": "For a chosen angle θ in a right-angled triangle:\n\nsin θ = opposite/hypotenuse\ncos θ = adjacent/hypotenuse\ntan θ = opposite/adjacent\n\nUse SOH CAH TOA to remember: Sine is Opposite over Hypotenuse, Cosine is Adjacent over Hypotenuse, Tangent is Opposite over Adjacent. A ratio has no unit because it divides two lengths.",
+          "speech": "For a chosen angle theta in a right-angled triangle, sine theta equals opposite over hypotenuse. Cosine theta equals adjacent over hypotenuse. Tangent theta equals opposite over adjacent. Use S O H, C A H, T O A to remember: sine is opposite over hypotenuse, cosine is adjacent over hypotenuse, tangent is opposite over adjacent. A ratio has no unit because it divides two lengths."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "angleLabels": [
+              "θ",
+              "90°",
+              ""
+            ],
+            "rightAngleAt": 1
+          },
+          "caption": "Use this triangle for the first examples. Right angle at B. θ is at A. AB = 4, BC = 3, AC = 5. AC is the hypotenuse, BC is opposite θ, AB is adjacent to θ.",
+          "speech": "The picture shows a right-angled triangle A B C with the right angle at B and theta at A. Side A B is four units, side B C is three units and side A C is five units. A C is the hypotenuse. B C is opposite theta, and A B is adjacent to theta."
         },
         {
           "kind": "worked",
-          "problem": "In triangle ABC, angle C = 90°, AB = 5, BC = 3 and AC = 4. Write down sin θ, where θ is the angle at A.",
+          "problem": "In the triangle with right angle at B, θ at A, AB = 4, BC = 3 and AC = 5, write sin θ.",
           "steps": [
             {
-              "line": "Hypotenuse = AB = 5",
-              "reason": "The hypotenuse is the side opposite the right angle at C."
+              "line": "Right angle is at B, so hypotenuse AC = 5.",
+              "reason": "The hypotenuse is opposite the right angle."
             },
             {
-              "line": "Opposite side to θ = BC = 3",
-              "reason": "θ is at A, and BC is the side across from A that does not touch it."
+              "line": "Opposite θ is BC = 3.",
+              "reason": "BC is across from θ and does not touch it."
             },
             {
               "line": "sin θ = opposite/hypotenuse",
-              "reason": "SOH tells us sine is opposite over hypotenuse."
+              "reason": "Use SOH: sine is opposite over hypotenuse."
             },
             {
               "line": "sin θ = 3/5",
-              "reason": "Put the opposite side 3 over the hypotenuse 5."
+              "reason": "Substitute BC = 3 and AC = 5."
             }
           ],
           "answer": "3/5",
           "answerKind": "fraction",
-          "speech": "In triangle A B C, angle C is ninety degrees, A B is five, B C is three and A C is four. Write down sine theta, where theta is the angle at A. First, the hypotenuse is A B, which is five, because it is opposite the right angle at C. Second, the side opposite theta is B C, which is three, because theta is at A and B C is the side across from A. Third, SOH tells us sine is opposite over hypotenuse. So sine theta is three over five.",
+          "speech": "In the triangle with right angle at B, theta at A, A B equals four, B C equals three and A C equals five, write sine theta. The right angle is at B, so the hypotenuse is A C, which is five. The side opposite theta is B C, which is three. Sine theta equals opposite over hypotenuse. So sine theta equals three over five. The answer is three fifths."
+        },
+        {
+          "kind": "worked",
+          "problem": "Same triangle: right angle at B, θ at A, AB = 4, BC = 3 and AC = 5. Write tan θ.",
+          "steps": [
+            {
+              "line": "Opposite θ is BC = 3.",
+              "reason": "BC is across from θ and does not touch it."
+            },
+            {
+              "line": "Adjacent θ is AB = 4.",
+              "reason": "AB touches θ and is not the hypotenuse."
+            },
+            {
+              "line": "tan θ = opposite/adjacent",
+              "reason": "Use TOA: tangent is opposite over adjacent."
+            },
+            {
+              "line": "tan θ = 3/4",
+              "reason": "Substitute BC = 3 and AB = 4."
+            }
+          ],
+          "answer": "3/4",
+          "answerKind": "fraction",
+          "speech": "Same triangle: right angle at B, theta at A, A B equals four, B C equals three and A C equals five. Write tangent theta. The side opposite theta is B C, which is three. The side adjacent to theta is A B, which is four. Tangent theta equals opposite over adjacent. So tangent theta equals three over four. The answer is three quarters."
+        },
+        {
+          "kind": "worked",
+          "problem": "Same triangle: right angle at B, α at C, AB = 4, BC = 3 and AC = 5. Write cos α.",
+          "steps": [
+            {
+              "line": "Right angle is at B, so hypotenuse AC = 5.",
+              "reason": "The hypotenuse is opposite the right angle."
+            },
+            {
+              "line": "For α at C, adjacent side is BC = 3.",
+              "reason": "BC touches α and is not the hypotenuse."
+            },
+            {
+              "line": "cos α = adjacent/hypotenuse",
+              "reason": "Use CAH: cosine is adjacent over hypotenuse."
+            },
+            {
+              "line": "cos α = 3/5",
+              "reason": "Substitute BC = 3 and AC = 5."
+            }
+          ],
+          "answer": "3/5",
+          "answerKind": "fraction",
+          "speech": "Same triangle: right angle at B, alpha at C, A B equals four, B C equals three and A C equals five. Write cosine alpha. The right angle is at B, so the hypotenuse is A C, which is five. For alpha at C, the adjacent side is B C, which is three. Cosine alpha equals adjacent over hypotenuse. So cosine alpha equals three over five. The answer is three fifths."
+        },
+        {
+          "kind": "worked",
+          "problem": "A ladder 5 m long leans against a vertical wall. Its foot is 3 m from the wall and its top is 4 m up the wall. Let θ be the angle between the ladder and the ground. Write tan θ.",
+          "steps": [
+            {
+              "line": "The ladder is the hypotenuse: 5 m.",
+              "reason": "The ladder is opposite the right angle between the wall and the ground."
+            },
+            {
+              "line": "The ground distance 3 m is adjacent to θ.",
+              "reason": "The ground touches θ and is not the hypotenuse."
+            },
+            {
+              "line": "The wall height 4 m is opposite θ.",
+              "reason": "The wall is across from θ."
+            },
+            {
+              "line": "tan θ = opposite/adjacent = 4/3",
+              "reason": "Use TOA and substitute the opposite and adjacent lengths."
+            }
+          ],
+          "answer": "4/3",
+          "answerKind": "fraction",
+          "speech": "A ladder five metres long leans against a vertical wall. Its foot is three metres from the wall and its top is four metres up the wall. Let theta be the angle between the ladder and the ground. Write tangent theta. The ladder is the hypotenuse, five metres. The ground distance, three metres, is adjacent to theta. The wall height, four metres, is opposite theta. Tangent theta equals opposite over adjacent, so tangent theta equals four over three. The answer is four thirds."
+        },
+        {
+          "kind": "explain",
+          "text": "To choose a ratio, name the two sides that are involved in the question. If the sides are opposite and hypotenuse, use sine. If they are adjacent and hypotenuse, use cosine. If they are opposite and adjacent, use tangent.\n\nDo not use a side that is not needed. SOH CAH TOA tells you which pair belongs with each ratio.",
+          "speech": "To choose a ratio, name the two sides that are involved in the question. If the sides are opposite and hypotenuse, use sine. If they are adjacent and hypotenuse, use cosine. If they are opposite and adjacent, use tangent. Do not use a side that is not needed. S O H, C A H, T O A tells you which pair belongs with each ratio."
+        },
+        {
+          "kind": "worked",
+          "problem": "In a right-angled triangle, θ is at A and the right angle is at B. AB = 8 and AC = 17. Which ratio connects AB and AC? Write it for θ.",
+          "steps": [
+            {
+              "line": "AB touches θ and is not the hypotenuse, so AB is adjacent.",
+              "reason": "The adjacent side touches the chosen angle and is not the hypotenuse."
+            },
+            {
+              "line": "AC is opposite the right angle, so AC is the hypotenuse.",
+              "reason": "The hypotenuse is always opposite the right angle."
+            },
+            {
+              "line": "Adjacent and hypotenuse belong to cosine.",
+              "reason": "CAH: cosine is adjacent over hypotenuse."
+            },
+            {
+              "line": "cos θ = AB/AC = 8/17",
+              "reason": "Substitute the adjacent side and the hypotenuse."
+            }
+          ],
+          "answer": "8/17",
+          "answerKind": "fraction",
+          "speech": "In a right-angled triangle, theta is at A and the right angle is at B. A B equals eight and A C equals seventeen. Which ratio connects A B and A C? Write it for theta. A B touches theta and is not the hypotenuse, so A B is adjacent. A C is opposite the right angle, so A C is the hypotenuse. Adjacent and hypotenuse belong to cosine. Cosine theta equals A B over A C, which is eight over seventeen. The answer is eight seventeenths."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "sin θ = AB/AC = 4/5",
+          "right": "sin θ = BC/AC = 3/5",
+          "why": "For θ at A with the right angle at B, BC is opposite θ and AB is adjacent. Sine must use the opposite side, not the adjacent side.",
+          "speech": "A common mistake is to use the adjacent side instead of the opposite side in sine. For theta at A with the right angle at B, B C is opposite theta and A B is adjacent. The wrong line uses A B over A C, which is four fifths. The right line uses B C over A C, which is three fifths. Sine always puts the side opposite the angle on top.",
           "diagram": {
             "kind": "triangle",
             "vertices": [
               "A",
               "B",
               "C"
-            ],
-            "sides": [
-              "3",
-              "4",
-              "5"
-            ],
-            "angleLabels": [
-              "θ",
-              "",
-              "90°"
-            ],
-            "rightAngleAt": 2
-          }
-        },
-        {
-          "kind": "worked",
-          "problem": "In the same triangle, the angle at B is called α. Write down tan α.",
-          "steps": [
-            {
-              "line": "Opposite side to α = AC = 4",
-              "reason": "α is at B, and AC is the side across from B that does not touch it."
-            },
-            {
-              "line": "Adjacent side to α = BC = 3",
-              "reason": "BC touches B and is not the hypotenuse."
-            },
-            {
-              "line": "tan α = opposite/adjacent",
-              "reason": "TOA tells us tangent is opposite over adjacent."
-            },
-            {
-              "line": "tan α = 4/3",
-              "reason": "Put the opposite side 4 over the adjacent side 3."
-            }
-          ],
-          "answer": "4/3",
-          "answerKind": "fraction",
-          "speech": "In the same triangle, the angle at B is called alpha. Write down tangent alpha. First, the side opposite alpha is A C, which is four, because alpha is at B and A C is across from B. Second, the side adjacent to alpha is B C, which is three, because it touches B and is not the hypotenuse. Third, TOA tells us tangent is opposite over adjacent. So tangent alpha is four over three.",
-          "diagram": {
-            "kind": "triangle",
-            "vertices": [
-              "A",
-              "B",
-              "C"
-            ],
-            "sides": [
-              "3",
-              "4",
-              "5"
-            ],
-            "angleLabels": [
-              "",
-              "α",
-              "90°"
-            ],
-            "rightAngleAt": 2
-          }
-        },
-        {
-          "kind": "try",
-          "question": {
-            "prompt": "In triangle ABC, angle C = 90°, AB = 13, BC = 5 and AC = 12. Write down cos A, where A is the angle at vertex A.",
-            "render": "text",
-            "steps": [
-              "Hypotenuse = AB = 13",
-              "Side adjacent to A = AC = 12",
-              "cos A = adjacent/hypotenuse",
-              "cos A = 12/13"
-            ],
-            "answer": "12/13",
-            "answerKind": "fraction",
-            "diagram": {
-              "kind": "triangle",
-              "vertices": [
-                "A",
-                "B",
-                "C"
-              ],
-              "sides": [
-                "5",
-                "12",
-                "13"
-              ],
-              "angleLabels": [
-                "",
-                "",
-                "90°"
-              ],
-              "rightAngleAt": 2
-            },
-            "difficulty": 2,
-            "why": "Learners often take the side opposite A, which is BC = 5, and write 5/13, which is sin A.",
-            "rightWay": "The angle is at A, so the adjacent side is AC = 12 and the hypotenuse is AB = 13, giving cos A = 12/13."
-          },
-          "hint": "Which side touches A and is not the hypotenuse?",
-          "speech": "In triangle A B C, angle C is ninety degrees, A B is thirteen, B C is five and A C is twelve. Write down cosine A, where A is the angle at vertex A. Pause here and try it yourself. The hypotenuse is A B, thirteen. The side adjacent to A is A C, twelve. So cosine A is twelve over thirteen."
-        },
-        {
-          "kind": "worked",
-          "problem": "In triangle PQR, angle Q = 90°, PR = 10, PQ = 6 and QR = 8. Write down tan θ in simplest form, where θ is the angle at P.",
-          "steps": [
-            {
-              "line": "Hypotenuse = PR = 10",
-              "reason": "The hypotenuse is the side opposite the right angle at Q."
-            },
-            {
-              "line": "Opposite side to θ = QR = 8",
-              "reason": "θ is at P, and QR is the side across from P."
-            },
-            {
-              "line": "Adjacent side to θ = PQ = 6",
-              "reason": "PQ touches P and is not the hypotenuse."
-            },
-            {
-              "line": "tan θ = 8/6",
-              "reason": "TOA: opposite over adjacent."
-            },
-            {
-              "line": "tan θ = 4/3",
-              "reason": "Divide the top and the bottom by 2 to simplify the fraction."
-            }
-          ],
-          "answer": "4/3",
-          "answerKind": "fraction",
-          "speech": "In triangle P Q R, angle Q is ninety degrees, P R is ten, P Q is six and Q R is eight. Write down tangent theta in simplest form, where theta is the angle at P. First, the hypotenuse is P R, ten, because it is opposite the right angle at Q. Second, the side opposite theta is Q R, eight. Third, the side adjacent to theta is P Q, six. Fourth, tangent is opposite over adjacent, so we get eight over six. Divide top and bottom by two, and tangent theta is four over three.",
-          "diagram": {
-            "kind": "triangle",
-            "vertices": [
-              "P",
-              "Q",
-              "R"
-            ],
-            "sides": [
-              "8",
-              "10",
-              "6"
             ],
             "angleLabels": [
               "θ",
@@ -677,269 +657,148 @@
           }
         },
         {
-          "kind": "worked",
-          "problem": "In triangle KLM, angle M = 90°, KL = 17, LM = 8 and KM = 15. Write down tan K, where K is the angle at vertex K.",
-          "steps": [
-            {
-              "line": "Hypotenuse = KL = 17",
-              "reason": "The hypotenuse is the side opposite the right angle at M."
-            },
-            {
-              "line": "Opposite side to K = LM = 8",
-              "reason": "K is at vertex K, and LM is the side across from K."
-            },
-            {
-              "line": "Adjacent side to K = KM = 15",
-              "reason": "KM touches K and is not the hypotenuse."
-            },
-            {
-              "line": "tan K = 8/15",
-              "reason": "TOA: opposite over adjacent."
-            }
-          ],
-          "answer": "8/15",
-          "answerKind": "fraction",
-          "speech": "In triangle K L M, angle M is ninety degrees, K L is seventeen, L M is eight and K M is fifteen. Write down tangent K, where K is the angle at vertex K. The hypotenuse is K L, seventeen, opposite the right angle at M. The side opposite K is L M, eight. The side adjacent to K is K M, fifteen. Tangent is opposite over adjacent, so tangent K is eight over fifteen.",
-          "diagram": {
-            "kind": "triangle",
-            "vertices": [
-              "K",
-              "L",
-              "M"
+          "kind": "try",
+          "question": {
+            "prompt": "In a right-angled triangle, the right angle is at B and θ is at A. AB = 12, BC = 5 and AC = 13. Find cos θ.",
+            "render": "text",
+            "steps": [
+              "AC is the hypotenuse because it is opposite the right angle.",
+              "AB is adjacent to θ.",
+              "cos θ = adjacent/hypotenuse",
+              "cos θ = 12/13"
             ],
-            "sides": [
-              "8",
-              "15",
-              "17"
-            ],
-            "angleLabels": [
-              "",
-              "",
-              "90°"
-            ],
-            "rightAngleAt": 2
-          }
-        },
-        {
-          "kind": "mistake",
-          "wrong": "sin θ = 4/5",
-          "right": "sin θ = 3/5",
-          "why": "The side of length 4 touches the angle θ, so it is the adjacent side and belongs to cosine. The side of length 3 is across from θ, so it is the opposite side. Sine is opposite over hypotenuse, which gives 3/5.",
-          "speech": "Here is the usual mistake. In a triangle with theta at A, the side opposite theta is three, the side adjacent to theta is four and the hypotenuse is five. The wrong answer is sine theta equals four over five. The right answer is sine theta equals three over five. The side of length four touches the angle theta, so it is the adjacent side and belongs to cosine. The side of length three is across from theta, so it is the opposite side. Sine is opposite over hypotenuse, which gives three over five.",
-          "diagram": {
-            "kind": "triangle",
-            "vertices": [
-              "A",
-              "B",
-              "C"
-            ],
-            "sides": [
-              "3",
-              "4",
-              "5"
-            ],
-            "angleLabels": [
-              "θ",
-              "",
-              "90°"
-            ],
-            "rightAngleAt": 2
-          }
-        },
-        {
-          "kind": "explain",
-          "text": "Before you write a ratio, do two things. First mark the angle you are working with. Then name the two sides the question talks about. The pair of names chooses the ratio. Opposite and hypotenuse: sine. Adjacent and hypotenuse: cosine. Opposite and adjacent: tangent. If the question links the side opposite the angle with the hypotenuse, you need sine.",
-          "speech": "Before you write a ratio, do two things. First mark the angle you are working with. Then name the two sides the question talks about. The pair of names chooses the ratio. Opposite and hypotenuse gives sine. Adjacent and hypotenuse gives cosine. Opposite and adjacent gives tangent. If the question links the side opposite the angle with the hypotenuse, you need sine."
+            "answer": "12/13",
+            "answerKind": "fraction",
+            "difficulty": 2,
+            "why": "Using the opposite side instead of the adjacent side gives 5/13.",
+            "rightWay": "For θ at A, AB is adjacent and AC is hypotenuse, so cos θ = AB/AC = 12/13."
+          },
+          "hint": "Cosine uses the side next to θ that is not the hypotenuse, over the hypotenuse.",
+          "speech": "In a right-angled triangle, the right angle is at B and theta is at A. A B is twelve, B C is five and A C is thirteen. Find cosine theta."
         },
         {
           "kind": "try",
           "question": {
-            "prompt": "In triangle PQR, angle Q = 90°, PQ = 7, QR = 24 and PR = 25. Which statement is correct?",
+            "prompt": "In a right-angled triangle, θ is at A and the right angle is at B. AB = 9, BC = 40 and AC = 41. Find tan θ.",
             "render": "text",
             "steps": [
-              "Angle Q = 90°, so PR = 25 is the hypotenuse",
-              "For the angle at P the opposite side is QR = 24 and the adjacent side is PQ = 7",
-              "sin P = opposite/hypotenuse = 24/25",
-              "The correct statement is A"
+              "BC is opposite θ.",
+              "AB is adjacent to θ.",
+              "tan θ = opposite/adjacent",
+              "tan θ = 40/9"
             ],
-            "answer": "A",
-            "answerKind": "choice",
-            "choices": [
-              "sin P = 24/25",
-              "cos P = 24/25",
-              "tan P = 7/25",
-              "sin P = 7/24"
-            ],
-            "diagram": {
-              "kind": "triangle",
-              "vertices": [
-                "P",
-                "Q",
-                "R"
-              ],
-              "sides": [
-                "24",
-                "25",
-                "7"
-              ],
-              "angleLabels": [
-                "",
-                "90°",
-                ""
-              ],
-              "rightAngleAt": 1
-            },
+            "answer": "40/9",
+            "answerKind": "fraction",
             "difficulty": 2,
-            "why": "Learners who take PQ as the opposite side get sin P = 7/25, which is wrong.",
-            "rightWay": "The angle is at P, so the opposite side is QR = 24 and the hypotenuse is PR = 25, giving sin P = 24/25."
+            "why": "Using AB over BC gives the reciprocal of the tangent ratio.",
+            "rightWay": "For θ at A, BC is opposite and AB is adjacent, so tan θ = BC/AB = 40/9."
           },
-          "hint": "Mark the angle at P first, then decide which side is across from it.",
-          "speech": "In triangle P Q R, angle Q is ninety degrees, P Q is seven, Q R is twenty four and P R is twenty five. Which statement is correct? The options are: A, sine P equals twenty four over twenty five. B, cosine P equals twenty four over twenty five. C, tangent P equals seven over twenty five. D, sine P equals seven over twenty four. Pause and try it. The right angle is at Q, so P R, twenty five, is the hypotenuse. For the angle at P the side across from it is Q R, twenty four, and the side touching it is P Q, seven. So sine P is twenty four over twenty five, which is option A."
+          "hint": "Tangent uses the side opposite θ over the side adjacent to θ.",
+          "speech": "In a right-angled triangle, theta is at A and the right angle is at B. A B is nine, B C is forty and A C is forty one. Find tangent theta."
         },
         {
           "kind": "explain",
-          "text": "To tie it together: the three ratios are only allowed in a right-angled triangle, so check for the right angle first. Then find the hypotenuse, name the other two sides according to the angle in the question, and let SOH CAH TOA pick the ratio. The answer is always a number: the ratio of two sides, with no unit.",
-          "speech": "To tie it together. The three ratios are only allowed in a right angled triangle, so check for the right angle first. Then find the hypotenuse, name the other two sides according to the angle in the question, and let SOH CAH TOA pick the ratio. The answer is always a number. It is the ratio of two sides, and it has no unit."
+          "text": "Every trigonometric ratio is a ratio of two named sides. First mark the right angle and the chosen angle. Then find the hypotenuse, opposite and adjacent. Finally use SOH CAH TOA to write the ratio.\n\nCheck your ratio: sine and cosine always have the hypotenuse below the line, while tangent does not use the hypotenuse.",
+          "speech": "Every trigonometric ratio is a ratio of two named sides. First mark the right angle and the chosen angle. Then find the hypotenuse, opposite and adjacent. Finally use S O H, C A H, T O A to write the ratio. Check your ratio: sine and cosine always have the hypotenuse below the line, while tangent does not use the hypotenuse."
         }
       ],
       "summary": [
-        "The hypotenuse is the side opposite the right angle and it is always the longest side.",
-        "The opposite and adjacent sides are named for the angle you use, so they swap when the angle changes.",
-        "sin θ = opposite/hypotenuse, cos θ = adjacent/hypotenuse, tan θ = opposite/adjacent.",
-        "SOH CAH TOA pairs each ratio with the two sides it needs.",
-        "These ratios only work in a right-angled triangle."
+        "The hypotenuse is opposite the right angle and is the longest side.",
+        "For a chosen angle θ, the opposite side does not touch θ, and the adjacent side touches θ but is not the hypotenuse.",
+        "sin θ = opposite/hypotenuse, cos θ = adjacent/hypotenuse and tan θ = opposite/adjacent.",
+        "Use SOH CAH TOA and name the two sides before writing the ratio.",
+        "Changing the chosen acute angle swaps opposite and adjacent, but the hypotenuse stays the same."
       ],
       "practice": [
         {
-          "prompt": "In a right-angled triangle the angle θ is marked. The side opposite θ is 3, the side adjacent to θ is 4 and the hypotenuse is 5. Write down sin θ.",
+          "prompt": "In a right-angled triangle, the right angle is at B. Which side is the hypotenuse?",
           "render": "text",
           "steps": [
-            "Hypotenuse = 5",
-            "Opposite side to θ = 3",
-            "sin θ = opposite/hypotenuse",
-            "sin θ = 3/5"
-          ],
-          "answer": "3/5",
-          "answerKind": "fraction",
-          "difficulty": 1,
-          "why": "Writing the adjacent side over the hypotenuse gives cos θ, not sin θ.",
-          "rightWay": "sin θ = opposite/hypotenuse = 3/5."
-        },
-        {
-          "prompt": "In triangle ABC, angle C = 90°, AB = 13, AC = 12 and BC = 5. Write down cos A.",
-          "render": "text",
-          "steps": [
-            "Hypotenuse = AB = 13",
-            "Side adjacent to A = AC = 12",
-            "cos A = adjacent/hypotenuse",
-            "cos A = 12/13"
-          ],
-          "answer": "12/13",
-          "answerKind": "fraction",
-          "difficulty": 1,
-          "why": "The side opposite A is BC = 5, so using 5 gives sin A instead of cos A.",
-          "rightWay": "cos A = adjacent/hypotenuse = AC/AB = 12/13."
-        },
-        {
-          "prompt": "In triangle DEF, angle F = 90°, DE = 26, EF = 10 and DF = 24. Write down tan D in simplest form.",
-          "render": "text",
-          "steps": [
-            "Opposite side to D = EF = 10",
-            "Adjacent side to D = DF = 24",
-            "tan D = 10/24",
-            "tan D = 5/12"
-          ],
-          "answer": "5/12",
-          "answerKind": "fraction",
-          "difficulty": 2,
-          "why": "Using DE, the hypotenuse, in place of the adjacent side gives sin D instead of tan D.",
-          "rightWay": "tan D = opposite/adjacent = EF/DF = 10/24 = 5/12."
-        },
-        {
-          "prompt": "In triangle XYZ, angle Z = 90°. Which statement is correct?",
-          "render": "text",
-          "steps": [
-            "Angle Z = 90°, so XY is the hypotenuse",
-            "For the angle at X the opposite side is YZ and the adjacent side is XZ",
-            "sin X = opposite/hypotenuse = YZ/XY",
-            "The correct statement is A"
-          ],
-          "answer": "A",
-          "answerKind": "choice",
-          "choices": [
-            "sin X = YZ/XY",
-            "cos X = XZ/YZ",
-            "tan X = XY/YZ",
-            "cos X = YZ/XZ"
-          ],
-          "difficulty": 2,
-          "why": "Cosine uses the hypotenuse, so cos X = XZ/XY, not XZ/YZ.",
-          "rightWay": "sin X = YZ/XY, cos X = XZ/XY and tan X = YZ/XZ, so only A is correct."
-        },
-        {
-          "prompt": "In a right-angled triangle the angle α is marked, the side opposite α is 15, the side adjacent to α is 20 and the hypotenuse is 25. Write down tan α in simplest form.",
-          "render": "text",
-          "steps": [
-            "tan α = opposite/adjacent",
-            "tan α = 15/20",
-            "tan α = 3/4"
-          ],
-          "answer": "3/4",
-          "answerKind": "fraction",
-          "difficulty": 2,
-          "why": "Dividing the opposite side by the hypotenuse gives sin α, which is 3/5, not tan α.",
-          "rightWay": "tan α = opposite/adjacent = 15/20 = 3/4."
-        },
-        {
-          "prompt": "Which statement is NOT correct?",
-          "render": "text",
-          "steps": [
-            "sin θ = opposite/hypotenuse",
-            "cos θ = adjacent/hypotenuse",
-            "tan θ = opposite/adjacent",
-            "The statement tan θ = adjacent/opposite is not correct, so the answer is C"
+            "The hypotenuse is opposite the right angle.",
+            "The right angle is at B, so the side opposite it is AC.",
+            "C"
           ],
           "answer": "C",
           "answerKind": "choice",
           "choices": [
-            "sin θ = opposite/hypotenuse",
-            "cos θ = adjacent/hypotenuse",
-            "tan θ = adjacent/opposite",
-            "tan θ = opposite/adjacent"
+            "AB",
+            "BC",
+            "AC",
+            "none of these"
           ],
-          "difficulty": 2,
-          "why": "Writing the adjacent side over the opposite side turns the tangent upside down.",
-          "rightWay": "TOA gives tan θ = opposite/adjacent, so option C is the one that is not correct."
+          "difficulty": 1,
+          "why": "Choosing AB or BC picks a side that touches the right angle.",
+          "rightWay": "The hypotenuse is the side opposite the right angle, which is AC, option C."
         },
         {
-          "prompt": "In triangle KLM, angle M = 90°, KL = 41, LM = 9 and KM = 40. Write down sin K + cos K.",
+          "prompt": "Right angle at B, θ at A, AB = 8, BC = 6, AC = 10. Find sin θ.",
           "render": "text",
           "steps": [
-            "sin K = opposite/hypotenuse = LM/KL = 9/41",
-            "cos K = adjacent/hypotenuse = KM/KL = 40/41",
-            "sin K + cos K = 9/41 + 40/41",
-            "sin K + cos K = 49/41"
+            "AC is the hypotenuse = 10.",
+            "BC is opposite θ = 6.",
+            "sin θ = opposite/hypotenuse = 6/10 = 3/5."
           ],
-          "answer": "49/41",
+          "answer": "3/5",
+          "answerKind": "fraction",
+          "difficulty": 1,
+          "why": "Using AB gives cos θ, not sin θ.",
+          "rightWay": "BC is opposite θ and AC is hypotenuse, so sin θ = 6/10 = 3/5."
+        },
+        {
+          "prompt": "Right angle at B, θ at A, AB = 7, BC = 24, AC = 25. Find cos θ.",
+          "render": "text",
+          "steps": [
+            "AC is the hypotenuse = 25.",
+            "AB is adjacent to θ = 7.",
+            "cos θ = adjacent/hypotenuse = 7/25."
+          ],
+          "answer": "7/25",
+          "answerKind": "fraction",
+          "difficulty": 2,
+          "why": "Using BC gives sin θ because BC is opposite θ.",
+          "rightWay": "AB is adjacent and AC is hypotenuse, so cos θ = 7/25."
+        },
+        {
+          "prompt": "Right angle at B, α at C, AB = 9, BC = 12, AC = 15. Find tan α.",
+          "render": "text",
+          "steps": [
+            "For α at C, the opposite side is AB = 9.",
+            "The adjacent side is BC = 12.",
+            "tan α = opposite/adjacent = 9/12 = 3/4."
+          ],
+          "answer": "3/4",
+          "answerKind": "fraction",
+          "difficulty": 2,
+          "why": "Using BC as opposite swaps the ratio.",
+          "rightWay": "For α at C, AB is opposite and BC is adjacent, so tan α = 9/12 = 3/4."
+        },
+        {
+          "prompt": "A ramp rises 1,5 m over a horizontal distance of 4 m. Let θ be the angle between the ramp and the ground. Find tan θ.",
+          "render": "text",
+          "steps": [
+            "The rise 1,5 m is opposite θ.",
+            "The horizontal distance 4 m is adjacent to θ.",
+            "tan θ = opposite/adjacent = 1,5/4 = 3/8."
+          ],
+          "answer": "3/8",
           "answerKind": "fraction",
           "difficulty": 3,
-          "why": "The two ratios must be written with the same hypotenuse KL = 41 before they can be added.",
-          "rightWay": "sin K = 9/41 and cos K = 40/41, so the sum is 49/41."
+          "why": "Putting the horizontal distance on top gives the reciprocal.",
+          "rightWay": "tan θ = rise/horizontal = 1,5/4 = 3/8."
         },
         {
-          "prompt": "In triangle PQR, angle Q = 90° and tan P = 5/12. The side opposite P is 10. Write down the length of the side adjacent to P.",
+          "prompt": "A ladder 13 m long leans against a vertical wall. Its foot is 5 m from the wall and its top is 12 m up the wall. Let θ be the angle between the ladder and the ground. Find cos θ.",
           "render": "text",
           "steps": [
-            "tan P = opposite/adjacent = 5/12",
-            "5/12 = 10/adjacent",
-            "5 x adjacent = 12 x 10 = 120",
-            "adjacent = 24"
+            "The ladder is the hypotenuse = 13 m.",
+            "The ground distance 5 m is adjacent to θ.",
+            "cos θ = adjacent/hypotenuse = 5/13."
           ],
-          "answer": "24",
-          "answerKind": "whole",
+          "answer": "5/13",
+          "answerKind": "fraction",
           "difficulty": 3,
-          "why": "Multiplying the opposite side by 12/5 instead of 12/5 of it in the wrong order gives the wrong side.",
-          "rightWay": "The opposite side is 2 times the 5 in the ratio, so the adjacent side is 2 times 12, which is 24."
+          "why": "Using the wall height 12 m gives sin θ, not cos θ.",
+          "rightWay": "The ground distance is adjacent to θ, so cos θ = 5/13."
         }
       ]
     },
@@ -3635,5 +3494,5 @@
       "reviewer": "z-ai/glm-5.3-flash"
     }
   ],
-  "generatedAt": "2026-11-16T20:04:39.025Z"
+  "generatedAt": "2026-11-16T21:55:42.042Z"
 }

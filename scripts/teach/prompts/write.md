@@ -49,7 +49,7 @@ Rules the lesson must meet:
 `speech` is what a voice says for that block while the learner listens and looks at the pictures. Write it in plain spoken words:
 
 - Say maths in words: "x squared plus three", "three quarters", "the square root of sixteen", "thirty degrees", "x is greater than two". NEVER put the symbols ^ _ $ or a backslash in `speech`, and never write LaTeX.
-- For `worked`, `speech` says the problem, then each step with its reason, then the answer. For `diagram` it describes what the picture shows. For `try` it reads the question. For `mistake` it says the wrong way, the right way and why.
+- For `worked`, `speech` says the problem, then each step with its reason, then the answer. For `diagram` it describes what the picture shows. For `try` it reads the question (and, for a choice question, the options one by one: "A, ... B, ...") and then STOPS: it never works the answer out and never says which option is right, because the learner has not answered yet. For `mistake` it says the wrong way, the right way and why.
 - It can be a little longer than the text, because the voice also carries what the shortened text leaves out.
 
 ## How to write maths in the text

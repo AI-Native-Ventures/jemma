@@ -26,44 +26,44 @@
       ],
       "keyWords": [
         {
+          "word": "theorem",
+          "meaning": "a rule or statement that has been proved by reasoning."
+        },
+        {
           "word": "right angle",
-          "meaning": "An angle of exactly 90°, the square corner you see in a rectangle."
+          "meaning": "an angle of 90°, like the corner of a square."
         },
         {
           "word": "right-angled triangle",
-          "meaning": "A triangle with one right angle of 90°."
+          "meaning": "a triangle with one angle of 90°."
         },
         {
           "word": "hypotenuse",
-          "meaning": "The side opposite the right angle in a right-angled triangle; it is always the longest side."
-        },
-        {
-          "word": "theorem",
-          "meaning": "A rule or statement that has been proved by reasoning."
-        },
-        {
-          "word": "Pythagoras' Theorem",
-          "meaning": "In a right-angled triangle, the square on the hypotenuse has the same area as the squares on the two shorter sides added together."
-        },
-        {
-          "word": "square on a side",
-          "meaning": "The square drawn with that side as one of its edges; its area is the side length multiplied by itself."
+          "meaning": "the side opposite the right angle in a right-angled triangle, and the longest side."
         },
         {
           "word": "area",
-          "meaning": "The amount of flat space a shape covers, measured in square units such as cm²."
+          "meaning": "the amount of space inside a flat shape, measured in square units."
+        },
+        {
+          "word": "square of a number",
+          "meaning": "the number multiplied by itself, for example 5 squared is 25."
+        },
+        {
+          "word": "Pythagoras' Theorem",
+          "meaning": "a rule for right-angled triangles: the square on the hypotenuse has the same area as the two squares on the shorter sides added."
         }
       ],
       "blocks": [
         {
           "kind": "explain",
-          "text": "A right-angled triangle is a triangle with one angle of exactly 90°. A 90° angle is the square corner you see in a rectangle, a door frame or a page of your book.\n\nPythagoras' Theorem is a rule that works for every right-angled triangle, and for no other triangle. It links the three sides of the triangle through the areas of squares drawn on those sides.\n\nThe rule is named after Pythagoras, a Greek mathematician who lived about 2500 years ago. Chinese and Babylonian writers used the same rule a thousand years before him.",
-          "speech": "A right-angled triangle is a triangle with one angle of exactly 90 degrees. A 90 degree angle is the square corner you see in a rectangle, a door frame or a page of your book. Pythagoras' Theorem is a rule that works for every right-angled triangle, and for no other triangle. It links the three sides of the triangle through the areas of squares drawn on those sides. The rule is named after Pythagoras, a Greek mathematician who lived about 2500 years ago. Chinese and Babylonian writers used the same rule a thousand years before him."
+          "text": "A right-angled triangle is a triangle with one right angle. A right angle is 90°, the same as the corner of a square. The two sides that make the right angle are called the shorter sides. The third side joins the ends of those two sides.",
+          "speech": "A right angled triangle is a triangle with one right angle. A right angle is ninety degrees, the same as the corner of a square. The two sides that make the right angle are called the shorter sides. The third side joins the ends of those two sides."
         },
         {
           "kind": "explain",
-          "text": "The hypotenuse is the side opposite the 90° angle. Opposite means it does not touch the right angle: it is the side right across the square corner.\n\nIt is always the longest side, because it lies opposite the biggest angle.\n\nSay it like this: high-pot-eh-news, with the stress on the second part.",
-          "speech": "The hypotenuse is the side opposite the 90 degree angle. Opposite means it does not touch the right angle. It is the side right across the square corner. It is always the longest side, because it lies opposite the biggest angle. Say it like this: high-pot-eh-news, with the stress on the second part."
+          "text": "The side opposite the right angle is special. It is called the hypotenuse. The hypotenuse is always the longest side of a right-angled triangle. Opposite means across from the right angle, not next to it.",
+          "speech": "The side opposite the right angle is special. It is called the hypotenuse. The hypotenuse is always the longest side of a right angled triangle. Opposite means across from the right angle, not next to it."
         },
         {
           "kind": "diagram",
@@ -74,10 +74,34 @@
               "B",
               "C"
             ],
-            "angles": [
-              36.9,
-              53.1,
-              90
+            "sides": [
+              "3 cm",
+              "4 cm",
+              "5 cm"
+            ],
+            "angleLabels": [
+              "x",
+              "y",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          },
+          "caption": "The right angle is at C. The side opposite C is the hypotenuse.",
+          "speech": "You see a right angled triangle with vertices A, B and C. The right angle is at C. The side opposite C is labelled five centimetres. The other two sides are labelled three centimetres and four centimetres. The five centimetre side is the hypotenuse because it is opposite the right angle."
+        },
+        {
+          "kind": "explain",
+          "text": "A square drawn on a side has area side × side, which we also write as side^2. So a square on a 3 cm side has area 3^2 = 9 square centimetres. A square on a 4 cm side has area 4^2 = 16 square centimetres. A square on a 5 cm side has area 5^2 = 25 square centimetres.",
+          "speech": "A square drawn on a side has area side times side, which we also write as side squared. So a square on a three centimetre side has area three squared, which is nine square centimetres. A square on a four centimetre side has area four squared, which is sixteen square centimetres. A square on a five centimetre side has area five squared, which is twenty five square centimetres."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
             ],
             "sides": [
               "3 cm",
@@ -85,351 +109,306 @@
               "5 cm"
             ],
             "angleLabels": [
-              "36,9°",
-              "53,1°",
+              "x",
+              "y",
               "90°"
             ],
             "rightAngleAt": 2
           },
-          "caption": "The right angle is at C. The side across from it, AB, is the hypotenuse and it is the longest side.",
-          "speech": "A right-angled triangle A B C. The square corner is at C, where the three centimetre side and the four centimetre side meet. The side A B joins the other two corners, so it lies across from the right angle. A B is five centimetres long and it is the longest side. That side is the hypotenuse. The other two sides, three centimetres and four centimetres, are the shorter sides."
+          "caption": "Imagine a square on each side. The square on the 5 cm hypotenuse has area 25 square centimetres.",
+          "speech": "You see the same right angled triangle with sides three centimetres, four centimetres and five centimetres. Imagine a square built outward on each side. The square on the five centimetre hypotenuse has area twenty five square centimetres."
         },
         {
           "kind": "worked",
-          "problem": "Triangle ABC has the right angle at C. AB = 13 cm, BC = 5 cm and CA = 12 cm. Which side is the hypotenuse?",
+          "problem": "A right-angled triangle has side lengths 3 cm, 4 cm and 5 cm. Which side is the hypotenuse?",
           "steps": [
             {
-              "line": "The right angle is at C, so the hypotenuse is opposite C.",
-              "reason": "The hypotenuse always lies opposite the 90° angle."
+              "line": "The right angle is opposite the longest side.",
+              "reason": "The hypotenuse is opposite the right angle."
             },
             {
-              "line": "The side opposite C is AB.",
-              "reason": "AB joins A and B, the two corners that are not C."
+              "line": "Longest side = 5 cm",
+              "reason": "Compare 3 cm, 4 cm and 5 cm."
             },
             {
-              "line": "Check: AB = 13 cm, the longest side.",
-              "reason": "The hypotenuse is always the longest side."
-            },
-            {
-              "line": "Hypotenuse = AB",
-              "reason": "This names the side we found."
+              "line": "Hypotenuse = 5",
+              "reason": "The 5 cm side is opposite the right angle."
             }
           ],
-          "answer": "AB",
-          "answerKind": "choice",
-          "speech": "Triangle A B C has the right angle at C, with A B equal to thirteen centimetres, B C equal to five centimetres and C A equal to twelve centimetres. Which side is the hypotenuse? The right angle is at C, so the hypotenuse is opposite C. The side opposite C is A B. As a check, A B is thirteen centimetres, which is the longest side. The hypotenuse is A B."
+          "answer": "5",
+          "answerKind": "whole",
+          "speech": "The triangle has sides three centimetres, four centimetres and five centimetres. The right angle is opposite the longest side. The longest side is five centimetres. So the hypotenuse is five centimetres.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "3 cm",
+              "4 cm",
+              "5 cm"
+            ],
+            "angleLabels": [
+              "x",
+              "y",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          }
         },
         {
           "kind": "explain",
-          "text": "Now draw a square on each side of a right-angled triangle, using that side as one edge of the square.\n\nA square of side 3 cm has area 3 × 3 = 9 cm², so it holds 9 unit squares. A square of side 4 cm has area 16 cm², so it holds 16 unit squares.\n\nPythagoras' Theorem says: the square on the hypotenuse has the same area as the squares on the two shorter sides added together. In symbols: hypotenuse² = side1² + side2².",
-          "speech": "Now draw a square on each side of a right-angled triangle, using that side as one edge of the square. A square of side three centimetres has area three times three, which is nine square centimetres, so it holds nine unit squares. A square of side four centimetres has area sixteen square centimetres, so it holds sixteen unit squares. Pythagoras' Theorem says that the square on the hypotenuse has the same area as the squares on the two shorter sides added together. In symbols: hypotenuse squared equals side one squared plus side two squared."
+          "text": "Pythagoras' Theorem is about the areas of those squares. It says: in a right-angled triangle, the square on the hypotenuse has the same area as the two squares on the shorter sides added together. In symbols: hypotenuse^2 = shorter side^2 + other shorter side^2.",
+          "speech": "Pythagoras' Theorem is about the areas of those squares. It says that in a right angled triangle, the square on the hypotenuse has the same area as the two squares on the shorter sides added together. In symbols, hypotenuse squared equals shorter side squared plus other shorter side squared."
         },
         {
           "kind": "diagram",
           "spec": {
-            "kind": "area_model",
-            "rows": 3,
-            "cols": 3,
-            "shaded": 9
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "6 cm",
+              "8 cm",
+              "10 cm"
+            ],
+            "angleLabels": [
+              "x",
+              "y",
+              "90°"
+            ],
+            "rightAngleAt": 2
           },
-          "caption": "The square on the 3 cm side: 3 × 3 = 9 unit squares, so its area is 9 cm².",
-          "speech": "A grid of three rows and three columns, with all nine small squares shaded. This is the square drawn on the three centimetre side of the triangle. It holds nine unit squares, so its area is nine square centimetres."
-        },
-        {
-          "kind": "diagram",
-          "spec": {
-            "kind": "area_model",
-            "rows": 4,
-            "cols": 4,
-            "shaded": 16
-          },
-          "caption": "The square on the 4 cm side: 4 × 4 = 16 unit squares, so its area is 16 cm².",
-          "speech": "A grid of four rows and four columns, with all sixteen small squares shaded. This is the square drawn on the four centimetre side of the triangle. It holds sixteen unit squares, so its area is sixteen square centimetres."
-        },
-        {
-          "kind": "diagram",
-          "spec": {
-            "kind": "area_model",
-            "rows": 5,
-            "cols": 5,
-            "shaded": 25
-          },
-          "caption": "The square on the hypotenuse: 5 × 5 = 25 unit squares, and 9 + 16 = 25.",
-          "speech": "A grid of five rows and five columns, with all twenty five small squares shaded. This is the square drawn on the hypotenuse, the five centimetre side. It holds twenty five unit squares. Notice that nine plus sixteen also gives twenty five. The two smaller squares together fill exactly the same space as the big square."
-        },
-        {
-          "kind": "explain",
-          "text": "Notice what the pictures show: the two smaller squares together hold exactly as many unit squares as the big square on the hypotenuse.\n\nPictures like these do not prove the theorem. They only show that it works for that one triangle. Euclid and others proved it by reasoning, for every right-angled triangle of any size. A rule proved in this way is called a theorem.\n\nSo you may use Pythagoras' Theorem on every right-angled triangle.",
-          "speech": "Notice what the pictures show: the two smaller squares together hold exactly as many unit squares as the big square on the hypotenuse. Pictures like these do not prove the theorem. They only show that it works for that one triangle. Euclid and others proved it by reasoning, for every right-angled triangle of any size. A rule proved in this way is called a theorem. So you may use Pythagoras' Theorem on every right-angled triangle."
+          "caption": "The squares on the 6 cm and 8 cm sides have areas 36 and 64. Together they equal the square on the 10 cm hypotenuse, area 100.",
+          "speech": "You see a right angled triangle with shorter sides six centimetres and eight centimetres, and hypotenuse ten centimetres. The square on the six centimetre side has area thirty six. The square on the eight centimetre side has area sixty four. Together they give one hundred. The square on the ten centimetre hypotenuse also has area one hundred."
         },
         {
           "kind": "worked",
-          "problem": "A right-angled triangle has shorter sides of 6 cm and 8 cm. What is the area of the square drawn on the hypotenuse?",
+          "problem": "A right-angled triangle has shorter sides 6 cm and 8 cm. What is the area of the square drawn on the hypotenuse?",
           "steps": [
             {
-              "line": "Area of square on the 6 cm side = 6 × 6 = 36 cm²",
-              "reason": "The area of a square is its side multiplied by itself."
+              "line": "6^2 = 36",
+              "reason": "Area of the square on the 6 cm side."
             },
             {
-              "line": "Area of square on the 8 cm side = 8 × 8 = 64 cm²",
-              "reason": "Same rule for the other shorter side."
+              "line": "8^2 = 64",
+              "reason": "Area of the square on the 8 cm side."
             },
             {
-              "line": "36 + 64 = 100 cm²",
-              "reason": "Add the areas of the squares on the two shorter sides."
+              "line": "36 + 64 = 100",
+              "reason": "Add the two smaller square areas."
             },
             {
               "line": "Area = 100",
-              "reason": "Pythagoras' Theorem: the square on the hypotenuse has the same area as the other two squares together."
+              "reason": "By Pythagoras' Theorem this is the area of the square on the hypotenuse."
             }
           ],
           "answer": "100",
           "answerKind": "whole",
-          "speech": "A right-angled triangle has shorter sides of six centimetres and eight centimetres. What is the area of the square drawn on the hypotenuse? The square on the six centimetre side has area six times six, which is thirty six square centimetres. The square on the eight centimetre side has area eight times eight, which is sixty four square centimetres. Add the two areas: thirty six plus sixty four is one hundred square centimetres. By Pythagoras' Theorem the square on the hypotenuse has the same area as those two squares together, so the area is one hundred square centimetres."
-        },
-        {
-          "kind": "worked",
-          "problem": "In a right-angled triangle the squares on the two shorter sides have areas 49 cm² and 576 cm². Find the area of the square on the hypotenuse, and then the length of the hypotenuse.",
-          "steps": [
-            {
-              "line": "49 + 576 = 625",
-              "reason": "Add the areas of the squares on the two shorter sides."
-            },
-            {
-              "line": "Area of square on hypotenuse = 625 cm²",
-              "reason": "Pythagoras' Theorem: the square on the hypotenuse equals the other two squares together."
-            },
-            {
-              "line": "625 = 25 × 25, so the side of that square is 25 cm",
-              "reason": "The side of a square is the number that multiplied by itself gives the area."
-            },
-            {
-              "line": "Hypotenuse = 25",
-              "reason": "That side of the square is also the hypotenuse of the triangle."
-            }
-          ],
-          "answer": "25",
-          "answerKind": "whole",
-          "speech": "In a right-angled triangle the squares on the two shorter sides have areas forty nine square centimetres and five hundred and seventy six square centimetres. Find the area of the square on the hypotenuse, and then the length of the hypotenuse. First add the two areas: forty nine plus five hundred and seventy six is six hundred and twenty five. So the square on the hypotenuse has area six hundred and twenty five square centimetres. Twenty five times twenty five is six hundred and twenty five, so the side of that square is twenty five centimetres. That side is the hypotenuse, so the hypotenuse is twenty five centimetres."
-        },
-        {
-          "kind": "mistake",
-          "wrong": "3² + 4² = 9 + 16 = 25, so the hypotenuse is 25 cm",
-          "right": "3² + 4² = 9 + 16 = 25, so the square on the hypotenuse has area 25 cm², and the hypotenuse is 5 cm",
-          "why": "The theorem gives you the area of the square on the hypotenuse, not the length of the hypotenuse itself. The length is the number that multiplied by itself gives that area.",
-          "speech": "Here is a common slip. A learner writes three squared plus four squared equals nine plus sixteen equals twenty five, so the hypotenuse is twenty five centimetres. That is wrong. The right way: three squared plus four squared equals twenty five, so the square on the hypotenuse has area twenty five square centimetres. Five times five is twenty five, so the hypotenuse is five centimetres. The theorem gives the area of the square on the hypotenuse, not the length of the hypotenuse itself. The length is the number that multiplied by itself gives that area.",
+          "speech": "A right angled triangle has shorter sides six centimetres and eight centimetres. Square the six: six squared is thirty six. Square the eight: eight squared is sixty four. Add the two areas: thirty six plus sixty four is one hundred. The area of the square on the hypotenuse is one hundred square centimetres.",
           "diagram": {
-            "kind": "area_model",
-            "rows": 5,
-            "cols": 5,
-            "shaded": 25
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "6 cm",
+              "8 cm",
+              "10 cm"
+            ],
+            "angleLabels": [
+              "x",
+              "y",
+              "90°"
+            ],
+            "rightAngleAt": 2
           }
         },
         {
-          "kind": "try",
-          "question": {
-            "prompt": "Triangle DEF has the right angle at E. Which side is the hypotenuse?",
-            "render": "text",
-            "steps": [
-              "The right angle is at E.",
-              "The hypotenuse is the side opposite E.",
-              "The side opposite E is DF.",
-              "Hypotenuse = DF"
-            ],
-            "answer": "C",
-            "answerKind": "choice",
-            "choices": [
-              "DE",
-              "EF",
-              "DF",
-              "It cannot be decided"
-            ],
-            "difficulty": 1,
-            "why": "Many learners choose the side at the bottom of the picture instead of the side opposite the right angle.",
-            "rightWay": "Find the right angle first, then take the side that does not touch it. Here that side is DF."
-          },
-          "hint": "Find the right angle first, then look for the side that does not touch it.",
-          "speech": "Triangle D E F has the right angle at E. Which side is the hypotenuse? Remember that the hypotenuse is the side opposite the right angle. The right angle is at E, so the side across from E is D F. The hypotenuse is D F."
+          "kind": "explain",
+          "text": "The theorem works for every right-angled triangle, not only for 3-4-5. The hypotenuse is always the longest side, so its square is the biggest area. The two smaller square areas must add up to exactly that biggest area.",
+          "speech": "The theorem works for every right angled triangle, not only for the three four five triangle. The hypotenuse is always the longest side, so its square is the biggest area. The two smaller square areas must add up to exactly that biggest area."
+        },
+        {
+          "kind": "worked",
+          "problem": "A right-angled triangle has shorter sides 5 m and 12 m. What is the area of the square drawn on the hypotenuse?",
+          "steps": [
+            {
+              "line": "5^2 = 25",
+              "reason": "Area of the square on the 5 m side."
+            },
+            {
+              "line": "12^2 = 144",
+              "reason": "Area of the square on the 12 m side."
+            },
+            {
+              "line": "25 + 144 = 169",
+              "reason": "Add the two smaller square areas."
+            },
+            {
+              "line": "Area = 169",
+              "reason": "By Pythagoras' Theorem this is the area of the square on the hypotenuse."
+            }
+          ],
+          "answer": "169",
+          "answerKind": "whole",
+          "speech": "A right angled triangle has shorter sides five metres and twelve metres. Square the five: five squared is twenty five. Square the twelve: twelve squared is one hundred and forty four. Add the two areas: twenty five plus one hundred and forty four is one hundred and sixty nine. The area of the square on the hypotenuse is one hundred and sixty nine square metres."
         },
         {
           "kind": "try",
           "question": {
-            "prompt": "A right-angled triangle has shorter sides of 9 cm and 12 cm. What is the area, in cm², of the square drawn on the hypotenuse?",
+            "prompt": "A right-angled triangle has shorter sides 9 cm and 12 cm. What is the area of the square drawn on the hypotenuse?",
             "render": "text",
             "steps": [
-              "9 × 9 = 81",
-              "12 × 12 = 144",
+              "9^2 = 81",
+              "12^2 = 144",
               "81 + 144 = 225",
               "Area = 225"
             ],
             "answer": "225",
             "answerKind": "whole",
-            "difficulty": 2,
-            "why": "Multiplying 9 by 2 and 12 by 2 instead of multiplying each side by itself.",
-            "rightWay": "Square each shorter side, then add: 81 + 144 = 225 cm²."
+            "difficulty": 1,
+            "why": "Learners sometimes add the sides before squaring instead of adding the two square areas.",
+            "rightWay": "Square each shorter side, then add the two areas: 9^2 + 12^2 = 81 + 144 = 225."
           },
-          "hint": "Square each shorter side first, then add the two areas.",
-          "speech": "A right-angled triangle has shorter sides of nine centimetres and twelve centimetres. What is the area, in square centimetres, of the square drawn on the hypotenuse? Square each shorter side: nine times nine is eighty one, and twelve times twelve is one hundred and forty four. Add them: eighty one plus one hundred and forty four is two hundred and twenty five. So the area is two hundred and twenty five square centimetres."
+          "hint": "Find the area of each square first, then add them.",
+          "speech": "A right angled triangle has shorter sides nine centimetres and twelve centimetres. What is the area of the square drawn on the hypotenuse?"
         },
         {
-          "kind": "try",
-          "question": {
-            "prompt": "In a right-angled triangle the square on the hypotenuse has area 169 cm² and the square on one shorter side has area 25 cm². What is the area, in cm², of the square on the other shorter side?",
-            "render": "text",
-            "steps": [
-              "169 = 25 + area of the other square",
-              "area of the other square = 169 - 25",
-              "= 144",
-              "Area = 144"
+          "kind": "mistake",
+          "wrong": "Area = (3 + 4)^2 = 49",
+          "right": "Area = 3^2 + 4^2 = 9 + 16 = 25",
+          "why": "Pythagoras' Theorem adds the areas of the squares on the two shorter sides. You square each side first. You do not add the side lengths first.",
+          "speech": "Wrong way: area equals three plus four, then squared, which gives forty nine. Right way: area equals three squared plus four squared, which is nine plus sixteen, giving twenty five. The theorem adds the areas of the squares on the two shorter sides, so square each side first.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
             ],
-            "answer": "144",
-            "answerKind": "whole",
-            "difficulty": 3,
-            "why": "Adding the two given areas instead of subtracting, because the big square is the sum of the two small ones.",
-            "rightWay": "The two small areas add to the big one, so subtract: 169 - 25 = 144 cm²."
-          },
-          "hint": "The two small areas add up to the big area, so work backwards with a subtraction.",
-          "speech": "In a right-angled triangle the square on the hypotenuse has area one hundred and sixty nine square centimetres, and the square on one shorter side has area twenty five square centimetres. What is the area of the square on the other shorter side? The two small areas add up to the big area, so one hundred and sixty nine equals twenty five plus the unknown area. Subtract: one hundred and sixty nine minus twenty five is one hundred and forty four. The area is one hundred and forty four square centimetres."
+            "sides": [
+              "3 cm",
+              "4 cm",
+              "5 cm"
+            ],
+            "angleLabels": [
+              "x",
+              "y",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          }
         },
         {
           "kind": "explain",
-          "text": "Pythagoras' Theorem only works when the triangle has a 90° angle. So always find the right angle first, then name the side opposite it: that side is the hypotenuse.\n\nThe heart of the theorem is about areas: the square on the hypotenuse equals the squares on the two other sides added.\n\nIf you know the area of the square on the hypotenuse, the length of the hypotenuse is the number that multiplied by itself gives that area.",
-          "speech": "Pythagoras' Theorem only works when the triangle has a 90 degree angle. So always find the right angle first, then name the side opposite it. That side is the hypotenuse. The heart of the theorem is about areas: the square on the hypotenuse equals the squares on the two other sides added. If you know the area of the square on the hypotenuse, the length of the hypotenuse is the number that multiplied by itself gives that area."
+          "text": "Today's key picture is areas. The hypotenuse is opposite the right angle and is the longest side. The square on the hypotenuse has area equal to the two squares on the shorter sides added. This is Pythagoras' Theorem, and it is true for every right-angled triangle.",
+          "speech": "Today's key picture is areas. The hypotenuse is opposite the right angle and is the longest side. The square on the hypotenuse has area equal to the two squares on the shorter sides added. This is Pythagoras' Theorem, and it is true for every right angled triangle."
         }
       ],
       "summary": [
-        "The hypotenuse is the side opposite the 90° angle. It is always the longest side.",
-        "Pythagoras' Theorem: the square on the hypotenuse has the same area as the squares on the two shorter sides added together.",
-        "In symbols: hypotenuse² = side1² + side2².",
-        "The theorem is true only for right-angled triangles.",
-        "The square on a side of length s has area s × s, and the side of a square is the number that multiplied by itself gives the area."
+        "A right-angled triangle has one 90° angle.",
+        "The hypotenuse is the side opposite the right angle and is the longest side.",
+        "A square on a side has area side × side, or side squared.",
+        "Pythagoras' Theorem: the square on the hypotenuse has the same area as the two squares on the shorter sides added.",
+        "So hypotenuse^2 = shorter side^2 + other shorter side^2."
       ],
       "practice": [
         {
-          "prompt": "In triangle PQR the angle at Q is 90°. Which side is the hypotenuse?",
+          "prompt": "In a right-angled triangle, the right angle is at B. Which side is the hypotenuse? Write the two letters of the side.",
           "render": "text",
           "steps": [
-            "The right angle is at Q.",
-            "The hypotenuse is the side opposite Q.",
-            "The side opposite Q is PR.",
-            "Hypotenuse = PR"
+            "The right angle is at B.",
+            "The side opposite B is AC.",
+            "Hypotenuse = AC"
           ],
-          "answer": "C",
-          "answerKind": "choice",
-          "choices": [
-            "PQ",
-            "QR",
-            "PR",
-            "It cannot be decided"
-          ],
+          "answer": "AC",
+          "answerKind": "expression",
           "difficulty": 1,
-          "why": "Learners often pick the side drawn at the bottom or the longest-looking side instead of the side opposite the right angle.",
-          "rightWay": "Find the right angle at Q, then take the side that does not touch Q. That side is PR."
+          "why": "Learners often choose a side next to the right angle instead of the side opposite it.",
+          "rightWay": "The hypotenuse is opposite the right angle. Since the right angle is at B, the hypotenuse is AC."
         },
         {
-          "prompt": "A right-angled triangle has shorter sides of 6 cm and 8 cm. What is the area, in cm², of the square drawn on the hypotenuse?",
+          "prompt": "A right-angled triangle has shorter sides 3 cm and 4 cm. What is the area of the square drawn on the hypotenuse?",
           "render": "text",
           "steps": [
-            "6 × 6 = 36",
-            "8 × 8 = 64",
-            "36 + 64 = 100",
-            "Area = 100"
-          ],
-          "answer": "100",
-          "answerKind": "whole",
-          "difficulty": 1,
-          "why": "Adding the sides, 6 + 8, instead of adding the areas of their squares.",
-          "rightWay": "Square each shorter side, then add: 36 + 64 = 100 cm²."
-        },
-        {
-          "prompt": "The squares on the two shorter sides of a right-angled triangle have areas 9 cm² and 16 cm². What is the area, in cm², of the square on the hypotenuse?",
-          "render": "text",
-          "steps": [
+            "3^2 = 9",
+            "4^2 = 16",
             "9 + 16 = 25",
             "Area = 25"
           ],
           "answer": "25",
           "answerKind": "whole",
           "difficulty": 1,
-          "why": "Subtracting the areas instead of adding them.",
-          "rightWay": "The square on the hypotenuse is the two small areas added: 9 + 16 = 25 cm²."
+          "why": "Learners sometimes add 3 and 4 before squaring instead of adding the two square areas.",
+          "rightWay": "Square each shorter side, then add: 3^2 + 4^2 = 9 + 16 = 25."
         },
         {
-          "prompt": "In a right-angled triangle the square on the hypotenuse has area 169 cm² and the square on one shorter side has area 25 cm². What is the area, in cm², of the square on the other shorter side?",
+          "prompt": "A right-angled triangle has shorter sides 6 cm and 8 cm. What is the area of the square drawn on the hypotenuse?",
           "render": "text",
           "steps": [
-            "169 = 25 + area of the other square",
-            "area of the other square = 169 - 25",
-            "= 144",
+            "6^2 = 36",
+            "8^2 = 64",
+            "36 + 64 = 100",
+            "Area = 100"
+          ],
+          "answer": "100",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Learners sometimes square only the longest side or add the side lengths before squaring.",
+          "rightWay": "Square each shorter side, then add: 6^2 + 8^2 = 36 + 64 = 100."
+        },
+        {
+          "prompt": "A right-angled triangle has shorter sides 9 cm and 12 cm. What is the area of the square drawn on the hypotenuse?",
+          "render": "text",
+          "steps": [
+            "9^2 = 81",
+            "12^2 = 144",
+            "81 + 144 = 225",
+            "Area = 225"
+          ],
+          "answer": "225",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Learners sometimes add 9 and 12 before squaring instead of adding the two square areas.",
+          "rightWay": "Square each shorter side, then add: 9^2 + 12^2 = 81 + 144 = 225."
+        },
+        {
+          "prompt": "A right-angled triangle has shorter sides 8 cm and 15 cm. What is the area of the square drawn on the hypotenuse?",
+          "render": "text",
+          "steps": [
+            "8^2 = 64",
+            "15^2 = 225",
+            "64 + 225 = 289",
+            "Area = 289"
+          ],
+          "answer": "289",
+          "answerKind": "whole",
+          "difficulty": 3,
+          "why": "Learners sometimes make an arithmetic slip when squaring 15 or when adding the two areas.",
+          "rightWay": "Square each shorter side, then add: 8^2 + 15^2 = 64 + 225 = 289."
+        },
+        {
+          "prompt": "A right-angled triangle has hypotenuse 13 cm and one shorter side 5 cm. What is the area of the square drawn on the other shorter side?",
+          "render": "text",
+          "steps": [
+            "13^2 = 169",
+            "5^2 = 25",
+            "169 - 25 = 144",
             "Area = 144"
           ],
           "answer": "144",
           "answerKind": "whole",
-          "difficulty": 2,
-          "why": "Adding 169 and 25, when the big area is the one that is the sum.",
-          "rightWay": "Work backwards: 169 - 25 = 144 cm²."
-        },
-        {
-          "prompt": "Which statement is Pythagoras' Theorem for a right-angled triangle with shorter sides a and b and hypotenuse c?",
-          "render": "text",
-          "steps": [
-            "The square on the hypotenuse equals the two other squares added.",
-            "So c² = a² + b²."
-          ],
-          "answer": "B",
-          "answerKind": "choice",
-          "choices": [
-            "a + b = c",
-            "a² + b² = c²",
-            "a² - b² = c²",
-            "c² + a² = b²"
-          ],
-          "difficulty": 2,
-          "why": "The theorem is about adding the squares of the two shorter sides, not adding the sides themselves.",
-          "rightWay": "Square both shorter sides and add them: c² = a² + b²."
-        },
-        {
-          "prompt": "A right-angled triangle has shorter sides of 5 cm and 12 cm. The square on the hypotenuse has area 169 cm². What is the length, in cm, of the hypotenuse?",
-          "render": "text",
-          "steps": [
-            "The square on the hypotenuse has area 169.",
-            "13 × 13 = 169",
-            "Hypotenuse = 13"
-          ],
-          "answer": "13",
-          "answerKind": "whole",
-          "difficulty": 2,
-          "why": "Giving 169 as the length instead of finding which number multiplied by itself gives 169.",
-          "rightWay": "Look for the number that squares to 169: 13 × 13 = 169, so the hypotenuse is 13 cm."
-        },
-        {
-          "prompt": "A right-angled triangle has shorter sides of 9 cm and 12 cm. Squares are drawn on all three sides. What is the total area, in cm², of the three squares?",
-          "render": "text",
-          "steps": [
-            "9 × 9 = 81",
-            "12 × 12 = 144",
-            "81 + 144 = 225, the square on the hypotenuse",
-            "Total = 81 + 144 + 225 = 450"
-          ],
-          "answer": "450",
-          "answerKind": "whole",
           "difficulty": 3,
-          "why": "Forgetting that the big square is not extra: it also has to be counted in the total.",
-          "rightWay": "Find all three areas, 81, 144 and 225, then add: 81 + 144 + 225 = 450 cm²."
-        },
-        {
-          "prompt": "In a right-angled triangle the square on the hypotenuse has area 400 cm². The squares on the two shorter sides have equal areas. What is the area, in cm², of each of those two squares?",
-          "render": "text",
-          "steps": [
-            "The two equal areas add to 400.",
-            "400 ÷ 2 = 200",
-            "Each area = 200"
-          ],
-          "answer": "200",
-          "answerKind": "whole",
-          "difficulty": 3,
-          "why": "Halving the wrong number, such as the side of the big square, instead of halving the area.",
-          "rightWay": "The two equal areas add to 400, so each is 400 ÷ 2 = 200 cm²."
+          "why": "Learners sometimes add the square areas when they should subtract the known smaller square from the hypotenuse square.",
+          "rightWay": "The two smaller square areas add to the hypotenuse square, so the other area is 13^2 - 5^2 = 169 - 25 = 144."
         }
       ]
     },
@@ -1293,51 +1272,47 @@
     {
       "position": 4,
       "title": "Testing if a triangle is right-angled",
-      "minutes": 20,
+      "minutes": 22,
       "objectives": [
         "You will be able to use the converse of Pythagoras' Theorem to test whether a triangle is right-angled.",
         "You will be able to decide whether a triangle is right-angled, acute or obtuse from its side lengths."
       ],
       "keyWords": [
         {
-          "word": "theorem",
-          "meaning": "A maths rule that has been proved by reasoning."
-        },
-        {
           "word": "converse",
-          "meaning": "The converse of a theorem swaps its if and then parts, so it works backwards."
-        },
-        {
-          "word": "right-angled triangle",
-          "meaning": "A triangle with one angle of 90°."
+          "meaning": "The converse of a rule is the rule turned around: it starts with the result and decides whether the first condition is true."
         },
         {
           "word": "hypotenuse",
-          "meaning": "The side opposite the 90° angle in a right-angled triangle, and it is always the longest side."
+          "meaning": "The side opposite the 90° angle in a right-angled triangle, and the longest side."
         },
         {
-          "word": "acute",
-          "meaning": "An angle smaller than 90°."
+          "word": "right-angled triangle",
+          "meaning": "A triangle with one angle equal to 90°."
         },
         {
-          "word": "obtuse",
-          "meaning": "An angle between 90° and 180°."
+          "word": "acute triangle",
+          "meaning": "A triangle in which all three angles are less than 90°."
+        },
+        {
+          "word": "obtuse triangle",
+          "meaning": "A triangle with one angle greater than 90°."
         },
         {
           "word": "Pythagorean triple",
-          "meaning": "Three whole numbers that can be the side lengths of a right-angled triangle, such as 3, 4 and 5."
+          "meaning": "A set of three whole numbers that can be the side lengths of a right-angled triangle, such as 3, 4 and 5."
         }
       ],
       "blocks": [
         {
           "kind": "explain",
-          "text": "In earlier lessons you used Pythagoras' Theorem to find a missing side of a right-angled triangle. The rule was: hypotenuse squared equals side 1 squared plus side 2 squared.\n\nNow we go the other way. If we know the three side lengths, we can test whether the triangle is right-angled, without needing a protractor.",
-          "speech": "In earlier lessons you used Pythagoras' Theorem to find a missing side of a right-angled triangle. The rule was: the hypotenuse squared equals side one squared plus side two squared. Now we go the other way. If we know the three side lengths, we can test whether the triangle is right-angled, without needing a protractor."
+          "text": "In earlier lessons you used Pythagoras' Theorem: in a right-angled triangle, the square on the hypotenuse equals the sum of the squares on the other two sides. That starts with a right angle and finds a side.\n\nNow we go the other way. If the three side lengths obey that same square rule, the triangle must be right-angled. Builders, carpenters and surveyors use this to check a corner is square.",
+          "speech": "In earlier lessons you used Pythagoras' Theorem. In a right-angled triangle, the square on the hypotenuse equals the sum of the squares on the other two sides. That starts with a right angle and finds a side. Now we go the other way. If the three side lengths obey that same square rule, the triangle must be right-angled. Builders, carpenters and surveyors use this to check that a corner is square."
         },
         {
           "kind": "explain",
-          "text": "Pythagoras' Theorem says: if a triangle is right-angled, then the longest side squared equals the sum of the squares of the other two sides.\n\nThe converse says: if the longest side squared equals the sum of the squares of the other two sides, then the triangle is right-angled. The converse is the test we use here.",
-          "speech": "Pythagoras' Theorem says: if a triangle is right-angled, then the longest side squared equals the sum of the squares of the other two sides. The converse says: if the longest side squared equals the sum of the squares of the other two sides, then the triangle is right-angled. The converse is the test we use here."
+          "text": "The converse of Pythagoras' Theorem says: if a triangle has sides a, b and c, where c is the longest side, and a^2 + b^2 = c^2, then the angle opposite c is 90°. So the triangle is right-angled.\n\nAlways square the two shorter sides, add them, and compare with the square of the longest side. Equality means a right angle.",
+          "speech": "The converse of Pythagoras' Theorem says that if a triangle has sides a, b and c, where c is the longest side, and a squared plus b squared equals c squared, then the angle opposite c is ninety degrees. So the triangle is right-angled. Always square the two shorter sides, add them, and compare with the square of the longest side. Equality means a right angle."
         },
         {
           "kind": "diagram",
@@ -1349,96 +1324,48 @@
               "C"
             ],
             "sides": [
+              "5",
               "3",
-              "4",
-              "5"
+              "4"
+            ],
+            "angleLabels": [
+              "?",
+              "?",
+              "90°"
             ],
             "rightAngleAt": 2
           },
-          "caption": "The side of length 5 is opposite the right angle, so it is the hypotenuse. Check: 3 squared plus 4 squared equals 9 plus 16, which is 25, and 5 squared is 25.",
-          "speech": "The picture shows a triangle with side lengths three, four and five. The right angle is at C. The side of length five is opposite the right angle, so it is the hypotenuse. Three squared plus four squared equals nine plus sixteen, which is twenty five. Five squared is also twenty five."
-        },
-        {
-          "kind": "explain",
-          "text": "To test a triangle, always do these steps:\n1. Find the longest side. Call it c.\n2. Square the longest side on its own.\n3. Square the two shorter sides and add them.\n4. Compare the two answers.\nIf they are equal, the triangle is right-angled.",
-          "speech": "To test a triangle, always do these steps. First, find the longest side. Call it c. Second, square the longest side on its own. Third, square the two shorter sides and add them. Fourth, compare the two answers. If they are equal, the triangle is right-angled."
+          "caption": "The longest side, 5, is opposite the right angle. Check: 3^2 + 4^2 = 5^2.",
+          "speech": "This picture shows a right-angled triangle. The right angle is at C. The side opposite C is AB and has length five. The other two sides have lengths three and four. The longest side, five, is opposite the right angle. Check that three squared plus four squared equals five squared."
         },
         {
           "kind": "worked",
-          "problem": "A triangle has sides 6 cm, 8 cm and 10 cm. Is it right-angled?",
+          "problem": "A triangle has sides 5 cm, 12 cm and 13 cm. Is it right-angled?",
           "steps": [
             {
-              "line": "Longest side = 10 cm",
-              "reason": "The longest side is the one we square on its own."
+              "line": "Longest side = 13 cm",
+              "reason": "The hypotenuse must be the longest side, if there is a right angle."
             },
             {
-              "line": "6^2 + 8^2 = 36 + 64 = 100",
-              "reason": "Square the two shorter sides and add them."
+              "line": "5^2 + 12^2 = 25 + 144 = 169",
+              "reason": "Square the two shorter sides and add."
             },
             {
-              "line": "10^2 = 100",
-              "reason": "Square the longest side on its own."
+              "line": "13^2 = 169",
+              "reason": "Square the longest side."
             },
             {
-              "line": "100 = 100",
-              "reason": "The two answers are equal, so the converse of Pythagoras' Theorem holds."
+              "line": "169 = 169",
+              "reason": "The sum of the squares equals the square of the longest side."
             },
             {
-              "line": "The triangle is right-angled.",
-              "reason": "Equal squares mean a right angle opposite the longest side."
+              "line": "right-angled",
+              "reason": "So the angle opposite 13 cm is 90°."
             }
           ],
           "answer": "right-angled",
           "answerKind": "choice",
-          "speech": "The problem is: is a triangle with sides six centimetres, eight centimetres and ten centimetres right-angled? The longest side is ten. Six squared is thirty six. Eight squared is sixty four. Thirty six plus sixty four is one hundred. Ten squared is one hundred. One hundred equals one hundred, so the triangle is right-angled."
-        },
-        {
-          "kind": "diagram",
-          "spec": {
-            "kind": "triangle",
-            "vertices": [
-              "A",
-              "B",
-              "C"
-            ],
-            "sides": [
-              "6",
-              "8",
-              "10"
-            ],
-            "rightAngleAt": 2
-          },
-          "caption": "In a 6, 8, 10 triangle the two shorter squares add to the square on the longest side. The right angle is opposite the side of length 10.",
-          "speech": "The picture shows a triangle with sides six, eight and ten. The right angle is opposite the side of length ten. Six squared plus eight squared equals ten squared."
-        },
-        {
-          "kind": "worked",
-          "problem": "A triangle has sides 8 cm, 15 cm and 17 cm. Is it right-angled?",
-          "steps": [
-            {
-              "line": "Longest side = 17 cm",
-              "reason": "The longest side is the one we square on its own."
-            },
-            {
-              "line": "8^2 + 15^2 = 64 + 225 = 289",
-              "reason": "Square the two shorter sides and add them."
-            },
-            {
-              "line": "17^2 = 289",
-              "reason": "Square the longest side on its own."
-            },
-            {
-              "line": "289 = 289",
-              "reason": "The two answers are equal, so the triangle is right-angled."
-            },
-            {
-              "line": "The triangle is right-angled.",
-              "reason": "The converse of Pythagoras' Theorem is true for these sides."
-            }
-          ],
-          "answer": "right-angled",
-          "answerKind": "choice",
-          "speech": "The problem is: is a triangle with sides eight centimetres, fifteen centimetres and seventeen centimetres right-angled? The longest side is seventeen. Eight squared is sixty four. Fifteen squared is two hundred and twenty five. Sixty four plus two hundred and twenty five is two hundred and eighty nine. Seventeen squared is two hundred and eighty nine. The answers are equal, so the triangle is right-angled."
+          "speech": "A triangle has sides five centimetres, twelve centimetres and thirteen centimetres. Is it right-angled? The longest side is thirteen centimetres, because the hypotenuse must be the longest side if there is a right angle. Five squared plus twelve squared equals twenty five plus one hundred and forty four, which is one hundred and sixty nine. Thirteen squared is one hundred and sixty nine. The two values are equal. So the angle opposite thirteen centimetres is ninety degrees, and the triangle is right-angled."
         },
         {
           "kind": "worked",
@@ -1446,51 +1373,56 @@
           "steps": [
             {
               "line": "Longest side = 12 cm",
-              "reason": "The longest side is the one we square on its own."
+              "reason": "Find the longest side first."
             },
             {
               "line": "7^2 + 9^2 = 49 + 81 = 130",
-              "reason": "Square the two shorter sides and add them."
+              "reason": "Square the two shorter sides and add."
             },
             {
               "line": "12^2 = 144",
-              "reason": "Square the longest side on its own."
+              "reason": "Square the longest side."
             },
             {
               "line": "130 is not equal to 144",
-              "reason": "The two answers are different, so the converse of Pythagoras' Theorem does not hold."
+              "reason": "The two values are different."
             },
             {
-              "line": "The triangle is not right-angled.",
-              "reason": "A right angle needs the two answers to be exactly equal."
+              "line": "not right-angled",
+              "reason": "The converse of Pythagoras' Theorem is not satisfied."
             }
           ],
           "answer": "not right-angled",
           "answerKind": "choice",
-          "speech": "The problem is: is a triangle with sides seven centimetres, nine centimetres and twelve centimetres right-angled? The longest side is twelve. Seven squared plus nine squared is forty nine plus eighty one, which is one hundred and thirty. Twelve squared is one hundred and forty four. One hundred and thirty is not equal to one hundred and forty four. So the triangle is not right-angled."
+          "speech": "A triangle has sides seven centimetres, nine centimetres and twelve centimetres. Is it right-angled? The longest side is twelve centimetres. Seven squared plus nine squared equals forty nine plus eighty one, which is one hundred and thirty. Twelve squared is one hundred and forty four. One hundred and thirty is not equal to one hundred and forty four. So the triangle is not right-angled."
         },
         {
           "kind": "explain",
-          "text": "The same comparison also tells us about the biggest angle when the triangle is not right-angled.\n\nIf the longest side squared is less than the sum of the squares of the other two sides, the biggest angle is acute. If it is more, the biggest angle is obtuse.",
-          "speech": "The same comparison also tells us about the biggest angle when the triangle is not right-angled. If the longest side squared is less than the sum of the squares of the other two sides, the biggest angle is acute. If it is more, the biggest angle is obtuse."
+          "text": "Some right-angled triangles have whole-number sides. These sets are called Pythagorean triples, for example 3, 4, 5 and 5, 12, 13. Multiples also work, such as 6, 8, 10. Recognising them can save time, but the square test still proves the result.",
+          "speech": "Some right-angled triangles have whole-number sides. These sets are called Pythagorean triples, for example three, four, five and five, twelve, thirteen. Multiples also work, such as six, eight, ten. Recognising them can save time, but the square test still proves the result."
         },
         {
-          "kind": "diagram",
-          "spec": {
-            "kind": "triangle",
-            "vertices": [
-              "A",
-              "B",
-              "C"
+          "kind": "try",
+          "question": {
+            "prompt": "A triangle has sides 8 cm, 15 cm and 17 cm. Work out 8^2 + 15^2.",
+            "render": "text",
+            "steps": [
+              "8^2 + 15^2 = 64 + 225",
+              "64 + 225 = 289"
             ],
-            "sides": [
-              "6",
-              "8",
-              "9"
-            ]
+            "answer": "289",
+            "answerKind": "whole",
+            "difficulty": 1,
+            "why": "Squaring only one side, or adding before squaring, gives the wrong value.",
+            "rightWay": "Square each shorter side first, then add the two squares."
           },
-          "caption": "In a 6, 8, 9 triangle, 9 squared is 81, which is less than 6 squared plus 8 squared, 100. The biggest angle is acute.",
-          "speech": "The picture shows a triangle with sides six, eight and nine. Nine squared is eighty one. Six squared plus eight squared is one hundred. Eighty one is less than one hundred, so the biggest angle is acute."
+          "hint": "Square each of the two shorter sides, then add the results.",
+          "speech": "A triangle has sides eight centimetres, fifteen centimetres and seventeen centimetres. Work out eight squared plus fifteen squared."
+        },
+        {
+          "kind": "explain",
+          "text": "When the squares are not equal, the longest side still tells us more. Compare c^2 with a^2 + b^2.\n\nIf c^2 is smaller, the largest angle is less than 90°, so the triangle is acute. If c^2 is larger, the largest angle is more than 90°, so the triangle is obtuse. Equal gives a right angle.",
+          "speech": "When the squares are not equal, the longest side still tells us more. Compare c squared with a squared plus b squared. If c squared is smaller, the largest angle is less than ninety degrees, so the triangle is acute. If c squared is larger, the largest angle is more than ninety degrees, so the triangle is obtuse. Equal gives a right angle."
         },
         {
           "kind": "diagram",
@@ -1505,75 +1437,80 @@
               "6",
               "8",
               "11"
+            ],
+            "angleLabels": [
+              "?",
+              "?",
+              "?"
             ]
           },
-          "caption": "In a 6, 8, 11 triangle, 11 squared is 121, which is more than 6 squared plus 8 squared, 100. The biggest angle is obtuse.",
-          "speech": "The picture shows a triangle with sides six, eight and eleven. Eleven squared is one hundred and twenty one. Six squared plus eight squared is one hundred. One hundred and twenty one is more than one hundred, so the biggest angle is obtuse."
+          "caption": "Here the longest side is 11. Compare 6^2 + 8^2 with 11^2 to decide the type of triangle.",
+          "speech": "This picture shows a triangle with sides six, eight and eleven. The longest side is eleven. Compare six squared plus eight squared with eleven squared to decide whether the triangle is right-angled, acute or obtuse."
         },
         {
           "kind": "worked",
-          "problem": "Classify the triangle with sides 6 cm, 8 cm and 9 cm as right-angled, acute or obtuse.",
+          "problem": "A triangle has sides 6 cm, 8 cm and 9 cm. Is it right-angled, acute or obtuse?",
           "steps": [
             {
               "line": "Longest side = 9 cm",
-              "reason": "The longest side is the one we square on its own."
+              "reason": "Find the longest side first."
             },
             {
               "line": "6^2 + 8^2 = 36 + 64 = 100",
-              "reason": "Square the two shorter sides and add them."
+              "reason": "Square the two shorter sides and add."
             },
             {
               "line": "9^2 = 81",
-              "reason": "Square the longest side on its own."
+              "reason": "Square the longest side."
             },
             {
               "line": "81 < 100",
-              "reason": "The square of the longest side is less than the sum of the squares of the other two sides."
+              "reason": "The square of the longest side is less than the sum of the other two squares."
             },
             {
-              "line": "The biggest angle is acute, so the triangle is acute.",
-              "reason": "If the biggest angle is acute, all three angles are acute."
+              "line": "acute",
+              "reason": "The largest angle is less than 90°, so the triangle is acute."
             }
           ],
           "answer": "acute",
           "answerKind": "choice",
-          "speech": "The problem is: classify the triangle with sides six centimetres, eight centimetres and nine centimetres as right-angled, acute or obtuse. The longest side is nine. Six squared plus eight squared is thirty six plus sixty four, which is one hundred. Nine squared is eighty one. Eighty one is less than one hundred. The square of the longest side is less than the sum, so the biggest angle is acute. The triangle is acute."
+          "speech": "A triangle has sides six centimetres, eight centimetres and nine centimetres. Is it right-angled, acute or obtuse? The longest side is nine centimetres. Six squared plus eight squared equals thirty six plus sixty four, which is one hundred. Nine squared is eighty one. Eighty one is less than one hundred. The square of the longest side is less than the sum of the other two squares, so the largest angle is less than ninety degrees. The triangle is acute."
         },
         {
           "kind": "worked",
-          "problem": "Classify the triangle with sides 6 cm, 8 cm and 11 cm as right-angled, acute or obtuse.",
+          "problem": "A triangle has sides 6 cm, 8 cm and 11 cm. Is it right-angled, acute or obtuse?",
           "steps": [
             {
               "line": "Longest side = 11 cm",
-              "reason": "The longest side is the one we square on its own."
+              "reason": "Find the longest side first."
             },
             {
               "line": "6^2 + 8^2 = 36 + 64 = 100",
-              "reason": "Square the two shorter sides and add them."
+              "reason": "Square the two shorter sides and add."
             },
             {
               "line": "11^2 = 121",
-              "reason": "Square the longest side on its own."
+              "reason": "Square the longest side."
             },
             {
               "line": "121 > 100",
-              "reason": "The square of the longest side is more than the sum of the squares of the other two sides."
+              "reason": "The square of the longest side is more than the sum of the other two squares."
             },
             {
-              "line": "The biggest angle is obtuse, so the triangle is obtuse.",
-              "reason": "A square that is bigger than the sum means the biggest angle is obtuse."
+              "line": "obtuse",
+              "reason": "The largest angle is more than 90°, so the triangle is obtuse."
             }
           ],
           "answer": "obtuse",
           "answerKind": "choice",
-          "speech": "The problem is: classify the triangle with sides six centimetres, eight centimetres and eleven centimetres as right-angled, acute or obtuse. The longest side is eleven. Six squared plus eight squared is thirty six plus sixty four, which is one hundred. Eleven squared is one hundred and twenty one. One hundred and twenty one is more than one hundred. The square of the longest side is more than the sum, so the biggest angle is obtuse. The triangle is obtuse."
+          "speech": "A triangle has sides six centimetres, eight centimetres and eleven centimetres. Is it right-angled, acute or obtuse? The longest side is eleven centimetres. Six squared plus eight squared equals thirty six plus sixty four, which is one hundred. Eleven squared is one hundred and twenty one. One hundred and twenty one is more than one hundred. The square of the longest side is more than the sum of the other two squares, so the largest angle is more than ninety degrees. The triangle is obtuse."
         },
         {
           "kind": "mistake",
-          "wrong": "For sides 5, 12 and 13: 5^2 + 13^2 = 194 and 12^2 = 144, so it is not right-angled.",
-          "right": "For sides 5, 12 and 13: 5^2 + 12^2 = 25 + 144 = 169 and 13^2 = 169, so it is right-angled.",
-          "why": "The longest side must be squared on its own. Adding the longest side to one of the shorter sides compares the wrong pair of sides.",
-          "speech": "A common mistake is to square the longest side together with one of the shorter sides. The wrong way says: for sides five, twelve and thirteen, five squared plus thirteen squared is one hundred and ninety four, and twelve squared is one hundred and forty four, so it is not right-angled. That compares the wrong sides. The right way is: five squared plus twelve squared is twenty five plus one hundred and forty four, which is one hundred and sixty nine. Thirteen squared is also one hundred and sixty nine. So the triangle is right-angled. The longest side must be squared on its own.",
+          "wrong": "For 6, 8, 11: 100 < 121, so the triangle is acute.",
+          "right": "For 6, 8, 11: 121 > 100, so the triangle is obtuse.",
+          "why": "A larger square on the longest side means the angle opposite it is larger than 90°. Acute happens when the longest side squared is smaller, not larger.",
+          "speech": "A common mistake is to read the comparison the wrong way round. The wrong way says for sides six, eight and eleven, one hundred is less than one hundred and twenty one, so the triangle is acute. The right way says one hundred and twenty one is greater than one hundred, so the triangle is obtuse. A larger square on the longest side means the angle opposite it is larger than ninety degrees. Acute happens when the longest side squared is smaller, not larger.",
           "diagram": {
             "kind": "triangle",
             "vertices": [
@@ -1582,231 +1519,174 @@
               "C"
             ],
             "sides": [
-              "5",
-              "12",
-              "13"
+              "6",
+              "8",
+              "11"
             ],
-            "rightAngleAt": 2
+            "angleLabels": [
+              "?",
+              "?",
+              "?"
+            ]
           }
         },
         {
           "kind": "try",
           "question": {
-            "prompt": "A triangle has sides 9 cm, 12 cm and 15 cm. Is it right-angled?",
+            "prompt": "A triangle has sides 5 cm, 6 cm and 8 cm. Work out 8^2 - (5^2 + 6^2).",
             "render": "text",
             "steps": [
-              "Longest side = 15 cm",
-              "9^2 + 12^2 = 81 + 144 = 225",
-              "15^2 = 225",
-              "225 = 225, so yes, right-angled. Option A."
+              "5^2 + 6^2 = 25 + 36 = 61",
+              "8^2 = 64",
+              "64 - 61 = 3"
             ],
-            "answer": "A",
-            "answerKind": "choice",
-            "choices": [
-              "Yes, because 9^2 + 12^2 = 15^2",
-              "No, because 9 + 12 is not 15",
-              "Yes, because 9 + 12 = 15",
-              "No, because 12^2 + 15^2 = 9^2"
-            ],
-            "diagram": {
-              "kind": "triangle",
-              "vertices": [
-                "A",
-                "B",
-                "C"
-              ],
-              "sides": [
-                "9",
-                "12",
-                "15"
-              ],
-              "rightAngleAt": 2
-            },
-            "difficulty": 1,
-            "why": "A common error is to add the side lengths instead of squaring them.",
-            "rightWay": "Compare 9 squared plus 12 squared with 15 squared."
-          },
-          "hint": "Find the longest side first and square it on its own.",
-          "speech": "A triangle has sides nine centimetres, twelve centimetres and fifteen centimetres. Is it right-angled? Find the longest side, which is fifteen. Nine squared plus twelve squared is eighty one plus one hundred and forty four, which is two hundred and twenty five. Fifteen squared is two hundred and twenty five. The answers are equal, so it is right-angled. The correct option is A."
-        },
-        {
-          "kind": "try",
-          "question": {
-            "prompt": "A triangle has sides 5 cm, 7 cm and 9 cm. Is it right-angled, acute or obtuse?",
-            "render": "text",
-            "steps": [
-              "Longest side = 9 cm",
-              "5^2 + 7^2 = 25 + 49 = 74",
-              "9^2 = 81",
-              "81 > 74, so the biggest angle is obtuse. Option C."
-            ],
-            "answer": "C",
-            "answerKind": "choice",
-            "choices": [
-              "right-angled",
-              "acute",
-              "obtuse",
-              "cannot tell"
-            ],
-            "diagram": {
-              "kind": "triangle",
-              "vertices": [
-                "A",
-                "B",
-                "C"
-              ],
-              "sides": [
-                "5",
-                "7",
-                "9"
-              ]
-            },
+            "answer": "3",
+            "answerKind": "whole",
             "difficulty": 2,
-            "why": "A common error is to compare the square of the longest side with only one square instead of the sum of both shorter squares.",
-            "rightWay": "Compare 9 squared with 5 squared plus 7 squared."
+            "why": "Subtracting in the wrong order, or forgetting the brackets, gives the wrong value.",
+            "rightWay": "Square the longest side, then subtract the sum of the squares of the shorter sides."
           },
-          "hint": "Square the longest side and compare it with the sum of the squares of the other two sides.",
-          "speech": "A triangle has sides five centimetres, seven centimetres and nine centimetres. Is it right-angled, acute or obtuse? The longest side is nine. Five squared plus seven squared is twenty five plus forty nine, which is seventy four. Nine squared is eighty one. Eighty one is more than seventy four, so the biggest angle is obtuse. The triangle is obtuse. The correct option is C."
+          "hint": "Do the bracket first: square 5 and 6, then add.",
+          "speech": "A triangle has sides five centimetres, six centimetres and eight centimetres. Work out eight squared minus, in brackets, five squared plus six squared."
         },
         {
           "kind": "explain",
-          "text": "Always start by finding the longest side. Square it on its own. Then square the other two sides and add. Equal means right-angled. Less means acute. More means obtuse. This test uses only the side lengths, so no angle measuring is needed.",
-          "speech": "Always start by finding the longest side. Square it on its own. Then square the other two sides and add. Equal means right-angled. Less means acute. More means obtuse. This test uses only the side lengths, so no angle measuring is needed."
+          "text": "To test a triangle, first find the longest side and call it c. Work out a^2 + b^2 and c^2. If equal, right-angled. If c^2 is smaller, acute. If c^2 is larger, obtuse.\n\nThis test uses side lengths only. It does not need an angle to be measured.",
+          "speech": "To test a triangle, first find the longest side and call it c. Work out a squared plus b squared and c squared. If they are equal, the triangle is right-angled. If c squared is smaller, the triangle is acute. If c squared is larger, the triangle is obtuse. This test uses side lengths only. It does not need an angle to be measured."
         }
       ],
       "summary": [
         "In a right-angled triangle, the hypotenuse squared equals the sum of the squares of the other two sides.",
-        "The converse: if the longest side squared equals the sum of the squares of the other two sides, the triangle is right-angled.",
-        "To test a triangle, find the longest side first and square it on its own.",
+        "Converse: if the longest side squared equals the sum of the squares of the other two sides, the triangle is right-angled.",
         "If the longest side squared is less than the sum, the triangle is acute.",
-        "If the longest side squared is more than the sum, the triangle is obtuse."
+        "If the longest side squared is greater than the sum, the triangle is obtuse.",
+        "Always compare with the square of the longest side.",
+        "Pythagorean triples are whole-number side sets such as 3, 4, 5 and 5, 12, 13."
       ],
       "practice": [
         {
-          "prompt": "A triangle has sides 6 cm, 8 cm and 10 cm. What type of triangle is it?",
+          "prompt": "A triangle has sides 3 cm, 4 cm and 5 cm. What is the longest side squared?",
           "render": "text",
           "steps": [
-            "Longest side = 10 cm",
-            "6^2 + 8^2 = 36 + 64 = 100",
-            "10^2 = 100",
-            "100 = 100, so right-angled. Option A."
+            "Longest side = 5 cm",
+            "5^2 = 25"
           ],
-          "answer": "A",
-          "answerKind": "choice",
-          "choices": [
-            "right-angled",
-            "acute",
-            "obtuse",
-            "not a triangle"
-          ],
+          "answer": "25",
+          "answerKind": "whole",
           "difficulty": 1,
-          "why": "Learners may add the side lengths instead of squaring them.",
-          "rightWay": "Compare 6 squared plus 8 squared with 10 squared."
+          "why": "Squaring a shorter side gives the wrong value.",
+          "rightWay": "Pick the longest side, 5 cm, and square it."
         },
         {
-          "prompt": "A triangle has sides 7 cm, 24 cm and 25 cm. What type of triangle is it?",
+          "prompt": "For a triangle with sides 6 cm, 8 cm and 10 cm, work out 6^2 + 8^2.",
           "render": "text",
           "steps": [
-            "Longest side = 25 cm",
-            "7^2 + 24^2 = 49 + 576 = 625",
-            "25^2 = 625",
-            "625 = 625, so right-angled. Option B."
+            "6^2 + 8^2 = 36 + 64",
+            "36 + 64 = 100"
+          ],
+          "answer": "100",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Adding 6 and 8 before squaring gives the wrong value.",
+          "rightWay": "Square 6 and 8 separately, then add."
+        },
+        {
+          "prompt": "Which one of these triangles is right-angled?",
+          "render": "text",
+          "steps": [
+            "Test each set by squaring the longest side and comparing with the sum of squares of the other two.",
+            "5^2 + 12^2 = 25 + 144 = 169 and 13^2 = 169",
+            "Only 5, 12, 13 fits the rule.",
+            "B"
           ],
           "answer": "B",
           "answerKind": "choice",
           "choices": [
-            "acute",
-            "right-angled",
-            "obtuse",
-            "cannot tell"
+            "4, 5, 6",
+            "5, 12, 13",
+            "7, 9, 11",
+            "8, 10, 12"
           ],
-          "difficulty": 1,
-          "why": "A common error is to use 24 as the longest side.",
-          "rightWay": "The longest side is 25, so compare 25 squared with 7 squared plus 24 squared."
+          "difficulty": 2,
+          "why": "Choosing a set without checking the square of the longest side can be wrong.",
+          "rightWay": "For each set, square the longest side and compare it with the sum of the squares of the other two sides."
         },
         {
-          "prompt": "A triangle has sides 8 cm, 10 cm and 12 cm. What type of triangle is it?",
+          "prompt": "A triangle has sides 7 cm, 8 cm and 11 cm. Is it right-angled, acute or obtuse?",
           "render": "text",
           "steps": [
-            "Longest side = 12 cm",
-            "8^2 + 10^2 = 64 + 100 = 164",
-            "12^2 = 144",
-            "144 < 164, so the biggest angle is acute. Option C."
+            "Longest side = 11 cm",
+            "7^2 + 8^2 = 49 + 64 = 113",
+            "11^2 = 121",
+            "121 > 113, so the largest angle is obtuse",
+            "C"
           ],
           "answer": "C",
           "answerKind": "choice",
           "choices": [
             "right-angled",
-            "obtuse",
             "acute",
-            "not a triangle"
+            "obtuse"
           ],
           "difficulty": 2,
-          "why": "A common error is to think that more than means obtuse without checking which side was squared.",
-          "rightWay": "Compare 12 squared with 8 squared plus 10 squared."
+          "why": "Reading 121 > 113 as acute reverses the test.",
+          "rightWay": "When the longest side squared is larger than the sum, the triangle is obtuse."
         },
         {
-          "prompt": "A triangle has sides 9 cm, 10 cm and 15 cm. What type of triangle is it?",
+          "prompt": "A triangle has sides 10 cm, 24 cm and 26 cm. Work out 26^2 - (10^2 + 24^2).",
           "render": "text",
           "steps": [
-            "Longest side = 15 cm",
-            "9^2 + 10^2 = 81 + 100 = 181",
-            "15^2 = 225",
-            "225 > 181, so the biggest angle is obtuse. Option A."
+            "10^2 + 24^2 = 100 + 576 = 676",
+            "26^2 = 676",
+            "676 - 676 = 0"
           ],
-          "answer": "A",
-          "answerKind": "choice",
-          "choices": [
-            "obtuse",
-            "right-angled",
-            "acute",
-            "cannot tell"
-          ],
+          "answer": "0",
+          "answerKind": "whole",
           "difficulty": 2,
-          "why": "Learners may compare 15 squared with 9 squared only.",
-          "rightWay": "Compare 15 squared with the sum 9 squared plus 10 squared."
+          "why": "A subtraction slip gives a value that is not zero.",
+          "rightWay": "Square 10 and 24, add them, then subtract that sum from 26 squared."
         },
         {
-          "prompt": "A triangle has sides 12 cm, 16 cm and 20 cm. What type of triangle is it?",
-          "render": "text",
-          "steps": [
-            "Longest side = 20 cm",
-            "12^2 + 16^2 = 144 + 256 = 400",
-            "20^2 = 400",
-            "400 = 400, so right-angled. Option C."
-          ],
-          "answer": "C",
-          "answerKind": "choice",
-          "choices": [
-            "acute",
-            "obtuse",
-            "right-angled",
-            "not a triangle"
-          ],
-          "difficulty": 2,
-          "why": "A common error is to square only one of the shorter sides.",
-          "rightWay": "Compare 20 squared with 12 squared plus 16 squared."
-        },
-        {
-          "prompt": "A triangle has sides 1,5 m, 2 m and 2,5 m. What type of triangle is it?",
+          "prompt": "A builder marks a corner with sides 1,5 m, 2 m and 2,5 m. Is the corner square, acute or obtuse?",
           "render": "text",
           "steps": [
             "Longest side = 2,5 m",
             "1,5^2 + 2^2 = 2,25 + 4 = 6,25",
             "2,5^2 = 6,25",
-            "6,25 = 6,25, so right-angled. Option B."
+            "The squares are equal, so the corner is right-angled",
+            "A"
+          ],
+          "answer": "A",
+          "answerKind": "choice",
+          "choices": [
+            "right-angled",
+            "acute",
+            "obtuse"
+          ],
+          "difficulty": 3,
+          "why": "Rounding decimals too early can hide that the squares are equal.",
+          "rightWay": "Square the exact decimal values and compare with the square of the longest side."
+        },
+        {
+          "prompt": "A triangle has sides 5 cm, 5 cm and 7 cm. Is it right-angled, acute or obtuse?",
+          "render": "text",
+          "steps": [
+            "Longest side = 7 cm",
+            "5^2 + 5^2 = 25 + 25 = 50",
+            "7^2 = 49",
+            "49 < 50, so the largest angle is acute",
+            "B"
           ],
           "answer": "B",
           "answerKind": "choice",
           "choices": [
-            "acute",
             "right-angled",
-            "obtuse",
-            "cannot tell"
+            "acute",
+            "obtuse"
           ],
           "difficulty": 3,
-          "why": "A common error is to treat the decimal comma as a multiplication sign.",
-          "rightWay": "Square 1,5 and square 2, then add the results and compare with 2,5 squared."
+          "why": "Thinking that two equal sides must make a right angle is wrong.",
+          "rightWay": "Compare the square of the longest side, 7, with the sum of the squares of the two 5 cm sides."
         }
       ]
     },
@@ -2382,5 +2262,5 @@
       "reviewer": "deepseek/deepseek-v4.1-flash-1017"
     }
   ],
-  "generatedAt": "2026-11-16T20:04:22.302Z"
+  "generatedAt": "2026-11-16T21:55:09.844Z"
 }
