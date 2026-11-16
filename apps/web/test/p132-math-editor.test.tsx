@@ -4,7 +4,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
 import { MathAnswerField } from '../app/k/session/_parts/MathAnswerField'
-import { CAPS, keyboardLayout, keyName, ROW_WIDTH, rowUnits } from '../app/k/session/_parts/math-keyboard'
+import { CAPS, keyboardLayout, keyName, layerId, openingTab, ROW_WIDTH, rowUnits, TABS, tabsFor, type Keycap, type KeyboardLayer, type KeyboardLayout, type TabId } from '../app/k/session/_parts/math-keyboard'
 import type { TypedKind } from '../app/k/session/_parts/maths-keys'
 import { QuestionScreen } from '../app/k/session/_parts/QuestionScreen'
 import type { QuestionForChild } from '../app/k/session/[sessionId]/logic'
@@ -22,89 +22,152 @@ const ready = async () => {
   await waitFor(() => expect(theField().mathVirtualKeyboardPolicy).toBe('manual'))
 }
 
-describe('the keyboard of the maths editor', () => {
+describe('the keyboard of the maths editor, as tabs by kind of symbol', () => {
   const kinds: TypedKind[] = ['number', 'expression', 'equation']
   const prompts = {
     algebra: 'Simplify x + x + 3',
     trigonometry: 'Work out sin 30',
+    geometry: 'Find the size of angle x',
     functions: 'Find the gradient of the line',
     calculus: 'Differentiate y = 3x^2',
     finance: 'How much interest is that?',
     data: 'What is the median?',
   }
   const all = kinds.flatMap((kind) => Object.entries(prompts).map(([strand, prompt]) => ({ kind, strand, layout: keyboardLayout({ kind, prompt }) })))
+  const layerOf = (layout: KeyboardLayout, tab: TabId) => layout.layers.find((l) => l.id === layerId(tab))!
+  const rowsNamed = (layer: KeyboardLayer) => layer.rows.map((row) => names(row))
+  const algebra = (kind: TypedKind) => keyboardLayout({ kind, prompt: prompts.algebra })
 
-  it('five rows, and every row is seven units wide, so every key of every row is the same size (48 px on a 360 px phone)', () => {
+  it('a layer for each tab of the kind of answer: a number has no letters, so no abc and no calculus tab', () => {
+    expect(algebra('expression').layers.map((l) => l.id).sort()).toEqual(['jemma-calculus', 'jemma-functions', 'jemma-geometry', 'jemma-letters', 'jemma-numbers'])
+    expect(algebra('equation').layers).toHaveLength(5)
+    expect(algebra('number').layers.map((l) => l.id).sort()).toEqual(['jemma-functions', 'jemma-geometry', 'jemma-numbers'])
+  })
+
+  it('every row of every layer is seven units wide, so every key is the same size (48 px on a 360 px phone)', () => {
     for (const { kind, strand, layout } of all) {
-      expect(layout.rows, `${kind} ${strand}`).toHaveLength(5)
-      for (const row of layout.rows) expect(rowUnits(row), `${kind} ${strand}`).toBe(ROW_WIDTH)
+      for (const layer of layout.layers) for (const row of layer.rows) expect(rowUnits(row), `${kind} ${strand} ${layer.id}`).toBe(ROW_WIDTH)
     }
     expect(360 / ROW_WIDTH).toBeGreaterThanOrEqual(48)
   })
 
-  it('row 1 is always + - x / = ( ), in that order, for every topic and every kind of answer', () => {
+  it('each layer starts with the row of tabs: 123, abc, f(x), angle, integral, the tab you are on dark, and a key that hides the keyboard', () => {
     for (const { kind, strand, layout } of all) {
-      expect(names(layout.rows[0]!), `${kind} ${strand}`).toEqual(['plus', 'minus', 'times', 'divided by', 'equals', 'open bracket', 'close bracket'])
+      for (const layer of layout.layers) {
+        const row = layer.rows[0]!.filter((k): k is Keycap => typeof k !== 'string')
+        const tabs = row.filter((k) => k.class?.includes('tab'))
+        expect(tabs.map((t) => t.tooltip), `${kind} ${strand} ${layer.id}`).toEqual(tabsFor(kind).map((t) => t.tooltip))
+        // each tab key switches to its own layer; only the tab of this layer is dark
+        expect(tabs.map((t) => t.command)).toEqual(tabsFor(kind).map((t) => ['switchKeyboardLayer', layerId(t.id)]))
+        expect(tabs.filter((t) => t.class?.includes('is-current-tab'))).toHaveLength(1)
+        expect(tabs.find((t) => t.class?.includes('is-current-tab'))!.command).toEqual(['switchKeyboardLayer', layer.id])
+        expect(row.some((k) => k.tooltip === 'hide the keyboard')).toBe(true)
+        expect(layer.style).toContain('.is-current-tab')
+      }
     }
-    expect(CAPS.plus.latex).toBe('+')
-    expect(CAPS.minus.latex).toBe('-')
+    expect(TABS.map((t) => t.face)).toEqual(['123', '<i>abc</i>', '<i>f</i>(<i>x</i>)', '&#x2220;', '&#x222B;'])
+  })
+
+  it('123: + - x / = ( ) on the top row, then the fraction, root, cube root, x squared, x to a power and backspace, then the digits, the comma and the arrows', () => {
+    for (const kind of kinds) {
+      const rows = rowsNamed(layerOf(algebra(kind), 'numbers')).slice(1)
+      expect(rows[0], kind).toEqual(['plus', 'minus', 'times', 'divided by', 'equals', 'open bracket', 'close bracket'])
+      expect(rows[1], kind).toEqual(['fraction', 'square root', 'cube root', 'squared', 'to the power of', 'backspace'])
+      expect(rows[2], kind).toEqual(['[1]', '[2]', '[3]', '[4]', '[5]', 'move left', 'move right'])
+      expect(rows[3]!.slice(0, 6), kind).toEqual(['[6]', '[7]', '[8]', '[9]', '[0]', 'decimal comma'])
+    }
+  })
+
+  it('the keys are textbook glyphs: a boxed fraction, a root over a box, a cube root with its 3, x with a raised box, the cross, the division sign, a true minus', () => {
+    expect(CAPS.fraction.latex).toBe('\\frac{\\square}{\\square}')
+    expect(CAPS.fraction.insert).toBe('\\frac{#@}{#?}')
+    expect(CAPS.sqrt.latex).toBe('\\sqrt{\\square}')
+    expect(CAPS.cbrt.latex).toBe('\\sqrt[3]{\\square}')
+    expect(CAPS.cbrt.insert).toBe('\\sqrt[3]{#0}')
+    expect(CAPS.power.latex).toBe('x^{\\square}')
+    expect(CAPS.power.insert).toBe('#@^{#?}')
+    expect(CAPS.squared.latex).toBe('x^2')
+    expect(CAPS.squared.insert).toBe('#@^2')
     expect(CAPS.times.latex).toBe('\\times')
     expect(CAPS.divide.latex).toBe('\\div')
-    expect(CAPS.equals.latex).toBe('=')
-  })
-
-  it('row 2 is always the fraction (a top and a bottom), the square root, the cube root, x squared, x to a power, and backspace', () => {
-    for (const { kind, strand, layout } of all) {
-      expect(names(layout.rows[1]!), `${kind} ${strand}`).toEqual(['fraction', 'square root', 'cube root', 'squared', 'to the power of', 'backspace'])
-    }
-    expect(CAPS.fraction.latex).toBe('\\frac{#@}{#?}')
-    expect(CAPS.sqrt.latex).toBe('\\sqrt{#0}')
-    expect(CAPS.cbrt.latex).toBe('\\sqrt[3]{#0}')
-    expect(CAPS.squared.insert).toBe('#@^2')
-    expect(CAPS.power.insert).toBe('#@^{#?}')
-  })
-
-  it('row 3 is the keys of the topic: x y for algebra, sin cos tan for trigonometry, f(x), d/dx and f prime for functions and calculus, % and R for money', () => {
-    const row3 = (kind: TypedKind, strand: keyof typeof prompts) => names(keyboardLayout({ kind, prompt: prompts[strand] }).rows[2]!)
-    expect(row3('expression', 'algebra')).toEqual(['x', 'y', 'pi'])
-    expect(row3('expression', 'trigonometry')).toEqual(['sine', 'cosine', 'tangent', 'theta', 'degrees', 'pi', 'x'])
-    expect(row3('expression', 'functions')).toEqual(expect.arrayContaining(['x', 'f of x']))
-    expect(row3('expression', 'calculus')).toEqual(expect.arrayContaining(['d y by d x', 'f prime of x']))
-    expect(row3('expression', 'finance')).toEqual(expect.arrayContaining(['percent', 'rand']))
-    expect(row3('expression', 'data')).toEqual(expect.arrayContaining(['percent', 'rand']))
-    expect(row3('equation', 'trigonometry')).toEqual(expect.arrayContaining(['theta', 'degrees', 'pi', 'or']))
-    expect(row3('equation', 'algebra')).toEqual(expect.arrayContaining(['x', 'plus or minus', 'or']))
-    expect(row3('number', 'trigonometry')).toEqual(['sine', 'cosine', 'tangent', 'degrees', 'pi'])
-    expect(row3('number', 'finance')).toEqual(['rand', 'percent'])
-  })
-
-  it('a number has no letter of algebra on its keyboard, and a derivative key is only on a question that asks for a derivative', () => {
-    for (const { kind, layout } of all.filter((a) => a.kind === 'number')) expect(names(layout.rows[2]!)).not.toEqual(expect.arrayContaining(['x']))
-    const plain = names(keyboardLayout({ kind: 'expression', topic: 'Calculus', prompt: 'Work out the limit' }).rows[2]!)
-    expect(plain).not.toContain('d y by d x')
-    expect(plain).not.toContain('f prime of x')
-  })
-
-  it('rows 4 and 5 are the digits 0 to 9, the decimal comma, the two arrows and hide the keyboard', () => {
-    for (const { kind, strand, layout } of all) {
-      expect(layout.rows[3], `${kind} ${strand}`).toEqual(['[1]', '[2]', '[3]', '[4]', '[5]', CAPS.left, CAPS.right])
-      expect(layout.rows[4], `${kind} ${strand}`).toEqual(['[6]', '[7]', '[8]', '[9]', '[0]', CAPS.comma, CAPS.hide])
-    }
+    expect(CAPS.minus.label).toBe('&#x2212;')
     expect(CAPS.comma.insert).toBe('{,}')
+    // no face is plain text with a slash or a caret
+    for (const k of Object.values(CAPS)) expect((k as Keycap).label ?? '', (k as Keycap).tooltip).not.toMatch(/[/^]/)
   })
 
-  it('no key is twice on a keyboard, and every key has a name for a screen reader', () => {
-    for (const { kind, strand, layout } of all) {
-      const all = layout.rows.flat().map((k) => keyName(k as never)).filter((n) => n !== '[separator]')
-      expect(new Set(all).size, `${kind} ${strand}`).toBe(all.length)
-      for (const k of layout.rows.flat()) expect(keyName(k as never).length).toBeGreaterThan(0)
+  it('abc: italic maths letters, x y k p n t a b c m first, every letter but e (which is on the f(x) tab), none of them a sign', () => {
+    const rows = rowsNamed(layerOf(algebra('expression'), 'letters')).slice(1)
+    const letters = rows.flat().filter((n) => n.startsWith('the letter ')).map((n) => n.slice('the letter '.length))
+    expect(letters.slice(0, 10)).toEqual(['x', 'y', 'k', 'p', 'n', 't', 'a', 'b', 'c', 'm'])
+    expect([...letters].sort().join('')).toBe('abcdfghijklmnopqrstuvwxyz'.replace('e', ''))
+    expect(letters).not.toContain('e')
+    const caps = layerOf(algebra('expression'), 'letters').rows.flat().filter((k): k is Keycap => typeof k !== 'string' && !!k.tooltip?.startsWith('the letter'))
+    for (const k of caps) expect(k.latex).toMatch(/^[a-z]$/)
+    // the cross is not a letter: the times key is on the numbers tab and is \times
+    expect(layerOf(algebra('expression'), 'numbers').rows.flat()).toContain(CAPS.times)
+    expect(CAPS.times.latex).not.toBe('x')
+  })
+
+  it('f(x): sin cos tan and their inverses, |x|, log, ln, e, pi, f(x), the relations < > <= >= != and plus or minus', () => {
+    const flat = rowsNamed(layerOf(algebra('expression'), 'functions')).flat()
+    expect(flat).toEqual(
+      expect.arrayContaining(['sine', 'cosine', 'tangent', 'inverse sine', 'inverse cosine', 'inverse tangent', 'absolute value', 'logarithm', 'natural logarithm', 'the number e', 'pi', 'f of x']),
+    )
+    expect(flat).toEqual(expect.arrayContaining(['less than', 'greater than', 'less than or equal to', 'greater than or equal to', 'not equal to', 'plus or minus', 'percent', 'rand']))
+    expect(CAPS.asin.latex).toBe('\\sin^{-1}')
+    expect(CAPS.abs.latex).toBe('\\left|\\square\\right|')
+    expect(CAPS.e.latex).toBe('\\mathrm{e}')
+  })
+
+  it('angle: the degree sign, theta and the Greek letters, pi, and the signs of geometry', () => {
+    const flat = rowsNamed(layerOf(algebra('expression'), 'geometry')).flat()
+    expect(flat).toEqual(expect.arrayContaining(['degrees', 'theta', 'alpha', 'beta', 'gamma', 'pi', 'angle', 'triangle', 'perpendicular', 'parallel', 'congruent', 'similar']))
+  })
+
+  it('calculus: d/dx, f prime of x, the integral, lim, the sum, infinity, e and ln', () => {
+    const flat = rowsNamed(layerOf(algebra('expression'), 'calculus')).flat()
+    expect(flat).toEqual(expect.arrayContaining(['d by d x', 'f prime of x', 'integral', 'limit', 'sum', 'infinity', 'the number e', 'natural logarithm']))
+    expect(CAPS.ddx.latex).toBe('\\frac{d}{dx}')
+  })
+
+  it('a number has no letter on any of its tabs, and only an equation has "or"', () => {
+    for (const { kind, layout } of all.filter((a) => a.kind === 'number')) {
+      for (const layer of layout.layers) expect(rowsNamed(layer).flat().filter((n) => n.startsWith('the letter'))).toEqual([])
+    }
+    for (const { kind, layout } of all.filter((a) => a.kind !== 'equation')) {
+      for (const layer of layout.layers) expect(rowsNamed(layer).flat(), kind).not.toContain('or')
     }
   })
 
-  it('the layout is shaped for the editor: a layout with rows, no edit toolbar, a unique id by kind and strand', () => {
+  it('the keyboard opens on the tab that fits the question: calculus for a derivative, f(x) for trigonometry, geometry for angles, 123 otherwise', () => {
+    const first = (kind: TypedKind, strand: keyof typeof prompts) => keyboardLayout({ kind, prompt: prompts[strand] }).layers[0]!.id
+    expect(first('expression', 'calculus')).toBe('jemma-calculus')
+    expect(first('equation', 'calculus')).toBe('jemma-calculus')
+    expect(first('number', 'calculus')).toBe('jemma-numbers')
+    expect(first('expression', 'trigonometry')).toBe('jemma-functions')
+    expect(first('number', 'trigonometry')).toBe('jemma-functions')
+    expect(first('equation', 'trigonometry')).toBe('jemma-geometry')
+    for (const kind of kinds) expect(first(kind, 'geometry')).toBe('jemma-geometry')
+    for (const strand of ['algebra', 'functions', 'finance', 'data'] as const) for (const kind of kinds) expect(first(kind, strand), `${kind} ${strand}`).toBe('jemma-numbers')
+    expect(openingTab('expression', 'calculus')).toBe('calculus')
+    // the tab row is the same whichever tab opens: only the dark tab changes
+    const a = keyboardLayout({ kind: 'expression', prompt: prompts.calculus }).layers[0]!
+    expect(a.rows[0]!.filter((k) => typeof k !== 'string' && k.class?.includes('is-current-tab'))).toHaveLength(1)
+  })
+
+  it('no key is twice on a layer, every key has a name for a screen reader, and the layout is shaped for the editor', () => {
+    for (const { kind, strand, layout } of all) {
+      for (const layer of layout.layers) {
+        const found = layer.rows.flat().map((k) => keyName(k as never)).filter((n) => n !== '[separator]' && n !== 'backspace')
+        expect(new Set(found).size, `${kind} ${strand} ${layer.id}`).toBe(found.length)
+        for (const k of layer.rows.flat()) expect(keyName(k as never).length).toBeGreaterThan(0)
+      }
+    }
     const layout = keyboardLayout({ kind: 'expression', topic: 'Trigonometry', prompt: 'x' })
     expect(layout).toMatchObject({ id: 'jemma-expression-trigonometry', displayEditToolbar: false })
     expect(new Set(all.map((a) => a.layout.id)).size).toBe(all.length)
+    expect(new Set(layout.layers.map((l) => l.id)).size).toBe(layout.layers.length)
   })
 })
 
@@ -127,12 +190,13 @@ describe('the answer area of a question', () => {
     expect(html(ask({ answerKind: 'point', prompt: 'Where does the line cut the y-axis?' }))).not.toContain('math-field')
   })
 
-  it('a trigonometry topic gives the editor the trigonometry keyboard', async () => {
+  it('a trigonometry topic opens the keyboard on the functions tab', async () => {
     render(<QuestionScreen q={ask({ prompt: 'Work out the length', answerKind: 'number' })} topic="Trigonometry" busy={false} onAnswer={() => {}} />)
     await ready()
     const layout = theKeyboard().layouts[0] as ReturnType<typeof keyboardLayout>
     expect(layout.id).toBe('jemma-number-trigonometry')
-    expect(names(layout.rows[2]!)).toEqual(['sine', 'cosine', 'tangent', 'degrees', 'pi'])
+    expect(layout.layers[0]!.id).toBe('jemma-functions')
+    expect(names(layout.layers[0]!.rows[1]!)).toEqual(['sine', 'cosine', 'tangent', 'inverse sine', 'inverse cosine', 'inverse tangent', 'absolute value'])
   })
 
   it('the editor is given fonts from this app, no sound and the decimal comma', async () => {
