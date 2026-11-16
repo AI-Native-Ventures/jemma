@@ -120,6 +120,25 @@ function read(toks: Tok[]): Node {
     expectSym('}')
     return inside
   }
+  /**
+   * One argument of \frac, \sqrt, ^ and _: a braced group, or, as TeX reads it, the one token after the command: a digit, a letter, pi, theta and the
+   * like. "\frac12" is one over two, "\sqrt2" the root of 2, "x^23" is x^2 and then 3: a number of two digits or more gives its first digit and keeps the rest.
+   */
+  const arg = (): Node => {
+    if (isSym(peek(), '{')) return braced()
+    const t = toks[pos++]
+    if (!t) return no()
+    if (t.k === 'num') {
+      if (/^\d\d/.test(t.text)) {
+        toks.splice(pos, 0, { k: 'num', text: t.text.slice(1) })
+        return { t: 'atom', s: t.text.slice(0, 1) }
+      }
+      return { t: 'atom', s: t.text }
+    }
+    if (t.k === 'letter') return { t: 'atom', s: t.text }
+    if (t.k === 'cmd' && SYMBOLS[t.name] && !['angle', 'triangle', 'int', 'sum', 'lim'].includes(t.name)) return { t: 'atom', s: SYMBOLS[t.name]! }
+    return no()
+  }
   /** The text of a command's braced argument ({ or } and letters and spaces only): \text{ or }, \mathrm{d/dx}. */
   const plainBraces = (): string => {
     expectSym('{')
@@ -226,13 +245,7 @@ function read(toks: Tok[]): Node {
       }
       return braced()
     }
-    const t = toks[pos++]
-    if (!t) return no()
-    if (t.k === 'num') return { t: 'atom', s: t.text.slice(0, 1) } // ^23 is ^2 then 3, as TeX reads it
-    if (t.k === 'letter') return { t: 'atom', s: t.text }
-    if (t.k === 'cmd' && t.name === 'pi') return { t: 'atom', s: '\u03c0' }
-    if (t.k === 'cmd' && t.name === 'theta') return { t: 'atom', s: '\u03b8' }
-    return no()
+    return arg()
   }
 
   function power(): Node {
@@ -324,8 +337,8 @@ function read(toks: Tok[]): Node {
       case 'frac':
       case 'dfrac':
       case 'tfrac': {
-        const a = braced()
-        const b = braced()
+        const a = arg()
+        const b = arg()
         return { t: 'frac', a, b }
       }
       case 'sqrt': {
@@ -335,7 +348,7 @@ function read(toks: Tok[]): Node {
           n = relation()
           expectSym(']')
         }
-        return { t: 'root', a: braced(), ...(n ? { n } : {}) }
+        return { t: 'root', a: arg(), ...(n ? { n } : {}) }
       }
       case 'mathrm':
       case 'operatorname':
