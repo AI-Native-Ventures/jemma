@@ -128,10 +128,10 @@ describe('rows 4 and 5, which are what a tab changes', () => {
     expect(CAPS.asin.latex).toBe('\\sin^{-1}')
   })
 
-  it('Compare: < > <= >= != plus or minus, |x|, %, R and one blank, then a row of blanks', () => {
+  it('Compare: < > <= >= != plus or minus, |x|, %, R and one blank, then (P147) the keys of an interval and four blanks', () => {
     const [a, b] = rows45('compare')
     expect(names(a!)).toEqual(['less than', 'greater than', 'less than or equal to', 'greater than or equal to', 'not equal to', 'plus or minus', 'absolute value', 'percent', 'rand', BLANK])
-    expect(names(b!)).toEqual(blanks(10))
+    expect(names(b!)).toEqual(['open square bracket', 'close square bracket', 'semicolon', 'infinity', 'union', 'element of', 'the real numbers', ...blanks(3)])
     expect(CAPS.abs.latex).toBe('\\left|\\square\\right|')
   })
 

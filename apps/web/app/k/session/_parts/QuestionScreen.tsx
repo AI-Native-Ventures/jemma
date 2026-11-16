@@ -10,6 +10,7 @@ import { UnitFrame } from './answers/QuantityBox'
 import { RatioBoxes } from './answers/RatioBoxes'
 import { TimeBoxes } from './answers/TimeBoxes'
 import { Frac, FractionText, withFractions } from './Frac'
+import { equationShapeHint } from './answers/hints'
 import { isValuesShape, ValuesAnswer } from './answers/ValuesAnswer'
 import { YoungSize } from './answers/YoungSize'
 import { MathAnswerField } from './MathAnswerField'
@@ -203,7 +204,7 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
     case 'expression':
       return <MathAnswerField kind="expression" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={FORM_HINTS[shape.form]} />
     case 'equation':
-      return <MathAnswerField kind="equation" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={EQUATION_HINT} />
+      return <MathAnswerField kind="equation" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={equationShapeHint(shape, EQUATION_HINT)} />
     case 'point':
       return (
         <div className="flex flex-col items-center gap-3.5">

@@ -112,6 +112,17 @@ describe('a unit for a young learner', () => {
     expect(onAnswer).toHaveBeenCalledWith('12', expect.any(Number))
   })
 
+  it('a young learner never gets the minus key, even on a question that counts as senior; a learner of Grade 7 or more still does', () => {
+    const senior: Question = { ...CM, steps: ['12 cm', '12'] }
+    expect(young(senior)).not.toHaveProperty('signed')
+    expect(grown(senior).signed).toBe(true)
+    const a = show(young(senior))
+    expect(a.container.querySelector('button[aria-label="Minus sign"]')).toBeNull()
+    a.unmount()
+    const b = show(grown(senior))
+    expect(b.container.querySelector('button[aria-label="Minus sign"]')).toBeTruthy()
+  })
+
   it('a unit and the flag do not hide the key either', () => {
     expect(JSON.stringify(young(CM))).not.toContain('"12"')
   })
