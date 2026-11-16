@@ -175,7 +175,8 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
     case 'money':
       return text ? `R${text}` : ''
     case 'number':
-      return hasDigit(text) ? text : ''
+      // A number answer holds a digit, or pi (the pi key types a whole answer, like 2\u03c0 or \u03c0/2).
+      return hasDigit(text) || /\u03c0|\bpi\b/i.test(text) ? text : ''
     case 'point': {
       const [x, y] = [(boxes.x ?? '').trim().replace(/[.,]+$/, ''), (boxes.y ?? '').trim().replace(/[.,]+$/, '')]
       return hasDigit(x) && hasDigit(y) ? `(${x}; ${y})` : ''

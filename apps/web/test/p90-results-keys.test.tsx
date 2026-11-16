@@ -138,17 +138,17 @@ describe('the maths keys sit in even rows', () => {
   /** The width of one key in a row of `count` columns on a phone `phone` px wide: the screen leaves 20 px at each side, the row has 8 px between keys. */
   const keyWidth = (phone: number, count: number) => (Math.min(360, phone - 40) - 8 * (count - 1)) / count
 
-  it('an expression has 8 keys in a grid of 4 columns: 4 + 4', () => {
+  it('an expression has 10 keys in a grid of 5 columns: 5 + 5 (P125; the rest are behind More keys)', () => {
     const { row, buttons } = keys(ask({ answerKind: 'expression' }))
-    expect(buttons).toHaveLength(8)
+    expect(buttons).toHaveLength(10)
     expect(row.classList.contains('grid')).toBe(true)
-    expect(row.classList.contains('grid-cols-4')).toBe(true)
+    expect(row.classList.contains('grid-cols-5')).toBe(true)
     expect(row.classList.contains('flex-wrap')).toBe(false)
   })
 
-  it('an equation has 5 keys in one row of 5 columns', () => {
+  it('an equation has 10 keys in a grid of 5 columns: 5 + 5 (P125)', () => {
     const { row, buttons } = keys(ask({ answerKind: 'equation' }))
-    expect(buttons).toHaveLength(5)
+    expect(buttons).toHaveLength(10)
     expect(row.classList.contains('grid-cols-5')).toBe(true)
   })
 
