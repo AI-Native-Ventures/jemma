@@ -32,7 +32,14 @@ function rational(n: bigint, d: bigint): Rational | null {
   return { n: n / g, d: d / g }
 }
 
-function parseNumber(s: string): Rational | null {
+/** A number as a learner of a senior class may write it: a minus (or the minus sign) in front of a whole number, a decimal, a fraction or a mixed number. */
+function parseNumber(text: string): Rational | null {
+  const negative = /^[-\u2212]\s*(?=\d|[.,]\d)/.test(text)
+  const value = parseUnsigned(negative ? text.replace(/^[-\u2212]\s*/, '') : text)
+  return value && negative ? { n: -value.n, d: value.d } : value
+}
+
+function parseUnsigned(s: string): Rational | null {
   let m = /^(\d+)\s+(\d+)\/(\d+)$/.exec(s)
   if (m) {
     const d = BigInt(m[3]!)

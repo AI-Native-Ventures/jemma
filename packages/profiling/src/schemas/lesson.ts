@@ -24,8 +24,8 @@ const Difficulty = z.union([z.literal(1), z.literal(2), z.literal(3)])
  */
 
 export const PRIMARY_ANSWER_KINDS = ['fraction', 'mixed', 'decimal', 'whole', 'money', 'choice'] as const
-/** The four kinds of a senior class that code marks by meaning (logic/meaning.ts). */
-export const MEANING_ANSWER_KINDS = ['number', 'expression', 'equation', 'point'] as const
+/** The kinds of a senior class that code marks by meaning (logic/meaning.ts): four from P86, and `time` and `ratio` (P148). */
+export const MEANING_ANSWER_KINDS = ['number', 'expression', 'equation', 'point', 'time', 'ratio'] as const
 export const ANSWER_KINDS = [...PRIMARY_ANSWER_KINDS, ...MEANING_ANSWER_KINDS] as const
 export type AnswerKind = (typeof ANSWER_KINDS)[number]
 export type MeaningKind = (typeof MEANING_ANSWER_KINDS)[number]
@@ -66,6 +66,10 @@ const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
     answerKind: z.enum(ANSWER_KINDS),
     choices: z.array(z.string()).optional(),
     form: FormSchema.optional(),
+    /** The unit of the answer ("cm²", "ml", "km/h", "°C", "kg"), shown after the box. The `answer` is the number alone. Senior classes only (P148). */
+    unit: z.string().optional(),
+    /** How many decimal places the question asks the answer to be rounded to ("correct to 2 decimal places"): an answer that rounds to the key there is right. Senior classes only (P148). */
+    round: z.number().int().optional(),
     /** A picture the question needs (a graph to read, a triangle with an angle to find). It never holds the answer. Senior classes only. */
     diagram: SeniorDiagramSpecSchema.optional(),
     difficulty: Difficulty,
