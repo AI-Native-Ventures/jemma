@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import { TopicLessonsSchema, type TeachingLesson } from '@jemma/profiling/schemas'
 import { Chain, FatalBackendError } from '../chain'
-import { Generator, reportLines, scrubDashes } from '../generate'
+import { Generator, acquireLock, reportLines, scrubDashes, selectGroups } from '../generate'
 import { ledgerPath, readLedger, summarize } from '../ledger'
 import { capsReference } from '../sources'
 import { topicFileNames, topicGroups, lessonPath } from '../topics'
@@ -483,5 +483,47 @@ describe('generate', () => {
   test('worked fixture sanity: the bad lesson really fails a check', () => {
     expect(worked(1, 2, 4).kind).toBe('worked')
     expect(badLesson(1).blocks[3]).toMatchObject({ answer: '5/4' })
+  })
+})
+
+describe('selecting topics and running one generator at a time', () => {
+  const all = topicGroups()
+  let root: string
+  beforeEach(() => void (root = mkdtempSync(join(tmpdir(), 'teach-lock-'))))
+  afterEach(() => rmSync(root, { recursive: true, force: true }))
+
+  test('--from-grade and --to-grade select a range of grades, --grade one grade, --topic one name, --samples the five', () => {
+    const upper = selectGroups(all, { fromGrade: 7 })
+    expect(upper.length).toBeGreaterThan(100)
+    expect(upper.every((g) => g.grade >= 7 && g.grade <= 12)).toBe(true)
+    expect(new Set(upper.map((g) => g.grade))).toEqual(new Set([7, 8, 9, 10, 11, 12]))
+    expect(selectGroups(all, { fromGrade: 7, toGrade: 9 }).every((g) => g.grade >= 7 && g.grade <= 9)).toBe(true)
+    expect(selectGroups(all, { grade: 3 }).every((g) => g.grade === 3)).toBe(true)
+    expect(selectGroups(all, { grade: 11, topic: 'functions' })).toHaveLength(1)
+    expect(selectGroups(all, { samples: true })).toHaveLength(5)
+    // the pitch topics of Grades 10 and 11 stay first in the order of the list
+    expect(upper.slice(0, 2).map((g) => [g.grade, g.baseName])).toEqual([[10, 'Trigonometry'], [11, 'Functions']])
+    expect(selectGroups(all, { fromGrade: 7 }).some((g) => g.grade < 7)).toBe(false)
+  })
+
+  test('a second generator on the same worktree is refused; a stale lock is taken over; the lock is given back', () => {
+    const release = acquireLock(root, 4242, (pid) => pid === 4242)
+    expect(readFileSync(join(root, 'content/lessons/.generate.lock'), 'utf8').trim()).toBe('4242')
+    expect(() => acquireLock(root, 5555, (pid) => pid === 4242)).toThrow(/another generator is running on this worktree \(process 4242\)/)
+    release()
+    expect(existsSync(join(root, 'content/lessons/.generate.lock'))).toBe(false)
+    // a lock left by a process that is gone is stale
+    acquireLock(root, 4242, () => true)
+    const second = acquireLock(root, 5555, () => false)
+    expect(readFileSync(join(root, 'content/lessons/.generate.lock'), 'utf8').trim()).toBe('5555')
+    second()
+    expect(existsSync(join(root, 'content/lessons/.generate.lock'))).toBe(false)
+  })
+
+  test('releasing a lock that someone else took over does not remove theirs', () => {
+    const first = acquireLock(root, 1111, () => false)
+    acquireLock(root, 2222, () => false)
+    first()
+    expect(readFileSync(join(root, 'content/lessons/.generate.lock'), 'utf8').trim()).toBe('2222')
   })
 })

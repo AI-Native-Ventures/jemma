@@ -547,6 +547,51 @@ export class Generator {
 
 // ---- the command line --------------------------------------------------------------------------------------------------------------
 
+/** Which topic groups a command line asks for: one grade, a range of grades, one topic, or the five samples. */
+export function selectGroups(all: TopicGroup[], o: { grade?: number; fromGrade?: number; toGrade?: number; topic?: string; samples?: boolean }): TopicGroup[] {
+  if (o.samples) return SAMPLE_TOPICS.map((t) => all.find((g) => g.grade === t.grade && g.baseName === t.baseName)).filter((g): g is TopicGroup => !!g)
+  return all.filter(
+    (g) =>
+      (o.grade === undefined || g.grade === o.grade) &&
+      (o.fromGrade === undefined || g.grade >= o.fromGrade) &&
+      (o.toGrade === undefined || g.grade <= o.toGrade) &&
+      (o.topic === undefined || g.baseName.toLowerCase() === o.topic.toLowerCase()),
+  )
+}
+
+const processAlive = (pid: number): boolean => {
+  try {
+    process.kill(pid, 0)
+    return true
+  } catch (e) {
+    return (e as NodeJS.ErrnoException).code === 'EPERM'
+  }
+}
+
+/**
+ * Only one generator may run on a worktree at a time: two would share the fail list and the progress files. The lock is a file with the process id of
+ * the generator that holds it; a lock whose process is gone is stale and is taken over. Returns the function that gives the lock back.
+ */
+export function acquireLock(root: string, pid = process.pid, alive: (pid: number) => boolean = processAlive): () => void {
+  const file = join(root, 'content/lessons/.generate.lock')
+  const holder = Number(readFileSafe(file)?.trim())
+  if (Number.isInteger(holder) && holder > 0 && holder !== pid && alive(holder)) {
+    throw new Error(`another generator is running on this worktree (process ${holder}): only one may run at a time. Stop it first, or wait for it to finish.`)
+  }
+  writeAtomic(file, `${pid}\n`)
+  return () => {
+    if (Number(readFileSafe(file)?.trim()) === pid) rmSync(file, { force: true })
+  }
+}
+
+const readFileSafe = (file: string): string | null => {
+  try {
+    return readFileSync(file, 'utf8')
+  } catch {
+    return null
+  }
+}
+
 /** The ledger as text: per model, then per kind of call, with tokens (in, cached, out), dollars and seconds. */
 export function reportLines(records: LedgerRecord[]): string[] {
   const line = (name: string, s: { calls: number; avgSeconds: number; tokensIn: number; tokensCached: number; tokensOut: number; tokensReasoning: number; usd: number }, extra = '') =>
@@ -563,6 +608,8 @@ export async function main(argv = process.argv.slice(2), env: Record<string, str
     args: argv,
     options: {
       grade: { type: 'string' },
+      'from-grade': { type: 'string' },
+      'to-grade': { type: 'string' },
       topic: { type: 'string' },
       samples: { type: 'boolean' },
       concurrency: { type: 'string' },
@@ -590,11 +637,14 @@ export async function main(argv = process.argv.slice(2), env: Record<string, str
     return n
   }
   const all = topicGroups()
-  const grade = number('grade', values.grade, 1)
-  const groups = values.samples
-    ? SAMPLE_TOPICS.map((t) => all.find((g) => g.grade === t.grade && g.baseName === t.baseName)!).filter(Boolean)
-    : all.filter((g) => (grade === undefined || g.grade === grade) && (values.topic === undefined || g.baseName.toLowerCase() === values.topic.toLowerCase()))
-  if (groups.length === 0) throw new Error(`no topic matches --grade ${values.grade ?? '*'} --topic ${values.topic ?? '*'}`)
+  const groups = selectGroups(all, {
+    grade: number('grade', values.grade, 1),
+    fromGrade: number('from-grade', values['from-grade'], 1),
+    toGrade: number('to-grade', values['to-grade'], 1),
+    topic: values.topic,
+    samples: values.samples,
+  })
+  if (groups.length === 0) throw new Error(`no topic matches --grade ${values.grade ?? '*'} --from-grade ${values['from-grade'] ?? '*'} --to-grade ${values['to-grade'] ?? '*'} --topic ${values.topic ?? '*'}`)
   if (values['dry-run']) {
     const names = topicFileNames(all)
     for (const g of groups) console.log(lessonPath(g, names.get(g)!))
@@ -629,8 +679,10 @@ export async function main(argv = process.argv.slice(2), env: Record<string, str
     console.log('Stopping after the topics in progress finish (press Ctrl-C again to stop now).')
     gen.requestStop()
   })
-  console.log(`backend ${backend}, models ${gen.models().join(', ')}`)
-  const summary = await gen.runAll(groups)
+  const release = acquireLock(REPO_ROOT)
+  process.on('exit', release)
+  console.log(`backend ${backend}, models ${gen.models().join(', ')}, ${groups.length} topics`)
+  const summary = await gen.runAll(groups).finally(release)
   console.log(JSON.stringify(summary))
   for (const l of reportLines(readLedger(REPO_ROOT))) console.log(l)
 }

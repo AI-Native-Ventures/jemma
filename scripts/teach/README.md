@@ -23,7 +23,7 @@ TEACH_BACKEND=openrouter TEACH_OPENROUTER_KEY_FILE=/path/to/key.txt pnpm teach:g
 
 Prompts are built with the fixed text first (rules, schema, the topic's reference, identical for every lesson of a topic) and the part that changes last (the lesson, its objectives, the problems to fix), so a provider's prompt cache can serve the front.
 
-Options: `--samples` (the five sample topics), `--max-usd N`, `--grade N`, `--topic "<name without (Term N)>"`, `--concurrency 4`, `--limit-calls N` (stops when the ledger holds N calls), `--max-lessons N` (at most N lessons a topic), `--retry-failed`, `--max-wait-min 120` (the longest the run waits for models that are out of free quota), `--timeout-sec 300`.
+Options: `--samples` (the five sample topics), `--from-grade N` and `--to-grade N` (a range of grades), `--max-usd N` (the whole ledger, every run), `--max-run-usd N` (this run only), `--grade N`, `--topic "<name without (Term N)>"`, `--concurrency 4`, `--limit-calls N` (stops when the ledger holds N calls), `--max-lessons N` (at most N lessons a topic), `--retry-failed`, `--max-wait-min 120` (the longest the run waits for models that are out of free quota), `--timeout-sec 300`.
 
 `TEACH_MODELS` (a comma list such as `opencode/hy4-flash-free,opencode/beam-free`) replaces the ranked default chain in `chain.ts`. Only `opencode/<name>-free` models are accepted.
 
