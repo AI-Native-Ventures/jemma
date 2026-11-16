@@ -3,7 +3,7 @@
 import { PendingButton } from '@/components/ui/Button'
 import { IconLabel } from '@/components/ui/IconLabel'
 import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useState, useTransition, type ReactNode } from 'react'
 import { startPractice } from './actions'
 
 export type Choice = { topicId?: string | null; topicName: string }
@@ -44,13 +44,15 @@ export function PractiseButton({ choice, label = 'Practise', size = 'small', onM
 
 /**
  * One row of a list on "My maths" or on the home: a name, a line or two under it (a reason, a stage, the learner's own count), and a Practise
- * button. `locked` hides the button (tonight's lesson waits, or a practice is being written).
+ * button. `locked` hides the button (tonight's lesson waits, or a practice is being written). `lead` is something that starts the row (a part page
+ * puts the topic's progress circle there).
  */
-export function PracticeRow({ choice, name, lines, locked }: { choice: Choice; name: string; lines: string[]; locked: boolean }) {
+export function PracticeRow({ choice, name, lines, locked, lead }: { choice: Choice; name: string; lines: string[]; locked: boolean; lead?: ReactNode }) {
   const [message, setMessage] = useState<string | null>(null)
   return (
     <li className="flex flex-col gap-1 border-t border-soft py-3 first:border-t-0">
       <div className="flex items-center gap-3">
+        {lead}
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="text-[17px] leading-[1.3] font-semibold text-pretty">{name}</span>
           {lines.map((line) => (

@@ -1,19 +1,26 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useRef, useState } from 'react'
+import { useRef, useState, useTransition } from 'react'
 
 const HOLD_MS = 2000
 
-/** Press and hold for 2 seconds so little fingers don't open the grown-up view by accident. */
-export function HoldToOpen({ href }: { href: string }) {
+/**
+ * Press and hold for 2 seconds so little fingers don't open the grown-up view by accident. Then it goes to `href`, or (in a demo copy, where the phone
+ * has to become the made-up grown-up's first) it runs `action`, a server action that signs in and opens the page itself.
+ */
+export function HoldToOpen({ href, action }: { href?: string; action?: () => Promise<void> }) {
   const router = useRouter()
+  const [, startTransition] = useTransition()
   const [holding, setHolding] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const start = () => {
     if (timer.current) return
     setHolding(true)
-    timer.current = setTimeout(() => router.push(href), HOLD_MS)
+    timer.current = setTimeout(() => {
+      if (action) startTransition(async () => void (await action()))
+      else if (href) router.push(href)
+    }, HOLD_MS)
   }
   const stop = () => {
     if (timer.current) clearTimeout(timer.current)

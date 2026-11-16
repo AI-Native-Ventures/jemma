@@ -75,7 +75,7 @@ test.describe('a learner can always practise', () => {
     test.skip(testInfo.project.name !== 'phone', 'the learner screens are phone screens')
     const sb = await sandbox(page, 'session_done')
     await page.goto('/k')
-    await check(page.getByRole('heading', { level: 1, name: /^Nothing new tonight, Amina! Your next lesson is on \w+day\.$/ })).toBeVisible()
+    await check(page.getByRole('heading', { level: 1, name: /^No new lesson from your class tonight\. Your next lesson is on \w+day\.$/ })).toBeVisible()
     await expect(page.getByText('Jemma is getting your next lesson ready.')).toHaveCount(0)
     await expect(page.getByText('Keep a fixed gap fixed')).toHaveCount(0)
     await expect(page.getByText('Suggested for you')).toBeVisible()
@@ -148,7 +148,7 @@ test.describe('a learner can always practise', () => {
     if (classes.length) await db.from('curriculum_maps').update({ status: 'draft' }).in('class_id', classes)
 
     await page.goto('/k')
-    await check(page.getByRole('heading', { level: 1, name: 'Nothing new tonight, Amina.' })).toBeVisible()
+    await check(page.getByRole('heading', { level: 1, name: 'No new lesson from your class tonight.' })).toBeVisible()
     await expect(page.getByText('Practice starts after your teacher marks a test.')).toBeVisible()
     await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(0)
     await expect(page.getByRole('link', { name: 'See my maths' })).toBeVisible()

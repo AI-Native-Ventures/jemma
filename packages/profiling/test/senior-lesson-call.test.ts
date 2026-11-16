@@ -68,11 +68,22 @@ describe('the system text', () => {
     expect(seen.system).toContain('`point` (`(2; -3)`)')
   })
 
+  // P127 (16 Nov 2026): the senior prompt gained the maths notation rule on purpose, so a senior lesson is written fresh by the model (no recorded answer).
+  // The Grade 6 baseline above did not move: its pins are in baseline-lesson-call.test.ts.
+  test('a Grade 10 class: the senior prompt tells the writer to state the maths as an expression or an equation, not in words', async () => {
+    const seen = await askedFor({ subject: 'Mathematics', grade: 10, country: 'ZA', family: 'algebra' }, PROMPT)
+    expect(seen.system).toContain('Write the maths of every question as an expression or an equation in plain maths notation, never in words.')
+    expect(seen.system).toContain('`Solve: x/2 + 6 = 10`')
+    expect(seen.system).toContain('Never describe the maths in words: `x over 2 plus 6 equals 10` is wrong.')
+    expect(seen.system.split(SCHEMA_INTRO)).toHaveLength(2)
+  })
+
   test('a Grade 4 class: no senior rule, the primary schema', async () => {
     const seen = await askedFor({ subject: 'Mathematics', grade: 4, country: 'ZA' }, PROMPT)
     expect(seen.system).toBe(`${renderPrompt('write_lesson', PROMPT, klass('Mathematics', 4, 'ZA'))}${SCHEMA_INTRO}${schemaText(PrimaryLessonSchema)}`)
     expect(seen.system).toContain('for a Grade 4 child')
     expect(seen.system).not.toContain('`expression`')
+    expect(seen.system).not.toContain('maths notation')
   })
 })
 

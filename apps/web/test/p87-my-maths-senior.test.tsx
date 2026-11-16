@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import { buildMyMaths } from '@jemma/profiling/logic'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MyMathsView } from '../lib/data/p80'
+import { textWithoutKey } from './p122-key'
 
 // P87, decision 5: the two "My maths" screens of a Grade 10 learner, drawn from the list `buildMyMaths` makes for a senior class with a map.
 // "All of Mathematics" lists the parts of the learner's own map, and each of them opens. The data, the router and the actions are doubles.
@@ -15,6 +16,8 @@ vi.mock('next/navigation', () => ({
 }))
 vi.mock('../app/k/actions', () => ({ startPractice: vi.fn(async () => ({ ok: true })), retryPractice: vi.fn(async () => ({ ok: true })) }))
 vi.mock('../lib/data/p80', () => ({ getMyMaths: async () => state.view }))
+// P120: "Your practice" on My maths reads the learner's finished practices; this test has none.
+vi.mock('../lib/data/p120', () => ({ getPastPractice: async () => [] }))
 // These tests are the "My school" screens (P95 added the "My own" ones, tested in p95-my-maths-own.test.tsx).
 vi.mock('../lib/data/own-screens', () => ({ getScreenShape: async () => ({ workspace: 'school' }) }))
 vi.mock('../app/k/own-actions', () => ({ setWorkspace: vi.fn(async () => ({ ok: true })), addMyGrade: vi.fn(async () => ({ ok: true })) }))
@@ -60,7 +63,8 @@ describe('/k/maths for a Grade 10 learner with a map', () => {
     const all = within(screen.getByRole('region', { name: 'All of Mathematics' }))
     const links = all.getAllByRole('link')
     expect(links.map((l) => l.getAttribute('href'))).toEqual(['/k/maths/algebra', '/k/maths/functions', '/k/maths/trigonometry', '/k/maths/analytical_geometry'])
-    expect(links.map((l) => l.textContent)).toEqual(['Algebra1 of 1 right', 'FunctionsNo score yet', 'TrigonometryNo score yet', 'Analytical geometryNo score yet'])
+    // each part is its circles and one line (P122): algebra has two topics and one of them is 1 of 1
+    expect(links.map((l) => l.textContent)).toEqual(['Algebra1 of 2 secure', 'FunctionsNot started yet', 'TrigonometryNot started yet', 'Analytical geometryNot started yet'])
   })
 
   it('has no "Whole numbers", no "Fractions", no "Decimals" with "No score yet"', async () => {
@@ -71,7 +75,7 @@ describe('/k/maths for a Grade 10 learner with a map', () => {
 
   it('still never says a percent, a grade, a rank, a strand or a subtopic', async () => {
     await page()
-    expect(document.body.textContent ?? '').not.toMatch(/%|percent|grade|rank|classmate|class average|strand|subtopic|out of/i)
+    expect(textWithoutKey()).not.toMatch(/%|percent|grade|rank|classmate|class average|strand|subtopic|out of/i)
   })
 })
 

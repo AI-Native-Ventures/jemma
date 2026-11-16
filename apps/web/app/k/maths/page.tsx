@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getScreenShape } from '@/lib/data/own-screens'
+import { getPastPractice } from '@/lib/data/p120'
 import { getMyMaths } from '@/lib/data/p80'
 import { ADD_A_GRADE, higherGradeLine, noTopicsLine } from '@/lib/own-grades'
 import { PracticeRow } from '../Practise'
@@ -8,9 +9,11 @@ import { AppHeader } from '../session/_parts/AppHeader'
 import { ChevronRight } from '../session/_parts/Chips'
 import { Diamond } from '../session/_parts/Gems'
 import { OwnWorkLink } from '../OwnWorkLink'
+import { PastPractice } from '../PastPractice'
 import { WorkspaceSwitch } from '../WorkspaceSwitch'
 import { GradeChips } from './GradeChips'
-import { gapLine, lockOf, rowScore } from './format'
+import { gapLine, levelOfScore, lockOf, progressLabel, rowScore, summaryLine, summaryOf } from './format'
+import { ProgressDots, ProgressLegend } from './ProgressDots'
 
 export const metadata: Metadata = { title: 'My maths' }
 export const dynamic = 'force-dynamic'
@@ -18,8 +21,10 @@ export const dynamic = 'force-dynamic'
 const list = 'm-0 flex list-none flex-col rounded-20 border border-line bg-card px-4 py-1 p-0'
 
 /**
- * "My maths": the learner's own count in each part of Mathematics ("5 of 6 right", never a percent), what Jemma suggests, the learner's gaps
- * and a way into each part. The count is the learner's own, from class tests the teacher has shared and from their own practices.
+ * "My maths": a row of circles for each part of Mathematics (one circle for each topic of the part, filled by the learner's own score, drawn like the
+ * teacher's Long view, P122) with one short line under them ("2 of 10 secure · 3 started"), what Jemma suggests, the learner's gaps and a way into
+ * each part. A part the map has no topic for keeps its count in words ("5 of 6 right", never a percent). The count is the learner's own, from class
+ * tests the teacher has shared and from their own practices.
  * In My own the switch is on top and, under it, a chip for each class of the learner's private workspace (the CAPS class of a grade, and a curriculum
  * of the learner's own): the page is that one class's map (the address carries it, `?class=<id>`; the old `?grade=7` means the CAPS class of that
  * grade), with one plain line above a class of a grade higher than the learner's own and "No topics yet" for a class with no map.
@@ -27,7 +32,7 @@ const list = 'm-0 flex list-none flex-col rounded-20 border border-line bg-card 
 export default async function MyMathsPage({ searchParams }: { searchParams?: Promise<{ class?: string | string[]; grade?: string | string[] }> } = {}) {
   const shape = await getScreenShape((await searchParams) ?? {})
   const own = shape.workspace === 'own' ? shape : null
-  const { firstName, maths, status } = await getMyMaths(own?.picked?.classId)
+  const [{ firstName, maths, status }, past] = await Promise.all([getMyMaths(own?.picked?.classId), getPastPractice()])
   const lock = lockOf(status)
   const locked = lock !== null
   const grade = own?.picked?.grade ?? null
@@ -81,21 +86,30 @@ export default async function MyMathsPage({ searchParams }: { searchParams?: Pro
           </section>
         ) : null}
 
+        <PastPractice rows={past} />
+
         {empty ? null : (
           <section aria-labelledby="all" className="flex flex-col gap-2.5">
             <h2 id="all" className="m-0 text-[17px] font-bold">All of {maths.subject}</h2>
+            {topicCount > 0 ? <ProgressLegend /> : null}
             <ul className={list}>
-              {maths.strands.map((s) => (
-                <li key={s.family} className="border-t border-soft first:border-t-0">
-                  <Link href={toPart(s.family)} className="flex min-h-[64px] items-center gap-3 py-3 text-ink no-underline">
-                    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                      <span className="text-[17px] leading-[1.3] font-semibold">{s.label}</span>
-                      <span className="text-[14px] text-body">{rowScore(s.score)}</span>
-                    </span>
-                    <ChevronRight />
-                  </Link>
-                </li>
-              ))}
+              {maths.strands.map((s) => {
+                // One circle for each topic of the part in map order. A part with no topic in the map keeps its count in words.
+                const levels = s.topics.map((t) => levelOfScore(t.score))
+                const summary = summaryOf(levels)
+                return (
+                  <li key={s.family} className="border-t border-soft first:border-t-0">
+                    <Link href={toPart(s.family)} className="flex min-h-[64px] items-center gap-3 py-3 text-ink no-underline">
+                      <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+                        <span className="text-[17px] leading-[1.3] font-semibold">{s.label}</span>
+                        {levels.length > 0 ? <ProgressDots levels={levels} label={progressLabel(s.label, summary)} /> : null}
+                        <span className="text-[14px] text-body">{levels.length > 0 ? summaryLine(summary) : rowScore(s.score)}</span>
+                      </span>
+                      <ChevronRight />
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           </section>
         )}

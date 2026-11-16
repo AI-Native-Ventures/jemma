@@ -1,7 +1,7 @@
 // The pure pieces of the two "My maths" screens (/k/maths and /k/maths/[family]). No database, no clock. The screens say "Mathematics", the
 // part's label and the topic's name: never "strand" and never "subtopic".
 
-import { scoreText, type MyMathsStrand, type MyMathsTopic, type Score } from '@jemma/profiling/logic'
+import { scoreText, STRENGTH_FROM, STRUGGLE_BELOW, type MyMathsStrand, type MyMathsTopic, type Score } from '@jemma/profiling/logic'
 
 export type Stage = 'new' | 'practising' | 'fixed'
 
@@ -16,6 +16,49 @@ export const topicLine = (topic: Pick<MyMathsTopic, 'gap'>): string | null => (t
 
 /** What a row of "Your gaps" says: its stage and its score. */
 export const gapLine = (gap: { stage: Stage; score: Score }): string => `${stageWords(gap.stage)} \u00b7 ${rowScore(gap.score)}`
+
+/**
+ * The circle of a topic (P122), in the teacher's Long view language: `full` from 80 percent, `half` from 50 to 79, `empty` below 50, `none` when
+ * nothing was asked. Made from the same `{ right, asked }` the rows say ("3 of 5 right"): school marks and the learner's practice together. The
+ * thresholds are the Long view's own (`STRENGTH_FROM`, `STRUGGLE_BELOW`), compared without a division so 4 of 5 is exactly 80.
+ */
+export type Level = 'full' | 'half' | 'empty' | 'none'
+export function levelOfScore(score: Score): Level {
+  if (score.asked <= 0) return 'none'
+  if (score.right * 100 >= STRENGTH_FROM * score.asked) return 'full'
+  if (score.right * 100 >= STRUGGLE_BELOW * score.asked) return 'half'
+  return 'empty'
+}
+
+/** What each circle means, in the legend's words (the one place the screen names the 80). Never shown beside a learner's own count. */
+export const LEGEND: { level: Level; text: string }[] = [
+  { level: 'full', text: '80% or more' },
+  { level: 'half', text: '50 to 79' },
+  { level: 'empty', text: 'below 50' },
+  { level: 'none', text: 'not tried' },
+]
+
+/** What a circle says to a screen reader: the same four meanings, in words. */
+export const levelWords = (level: Level): string =>
+  ({ full: '80 percent or more', half: '50 to 79 percent', empty: 'below 50 percent', none: 'not tried yet' })[level]
+
+/** How a part stands: `secure` topics at 80 percent or more, `started` topics tried but below that, `untried` topics with no answer. */
+export type PartSummary = { total: number; secure: number; started: number; untried: number }
+export function summaryOf(levels: Level[]): PartSummary {
+  const count = (l: Level) => levels.filter((x) => x === l).length
+  const untried = count('none')
+  return { total: levels.length, secure: count('full'), started: levels.length - count('full') - untried, untried }
+}
+
+/** The one short line under a part's circles: "2 of 10 secure \u00b7 3 started", or "Not started yet" when no topic was tried. */
+export function summaryLine(s: PartSummary): string {
+  if (s.secure === 0 && s.started === 0) return 'Not started yet'
+  return s.started === 0 ? `${s.secure} of ${s.total} secure` : `${s.secure} of ${s.total} secure \u00b7 ${s.started} started`
+}
+
+/** What a screen reader says for the circles of a part: "Algebra: 2 of 10 topics at 80 percent or more, 3 started, 5 not tried". */
+export const progressLabel = (name: string, s: PartSummary): string =>
+  `${name}: ${s.secure} of ${s.total} topics at 80 percent or more, ${s.started} started, ${s.untried} not tried`
 
 export const NO_MAP_LINE = "Your teacher has not set up this year's topics yet."
 

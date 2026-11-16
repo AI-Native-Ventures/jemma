@@ -75,7 +75,9 @@ const practiceEvents = async (childId: string) =>
 // "Percentages" is a topic of the Fractions part, so the word is looked for as a whole word ("63 percent"), and the sign "%" as before.
 const NEVER = /%|\bpercent\b|\bgrade\b|\brank\b|classmate|class average|strand|subtopic/i
 /** The words of the screen itself. The laptop's sidebar (outside <main>) names the learner's class, "Grade 6 · Hillview Primary", which is not a mark. */
-const screenText = (page: Page) => page.locator('main').first().innerText()
+const screenText = async (page: Page) => (await page.locator('main').first().innerText()).replace(KEY_80, '')
+/** The one-line key of the progress circles (P122) is the only place My maths names the 80: "80% or more". It is left out of the words looked at above. */
+const KEY_80 = '80% or more'
 
 test.describe('My maths', () => {
   test('Amina, after the marked and shared test, sees her counts, opens Fractions, taps Practise on a topic and lands on "Jemma is writing your practice."', async ({ page }, testInfo) => {
@@ -91,13 +93,15 @@ test.describe('My maths', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'Your gaps' })).toBeVisible()
     await expect(page.getByRole('heading', { level: 2, name: 'All of Mathematics' })).toBeVisible()
 
-    // her own count in each part: "5 of 6 right" or "No score yet", never a percent
+    // each part is a circle for each topic with one line under them ("2 of 10 secure \u00b7 3 started", or "Not started yet"); a part the map has no topic of keeps "No score yet"
+    await expect(page.locator('[data-legend]')).toHaveCount(1)
     const all = page.getByRole('region', { name: 'All of Mathematics' })
     await expect(all.getByRole('link')).toHaveCount(6)
     for (const label of ['Whole numbers', 'Fractions', 'Decimals', 'Shapes and space', 'Measurement', 'Data handling']) {
       await expect(all.getByRole('link', { name: new RegExp(label) })).toBeVisible()
     }
-    await expect(all.getByRole('link', { name: /Fractions/ })).toContainText(/\d+ of \d+ right/)
+    await expect(all.getByRole('link', { name: /Fractions/ })).toContainText(/of \d+ secure|Not started yet/)
+    expect(await all.getByRole('link', { name: /Fractions/ }).locator('svg[data-dot]').count()).toBeGreaterThan(0)
     expect(await screenText(page)).not.toMatch(NEVER)
     await noSidewaysScroll(page)
     await proof(page, 'my-maths')
