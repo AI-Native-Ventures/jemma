@@ -44,9 +44,7 @@ export function reviewTour(questions: Question[], typed: Typed): MissedQuestion[
 /** How many were right, of how many. */
 export const tourScore = (review: MissedQuestion[]): { right: number; total: number } => ({ right: review.filter((m) => m.correct).length, total: review.length })
 
-type Store = Pick<Storage, 'getItem' | 'setItem'>
-
-export function saveTourResult(store: Store, results: boolean[]): void {
+export function saveTourResult(store: Pick<Storage, 'setItem'>, results: boolean[]): void {
   try {
     store.setItem(TOUR_RESULT_KEY, JSON.stringify(results))
   } catch {
@@ -54,14 +52,17 @@ export function saveTourResult(store: Store, results: boolean[]): void {
   }
 }
 
-/** The saved result of the learner, or the default when there is none or it is not five answers. */
-export function readTourResult(store: Store): boolean[] {
+/** The result of the lesson finished in this browser tab: five answers, or null when the lesson has not been finished (or what is saved is not five answers). */
+export function savedTourResult(store: Pick<Storage, 'getItem'>): boolean[] | null {
   try {
     const raw = store.getItem(TOUR_RESULT_KEY)
     const parsed: unknown = raw === null ? null : JSON.parse(raw)
     if (Array.isArray(parsed) && parsed.length === DEFAULT_YOU.length && parsed.every((p) => typeof p === 'boolean')) return parsed as boolean[]
   } catch {
-    // not readable: the default
+    // not readable: no result
   }
-  return DEFAULT_YOU
+  return null
 }
+
+/** The saved result of the learner, or the default when there is none. */
+export const readTourResult = (store: Pick<Storage, 'getItem'>): boolean[] => savedTourResult(store) ?? DEFAULT_YOU

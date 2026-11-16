@@ -1,5 +1,5 @@
 import { FractionText } from '../../k/session/_parts/Frac'
-import { countText, sumOf, totalOf, type TokenRow, type TourClass } from '../data/class'
+import { countText, sumOf, totalOf, type TokenJob, type TourClass } from '../data/class'
 
 const card = 'flex flex-col gap-4 rounded-[22px] border border-line bg-card p-5'
 
@@ -53,12 +53,13 @@ export function AnalysisCard({ analysis }: { analysis: TourClass['analysis'] }) 
 
 const cell = 'py-2 text-right whitespace-nowrap tabular-nums'
 
-function Rows({ head, rows, total }: { head: string; rows: ({ label: string } & TokenRow)[]; total: TokenRow }) {
+/** The jobs, one row each (a job with no model has 0 and says why under its name), and the sum of them. */
+function Rows({ rows, total }: { rows: TokenJob[]; total: TokenJob | { input: number; output: number } }) {
   return (
     <table className="w-full border-collapse text-[14px]">
       <thead>
         <tr className="text-[12px] font-semibold text-body">
-          <th scope="col" className="py-1 text-left font-semibold">{head}</th>
+          <th scope="col" className="py-1 text-left font-semibold">Job</th>
           <th scope="col" className="py-1 text-right font-semibold">Read</th>
           <th scope="col" className="py-1 pl-3 text-right font-semibold">Written</th>
           <th scope="col" className="py-1 pl-3 text-right font-semibold">Total</th>
@@ -66,8 +67,11 @@ function Rows({ head, rows, total }: { head: string; rows: ({ label: string } & 
       </thead>
       <tbody>
         {rows.map((r) => (
-          <tr key={r.label} className="border-t border-soft">
-            <th scope="row" className="min-w-0 py-2 text-left font-semibold">{r.label}</th>
+          <tr key={r.key} className="border-t border-soft align-top">
+            <th scope="row" className="min-w-0 py-2 text-left font-semibold">
+              {r.label}
+              {r.note ? <span className="block text-[12px] leading-[1.35] font-normal text-body">{r.note}</span> : null}
+            </th>
             <td className={cell}>{countText(r.input)}</td>
             <td className={`${cell} pl-3`}>{countText(r.output)}</td>
             <td className={`${cell} pl-3 font-semibold`}>{countText(totalOf(r))}</td>
@@ -85,26 +89,32 @@ function Rows({ head, rows, total }: { head: string; rows: ({ label: string } & 
 }
 
 /**
- * The tokens the model read and wrote for this topic, in all, by job and by learner. It draws whatever rows `tokens` of the class file holds and adds
- * them up itself, so a real run's counts need no change here.
+ * The tokens the model read and wrote for one practice on this topic: the model, the total, the jobs, and the whole class worked out from that one
+ * practice (the learners who practised times its total). It draws whatever rows `tokens` of the class file holds and adds them up itself.
  */
-export function TokensCard({ tokens }: { tokens: TourClass['tokens'] }) {
-  const jobs = tokens.jobs
-  const learners = tokens.perLearner.map((l) => ({ ...l, label: l.name }))
-  const jobTotal = sumOf(jobs)
-  const learnerTotal = sumOf(learners)
+export function TokensCard({ tokens, practised }: { tokens: TourClass['tokens']; practised: number }) {
+  const sum = sumOf(tokens.jobs)
+  const one = totalOf(sum)
   return (
     <section aria-labelledby="tokens" className={card}>
       <div className="flex flex-col gap-1">
         <h2 id="tokens" className="m-0 text-[20px] leading-[1.2] font-bold">Tokens spent</h2>
-        <p className="m-0 flex items-baseline gap-2">
-          <span data-tokens-total="true" className="text-[34px] leading-[1.1] font-bold tabular-nums">{countText(totalOf(jobTotal))}</span>
-          <span className="text-[15px] text-body">tokens for this topic</span>
+        <p className="m-0 flex flex-wrap items-baseline gap-x-2">
+          <span data-tokens-total="true" className="text-[34px] leading-[1.1] font-bold tabular-nums">{countText(one)}</span>
+          <span className="text-[15px] text-body">tokens for one learner&apos;s practice</span>
         </p>
-        <p className="m-0 text-[14px] text-body">{countText(jobTotal.input)} read and {countText(jobTotal.output)} written by the model.</p>
+        <p className="m-0 text-[14px] text-body">{countText(sum.input)} read and {countText(sum.output)} written by the model.</p>
+        <p data-model="true" className="m-0 text-[14px] text-body">
+          Model: <span className="font-semibold text-ink">{tokens.model.name}</span> on {tokens.model.provider}. Counted for one real practice on this topic.
+        </p>
       </div>
-      <Rows head="Job" rows={jobs} total={jobTotal} />
-      {learners.length > 0 ? <Rows head="Learner" rows={learners} total={learnerTotal} /> : null}
+      <Rows rows={tokens.jobs} total={sum} />
+      <div className="flex flex-col gap-1.5 rounded-14 bg-soft-2 px-3.5 py-3">
+        <p className="m-0 text-[15px] leading-[1.45] font-semibold">{tokens.perLearner}</p>
+        <p data-class-total="true" className="m-0 text-[14px] leading-[1.5] text-body">
+          {practised} learners practised, so the class is {practised} &times; {countText(one)} = <strong className="font-bold text-ink">{countText(practised * one)}</strong> tokens, worked out from that one real call.
+        </p>
+      </div>
     </section>
   )
 }

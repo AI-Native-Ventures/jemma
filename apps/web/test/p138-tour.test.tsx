@@ -8,7 +8,7 @@ import { isPublicPath } from '../lib/public-paths'
 import { TOUR_CLASS } from '../app/tour/data/class'
 import { TOUR_LESSON, TOUR_QUESTIONS, tourQuestionsForChild } from '../app/tour/data/lesson'
 import { TOUR_PARTS, findPart, findTopic } from '../app/tour/data/topics'
-import { DEFAULT_YOU, markTourAnswer, readTourResult, reviewTour, saveTourResult, tourScore, TOUR_RESULT_KEY } from '../app/tour/outcome'
+import { DEFAULT_YOU, markTourAnswer, readTourResult, reviewTour, saveTourResult, savedTourResult, tourScore, TOUR_RESULT_KEY } from '../app/tour/outcome'
 import { TourSession } from '../app/tour/TourSession'
 import TourHome from '../app/tour/page'
 import TourPartPage from '../app/tour/[part]/page'
@@ -140,6 +140,16 @@ describe('the answer and the skips', () => {
     expect(readTourResult(storage)).toEqual(DEFAULT_YOU)
     store.set(TOUR_RESULT_KEY, '[true]')
     expect(readTourResult(storage)).toEqual(DEFAULT_YOU)
+  })
+
+  it('tells a lesson done in this tab from none: the saved result is null until the lesson has been finished', () => {
+    const store = new Map<string, string>()
+    const storage = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v) }
+    expect(savedTourResult(storage)).toBeNull()
+    saveTourResult(storage, [false, false, false, false, false])
+    expect(savedTourResult(storage)).toEqual([false, false, false, false, false])
+    store.set(TOUR_RESULT_KEY, '[true,"x",false,false,false]')
+    expect(savedTourResult(storage)).toBeNull()
   })
 })
 
@@ -276,6 +286,80 @@ describe('the learner pages', () => {
   })
 })
 
+describe('the learner pages show the score of a finished lesson', () => {
+  beforeEach(() => sessionStorage.clear())
+  afterEach(() => cleanup())
+
+  const algebraRow = () => screen.getByRole('link', { name: /^Algebra/ })
+
+  it('the topic list says Not started yet for every part until the lesson is done', async () => {
+    render(<TourHome />)
+    await act(async () => {})
+    expect(screen.getAllByText('Not started yet')).toHaveLength(TOUR_PARTS.length)
+  })
+
+  it('after a finished lesson the Algebra row of the list shows one topic started, and the other parts stay as they were', async () => {
+    saveTourResult(sessionStorage, [true, false, false, false, false])
+    render(<TourHome />)
+    await act(async () => {})
+    expect(algebraRow().textContent).toContain('0 of 3 secure \u00b7 1 started')
+    expect(algebraRow().querySelector('[data-dot="empty"]')).not.toBeNull()
+    expect(algebraRow().querySelectorAll('[data-dot]')).toHaveLength(3)
+    expect(screen.getAllByText('Not started yet')).toHaveLength(TOUR_PARTS.length - 1)
+  })
+
+  it('a lesson that went well fills the circle and counts the topic as secure', async () => {
+    saveTourResult(sessionStorage, [true, true, true, true, false])
+    render(<TourHome />)
+    await act(async () => {})
+    expect(algebraRow().textContent).toContain('1 of 3 secure')
+    expect(algebraRow().querySelector('[data-dot="full"]')).not.toBeNull()
+  })
+
+  it('the Algebra page shows the score on Equations and inequalities only, and the same score under the heading', async () => {
+    saveTourResult(sessionStorage, [true, false, false, false, false])
+    render(await TourPartPage({ params: Promise.resolve({ part: 'algebra' }) }))
+    await act(async () => {})
+    const equations = screen.getByRole('link', { name: /Equations and inequalities/ })
+    expect(equations.textContent).toContain('1 of 5 right')
+    expect(equations.querySelector('[data-dot="empty"]')).not.toBeNull()
+    expect(screen.getByText('Exponents and surds').closest('li')?.textContent).toContain('No score yet')
+    expect(screen.getByText('Number patterns').closest('li')?.textContent).toContain('No score yet')
+    expect(screen.getByRole('heading', { level: 1 }).parentElement?.textContent).toContain('1 of 5 right')
+    stayInTour()
+  })
+
+  it('another part has no score to show', async () => {
+    saveTourResult(sessionStorage, [true, false, false, false, false])
+    render(await TourPartPage({ params: Promise.resolve({ part: 'functions' }) }))
+    await act(async () => {})
+    expect(document.body.textContent).not.toContain('1 of 5 right')
+  })
+
+  it('the lesson itself writes the score the list then shows: five skips are 0 of 5', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      render(<TourSession />)
+      fireEvent.click(screen.getByRole('button', { name: /ready/i }))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      for (let n = 1; n <= 5; n++) {
+        fireEvent.click(screen.getByRole('button', { name: 'Skip' }))
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(1500)
+        })
+      }
+    } finally {
+      vi.useRealTimers()
+    }
+    cleanup()
+    render(await TourPartPage({ params: Promise.resolve({ part: 'algebra' }) }))
+    await act(async () => {})
+    expect(screen.getByRole('link', { name: /Equations and inequalities/ }).textContent).toContain('0 of 5 right')
+  })
+})
+
 describe('the teacher pages', () => {
   beforeEach(() => sessionStorage.clear())
   afterEach(() => cleanup())
@@ -310,9 +394,34 @@ describe('the teacher pages', () => {
     expect(['1', '2', '3', '4', '5'].map((n) => document.querySelector(`[data-column="${n}"]`)?.textContent)).toEqual(['4', '2', '7', '4', '3'])
     expect(screen.getByText('What Jemma sees in the class')).toBeTruthy()
     expect(screen.getByText('Fractions not cleared properly')).toBeTruthy()
-    const sum = [...TOUR_CLASS.tokens.jobs].reduce((n, j) => n + j.input + j.output, 0)
-    expect(document.querySelector('[data-tokens-total]')?.textContent?.replace(/\s/g, '')).toBe(String(sum))
+    expect(document.querySelector('[data-tokens-total]')?.textContent).toBe('19,642')
     stayInTour()
+  })
+
+  it('the tokens card has the real counts of one practice: the model, three labelled rows, and the class worked out from them', async () => {
+    render(await TourTeacherTopicPage({ params: Promise.resolve({ part: 'algebra', topic: 'equations' }) }))
+    const card = document.querySelector('section[aria-labelledby="tokens"]') as HTMLElement
+    expect(card.querySelector('[data-tokens-total]')?.textContent).toBe('19,642')
+    expect(card.textContent).toContain("tokens for one learner's practice")
+    // the model stays on the card
+    expect(card.querySelector('[data-model]')?.textContent).toContain('DeepSeek V4.1 Flash')
+    expect(card.querySelector('[data-model]')?.textContent).toContain('Cloudflare Workers AI')
+    // the three rows, with their counts
+    const row = (label: string) => within(card).getByRole('rowheader', { name: new RegExp(label) }).closest('tr') as HTMLElement
+    const cells = (tr: HTMLElement) => Array.from(tr.querySelectorAll('td')).map((td) => td.textContent)
+    expect(cells(row('Lesson and 15 questions'))).toEqual(['8,644', '10,998', '19,642'])
+    expect(cells(row('Marking the typed answers'))).toEqual(['0', '0', '0'])
+    expect(row('Marking the typed answers').textContent).toContain("Jemma's own marking code, no AI")
+    expect(cells(row("The teacher's AI analysis"))).toEqual(['0', '0', '0'])
+    expect(row("The teacher's AI analysis").textContent).toContain('Built from the notes the AI already wrote')
+    // no made-up learner by learner numbers any more
+    expect(card.querySelectorAll('tbody tr')).toHaveLength(4)
+    expect(card.textContent).toContain('About 19,600 tokens per learner practice (one lesson with its questions)')
+    // nine learners are listed, so the class is nine practices, worked out from the one real call
+    const class_ = card.querySelector('[data-class-total]')!
+    expect(class_.textContent).toContain('9 learners')
+    expect(class_.textContent).toContain('9 × 19,642 = 176,778')
+    expect(class_.textContent).toContain('worked out from that one real call')
   })
 
   it('shows the result of the lesson done in this tab in the tour learner row', async () => {
@@ -323,17 +432,15 @@ describe('the teacher pages', () => {
   })
 
   it('draws whatever token rows the class file holds, and adds them up', async () => {
-    const jobs = TOUR_CLASS.tokens.jobs
     const saved = JSON.stringify(TOUR_CLASS.tokens)
     TOUR_CLASS.tokens.jobs = [{ key: 'only', label: 'One job', input: 1200, output: 34 }]
-    TOUR_CLASS.tokens.perLearner = []
     try {
       render(await TourTeacherTopicPage({ params: Promise.resolve({ part: 'algebra', topic: 'equations' }) }))
-      expect(document.querySelector('[data-tokens-total]')?.textContent?.replace(/\s/g, '')).toBe('1234')
+      expect(document.querySelector('[data-tokens-total]')?.textContent).toBe('1,234')
       expect(screen.getByText('One job')).toBeTruthy()
+      expect(document.querySelector('[data-class-total]')?.textContent).toContain('9 \u00d7 1,234 = 11,106')
     } finally {
       Object.assign(TOUR_CLASS.tokens, JSON.parse(saved))
-      expect(TOUR_CLASS.tokens.jobs).toEqual(jobs)
     }
   })
 })
@@ -368,12 +475,15 @@ describe('the made-up class', () => {
     expect(TOUR_CLASS.analysis.reteach.length).toBeGreaterThan(0)
     expect(TOUR_CLASS.parts.algebra?.avg).toBeTypeOf('number')
     expect(TOUR_CLASS.topics.equations?.avg).toBeTypeOf('number')
-    expect(TOUR_CLASS.tokens.jobs.map((j) => j.key)).toEqual(['lesson', 'questions', 'marking', 'analysis'])
-    expect(TOUR_CLASS.tokens.perLearner.length).toBeGreaterThan(0)
-    for (const row of [...TOUR_CLASS.tokens.jobs, ...TOUR_CLASS.tokens.perLearner]) {
-      expect(row.input).toBeTypeOf('number')
-      expect(row.output).toBeTypeOf('number')
-    }
+    const { tokens } = TOUR_CLASS
+    expect(tokens.model).toEqual({ name: 'DeepSeek V4.1 Flash', provider: 'Cloudflare Workers AI' })
+    expect(tokens.jobs.map((j) => j.label)).toEqual(['Lesson and 15 questions', 'Marking the typed answers', "The teacher's AI analysis"])
+    expect(tokens.jobs.map((j) => [j.input, j.output])).toEqual([
+      [8644, 10998],
+      [0, 0],
+      [0, 0],
+    ])
+    expect(tokens.perLearner).toBe('About 19,600 tokens per learner practice (one lesson with its questions)')
   })
 })
 

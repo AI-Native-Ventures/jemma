@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { TopicDot, ProgressLegend } from '../../k/maths/ProgressDots'
-import { rowScore } from '../../k/maths/format'
+import { ProgressLegend } from '../../k/maths/ProgressDots'
 import { ChevronRight } from '../../k/session/_parts/Chips'
 import { Diamond } from '../../k/session/_parts/Gems'
 import { byTerm, findPart, hasLesson, TOUR_PARTS } from '../data/topics'
+import { PartScore, TopicBody } from '../Progress'
 import { LEARNER_WIDTH, TourHeader } from '../TourHeader'
 
 export const metadata: Metadata = { title: 'My maths' }
@@ -14,11 +14,10 @@ export const dynamicParams = false
 export const generateStaticParams = () => TOUR_PARTS.map((p) => ({ part: p.slug }))
 
 const list = 'm-0 flex list-none flex-col rounded-20 border border-line bg-card px-4 py-1 p-0'
-const none = { right: 0, asked: 0 }
 
 /**
- * One part of Mathematics, as the learner's part page draws it: the topics of the part under their term, each with its circle and its score. The topic
- * that has a lesson is a link to it; the others are listed and not tapped.
+ * One part of Mathematics, as the learner's part page draws it: the topics of the part under their term, each with its circle and its score (the score of
+ * the lesson, once it has been done in this tab). The topic that has a lesson is a link to it; the others are listed and not tapped.
  */
 export default async function TourPartPage({ params }: { params: Promise<{ part: string }> }) {
   const part = findPart((await params).part)
@@ -34,7 +33,7 @@ export default async function TourPartPage({ params }: { params: Promise<{ part:
           <Diamond size={16} className="mt-3 flex-none" />
           <div className="flex flex-col gap-1">
             <h1 className="m-0 text-[30px] leading-[1.14] font-bold tracking-[-0.02em] text-pretty">{part.label}</h1>
-            <p className="m-0 text-[17px] text-body">{rowScore(none)}</p>
+            <PartScore part={part} />
           </div>
         </div>
 
@@ -45,15 +44,7 @@ export default async function TourPartPage({ params }: { params: Promise<{ part:
             <h2 id={`term-${group.term}`} className="m-0 text-[17px] font-bold">Term {group.term}</h2>
             <ul className={list}>
               {group.topics.map((topic) => {
-                const body = (
-                  <>
-                    <TopicDot level="none" />
-                    <span className="flex min-w-0 flex-1 flex-col gap-1">
-                      <span className="text-[17px] leading-[1.3] font-semibold">{topic.name}</span>
-                      <span className="text-[14px] text-body">{rowScore(none)}</span>
-                    </span>
-                  </>
-                )
+                const body = <TopicBody part={part.slug} topic={topic} />
                 return (
                   <li key={topic.slug} className="border-t border-soft first:border-t-0">
                     {hasLesson(part.slug, topic.slug) ? (
