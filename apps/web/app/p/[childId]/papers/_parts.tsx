@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { CSSProperties, ReactNode } from 'react'
+import { Maths, isMaths } from '@/components/Maths'
 import type { PaperDetail, ResultRow } from '@/lib/data/p24'
 
 /** Pieces shared by the parent evidence screens (topic, paper, flag, notifications). Ported from the boards' inline styles. */
@@ -86,10 +87,10 @@ function CheckIcon() {
   )
 }
 
-function PaperRow({ row, highlight }: { row: ResultRow; highlight: boolean }) {
+function PaperRow({ row, highlight, grade }: { row: ResultRow; highlight: boolean; grade: number | null }) {
   const miss = !row.correct
   const box: CSSProperties = {
-    width: 58, height: 32, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    minWidth: 58, maxWidth: '40%', padding: '0 4px', height: 32, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
     fontFamily: HAND, color: '#2F3A56', fontSize: 18, lineHeight: 1, borderRadius: 3,
     border: miss ? '2px solid #FF6A4D' : '1px solid #8F8F8F',
   }
@@ -103,13 +104,13 @@ function PaperRow({ row, highlight }: { row: ResultRow; highlight: boolean }) {
         ...(highlight ? { background: '#FFF4F1', outline: '2px solid #FF6A4D', outlineOffset: -2 } : null),
       }}
     >
-      <span style={{ flex: 1, minWidth: 0, fontSize: 13, lineHeight: 1.3 }}>{`${row.n}.  ${displayPrompt(row.prompt)}`}</span>
+      <span style={{ flex: 1, minWidth: 0, fontSize: 13, lineHeight: 1.3 }}>{`${row.n}.  `}<Maths text={displayPrompt(row.prompt)} grade={grade} size={15} /></span>
       {circled(row) ? (
-        <span style={{ width: 58, height: 32, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontFamily: HAND, color: '#2F3A56', fontSize: 17, lineHeight: 1, border: '1.5px solid #2F3A56', borderRadius: '50%', padding: '3px 7px' }}>{row.answer}</span>
+        <span style={{ minWidth: 58, maxWidth: '40%', height: 32, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontFamily: HAND, color: '#2F3A56', fontSize: 17, lineHeight: 1, border: '1.5px solid #2F3A56', borderRadius: '50%', padding: '3px 7px' }}><Maths text={row.answer} grade={grade} size={16} /></span>
         </span>
       ) : (
-        <span style={box}>{row.answer}</span>
+        <span style={box}><Maths text={row.answer} grade={grade} size={16} /></span>
       )}
       {miss ? (
         <span style={{ width: 68, flex: 'none', display: 'flex' }}>
@@ -118,7 +119,7 @@ function PaperRow({ row, highlight }: { row: ResultRow; highlight: boolean }) {
               <path d="M6 6l12 12M18 6 6 18" />
             </svg>
             <span style={srOnly}>Missed. Right answer </span>
-            {row.rightAnswer}
+            {row.rightAnswer ? <Maths text={row.rightAnswer} grade={grade} size={14} /> : null}
           </span>
         </span>
       ) : (
@@ -156,7 +157,7 @@ export function PaperSheet({ paper, highlightN }: { paper: PaperDetail; highligh
         </span>
         <ol style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           {paper.sections.map((section, i) => (
-            <SectionRows key={section.heading || i} heading={section.heading} first={i === 0} rows={section.rows} highlightN={highlightN} />
+            <SectionRows key={section.heading || i} heading={section.heading} first={i === 0} rows={section.rows} highlightN={highlightN} grade={paper.child.grade ?? null} />
           ))}
         </ol>
       </div>
@@ -164,14 +165,14 @@ export function PaperSheet({ paper, highlightN }: { paper: PaperDetail; highligh
   )
 }
 
-function SectionRows({ heading, first, rows, highlightN }: { heading: string; first: boolean; rows: ResultRow[]; highlightN?: number }) {
+function SectionRows({ heading, first, rows, highlightN, grade }: { heading: string; first: boolean; rows: ResultRow[]; highlightN?: number; grade: number | null }) {
   return (
     <>
       {heading ? (
         <li style={first ? { fontSize: 11, fontWeight: 700, padding: '6px 0 4px' } : { fontSize: 11, fontWeight: 700, padding: '10px 0 4px', borderTop: '1px solid #ECEAE2' }}>{heading}</li>
       ) : null}
       {rows.map((row) => (
-        <PaperRow key={row.id} row={row} highlight={row.n === highlightN} />
+        <PaperRow key={row.id} row={row} highlight={row.n === highlightN} grade={grade} />
       ))}
     </>
   )
@@ -199,7 +200,7 @@ export function PrintedSum({ prompt }: { prompt: string }) {
 }
 
 /** One missed question cut out of the paper: dark mat, cream sheet, the sum and the child's boxed answer. */
-export function QuestionCrop({ row }: { row: ResultRow }) {
+export function QuestionCrop({ row, grade = null }: { row: ResultRow; grade?: number | null }) {
   const tokens = row.prompt.split(' ')
   const mixed = tokens.some((t) => /^\d+$/.test(t))
   return (
@@ -211,14 +212,14 @@ export function QuestionCrop({ row }: { row: ResultRow }) {
         }}
       >
         <span style={{ fontWeight: 700 }}>{`${row.n}.`}</span>
-        <PrintedSum prompt={row.prompt} />
+        {isMaths(row.prompt, grade) ? <Maths text={row.prompt} grade={grade} size={17} /> : <PrintedSum prompt={row.prompt} />}
         <span
           style={{
-            width: row.answer.length > 4 ? 76 : 66, height: 44, border: '1.5px solid #888888', display: 'flex', alignItems: 'center',
+            minWidth: row.answer.length > 4 ? 76 : 66, padding: '0 4px', height: 44, border: '1.5px solid #888888', display: 'flex', alignItems: 'center',
             justifyContent: 'center', fontFamily: HAND, fontSize: 24, color: '#2F3A56',
           }}
         >
-          {row.answer}
+          <Maths text={row.answer} grade={grade} size={22} />
         </span>
       </div>
     </div>

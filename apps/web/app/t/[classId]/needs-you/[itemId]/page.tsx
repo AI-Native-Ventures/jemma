@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { getNeedsItem, getPaperView, getPile, getRoster, hhmm, type ReviewResult } from '@/lib/data/p31'
 import { getReviewPile, type ReviewPileRow } from '@/lib/data/p34'
+import { getClassGrade } from '@/lib/data/maths-grade'
+import { Maths } from '@/components/Maths'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import { Diamond, Flow, PageTitle } from '../../snap/_parts'
 import { ConfirmButton, FixCard } from './FixCard'
@@ -79,7 +81,7 @@ export default async function NeedsYouItemPage({
   const crop = focus?.crop
   const original = focus ? (focus.changed ? (focus.previous ?? focus.answer) : focus.answer) : ''
   const total = view.results.reduce((s, r) => s + r.mark, 0)
-  const review = await getReviewPile(view.test.id)
+  const [review, grade] = await Promise.all([getReviewPile(view.test.id), getClassGrade(classId)])
 
   const headline =
     focus && focus.unsure
@@ -155,6 +157,7 @@ export default async function NeedsYouItemPage({
           keyAnswer={focus.keyAnswer}
           current={focus.changed ? focus.answer : null}
           marks={1}
+          grade={grade}
         />
       ) : null}
 
@@ -174,13 +177,13 @@ export default async function NeedsYouItemPage({
                   <span className={`w-[30px] text-[13px] font-semibold ${on ? 'text-coral-text' : 'text-body'}`}>Q{r.n}</span>
                   {r.changed || r.unsure ? (
                     <span className="flex flex-1 flex-col leading-tight">
-                      <span className="text-[15px]">{r.prompt}</span>
-                      <span className="text-[12px] text-body">{r.changed ? `Changed by you, was ${r.previous ?? ''}` : 'Not sure'}</span>
+                      <span className="text-[15px]"><Maths text={r.prompt} grade={grade} size={16} /></span>
+                      <span className="text-[12px] text-body">{r.changed ? <>Changed by you, was <Maths text={r.previous ?? ''} grade={grade} size={14} /></> : 'Not sure'}</span>
                     </span>
                   ) : (
-                    <span className="flex-1 text-[15px]">{r.prompt}</span>
+                    <span className="min-w-0 flex-1 text-[15px]"><Maths text={r.prompt} grade={grade} size={16} /></span>
                   )}
-                  <span className="w-[52px] text-right text-[16px] font-semibold">{r.answer}</span>
+                  <span className="max-w-[40%] min-w-[52px] text-right text-[16px] font-semibold"><Maths text={r.answer} grade={grade} size={16} /></span>
                   <span className={`flex size-7 items-center justify-center rounded-pill ${r.mark ? (on ? 'bg-card' : 'bg-soft-4') : 'bg-[#FFEDE8]'}`}>{r.mark ? TICK : X}</span>
                 </Link>
               </li>
@@ -195,8 +198,8 @@ export default async function NeedsYouItemPage({
                 <Link href={`?q=${r.n}`} replace scroll={false} className={`flex items-center gap-2.5 text-ink no-underline ${on ? 'min-h-[46px] px-1.5' : 'min-h-10'}`}>
                   <span className={`w-[30px] text-[13px] font-semibold ${on ? 'text-coral-text' : 'text-body'}`}>Q{r.n}</span>
                   <span className="flex flex-1 flex-col leading-[1.2]">
-                    <span className="text-[15px] font-semibold">{r.answer}</span>
-                    {r.changed || r.unsure ? <span className="text-[12px] text-body">{r.changed ? `You changed it from ${r.previous ?? ''}` : 'Not sure'}</span> : null}
+                    <span className="text-[15px] font-semibold"><Maths text={r.answer} grade={grade} size={16} /></span>
+                    {r.changed || r.unsure ? <span className="text-[12px] text-body">{r.changed ? <>You changed it from <Maths text={r.previous ?? ''} grade={grade} size={14} /></> : 'Not sure'}</span> : null}
                   </span>
                   <span className={`flex size-[26px] items-center justify-center rounded-pill ${r.mark ? (on ? 'bg-card' : 'bg-soft-4') : 'bg-[#FFEDE8]'}`}>{r.mark ? TICK : X}</span>
                   <span className={`w-11 text-right text-[13px] ${on ? 'font-bold text-coral-text' : 'text-body'}`}>{Math.round(r.confidence * 100)}%</span>

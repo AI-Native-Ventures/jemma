@@ -1,5 +1,6 @@
 'use client'
 
+import { Maths } from '@/components/Maths'
 import { IconLabel } from '@/components/ui/IconLabel'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -27,7 +28,7 @@ const wrongPill = (
 
 /** parent-snap-check: what Jemma read, one unsure answer to settle, then Confirm and save. */
 export function CheckScreen({
-  childId, paperId, answers, title, written, photoUrl, next, retakeHref,
+  childId, paperId, answers, title, written, photoUrl, next, retakeHref, grade = null,
 }: {
   childId: string
   paperId: string
@@ -37,6 +38,8 @@ export function CheckScreen({
   photoUrl: string | null
   next: string | null
   retakeHref: string
+  /** The grade of the learner (P136), for how much of a question and an answer is typeset as maths. */
+  grade?: number | null
 }) {
   const router = useRouter()
   const [sure, setSure] = useState<number[]>([])
@@ -108,8 +111,8 @@ export function CheckScreen({
               return (
                 <li key={a.n} className="flex min-h-[52px] items-center gap-2.5 border-t border-[#EFEEF4] pr-1.5">
                   <span className="w-[22px] text-[13px] font-semibold text-body">{a.n}</span>
-                  <span className="flex-1 text-[15px]">{a.prompt}</span>
-                  <span className="w-14 text-right text-[20px] text-[#2F3A56]" style={{ fontFamily: hand }}>{value}</span>
+                  <span className="min-w-0 flex-1 text-[15px]"><Maths text={a.prompt} grade={grade} size={16} /></span>
+                  <span className="min-w-14 max-w-[40%] text-right text-[20px] text-[#2F3A56]" style={{ fontFamily: hand }}><Maths text={value} grade={grade} size={18} /></span>
                   {a.right ? rightPill('#EEEDF5') : wrongPill}
                 </li>
               )
@@ -118,13 +121,13 @@ export function CheckScreen({
               <li key={a.n} className="-ml-2.5 my-1 flex flex-col gap-2.5 rounded-14 border border-[#FFC9BB] bg-[#FFF4F1] p-2.5">
                 <span className="flex items-center gap-2.5">
                   <span className="w-[22px] text-[13px] font-semibold text-[#B8381F]">{a.n}</span>
-                  <span className="flex-1 text-[15px]">{a.prompt}</span>
-                  <span className="w-14 text-right text-[20px] text-[#5A6378]" style={{ fontFamily: hand }}>{value}</span>
+                  <span className="min-w-0 flex-1 text-[15px]"><Maths text={a.prompt} grade={grade} size={16} /></span>
+                  <span className="min-w-14 max-w-[40%] text-right text-[20px] text-[#5A6378]" style={{ fontFamily: hand }}><Maths text={value} grade={grade} size={18} /></span>
                   {a.right ? rightPill('#FFFFFF') : wrongPill}
                 </span>
                 <span className="flex gap-2 text-[14px] leading-[1.45]">
                   <GemIcon size={12} className="mt-1 flex-none" />
-                  <span>The pencil is faint here. Does it say {a.answer}?</span>
+                  <span>The pencil is faint here. Does it say <Maths text={a.answer} grade={grade} size={16} />?</span>
                 </span>
                 {fixing.includes(a.n) ? (
                   <input
@@ -136,7 +139,7 @@ export function CheckScreen({
                 ) : (
                   <span className="grid grid-cols-2 gap-2">
                     <button type="button" onClick={() => setSure((cur) => [...cur, a.n])} className="min-h-11 rounded-12 border-none bg-ink px-5 py-2 text-center text-[15px] font-semibold text-balance text-white">
-                      Yes, {a.answer}
+                      Yes, <Maths text={a.answer} grade={grade} size={16} />
                     </button>
                     <button type="button" onClick={() => setFixing((cur) => [...cur, a.n])} className="min-h-11 rounded-12 border-[1.5px] border-ink bg-card px-5 py-2 text-center text-[15px] font-semibold text-balance text-ink">
                       Fix it

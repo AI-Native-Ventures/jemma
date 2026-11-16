@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Maths } from '@/components/Maths'
 import { IconLabel } from '@/components/ui/IconLabel'
 import { notFound } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
@@ -44,7 +45,7 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
           {topic.slip ? (
             <p style={{ margin: 0, display: 'flex', gap: 10, fontSize: 17, lineHeight: 1.45 }}>
               <Diamond size={12} mt={7} />
-              <span>{topic.slip}</span>
+              <span><Maths text={topic.slip} size={18} /></span>
             </p>
           ) : null}
         </div>
@@ -60,11 +61,20 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
             {topic.missed.map((q) => (
               <figure key={q.id} style={{ ...card, margin: 0, gap: 10, padding: 12, borderRadius: 18 }}>
                 <Link href={`/p/${childId}/papers/${q.paperId}?q=${q.n}#q${q.n}`} aria-label={`Question ${q.n}: open the marked paper`} style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}>
-                  <QuestionCrop row={q} />
+                  <QuestionCrop row={q} grade={topic.child.grade} />
                 </Link>
                 <figcaption style={{ fontSize: 15 }}>
                   <strong style={{ fontWeight: 600 }}>{`Question ${q.n}.`}</strong>
-                  {` Wrote ${q.answer}.${q.rightAnswer ? ` Right answer ${q.rightAnswer}.` : ''}`}
+                  {' Wrote '}
+                  <Maths text={q.answer} grade={topic.child.grade} size={17} />
+                  {'.'}
+                  {q.rightAnswer ? (
+                    <>
+                      {' Right answer '}
+                      <Maths text={q.rightAnswer} grade={topic.child.grade} size={17} />
+                      {'.'}
+                    </>
+                  ) : null}
                 </figcaption>
               </figure>
             ))}

@@ -1,5 +1,6 @@
 'use client'
 
+import { Maths } from '@/components/Maths'
 import { PendingButton } from '@/components/ui/Button'
 import { IconLabel } from '@/components/ui/IconLabel'
 import { useRouter } from 'next/navigation'
@@ -18,6 +19,7 @@ export function FixCard({
   keyAnswer,
   current,
   marks,
+  grade = null,
 }: {
   classId: string
   itemId: string
@@ -26,6 +28,8 @@ export function FixCard({
   keyAnswer: string | null
   current: string | null
   marks: number
+  /** The grade of the class (P136), for how much of an answer is typeset as maths. */
+  grade?: number | null
 }) {
   const router = useRouter()
   const options = [...new Set([original, keyAnswer].filter((o): o is string => !!o))]
@@ -56,7 +60,7 @@ export function FixCard({
         {options.map((o) => (
           <button key={o} type="button" aria-pressed={selected === o && !typing} disabled={pending} onClick={() => { setTyping(false); choose(o) }} className={chip(selected === o && !typing, true)}>
             {selected === o && !typing ? tick(16, 3) : null}
-            {o}
+            <Maths text={o} grade={grade} size={19} />
           </button>
         ))}
         <button type="button" aria-pressed={typing} onClick={() => setTyping(true)} className={chip(typing, false)}>Type it</button>

@@ -1,3 +1,4 @@
+import { Maths, MathsOnly } from '@/components/Maths'
 import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { EmptyLine, NeedsYouList } from '@/components/blocks'
@@ -85,7 +86,7 @@ function Detail({ detail, base }: { detail: GapDetail; base: string }) {
         </h2>
         <p className="m-0 flex gap-2.5 text-[16px] leading-[1.45]">
           {diamond(12, 'mt-1.5')}
-          <span>{why}</span>
+          <span><Maths text={why} size={17} /></span>
         </p>
       </div>
 
@@ -99,7 +100,7 @@ function Detail({ detail, base }: { detail: GapDetail; base: string }) {
               </span>
               <span className="flex flex-col leading-[1.3]">
                 <span className="text-[15px] font-semibold">{l.name}</span>
-                <span className="text-[13px] text-body">{l.wrote.join(', ')}</span>
+                <span className="text-[13px] text-body"><Maths text={l.wrote.join(', ')} size={15} /></span>
               </span>
             </Link>
           ))}
@@ -115,7 +116,7 @@ function Detail({ detail, base }: { detail: GapDetail; base: string }) {
                 <span className="text-[12px] font-semibold text-body">
                   Q{r.n} · {r.learners} learners
                 </span>
-                <span className="text-[17px] font-bold [overflow-wrap:anywhere]">{r.text}</span>
+                <span className="text-[17px] font-bold [overflow-wrap:anywhere]"><MathsOnly text={r.text} size={18} /></span>
               </span>
             ))}
           </div>
@@ -134,7 +135,7 @@ function Detail({ detail, base }: { detail: GapDetail; base: string }) {
             {reteach.content.steps.map((s, i) => (
               <li key={i} className="flex gap-2.5 text-[14px] leading-[1.45]">
                 <span className="w-10 flex-none pt-0.5 text-[12px] font-semibold text-body">{s.minutes} min</span>
-                <span>{s.text}</span>
+                <span><Maths text={s.text} size={16} /></span>
               </li>
             ))}
           </ol>

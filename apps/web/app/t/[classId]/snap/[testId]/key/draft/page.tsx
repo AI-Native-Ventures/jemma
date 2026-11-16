@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { READ_MIN, getKeyView, getTestLog } from '@/lib/data/p31'
 import { WhatJemmaDid } from '@/components/blocks'
+import { getClassGrade } from '@/lib/data/maths-grade'
 import { Poller } from '../../../Poller'
 import { Diamond, Flow } from '../../../_parts'
 import { DraftKey } from './DraftKey'
@@ -8,7 +9,7 @@ import { DraftKey } from './DraftKey'
 /** Board `teacher-key-draft`: no memo, so Jemma worked the answers out. */
 export default async function KeyDraftPage({ params }: { params: Promise<{ classId: string; testId: string }> }) {
   const { classId, testId } = await params
-  const key = await getKeyView(classId, testId)
+  const [key, grade] = await Promise.all([getKeyView(classId, testId), getClassGrade(classId)])
   const short = key.test.title.split(':')[0]
   const shell = (body: ReactNode) => (
     <Flow href={`/t/${classId}/snap`} label="Back" title="Answer key" subtitle={`${short} · no memo`} subtitleFirst>
@@ -31,7 +32,7 @@ export default async function KeyDraftPage({ params }: { params: Promise<{ class
   const unsure = key.items.filter((i) => i.confidence < READ_MIN || i.note).map((i) => i.n)
   return shell(
     <div className="flex flex-col gap-[18px] px-5 pt-3 pb-6 leading-[normal]">
-      <DraftKey classId={classId} testId={testId} items={key.items} unsure={unsure} approved={key.status === 'approved'}>
+      <DraftKey classId={classId} testId={testId} items={key.items} unsure={unsure} approved={key.status === 'approved'} grade={grade}>
         {log.length > 0 ? <WhatJemmaDid entries={log} variant="parent" /> : null}
       </DraftKey>
     </div>,

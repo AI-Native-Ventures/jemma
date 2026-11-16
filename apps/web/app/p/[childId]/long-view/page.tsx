@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { Maths } from '@/components/Maths'
 import { requireRole } from '@/lib/auth'
 import { getSharedLongView } from '@/lib/data/p52'
 import { css, Diamond, SubHeader } from '../beyond/_parts'
@@ -35,7 +36,7 @@ export default async function ParentLongViewPage({ params }: { params: Promise<{
                 <h2 id={`shared-${p.id}`} style={css('margin:0;font-size:18px;line-height:1.3;font-weight:600')}>
                   {p.title}
                 </h2>
-                <p style={css('margin:0;font-size:16px;line-height:1.5')}>{p.statement}</p>
+                <p style={css('margin:0;font-size:16px;line-height:1.5')}><Maths text={p.statement} size={16} /></p>
                 {p.labels.length > 0 ? (
                   <section aria-label={`Where this comes from, ${p.title}`} style={css('display:flex;flex-direction:column;gap:6px')}>
                     <h3 style={css('margin:0;font-size:13px;font-weight:600;color:#5D5A73')}>Where this comes from</h3>
