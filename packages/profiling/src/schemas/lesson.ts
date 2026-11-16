@@ -21,6 +21,9 @@ const Difficulty = z.union([z.literal(1), z.literal(2), z.literal(3)])
  * parsing, and a model that leaves `steps` out of one question never refuses a lesson (the question is saved without them).
  * Everything that READS a saved lesson (the learner's screens, the home, the parent's page) uses `StoredLessonSchema`, the same shape with the
  * counts a save can leave (see below).
+ *
+ * P149 widened the senior shape again: a `choices` entry may be a picture (`ChoiceSchema`), and `truefalse` and `reason` are two more answer kinds that a
+ * learner answers by tapping (`PICK_ANSWER_KINDS`). The primary shape has none of this.
  */
 
 export const PRIMARY_ANSWER_KINDS = ['fraction', 'mixed', 'decimal', 'whole', 'money', 'choice'] as const
