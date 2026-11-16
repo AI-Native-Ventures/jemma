@@ -136,7 +136,7 @@ const answerBox = (page: Page) => page.getByLabel('Your answer', { exact: true }
 /** From the learner's home to the first question on the screen: the warm-up, the lesson, "I'm ready", "Answer on the screen". */
 async function toTheFirstQuestion(page: Page) {
   await page.goto('/k')
-  await page.getByRole('link', { name: 'Start' }).click()
+  await page.getByRole('link', { name: 'Start', exact: true }).click()
   for (const n of [1, 2]) {
     await check(page.getByText(`Warm-up · ${n} of 2`)).toBeVisible()
     await page.getByRole('button', { pressed: false }).first().click()

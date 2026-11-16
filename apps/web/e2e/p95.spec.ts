@@ -151,7 +151,9 @@ test.describe('My own, the screens', () => {
     await proof(page, 'my-maths-grade-9-part')
     await practise.click()
     await expect(page).toHaveURL(/\/k$/, { timeout: 45_000 })
-    await check(page.getByText('Jemma is writing your practice.')).toBeVisible()
+    // The card at the top of My maths is the practice: writing, or (with recorded answers only, where the job ends at once because the answer was never
+    // recorded) already failed with Try again. Either way the practice was asked for, and the event below says for whom.
+    await check(page.getByText('Jemma is writing your practice.').or(page.getByText('Jemma could not write your practice.'))).toBeVisible()
     await proof(page, 'home-writing')
     const events = async (childId: string) => (await db.from('events').select('id').eq('type', 'practice.requested').eq('payload->>childId', childId)).data ?? []
     expect((await events(twin.id)).length).toBeGreaterThan(0)

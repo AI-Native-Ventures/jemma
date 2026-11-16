@@ -175,7 +175,7 @@ test.describe('My maths', () => {
     await page.goto('/k/maths')
     await check(page.getByText(/Finish tonight's lesson first\./)).toBeVisible()
     // the lesson is the first card of this page, with Start
-    await expect(page.getByRole('link', { name: 'Start' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Start', exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(0)
     // the counts and the way into each part stay
     await expect(page.getByRole('region', { name: 'All of Mathematics' }).getByRole('link')).toHaveCount(6)

@@ -110,7 +110,7 @@ test.describe('a learner can always practise', () => {
 
     // the home asks again every 3 seconds, so tonight's session shows by itself, with the same Start the normal sessions have
     await check(page.getByText("Hi Amina. One thing tonight, then you're done.")).toBeVisible({ timeout: 60_000 })
-    await expect(page.getByRole('link', { name: 'Start' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Start', exact: true })).toBeVisible()
     await proof(page, 'tonight-offered')
   })
 
