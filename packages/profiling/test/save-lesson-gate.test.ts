@@ -21,6 +21,7 @@ describe('a key of a new kind must be readable by its kind', () => {
     ['number', '-3'], ['number', '15%'], ['number', '30°'], ['number', '2√2'], ['number', '0,5'], ['number', '12'],
     ['expression', '2x + 3'], ['expression', 'x^2 - 4'], ['expression', '(x+2)(x-2)'], ['expression', '2x^2 + 7x'],
     ['equation', 'x = 3'], ['equation', 'x = 3 or x = -1'], ['equation', 'x = 1 + √2'],
+    ['equation', 'x = y'], // P147: an equation of two letters is a line
     ['point', '(2; -3)'], ['point', '(-1,5; 4)'],
   ]
   test.each(fine)('%s %j is fine', (kind, answer) => expect(answerProblem(q(kind, answer))).toBeNull())
@@ -31,7 +32,7 @@ describe('a key of a new kind must be readable by its kind', () => {
     ['expression', '12', 'an expression'],
     ['expression', '2x +', 'an expression'],
     ['equation', '2x + 3', 'an equation'],
-    ['equation', 'x = y', 'an equation'],
+    ['equation', 'x = 2x', 'an equation'],
     ['point', '(2)', 'a point'],
     ['point', '(2; x)', 'a point'],
   ]

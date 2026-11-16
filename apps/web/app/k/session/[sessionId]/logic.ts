@@ -3,7 +3,9 @@ import {
   completeAnswer,
   fillMissing,
   finishAnswer,
+  isInequalityKey,
   isListKind,
+  isPairKey,
   listAnswerParts,
   LIST_MAX_LENGTH,
   missingPart,
@@ -56,6 +58,8 @@ export type QuestionForChild = {
   form?: Form
   /** The picture the question needs, drawn between its words and the answer box (a senior class only). It never holds the answer. */
   diagram?: SeniorDiagramSpec
+  /** P147: the SHAPE of the answer when its key is an inequality or an interval ('inequality') or two letters with a value each ('pair'), so the screen can say how to type it. Never the key itself. */
+  answerShape?: 'inequality' | 'pair'
   /** P150, a list: how many boxes, whether the place of a value matters, whether a number pad is enough, and a label over each box. Never a value. */
   list?: ListParts['list']
   /** P150, an order: the items to put in order, shuffled (never in the right order). */
@@ -127,6 +131,7 @@ export function stripQuestion(
     ...(q.answerKind === 'reason' && reasonKeyHasValue(q.answer) ? { withValue: true } : {}),
     ...(q.form ? { form: q.form } : {}),
     ...(q.diagram ? { diagram: q.diagram } : {}),
+    ...(q.answerKind === 'equation' && isInequalityKey(q.answer) ? { answerShape: 'inequality' as const } : q.answerKind === 'equation' && isPairKey(q.answer) ? { answerShape: 'pair' as const } : {}),
     // P150: a count, the labels, the items to put in order (shuffled), the table with its blanks: never the key's values or order.
     ...listAnswerParts(q),
     ...(isListKind(q.answerKind) && q.round !== undefined ? { round: q.round } : {}),
@@ -182,7 +187,9 @@ export type AnswerShape =
   | { kind: 'missing'; part: MissingPart }
   | { kind: 'fraction' | 'mixed' | 'whole' | 'decimal' | 'money' | 'text' }
   /** The four kinds of a senior class, marked by meaning: a number that may be negative, an expression, an equation, a point. */
-  | { kind: 'number' | 'equation' | 'point' }
+  | { kind: 'number' | 'point' }
+  /** An equation answer; `inequality` when its key is an inequality or an interval, `pair` when it is two letters with a value each (P147): they change the line under the box. */
+  | { kind: 'equation'; inequality?: true; pair?: true }
   | { kind: 'expression'; form: Form }
   /** P149: two big buttons, True and False. */
   | { kind: 'truefalse' }
@@ -196,10 +203,13 @@ export type AnswerShape =
 /** What `answerShape` reads besides the old four fields: the parts the server sent (a whole `Question` fits too: its table has no `plain`, so its boxes are the full keyboard). */
 type ShapeParts = { list?: ListParts['list']; items?: string[]; table?: { columns: string[]; rows: (string | null)[][]; plain?: boolean }; round?: number }
 
-export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> & ShapeParts & { withValue?: boolean }): AnswerShape {
+export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> & ShapeParts & { withValue?: boolean } & Pick<QuestionForChild, 'answerShape'>): AnswerShape {
   if (q.answerKind === 'truefalse') return { kind: 'truefalse' }
   if (q.answerKind === 'reason') return { kind: 'reason', withValue: q.withValue === true }
   if (q.choices?.length) return { kind: 'choice' }
+  // P147: an equation whose key is an inequality or an interval, or two letters with a value each, says so in its line under the box.
+  if (q.answerKind === 'equation' && q.answerShape === 'inequality') return { kind: 'equation', inequality: true }
+  if (q.answerKind === 'equation' && q.answerShape === 'pair') return { kind: 'equation', pair: true }
   // P150: a list, an order and a table are drawn from the parts the server sent (a question that came without them gets the plain box below).
   const places = q.round !== undefined ? { round: q.round } : {}
   // A shape with nothing to fill (no box, one chip, no empty cell) could never be answered, so it falls to the plain box rather than leave the learner stuck.
