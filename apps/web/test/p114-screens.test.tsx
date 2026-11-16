@@ -75,7 +75,8 @@ describe('"Link a parent" on Me', () => {
     await waitFor(() => expect(screen.getByLabelText('Your code for a parent is K7M2QX')).toBeTruthy())
     expect(screen.getByLabelText('Your code for a parent is K7M2QX').textContent).toBe('K7M2QX')
     expect(body()).toContain('Give this code to your parent or guardian. It works for 7 days.')
-    expect(screen.getByRole('button', { name: 'Make a new code' })).toBeTruthy()
+    // The button is still "Making your code" for a moment after the code shows, so wait for its last label.
+    expect(await screen.findByRole('button', { name: 'Make a new code' })).toBeTruthy()
     expect(state.made).toEqual(['made'])
   })
 
@@ -86,6 +87,7 @@ describe('"Link a parent" on Me', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Make a new code' }))
     await waitFor(() => expect(screen.getByLabelText('Your code for a parent is ZZ89YY')).toBeTruthy())
     expect(screen.queryByLabelText('Your code for a parent is AB23CD')).toBeNull()
+    expect(await screen.findByRole('button', { name: 'Make a new code' })).toBeTruthy()
   })
 
   it('a refusal is said in words and the code on the screen stays', async () => {
