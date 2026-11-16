@@ -2,7 +2,7 @@
 
 ## Agent shape
 
-An event starts a job plan. Code builds the plan from the database after every step. Each of the 10 AI jobs is one run. Goose, Claude Code on the owner's laptop and the operator runner call Jemma's tools over MCP. The hosted app's own runner calls the same functions in code, and its model gets no tools. Save tools enforce the rules in code: marks, sources, school scope, and banned words for Long view patterns only. Code then checks what the event had to produce, retries, falls back to another model, or hands the item to the teacher.
+An event starts a job plan. Code builds the plan from the database after every step. Each of the 10 AI jobs is one run. Goose, Claude Code on the owner's laptop and the operator runner call Jemma's tools over MCP. The hosted app's own runner calls the same functions in code, and its model gets no tools. Save tools enforce the rules in code: marks, sources, school scope, and a word check on text about a learner. Code then checks what the event had to produce, retries, falls back to another model, or hands the item to the teacher.
 
 ```mermaid
 flowchart LR
@@ -29,23 +29,24 @@ Open weights (`packages/runner/src/goose.ts`): `nvidia/nemotron-3.5-super-vl`, `
 
 ## Where a person decides
 
-Each is a tap by a named teacher. The name and time go to `approvals` first, then the change. If that save fails, nothing changes. If the change fails, the row is deleted. Past records are refused without it.
+Each is a tap by a named teacher. The name and time go to `approvals` first. If that save fails, nothing changes. If the change fails, the row is deleted.
 
 - Topic map: Approve map.
 - Answer key: Approve key.
 - Unsure marks: the teacher checks the paper.
 - Guardian link: the teacher says yes.
-- Past records: Add to records.
+- Past records: Add to records (refused without it).
 - Sharing results: Share with parents, once per test.
+- Guidance card: Send to family (a draft until then).
 - Long view pattern: Looks right.
-- The talk: We have talked. Only then does a parent see it. The learner never does.
+- The talk: We have talked. A parent sees it only then, a learner never.
 
 ## What is logged
 
-Every tool call, with input, output, time and duration, in `tool_calls`. Calls to the borrowed server are logged too, with the engine, model, tokens and cost. Approvals carry the person's name. Teachers read both on "The full log" screen. Parents and learners cannot. Plain writes, not tool calls: notifications, event status, a failed read's Needs you item.
+Every tool call, with input, output, time and duration, in `tool_calls`. Calls to the borrowed server are logged too, with the engine, model, tokens and cost. Approvals carry the person's name. Teachers read both on "The full log" screen. Plain writes, not tool calls: notifications, event status, a failed read's Needs you item.
 
 ## Cost per run
 
-Free tier: $0 (33 of 33 eval runs, `EVALS.md`). Paid price: about $0.02 a run, median 70,797 tokens in and 4,152 out.
+Free tier: $0 (33 of 33 eval runs, `EVALS.md`). Paid: about $0.02 a run (median 70,797 tokens in, 4,152 out).
 
 Detail: `docs/architecture.md`.
