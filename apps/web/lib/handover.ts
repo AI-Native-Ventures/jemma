@@ -37,11 +37,11 @@ export async function verifyHandover(value: string | undefined, now = Date.now()
 export const isOwnHandover = (h: { sessionId: string } | null): boolean => h?.sessionId === OWN_HANDOVER
 
 /**
- * The learner's own screens a hand-over of the learner's own practice opens: the home, My maths (and the grade page), the gaps, a session, the
+ * The learner's own screens a hand-over of the learner's own practice opens: the home, My maths (and the grade page), the lessons of a topic (P142), the gaps, a session, the
  * hand-back screen, the paper upload and "Add your own work" (`/k/own` and what is under it: a parent who acts for the child may add a marked test
  * or a curriculum for them). Not the account page, not the sign-in, not a screen of the parent or the teacher.
  */
-const OWN_SCREENS = ['/k/maths', '/k/gaps', '/k/session', '/k/done', '/k/own']
+const OWN_SCREENS = ['/k/maths', '/k/learn', '/k/gaps', '/k/session', '/k/done', '/k/own']
 const underOwn = (pathname: string) => pathname === '/k' || pathname === '/k/upload' || OWN_SCREENS.some((p) => pathname === p || pathname.startsWith(`${p}/`))
 
 /**

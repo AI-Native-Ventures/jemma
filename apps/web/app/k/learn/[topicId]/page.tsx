@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { myChild } from '@/lib/data/p27'
 import { libraryFor, resolveTopic } from '@/lib/data/teaching'
-import { isUuid, nextEntry } from '@/lib/teaching'
+import { entryButton, isUuid, nextEntry } from '@/lib/teaching'
 import { AppHeader } from '../../session/_parts/AppHeader'
 import { Diamond } from '../../session/_parts/Gems'
 
@@ -33,7 +33,7 @@ export default async function LessonListPage({ params, searchParams }: { params:
   const href = (position: number) => `/k/learn/${topicId}/${position}${query}`
   const doneCount = entries.filter((e) => e.done).length
   const back = session ? { href: `/k/session/${session}`, label: 'Your practice' } : { href: '/k/maths', label: 'My maths' }
-  const label = go.done ? `Read lesson ${go.position} again` : go.started ? `Continue lesson ${go.position}` : `Start lesson ${go.position}`
+  const label = entryButton(go)
 
   return (
     <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans leading-[normal] lg:min-h-dvh">

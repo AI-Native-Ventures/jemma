@@ -122,3 +122,6 @@ export function sourceHref(address: string | undefined): string | null {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 /** True for an id the way the database writes one. An address that holds anything else is not looked up. */
 export const isUuid = (value: string | undefined | null): value is string => typeof value === 'string' && UUID.test(value)
+
+/** What the button that opens a lesson of the list says: start it, go on with it, or read it again when it is done. */
+export const entryButton = (e: LibraryEntry): string => (e.done ? `Read lesson ${e.position} again` : e.started ? `Continue lesson ${e.position}` : `Start lesson ${e.position}`)
