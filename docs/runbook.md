@@ -29,10 +29,12 @@ Copy `.env.example` to `.env.local` at the repo root. `apps/web` reads it, and `
 | Var | What it does |
 | --- | --- |
 | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | The local stack, or your hosted project. The service key is server and agent only. |
-| `LLM_PROVIDER`, `LLM_MODEL` | Text model. Free runs use `openrouter` and an OpenRouter `:free` id. The hosted demo uses the free id `nvidia/nemotron-3.5-super-vl:free`. The paid listing of the same model, the same id without `:free` (`nvidia/nemotron-3.5-super-vl`, pay per use, credit on the OpenRouter account), is built and switched off: see "Paid hosting (built, off on the preview)". |
-| `LLM_MODEL_FALLBACKS` | Comma list of ids (same provider) tried in order when the model still fails with a 5xx or overload after its retries, or is gone, unpaid or refuses the caller, or does not answer in time (any error moves on to the next id, except a call the caller cancelled): 90 seconds for a paid OpenRouter id (no `:free`), 4 minutes for every other. The hosted demo lists the free ids here: `nvidia/nemotron-3.5-super-vl:free,nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-31b-it:free`. |
+| `LLM_PROVIDER`, `LLM_MODEL` | Text model. The hosted demo uses `workers-ai` (Cloudflare Workers AI) and `@cf/deepseek-ai/deepseek-v4.1-flash-1017`: see "Cloudflare Workers AI (the hosted demo)". Free runs of your own use `openrouter` and an OpenRouter `:free` id. The paid OpenRouter listing of a model, the same id without `:free`, is built and not used by the hosted demo: see "Paid hosting (built, off on the preview)". |
+| `LLM_MODEL_FALLBACKS` | Comma list of ids (same provider) tried in order when the model still fails with a 5xx or overload after its retries, or is gone, unpaid or refuses the caller, or does not answer in time (any error moves on to the next id, except a call the caller cancelled): 90 seconds for a paid OpenRouter id (no `:free`), 4 minutes for every other. The hosted demo lists the backup here: `@cf/zai-org/glm-5.3-flash` (150 seconds a try for a `workers-ai` id). |
 | `VISION_PROVIDER`, `VISION_MODEL`, `VISION_MODEL_FALLBACKS` | Same for photos (memo, papers, the curriculum PDF). |
 | `TTS_PROVIDER`, `TTS_MODEL` | Lesson audio: `workers-ai` and `@cf/deepgram/aura-2-en`. |
+| `CF_ACCOUNT_ID`, `CF_AI_TOKEN` | The Cloudflare account id and a Workers AI API token (a secret, never written in the repository), used when `LLM_PROVIDER` or `VISION_PROVIDER` is `workers-ai`. A missing one is a plain error that names it (not in `replay`, which never calls a model). |
+| `AI_RECORDED_IDS` | Comma list of model ids that recorded answers were saved under. In `cache` and `replay` they are looked up after the model ids and never called. Unset: only the model ids are looked up. |
 | `AI_MODE` | `live` (call the model), `record` (call it and store the answer in `ai_replays`), `replay` (use the stored answer, never call a model, a miss is an error), `cache` (use the stored answer when the key exists, else call the model and store it). |
 | `AI_MODEL_RANKING` | Agent only, with `LLM_PROVIDER=openrouter`. `artificial-analysis` switches on the dynamic model list (below). Unset or anything else: the model lists above, exactly as before. |
 | `AA_API_KEY` | Agent only, a secret. The key of the Artificial Analysis API, sent as `x-api-key`. Used only with `AI_MODEL_RANKING`. Without it the dynamic list ranks the newest free models first. |
@@ -49,16 +51,33 @@ Copy `.env.example` to `.env.local` at the repo root. `apps/web` reads it, and `
 
 Every judge sandbox has the same synthetic inputs, so one warm-up run fills `ai_replays` and every later run is near instant. Set `AI_MODE=cache` on the preview agent, then run the demo path once (`demo-path.spec.ts` or by hand). After that a judge's papers, reports and lessons come from storage in seconds. A miss (an edited paper, a new prompt) calls the model live and stores the answer, so live runs still work.
 
-A replay is keyed by the model id and the call, and an answer is stored under the id of the model that wrote it. With more than one id in `LLM_MODEL` and `LLM_MODEL_FALLBACKS` (or the vision pair), `cache` and `replay` look the call up under every id at once, the free ids first, before any model is called. So the paid id can be first and the answers recorded under the free ids (the whole demo path, `fixtures/ai-replays.json.gz`) still hit with no new call. Only a call with no answer under any id goes to a model (the first id of the list, the paid one when paid hosting is switched on), and its answer is stored under the id of the model that answered. Uuids and dates in a call are left out of the key, so an answer recorded in one sandbox replays in another.
+A replay is keyed by the model id and the call, and an answer is stored under the id of the model that wrote it. With more than one id in `LLM_MODEL` and `LLM_MODEL_FALLBACKS` (or the vision pair), `cache` and `replay` look the call up under every id at once, the free ids first, before any model is called. So the paid id can be first and the answers recorded under the free ids (the whole demo path, `fixtures/ai-replays.json.gz`) still hit with no new call. Only a call with no answer under any id goes to a model (the first id of the list, the paid one when paid hosting is switched on), and its answer is stored under the id of the model that answered. `AI_RECORDED_IDS` adds ids to that lookup that are never called (the old free OpenRouter ids that the demo path was recorded under, now that the models are on Workers AI). Uuids and dates in a call are left out of the key, so an answer recorded in one sandbox replays in another.
+
+### Cloudflare Workers AI (the hosted demo)
+
+The hosted demo's AI runs on Cloudflare Workers AI through its OpenAI-compatible endpoint (`https://api.cloudflare.com/client/v4/accounts/<account id>/ai/v1`): DeepSeek V4.1 Flash first, GLM 5.3 Flash as backup, for text and for photos. Both are open weights under the MIT licence. Prices read on 16 November 2026: DeepSeek V4.1 Flash $0.300 per million input tokens and $1.200 per million output tokens, GLM 5.3 Flash $0.150 and $0.500; the first 10,000 Neurons a day are free, and these models need a paid billing method on the Cloudflare account. About 1.3 US cents per lesson on DeepSeek. Measured in a probe on 16 November: a lesson in 46.9 seconds (15 of 15 answers correct) and a photo of five handwritten answers in 4.3 seconds on DeepSeek; GLM took 99.7 seconds for a lesson and 2.4 seconds for the photo. When both models fail the error goes up and the screen offers Try again. No other provider is a last resort, and Nemotron is never called.
+
+To switch it on, set these on the preview agent (the Cloudflare worker `jemma-agent`), no code change after this release:
+
+- `LLM_PROVIDER` and `VISION_PROVIDER`: `workers-ai`
+- `LLM_MODEL` and `VISION_MODEL`: `@cf/deepseek-ai/deepseek-v4.1-flash-1017`
+- `LLM_MODEL_FALLBACKS` and `VISION_MODEL_FALLBACKS`: `@cf/zai-org/glm-5.3-flash`
+- `CF_ACCOUNT_ID`: the Cloudflare account id
+- `CF_AI_TOKEN`: a Workers AI API token, as a secret
+- `AI_RECORDED_IDS`: `nvidia/nemotron-3.5-super-vl:free,nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-31b-it:free`
+
+`AI_MODE` stays `cache` and `AI_MODEL_RANKING` stays unset. `AI_RECORDED_IDS` is what keeps the demo path's recorded answers (saved under the old free ids) hitting while every live call goes to Cloudflare: those ids are looked up and never called.
+
+To go back to the free OpenRouter models, set `LLM_PROVIDER=openrouter`, `LLM_MODEL=nvidia/nemotron-3.5-super-vl:free`, `LLM_MODEL_FALLBACKS=nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-31b-it:free`, `VISION_PROVIDER=openrouter`, `VISION_MODEL=nvidia/nemotron-3.5-super-vl:free` and `VISION_MODEL_FALLBACKS=nvidia/nemotron-3.5-super-vl:free,google/gemma-4-31b-it:free`. `CF_ACCOUNT_ID`, `CF_AI_TOKEN` and `AI_RECORDED_IDS` may stay set.
 
 ### Paid hosting (built, off on the preview)
 
-Paid hosting of the same open-weights model is built (P113) and switched off on the preview: the OpenRouter account has no credit, and the owner chose free models. The preview agent's `LLM_MODEL` and `VISION_MODEL` are `nvidia/nemotron-3.5-super-vl:free`. To switch paid hosting on, add credit to the OpenRouter account and give the preview agent (the Cloudflare worker `jemma-agent`) these four variables, text and photos alike, and no code change:
+Paid hosting of the same open-weights model is built (P113) and switched off on the preview: the OpenRouter account has no credit, and the owner chose not to use it. Before the move to Cloudflare Workers AI the preview agent's `LLM_MODEL` and `VISION_MODEL` were `nvidia/nemotron-3.5-super-vl:free`. To switch paid hosting on, add credit to the OpenRouter account and give the preview agent (the Cloudflare worker `jemma-agent`) these four variables, text and photos alike, and no code change:
 
 - `LLM_MODEL` and `VISION_MODEL`: `nvidia/nemotron-3.5-super-vl`
 - `LLM_MODEL_FALLBACKS` and `VISION_MODEL_FALLBACKS`: `nvidia/nemotron-3.5-super-vl:free,nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-31b-it:free`
 
-`LLM_PROVIDER` and `VISION_PROVIDER` stay `openrouter`, `AI_MODE` stays `cache`. The OpenRouter account needs credit. To go back to free only (how the preview runs now), put the `:free` id in `LLM_MODEL` and `VISION_MODEL` and drop it from the fallbacks. A local run and CI keep their own values and are unchanged.
+`LLM_PROVIDER` and `VISION_PROVIDER` stay `openrouter`, `AI_MODE` stays `cache`. The OpenRouter account needs credit. To go back to free only (how the preview ran before Workers AI), put the `:free` id in `LLM_MODEL` and `VISION_MODEL` and drop it from the fallbacks. A local run and CI keep their own values and are unchanged.
 
 ### Dynamic model list
 

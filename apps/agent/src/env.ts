@@ -13,6 +13,11 @@ export interface Env {
   TTS_PROVIDER?: string
   TTS_MODEL?: string
   AI_MODE?: 'live' | 'record' | 'replay' | 'cache'
+  /** Cloudflare account id and an API token (a secret) with Workers AI access: used when LLM_PROVIDER or VISION_PROVIDER is `workers-ai`. */
+  CF_ACCOUNT_ID?: string
+  CF_AI_TOKEN?: string
+  /** Comma list of ids that recorded answers were saved under and that are only looked up in `cache` and `replay`, never called. */
+  AI_RECORDED_IDS?: string
   /** `artificial-analysis`: the worker picks its free OpenRouter models itself each hour, ranked by Artificial Analysis. Unset: only the model lists above. */
   AI_MODEL_RANKING?: string
   /** Key of the Artificial Analysis API (a secret). Without it the dynamic list ranks the newest free models first. */

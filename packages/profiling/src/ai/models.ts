@@ -24,6 +24,9 @@ export const MODEL_CALL_TIMEOUT_MS = 240_000
 /** A paid model has this long for one try: it answers in seconds or something is wrong, and the next model should get the call sooner. */
 export const PAID_MODEL_CALL_TIMEOUT_MS = 90_000
 
+/** A Cloudflare Workers AI model (DeepSeek V4.1 Flash, GLM 5.3 Flash) has this long for one try: a whole lesson took 47 s and 100 s in the probe of 16 November 2026. */
+export const WORKERS_AI_MODEL_CALL_TIMEOUT_MS = 150_000
+
 /** In the dynamic list (`AI_MODEL_RANKING`) a free model has this long for one try: a longer list must not outlast the queue limit. */
 export const DYNAMIC_FREE_MODEL_CALL_TIMEOUT_MS = 120_000
 
@@ -38,10 +41,11 @@ export function isPaidModel(provider: string, id: string): boolean {
 }
 
 /**
- * The time one try of this model may take: 90 seconds for a paid model, 4 minutes for every other. In the dynamic list (`dynamic`) a free
- * model gets 2 minutes instead, and a paid model keeps 90 seconds.
+ * The time one try of this model may take: 150 seconds for a Workers AI model, 90 seconds for a paid OpenRouter model, 4 minutes for every
+ * other. In the dynamic list (`dynamic`) a free model gets 2 minutes instead, and a paid model keeps 90 seconds.
  */
 export function modelCallTimeoutMs(provider: string, id: string, dynamic = false): number {
+  if (provider === 'workers-ai') return WORKERS_AI_MODEL_CALL_TIMEOUT_MS
   if (isPaidModel(provider, id)) return PAID_MODEL_CALL_TIMEOUT_MS
   return dynamic ? DYNAMIC_FREE_MODEL_CALL_TIMEOUT_MS : MODEL_CALL_TIMEOUT_MS
 }
@@ -106,6 +110,14 @@ function noteRefusals(onRefused: () => void): LanguageModelMiddleware {
       }
     },
   }
+}
+
+/**
+ * The ids of `AI_RECORDED_IDS`: a comma list, blanks and repeats dropped. They are ids that recorded answers were saved under (the old free
+ * OpenRouter ids of the demo path) and that are only looked up, never called.
+ */
+export function recordedIdList(value: string | undefined): string[] {
+  return [...new Set((value ?? '').split(',').map((id) => id.trim()).filter(Boolean))]
 }
 
 /**
@@ -187,6 +199,15 @@ export type AiEnv = {
   TTS_PROVIDER?: string
   TTS_MODEL?: string
   AI_MODE?: AiMode
+  /** Cloudflare account id and an API token (a secret) with Workers AI access: used by the `workers-ai` provider. */
+  CF_ACCOUNT_ID?: string
+  CF_AI_TOKEN?: string
+  /**
+   * Comma list of ids that recorded answers were saved under but that are never called (`cache` and `replay` look a call up under them after the
+   * model ids). With the three old free OpenRouter ids here, the demo path's recorded answers still hit while every live call goes to another
+   * provider. Unset: the lookup list is the model ids only.
+   */
+  AI_RECORDED_IDS?: string
   /** `artificial-analysis`: the hosted app picks its free OpenRouter models itself each hour, ranked by Artificial Analysis (see `catalog.ts`). Anything else or unset: the env lists only. */
   AI_MODEL_RANKING?: string
   /** Key of the Artificial Analysis API (secret). Without it the dynamic list ranks the newest free models first. */
@@ -214,6 +235,18 @@ function rawModel(label: string, provider: string, modelId: string, env: AiEnv) 
       return createGoogleGenerativeAI({ apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY })(modelId)
     case 'openai':
       return createOpenAI({ apiKey: env.OPENAI_API_KEY })(modelId)
+    case 'workers-ai':
+      // Cloudflare Workers AI through its OpenAI-compatible endpoint (DeepSeek V4.1 Flash, GLM 5.3 Flash: `@cf/...` ids). `replay` never calls a
+      // model, so it needs no token; every other mode names the variable that is missing.
+      if (env.AI_MODE !== 'replay') {
+        if (!env.CF_ACCOUNT_ID?.trim()) throw new Error('CF_ACCOUNT_ID is not set (the workers-ai provider needs it)')
+        if (!env.CF_AI_TOKEN?.trim()) throw new Error('CF_AI_TOKEN is not set (the workers-ai provider needs it)')
+      }
+      return createOpenAI({
+        name: 'workers-ai',
+        baseURL: `https://api.cloudflare.com/client/v4/accounts/${(env.CF_ACCOUNT_ID ?? '').trim()}/ai/v1`,
+        apiKey: (env.CF_AI_TOKEN ?? '').trim(),
+      }).chat(modelId)
     case 'opencode':
       return createOpenAI({
         name: 'opencode',
@@ -312,8 +345,10 @@ export function recordedFirst(lookups: Chained[], then: Chained | null, tolerate
  * every id (recorded answers of the free ids still hit when the paid id is first), and only on a miss call the models. In `replay` there is no
  * model to call, so the lookups are the whole chain.
  */
-function buildChain(label: string, provider: string, ids: string[], lookupIds: string[], env: AiEnv, dynamic: boolean, onRefused?: (id: string) => void): Chained {
+function buildChain(label: string, provider: string, ids: string[], baseLookupIds: string[], env: AiEnv, dynamic: boolean, onRefused?: (id: string) => void): Chained {
   const mode = env.AI_MODE ?? 'live'
+  // `AI_RECORDED_IDS` are looked up after the model ids and never called: the old ids that the demo path's answers were saved under.
+  const lookupIds = [...new Set([...baseLookupIds, ...recordedIdList(env.AI_RECORDED_IDS)])]
   const lookupFirst = lookupIds.length > 1 && (mode === 'cache' || mode === 'replay')
   // Each model has its own replay layer, so an answer is recorded and replayed under the id of the model that wrote it. Each has its own
   // time limit: 90 seconds for a paid model, 4 minutes for a free one (2 minutes in the dynamic list).
