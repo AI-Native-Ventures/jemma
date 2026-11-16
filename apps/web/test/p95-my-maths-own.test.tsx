@@ -24,6 +24,8 @@ vi.mock('../lib/data/p80', () => ({
     return state.view
   },
 }))
+// P120: "Your practice" on My maths reads the learner's finished practices; this test has none.
+vi.mock('../lib/data/p120', () => ({ getPastPractice: async () => [] }))
 vi.mock('../lib/data/own-screens', () => ({
   getScreenShape: async (query?: unknown) => {
     state.gradeParams.push(query)

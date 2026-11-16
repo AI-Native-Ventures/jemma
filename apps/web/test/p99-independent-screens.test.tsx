@@ -16,6 +16,8 @@ vi.mock('../lib/data/p27', () => ({ getLearnerToday: async () => state.today }))
 // P112: the "Join your school class" card reads the database by itself; it has its own tests (p112-join-card.test.tsx).
 vi.mock('../app/k/join/JoinClassCard', () => ({ JoinClassCard: () => null }))
 vi.mock('../lib/data/p80', () => ({ getMyMaths: async () => state.view }))
+// P120: "Your practice" on My maths reads the learner's finished practices; this test has none.
+vi.mock('../lib/data/p120', () => ({ getPastPractice: async () => [] }))
 vi.mock('../lib/data/own-screens', () => ({ getScreenShape: async () => state.shape }))
 vi.mock('../lib/data/own-uploads', () => ({ getOwnHome: async () => state.own }))
 
