@@ -2,15 +2,18 @@
 
 import type { ReactNode } from 'react'
 import { IconLabel } from '@/components/ui/IconLabel'
+import { CHOICE_LETTERS, choiceText, hasPictureChoices } from '@jemma/profiling/logic'
 import { answerShape, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
 import { Frac, FractionText } from './Frac'
 import { QuestionPicture } from './QuestionPicture'
+import { PictureChoices } from './answers/PictureChoices'
+import { ReasonList } from './answers/ReasonPicker'
+import { PaperValues } from './answers/PaperValues'
+import { paperValuesLine } from './answers/values-hints'
 
 // A practice answered on paper: the choice before the first Try question, the sheet of five questions with the photo button, the wait while
 // Jemma reads the photo, and the card for a photo that could not be read. All of them are drawn from their props alone (the state lives in
 // SessionFlow), so they render the same on the server and in a test.
-
-const CHOICE_LETTERS = ['A', 'B', 'C', 'D']
 
 /** The same coral ring the lesson-loading screen and the practice card turn while Jemma works. */
 function Ring() {
@@ -74,6 +77,11 @@ export function writeLine(shape: AnswerShape): string {
   switch (shape.kind) {
     case 'choice':
       return 'Write the letter of your answer.'
+    // P149: a true or false and a reason (the reasons are the ones the lesson names: a geometry reason is written in words).
+    case 'truefalse':
+      return 'Write True or False.'
+    case 'reason':
+      return shape.withValue ? 'Write the value, then the reason in words, like 40, angles in the same segment.' : 'Write the reason in words, like angles on a straight line.'
     case 'missing':
       return 'Write the missing number.'
     case 'fraction':
@@ -99,6 +107,11 @@ export function writeLine(shape: AnswerShape): string {
       return 'Write the x and the y of the point, like (2; 3).'
     case 'number':
       return 'Write a number. It may be negative, like -3.'
+    // P150: several values, with a semicolon between them (that is how the photo is read).
+    case 'list':
+    case 'order':
+    case 'table':
+      return paperValuesLine(shape)
     default:
       return 'Write your answer.'
   }
@@ -135,16 +148,20 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
           </h2>
         )}
         <QuestionPicture spec={q.diagram} />
-        {shape.kind === 'choice' ? (
+        {shape.kind === 'choice' && hasPictureChoices(q.choices) ? (
+          <PictureChoices choices={q.choices!} />
+        ) : shape.kind === 'choice' ? (
           <ol aria-label="Choices" className="m-0 grid list-none grid-cols-2 gap-2 p-0">
             {(q.choices ?? []).map((choice, i) => (
               <li key={i} className="flex items-center gap-2.5 rounded-14 border-2 border-edge px-3 py-2.5 text-[22px] font-bold">
                 <span className="flex size-7 flex-none items-center justify-center rounded-pill bg-soft-2 text-[15px]">{CHOICE_LETTERS[i]}</span>
-                <FractionText text={choice} size={26} rule={3} gap={4} side={5} className="mx-0.5 align-middle" />
+                <FractionText text={choiceText(choice) ?? ''} size={26} rule={3} gap={4} side={5} className="mx-0.5 align-middle" />
               </li>
             ))}
           </ol>
         ) : null}
+        {shape.kind === 'reason' ? <ReasonList /> : null}
+        <PaperValues shape={shape} />
         <p className="m-0 text-[15px] leading-[1.4] text-body">{writeLine(shape)}</p>
       </div>
     </li>

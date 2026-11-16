@@ -4,8 +4,10 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getScreenShape } from '@/lib/data/own-screens'
 import { getMyMaths } from '@/lib/data/p80'
+import { libraryNames } from '@/lib/data/teaching'
 import { capsLine, groupByTerm, withoutTermSuffix } from '@/lib/map-source'
 import { noTopicsLine } from '@/lib/own-grades'
+import { inLibrary } from '@/lib/teaching'
 import { PracticeRow, PractiseButton } from '../../Practise'
 import { AppHeader } from '../../session/_parts/AppHeader'
 import { Diamond } from '../../session/_parts/Gems'
@@ -39,6 +41,9 @@ export default async function MyMathsPartPage({ params, searchParams }: { params
   const lock = lockOf(status)
   const byTerm = screen.kind === 'topics' ? groupByTerm(screen.topics, source) : null
   const from = screen.kind === 'topics' ? capsLine(source) : null
+  // P144: the topics of this grade that have lessons in the teaching library get a Learn button (one read for the whole part). No grade, no lessons.
+  const libraryGrade = grade ?? source?.grade ?? null
+  const withLessons = screen.kind === 'topics' && libraryGrade !== null ? await libraryNames(libraryGrade) : new Set<string>()
   const row = (t: MyMathsTopic, name: string) => (
     <PracticeRow
       key={t.id}
@@ -47,6 +52,7 @@ export default async function MyMathsPartPage({ params, searchParams }: { params
       lines={[topicLine(t), rowScore(t.score)].filter((l): l is string => l !== null)}
       locked={lock !== null}
       lead={<TopicDot level={levelOfScore(t.score)} />}
+      hasLessons={inLibrary(withLessons, t.name)}
     />
   )
   return (

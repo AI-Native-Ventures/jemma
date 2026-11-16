@@ -153,71 +153,147 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await expect(page.locator('input#answer')).toHaveCount(0)
     await expect(page.getByText('Type an expression, like 2x + 3.')).toBeVisible()
     await expect(next(page)).toBeDisabled()
-    // The keyboard of the editor comes up when the box is touched: our layout, in five rows of seven keys, each key at least 44 px.
+    // In development the page has a round indicator at its bottom left (the Next.js dev tools, "Compiling"). The row of tabs is the last row of the keyboard
+    // now, so the indicator sits on the Letters tab and takes the tap (CI run 3: "<nextjs-portal> intercepts pointer events"). It is not part of the app: it
+    // is put away for this test.
+    await page.addStyleTag({ content: 'nextjs-portal { display: none !important }' })
+    // The keyboard of the editor comes up when the box is touched: our layout, six rows of ten keys (P140).
     await field.click()
     await expect.poll(() => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible)).toBe(true)
     const layoutId = await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { layouts: { id: string }[] } }).mathVirtualKeyboard.layouts[0]!.id)
     expect(layoutId).toMatch(/^jemma-expression-/)
-    // The keyboard is tabs by kind of symbol and opens on 123 for this question; each key is at least 44 px and the page does not slide sideways.
+    // The numbers, signs and fraction keys are on every tab; five word tabs change the two rows under them. This question ("Simplify x + x + 3") is algebra,
+    // so the keyboard opens on Letters.
     const visibleLayer = () => page.locator('.MLK__layer.is-visible').first().getAttribute('id')
     // The editor shows its keyboard a moment after the touch (300 ms) and builds it once more then: it is measured when it has settled.
     await page.waitForTimeout(900)
-    expect(await visibleLayer()).toBe('jemma-numbers')
-    const keycap = page.locator('.MLK__layer.is-visible .MLK__keycap').first()
-    await expect(keycap).toBeVisible()
-    const size = await boxOf(keycap)
-    expect(size.width).toBeGreaterThanOrEqual(44)
-    expect(size.height).toBeGreaterThanOrEqual(44)
-    await noHorizontalScroll(page)
-    // The row of tabs: five tabs and the key that hides the keyboard. Each face is one line, readable (16 px text, a 22 px drawing), and inside its key,
-    // at 390 px and at 360 px.
+    expect(await visibleLayer()).toBe('jemma-letters')
+    // The answer box is above the keyboard, not under it (P140b): how far the top of the keys is below the bottom of the box. The page scrolls the box into view
+    // (smoothly, so it is polled), so this is 0 or more once the keyboard is up and the scroll is done.
+    const gapAboveKeyboard = () =>
+      page.evaluate(() => {
+        const answer = document.querySelector('math-field#answer')
+        const plate = document.querySelector('.ML__keyboard .MLK__plate')
+        if (!answer || !plate) return null
+        return plate.getBoundingClientRect().top - answer.getBoundingClientRect().bottom
+      })
+    await expect.poll(gapAboveKeyboard, { timeout: 10_000, message: 'the answer box is above the keyboard' }).toBeGreaterThanOrEqual(-1)
+    // The backspace key shows only its own sign: MathLive's clear-all icon (the trash, a second face of the key) is hidden.
+    expect(await page.locator('.MLK__layer.is-visible .MLK__shift').evaluateAll((els) => els.filter((el) => getComputedStyle(el).display !== 'none').length)).toBe(0)
     const showKeyboard = async () => {
       // A change of the window size may put the keyboard away: it is brought back if it went, and measured when it has settled.
       const up = await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible)
       if (!up) await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { show(): void } }).mathVirtualKeyboard.show())
       await page.waitForTimeout(900)
     }
+    // Every key of the visible tab (the blank ones apart): its size and whether what is on it sticks out of it.
+    type KeyBox = { name: string; width: number; height: number; overflowX: boolean; overflowY: boolean; detail: string }
+    const measureKeys = (): Promise<KeyBox[]> =>
+      page.locator('.MLK__layer.is-visible .MLK__keycap:not(.separator)').evaluateAll((els) =>
+        els.map((el) => {
+          const r = el.getBoundingClientRect()
+          // How far anything inside the key reaches past the key (the parts of a drawn fraction are positioned, so they can reach further than the face).
+          let right = 0
+          let bottom = 0
+          for (const d of Array.from(el.querySelectorAll('*'))) {
+            const b = d.getBoundingClientRect()
+            if (b.width === 0 && b.height === 0) continue
+            right = Math.max(right, b.right - r.right)
+            bottom = Math.max(bottom, b.bottom - r.bottom)
+          }
+          const detail = `scroll ${el.scrollWidth}x${el.scrollHeight}, client ${el.clientWidth}x${el.clientHeight}, inside reaches ${right.toFixed(1)} right and ${bottom.toFixed(1)} below`
+          return { name: (el.getAttribute('data-tooltip') ?? el.textContent ?? '').trim(), width: r.width, height: r.height, overflowX: el.scrollWidth > el.clientWidth + 1, overflowY: el.scrollHeight > el.clientHeight + 1, detail }
+        }),
+      )
+    // Each key is at least 44 px tall (and at least 30 px wide from 360 px up: a tenth of the width less the gap), and nothing sticks out of any key.
+    const checkKeys = async (label: string, width: number) => {
+      await showKeyboard()
+      // The keys drawn with the keycap class: every key but the blanks and the action keys (the five tabs, backspace and the two arrows, which are
+      // measured below). That is 31 on the tab with the fewest keys (Compare: 32), 43 on Letters.
+      await expect.poll(async () => (await measureKeys()).length, { timeout: 10_000 }).toBeGreaterThanOrEqual(30)
+      const keys = await measureKeys()
+      // Soft checks: a failure at one width does not hide the others (the test still fails at the end).
+      expect.soft(keys.filter((k) => k.height < 44).map((k) => `${k.name} ${k.height}`), `${label}: keys under 44 px tall`).toEqual([])
+      if (width >= 360) expect.soft(keys.filter((k) => k.width < 30).map((k) => `${k.name} ${k.width}`), `${label}: keys under 30 px wide`).toEqual([])
+      expect.soft(keys.filter((k) => k.overflowX || k.overflowY).map((k) => `${k.name}: ${k.detail}`), `${label}: keys with something sticking out`).toEqual([])
+    }
+    // The row of tabs: five words, each one line, 11 to 15 px, and inside its key.
     const tabFaces = async (label: string) => {
       await showKeyboard()
       const tabs = page.locator('.MLK__layer.is-visible .tab')
       await expect(tabs).toHaveCount(5)
       await expect(tabs.first()).toBeVisible()
+      expect((await tabs.allTextContents()).map((t) => t.trim())).toEqual(['Letters', 'Trig', 'Compare', 'Shapes', 'Calculus'])
       for (let i = 0; i < 5; i++) {
         const at = `${label}, tab ${i}`
         const key = await boxOf(tabs.nth(i))
         const face = await boxOf(tabs.nth(i).locator('.tab-face'))
         expect(key.width, at).toBeGreaterThanOrEqual(44)
-        expect(face.height, at).toBeGreaterThanOrEqual(14)
-        expect(face.height, at).toBeLessThanOrEqual(26)
-        expect(face.width, at).toBeGreaterThanOrEqual(14)
+        expect(key.height, at).toBeGreaterThanOrEqual(44)
+        expect(face.height, at).toBeLessThanOrEqual(20)
         expect(face.x, at).toBeGreaterThanOrEqual(key.x - 0.5)
         expect(face.x + face.width, at).toBeLessThanOrEqual(key.x + key.width + 0.5)
+        const px = parseFloat(await tabs.nth(i).locator('.tab-face').evaluate((el) => getComputedStyle(el).fontSize))
+        expect(px, at).toBeGreaterThanOrEqual(11)
+        expect(px, at).toBeLessThanOrEqual(15)
       }
-      for (const i of [0, 1, 2]) expect(await tabs.nth(i).locator('.tab-face').evaluate((el) => getComputedStyle(el).fontSize), `${label}, tab ${i}`).toBe('16px')
     }
+    await checkKeys('390 px', 390)
     await tabFaces('390 px')
-    await page.setViewportSize({ width: 360, height: 844 })
-    await tabFaces('360 px')
     await noHorizontalScroll(page)
-    await page.setViewportSize({ width: 390, height: 844 })
+    // The phone widths, then a laptop width (the keys stop growing at 64 px and the fonts at their largest): nothing sticks out of a key at any of them.
+    for (const width of [360, 320, 430, 1440, 390]) {
+      await page.setViewportSize({ width, height: width === 1440 ? 900 : 844 })
+      await checkKeys(`${width} px`, width)
+      await tabFaces(`${width} px`)
+      if (width === 360 || width === 390) await noHorizontalScroll(page)
+    }
     await showKeyboard()
     await expect(page.locator('.MLK__layer.is-visible .tab').first()).toBeVisible()
     await proof(page, 'expression-keyboard')
-    // The abc tab has the letters, italic, apart from the signs; the 123 tab has them back.
-    await page.locator('.MLK__layer.is-visible [data-tooltip="letters"], .MLK__layer.is-visible [data-command*="jemma-letters"]').first().click()
-    await expect.poll(visibleLayer).toBe('jemma-letters')
+    // Each tab is opened by clicking its word, and the digits row is there on every one of them.
+    const tab = (word: string) => page.locator('.MLK__layer.is-visible .tab', { hasText: word }).first()
+    const TABS: [string, string][] = [['Trig', 'jemma-trig'], ['Compare', 'jemma-compare'], ['Shapes', 'jemma-shapes'], ['Calculus', 'jemma-calculus'], ['Letters', 'jemma-letters']]
+    for (const [word, id] of TABS) {
+      await tab(word).click()
+      await expect.poll(visibleLayer).toBe(id)
+      await expect(page.locator('.MLK__layer.is-visible .tab.is-current-tab')).toHaveText(word)
+      for (const digit of '1234567890') await expect(page.locator(`.MLK__layer.is-visible .MLK__keycap[data-keycap-value="${digit}"]`).first()).toBeVisible()
+      await checkKeys(`${word} tab`, 390)
+    }
+    // The Letters tab has the letters, italic, apart from the signs.
     await page.locator('.MLK__layer.is-visible .MLK__keycap[data-keycap-value="k"]').first().click()
     expect(await writtenLatex(page)).toBe('k')
     await proof(page, 'expression-letters')
-    await page.locator('.MLK__layer.is-visible [data-tooltip="numbers and signs"], .MLK__layer.is-visible [data-command*="jemma-numbers"]').first().click()
-    await expect.poll(visibleLayer).toBe('jemma-numbers')
-    // The keys of the 123 tab write into the box: a digit, the plus on the top row, and the fraction (a top and a bottom).
+    // The keys write into the box: a digit, the plus on the signs row, and the fraction (a top and a bottom). The digits are on this tab too.
     await page.locator('.MLK__layer.is-visible .MLK__keycap[data-keycap-value="7"]').first().click()
     await page.locator('.MLK__layer.is-visible .MLK__keycap[data-tooltip="plus"], .MLK__layer.is-visible .MLK__keycap[data-keycap-value="+"]').first().click()
     await page.locator('.MLK__layer.is-visible .MLK__keycap[data-keycap-value="3"]').first().click()
     expect(await writtenLatex(page)).toBe('k7+3')
     await page.locator('.MLK__layer.is-visible .MLK__keycap[data-tooltip="fraction"], .MLK__layer.is-visible .MLK__keycap[data-keycap-value*="frac"]').first().click()
     expect(await writtenLatex(page)).toContain('\\frac')
+    // A short phone window: the box sits low and the open keyboard would cover it. The screen is scrolled so the box is just above the keyboard, whatever it showed
+    // before (P140b): on a phone the session screen is a fixed layer that scrolls inside itself, so that layer is scrolled, not the window. The keyboard is put away
+    // first (it would cover the tap), the window is made short, the screen is scrolled back to its top, and the box is tapped; the keyboard comes up again.
+    await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { hide(): void } }).mathVirtualKeyboard.hide())
+    await expect.poll(() => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible)).toBe(false)
+    await page.setViewportSize({ width: 390, height: 520 })
+    await page.evaluate(() => {
+      window.scrollTo(0, 0)
+      document.querySelectorAll('.fixed.inset-0').forEach((layer) => layer.scrollTo(0, 0))
+    })
+    await field.click()
+    await showKeyboard()
+    await expect.poll(gapAboveKeyboard, { timeout: 10_000, message: 'the answer box is above the keyboard in a short window' }).toBeGreaterThanOrEqual(-1)
+    const inWindow = await page.evaluate(() => {
+      const r = document.querySelector('math-field#answer')!.getBoundingClientRect()
+      return { top: r.top, bottom: r.bottom, height: window.innerHeight }
+    })
+    // The box is on the screen (its top is not above the window), and above the keyboard.
+    expect(inWindow.top).toBeGreaterThanOrEqual(0)
+    expect(inWindow.bottom).toBeLessThanOrEqual(inWindow.height)
+    await page.setViewportSize({ width: 390, height: 844 })
+    await showKeyboard()
     // Tapping outside the box puts the keyboard away (the box loses the focus; the editor hides its keyboard a moment after).
     await page.locator('h1[data-prompt]').click()
     await expect.poll(() => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible), { timeout: 15_000 }).toBe(false)
@@ -239,7 +315,8 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
 
     // Question 3: a point. A bracket, a box, a semicolon, a box and a bracket, with a minus key beside each box. Next waits for both.
     await check(page.getByText('Question 3 of 5')).toBeVisible()
-    await expect(page.getByText('Type the x and the y of the point.')).toBeVisible()
+    // P141: the x and the y of the hint are maths now, so the words are in two places (the screen reader's line and the drawn one): the drawn one is looked at.
+    await expect(page.locator('[data-typeset="true"]', { hasText: 'Type the x and the y of the point.' })).toBeVisible()
     await expect(page.getByRole('button', { name: /minus sign/i })).toHaveCount(2)
     await page.getByLabel('x of the point').fill('3')
     await page.getByRole('button', { name: 'Minus sign for x' }).click()

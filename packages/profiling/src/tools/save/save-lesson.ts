@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { parseAnswer } from '../../logic/answers'
-import { isMeaningKind, meaningKeyProblem } from '../../logic/meaning'
+import { choicePictureProblem, isPickQuestion, pickKeyProblem } from '../../logic/answers/pick'
+import { isListKind, listKeyProblem } from '../../logic/answers/lists'
+import { isMeaningKind, meaningKeyProblem, readNumber } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { pictureProblem } from '../../logic/picture'
 import { cleanSteps } from '../../logic/steps'
@@ -21,11 +23,16 @@ export function answerProblem(q: Question): string | null {
   const answer = answerKeyProblem(q)
   if (answer) return answer
   const picture = q.diagram ? pictureProblem(q.diagram) : null
-  return picture ? `picture: ${picture}` : null
+  if (picture) return `picture: ${picture}`
+  // P149: the pictures (and words) of the choices of a question that is picked. A true or false or a reason question ignores any choices it carries.
+  return q.answerKind === 'truefalse' || q.answerKind === 'reason' ? null : choicePictureProblem(q.choices)
 }
 
 function answerKeyProblem(q: Question): string | null {
+  // P149: a question with choices (any kind), a true or false and a reason are picked: the key is the letter, true or false, or a reason of the list.
+  if (isPickQuestion(q)) return pickKeyProblem(q)
   if (isMeaningKind(q.answerKind)) return meaningKeyProblem(q.answerKind, q.answer)
+  if (isListKind(q.answerKind)) return listKeyProblem(q, readNumber)
   const parsed = parseAnswer(q.answer)
   const fine =
     q.answerKind === 'choice' ? parsed.kind === 'choice'

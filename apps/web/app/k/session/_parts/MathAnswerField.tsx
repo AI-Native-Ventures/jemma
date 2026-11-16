@@ -27,6 +27,48 @@ export type MathAnswerFieldProps = {
 const FONTS = '/mathlive/fonts'
 /** How long the box is left alone before a line says it cannot be read. */
 const SETTLE_MS = 1500
+/** After a tap on the box, how long to wait before looking at the keyboard: a phone's editor shows its own keyboard about 300 ms after the touch. */
+const KEYBOARD_SETTLE_MS = 350
+
+/**
+ * P140b: how many px the page must scroll down so that the answer box is above the keyboard, with `gap` px between them. 0 when the bottom of the box is
+ * already at or above the top of the keyboard less the gap. Never negative, and a box so tall that scrolling that far would push its top above 8 px is
+ * scrolled only far enough to put its top at 8 px. Pure: the numbers come from `getBoundingClientRect`.
+ */
+export function scrollNeeded(fieldRect: { top: number; bottom: number }, keyboardTop: number, gap = 12): number {
+  const covered = fieldRect.bottom - (keyboardTop - gap)
+  if (!(covered > 0)) return 0
+  const by = Math.min(covered, fieldRect.top - 8)
+  return by > 0 ? by : 0
+}
+
+/**
+ * The element that scrolls the box: its nearest ancestor with a scrolling overflow (on a phone the session screen is a fixed full-screen layer that scrolls
+ * inside itself, so scrolling the window moves nothing), or null when the window scrolls (a laptop).
+ */
+function scrollerOf(el: Element | null): HTMLElement | null {
+  for (let node = el?.parentElement; node && node !== document.body && node !== document.documentElement; node = node.parentElement) {
+    const overflowY = getComputedStyle(node).overflowY
+    if (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') return node
+  }
+  return null
+}
+
+/**
+ * When the keyboard is up and covers the answer box (on a phone the box of a question with a picture sits low, and the keyboard opens over it), scrolls
+ * the screen just far enough, smoothly, to show the box above the keyboard: the layer that scrolls the box, or the window. Does nothing while the keyboard
+ * is hidden, or when the box is already clear of it. The top of the keyboard is the smaller of the screen height less the keyboard height and the real
+ * top of its keys: a keyboard that is still sliding up has its keys lower than they will be.
+ */
+function keepInView(el: Element | null) {
+  const keyboard = window.mathVirtualKeyboard
+  if (!el || !keyboard?.visible) return
+  const rect = keyboard.boundingRect
+  if (!(rect.height > 0)) return
+  const keyboardTop = Math.min(window.innerHeight - rect.height, rect.top > 0 ? rect.top : Number.POSITIVE_INFINITY)
+  const by = scrollNeeded(el.getBoundingClientRect(), keyboardTop)
+  if (by > 0) (scrollerOf(el) ?? window).scrollBy({ top: by, behavior: 'smooth' })
+}
 
 function Hint({ children }: { children: string }) {
   // The example in a hint is maths ("like (x + 2)(x - 2)"), drawn as it is in a textbook, as the hints of every other answer are (P129).
@@ -49,6 +91,9 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint }: 
   useEffect(() => {
     let gone = false
     let unpad: (() => void) | undefined
+    let frame = 0
+    // The layer that scrolls the box on a phone, while it has the keyboard's room at its bottom.
+    let padded: HTMLElement | null = null
     import('mathlive')
       .then(({ MathfieldElement }) => {
         if (gone) return
@@ -59,14 +104,29 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint }: 
         keyboard.layouts = [layout]
         // The keyboard covers the bottom of the page: while it is up the page has room under its last button, so Next can be scrolled into reach.
         const room = () => {
-          document.body.style.paddingBottom = keyboard.visible ? `${Math.round(keyboard.boundingRect.height)}px` : ''
+          const padding = keyboard.visible ? `${Math.round(keyboard.boundingRect.height)}px` : ''
+          document.body.style.paddingBottom = padding
+          // On a phone the screen scrolls inside its own layer, which the padding of the body does not reach: it has the room too, or a box low on the page could
+          // not be scrolled above the keyboard (P140b).
+          const scroller = scrollerOf(field.current)
+          if (padded && padded !== scroller) padded.style.paddingBottom = ''
+          padded = scroller
+          if (scroller) scroller.style.paddingBottom = padding
         }
-        keyboard.addEventListener('geometrychange', room)
-        keyboard.addEventListener('virtual-keyboard-toggle', room)
+        // And the box is scrolled above it (P140b), one frame after the room is made, so the page can scroll that far.
+        const onKeyboard = () => {
+          room()
+          cancelAnimationFrame(frame)
+          frame = requestAnimationFrame(() => keepInView(field.current))
+        }
+        keyboard.addEventListener('geometrychange', onKeyboard)
+        keyboard.addEventListener('virtual-keyboard-toggle', onKeyboard)
         unpad = () => {
-          keyboard.removeEventListener('geometrychange', room)
-          keyboard.removeEventListener('virtual-keyboard-toggle', room)
+          cancelAnimationFrame(frame)
+          keyboard.removeEventListener('geometrychange', onKeyboard)
+          keyboard.removeEventListener('virtual-keyboard-toggle', onKeyboard)
           document.body.style.paddingBottom = ''
+          if (padded) padded.style.paddingBottom = ''
         }
         setStatus('ready')
       })
@@ -114,7 +174,15 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint }: 
       setProblem(look().issue)
     }
     const show = () => window.mathVirtualKeyboard.show()
+    // A tap on the box: once the phone has shown its own keyboard, the box is scrolled above it if the keyboard covers it (P140b).
+    let settle: ReturnType<typeof setTimeout> | undefined
+    const tapped = () => {
+      clearTimeout(settle)
+      settle = setTimeout(() => keepInView(el), KEYBOARD_SETTLE_MS)
+    }
     el.addEventListener('input', read)
+    el.addEventListener('focusin', tapped)
+    el.addEventListener('pointerup', tapped)
     // A phone's editor shows its keyboard itself, a moment after the box is touched: a second show from here would build the keyboard again under the child's finger.
     if (!touch) el.addEventListener('focusin', show)
     el.addEventListener('focusout', leave)
@@ -122,7 +190,10 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint }: 
     el.setAttribute('data-ready', 'true')
     return () => {
       clearTimeout(timer)
+      clearTimeout(settle)
       el.removeEventListener('input', read)
+      el.removeEventListener('focusin', tapped)
+      el.removeEventListener('pointerup', tapped)
       if (!touch) el.removeEventListener('focusin', show)
       el.removeEventListener('focusout', leave)
     }
