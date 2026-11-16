@@ -1,4 +1,4 @@
-import { completeAnswer, fillMissing, finishAnswer, missingPart, nextDifficulty, nextStage, paperQuestions, type MissingPart, type Stage } from '@jemma/profiling/logic'
+import { answerCountOf, completeAnswer, fillMissing, finishAnswer, missingPart, nextDifficulty, nextStage, paperQuestions, type MissingPart, type Stage } from '@jemma/profiling/logic'
 import type { Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
@@ -29,6 +29,13 @@ export type QuestionForChild = {
   form?: Form
   /** The picture the question needs, drawn between its words and the answer box (a senior class only). It never holds the answer. */
   diagram?: SeniorDiagramSpec
+  /**
+   * An equation question only (P146): how many values its key has (2 for "x = 2 or x = 3", 1 for one value, 0 for an inequality). The screen shows that many
+   * boxes. Only the count goes to the browser, never the values.
+   */
+  answerCount?: number
+  /** An equation question only: the letter of the key ("x"), so a box can start with "x =". */
+  answerLetter?: string
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -84,7 +91,14 @@ export function stripQuestion(
     ...(q.choices ? { choices: q.choices } : {}),
     ...(q.form ? { form: q.form } : {}),
     ...(q.diagram ? { diagram: q.diagram } : {}),
+    ...answerFactsOf(q),
   }
+}
+
+/** The count and the letter of an equation question's key (P146), the only facts about the key the browser gets. */
+function answerFactsOf(q: Question): Pick<QuestionForChild, 'answerCount' | 'answerLetter'> {
+  const facts = q.answerKind === 'equation' ? answerCountOf(q.answer) : null
+  return facts ? { answerCount: facts.count, ...(facts.letter ? { answerLetter: facts.letter } : {}) } : {}
 }
 
 const sorted = (items: StoredItem[], phase: Phase) =>
@@ -136,14 +150,26 @@ export type AnswerShape =
   | { kind: 'missing'; part: MissingPart }
   | { kind: 'fraction' | 'mixed' | 'whole' | 'decimal' | 'money' | 'text' }
   /** The four kinds of a senior class, marked by meaning: a number that may be negative, an expression, an equation, a point. */
-  | { kind: 'number' | 'equation' | 'point' }
+  | { kind: 'number' | 'point' }
+  /** An equation with one answer, or with more than the screen has boxes for, or an inequality (`count` 0), or a key the screen was not told about: one maths field. */
+  | { kind: 'equation'; count?: number }
+  /** An equation with 2 to 4 answers (P146): one box for each, "Answer 1", "Answer 2", sent as "x = a or x = b". */
+  | { kind: 'answers'; count: number; letter?: string }
   | { kind: 'expression'; form: Form }
 
-export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'>): AnswerShape {
+/** The most boxes the screen gives an equation (P146). An equation with more values than this is typed in one field, with the word or between them. */
+export const MAX_ANSWER_BOXES = 4
+
+export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> & Pick<QuestionForChild, 'answerCount' | 'answerLetter'>): AnswerShape {
   if (q.choices?.length) return { kind: 'choice' }
   // A question marked by meaning is never a missing number in a fraction, whatever its prompt holds.
   if (q.answerKind === 'expression') return { kind: 'expression', form: q.form ?? 'any' }
-  if (q.answerKind === 'number' || q.answerKind === 'equation' || q.answerKind === 'point') return { kind: q.answerKind }
+  if (q.answerKind === 'equation') {
+    const count = q.answerCount
+    if (count !== undefined && count >= 2 && count <= MAX_ANSWER_BOXES) return { kind: 'answers', count, ...(q.answerLetter ? { letter: q.answerLetter } : {}) }
+    return { kind: 'equation', ...(count !== undefined ? { count } : {}) }
+  }
+  if (q.answerKind === 'number' || q.answerKind === 'point') return { kind: q.answerKind }
   const part = missingPart(q.prompt)
   if (part) return { kind: 'missing', part }
   return { kind: q.answerKind === 'choice' ? 'text' : q.answerKind }
@@ -166,7 +192,7 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
   const [whole, top, bottom] = [boxes.whole.trim(), boxes.top.trim(), boxes.bottom.trim()]
   // "12," is a number the child stopped typing: the comma at the end is not part of it.
   const text =
-    shape.kind === 'missing' || shape.kind === 'text' || shape.kind === 'expression' || shape.kind === 'equation'
+    shape.kind === 'missing' || shape.kind === 'text' || shape.kind === 'expression' || shape.kind === 'equation' || shape.kind === 'answers'
       ? boxes.text.trim()
       : boxes.text.trim().replace(/[.,]+$/, '')
   switch (shape.kind) {

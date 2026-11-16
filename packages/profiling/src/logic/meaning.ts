@@ -680,7 +680,7 @@ const inForm = (n: MathNode, form: Form | undefined): boolean => (form === 'fact
 
 // ---- An equation: one letter, one or more values ------------------------------------------------------------------------------
 
-type Equation = { letter: string | null; values: number[] }
+export type Equation = { letter: string | null; values: number[] }
 
 /** Cuts "x = 3 or x = -1" at `;`, `or`, `and` and at a comma that is not the comma of a decimal (a comma between two digits). */
 const pieces = (text: string): string[] => {
@@ -710,8 +710,12 @@ const pieces = (text: string): string[] => {
   return out
 }
 
-const readEquation = (text: string): Equation | null => {
-  const s = text.replace(MINUS_SIGNS, '-').trim()
+/** The label a paper sheet prints for each answer of a question with several ("Answer 1: ____  Answer 2: ____", P146): not part of the answer. */
+const FIRST_LABEL = /^\s*answers?\s*\d+\s*[:.)]?/i
+const LABEL = /\banswers?\s*\d+\s*[:.)]?/gi
+
+export const readEquation = (text: string): Equation | null => {
+  const s = text.replace(MINUS_SIGNS, '-').replace(FIRST_LABEL, '').replace(LABEL, ';').trim()
   if (!s || s.length > MEANING_MAX_LENGTH) return null
   let letter: string | null = null
   const values: number[] = []
@@ -742,7 +746,7 @@ const readEquation = (text: string): Equation | null => {
 type Op = '<' | '<=' | '>' | '>=' | '!=' | '='
 /** All of these hold at once. */
 type Branch = { op: Op; v: number }[]
-type Inequality = { letter: string; branches: Branch[] }
+export type Inequality = { letter: string; branches: Branch[] }
 
 const RELATION = /(<=|>=|!=|≤|≥|≠|<|>|=)/
 const OPS: Record<string, Op> = { '<=': '<=', '≤': '<=', '>=': '>=', '≥': '>=', '!=': '!=', '≠': '!=', '<': '<', '>': '>', '=': '=' }
@@ -753,7 +757,7 @@ const LETTER_ALONE = /^\s*([a-zA-ZθΘαβγδφλω])\s*$/
  * "x < 3", "3 <= x", "-2 < x <= 5", "x != 0", "x < -1 or x > 4", "x > 1 and x < 5". `needed` says a sign of inequality must be in the text (the key of an
  * inequality has one); an answer may be a plain "x = 3" too. Null when it does not read: more than one letter, or a side that is not a number.
  */
-const readInequality = (text: string, needed: boolean): Inequality | null => {
+export const readInequality = (text: string, needed: boolean): Inequality | null => {
   const s = text.replace(MINUS_SIGNS, '-').trim()
   if (!s || s.length > MEANING_MAX_LENGTH) return null
   if (needed && !/[<>≤≥≠]|!=/.test(s)) return null

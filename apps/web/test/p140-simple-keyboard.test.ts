@@ -128,30 +128,60 @@ describe('rows 4 and 5, which are what a tab changes', () => {
     expect(CAPS.asin.latex).toBe('\\sin^{-1}')
   })
 
-  it('Compare: < > <= >= != plus or minus, |x|, %, R and one blank, then a row of blanks', () => {
+  it('Compare: < > <= >= != plus or minus, |x|, %, R and the word or, then a row of blanks (a number answer has a blank where or is)', () => {
     const [a, b] = rows45('compare')
-    expect(names(a!)).toEqual(['less than', 'greater than', 'less than or equal to', 'greater than or equal to', 'not equal to', 'plus or minus', 'absolute value', 'percent', 'rand', BLANK])
+    expect(names(a!)).toEqual(['less than', 'greater than', 'less than or equal to', 'greater than or equal to', 'not equal to', 'plus or minus', 'absolute value', 'percent', 'rand', 'or'])
     expect(names(b!)).toEqual(blanks(10))
     expect(CAPS.abs.latex).toBe('\\left|\\square\\right|')
+    // P146: the word or types the word between two answers, so three answers, or x < -1 or x > 4, can be written in one box
+    expect(CAPS.or.insert).toBe('\\text{ or }')
+    expect(widths(a!)).toEqual(Array.from({ length: 10 }, () => 1))
+    for (const kind of ['expression', 'equation'] as const) expect(names(rows45('compare', kind)[0]!)).toContain('or')
+    expect(names(rows45('compare', 'number')[0]!)).toEqual(['less than', 'greater than', 'less than or equal to', 'greater than or equal to', 'not equal to', 'plus or minus', 'absolute value', 'percent', 'rand', BLANK])
   })
 
-  it('Shapes: angle, triangle, perpendicular, parallel, congruent, similar, the degree sign, theta, pi and one blank, then a row of blanks', () => {
+  it('Shapes: only the degree sign, theta and pi are left (the signs of geometry the marking cannot read are not on any key), then blanks', () => {
     const [a, b] = rows45('shapes')
-    expect(names(a!)).toEqual(['angle', 'triangle', 'perpendicular', 'parallel', 'congruent', 'similar', 'degrees', 'theta', 'pi', BLANK])
+    expect(names(a!)).toEqual(['degrees', 'theta', 'pi', ...blanks(7)])
     expect(names(b!)).toEqual(blanks(10))
   })
 
-  it('Calculus: d/dx and f prime of x (two units each), the integral, lim, the sum, infinity, to, e, then ln, log, f(x), x, y and blanks', () => {
+  it('Calculus: d/dx and f prime of x (two units each), infinity, e, then ln, log, f(x), x, y and blanks (no integral, lim, sum or arrow)', () => {
     const [a, b] = rows45('calculus')
-    expect(names(a!)).toEqual(['d by d x', 'f prime of x', 'integral', 'limit', 'sum', 'infinity', 'tends to', 'the number e'])
+    expect(names(a!)).toEqual(['d by d x', 'f prime of x', 'infinity', 'the number e', ...blanks(4)])
     expect(widths(a!)).toEqual([2, 2, 1, 1, 1, 1, 1, 1])
     expect(names(b!)).toEqual(['natural logarithm', 'logarithm', 'f of x', 'the letter x', 'the letter y', ...blanks(5)])
     expect(CAPS.ddx.latex).toBe('\\frac{d}{dx}')
     expect(CAPS.fPrime.latex).toBe("f'(x)")
   })
 
-  it('a number answer sees the same rows 4 and 5 on the tabs it has', () => {
-    for (const tab of ['trig', 'compare', 'shapes'] as const) expect(rows45(tab, 'number').map(names)).toEqual(rows45(tab, 'expression').map(names))
+  it('P146: no key whose sign the marking can never read is on any layer (angle, triangle, perpendicular, parallel, congruent, similar, integral, lim, sum, to)', () => {
+    const hidden = ['angle', 'triangle', 'perpendicular', 'parallel', 'congruent', 'similar', 'integral', 'limit', 'sum', 'tends to']
+    const unreadable = [CAPS.angle, CAPS.triangle, CAPS.perpendicular, CAPS.parallel, CAPS.congruent, CAPS.similar, CAPS.integral, CAPS.limit, CAPS.sum, CAPS.arrow]
+    expect(unreadable.map((k) => k.tooltip)).toEqual(hidden)
+    for (const { kind, strand, layout } of all) {
+      for (const layer of layout.layers) {
+        const found = layer.rows.flatMap(names)
+        for (const name of hidden) expect(found, `${kind} ${strand} ${layer.id}`).not.toContain(name)
+        // none of their faces is anywhere on the layer either
+        const latex = layer.rows.flat().map((k) => (typeof k === 'string' ? '' : (k.latex ?? '')))
+        for (const sign of ['\\angle', '\\triangle', '\\perp', '\\parallel', '\\cong', '\\sim', '\\int', '\\lim', '\\sum', '\\to']) expect(latex, `${layer.id} ${sign}`).not.toContain(sign)
+      }
+    }
+  })
+
+  it('infinity stays, on the Calculus tab', () => {
+    expect(names(rows45('calculus')[0]!)).toContain('infinity')
+  })
+
+  it('a number answer sees the same rows 4 and 5 on the tabs it has, apart from the word or (a number is one number)', () => {
+    for (const tab of ['trig', 'shapes'] as const) expect(rows45(tab, 'number').map(names)).toEqual(rows45(tab, 'expression').map(names))
+    const [numberRow] = rows45('compare', 'number').map(names)
+    const [expressionRow] = rows45('compare', 'expression').map(names)
+    expect(numberRow!.slice(0, 9)).toEqual(expressionRow!.slice(0, 9))
+    expect(expressionRow![9]).toBe('or')
+    expect(numberRow![9]).toBe(BLANK)
+    expect(names(rows45('compare', 'number')[1]!)).toEqual(names(rows45('compare', 'expression')[1]!))
   })
 
   it('a number answer has no letter key on any of its tabs, and no key is twice on a layer', () => {

@@ -5,6 +5,7 @@ import { answerShape, answerValue, type AnswerShape, type QuestionForChild } fro
 import { PendingButton } from '@/components/ui/Button'
 import { Frac, FractionText, withFractions } from './Frac'
 import { MathAnswerField } from './MathAnswerField'
+import { equationHint, MULTI_HINT, MultiAnswer } from './answers/MultiAnswer'
 import { promptLayout } from './prompt-layout'
 import { QuestionContext, QuestionHeading } from './QuestionPrompt'
 import { QuestionPicture } from './QuestionPicture'
@@ -92,7 +93,6 @@ const FORM_HINTS = {
   factorised: 'Type it as a product of brackets, like (x + 2)(x - 2).',
   expanded: 'Type it with no brackets, like x\u00b2 + 4x + 4.',
 } as const
-const EQUATION_HINT = 'Type the answer, like x = 4. Two answers: x = 3 or x = -1.'
 
 /** The minus key of a number: a phone's number pad has none. It puts a minus in front of the number, and takes it away again. */
 function MinusKey({ label, onPress, className = 'h-[76px] w-14 text-[34px]' }: { label: string; onPress: () => void; className?: string }) {
@@ -190,7 +190,14 @@ function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b: Boxes;
     case 'expression':
       return <MathAnswerField kind="expression" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={FORM_HINTS[shape.form]} />
     case 'equation':
-      return <MathAnswerField kind="equation" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={EQUATION_HINT} />
+      return <MathAnswerField kind="equation" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={equationHint(shape.count)} />
+    case 'answers':
+      return (
+        <div className="flex w-full flex-col items-center gap-3.5">
+          <MultiAnswer count={shape.count} letter={shape.letter} topic={topic} prompt={prompt} onChange={b.set.text} />
+          <Hint>{MULTI_HINT}</Hint>
+        </div>
+      )
     case 'point':
       return (
         <div className="flex flex-col items-center gap-3.5">
@@ -311,7 +318,7 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
   const warm = q.phase === 'warmup'
   const shape = answerShape(q)
   // A question of a senior class (the four typed kinds) has its maths typeset whenever it has a sign in it; any other question when it has algebra in it.
-  const typeset = shape.kind === 'number' || shape.kind === 'expression' || shape.kind === 'equation' || shape.kind === 'point' ? 'all' : 'algebra'
+  const typeset = shape.kind === 'number' || shape.kind === 'expression' || shape.kind === 'equation' || shape.kind === 'answers' || shape.kind === 'point' ? 'all' : 'algebra'
   const value = shape.kind === 'choice' ? (picked ?? '') : answerValue(shape, { whole, top, bottom, text, x, y })
   const submit = () => value && !busy && onAnswer(value, (Date.now() - shown.current) / 1000)
   const boxes: Boxes = { whole, top, bottom, text, x, y, set: { whole: setWhole, top: setTop, bottom: setBottom, text: setText, x: setX, y: setY } }

@@ -94,7 +94,10 @@ export function writeLine(shape: AnswerShape): string {
           ? 'Write it with no brackets, like x\u00b2 + 4x + 4.'
           : 'Write an expression, like 2x + 3.'
     case 'equation':
-      return 'Write the answer, like x = 4. Two answers: x = 3 or x = -1.'
+      return shape.count === 0 ? 'Write the answer, like x < 4.' : shape.count !== undefined && shape.count > 4 ? 'Write every answer, with the word or between them.' : 'Write the answer, like x = 4.'
+    // An equation with two answers or more (P146): a blank for each.
+    case 'answers':
+      return Array.from({ length: shape.count }, (_, i) => `Answer ${i + 1}: ____`).join('  ')
     case 'point':
       return 'Write the x and the y of the point, like (2; 3).'
     case 'number':
@@ -145,7 +148,7 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
             ))}
           </ol>
         ) : null}
-        <p className="m-0 text-[15px] leading-[1.4] text-body">{writeLine(shape)}</p>
+        <p className="m-0 text-[15px] leading-[1.4] whitespace-pre-wrap text-body">{writeLine(shape)}</p>
       </div>
     </li>
   )

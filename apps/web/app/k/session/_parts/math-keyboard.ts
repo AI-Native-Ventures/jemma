@@ -12,9 +12,12 @@ import { strandOf, type Strand, type TypedKind } from './maths-keys'
 // Rows 4 and 5 depend on the tab (blank keys fill a row, so every tab is as tall as the others):
 //   Letters   x y z a b c k m n p / d f g h q r s t u v
 //   Trig      sin cos tan and their inverses, the degree sign, theta, alpha, beta / pi, gamma, delta, phi
-//   Compare   < > <= >= != plus-or-minus |x| % R
-//   Shapes    angle, triangle, perpendicular, parallel, congruent, similar, the degree sign, theta, pi
-//   Calculus  d/dx, f'(x), the integral, lim, the sum, infinity, to, e / ln, log, f(x), x, y
+//   Compare   < > <= >= != plus-or-minus |x| % R, and the word or (an expression or an equation: 3 answers, or x < -1 or x > 4, in one box)
+//   Shapes    the degree sign, theta, pi
+//   Calculus  d/dx, f'(x), infinity, e / ln, log, f(x), x, y
+// P146: the signs of geometry and calculus that the marking can never read (angle, triangle, perpendicular, parallel, congruent, similar, the integral, lim,
+// the sum, to) are not on any key: an answer written with one could only be marked unreadable. They are still defined in CAPS, so a key comes back when the
+// marking learns its sign. Infinity stays.
 // Row 6 is the tabs, one key for each tab of this kind of answer (the one you are on is dark). A number has no letters and no calculus, so it has Trig, Compare
 // and Shapes, then blanks, then the key that hides the keyboard. The faces of the keys are textbook maths (LaTeX drawn by the editor), never text with a slash
 // or a caret. The size of everything follows the width of the screen (LAYER_STYLE).
@@ -173,8 +176,8 @@ const topRows = (): (string | Keycap)[][] => [
   [wide(CAPS.fraction, 2), wide(CAPS.sqrt, 1.5), wide(CAPS.cbrt, 1.5), wide(CAPS.squared, 1.5), wide(CAPS.power, 1.5), CAPS.left, CAPS.right],
 ]
 
-/** The two rows under the top rows: they are what a tab changes. */
-function tabRows(tab: TabId): [(string | Keycap)[], (string | Keycap)[]] {
+/** The two rows under the top rows: they are what a tab changes. A number answer has no word or between answers (it is one number). */
+function tabRows(tab: TabId, kind: TypedKind): [(string | Keycap)[], (string | Keycap)[]] {
   switch (tab) {
     case 'letters':
       return [['x', 'y', 'z', 'a', 'b', 'c', 'k', 'm', 'n', 'p'].map(letter), ['d', 'f', 'g', 'h', 'q', 'r', 's', 't', 'u', 'v'].map(letter)]
@@ -184,19 +187,19 @@ function tabRows(tab: TabId): [(string | Keycap)[], (string | Keycap)[]] {
         filled([CAPS.pi, CAPS.gamma, CAPS.delta, CAPS.phi]),
       ]
     case 'compare':
-      return [filled([CAPS.less, CAPS.greater, CAPS.lessEqual, CAPS.greaterEqual, CAPS.notEqual, CAPS.plusMinus, CAPS.abs, CAPS.percent, CAPS.rand]), filled([])]
-    case 'shapes':
-      return [filled([CAPS.angle, CAPS.triangle, CAPS.perpendicular, CAPS.parallel, CAPS.congruent, CAPS.similar, CAPS.degree, CAPS.theta, CAPS.pi]), filled([])]
-    case 'calculus':
       return [
-        [wide(CAPS.ddx, 2), wide(CAPS.fPrime, 2), CAPS.integral, CAPS.limit, CAPS.sum, CAPS.infinity, CAPS.arrow, CAPS.e],
-        filled([CAPS.ln, CAPS.log, CAPS.fx, letter('x'), letter('y')]),
+        filled([CAPS.less, CAPS.greater, CAPS.lessEqual, CAPS.greaterEqual, CAPS.notEqual, CAPS.plusMinus, CAPS.abs, CAPS.percent, CAPS.rand, ...(kind === 'number' ? [] : [CAPS.or])]),
+        filled([]),
       ]
+    case 'shapes':
+      return [filled([CAPS.degree, CAPS.theta, CAPS.pi]), filled([])]
+    case 'calculus':
+      return [filled([wide(CAPS.ddx, 2), wide(CAPS.fPrime, 2), CAPS.infinity, CAPS.e]), filled([CAPS.ln, CAPS.log, CAPS.fx, letter('x'), letter('y')])]
   }
 }
 
 /** The rows of one tab for one kind of answer: the three rows every tab has, the two of the tab, and the strip of tabs. Six rows, whatever the tab. */
-const rowsOf = (tab: TabId, kind: TypedKind): (string | Keycap)[][] => [...topRows(), ...tabRows(tab), tabRow(kind, tab)]
+const rowsOf = (tab: TabId, kind: TypedKind): (string | Keycap)[][] => [...topRows(), ...tabRows(tab, kind), tabRow(kind, tab)]
 
 /**
  * The CSS of a layer, so that the keyboard is responsive: the size of the keys and of what is written on them follows the width of the screen, and nothing
