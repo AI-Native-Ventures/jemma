@@ -125,7 +125,7 @@ function Coordinate({ axis, value, onChange }: { axis: 'x' | 'y'; value: string;
   )
 }
 
-type Boxes = {
+export type Boxes = {
   whole: string
   top: string
   bottom: string
@@ -143,7 +143,7 @@ type Boxes = {
 }
 
 /** The boxes and the line for every answer that is typed, by what kind of answer it is. A missing number is not here: it is typed in the question. */
-function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b: Boxes; prompt: string; topic?: string }) {
+export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b: Boxes; prompt: string; topic?: string }) {
   switch (shape.kind) {
     case 'fraction':
       return (
@@ -225,7 +225,7 @@ function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b: Boxes;
 }
 
 /** The question with its missing number as a box inside the fraction, big enough to tap, and the line under it. */
-function MissingQuestion({ q, shape, value, onChange }: { q: QuestionForChild; shape: Extract<AnswerShape, { kind: 'missing' }>; value: string; onChange: (v: string) => void }) {
+export function MissingQuestion({ q, shape, value, onChange }: { q: QuestionForChild; shape: Extract<AnswerShape, { kind: 'missing' }>; value: string; onChange: (v: string) => void }) {
   const { unknown } = shape.part
   // A long prompt (P130): the sentences before the line that holds the fraction (and any after it) are normal text, and only that line is drawn big.
   const layout = promptLayout(q.prompt, 'algebra')
@@ -268,7 +268,7 @@ function MissingQuestion({ q, shape, value, onChange }: { q: QuestionForChild; s
 }
 
 /** The answer buttons of a choice question: a fraction in a choice is stacked too. */
-function Choices({ q, picked, onPick, warm }: { q: QuestionForChild; picked: string | null; onPick: (letter: string) => void; warm: boolean }) {
+export function Choices({ q, picked, onPick, warm }: { q: QuestionForChild; picked: string | null; onPick: (letter: string) => void; warm: boolean }) {
   return (
     <div className={`grid gap-3 ${warm ? 'grid-cols-2' : 'w-full grid-cols-2'}`}>
       {(q.choices ?? []).map((choice, i) => {
