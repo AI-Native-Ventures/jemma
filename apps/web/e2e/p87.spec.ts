@@ -5,7 +5,7 @@ import { pictureProblem } from '@jemma/profiling/logic'
 import { createServiceClient, type Json } from '@jemma/profiling/db'
 import { LessonSchema, type Lesson, type Question } from '@jemma/profiling/schemas'
 import { expect, test as base, type Locator, type Page } from '@playwright/test'
-import { mathField, writeAnswer, writtenLatex } from './helpers/math-field'
+import { mathField, tapAwayKeyboard, writeAnswer, writtenLatex } from './helpers/math-field'
 import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 
 // A learner of a Grade 10 class meets a graph and a triangle inside a question, types the answers, and finds the parts of their own map on My maths.
@@ -194,8 +194,7 @@ test.describe('a learner of a Grade 10 class meets a graph and a triangle in a q
     // The question is about an angle: the keyboard of the editor opens on the geometry tab (the degree sign, the Greek letters), then goes away.
     await (await mathField(page)).click()
     await expect.poll(() => page.locator('.MLK__layer.is-visible').first().getAttribute('id')).toBe('jemma-geometry')
-    await page.locator('h1[data-prompt]').click()
-    await expect.poll(() => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible), { timeout: 15_000 }).toBe(false)
+    await tapAwayKeyboard(page)
     await writeAnswer(page, '30')
     await next(page).click()
 
