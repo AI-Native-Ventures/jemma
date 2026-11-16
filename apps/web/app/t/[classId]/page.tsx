@@ -9,6 +9,7 @@ import { LaptopHome } from './LaptopHome'
 import { FullLogLink } from './log/FullLogLink'
 import { Only } from './Only'
 import { ShareCard } from './ShareCard'
+import { TopicsEntry } from './TopicsEntry'
 
 const dot = 'size-[9px] rounded-pill'
 
@@ -265,11 +266,12 @@ export default async function TeacherClassHome({
   const base = `/t/${classId}`
   const next = home.mode === 'next'
   const phone = <PhoneHome home={home} base={base} classId={classId} />
-  if (next) return <div className="lg:mx-auto lg:max-w-[640px]">{phone}</div>
+  if (next) return <div className="lg:mx-auto lg:max-w-[640px]"><TopicsEntry base={base} narrow />{phone}</div>
   const key = home.gaps.some((g) => g.key === gap) ? gap! : home.topGapKey
   const detail = key ? await getGapDetail(classId, key) : null
   return (
     <>
+      <TopicsEntry base={base} />
       <Only on="phone">{phone}</Only>
       <Only on="laptop">
         <LaptopHome home={home} detail={detail} base={base} classId={classId} />
