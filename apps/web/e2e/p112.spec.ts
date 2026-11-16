@@ -86,8 +86,13 @@ test.describe('a learner who signed up alone joins their school class', () => {
     const logins = (await db.from('demo_sandboxes').select('logins').eq('id', sandbox.sandboxId).single()).data!.logins as Record<'teacher', { email: string; password: string }>
     const baseURL = new URL(process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000')
 
-    // 1. The learner opens Me: the card, a code no class has, then the code of the class.
+    // 1. The home keeps to "class" (no school, no teacher); Me has the full card; then a code no class has, then the code of the class.
     await signInWithPassword(page, learner.email, learner.password)
+    await page.goto('/k')
+    await check(page.getByRole('heading', { name: 'Join your class' })).toBeVisible()
+    await expect(page.getByLabel('Class code')).toBeVisible()
+    expect(await page.locator('main').first().innerText()).not.toMatch(/school|teacher/i)
+    await atEveryWidth(page, 'learner-home-card')
     await page.goto('/k/me')
     await check(page.getByRole('heading', { name: 'Join your school class' })).toBeVisible()
     await expect(page.getByLabel("Your teacher's class code")).toBeVisible()
@@ -112,7 +117,7 @@ test.describe('a learner who signed up alone joins their school class', () => {
     // The card stays on the home too, and no second request can be made.
     await page.goto('/k')
     await check(page.getByText('Waiting for Ms Banda to say yes.')).toBeVisible()
-    await expect(page.getByLabel("Your teacher's class code")).toHaveCount(0)
+    await expect(page.getByLabel('Class code')).toHaveCount(0)
     await atEveryWidth(page, 'learner-waiting')
 
     // 2. Ms Banda: the item in Needs you, who the learner is, yes.
@@ -158,7 +163,7 @@ test.describe('a learner who signed up alone joins their school class', () => {
     await check(group).toBeVisible()
     await expect(page.getByRole('button', { name: 'My school', exact: true })).toHaveAttribute('aria-pressed', 'true')
     await expect(page.getByRole('button', { name: 'My own', exact: true })).toHaveAttribute('aria-pressed', 'false')
-    await expect(page.getByRole('heading', { name: 'Join your school class' })).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: /^Join your (school )?class$/ })).toHaveCount(0)
     await atEveryWidth(page, 'learner-switch')
     await expect(async () => {
       await page.getByRole('button', { name: 'My own', exact: true }).click({ timeout: 5_000 })

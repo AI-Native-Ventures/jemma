@@ -26,7 +26,7 @@ vi.mock('../app/t/[classId]/join-requests/actions', () => ({ decideJoinRequest: 
 import { NeedsYouList } from '@/components/blocks'
 import { getClassHome } from '@/lib/data/p18'
 import { likelyMatch, type JoinRequestView } from '@/lib/data/class-join'
-import { JoinClassCard } from '../app/k/join/JoinClassCard'
+import { JoinClassCardContent } from '../app/k/join/JoinClassCard'
 import TeacherJoinRequestPage from '../app/t/[classId]/join-requests/[requestId]/page'
 
 const LEARNER = 'learner-1'
@@ -48,39 +48,56 @@ beforeEach(() => {
 })
 afterEach(cleanup)
 
+const card = (where: 'home' | 'me' = 'me') => JoinClassCardContent({ where })
+
 describe('the card "Join your school class"', () => {
-  it('is a code box and Send for a learner who signed up alone', async () => {
+  it('on Me is a code box and Send, in full words, for a learner who signed up alone', async () => {
     asLearner(kids())
-    render(await JoinClassCard())
+    render(await card('me'))
     expect(screen.getByRole('heading', { name: 'Join your school class' })).toBeTruthy()
     expect(screen.getByLabelText("Your teacher's class code")).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Send' })).toBeTruthy()
   })
 
-  it('says who the learner is waiting for, with no code box, once a request is sent', async () => {
-    asLearner(kids({ class_join_requests: [{ id: 'r1', class_id: 'c1', own_child_id: 'own-kid', requested_name: 'Zola', status: 'pending' }] }))
-    render(await JoinClassCard())
-    expect(screen.getByText('Waiting for Ms Banda to say yes.')).toBeTruthy()
-    expect(screen.queryByLabelText("Your teacher's class code")).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Send' })).toBeNull()
+  it('on the home keeps to "class": no school and no teacher in its words', async () => {
+    asLearner(kids())
+    render(await card('home'))
+    expect(screen.getByRole('heading', { name: 'Join your class' })).toBeTruthy()
+    expect(screen.getByLabelText('Class code')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Send' })).toBeTruthy()
+    expect(document.body.textContent).not.toMatch(/school|teacher/i)
   })
 
-  it('says the teacher said no, and offers the box again', async () => {
+  it('says who the learner is waiting for, with no code box, once a request is sent', async () => {
+    asLearner(kids({ class_join_requests: [{ id: 'r1', class_id: 'c1', own_child_id: 'own-kid', requested_name: 'Zola', status: 'pending' }] }))
+    for (const where of ['me', 'home'] as const) {
+      cleanup()
+      render(await card(where))
+      expect(screen.getByText('Waiting for Ms Banda to say yes.')).toBeTruthy()
+      expect(screen.queryByRole('button', { name: 'Send' })).toBeNull()
+      expect(document.querySelector('input')).toBeNull()
+    }
+  })
+
+  it('says it was no, and offers the box again', async () => {
     asLearner(kids({ class_join_requests: [{ id: 'r1', class_id: 'c1', own_child_id: 'own-kid', requested_name: 'Zola', status: 'declined' }] }))
-    render(await JoinClassCard())
+    render(await card('me'))
     expect(screen.getByText('Your teacher said no. Check the code and try again.')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Send' })).toBeTruthy()
+    cleanup()
+    render(await card('home'))
+    expect(screen.getByText('The answer was no. Check the code and try again.')).toBeTruthy()
   })
 
   it('is not drawn for a learner who has a school class, for a twin, for a grown-up, or when nobody is signed in', async () => {
     asLearner(kids({ children: [{ id: 'sk', school_id: 's1', first_name: 'Zola', private_of: null, user_id: LEARNER }] }))
-    expect(await JoinClassCard()).toBeNull()
+    expect(await card()).toBeNull()
     asLearner(kids({ children: [{ id: 'sk', school_id: 's1', first_name: 'Zola', private_of: null, user_id: LEARNER }, { id: 'own-kid', school_id: 'own1', first_name: 'Zola', private_of: 'sk', user_id: LEARNER }] }))
-    expect(await JoinClassCard()).toBeNull()
+    expect(await card()).toBeNull()
     asLearner(kids(), 'a-grown-up')
-    expect(await JoinClassCard()).toBeNull()
+    expect(await card()).toBeNull()
     asLearner(kids(), null)
-    expect(await JoinClassCard()).toBeNull()
+    expect(await card()).toBeNull()
   })
 
   it('never fails the page it sits on', async () => {
@@ -90,7 +107,7 @@ describe('the card "Join your school class"', () => {
       },
     }
     world.server = { auth: { getUser: async () => ({ data: { user: { id: LEARNER } } }) } }
-    expect(await JoinClassCard()).toBeNull()
+    expect(await card()).toBeNull()
   })
 })
 

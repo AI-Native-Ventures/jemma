@@ -17,7 +17,7 @@ export default async function ChildAccountPage() {
       </header>
       <main className="mx-auto lg:max-w-[560px]" style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '18px 20px 30px' }}>
         <MeForm firstName={firstName} initial={initial} />
-        <JoinClassCard />
+        <JoinClassCard where="me" />
       </main>
     </div>
   )

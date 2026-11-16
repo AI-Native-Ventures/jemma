@@ -68,7 +68,7 @@ export default async function ChildToday() {
           <PracticeCard state={today.practice} suggestion={today.suggestion} workspace={today.workspace} />
           <GapsCard today={today} tone="rest" />
           {today.workspace === 'own' ? <OwnWorkLink /> : null}
-          <JoinClassCard />
+          <JoinClassCard where="home" />
         </div>
       </div>
     )
@@ -104,7 +104,7 @@ export default async function ChildToday() {
         </section>
         <GapsCard today={today} tone="today" />
         {today.workspace === 'own' ? <OwnWorkLink /> : null}
-        <JoinClassCard />
+        <JoinClassCard where="home" />
       </div>
     </div>
   )

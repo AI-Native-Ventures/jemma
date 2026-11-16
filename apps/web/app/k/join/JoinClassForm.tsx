@@ -8,7 +8,7 @@ import { sendJoinRequest } from './actions'
  * The code box and Send of "Join your school class". After a good code the card says who the learner is waiting for, at once; the page the server
  * draws next has the same line. A refusal is shown under the box in the action's own words.
  */
-export function JoinClassForm({ declined }: { declined: boolean }) {
+export function JoinClassForm({ declined, label, declinedNote }: { declined: boolean; label: string; declinedNote: string }) {
   const [code, setCode] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [sent, setSent] = useState<string | null>(null)
@@ -32,9 +32,9 @@ export function JoinClassForm({ declined }: { declined: boolean }) {
         send()
       }}
     >
-      {declined ? <p className="m-0 text-[15px] leading-[1.4] text-body">Your teacher said no. Check the code and try again.</p> : null}
+      {declined ? <p className="m-0 text-[15px] leading-[1.4] text-body">{declinedNote}</p> : null}
       <label htmlFor="join-code" className="text-[15px] font-medium">
-        Your teacher&apos;s class code
+        {label}
       </label>
       <input
         id="join-code"

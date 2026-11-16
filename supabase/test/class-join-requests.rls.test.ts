@@ -59,8 +59,8 @@ beforeAll(async () => {
   Object.assign(ids, { sA: sA!.id, cA: cA!.id, cA2: cA2!.id, cB: cB!.id, zolaKid: zolaKid!.id, otherKid: otherKid!.id })
   await ok(
     service.from('class_join_requests').insert([
-      { id: crypto.randomUUID(), class_id: cA!.id, own_child_id: zolaKid!.id, requested_name: 'Zola' },
-      { id: crypto.randomUUID(), class_id: cA2!.id, own_child_id: otherKid!.id, requested_name: 'Naledi' },
+      { id: crypto.randomUUID(), class_id: cA!.id, own_child_id: zolaKid!.id, requested_name: 'Zola', status: 'pending' },
+      { id: crypto.randomUUID(), class_id: cA2!.id, own_child_id: otherKid!.id, requested_name: 'Naledi', status: 'pending' },
       { id: crypto.randomUUID(), class_id: cB!.id, own_child_id: otherKid!.id, requested_name: 'Naledi', status: 'declined' },
     ]),
   )
