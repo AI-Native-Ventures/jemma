@@ -9,7 +9,8 @@ import { noTopicsLine } from '@/lib/own-grades'
 import { PracticeRow, PractiseButton } from '../../Practise'
 import { AppHeader } from '../../session/_parts/AppHeader'
 import { Diamond } from '../../session/_parts/Gems'
-import { lockOf, rowScore, strandScreen, topicLine } from '../format'
+import { levelOfScore, lockOf, rowScore, strandScreen, topicLine } from '../format'
+import { ProgressLegend, TopicDot } from '../ProgressDots'
 
 export const metadata: Metadata = { title: 'My maths' }
 export const dynamic = 'force-dynamic'
@@ -22,6 +23,7 @@ const list = 'm-0 flex list-none flex-col rounded-20 border border-line bg-card 
  * to practise the part itself. In My own the address carries the class (`?class=<id>`), and the way back goes to that class.
  * A class on the CAPS map (P115) lists its topics under "Term 1", "Term 2" and so on, with the names as CAPS has them (a topic CAPS teaches twice
  * in a year is the same name under two terms), and says under the heading where the topics come from. Any other map keeps its flat list.
+ * Each topic row starts with its progress circle (P122), filled by the topic's score as on My maths, with the same one-line key above the list.
  */
 export default async function MyMathsPartPage({ params, searchParams }: { params: Promise<{ family: string }>; searchParams?: Promise<{ class?: string | string[]; grade?: string | string[] }> }) {
   const { family } = await params
@@ -38,7 +40,14 @@ export default async function MyMathsPartPage({ params, searchParams }: { params
   const byTerm = screen.kind === 'topics' ? groupByTerm(screen.topics, source) : null
   const from = screen.kind === 'topics' ? capsLine(source) : null
   const row = (t: MyMathsTopic, name: string) => (
-    <PracticeRow key={t.id} choice={{ topicId: t.id, topicName: t.name }} name={name} lines={[topicLine(t), rowScore(t.score)].filter((l): l is string => l !== null)} locked={lock !== null} />
+    <PracticeRow
+      key={t.id}
+      choice={{ topicId: t.id, topicName: t.name }}
+      name={name}
+      lines={[topicLine(t), rowScore(t.score)].filter((l): l is string => l !== null)}
+      locked={lock !== null}
+      lead={<TopicDot level={levelOfScore(t.score)} />}
+    />
   )
   return (
     <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans leading-[normal] lg:min-h-dvh">
@@ -62,6 +71,8 @@ export default async function MyMathsPartPage({ params, searchParams }: { params
             <Link href={lock.href} className="font-semibold text-ink underline underline-offset-[3px]">{lock.link}</Link>
           </p>
         ) : null}
+
+        {screen.kind === 'topics' ? <ProgressLegend /> : null}
 
         {screen.kind === 'topics' ? (
           byTerm ? (
