@@ -1,5 +1,6 @@
 import { ReteachSchema, type Reteach } from '@jemma/profiling/schemas'
 import type { NeedsYouItem } from '@/components/blocks'
+import { needsOfClass } from '@/lib/class-join'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import { gapSentence, whyLine } from '@/lib/mistake-words'
 import { loadShortLabels } from '@/lib/topics'
@@ -185,7 +186,7 @@ async function load(classId: string) {
 
   const none = ['00000000-0000-0000-0000-000000000000']
   const ids = childIds.length ? childIds : none
-  const [kids, gapRows, papers, needs, sessions, plannedSessions, log] = await Promise.all([
+  const [kids, gapRows, papers, needs, sessions, plannedSessions, log, joins] = await Promise.all([
     supabase.from('children').select('id, first_name, created_at').in('id', ids),
     supabase.from('gaps').select('child_id, topic_name, stage, evidence, first_practised_at').in('child_id', ids).order('created_at'),
     test
@@ -200,6 +201,8 @@ async function load(classId: string) {
       .gte('finished_at', since),
     supabase.from('sessions').select('child_id, topic_name, planned_for').in('child_id', ids).eq('status', 'planned').gt('planned_for', dayKey(now)).order('planned_for'),
     supabase.from('activity_log').select('at, text').eq('class_id', classId).order('at', { ascending: false }).limit(4),
+    // P112: the learners who asked to join this class and wait for a yes. A table that is not there yet reads as none.
+    supabase.from('class_join_requests').select('id').eq('class_id', classId).eq('status', 'pending'),
   ])
 
   const paperIds = (papers.data ?? []).map((p) => p.id)
@@ -227,7 +230,7 @@ async function load(classId: string) {
     names: new Map((kids.data ?? []).map((k) => [k.id, k.first_name])),
     gapRows: gapRows.data ?? [],
     papers: papers.data ?? [],
-    needs: (needs.data ?? []).filter((n) => !n.child_id || childIds.includes(n.child_id)),
+    needs: needsOfClass(needs.data ?? [], childIds, new Set((joins.data ?? []).map((j) => j.id))),
     sessions: sessions.data ?? [],
     items,
     plannedSessions: plannedSessions.data ?? [],
@@ -377,7 +380,7 @@ export async function getClassHome(classId: string): Promise<ClassHome | null> {
     n.kind === 'desktop_off' && desktopOff
       ? { href: `${base}/settings/ai-runner`, title: desktopOff.title, detail: desktopOff.detail, desktopOff: true }
       : {
-          href: n.kind === 'approve_link' ? `${base}/link-requests/${n.ref_id}` : n.kind === 'review_long_view' ? `${base}/learners/${n.ref_id}/long-view` : n.kind === 'check_records' ? `${base}/learners/records/${n.ref_id}` : `${base}/needs-you/${n.id}`,
+          href: n.kind === 'approve_link' ? `${base}/link-requests/${n.ref_id}` : n.kind === 'approve_join' ? `${base}/join-requests/${n.ref_id}` : n.kind === 'review_long_view' ? `${base}/learners/${n.ref_id}/long-view` : n.kind === 'check_records' ? `${base}/learners/records/${n.ref_id}` : `${base}/needs-you/${n.id}`,
           title: n.title,
           detail: n.detail,
         },
