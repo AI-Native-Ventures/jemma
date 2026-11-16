@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { TeachingLessonSchema, TopicLessonsSchema, type TeachingLesson, type TeachingSource, type TopicLessons } from '@jemma/profiling/schemas'
 import { backendFromEnv, limitParkMsFor, modelsFor, runnerFor } from './backend'
 import { Chain, FatalBackendError, callJson, type Attempt } from './chain'
-import { checkLesson } from './checks'
+import { checkLesson, tidyLesson } from './checks'
 import { appendLedger, readLedger, summarize, summarizeByKind, sumCost, type LedgerRecord } from './ledger'
 import { runOpencode, type Runner } from './opencode'
 import { OutlineSchema, ReviewSchema, lessonRange, outlinePrompt, reviewPrompt, writePrompt, type Outline } from './build-prompts'
@@ -271,8 +271,8 @@ export class Generator {
 
   // ---- one lesson ----------------------------------------------------------------------------------------------------------------------
 
-  private normalize(lesson: TeachingLesson, position: number, item: OutlineItem): TeachingLesson {
-    return scrubDashes({ ...lesson, position, title: item.title, objectives: goodObjectives(item.objectives) ? item.objectives : lesson.objectives })
+  private normalize(lesson: TeachingLesson, position: number, item: OutlineItem, grade: number): TeachingLesson {
+    return tidyLesson(scrubDashes({ ...lesson, position, title: item.title, objectives: goodObjectives(item.objectives) ? item.objectives : lesson.objectives }), grade)
   }
 
   private async produceLesson(group: TopicGroup, ref: Reference, outline: Outline, index: number): Promise<LessonResult> {
@@ -286,7 +286,7 @@ export class Generator {
 
     const first = await this.call('write', group, position, writePrompt(input), schema)
     if (!first) return failed(['no model produced a lesson that fits the lesson shape'], '', '')
-    let lesson = this.normalize(first.value, position, item)
+    let lesson = this.normalize(first.value, position, item, group.grade)
     let writer = first.model
 
     let problems = checkLesson(lesson, ctx)
@@ -303,7 +303,7 @@ export class Generator {
     this.log(`  lesson ${position}: ${problems.length} problem(s), one rewrite: ${problems[0]!.slice(0, 120)}`)
     const second = await this.call('rewrite', group, position, writePrompt({ ...input, rewrite: { problems, previous: lesson } }), schema, { prefer: writer })
     if (!second) return failed(problems, writer, reviewer)
-    lesson = this.normalize(second.value, position, item)
+    lesson = this.normalize(second.value, position, item, group.grade)
     writer = second.model
     reviewer = ''
     problems = checkLesson(lesson, ctx)

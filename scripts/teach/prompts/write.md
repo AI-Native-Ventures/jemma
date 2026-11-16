@@ -64,6 +64,8 @@ A question is an object with these fields: `prompt`, `render` (always `"text"`),
 
 {{ANSWER_KINDS}}
 
+`answer` holds ONLY the value: `12`, never `12 cm` or `12 apples` (the unit goes in the question and in the working lines). Write no space inside a number (`R132000`, not `R132 000`). A negative value is always `number`, never `decimal` or `fraction` (so `-0,6` and `-3/5` are `number`). The last line of the working contains the final answer, written as in `answer` (`Hypotenuse = 13`, `Period = 360°`), not a sentence that only talks about it. A `worked` block follows the same rules for its `answer` and its last step.
+
 An answer is never a sentence, a description, an inequality, a domain, a range or an interval. A question that asks for those becomes a `choice` question with 3 or 4 short options and the letter of the right one as the answer. The options must be different and only one is right. Spread the right letters (not always A).
 
 ## Pictures

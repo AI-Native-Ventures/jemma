@@ -113,7 +113,7 @@ function untrueSteps(lines: string[]): string[] {
 
 // ---- the end of a working shows the answer ------------------------------------------------------------------------------------------
 
-const squash = (s: string) => s.replace(/\s+/g, '').replace(/−/g, '-').toLowerCase()
+const squash = (s: string) => s.replace(/\s+/g, '').replace(/−/g, '-').replace(/degrees?/gi, '°').toLowerCase()
 
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -131,7 +131,8 @@ function endsWithAnswer(lastLine: string, answer: string, kind: string): boolean
     // not readable: fall through to the token test
   }
   const token = escapeRegExp(squash(answer))
-  return new RegExp(`(?<![\\d.,/^-])${token}(?![\\d.,/^])`).test(squash(lastLine))
+  // The answer must stand on its own: not inside a longer number (120, 11/2, -3), but a full stop after it is only the end of a sentence.
+  return new RegExp(`(?<![\\d/^-])(?<!\\d[.,])${token}(?![\\d/^])(?![.,]\\d)`).test(squash(lastLine))
 }
 
 // ---- pictures ------------------------------------------------------------------------------------------------------------------------
@@ -296,4 +297,32 @@ export function checkLesson(lesson: TeachingLesson, ctx: CheckContext): string[]
   problems.push(...textProblems({ title: lesson.title, objectives: lesson.objectives, keyWords: lesson.keyWords, summary: lesson.summary }, 'lesson'))
   problems.push(...sourceProblems(ctx.source))
   return problems
+}
+
+// ---- small repairs the code may make --------------------------------------------------------------------------------------------------
+
+const PLAIN_VALUE_KINDS = new Set(['whole', 'decimal', 'fraction', 'mixed', 'number'])
+const TRAILING_UNIT = /\s+(?:[A-Za-z°%²³/.]+\s*)+$/
+
+/**
+ * An answer that is a value followed by its unit ("12 cm", "4,90 m", "1 1/2 km") is cut to the value when the value alone can be marked.
+ * The unit stays where it belongs: in the problem and in the working. Nothing else is changed, and an answer that is wrong stays wrong.
+ */
+export function tidyAnswer(answer: string, kind: string, grade: number): string {
+  if (!PLAIN_VALUE_KINDS.has(kind) || !TRAILING_UNIT.test(answer)) return answer
+  if (grade <= 6 && !(PRIMARY_ANSWER_KINDS as readonly string[]).includes(kind)) return answer
+  const stripped = answer.replace(TRAILING_UNIT, '').trim()
+  if (!stripped) return answer
+  const q = { prompt: '', render: 'text' as const, answer, answerKind: kind as Question['answerKind'], difficulty: 1 as const, why: '', rightWay: '' }
+  return answerProblem(q) !== null && answerProblem({ ...q, answer: stripped }) === null ? stripped : answer
+}
+
+/** The lesson with the units cut from the answers of its worked examples, "your turn" questions and practice questions (see `tidyAnswer`). */
+export function tidyLesson(lesson: TeachingLesson, grade: number): TeachingLesson {
+  const question = (q: Question): Question => ({ ...q, answer: tidyAnswer(q.answer, q.answerKind, grade) })
+  return {
+    ...lesson,
+    blocks: lesson.blocks.map((b) => (b.kind === 'worked' ? { ...b, answer: tidyAnswer(b.answer, b.answerKind, grade) } : b.kind === 'try' ? { ...b, question: question(b.question) } : b)),
+    practice: lesson.practice.map(question),
+  }
 }

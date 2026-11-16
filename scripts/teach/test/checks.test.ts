@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { TeachingLessonSchema, type TeachingBlock, type TeachingLesson } from '@jemma/profiling/schemas'
-import { checkLesson, evalArithmetic } from '../checks'
+import { checkLesson, evalArithmetic, tidyAnswer, tidyLesson } from '../checks'
 import { capsSource, explain, fractionBar, goodLesson, mistake, practice, question, siyavulaSource, tryBlock, worked } from './fixtures'
 
 const ctx6 = { grade: 6, source: capsSource() }
@@ -60,6 +60,20 @@ describe('checkLesson: worked examples', () => {
     w.answer = answer
     w.answerKind = answer.includes('/') ? 'fraction' : answer.includes(',') ? 'decimal' : 'whole'
     expect(check(replaceBlock(goodLesson(), 3, w)).join('\n')).not.toMatch(/last step/)
+  })
+
+  test.each([
+    ['13', 'whole', 'Hypotenuse = sqrt(169) = 13.'],
+    ['360°', 'number', 'Period = 360 degrees'],
+    ['-0,6', 'number', 'cos θ = -0,6.'],
+    ['7', 'whole', 'The answer is 7.'],
+  ])('a full stop or the word degrees after the answer is fine: answer %s, last step "%s"', (answer, kind, last) => {
+    const w = worked(1, 2, 4)
+    if (w.kind !== 'worked') throw new Error('fixture')
+    w.steps[2] = { line: last, reason: 'The last line.' }
+    w.answer = answer
+    w.answerKind = kind as typeof w.answerKind
+    expect(check(replaceBlock(goodLesson(), 3, w), { grade: 10, source: capsSource() }).join('\n')).not.toMatch(/last step/)
   })
 
   test('a step that is plain arithmetic and is not true fails', () => {
@@ -247,5 +261,38 @@ describe('evalArithmetic', () => {
     expect(evalArithmetic('1/0')).toBeNull()
     expect(evalArithmetic('2 1/2')).toBeNull()
     expect(evalArithmetic('')).toBeNull()
+  })
+})
+
+describe('tidyAnswer and tidyLesson', () => {
+  test('cut a unit from a value when the value alone can be marked', () => {
+    expect(tidyAnswer('12 cm', 'whole', 9)).toBe('12')
+    expect(tidyAnswer('4,90 m', 'decimal', 6)).toBe('4,90')
+    expect(tidyAnswer('1 1/2 km', 'mixed', 6)).toBe('1 1/2')
+    expect(tidyAnswer('30 degrees', 'number', 10)).toBe('30')
+    expect(tidyAnswer('25 cm^2', 'whole', 9)).toBe('25 cm^2')
+  })
+
+  test('leave alone what is already fine, what is not a plain value, and what no cutting can mend', () => {
+    expect(tidyAnswer('12', 'whole', 9)).toBe('12')
+    expect(tidyAnswer('R5', 'money', 6)).toBe('R5')
+    expect(tidyAnswer('B', 'choice', 6)).toBe('B')
+    expect(tidyAnswer('2x + 3', 'expression', 9)).toBe('2x + 3')
+    expect(tidyAnswer('3/8 of an hour, which is 22 1/2 minutes', 'mixed', 6)).toBe('3/8 of an hour, which is 22 1/2 minutes')
+    expect(tidyAnswer('twelve cm', 'whole', 6)).toBe('twelve cm')
+  })
+
+  test('the answers of worked, try and practice questions are tidied, and nothing else is touched', () => {
+    const w = worked(1, 2, 4)
+    if (w.kind !== 'worked') throw new Error('fixture')
+    const lesson = goodLesson({
+      blocks: goodLesson().blocks.map((b, i) => (i === 3 ? { ...w, steps: [w.steps[0]!, { line: '3', reason: 'Add.' }], answer: '3 cm', answerKind: 'whole' as const } : b)),
+      practice: [question({ prompt: 'Add 1 + 2 cm.', steps: ['1 + 2', '3'], answer: '3 cm', answerKind: 'whole' }), ...practice(4).slice(1)],
+    })
+    const tidy = tidyLesson(lesson, 6)
+    expect(tidy.blocks[3]).toMatchObject({ answer: '3' })
+    expect(tidy.practice[0]).toMatchObject({ answer: '3', prompt: 'Add 1 + 2 cm.' })
+    expect(tidy.title).toBe(lesson.title)
+    expect(check(tidy)).toEqual([])
   })
 })
