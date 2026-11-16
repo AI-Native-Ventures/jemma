@@ -12,7 +12,7 @@ import { savePracticeAnswers } from '../../tools/save/save-practice-answers'
 export type ReadPaperDeps = { model?: LanguageModel; prompt?: string }
 
 /** Choice letters as the sheet and the screen write them. */
-const LETTERS = ['A', 'B', 'C', 'D']
+const LETTERS = ['A', 'B', 'C', 'D', 'E']
 
 /**
  * The vision call of `read_paper`, for a class test, a homework photo or a practice answered on paper: the same prompt file and the same

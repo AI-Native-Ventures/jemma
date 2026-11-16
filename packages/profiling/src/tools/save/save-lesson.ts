@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { parseAnswer } from '../../logic/answers'
+import { choicePictureProblem, isPickQuestion, pickKeyProblem } from '../../logic/answers/pick'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
 import { isSeniorQuestion, quantityProblem, readCents, stripUnit } from '../../logic/answers/quantity'
 import { isMeaningKind, meaningKeyProblem, readNumber } from '../../logic/meaning'
@@ -23,18 +24,21 @@ export function answerProblem(q: Question): string | null {
   const answer = answerKeyProblem(q)
   if (answer) return answer
   const picture = q.diagram ? pictureProblem(q.diagram) : null
-  return picture ? `picture: ${picture}` : null
+  if (picture) return `picture: ${picture}`
+  // P149: the pictures (and words) of the choices of a question that is picked. A true or false or a reason question ignores any choices it carries.
+  return q.answerKind === 'truefalse' || q.answerKind === 'reason' ? null : choicePictureProblem(q.choices)
 }
 
 function answerKeyProblem(q: Question): string | null {
   // P148: a unit or a round the screen could not use is a problem, and the key may be written with the unit of the question ("24 cm²" for a unit of cm²).
   const setting = quantityProblem(q)
   if (setting) return setting
+  // P149: a question with choices (any kind), a true or false and a reason are picked: the key is the letter, true or false, or a reason of the list.
+  if (isPickQuestion(q)) return pickKeyProblem(q)
   // P150: a list, an order and a table are several values, each read as a number (the unit of a question is no part of a value).
   if (isListKind(q.answerKind)) return listKeyProblem(q, readNumber)
   const key = stripUnit(q.answer, q.unit)
   if (isMeaningKind(q.answerKind)) return meaningKeyProblem(q.answerKind, key)
-  if (isListKind(q.answerKind)) return listKeyProblem(q, readNumber)
   const parsed = parseAnswer(key)
   // A negative whole or decimal key is for a senior class (its box has a minus key); a primary question keeps the rule it always had: the number kind is for it.
   const negative = parsed.kind === 'number' && parsed.value.n < 0n && !isSeniorQuestion(q)

@@ -211,6 +211,10 @@ describe('the schema of a gated lesson', () => {
     expect(items.properties).not.toHaveProperty('steps')
     expect(items.properties).not.toHaveProperty('diagram')
     expect(items.required).not.toContain('steps')
+    // A choice is plain text (a picture choice, true or false and a reason are for a senior class).
+    const fields = items.properties as Record<string, { items?: { type?: string } }>
+    expect(fields.choices?.items?.type).toBe('string')
+    for (const word of ['"truefalse"', '"reason"', '"ratio"']) expect(json).not.toContain(word)
   })
 })
 

@@ -61,7 +61,7 @@ export function parseAnswer(raw: string): Parsed {
     return (/\d$/.test(before) ? ' ' : '') + VULGAR[c]!
   })
   s = squash(s)
-  const choice = /^\(?([a-d])\)?\.?$/i.exec(s)
+  const choice = /^\(?([a-e])\)?\.?$/i.exec(s)
   if (choice) return { kind: 'choice', letter: choice[1]!.toUpperCase() }
   const money = /^r\s*(.+)$/i.exec(s)
   if (money) {

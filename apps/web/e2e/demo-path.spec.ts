@@ -107,8 +107,8 @@ async function signInAs(page: Page, logins: Logins, role: keyof Logins) {
 
 /** What the child taps or types for one question: the right answer, or something that is not. A typed question is answered box by box (see helpers/answers.ts). */
 async function answerQuestion(page: Page, q: LessonQuestion, right: boolean) {
-  const wrongChoice = (choices: string[]) => choices.findIndex((c, i) => c !== q.answer && String.fromCharCode(65 + i) !== q.answer)
-  const rightChoice = (choices: string[]) => choices.findIndex((c, i) => c === q.answer || String.fromCharCode(65 + i) === q.answer)
+  const wrongChoice = (choices: readonly unknown[]) => choices.findIndex((c, i) => c !== q.answer && String.fromCharCode(65 + i) !== q.answer)
+  const rightChoice = (choices: readonly unknown[]) => choices.findIndex((c, i) => c === q.answer || String.fromCharCode(65 + i) === q.answer)
   if (q.choices?.length) {
     const i = right ? rightChoice(q.choices) : wrongChoice(q.choices)
     await page.getByRole('button', { pressed: false }).nth(Math.max(i, 0)).click()

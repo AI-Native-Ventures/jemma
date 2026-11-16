@@ -10,17 +10,36 @@ import { lessonAround, PRIMARY_ANSWER_KINDS, QuestionSchema } from './lesson'
  * (a time, a list of values, an order, a small table to fill) and the optional fields of those kinds. It has none of the senior ones: no `steps`, no
  * `form`, no picture of a graph or a triangle, no expression, equation, point or number.
  *
- * It is built from `QuestionSchema`, the wide question, so a field that a kind needs (a unit, a count, the cells of a table) is the field every reader of a
- * lesson already has, with the same name and the same type. A reply is read with the wide `LessonSchema`, as a senior reply is.
+ * Its fields are the ones the wide `QuestionSchema` has (a unit, the order flag and labels of a list, the cells of a table), with the same name and the same type.
+ * A reply is read with the wide `LessonSchema`, as a senior reply is.
  */
 
 /** The kinds a gated Grade 1 to 6 topic may add to the six old ones. */
 export const PRIMARY_EXTRA_ANSWER_KINDS = ['time', 'list', 'order', 'table'] as const
 export type PrimaryExtraAnswerKind = (typeof PRIMARY_EXTRA_ANSWER_KINDS)[number]
 
-/** The question of a gated primary lesson: the wide question without `steps`, `form` and a senior picture, and with the six old kinds and the new ones. */
-export const PrimaryExtraQuestionSchema = QuestionSchema.omit({ steps: true, form: true, diagram: true }).extend({
+const wide = QuestionSchema.shape
+
+/**
+ * The question of a gated primary lesson, named field by field from the wide question (so a field that a later packet adds for senior classes never reaches a
+ * young learner's lesson by itself): the prompt, the answer, the six old kinds and the new ones, plain-text choices (a picture choice is senior), the fields the
+ * new kinds read (`unit`, `ordered`, `labels`, `round`, `table`), and no `steps`, no `form` and no senior picture.
+ */
+export const PrimaryExtraQuestionSchema = z.object({
+  prompt: wide.prompt,
+  render: wide.render,
+  terms: wide.terms,
+  answer: wide.answer,
   answerKind: z.enum([...PRIMARY_ANSWER_KINDS, ...PRIMARY_EXTRA_ANSWER_KINDS]),
+  choices: z.array(z.string()).optional(),
+  unit: wide.unit,
+  ordered: wide.ordered,
+  labels: wide.labels,
+  round: wide.round,
+  table: wide.table,
+  difficulty: wide.difficulty,
+  why: wide.why,
+  rightWay: wide.rightWay,
 })
 export type PrimaryExtraQuestion = z.infer<typeof PrimaryExtraQuestionSchema>
 
