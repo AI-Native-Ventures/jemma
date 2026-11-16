@@ -1,4 +1,5 @@
 import { isBaselineClass, isSeniorMaths, subjectProfile, type ClassContext } from './subject-profile'
+import { seniorLists } from './senior-lists-prompt'
 
 /**
  * A job's system prompt for the class it works for.
@@ -263,6 +264,12 @@ export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
     },
     // A senior class: graphs on a grid and triangles, in a card, a step or a question.
     { find: 'Use only the diagram kinds in the schema.', when: isSeniorMaths, replace: () => SENIOR_PICTURES },
+    // A senior class: a list, an order and a table (P150), as a bullet of "What to write" after the one that tells the answer kinds.
+    {
+      find: '- `why` says in one sentence what usually goes wrong.',
+      when: isSeniorMaths,
+      replace: (c) => `- ${seniorLists(!notSouthAfrica(c))}\n- \`why\` says in one sentence what usually goes wrong.`,
+    },
   ],
   guidance: [
     { find: 'The child is in Grade 1 to 7: plain, warm, short words.', when: outsidePrimary, replace: (c) => `The child is in Grade ${c.grade}: plain, warm, short words.` },

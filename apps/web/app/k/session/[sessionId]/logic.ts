@@ -1,4 +1,23 @@
-import { completeAnswer, fillMissing, finishAnswer, isInequalityKey, isPairKey, missingPart, nextDifficulty, nextStage, paperQuestions, type MissingPart, type Stage } from '@jemma/profiling/logic'
+import {
+  completeAnswer,
+  fillMissing,
+  finishAnswer,
+  isInequalityKey,
+  isListKind,
+  isPairKey,
+  listAnswerParts,
+  LIST_MAX_LENGTH,
+  missingPart,
+  nextDifficulty,
+  nextStage,
+  paperQuestions,
+  readNumber,
+  resultCells,
+  rightValues,
+  type ListParts,
+  type MissingPart,
+  type Stage,
+} from '@jemma/profiling/logic'
 import type { Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
@@ -8,6 +27,8 @@ export const FIX_AFTER_DAYS = 3
 export const DEFAULT_TRY_COUNT = 5
 /** The longest answer the server takes: the longest the marking reads (60 characters), so a fraction sum from the maths editor fits. */
 export const ANSWER_MAX_LENGTH = 60
+/** A list, an order or a table is several values in one answer (P150): its answer may be this long. */
+export const LIST_ANSWER_MAX_LENGTH = LIST_MAX_LENGTH
 
 export type Phase = 'warmup' | 'try'
 
@@ -31,6 +52,14 @@ export type QuestionForChild = {
   diagram?: SeniorDiagramSpec
   /** P147: the SHAPE of the answer when its key is an inequality or an interval ('inequality') or two letters with a value each ('pair'), so the screen can say how to type it. Never the key itself. */
   answerShape?: 'inequality' | 'pair'
+  /** P150, a list: how many boxes, whether the place of a value matters, whether a number pad is enough, and a label over each box. Never a value. */
+  list?: ListParts['list']
+  /** P150, an order: the items to put in order, shuffled (never in the right order). */
+  items?: ListParts['items']
+  /** P150, a table: its columns and rows with each blank cell as null. The given cells are in the question anyway. */
+  table?: ListParts['table']
+  /** P150: the places the answer is rounded to, when the question asks for it ("correct to 1 decimal place"). A count, so it may be sent. */
+  round?: number
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -68,6 +97,12 @@ export type MissedQuestion = {
   rightWay: string
   /** The maths from the question to the answer, one line each (a senior lesson, 2 to 6 lines). Absent for a question that has none: the card then shows the right way alone. */
   steps?: string[]
+  /** P150, a list, an order or a table: each place of the answer with what was written, the right value (a fixed order) and whether it was right. */
+  cells?: { wrote: string; right: string; ok: boolean }[]
+  /** P150, a table: its columns and rows (a blank is null), so the results can draw it with the answers in. */
+  table?: NonNullable<ListParts['table']>
+  /** P150, a list or an order: the right answer is drawn in the same places as the answer (a fixed order), or as one list (any order). */
+  ordered?: boolean
 }
 
 export function stripQuestion(
@@ -87,6 +122,9 @@ export function stripQuestion(
     ...(q.form ? { form: q.form } : {}),
     ...(q.diagram ? { diagram: q.diagram } : {}),
     ...(q.answerKind === 'equation' && isInequalityKey(q.answer) ? { answerShape: 'inequality' as const } : q.answerKind === 'equation' && isPairKey(q.answer) ? { answerShape: 'pair' as const } : {}),
+    // P150: a count, the labels, the items to put in order (shuffled), the table with its blanks: never the key's values or order.
+    ...listAnswerParts(q),
+    ...(isListKind(q.answerKind) && q.round !== undefined ? { round: q.round } : {}),
   }
 }
 
@@ -143,17 +181,31 @@ export type AnswerShape =
   /** An equation answer; `inequality` when its key is an inequality or an interval, `pair` when it is two letters with a value each (P147): they change the line under the box. */
   | { kind: 'equation'; inequality?: true; pair?: true }
   | { kind: 'expression'; form: Form }
+  /** P150: several values. A row of boxes (a list), the chips of an order, or the empty cells of a table. */
+  | { kind: 'list'; count: number; ordered: boolean; plain: boolean; labels?: string[]; round?: number }
+  | { kind: 'order'; items: string[] }
+  | { kind: 'table'; table: NonNullable<ListParts['table']>; round?: number }
 
-export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> & Pick<QuestionForChild, 'answerShape'>): AnswerShape {
+/** What `answerShape` reads besides the old four fields: the parts the server sent (a whole `Question` fits too: its table has no `plain`, so its boxes are the full keyboard). */
+type ShapeParts = { list?: ListParts['list']; items?: string[]; table?: { columns: string[]; rows: (string | null)[][]; plain?: boolean }; round?: number }
+
+export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> & ShapeParts & Pick<QuestionForChild, 'answerShape'>): AnswerShape {
   if (q.choices?.length) return { kind: 'choice' }
+  // P147: an equation whose key is an inequality or an interval, or two letters with a value each, says so in its line under the box.
   if (q.answerKind === 'equation' && q.answerShape === 'inequality') return { kind: 'equation', inequality: true }
   if (q.answerKind === 'equation' && q.answerShape === 'pair') return { kind: 'equation', pair: true }
+  // P150: a list, an order and a table are drawn from the parts the server sent (a question that came without them gets the plain box below).
+  const places = q.round !== undefined ? { round: q.round } : {}
+  // A shape with nothing to fill (no box, one chip, no empty cell) could never be answered, so it falls to the plain box rather than leave the learner stuck.
+  if (q.answerKind === 'list' && q.list && q.list.count > 0) return { kind: 'list', ...q.list, ...places }
+  if (q.answerKind === 'order' && q.items && q.items.length > 1) return { kind: 'order', items: q.items }
+  if (q.answerKind === 'table' && q.table && q.table.rows.some((row) => row.includes(null))) return { kind: 'table', table: { ...q.table, plain: q.table.plain ?? false }, ...places }
   // A question marked by meaning is never a missing number in a fraction, whatever its prompt holds.
   if (q.answerKind === 'expression') return { kind: 'expression', form: q.form ?? 'any' }
   if (q.answerKind === 'number' || q.answerKind === 'equation' || q.answerKind === 'point') return { kind: q.answerKind }
   const part = missingPart(q.prompt)
   if (part) return { kind: 'missing', part }
-  return { kind: q.answerKind === 'choice' ? 'text' : q.answerKind }
+  return { kind: q.answerKind === 'choice' || q.answerKind === 'list' || q.answerKind === 'order' || q.answerKind === 'table' ? 'text' : q.answerKind }
 }
 
 // One rule for the screen and for paper: the agent's `save_practice_answers` finishes and marks a written answer with the same functions.
@@ -231,7 +283,22 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       why: item.question.why,
       rightWay: item.question.rightWay,
       ...(stepsOf(item.question).length > 0 ? { steps: stepsOf(item.question) } : {}),
+      ...cellsOf(item),
     }))
+}
+
+/** P150: for a list, an order or a table, each place of the answer marked right or wrong (and the table to draw them in). Nothing for any other question. */
+function cellsOf(item: StoredItem): Partial<Pick<MissedQuestion, 'cells' | 'table' | 'ordered' | 'right'>> {
+  const q = item.question
+  if (!isListKind(q.answerKind) || item.unread) return {}
+  const parts = listAnswerParts(q)
+  return {
+    // The right answer as the question asks for it (rounded, when it says "correct to 1 decimal place").
+    right: rightValues(q, readNumber).join('; '),
+    cells: resultCells(q, item.answer, readNumber),
+    ordered: q.answerKind !== 'list' || parts.list?.ordered === true,
+    ...(parts.table ? { table: parts.table } : {}),
+  }
 }
 
 /** The try questions that were missed, numbered as in `reviewOf`. */
