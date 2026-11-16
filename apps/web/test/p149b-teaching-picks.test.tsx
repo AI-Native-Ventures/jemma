@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import type { Choice, SeniorDiagramSpec } from '@jemma/profiling/schemas'
+import type { Choice, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { StrippedQuestion } from '../lib/teaching'
+import { stripLessonQuestion, type StrippedQuestion } from '../lib/teaching'
 
 // P149b: the "Your turn" block of a teaching lesson (P144) after P149. A lesson question may now have picture choices, be true or false, or ask for a reason:
 // string choices work as before (now up to E), a picture choice is drawn as a card and written as "Picture B", and the answer sent is the letter, the word
@@ -87,5 +87,40 @@ describe('a try block that is true or false, or asks for a reason', () => {
     fireEvent.change(screen.getByLabelText('1. The value'), { target: { value: '5' } })
     fireEvent.click(check())
     await waitFor(() => expect(actions.answerLessonQuestion).toHaveBeenCalledWith('lesson-1', { kind: 'try', block: 0 }, '5; Pythagoras'))
+  })
+})
+
+describe('a stripped lesson question still holds no answer, no steps, no why and no right way, for every kind', () => {
+  const full = (over: Partial<Question>): Question => ({
+    prompt: 'A question',
+    render: 'text',
+    answer: 'KEY-SECRET',
+    answerKind: 'whole',
+    steps: ['STEP-SECRET-A', 'STEP-SECRET-B'],
+    difficulty: 1,
+    why: 'WHY-SECRET',
+    rightWay: 'WAY-SECRET',
+    ...over,
+  })
+
+  it.each([
+    ['true or false', full({ answerKind: 'truefalse', answer: 'true', choices: ['True', 'False'] })],
+    ['a reason', full({ answerKind: 'reason', answer: 'KEY-SECRET; Pythagoras' })],
+    ['a reason with no value', full({ answerKind: 'reason', answer: 'Pythagoras' })],
+    ['picture choices', full({ answerKind: 'choice', answer: 'B', choices: [{ diagram: LINE }, { diagram: PARABOLA }] })],
+    ['string choices', full({ answerKind: 'choice', answer: 'B', choices: ['1', '2'] })],
+  ])('%s', (_name, question) => {
+    const sent = JSON.stringify(stripLessonQuestion(question))
+    for (const secret of ['KEY-SECRET', 'STEP-SECRET', 'WHY-SECRET', 'WAY-SECRET']) expect(sent, secret).not.toContain(secret)
+    const keys = Object.keys(stripLessonQuestion(question))
+    for (const field of ['answer', 'steps', 'why', 'rightWay', 'difficulty']) expect(keys, field).not.toContain(field)
+    // True or false sends no choices; a reason sends only whether it has a value box, never the value or the reason.
+    expect(sent).not.toContain('Pythagoras')
+  })
+
+  it('a reason with a value says so, and a true or false question sends no choices', () => {
+    expect(stripLessonQuestion(full({ answerKind: 'reason', answer: '5; Pythagoras' })).withValue).toBe(true)
+    expect(stripLessonQuestion(full({ answerKind: 'reason', answer: 'Pythagoras' })).withValue).toBeUndefined()
+    expect(stripLessonQuestion(full({ answerKind: 'truefalse', answer: 'true', choices: ['True', 'False'] })).choices).toBeUndefined()
   })
 })
