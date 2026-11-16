@@ -134,7 +134,7 @@ jobs:
           . ./.env.local
           set +a
           failed=0
-          PLAYWRIGHT_HTML_REPORT=playwright-report/with-agent-phone pnpm --filter web exec playwright test p27 p28 p73 p82 p94 p95 p99 p100 p102 p111 --project=phone --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/with-agent-phone || failed=1
+          PLAYWRIGHT_HTML_REPORT=playwright-report/with-agent-phone pnpm --filter web exec playwright test p27 p28 p73 p82 p94 p95 p99 p100 p102 p111 p114 --project=phone --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/with-agent-phone || failed=1
           PLAYWRIGHT_HTML_REPORT=playwright-report/with-agent-laptop pnpm --filter web exec playwright test p73 p95 --project=laptop --workers=1 --reporter=list,html --trace=retain-on-failure --output=test-results/with-agent-laptop || failed=1
           exit "$failed"
 

@@ -32,6 +32,8 @@ vi.mock('@/lib/supabase/server', () => ({
 vi.mock('@/lib/data/p28', () => ({ getChildName: async () => ({ firstName: 'Naledi', initial: 'N' }) }))
 vi.mock('@/lib/data/p27', () => ({ getHandback: async () => state.handback }))
 vi.mock('../app/k/me/actions', () => ({ signOutChild: async () => undefined }))
+// P114's "Link a parent" card is an async server part of the same page; this test is about the PIN line only.
+vi.mock('../app/k/me/LinkParent', () => ({ LinkParent: () => null }))
 
 import { isCodeLoginEmail } from '../lib/child-login'
 import { MeForm } from '../app/k/me/MeForm'

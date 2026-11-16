@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { isCodeLoginEmail } from '@/lib/child-login'
 import { getChildName } from '@/lib/data/p28'
 import { createSupabaseServer } from '@/lib/supabase/server'
+import { LinkParent } from './LinkParent'
 import { MeForm } from './MeForm'
 
 export default async function ChildAccountPage() {
@@ -20,6 +21,7 @@ export default async function ChildAccountPage() {
       </header>
       <main className="mx-auto lg:max-w-[560px]" style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '18px 20px 30px' }}>
         <MeForm firstName={firstName} initial={initial} hasPin={isCodeLoginEmail(auth.user?.email)} />
+        <LinkParent />
       </main>
     </div>
   )

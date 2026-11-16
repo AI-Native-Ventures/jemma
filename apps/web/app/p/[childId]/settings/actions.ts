@@ -27,6 +27,11 @@ export async function setChildPin(childId: string, pin: string): Promise<PinResu
 
   const admin = createSupabaseAdmin()
   const { data: old } = await admin.from('child_logins').select('user_id').eq('child_id', childId).maybeSingle()
+  // A learner who signed up alone has a login of their own and no code made by a parent (P114): a new code would take that login away from them.
+  if (!old) {
+    const { data: child } = await admin.from('children').select('user_id').eq('id', childId).maybeSingle()
+    if (child?.user_id) return { ok: false, error: 'This learner signs in with their own account.' }
+  }
   if (old) {
     const gone = await admin.auth.admin.deleteUser(old.user_id)
     if (gone.error) return { ok: false, error: 'Could not remove the old code. Try again.' }

@@ -1321,6 +1321,36 @@ export type Database = {
           },
         ]
       }
+      parent_invite_codes: {
+        Row: {
+          child_id: string
+          code: string
+          created_at: string
+          expires_at: string
+        }
+        ComputedFields: never
+        Insert: {
+          child_id: string
+          code: string
+          created_at?: string
+          expires_at: string
+        }
+        Update: {
+          child_id?: string
+          code?: string
+          created_at?: string
+          expires_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_invite_codes_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: true
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parent_links: {
         Row: {
           child_id: string

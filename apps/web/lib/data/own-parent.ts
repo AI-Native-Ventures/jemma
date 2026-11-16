@@ -53,6 +53,8 @@ export type AloneSummary = AloneChild & {
   grades: OwnGrade[]
   /** The sign-in code the parent made for the child, or null when none was made yet. The PIN is never kept. */
   loginCode: string | null
+  /** True (and left out otherwise) for a learner who signed up alone and linked this parent with a code (P114): they have a login of their own, so the parent makes no sign-in code. */
+  ownLogin?: boolean
 }
 
 /** The child's page for the parent: the child, the grades with the child's own counts and the sign-in code. Null unless the child is on their own. */
@@ -60,6 +62,12 @@ export async function getAloneSummary(childId: string): Promise<AloneSummary | n
   const child = await aloneOf(childId)
   if (!child) return null
   const admin = createSupabaseAdmin()
-  const [grades, login] = await Promise.all([getOwnOverview(child.id), admin.from('child_logins').select('code').eq('child_id', child.id).maybeSingle()])
-  return { ...child, grades, loginCode: login.data?.code ?? null }
+  const [grades, login, owner] = await Promise.all([
+    getOwnOverview(child.id),
+    admin.from('child_logins').select('code').eq('child_id', child.id).maybeSingle(),
+    admin.from('children').select('user_id').eq('id', child.id).maybeSingle(),
+  ])
+  // A login with no code made by a parent behind it is the learner's own (they signed up alone): a new code would take it away from them.
+  const ownLogin = !!owner.data?.user_id && !login.data
+  return { ...child, grades, loginCode: login.data?.code ?? null, ...(ownLogin ? { ownLogin: true } : {}) }
 }

@@ -11,7 +11,7 @@ import { SignInCard } from './SignInCard'
  * the same column in the middle of the page on a laptop.
  */
 export function AloneChildPage({ summary }: { summary: AloneSummary }) {
-  const { id, firstName: name, grade, grades, loginCode } = summary
+  const { id, firstName: name, grade, grades, loginCode, ownLogin } = summary
   return (
     <div className="mx-auto flex w-full max-w-[640px] flex-col gap-5 px-5 pt-3.5 pb-8 leading-[normal] lg:px-10 lg:pt-8">
       <div className="flex flex-col gap-2">
@@ -45,7 +45,16 @@ export function AloneChildPage({ summary }: { summary: AloneSummary }) {
         )}
       </section>
 
-      <SignInCard childId={id} name={name} code={loginCode} />
+      {ownLogin ? (
+        <section aria-labelledby="alone-own-login" className="flex flex-col gap-1 rounded-20 border border-line bg-card p-4 leading-[normal]">
+          <h2 id="alone-own-login" className="m-0 text-[17px] font-semibold">
+            {name}&apos;s sign-in
+          </h2>
+          <p className="m-0 text-[14px] leading-[1.45] text-body">{name} signs in with their own account, so there is no code for you to make.</p>
+        </section>
+      ) : (
+        <SignInCard childId={id} name={name} code={loginCode} />
+      )}
     </div>
   )
 }
