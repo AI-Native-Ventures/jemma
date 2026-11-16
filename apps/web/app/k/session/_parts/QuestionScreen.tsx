@@ -4,9 +4,15 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CHOICE_LETTERS, choiceText, composeReasonAnswer, hasPictureChoices } from '@jemma/profiling/logic'
 import { answerShape, answerValue, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
 import { PendingButton } from '@/components/ui/Button'
+import { numberHint, ratioHint, timeHint } from './answers/hints'
+import { QuantityAnswer } from './answers/QuantityAnswer'
+import { UnitFrame } from './answers/QuantityBox'
+import { RatioBoxes } from './answers/RatioBoxes'
+import { TimeBoxes } from './answers/TimeBoxes'
 import { Frac, FractionText, withFractions } from './Frac'
 import { equationShapeHint } from './answers/hints'
 import { isValuesShape, ValuesAnswer } from './answers/ValuesAnswer'
+import { YoungSize } from './answers/YoungSize'
 import { MathAnswerField } from './MathAnswerField'
 import { promptLayout } from './prompt-layout'
 import { QuestionContext, QuestionHeading } from './QuestionPrompt'
@@ -179,6 +185,8 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
         </div>
       )
     case 'decimal':
+      // P148: a unit, a round or a minus key (a senior class): the box of answers/QuantityBox.tsx. Without one it is the box it always was.
+      if (shape.unit || shape.signed || shape.round !== undefined) return <QuantityAnswer kind="decimal" extras={shape} value={b.text} onChange={b.set.text} />
       return (
         <div className="flex flex-col items-center gap-3.5">
           <Box id="answer" label="Your answer" value={b.text} onChange={(v) => b.set.text(numberText(v))} mode="decimal" className="h-[76px] w-48 border-[3px] border-coral text-[40px]" />
@@ -186,6 +194,7 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
         </div>
       )
     case 'whole':
+      if (shape.unit || shape.signed || shape.round !== undefined) return <QuantityAnswer kind="whole" extras={shape} value={b.text} onChange={b.set.text} />
       return (
         <div className="flex flex-col items-center gap-3.5">
           <Box id="answer" label="Your answer" value={b.text} onChange={(v) => b.set.text(numberText(v))} className="h-[76px] w-48 border-[3px] border-coral text-[40px]" />
@@ -210,12 +219,31 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
         </div>
       )
     case 'number':
-      return <MathAnswerField kind="number" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint="Type a number. It may be negative, like -3." />
+      return (
+        <UnitFrame unit={shape.unit}>
+          <MathAnswerField kind="number" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={numberHint(shape)} />
+        </UnitFrame>
+      )
+    // P148: a time and a ratio, each its own boxes (answers/TimeBoxes.tsx, RatioBoxes.tsx).
+    case 'time':
+      return (
+        <div className="flex flex-col items-center gap-3.5">
+          <YoungSize young={shape.young} kind="time"><TimeBoxes style={shape.style} onChange={b.set.text} /></YoungSize>
+          <Hint>{timeHint(shape.style, shape.young === true)}</Hint>
+        </div>
+      )
+    case 'ratio':
+      return (
+        <div className="flex flex-col items-center gap-3.5">
+          <RatioBoxes parts={shape.parts} onChange={b.set.text} />
+          <Hint>{ratioHint(shape.parts)}</Hint>
+        </div>
+      )
     case 'list':
     case 'order':
     case 'table':
       // P150: several values (a row of boxes, chips to put in order, the empty cells of a table), sent as one text.
-      return <ValuesAnswer shape={shape} onChange={b.set.text} />
+      return <YoungSize young={shape.young}><ValuesAnswer shape={shape} onChange={b.set.text} /></YoungSize>
     default:
       // The lesson gave no kind we know: one plain box.
       return (

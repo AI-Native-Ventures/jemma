@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { parseAnswer } from '../../logic/answers'
 import { choicePictureProblem, isPickQuestion, pickKeyProblem } from '../../logic/answers/pick'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
+import { isSeniorQuestion, quantityProblem, readCents, stripUnit } from '../../logic/answers/quantity'
 import { isMeaningKind, meaningKeyProblem, readNumber } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { pictureProblem } from '../../logic/picture'
@@ -29,16 +30,24 @@ export function answerProblem(q: Question): string | null {
 }
 
 function answerKeyProblem(q: Question): string | null {
+  // P148: a unit or a round the screen could not use is a problem, and the key may be written with the unit of the question ("24 cm²" for a unit of cm²).
+  const setting = quantityProblem(q)
+  if (setting) return setting
   // P149: a question with choices (any kind), a true or false and a reason are picked: the key is the letter, true or false, or a reason of the list.
   if (isPickQuestion(q)) return pickKeyProblem(q)
-  if (isMeaningKind(q.answerKind)) return meaningKeyProblem(q.answerKind, q.answer)
+  // P150: a list, an order and a table are several values, each read as a number (the unit of a question is no part of a value).
   if (isListKind(q.answerKind)) return listKeyProblem(q, readNumber)
-  const parsed = parseAnswer(q.answer)
+  const key = stripUnit(q.answer, q.unit)
+  if (isMeaningKind(q.answerKind)) return meaningKeyProblem(q.answerKind, key)
+  const parsed = parseAnswer(key)
+  // A negative whole or decimal key is for a senior class (its box has a minus key); a primary question keeps the rule it always had: the number kind is for it.
+  const negative = parsed.kind === 'number' && parsed.value.n < 0n && !isSeniorQuestion(q)
   const fine =
     q.answerKind === 'choice' ? parsed.kind === 'choice'
-    : q.answerKind === 'money' ? parsed.kind === 'money'
-    : q.answerKind === 'whole' ? parsed.kind === 'number' && parsed.value.d === 1n
-    : parsed.kind === 'number'
+    // A rand sign and an amount written the way a book writes it (R 15 386,42, R15,386.42) are an amount too, to the cent (P148).
+    : q.answerKind === 'money' ? parsed.kind === 'money' || (/^\s*-?\s*R/i.test(q.answer) && readCents(q.answer) !== null)
+    : q.answerKind === 'whole' ? parsed.kind === 'number' && parsed.value.d === 1n && !negative
+    : parsed.kind === 'number' && !negative
   return fine ? null : `answer "${q.answer}" is not a ${q.answerKind}`
 }
 
