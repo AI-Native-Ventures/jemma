@@ -191,10 +191,10 @@ test.describe('a learner of a Grade 10 class meets a graph and a triangle in a q
     await expect(page.locator('[data-picture] svg')).not.toContainText('30')
     await noHorizontalScroll(page)
     await proof(page, 'triangle')
-    // The question is about an angle: the keyboard of the editor opens on the geometry tab (the degree sign, the Greek letters), then is put away. The box is not
+    // The question is about an angle: the keyboard of the editor opens on the Shapes tab (the signs of geometry, the degree sign, theta, pi), then is put away. The box is not
     // touched here, so nothing brings the keyboard back.
     await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { show(): void } }).mathVirtualKeyboard.show())
-    await expect.poll(() => page.locator('.MLK__layer.is-visible').first().getAttribute('id')).toBe('jemma-geometry')
+    await expect.poll(() => page.locator('.MLK__layer.is-visible').first().getAttribute('id')).toBe('jemma-shapes')
     await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { hide(): void } }).mathVirtualKeyboard.hide())
     await expect.poll(() => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible)).toBe(false)
     await writeAnswer(page, '30')
