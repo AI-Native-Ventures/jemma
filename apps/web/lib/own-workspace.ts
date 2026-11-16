@@ -8,7 +8,7 @@ import { createSupabaseServer } from '@/lib/supabase/server'
 // class's own teacher for the teacher's read-only view. The cookie that says which workspace is on screen is in `./workspace`.
 
 export { capsClassName, isCapsClassName, OwnWorkspaceError, OWN_GRADES } from '@jemma/profiling/own'
-export type { AddedChild, AddedGrade, OwnClass, OwnGrade, OwnGap, OwnPractised, OwnSummary } from '@jemma/profiling/own'
+export type { AddedChild, AddedGrade, OwnClass, OwnGrade, OwnGap, OwnPractised, OwnSummary, StartedLearner } from '@jemma/profiling/own'
 
 /**
  * The learner's private workspace: the twin of the school child, made on the first call (a personal school named "{first name}'s own" and the twin,
@@ -34,6 +34,16 @@ export async function addOwnGrade(twinId: string, grade: number, actorUserId: st
  */
 export async function addChildAlone(input: { parentId: string; firstName: string; grade: number; country: string }): Promise<own.AddedChild> {
   return own.addChildAlone(createSupabaseAdmin(), input)
+}
+
+/**
+ * A learner signs up alone (P111): their personal school, ONE child with `user_id` = this login (the same shape as a child a parent added alone), the CAPS class
+ * of the grade with its approved map (South Africa) and the learner's profile. Calling it twice makes nothing new. The caller has checked that `userId` is the
+ * signed-in person and that `country` is one the app knows. A missing grade, a country that cannot be used or a login with another role throws `OwnWorkspaceError`
+ * with one plain sentence.
+ */
+export async function startLearnerAlone(input: { userId: string; displayName: string; grade: unknown; country: unknown }): Promise<own.StartedLearner> {
+  return own.startLearnerAlone(createSupabaseAdmin(), input)
 }
 
 /** The twin of a school child, or null when the learner has not opened "My own". */

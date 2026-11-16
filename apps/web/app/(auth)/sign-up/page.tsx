@@ -22,7 +22,7 @@ export default function SignUpPage() {
             </h1>
           </div>
           <p style={{ margin: '0 0 0 24px', fontSize: 15, lineHeight: 1.45, color: colors.body, textWrap: 'pretty' }}>
-            For teachers and parents. Learners sign in with a code from a parent or teacher.
+            For teachers, parents and learners. Got a code from a parent or teacher? Learners can sign in with it instead.
           </p>
         </div>
 

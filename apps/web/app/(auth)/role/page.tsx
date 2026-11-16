@@ -5,7 +5,6 @@ import { HOMES } from '@/components/blocks/nav'
 import { chooseRole } from '@/lib/auth'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import { BackLink, ChevronRight, colors } from '../_parts'
-import { ComingButton } from '../_coming'
 import Link from 'next/link'
 
 export const metadata = { title: 'Pick a role · Jemma' }
@@ -93,19 +92,21 @@ export default async function RolePage() {
               <ChevronRight />
             </PendingButton>
           </form>
-          <ComingButton style={card}>
-            <Tile bg="#FFD3C7">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.8" strokeLinejoin="round">
-                <path d="M12 3 21 12 12 21 3 12z" />
-                <path d="M7.5 7.5 12 12l4.5-4.5" />
-              </svg>
-            </Tile>
-            <Words title="Learner · Grade 8 to 12" line="I fix my own gaps with my Jemma." />
-            <ChevronRight />
-          </ComingButton>
+          <form action="/role/learner">
+            <PendingButton type="submit" style={card}>
+              <Tile bg="#FFD3C7">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.8" strokeLinejoin="round">
+                  <path d="M12 3 21 12 12 21 3 12z" />
+                  <path d="M7.5 7.5 12 12l4.5-4.5" />
+                </svg>
+              </Tile>
+              <Words title="Learner" line="I practise maths at any grade, 1 to 12." />
+              <ChevronRight />
+            </PendingButton>
+          </form>
         </nav>
         <p style={{ margin: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2px 8px', fontSize: 15, color: colors.body }}>
-          Learners sign in with a code from a parent or teacher.
+          Got a code from a parent or teacher?
           <Link href="/k/sign-in" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, fontWeight: 600, color: colors.ink, textDecoration: 'underline', textUnderlineOffset: 3 }}>
             Sign in with your code
           </Link>

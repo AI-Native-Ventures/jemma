@@ -256,6 +256,108 @@ export async function addChildAlone(db: JemmaDb, input: { parentId: string; firs
   }
 }
 
+/**
+ * The first name of a learner who signs up alone, from the name on the account: the first word, letters only (a name made from an email, "jane.doe99",
+ * still reads as a name), at most 40 letters, with a capital at the start when it was typed in small letters. "Learner" when no letter is left.
+ */
+export function learnerFirstName(displayName: string): string {
+  const word = squash(displayName).split(' ')[0] ?? ''
+  const letters = word.replace(/[^\p{L}\p{M}'’-]/gu, '').replace(/^[^\p{L}]+/u, '').slice(0, NAME_MAX)
+  if (!letters) return 'Learner'
+  return letters === letters.toLowerCase() ? letters.charAt(0).toUpperCase() + letters.slice(1) : letters
+}
+
+export type StartedLearner = {
+  childId: string
+  schoolId: string
+  /** The CAPS class of the learner's grade. Null only for a learner started earlier whose class cannot be found. */
+  classId: string | null
+  grade: number
+  /** Topics of the approved map of the grade, 0 outside South Africa. */
+  topics: number
+  /** False when the learner was already started: nothing was made. */
+  created: boolean
+}
+
+/**
+ * A learner signs up alone (P111): one login, no teacher, no parent, no code, no age. Makes ONE `children` row with `user_id` = this login in a
+ * personal school of its own (`schools.kind 'private'`, named "{first name}'s own", the chosen country, no sandbox), `private_of` null and no parent
+ * (the same shape as a child a parent added alone, P99, so every learner screen treats it as an independent own record), the CAPS class of the grade
+ * with its approved map in South Africa (`addGradeToWorkspace`, the learner as the person acting), and last the learner's `profiles` row (role
+ * 'learner', `school_id` the personal school, so the learner's own login can read it). The first name comes from the account name (`learnerFirstName`).
+ * Calling it twice never makes a second child: a login that already has a child (made by this call, or by a teacher's or a parent's code) gets that child
+ * back, with nothing else made, and a missing profile or school link is filled in. A login that already has another role is refused. A grade outside 1 to 12
+ * and a country that is not a two-letter code are refused with one plain sentence (`OwnWorkspaceError`) and nothing is written. A failure after the school was
+ * made removes the school again (the child, the class, the map and the enrolment go with it) and the profile is never left behind. The caller has checked
+ * that `userId` is the signed-in person and that `country` is one the app knows.
+ */
+export async function startLearnerAlone(
+  db: JemmaDb,
+  input: { userId: string; displayName: string; grade: unknown; country: unknown },
+  now: Date = new Date(),
+): Promise<StartedLearner> {
+  if (!isGrade(input.grade)) throw new OwnWorkspaceError(`Pick your grade, from ${OWN_GRADES.from} to ${OWN_GRADES.to}.`)
+  const grade = input.grade
+  const country = typeof input.country === 'string' && /^[A-Z]{2}$/.test(input.country) ? input.country : null
+  if (!country) throw new OwnWorkspaceError('Pick the country.')
+  const firstName = learnerFirstName(input.displayName)
+  const displayName = squash(input.displayName).slice(0, 80) || firstName
+
+  const profile = await maybe(db.from('profiles').select('role, school_id').eq('user_id', input.userId).maybeSingle())
+  if (profile && profile.role !== 'learner') throw new OwnWorkspaceError('This login already has a role.')
+
+  const childrenOf = () => ok(db.from('children').select('id, school_id, grade').eq('user_id', input.userId).is('private_of', null).order('created_at').order('id'))
+  const linkProfile = async (schoolId: string) => {
+    if (!profile) {
+      const made = await db.from('profiles').insert({ user_id: input.userId, role: 'learner', display_name: displayName, school_id: schoolId })
+      // Two taps at once: the other one made the profile first, which is the same profile.
+      if (made.error && codeOf(made.error) !== '23505') throw new Error(`could not save the profile: ${made.error.message}`)
+    } else if (profile.school_id !== schoolId) {
+      await ok(db.from('profiles').update({ school_id: schoolId }).eq('user_id', input.userId).select('user_id'))
+    }
+  }
+
+  const before = (await childrenOf())[0]
+  if (before) return alreadyStarted(db, before, linkProfile)
+
+  const school = await ok(
+    db.from('schools').insert({ name: `${firstName}'s own`, country, region: null, grades: null, sandbox_id: null, kind: 'private' }).select('id').single(),
+  )
+  try {
+    const child = await ok(
+      db
+        .from('children')
+        .insert({ school_id: school.id, first_name: firstName, last_name: null, grade, user_id: input.userId, private_of: null, parent_first_name: null, parent_relation: null })
+        .select('id')
+        .single(),
+    )
+    // Two taps at once: the oldest child of this login stays and the other tap takes its own school away again.
+    const keeper = (await childrenOf())[0]
+    if (keeper && keeper.id !== child.id) {
+      await db.from('schools').delete().eq('id', school.id)
+      return alreadyStarted(db, keeper, linkProfile)
+    }
+    const added = await addGradeToWorkspace(db, { schoolId: school.id, childId: child.id, country }, grade, input.userId, now)
+    await linkProfile(school.id)
+    return { childId: child.id, schoolId: school.id, classId: added.classId, grade, topics: added.topics, created: true }
+  } catch (e) {
+    // Nothing is left half made: the personal school goes, and the child, the class, the map and the enrolment with it.
+    await db.from('schools').delete().eq('id', school.id)
+    throw new Error(`could not start: ${e instanceof Error ? e.message : String(e)}`)
+  }
+}
+
+/** The answer of `startLearnerAlone` for a login that already has a child: that child, its CAPS class and map as they are, and the profile filled in. */
+async function alreadyStarted(
+  db: JemmaDb,
+  child: { id: string; school_id: string; grade: number },
+  linkProfile: (schoolId: string) => Promise<void>,
+): Promise<StartedLearner> {
+  await linkProfile(child.school_id)
+  const caps = (await ok(db.from('classes').select('id').eq('school_id', child.school_id).eq('grade', child.grade).eq('name', capsClassName(child.grade)).order('created_at').order('id')))[0]
+  return { childId: child.id, schoolId: child.school_id, classId: caps?.id ?? null, grade: child.grade, topics: caps ? await topicCountOf(db, caps.id) : 0, created: false }
+}
+
 const sum = (scores: Score[]): Score => ({ right: scores.reduce((n, s) => n + s.right, 0), asked: scores.reduce((n, s) => n + s.asked, 0) })
 
 /** One class of a private workspace. `caps` is true for the CAPS class of a grade (`capsClassName`), false for a learner's own curriculum (P97). */

@@ -284,7 +284,8 @@ export async function getSessionPage(sessionId: string): Promise<SessionPage> {
   }
 }
 
-export type Handback = { firstName: string; minutes: number | null; relation: string; parentName: string }
+/** `alone`: a learner on their own (no school, no grown-up on the record, P111): the screen does not ask them to pass the phone back. */
+export type Handback = { firstName: string; minutes: number | null; relation: string; parentName: string; alone: boolean }
 
 export async function getHandback(): Promise<Handback> {
   const { supabase, child } = await myChild()
@@ -302,5 +303,6 @@ export async function getHandback(): Promise<Handback> {
     minutes: done?.[0]?.minutes ?? null,
     relation: !rel ? "your grown-up" : /^(mum|mom|mother|dad|father|gran|granny|grandma|grandpa|auntie|uncle)$/i.test(rel) ? `your ${rel.toLowerCase()}` : rel,
     parentName,
+    alone: isIndependent(child) && !child.parent_first_name?.trim(),
   }
 }

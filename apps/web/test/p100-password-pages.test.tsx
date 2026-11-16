@@ -126,10 +126,10 @@ describe('the sign-up form', () => {
 })
 
 describe('the sign-up page', () => {
-  it('keeps its heading and the line for learners, and links back to sign in', async () => {
+  it('keeps its heading, says learners can sign up too (P111), and links back to sign in', async () => {
     const page = await pageText(Promise.resolve(SignUpPage()))
     expect(page.querySelector('h1')!.textContent).toBe("Make your Jemma account. It's free for families.")
-    expect(page.textContent).toContain('For teachers and parents. Learners sign in with a code from a parent or teacher.')
+    expect(page.textContent).toContain('For teachers, parents and learners. Got a code from a parent or teacher? Learners can sign in with it instead.')
     expect(page.textContent).toContain('Make my account')
     expect(page.textContent).not.toMatch(/6 digit|No password to remember/i)
     expect(page.querySelector('a[href="/sign-in"]:not([aria-label])')!.textContent).toBe('Sign in')

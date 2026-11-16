@@ -12,6 +12,14 @@ export function childEmail(code: string): string {
   return `${code.toLowerCase()}@kids.jemma.invalid`
 }
 
+/**
+ * True for the made-up email of a learner who signs in with a code and a PIN (`childEmail`). A learner who signed up alone (P111) has a real email and a
+ * password: no code, no PIN, so no line about a PIN and a different sign-in screen to go back to.
+ */
+export function isCodeLoginEmail(email: string | null | undefined): boolean {
+  return (email ?? '').trim().toLowerCase().endsWith('@kids.jemma.invalid')
+}
+
 /** `hex(HMAC_SHA256(CHILD_PIN_PEPPER, code + ':' + pin))`. Server only. */
 export async function childPassword(code: string, pin: string): Promise<string> {
   const pepper = process.env.CHILD_PIN_PEPPER
