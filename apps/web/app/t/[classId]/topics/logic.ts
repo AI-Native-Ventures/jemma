@@ -8,6 +8,40 @@ export type MapTopic = { id: string; name: string; family: string; term: number;
 export type Learner = { id: string; name: string }
 /** A finished practice session. `asked` is the number of questions it had (null when the session does not say). */
 export type SessionRow = { id: string; childId: string; topicId: string | null; topicName: string | null; right: number | null; asked: number | null; finishedAt: string | null }
+/**
+ * A finished session as the database holds it. A practice a learner really did never has its size written (`question_count` is null: only the planner
+ * sets it) and may have no `right`, so the size and the score are read from its Try answers (`withSizes`).
+ */
+export type RawSession = { id: string; childId: string; topicId: string | null; topicName: string | null; right: number | null; questionCount: number | null; finishedAt: string | null }
+/** One Try answer of a session, as little as it takes to size it. Warm-up answers are never in this list. */
+export type TryMark = { sessionId: string; correct: boolean }
+
+/** True when a session's size or score is not in its row, so its Try answers are needed to read them. */
+export const needsTries = (s: RawSession): boolean => s.questionCount === null || s.questionCount <= 0 || s.right === null
+
+/**
+ * The sessions with their size and score filled in. The size is `question_count` when the row has one, else the number of Try answers of the session; the
+ * score is `right` when the row has one, else the number of right Try answers. A session with no Try answers and no size in its row has no size: it is
+ * left out of every number (`counts`). A row that has both is taken as it is (the made-up learners' practice, the planner's own count).
+ */
+export function withSizes(raw: RawSession[], tries: TryMark[]): SessionRow[] {
+  const by = new Map<string, TryMark[]>()
+  for (const t of tries) by.set(t.sessionId, [...(by.get(t.sessionId) ?? []), t])
+  return raw.map((s) => {
+    const mine = by.get(s.id) ?? []
+    const sized = s.questionCount !== null && s.questionCount > 0
+    return {
+      id: s.id,
+      childId: s.childId,
+      topicId: s.topicId,
+      topicName: s.topicName,
+      right: s.right ?? (mine.length > 0 ? mine.filter((t) => t.correct).length : null),
+      asked: sized ? s.questionCount : mine.length > 0 ? mine.length : null,
+      finishedAt: s.finishedAt,
+    }
+  })
+}
+
 /** One Try answer: the question as the AI wrote it (its notes, the right way), and what the learner typed. */
 export type ItemRow = { sessionId: string; childId: string; correct: boolean; answer: string; question: unknown }
 
