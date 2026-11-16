@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { finishAnswer, markQuestion, readNumber } from '../../src/logic'
-import { listAnswerParts, listKeyProblem, markValues, roundTo, shuffledItems, splitValues } from '../../src/logic/answers/lists'
+import { listAnswerParts, listKeyProblem, markValues, resultCells, rightValues, roundTo, shuffledItems, splitValues } from '../../src/logic/answers/lists'
 import { ANSWER_KINDS, LIST_ANSWER_KINDS, LessonSchema, QuestionSchema, SeniorQuestionSchema, StoredLessonSchema } from '../../src/schemas/lesson'
 import { answerProblem, badQuestions, screenLesson } from '../../src/tools/save/save-lesson'
 
@@ -156,6 +156,16 @@ describe('rounding', () => {
   })
   test('without the field the key is compared as it is', () => {
     expect(right(list('3,14; 2,72', { ordered: true }), '3,1; 2,7')).toBe(false)
+  })
+  test('the right answer shown is the key rounded as the question asks, with the key\'s own decimal sign', () => {
+    expect(rightValues({ answer: '3,14159; 2,71828', round: 2 }, readNumber)).toEqual(['3,14', '2,72'])
+    expect(rightValues({ answer: '3.14159; 2', round: 1 }, readNumber)).toEqual(['3.1', '2.0'])
+    expect(rightValues({ answer: '3,14159; 2,71828' }, readNumber)).toEqual(['3,14159', '2,71828'])
+    const cells = resultCells(list('3,14159; 2,71828', { ordered: true, round: 2 }), '3,14; 2,7', readNumber)
+    expect(cells).toEqual([
+      { wrote: '3,14', right: '3,14', ok: true },
+      { wrote: '2,7', right: '2,72', ok: false },
+    ])
   })
   test('a table rounds too', () => {
     const q = table('2,333; 4,667', [[null, 'a'], [null, 'b']], { round: 1 })

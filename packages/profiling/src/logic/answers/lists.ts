@@ -217,9 +217,23 @@ export function listAnswerParts(q: ListQuestion): ListParts {
   return q.table ? { table: { columns: q.table.columns, rows: q.table.rows, plain } } : {}
 }
 
+/**
+ * The key as the question asks for it: each value rounded to `round` places and written with the key's own decimal sign (a comma when the key has one, else a point,
+ * else a comma), or the key as it is when the question asks for no rounding or a value does not read. This is what the results show as the right answer.
+ */
+export function rightValues(q: Pick<ListQuestion, 'answer' | 'round'>, read: Reader): string[] {
+  const texts = splitValues(q.answer)
+  if (q.round === undefined) return texts
+  const sign = q.answer.includes(',') ? ',' : q.answer.includes('.') ? '.' : ','
+  return texts.map((t) => {
+    const v = read(t)
+    return v === null || !Number.isFinite(v) ? t : roundTo(v, q.round!).toFixed(q.round).replace('.', sign)
+  })
+}
+
 /** The cells of a typed answer for the results: what was written in each place, and whether it was right. `right` is the key's value for that place. */
 export function resultCells(q: ListQuestion, stored: string, read: Reader): { wrote: string; right: string; ok: boolean }[] {
-  const keyTexts = splitValues(q.answer)
+  const keyTexts = rightValues(q, read)
   const wrote = splitValues(stored)
   const mark = markListQuestion(q, stored, read)
   const length = Math.max(keyTexts.length, wrote.length)

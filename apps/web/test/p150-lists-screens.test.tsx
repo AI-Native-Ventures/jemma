@@ -318,6 +318,13 @@ describe('the results: each value or cell right or not right', () => {
     const [m] = reviewOf([item(MEAN, '3,1; 2,7', true)])
     expect(m!.cells!.every((c) => c.ok)).toBe(true)
   })
+  it('the right answer of a rounded question is the key rounded as the question asks', () => {
+    const [m] = missed(MEAN, '3,1; 2,7')
+    expect(m!.right).toBe('3,1; 2,7')
+    const [again] = missed({ ...MEAN, round: 2 }, '3,1; 2,7')
+    expect(again!.right).toBe('3,14; 2,72')
+    expect(again!.cells!.map((c) => c.right)).toEqual(['3,14', '2,72'])
+  })
   it('an answer that could not be read on paper has no cells (the card says so)', () => {
     const [m] = reviewOf([{ ...item(FIVE, '', false), unread: true }])
     expect(m!.cells).toBeUndefined()

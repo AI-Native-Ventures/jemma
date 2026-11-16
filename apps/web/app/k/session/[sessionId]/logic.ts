@@ -11,6 +11,7 @@ import {
   paperQuestions,
   readNumber,
   resultCells,
+  rightValues,
   type ListParts,
   type MissingPart,
   type Stage,
@@ -277,11 +278,13 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
 }
 
 /** P150: for a list, an order or a table, each place of the answer marked right or wrong (and the table to draw them in). Nothing for any other question. */
-function cellsOf(item: StoredItem): Pick<MissedQuestion, 'cells' | 'table' | 'ordered'> {
+function cellsOf(item: StoredItem): Partial<Pick<MissedQuestion, 'cells' | 'table' | 'ordered' | 'right'>> {
   const q = item.question
   if (!isListKind(q.answerKind) || item.unread) return {}
   const parts = listAnswerParts(q)
   return {
+    // The right answer as the question asks for it (rounded, when it says "correct to 1 decimal place").
+    right: rightValues(q, readNumber).join('; '),
     cells: resultCells(q, item.answer, readNumber),
     ordered: q.answerKind !== 'list' || parts.list?.ordered === true,
     ...(parts.table ? { table: parts.table } : {}),
