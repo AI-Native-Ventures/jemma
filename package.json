@@ -8,8 +8,8 @@
     "test": "vitest run",
     "typecheck": "pnpm -r --parallel typecheck",
     "teach:generate": "pnpm --filter @jemma/teach generate",
-    "teach:import": "pnpm --filter @jemma/teach --silent import",
-    "operator":"pnpm --filter @jemma/runner operator",
+    "teach:import": "pnpm --filter @jemma/teach --silent run import",
+    "operator": "pnpm --filter @jemma/runner operator",
     "evals": "pnpm --filter @jemma/runner exec node --import tsx --import ../profiling/scripts/register-md.mjs ../../evals/run.ts",
     "evals:report": "pnpm --filter @jemma/runner exec node --import tsx --import ../profiling/scripts/register-md.mjs ../../evals/report.ts",
     "evals:unseen": "pnpm --filter @jemma/runner exec node --import tsx --import ../profiling/scripts/register-md.mjs ../../evals/unseen.ts"

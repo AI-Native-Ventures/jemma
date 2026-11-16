@@ -1,0 +1,269 @@
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { afterEach, beforeEach, describe, expect, test } from 'vitest'
+import { TopicLessonsSchema, type TeachingLesson } from '@jemma/profiling/schemas'
+import { Chain } from '../chain'
+import { Generator, scrubDashes } from '../generate'
+import { ledgerPath, readLedger, summarize } from '../ledger'
+import { capsReference } from '../sources'
+import { topicFileNames, topicGroups, lessonPath } from '../topics'
+import type { Runner } from '../opencode'
+import { goodLesson, worked } from './fixtures'
+
+const group = topicGroups().find((g) => g.grade === 6 && g.baseName === 'Common fractions')!
+const fileName = topicFileNames([group]).get(group)!
+const MIN = 60_000
+const EM = String.fromCharCode(0x2014)
+
+type Call = { model: string; kind: 'outline' | 'write' | 'rewrite' | 'review' }
+
+type FakeOpts = {
+  lessons?: number
+  /** The lesson a writer returns for a position, and whether it is a rewrite. */
+  write?: (position: number, rewrite: boolean) => TeachingLesson
+  review?: (position: number, n: number) => { ok: boolean; problems: string[] }
+  /** Models that answer "Free usage limit reached" for their first `n` calls. */
+  limited?: Record<string, number>
+  fence?: boolean
+}
+
+const badLesson = (position: number): TeachingLesson => {
+  const lesson = goodLesson({ position })
+  const blocks = lesson.blocks.map((b, i) => (i === 3 && b.kind === 'worked' ? { ...b, answer: '5/4' } : b))
+  return { ...lesson, blocks }
+}
+
+function fake(opts: FakeOpts = {}) {
+  const calls: Call[] = []
+  const used: Record<string, number> = {}
+  let reviews = 0
+  const run: Runner = async (model, prompt) => {
+    used[model] = (used[model] ?? 0) + 1
+    if (used[model]! <= (opts.limited?.[model] ?? 0)) return { text: '', limited: true, error: 'Free usage limit reached' }
+    const wrap = (o: unknown) => (opts.fence ? '```json\n' + JSON.stringify(o) + '\n```' : JSON.stringify(o))
+    if (prompt.includes('# Task: plan the lessons of one topic')) {
+      calls.push({ model, kind: 'outline' })
+      const n = opts.lessons ?? 1
+      return { text: wrap({ lessons: Array.from({ length: n }, (_, i) => ({ title: `Lesson ${i + 1} title`, objectives: [`You will be able to do thing ${i + 1}.`, 'You will be able to explain it.'] })) }), limited: false, tokensIn: 100, tokensOut: 50 }
+    }
+    if (prompt.includes('# Task: write ONE full maths lesson')) {
+      const position = Number(/This is lesson (\d+) of/.exec(prompt)![1])
+      const rewrite = prompt.includes('fix every one')
+      calls.push({ model, kind: rewrite ? 'rewrite' : 'write' })
+      const lesson = (opts.write ?? ((p) => goodLesson({ position: p })))(position, rewrite)
+      return { text: wrap(lesson), limited: false, tokensIn: 2000, tokensOut: 4000 }
+    }
+    const position = Number(/Lesson (\d+) of/.exec(prompt)![1])
+    calls.push({ model, kind: 'review' })
+    reviews += 1
+    return { text: wrap((opts.review ?? (() => ({ ok: true, problems: [] })))(position, reviews)), limited: false }
+  }
+  return { run, calls }
+}
+
+describe('generate', () => {
+  let root: string
+  let clock: number
+  beforeEach(() => {
+    root = mkdtempSync(join(tmpdir(), 'teach-gen-'))
+    clock = 1_000_000
+  })
+  afterEach(() => rmSync(root, { recursive: true, force: true }))
+
+  const make = (f: ReturnType<typeof fake>, extra: Partial<ConstructorParameters<typeof Generator>[0]> = {}) =>
+    new Generator({
+      root,
+      chain: new Chain(['opencode/a-free', 'opencode/b-free'], () => clock),
+      run: f.run,
+      reference: async (g) => capsReference(g),
+      sleep: async (ms) => void (clock += ms),
+      log: () => undefined,
+      timeoutMs: 1000,
+      maxWaitMs: 120 * MIN,
+      ...extra,
+    })
+  const filePath = () => join(root, lessonPath(group, fileName))
+  const failList = () => JSON.parse(readFileSync(join(root, 'content/lessons/fail-list.json'), 'utf8')) as { topics: { baseName: string; attempts: number }[]; lessons: { position: number; problems: string[] }[] }
+
+  test('one topic end to end writes a valid TopicLessons file, one file for both term rows', async () => {
+    const f = fake({ lessons: 2, fence: true })
+    const g = make(f)
+    const result = await g.generateTopic(group, fileName)
+    expect(result).toMatchObject({ status: 'done', ready: 2, failed: 0 })
+    const file = TopicLessonsSchema.parse(JSON.parse(readFileSync(filePath(), 'utf8')))
+    expect(file).toMatchObject({ grade: 6, baseName: 'Common fractions', family: 'fractions', terms: [1, 4], capsNames: ['Common fractions'] })
+    expect(file.lessons.map((l) => [l.position, l.title])).toEqual([[1, 'Lesson 1 title'], [2, 'Lesson 2 title']])
+    expect(file.lessons[0]!.objectives[0]).toBe('You will be able to do thing 1.')
+    expect(file.source.kind).toBe('caps')
+    expect(file.status.map((s) => s.status)).toEqual(['ready', 'ready'])
+    expect(file.status[0]).toMatchObject({ writer: 'opencode/a-free', reviewer: 'opencode/b-free' })
+    expect(Date.parse(file.generatedAt)).not.toBeNaN()
+    expect(existsSync(join(root, 'content/lessons/.progress'))).toBe(true)
+    expect(existsSync(join(root, 'content/lessons/.progress', `g6-${fileName}.json`))).toBe(false)
+  })
+
+  test('the reviewer is never the writer, and every call is in the ledger', async () => {
+    const f = fake()
+    await make(f).generateTopic(group, fileName)
+    const write = f.calls.find((c) => c.kind === 'write')!
+    const review = f.calls.find((c) => c.kind === 'review')!
+    expect(review.model).not.toBe(write.model)
+    const ledger = readLedger(root)
+    expect(ledger.map((l) => l.kind)).toEqual(['outline', 'write', 'review'])
+    expect(ledger.every((l) => l.ok && l.grade === 6 && l.topic === 'Common fractions')).toBe(true)
+    expect(ledger[1]).toMatchObject({ tokensIn: 2000, tokensOut: 4000 })
+    expect(existsSync(ledgerPath(root))).toBe(true)
+    expect(summarize(ledger).find((s) => s.model === 'opencode/a-free')).toMatchObject({ calls: 2, failures: 0, limited: 0 })
+  })
+
+  test('a lesson that fails the code checks is rewritten once by the same writer, then passes', async () => {
+    const f = fake({ write: (p, rewrite) => (rewrite ? goodLesson({ position: p }) : badLesson(p)) })
+    const result = await make(f).generateTopic(group, fileName)
+    expect(result).toMatchObject({ status: 'done', ready: 1 })
+    expect(f.calls.map((c) => c.kind)).toEqual(['outline', 'write', 'rewrite', 'review'])
+    expect(f.calls[2]!.model).toBe(f.calls[1]!.model)
+    expect(readLedger(root).map((l) => l.kind)).toEqual(['outline', 'write', 'rewrite', 'review'])
+  })
+
+  test('a reviewer that finds a problem sends the lesson back once, with the problem in the prompt', async () => {
+    const prompts: string[] = []
+    const base = fake({ review: (_p, n) => (n === 1 ? { ok: false, problems: ['block 4: 3/4 is wrong'] } : { ok: true, problems: [] }) })
+    const run: Runner = async (m, p) => {
+      prompts.push(p)
+      return base.run(m, p, { timeoutMs: 1 })
+    }
+    const result = await make(base, { run }).generateTopic(group, fileName)
+    expect(result).toMatchObject({ status: 'done', ready: 1 })
+    expect(base.calls.map((c) => c.kind)).toEqual(['outline', 'write', 'review', 'rewrite', 'review'])
+    expect(prompts.find((p) => p.includes('fix every one'))).toContain('block 4: 3/4 is wrong')
+  })
+
+  test('a lesson that fails twice ends failed and is in the fail list; the passing lessons are kept', async () => {
+    const f = fake({ lessons: 2, write: (p) => (p === 2 ? badLesson(p) : goodLesson({ position: p })) })
+    const result = await make(f).generateTopic(group, fileName)
+    expect(result).toMatchObject({ status: 'partial', ready: 1, failed: 1 })
+    const file = TopicLessonsSchema.parse(JSON.parse(readFileSync(filePath(), 'utf8')))
+    expect(file.lessons.map((l) => l.position)).toEqual([1])
+    expect(file.status.map((s) => [s.position, s.status])).toEqual([[1, 'ready'], [2, 'failed']])
+    expect(file.status[1]!.problems.join(' ')).toMatch(/last step/)
+    const list = failList()
+    expect(list.lessons).toHaveLength(1)
+    expect(list.lessons[0]).toMatchObject({ position: 2 })
+    expect(list.topics).toEqual([])
+  })
+
+  test('when lesson 1 fails there is no file, and the topic is in the fail list', async () => {
+    const f = fake({ lessons: 1, write: (p) => badLesson(p) })
+    const result = await make(f).generateTopic(group, fileName)
+    expect(result).toMatchObject({ status: 'failed', ready: 0, failed: 1 })
+    expect(existsSync(filePath())).toBe(false)
+    expect(failList().topics).toEqual([expect.objectContaining({ baseName: 'Common fractions', attempts: 1 })])
+  })
+
+  test('a topic that failed twice is not tried again unless asked', async () => {
+    const f = fake({ write: (p) => badLesson(p) })
+    await make(f).generateTopic(group, fileName)
+    await make(f).generateTopic(group, fileName)
+    expect(failList().topics[0]!.attempts).toBe(2)
+    const before = f.calls.length
+    const third = await make(f).generateTopic(group, fileName)
+    expect(third.status).toBe('skipped')
+    expect(f.calls.length).toBe(before)
+    const forced = await make(f, { retryFailed: true }).generateTopic(group, fileName)
+    expect(forced.status).toBe('failed')
+    expect(f.calls.length).toBeGreaterThan(before)
+  })
+
+  test('a second run skips the finished topic and makes no call', async () => {
+    const f = fake()
+    await make(f).generateTopic(group, fileName)
+    const calls = f.calls.length
+    const again = await make(f).generateTopic(group, fileName)
+    expect(again.status).toBe('skipped')
+    expect(f.calls.length).toBe(calls)
+  })
+
+  test('a model that is out of free quota is parked for an hour, never retried in a loop, and the next model takes over', async () => {
+    const f = fake({ limited: { 'opencode/a-free': 99 } })
+    const chain = new Chain(['opencode/a-free', 'opencode/b-free', 'opencode/c-free'], () => clock)
+    const result = await make(f, { chain }).generateTopic(group, fileName)
+    expect(result.status).toBe('done')
+    expect(f.calls.map((c) => c.model)).toEqual(['opencode/b-free', 'opencode/b-free', 'opencode/c-free'])
+    const ledger = readLedger(root)
+    expect(ledger.filter((l) => l.limited)).toHaveLength(1)
+    expect(chain.next()).toBe('opencode/b-free')
+    clock += 61 * MIN
+    expect(chain.next()).toBe('opencode/a-free')
+  })
+
+  test('when every model is limited the run waits until the first one is back, then goes on', async () => {
+    const f = fake({ limited: { 'opencode/a-free': 1, 'opencode/b-free': 1 } })
+    const slept: number[] = []
+    const result = await make(f, { sleep: async (ms) => void (slept.push(ms), (clock += ms)) }).generateTopic(group, fileName)
+    expect(result.status).toBe('done')
+    expect(slept.reduce((a, b) => a + b, 0)).toBeGreaterThanOrEqual(60 * MIN)
+    expect(slept.every((ms) => ms <= 5 * MIN)).toBe(true)
+  })
+
+  test('when every model is limited and waiting is not allowed the topic stops, is not failed, and keeps no fail-list entry', async () => {
+    const f = fake({ limited: { 'opencode/a-free': 99, 'opencode/b-free': 99 } })
+    const result = await make(f, { maxWaitMs: 0 }).generateTopic(group, fileName)
+    expect(result).toMatchObject({ status: 'stopped' })
+    expect(result.reason).toMatch(/limit/i)
+    expect(existsSync(join(root, 'content/lessons/fail-list.json'))).toBe(false)
+    expect(existsSync(filePath())).toBe(false)
+  })
+
+  test('the call cap stops the run, and the next run continues from the saved lessons without asking for the outline again', async () => {
+    const f = fake({ lessons: 2 })
+    const first = make(f, { limitCalls: 3 })
+    const stopped = await first.generateTopic(group, fileName)
+    expect(stopped.status).toBe('stopped')
+    expect(first.capReached).toBe(true)
+    expect(readLedger(root)).toHaveLength(3)
+    expect(existsSync(filePath())).toBe(false)
+    const second = await make(f, { limitCalls: 20 }).generateTopic(group, fileName)
+    expect(second).toMatchObject({ status: 'done', ready: 2 })
+    expect(f.calls.map((c) => c.kind)).toEqual(['outline', 'write', 'review', 'write', 'review'])
+    expect(TopicLessonsSchema.parse(JSON.parse(readFileSync(filePath(), 'utf8'))).lessons).toHaveLength(2)
+  })
+
+  test('the cap counts calls already in the ledger, including a hand made one', async () => {
+    const f = fake()
+    const g = make(f, { limitCalls: 1 })
+    g.addProbe({ model: 'opencode/a-free', ok: false, limited: true, error: 'Free usage limit reached' })
+    expect(readLedger(root).map((l) => l.kind)).toEqual(['probe'])
+    const result = await g.generateTopic(group, fileName)
+    expect(result.status).toBe('stopped')
+    expect(f.calls).toEqual([])
+  })
+
+  test('runAll works through the groups with a pool and returns a summary', async () => {
+    const f = fake()
+    const second = topicGroups().find((g) => g.grade === 6 && g.baseName === 'Decimal fractions')!
+    const groups = [group, second]
+    const g = make(f, { concurrency: 2 })
+    const summary = await g.runAll(groups)
+    expect(summary).toMatchObject({ done: 2, skipped: 0, failed: 0, partial: 0, stopped: 0 })
+    const again = await make(f, { concurrency: 2 }).runAll(groups)
+    expect(again).toMatchObject({ done: 0, skipped: 2 })
+  })
+
+  test('a model that writes an em dash, a wrong position or a wrong title is put right by code', async () => {
+    const f = fake({ write: (p) => ({ ...goodLesson({ position: 7, title: 'My own title' }), summary: [`Add ${EM} then check`, 'Keep the bottom.', 'Check it.'] }) })
+    await make(f).generateTopic(group, fileName)
+    const file = TopicLessonsSchema.parse(JSON.parse(readFileSync(filePath(), 'utf8')))
+    expect(file.lessons[0]).toMatchObject({ position: 1, title: 'Lesson 1 title' })
+    expect(JSON.stringify(file)).not.toContain(EM)
+  })
+
+  test('scrubDashes turns the long dashes into plain ones, deep inside a value', () => {
+    expect(scrubDashes({ a: [`one ${EM} two`, `three${EM}four`, { b: `5${String.fromCharCode(0x2013)}10` }] })).toEqual({ a: ['one - two', 'three - four', { b: '5-10' }] })
+  })
+
+  test('worked fixture sanity: the bad lesson really fails a check', () => {
+    expect(worked(1, 2, 4).kind).toBe('worked')
+    expect(badLesson(1).blocks[3]).toMatchObject({ answer: '5/4' })
+  })
+})

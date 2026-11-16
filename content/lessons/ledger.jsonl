@@ -1,0 +1,5 @@
+{"time": "2026-11-16T18:05:30.000Z", "model": "opencode/hy4-flash-free", "kind": "probe", "seconds": 0, "ok": false, "limited": true, "error": "Free usage limit reached"}
+{"time": "2026-11-16T18:09:48.000Z", "model": "opencode/hy4-flash-free", "kind": "probe", "seconds": 0, "ok": false, "limited": true, "error": "Free usage limit reached"}
+{"time": "2026-11-16T18:10:33.000Z", "model": "opencode/inkling-2-small-free", "kind": "probe", "seconds": 0, "ok": false, "limited": true, "error": "Free usage limit reached"}
+{"time": "2026-11-16T18:11:06.000Z", "model": "opencode/beam-free", "kind": "probe", "seconds": 0, "ok": false, "limited": true, "error": "Free usage limit reached"}
+{"time": "2026-11-16T18:11:10.000Z", "model": "opencode/flint-40b-free", "kind": "probe", "seconds": 0, "ok": false, "limited": true, "error": "Free usage limit reached"}

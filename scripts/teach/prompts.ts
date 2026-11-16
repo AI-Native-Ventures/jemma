@@ -186,7 +186,7 @@ export function writePrompt(input: WriteInput): string {
 
 // ---- the reviewer --------------------------------------------------------------------------------------------------------------------
 
-export const ReviewSchema = z.object({ ok: z.boolean(), problems: z.array(z.string()) })
+export const ReviewSchema = z.object({ ok: z.boolean(), problems: z.array(z.string()).default([]) })
 export type Review = z.infer<typeof ReviewSchema>
 
 export function reviewPrompt(group: TopicGroup, ref: Reference, lesson: TeachingLesson, total: number, sections?: string[]): string {

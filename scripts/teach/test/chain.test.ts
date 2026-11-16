@@ -144,6 +144,16 @@ describe('callJson', () => {
     expect(calls).toEqual(['a', 'b', 'c'])
   })
 
+  test('a preferred model is tried first when it is free, and the rest follow in rank order', async () => {
+    const { run, calls } = scripted({ a: [reply('{"n":1,"word":"a"}')], b: [reply('nope')], c: [reply('{"n":3,"word":"c"}')] })
+    const out = await callJson(new Chain(['a', 'b', 'c']), 'p', Shape, { timeoutMs: 1000, run, prefer: 'b' })
+    expect(out?.model).toBe('a')
+    expect(calls).toEqual(['b', 'a'])
+    const parked = new Chain(['a', 'b'])
+    parked.park('b', 1000)
+    expect(parked.next([], 'b')).toBe('a')
+  })
+
   test('never calls a model it was told to exclude', async () => {
     const { run, calls } = scripted({ a: [reply('{"n":1,"word":"a"}')], b: [reply('{"n":2,"word":"b"}')] })
     const out = await callJson(new Chain(['a', 'b']), 'p', Shape, { timeoutMs: 1000, run, exclude: ['a'] })

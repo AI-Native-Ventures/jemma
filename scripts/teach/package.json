@@ -7,8 +7,8 @@
   "description": "Offline generator of the teaching library: drives OpenCode free models, checks every lesson, writes content/lessons.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "generate": "node --import tsx --import ../../packages/profiling/scripts/register-md.mjs generate.ts",
-    "import": "node --import tsx --import ../../packages/profiling/scripts/register-md.mjs import.ts"
+    "generate": "node --import tsx generate.ts",
+    "import": "node --import tsx import.ts"
   },
   "dependencies": {
     "@jemma/profiling": "workspace:*",

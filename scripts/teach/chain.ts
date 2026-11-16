@@ -48,10 +48,12 @@ export class Chain {
     private readonly now: () => number = Date.now,
   ) {}
 
-  /** The best model that is not excluded and not resting, or null. */
-  next(exclude: string[] = []): string | null {
+  /** The best model that is not excluded and not resting, or null. `prefer` is tried before the rest when it is in the chain and free. */
+  next(exclude: string[] = [], prefer?: string): string | null {
     const t = this.now()
-    return this.models.find((m) => !exclude.includes(m) && (this.parkedUntil.get(m) ?? 0) <= t) ?? null
+    const free = (m: string) => !exclude.includes(m) && (this.parkedUntil.get(m) ?? 0) <= t
+    if (prefer && this.models.includes(prefer) && free(prefer)) return prefer
+    return this.models.find(free) ?? null
   }
 
   park(model: string, ms: number): void {
@@ -63,6 +65,12 @@ export class Chain {
     const t = this.now()
     const times = this.models.filter((m) => !exclude.includes(m)).map((m) => this.parkedUntil.get(m) ?? 0).filter((u) => u > t)
     return times.length ? Math.min(...times) : null
+  }
+
+  /** Milliseconds until the first resting model (not excluded) is free again, or null when none of them is resting. */
+  msUntilAvailable(exclude: string[] = []): number | null {
+    const at = this.nextAvailableAt(exclude)
+    return at === null ? null : Math.max(0, at - this.now())
   }
 
   /** A process-level failure (crash, timeout, empty reply). A string of them rests the model for a while. */
@@ -98,6 +106,8 @@ export type Attempt = {
 
 export type CallOpts = {
   exclude?: string[]
+  /** Tried first when it is free: a rewrite goes to the model that wrote the lesson. */
+  prefer?: string
   timeoutMs: number
   /** Replaces `runOpencode` (tests). */
   run?: Runner
@@ -119,7 +129,7 @@ export async function callJson<T>(chain: Chain, prompt: string, schema: z.ZodTyp
   const run = opts.run ?? runOpencode
   const tried = [...(opts.exclude ?? [])]
   for (;;) {
-    const model = chain.next(tried)
+    const model = chain.next(tried, opts.prefer)
     if (!model) return null
     tried.push(model)
     const started = Date.now()
