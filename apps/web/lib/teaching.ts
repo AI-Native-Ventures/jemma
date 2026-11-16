@@ -110,3 +110,15 @@ export function buildEntries(rows: LessonRow[], progress: ProgressRow[]): Librar
 export function nextEntry(entries: LibraryEntry[]): LibraryEntry | null {
   return entries.find((e) => !e.done) ?? entries[0] ?? null
 }
+
+/** The address a credit line links to: a full web address as it is, a Siyavula reader path ("/read/za/...") on their site, anything else no link. */
+export function sourceHref(address: string | undefined): string | null {
+  if (!address) return null
+  if (/^https?:\/\//i.test(address)) return address
+  if (address.startsWith('/read/')) return `https://www.siyavula.com${address}`
+  return null
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+/** True for an id the way the database writes one. An address that holds anything else is not looked up. */
+export const isUuid = (value: string | undefined | null): value is string => typeof value === 'string' && UUID.test(value)

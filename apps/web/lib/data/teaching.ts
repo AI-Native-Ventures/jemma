@@ -2,7 +2,7 @@ import { libraryKey, TeachingLessonSchema, TeachingSourceSchema, type TeachingLe
 import { cookies } from 'next/headers'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { HANDOVER_COOKIE, isOwnHandover, verifyHandover } from '@/lib/handover'
-import { buildEntries, forChild, readyLessons, type LessonRow, type LibraryEntry, type TeachingLessonForChild } from '@/lib/teaching'
+import { buildEntries, forChild, isUuid, readyLessons, type LessonRow, type LibraryEntry, type TeachingLessonForChild } from '@/lib/teaching'
 import { classIdsOfChild } from '@/lib/topics'
 import { myChild } from './p27'
 
@@ -10,8 +10,6 @@ import { myChild } from './p27'
 // for every learner), so they are read with the service client; the learner is found the way every learner screen finds them (`myChild`) and only their own
 // progress is read or written. Every read that fails says "no library" and the screen keeps today's flow: the Learn button is not drawn, the Learn step of
 // a practice is the one it always was.
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /** The topic of the learner's map a lesson list is for: its name, its part of Mathematics and the grade of the class whose map it is in. */
 export type LearnTopic = { id: string; name: string; family: string; grade: number }
@@ -22,7 +20,7 @@ export type LearnTopic = { id: string; name: string; family: string; grade: numb
  * time and the topic belongs to that grade's class.
  */
 export async function resolveTopic(topicId: string): Promise<LearnTopic | null> {
-  if (!UUID.test(topicId)) return null
+  if (!isUuid(topicId)) return null
   try {
     const { supabase, child } = await myChild()
     const admin = createSupabaseAdmin()
@@ -83,7 +81,7 @@ export async function libraryFor(grade: number, topicName: string): Promise<Libr
 
 /** One stored lesson that is ready, whole (answers and all): the server's copy, for marking. Null when it is not there, not ready, or not a lesson. */
 export async function storedLesson(id: string): Promise<{ lesson: TeachingLesson; source: TeachingSource } | null> {
-  if (!UUID.test(id)) return null
+  if (!isUuid(id)) return null
   try {
     const { data } = await createSupabaseAdmin().from('topic_lessons').select('content, source').eq('id', id).eq('status', 'ready').maybeSingle()
     if (!data) return null
@@ -147,7 +145,7 @@ async function underSessionHandover(): Promise<boolean> {
  */
 export async function sessionLibrary(sessionId: string): Promise<{ topicId: string | null; entries: LibraryEntry[] }> {
   const none = { topicId: null, entries: [] as LibraryEntry[] }
-  if (!UUID.test(sessionId)) return none
+  if (!isUuid(sessionId)) return none
   try {
     if (await underSessionHandover()) return none
     const { supabase, child } = await myChild()

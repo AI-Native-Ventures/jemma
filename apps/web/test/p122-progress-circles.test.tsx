@@ -17,6 +17,8 @@ vi.mock('next/navigation', () => ({
 }))
 vi.mock('../app/k/actions', () => ({ startPractice: vi.fn(async () => ({ ok: true })), retryPractice: vi.fn(async () => ({ ok: true })) }))
 vi.mock('../lib/data/p80', () => ({ getMyMaths: async () => state.view }))
+// P142: a part page asks the teaching library which topics have lessons; here none does, and nothing reaches a database.
+vi.mock('../lib/data/teaching', () => ({ libraryNames: async () => new Set<string>() }))
 vi.mock('../lib/data/own-screens', () => ({ getScreenShape: async () => state.shape }))
 // P128: the page is also the learner's home, so it reads what the home read. The workspace follows the shape the test chose; nothing planned, nothing to practise.
 vi.mock('../lib/data/p27', () => ({

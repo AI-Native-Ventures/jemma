@@ -2,6 +2,7 @@
 
 import { PendingButton } from '@/components/ui/Button'
 import { IconLabel } from '@/components/ui/IconLabel'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition, type ReactNode } from 'react'
 import { startPractice } from './actions'
@@ -9,6 +10,7 @@ import { startPractice } from './actions'
 export type Choice = { topicId?: string | null; topicName: string }
 
 const small = 'flex h-11 flex-none cursor-pointer items-center justify-center rounded-14 border-0 bg-ink px-4 text-[15px] font-semibold text-white disabled:opacity-60'
+const learn = 'flex h-11 flex-none items-center justify-center rounded-14 border-[1.5px] border-ink bg-card px-4 text-[15px] font-semibold text-ink no-underline'
 const big = 'flex min-h-[68px] w-full cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[24px] disabled:opacity-60'
 
 /**
@@ -43,11 +45,25 @@ export function PractiseButton({ choice, label = 'Practise', size = 'small', onM
 }
 
 /**
+ * The Learn button of a topic that has lessons in the teaching library (P142): it opens the topic's lesson list. Nothing for a topic that has none (a teacher's
+ * own map, class 6B's "Equivalent fractions"), or a row that is not a topic of the map. The lessons of the second teaching of a topic are the first's.
+ */
+export function LearnLink({ topicId, name, hasLessons }: { topicId: string | null | undefined; name: string; hasLessons: boolean }) {
+  if (!hasLessons || !topicId) return null
+  return (
+    <Link href={`/k/learn/${topicId}`} aria-label={`Learn ${name}`} className={learn}>
+      Learn
+    </Link>
+  )
+}
+
+/**
  * One row of a list on "My maths" or on the home: a name, a line or two under it (a reason, a stage, the learner's own count), and a Practise
  * button. `locked` hides the button (tonight's lesson waits, or a practice is being written). `lead` is something that starts the row (a part page
- * puts the topic's progress circle there).
+ * puts the topic's progress circle there). `hasLessons` (P142): the topic has lessons in the teaching library, so a Learn button comes with the Practise
+ * button (a practice that is being written does not hide it: lessons do not wait for a practice). A row without it is exactly as it was.
  */
-export function PracticeRow({ choice, name, lines, locked, lead }: { choice: Choice; name: string; lines: string[]; locked: boolean; lead?: ReactNode }) {
+export function PracticeRow({ choice, name, lines, locked, lead, hasLessons = false }: { choice: Choice; name: string; lines: string[]; locked: boolean; lead?: ReactNode; hasLessons?: boolean }) {
   const [message, setMessage] = useState<string | null>(null)
   return (
     <li className="flex flex-col gap-1 border-t border-soft py-3 first:border-t-0">
@@ -59,7 +75,14 @@ export function PracticeRow({ choice, name, lines, locked, lead }: { choice: Cho
             <span key={line} className="text-[14px] leading-[1.35] text-body">{line}</span>
           ))}
         </span>
-        {locked ? null : <PractiseButton choice={choice} onMessage={setMessage} />}
+        {hasLessons && choice.topicId ? (
+          <span className="flex flex-none flex-col items-stretch gap-2 min-[460px]:flex-row min-[460px]:items-center">
+            <LearnLink topicId={choice.topicId} name={choice.topicName} hasLessons />
+            {locked ? null : <PractiseButton choice={choice} onMessage={setMessage} />}
+          </span>
+        ) : locked ? null : (
+          <PractiseButton choice={choice} onMessage={setMessage} />
+        )}
       </div>
       {message ? <p role="alert" className="m-0 text-[14px] text-coral-text">{message}</p> : null}
     </li>

@@ -24,6 +24,8 @@ vi.mock('../app/k/join/JoinClassCard', () => ({ JoinClassCard: () => null }))
 // P120: "Your practice" on My maths reads the learner's finished practices; this test has none.
 vi.mock('../lib/data/p120', () => ({ getPastPractice: async () => [] }))
 // These tests are the "My school" screens (P95 added the "My own" ones, tested in p95-my-maths-own.test.tsx).
+// P142: a part page asks the teaching library which topics have lessons; here none does, and nothing reaches a database.
+vi.mock('../lib/data/teaching', () => ({ libraryNames: async () => new Set<string>() }))
 vi.mock('../lib/data/own-screens', () => ({ getScreenShape: async () => ({ workspace: 'school' }) }))
 vi.mock('../app/k/own-actions', () => ({ setWorkspace: vi.fn(async () => ({ ok: true })), addMyGrade: vi.fn(async () => ({ ok: true })) }))
 
