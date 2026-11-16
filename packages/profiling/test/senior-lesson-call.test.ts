@@ -78,6 +78,28 @@ describe('the system text', () => {
     expect(seen.system.split(SCHEMA_INTRO)).toHaveLength(2)
   })
 
+  // P127 (16 Nov 2026, second part): every senior question has `steps`, 2 to 6 lines of maths. The schema the model is handed asks for them (the senior
+  // schema pin changed on purpose, see stored-lesson.test.ts); the baseline and every other class are asked for nothing new.
+  test('a Grade 10 class: the prompt asks for steps and the schema lists them as required', async () => {
+    const seen = await askedFor({ subject: 'Mathematics', grade: 10, country: 'ZA', family: 'algebra' }, PROMPT)
+    expect(seen.system).toContain('also has `steps`: 2 to 6 short lines')
+    const json = JSON.parse(schemaOf(seen.system)) as { properties: { questions: { items: { required: string[] } }; warmup: { items: { required: string[] } } } }
+    expect(json.properties.questions.items.required).toContain('steps')
+    expect(json.properties.warmup.items.required).toContain('steps')
+  })
+
+  test.each([
+    ['a Grade 6 baseline class', { subject: 'Mathematics', grade: 6, country: 'ZA' }],
+    ['a Grade 4 class', { subject: 'Mathematics', grade: 4, country: 'ZA' }],
+    ['a Grade 10 Natural Sciences class', { subject: 'Natural Sciences', grade: 10, country: 'ZA' }],
+  ])('%s is not asked for steps', async (_name, spec) => {
+    const seen = await askedFor(spec, PROMPT)
+    expect(seen.system).not.toContain('also has `steps`')
+    const json = JSON.parse(schemaOf(seen.system)) as { properties: { questions: { items: { required: string[]; properties: Record<string, unknown> } } } }
+    expect(json.properties.questions.items.required).not.toContain('steps')
+    expect(json.properties.questions.items.properties).not.toHaveProperty('steps')
+  })
+
   test('a Grade 4 class: no senior rule, the primary schema', async () => {
     const seen = await askedFor({ subject: 'Mathematics', grade: 4, country: 'ZA' }, PROMPT)
     expect(seen.system).toBe(`${renderPrompt('write_lesson', PROMPT, klass('Mathematics', 4, 'ZA'))}${SCHEMA_INTRO}${schemaText(PrimaryLessonSchema)}`)

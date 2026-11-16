@@ -354,6 +354,23 @@ describe('maths notation, for a senior class', () => {
     expect(out).toContain('the `audio` script is spoken, so there the maths is said in words')
   })
 
+  test('P127: a second bullet asks for steps on every question, in the same notation, the last line the result of the answer', () => {
+    const out = lesson(10)
+    expect(out).toContain('\n- Every question, and every warm-up question, also has `steps`: 2 to 6 short lines, each one line of maths')
+    for (const word of [
+      'for example `["x/2 + 6 = 10", "x/2 = 4", "x = 8"]` for `Solve: x/2 + 6 = 10`',
+      'one move on each line, with no sentences and no names',
+      'The last line is the result that the `answer` comes from.',
+      'Work the steps out before you write the `answer`',
+    ]) {
+      expect(out).toContain(word)
+    }
+    // After the notation bullet and before the next bullet of the file.
+    expect(out.indexOf('also has `steps`')).toBeGreaterThan(out.indexOf(RULE))
+    expect(out.indexOf('also has `steps`')).toBeLessThan(out.indexOf('- Every question has `prompt`'))
+    expect(out.split('also has `steps`')).toHaveLength(2)
+  })
+
   test.each([[7], [8], [9], [11], [12]])('Grade %i is told too', (grade) => expect(lesson(grade)).toContain(RULE))
 
   test('outside South Africa it is the same rule, and it names no rand or decimal comma', () => {
@@ -377,6 +394,7 @@ describe('maths notation, for a senior class', () => {
   test.each([[1], [4], [5], [13]])('Grade %i is told nothing about it: the questions bullet of the file, as it was', (grade) => {
     const out = lesson(grade)
     expect(out).not.toContain(RULE)
+    expect(out).not.toContain('also has `steps`')
     expect(out).not.toContain('x over 2 plus 6 equals 10')
     expect(out).toContain(`${QUESTIONS}\n- Every question has`)
   })
@@ -384,11 +402,13 @@ describe('maths notation, for a senior class', () => {
   test('another subject, and a Grade 6 class outside South Africa, are told nothing about it', () => {
     expect(lesson(10, 'ZA', 'Natural Sciences')).not.toContain(RULE)
     expect(lesson(6, 'KE')).not.toContain(RULE)
+    expect(lesson(6, 'KE')).not.toContain('also has `steps`')
   })
 
   test('the baseline class still gets the file byte for byte, and the file has no such rule', () => {
     expect(lesson(6)).toBe(md('write_lesson'))
     expect(md('write_lesson')).not.toContain('maths notation')
+    expect(md('write_lesson')).not.toContain('`steps`')
   })
 
   test('no em dash, and no text of another rule is cut by it: the senior prompt still has its answers, its pictures and its learner', () => {
