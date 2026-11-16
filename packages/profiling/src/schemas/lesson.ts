@@ -27,8 +27,8 @@ const Difficulty = z.union([z.literal(1), z.literal(2), z.literal(3)])
  */
 
 export const PRIMARY_ANSWER_KINDS = ['fraction', 'mixed', 'decimal', 'whole', 'money', 'choice'] as const
-/** The four kinds of a senior class that code marks by meaning (logic/meaning.ts). */
-export const MEANING_ANSWER_KINDS = ['number', 'expression', 'equation', 'point'] as const
+/** The kinds of a senior class that code marks by meaning (logic/meaning.ts): four from P86, and `time` and `ratio` (P148). */
+export const MEANING_ANSWER_KINDS = ['number', 'expression', 'equation', 'point', 'time', 'ratio'] as const
 /** The two kinds a senior learner answers by tapping (P149): `truefalse` (the key is `true` or `false`) and `reason` (a reason for a step of a geometry proof, from a fixed list). */
 export const PICK_ANSWER_KINDS = ['truefalse', 'reason'] as const
 /** P150: the three kinds that are several values (logic/answers/lists.ts): a list, an order the learner puts items in, and a table with empty cells. */
@@ -86,6 +86,8 @@ const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
     answerKind: z.enum(ANSWER_KINDS),
     choices: z.array(ChoiceSchema).optional(),
     form: FormSchema.optional(),
+    /** The unit of the answer ("cm²", "ml", "km/h", "°C", "kg"), shown after the box. The `answer` is the number alone. Senior classes only (P148). */
+    unit: z.string().optional(),
     /** A `list` question: true when the order of the values matters (the next three terms), false or left out when it does not (all the factors of 24). Labels make it true. */
     ordered: z.boolean().optional(),
     /** A `list` question: a short label over each box (`["min", "Q1", "median", "Q3", "max"]`), one for each value of the answer. */
@@ -110,7 +112,7 @@ export type Question = z.infer<typeof QuestionSchema>
 export type PrimaryQuestion = z.infer<typeof PrimaryQuestionSchema>
 
 /** One lesson around one kind of question and one set of pictures. The fields, their order and the two rules are the same for both shapes. */
-const lessonAround = <Q extends z.ZodType<{ difficulty: 1 | 2 | 3 }>, D extends z.ZodType>(question: Q, picture: D) =>
+export const lessonAround = <Q extends z.ZodType<{ difficulty: 1 | 2 | 3 }>, D extends z.ZodType>(question: Q, picture: D) =>
   z
     .object({
       format: FormatSchema,

@@ -1,10 +1,12 @@
 import type { LanguageModel } from 'ai'
 import { generateJson, getModel } from '../../ai'
+import { primaryKit, withPrimaryAnswers } from '../../ai/primary-answers'
 import { renderPrompt } from '../../ai/prompt-variants'
 import { classContext, isSeniorMaths } from '../../ai/subject-profile'
 import type { JemmaDb } from '../../db'
 import { pictureProblem } from '../../logic/picture'
 import { LessonSchema, PrimaryLessonSchema, SeniorLessonSchema, type Lesson, type Question } from '../../schemas/lesson'
+import { PrimaryExtraLessonSchema } from '../../schemas/primary-extra'
 import { contextFor, maybe, ok, type ToolContext } from '../../tools/context'
 import { getChildContext } from '../../tools/read/get-child-context'
 import { badQuestions, saveLesson } from '../../tools/save/save-lesson'
@@ -61,10 +63,14 @@ export async function runJobWriteLesson(
 
   const model = opts.model ?? getModel('text', ctx.env)
   const klass = await classContext(ctx.db, { childId, sessionId: session.id, eventId: ctx.eventId })
-  const system = renderPrompt('write_lesson', opts.prompt ?? FALLBACK_PROMPT, klass)
   // Only a senior class (Mathematics, Grades 7 to 12) gets the wide lesson schema and the topic with its family. Every other class, the demo
   // class above all, is asked exactly as before: the recorded answers are found by a hash of this very text.
   const senior = isSeniorMaths(klass)
+  // P151: a Grade 1 to 6 Mathematics lesson whose TOPIC needs more than six answer kinds (time, measurement, ordering, patterns, data handling, money, place
+  // value) is told about the new ones and given the wider schema. A lesson of any other topic, the fraction topics of the demo class above all, is asked as before.
+  const kit = senior ? null : primaryKit(klass, session.topicName)
+  const rendered = renderPrompt('write_lesson', opts.prompt ?? FALLBACK_PROMPT, klass)
+  const system = kit && klass ? withPrimaryAnswers(rendered, kit, klass) : rendered
   const topic = senior ? await topicOfSession(ctx.db, session.id, session.topicName) : null
   const data = JSON.stringify({
     profile: info.profile,
@@ -83,11 +89,12 @@ export async function runJobWriteLesson(
     try {
       // Prompt-side JSON: free models fail provider-side structured output on a schema this big.
       // A senior class is asked for `steps` on every question (`SeniorLessonSchema`) but its reply is read with the wide `LessonSchema`, so a question
-      // without steps is saved without them and never refuses the lesson (P127). Any other class is asked and read as before.
+      // without steps is saved without them and never refuses the lesson (P127). A gated primary topic is asked with `PrimaryExtraLessonSchema` and read
+      // with the wide one too (P151). Any other class is asked and read as before.
       const output = await generateJson({
         model,
-        schema: senior ? SeniorLessonSchema : PrimaryLessonSchema,
-        parse: senior ? LessonSchema : PrimaryLessonSchema,
+        schema: senior ? SeniorLessonSchema : kit ? PrimaryExtraLessonSchema : PrimaryLessonSchema,
+        parse: senior || kit ? LessonSchema : PrimaryLessonSchema,
         system,
         prompt: base_prompt + feedback,
       })
