@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { answerShape, answerValue, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
 import { PendingButton } from '@/components/ui/Button'
 import { Frac, FractionText, withFractions } from './Frac'
+import { isValuesShape, ValuesAnswer } from './answers/ValuesAnswer'
 import { MathAnswerField } from './MathAnswerField'
 import { promptLayout } from './prompt-layout'
 import { QuestionContext, QuestionHeading } from './QuestionPrompt'
@@ -206,6 +207,11 @@ function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b: Boxes;
       )
     case 'number':
       return <MathAnswerField kind="number" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint="Type a number. It may be negative, like -3." />
+    case 'list':
+    case 'order':
+    case 'table':
+      // P150: several values (a row of boxes, chips to put in order, the empty cells of a table), sent as one text.
+      return <ValuesAnswer shape={shape} onChange={b.set.text} />
     default:
       // The lesson gave no kind we know: one plain box.
       return (
@@ -311,7 +317,7 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
   const warm = q.phase === 'warmup'
   const shape = answerShape(q)
   // A question of a senior class (the four typed kinds) has its maths typeset whenever it has a sign in it; any other question when it has algebra in it.
-  const typeset = shape.kind === 'number' || shape.kind === 'expression' || shape.kind === 'equation' || shape.kind === 'point' ? 'all' : 'algebra'
+  const typeset = shape.kind === 'number' || shape.kind === 'expression' || shape.kind === 'equation' || shape.kind === 'point' || isValuesShape(shape) ? 'all' : 'algebra'
   const value = shape.kind === 'choice' ? (picked ?? '') : answerValue(shape, { whole, top, bottom, text, x, y })
   const submit = () => value && !busy && onAnswer(value, (Date.now() - shown.current) / 1000)
   const boxes: Boxes = { whole, top, bottom, text, x, y, set: { whole: setWhole, top: setTop, bottom: setBottom, text: setText, x: setX, y: setY } }

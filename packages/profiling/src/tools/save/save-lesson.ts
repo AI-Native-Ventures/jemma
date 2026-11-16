@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { parseAnswer } from '../../logic/answers'
-import { isMeaningKind, meaningKeyProblem } from '../../logic/meaning'
+import { isListKind, listKeyProblem } from '../../logic/answers/lists'
+import { isMeaningKind, meaningKeyProblem, readNumber } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { pictureProblem } from '../../logic/picture'
 import { cleanSteps } from '../../logic/steps'
@@ -26,6 +27,7 @@ export function answerProblem(q: Question): string | null {
 
 function answerKeyProblem(q: Question): string | null {
   if (isMeaningKind(q.answerKind)) return meaningKeyProblem(q.answerKind, q.answer)
+  if (isListKind(q.answerKind)) return listKeyProblem(q, readNumber)
   const parsed = parseAnswer(q.answer)
   const fine =
     q.answerKind === 'choice' ? parsed.kind === 'choice'
