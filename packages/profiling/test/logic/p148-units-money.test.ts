@@ -449,10 +449,10 @@ describe('the schemas and the save gate', () => {
     expect(answerProblem(question({ answer: '24 m²', unit: 'cm²' }))).not.toBeNull()
   })
 
-  test('a negative whole or decimal key is for a senior question (worked steps, a unit, a round): a primary question keeps the rule it had', () => {
+  test('a negative whole or decimal key is for a senior question (worked steps, a senior kind, a picture, a form): a primary question keeps the rule it had, with a unit or not', () => {
     expect(answerProblem(question({ answerKind: 'whole', answer: '-5', steps: STEPS }))).toBeNull()
     expect(answerProblem(question({ answerKind: 'decimal', answer: '-0,5', steps: STEPS }))).toBeNull()
-    expect(answerProblem(question({ answerKind: 'decimal', answer: '-0,5', unit: 'm' }))).toBeNull()
+    expect(answerProblem(question({ answerKind: 'decimal', answer: '-0,5', unit: 'm' }))).toBe('answer "-0,5" is not a decimal')
     expect(answerProblem(question({ answerKind: 'whole', answer: '-5' }))).toBe('answer "-5" is not a whole')
     expect(answerProblem(question({ answerKind: 'decimal', answer: '-0,5' }))).toBe('answer "-0,5" is not a decimal')
     expect(answerProblem(question({ answerKind: 'whole', answer: '5', steps: STEPS }))).toBeNull()
@@ -529,7 +529,7 @@ describe('how the results show a key and an answer with the unit', () => {
 })
 
 describe('isSeniorQuestion: what tells a senior question from a primary one', () => {
-  test('worked steps, a senior kind, a picture, a form, a unit or a round make it senior; nothing else does', () => {
+  test('worked steps, a senior kind, a picture or a form make it senior; a unit or a round does not (a primary question may have them)', () => {
     expect(isSeniorQuestion({ answerKind: 'whole' })).toBe(false)
     expect(isSeniorQuestion({ answerKind: 'whole', steps: [] })).toBe(false)
     expect(isSeniorQuestion({ answerKind: 'whole', steps: ['', ' '] })).toBe(false)
@@ -537,9 +537,8 @@ describe('isSeniorQuestion: what tells a senior question from a primary one', ()
     for (const answerKind of ['number', 'expression', 'equation', 'point', 'time', 'ratio']) expect(isSeniorQuestion({ answerKind }), answerKind).toBe(true)
     expect(isSeniorQuestion({ answerKind: 'whole', diagram: {} })).toBe(true)
     expect(isSeniorQuestion({ answerKind: 'whole', form: 'any' })).toBe(true)
-    expect(isSeniorQuestion({ answerKind: 'whole', unit: 'kg' })).toBe(true)
-    expect(isSeniorQuestion({ answerKind: 'whole', unit: ' ' })).toBe(false)
-    expect(isSeniorQuestion({ answerKind: 'decimal', round: 0 })).toBe(true)
+    expect(isSeniorQuestion({ answerKind: 'whole', unit: 'kg' } as never)).toBe(false)
+    expect(isSeniorQuestion({ answerKind: 'decimal', round: 0 } as never)).toBe(false)
   })
 })
 
