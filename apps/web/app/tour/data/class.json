@@ -1,0 +1,91 @@
+{
+  "name": "Grade 11A",
+  "subject": "Mathematics",
+  "grade": 11,
+  "parts": {
+    "algebra": { "avg": 61, "help": 5 },
+    "functions": { "avg": 54, "help": 4 },
+    "finance": { "avg": 72, "help": 2 },
+    "trigonometry": { "avg": 48, "help": 5 },
+    "euclidean-geometry": { "avg": 66, "help": 2 },
+    "analytical-geometry": { "avg": 58, "help": 3 },
+    "measurement": { "avg": 74, "help": 1 },
+    "statistics": { "avg": null, "help": 0 },
+    "probability": { "avg": null, "help": 0 }
+  },
+  "topics": {
+    "exponents-and-surds": { "avg": 71, "help": 1 },
+    "equations": { "avg": 50, "help": 4 },
+    "number-patterns": { "avg": 62, "help": 2 },
+    "functions": { "avg": 54, "help": 4 },
+    "finance-growth-and-decay": { "avg": 72, "help": 2 },
+    "trigonometry-reduction": { "avg": 45, "help": 5 },
+    "trigonometry-rules": { "avg": 51, "help": 4 },
+    "euclidean-geometry": { "avg": 66, "help": 2 },
+    "analytical-geometry": { "avg": 58, "help": 3 },
+    "measurement": { "avg": 74, "help": 1 },
+    "statistics": { "avg": null, "help": 0 },
+    "probability": { "avg": null, "help": 0 }
+  },
+  "learners": [
+    { "id": "thabo", "name": "Thabo", "results": [true, true, true, true, true] },
+    { "id": "naledi", "name": "Naledi", "results": [true, false, true, true, true] },
+    { "id": "kagiso", "name": "Kagiso", "results": [true, false, true, true, false] },
+    { "id": "zanele", "name": "Zanele", "results": [true, true, true, false, false] },
+    { "id": "sipho", "name": "Sipho", "results": [false, false, true, true, false] },
+    { "id": "ayanda", "name": "Ayanda", "results": [false, false, true, false, true] },
+    { "id": "refilwe", "name": "Refilwe", "results": [false, false, true, false, false] },
+    { "id": "mpho", "name": "Mpho", "results": [false, false, false, false, false] }
+  ],
+  "analysis": {
+    "summary": "The class got 20 of 40 answers right on Equations and inequalities. Most learners solve equations with one or two steps. The marks fall away when an equation has fractions in it, when it has two answers, or when the answer has to be read off a graph.",
+    "mistakes": [
+      {
+        "title": "Fractions not cleared properly",
+        "detail": "On the equation (x + 1)/2 − (x − 3)/3 = 2, six learners multiplied the left side by 6 but left the 2 on the right side as it was. Two of them also dropped the minus sign in front of the second fraction."
+      },
+      {
+        "title": "Only one answer to a quadratic",
+        "detail": "On the equation x^2 − 5x + 6 = 0, three learners factorised correctly to (x − 2)(x − 3) = 0 and then gave only one of the two answers. One learner factorised with the wrong signs."
+      },
+      {
+        "title": "Finding x but not y",
+        "detail": "On the two lines that meet, five learners found x = 2 and stopped. The question asked for the point, so the answer needed y = 4 as well."
+      },
+      {
+        "title": "Reading the wrong part of the parabola",
+        "detail": "On the parabola y = x^2 − 2x − 3, four learners chose x < −1 or x > 3. That is where the curve is above the x-axis, not below it."
+      }
+    ],
+    "needHelp": [
+      { "name": "Mpho", "why": "0 of 5. Did not get past the first step of any equation. Start with two-step equations." },
+      { "name": "Refilwe", "why": "1 of 5. Reads the graph of a line well, but loses the sign when a term moves across the equals sign." },
+      { "name": "Sipho", "why": "2 of 5. Solves a quadratic as far as the factors, then gives only one answer." },
+      { "name": "Ayanda", "why": "2 of 5. Good with graphs, but does not clear fractions or check the answer." }
+    ],
+    "reteach": [
+      "Clearing fractions: multiply every term, including the one on the right side, by the common denominator.",
+      "Quadratics: ask for both answers, and put each one back into the equation to check it.",
+      "Two lines that meet: find x first, then put it into one of the lines to get y. The answer is a point.",
+      "Inequalities on a graph: say out loud whether you want the curve above or below the x-axis."
+    ]
+  },
+  "tokens": {
+    "jobs": [
+      { "key": "lesson", "label": "Writing the lesson", "input": 3200, "output": 5400 },
+      { "key": "questions", "label": "Writing the questions", "input": 2100, "output": 4800 },
+      { "key": "marking", "label": "Marking the answers", "input": 1800, "output": 420 },
+      { "key": "analysis", "label": "Analysing the class", "input": 2600, "output": 780 }
+    ],
+    "perLearner": [
+      { "name": "Thabo", "input": 230, "output": 52 },
+      { "name": "Naledi", "input": 230, "output": 52 },
+      { "name": "Kagiso", "input": 230, "output": 52 },
+      { "name": "Zanele", "input": 230, "output": 52 },
+      { "name": "Sipho", "input": 230, "output": 52 },
+      { "name": "Ayanda", "input": 230, "output": 52 },
+      { "name": "Refilwe", "input": 230, "output": 52 },
+      { "name": "Mpho", "input": 230, "output": 52 }
+    ]
+  }
+}
