@@ -10,6 +10,7 @@ import { createSupabaseServer } from '@/lib/supabase/server'
 import { classIdsOfChild, loadShortLabels } from '@/lib/topics'
 import {
   adaptedOf,
+  ANSWER_MAX_LENGTH,
   DEFAULT_TRY_COUNT,
   finishAnswer,
   nextInSequence,
@@ -170,7 +171,7 @@ export async function answer(
   seconds = 0,
 ): Promise<{ next: QuestionForChild | null }> {
   const text = value.trim()
-  if (!text || text.length > 40) throw new Error('Write an answer first')
+  if (!text || text.length > ANSWER_MAX_LENGTH) throw new Error('Write an answer first')
   const run = await loadRun(sessionId)
   if (run.session.status !== 'in_progress') throw new Error('This session is not running')
   const current = nextInSequence(run.warmup, run.lesson.questions, run.tryCount, run.items)

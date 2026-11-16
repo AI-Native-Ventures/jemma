@@ -90,9 +90,15 @@ describe('answer: the four senior kinds are marked by meaning on the server', ()
     expect(state.inserted[0]!.question).toMatchObject({ answerKind: 'expression', form: 'factorised' })
   })
 
-  it('an answer over 40 characters is still refused', async () => {
+  it('an answer over 60 characters (the longest the marking reads) is still refused', async () => {
     state.lesson = withFirstTry({ prompt: 'Simplify', answer: 'x', answerKind: 'expression' })
-    await expect(answer('s1', 1, 'x+'.repeat(21), 4)).rejects.toThrow('Write an answer first')
+    await expect(answer('s1', 1, 'x+'.repeat(31), 4)).rejects.toThrow('Write an answer first')
     expect(state.inserted).toHaveLength(0)
+  })
+
+  it('a fraction sum from the maths editor, 37 characters, is taken (P132: the limit was 40 and is 60)', async () => {
+    state.lesson = withFirstTry({ prompt: 'Simplify', answer: '(2x-3)/17 + (18+0,5)/5', answerKind: 'expression' })
+    await answer('s1', 1, '(2x - 3)/17 + (18 + sin(30\u00b0))/5', 4)
+    expect(state.inserted).toHaveLength(1)
   })
 })

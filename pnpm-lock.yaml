@@ -105,6 +105,9 @@ importers:
       katex:
         specifier: 0.19.1
         version: 0.19.1
+      mathlive:
+        specifier: 0.111.4
+        version: 0.111.4
       next:
         specifier: 16.4.3
         version: 16.4.3(@babel/core@8.0.9)(@playwright/test@1.64.1)(@types/node@24.10.1)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -3088,6 +3091,9 @@ packages:
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
     engines: {node: '>= 0.4'}
+
+  mathlive@0.111.4:
+    resolution: {integrity: sha512-1E5EOQnUHWn+KfEXaDTmuyxRWZrZw4WlQFyZLzJmjKEPdaX4WAnFqVfZb36mhulykcIl7/W7gKkTmutP2/9wjQ==}
 
   mdn-data@2.27.1:
     resolution: {integrity: sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==}
@@ -7275,6 +7281,8 @@ snapshots:
     optional: true
 
   math-intrinsics@1.1.0: {}
+
+  mathlive@0.111.4: {}
 
   mdn-data@2.27.1: {}
 
