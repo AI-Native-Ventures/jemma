@@ -26,9 +26,9 @@ Options: `--grade N`, `--topic "<name without (Term N)>"`, `--concurrency 4`, `-
 ## Safe to stop and start
 
 - Finished topics are skipped. Progress is saved after every lesson in `content/lessons/.progress/` (git-ignored), so a stopped topic carries on from its saved lessons.
-- A topic with a failed lesson, or one that failed twice, is skipped until `--retry-failed`. `content/lessons/fail-list.json` says what failed and why.
+- A topic with a failed lesson, or one that failed twice, is skipped until `--retry-failed`; then only the failed lessons are written again and the ready ones stay as they are. `content/lessons/fail-list.json` says what failed and why.
 - `content/lessons/ledger.jsonl` has one line per model call (time, model, kind, seconds, tokens, ok, limited). It is the counter of any call cap.
-- A model that answers "Free usage limit reached" is left alone for 60 minutes. When every model is resting the run sleeps (in 5 minute steps) until the first one is back, up to `--max-wait-min`.
+- A model that answers "Free usage limit reached" is left alone for 60 minutes. The ledger remembers it: a restarted run does not ask a model again whose latest ledger line, less than an hour old, is a limit. When every model is resting the run sleeps (in 5 minute steps) until the first one is back, up to `--max-wait-min`.
 - Ctrl-C stops after the topics in progress; a second Ctrl-C stops at once.
 
 ## How a model is called

@@ -96,7 +96,7 @@ const SENIOR_ANSWERS = [
   PRIMARY_ANSWERS,
   '- `number`: a value with no letters, like -3, 15%, 30°, sqrt(8), 1/2',
   '- `expression`: algebra with a letter, like 2x + 3 or (x + 2)(x - 2). The rule of a graph is an expression too: answer 2x + 1, not y = 2x + 1. Set `form` to "factorised" or "expanded" only when the question asks for that form',
-  '- `equation`: the solutions of an equation, like x = 3 or x = 3 or x = -1',
+  '- `equation`: the solutions of an equation, like x = 4 (one solution) or x = 3 or x = -1 (two solutions)',
   '- `point`: a point, like (2; -3), a semicolon between the two numbers',
 ].join('\n')
 
@@ -112,7 +112,7 @@ const PRIMARY_DIAGRAMS = [
 
 const SENIOR_DIAGRAMS = [
   PRIMARY_DIAGRAMS,
-  '- `{"kind": "coordinate_plane", "xMin": -4, "xMax": 4, "yMin": -2, "yMax": 8, "step": 1, "points": [{"x": 1, "y": 2, "label": "A"}], "graphs": [...]}`: at most 12 points and 3 graphs. A grid is at most 200 wide (720 wide for a trig graph, x in degrees). Each graph is one of: `{"type": "line", "m": 2, "c": 1}` (y = mx + c); `{"type": "parabola", "a": 1, "p": 0, "q": -1}` (y = a(x - p)^2 + q); `{"type": "hyperbola", "a": 2, "p": 0, "q": 0}` (y = a/(x - p) + q); `{"type": "exponential", "a": 1, "b": 2, "p": 0, "q": 0}` (y = a b^(x - p) + q, b above 0); `{"type": "trig", "fn": "sin", "a": 1, "b": 1, "q": 0}` (y = a fn(bx) + q, fn is sin, cos or tan). Any graph can have a `label`',
+  '- `{"kind": "coordinate_plane", "xMin": -4, "xMax": 4, "yMin": -2, "yMax": 8, "step": 1, "points": [{"x": 1, "y": 2, "label": "A"}], "graphs": [...]}`: at most 12 points and 3 graphs. A grid is at most 200 wide (720 wide for a trig graph, x in degrees). Each graph is one of: `{"type": "line", "m": 2, "c": 1}` (y = mx + c); `{"type": "parabola", "a": 1, "p": 0, "q": -1}` (y = a(x - p)^2 + q); `{"type": "hyperbola", "a": 2, "p": 0, "q": 0}` (y = a/(x - p) + q); `{"type": "exponential", "a": 1, "b": 2, "p": 0, "q": 0}` (y = a b^(x - p) + q, b above 0); `{"type": "trig", "fn": "sin", "a": 1, "b": 1, "q": 0}` (y = a fn(bx) + q, fn is sin, cos or tan). Any graph can have a `label`. Careful with signs: the code draws y = a(x - p)^2 + q, so for y = (x + 2)^2 + 1 give p: -2 and q: 1; for y = 2/(x + 1) give p: -1',
   '- `{"kind": "triangle", "vertices": ["A", "B", "C"], "angles": [30, 60, 90], "sides": ["3", "4", "5"], "angleLabels": ["30°", "60°", "90°"], "rightAngleAt": 2}`: lists of three. Give `angles` only when you know all three numbers and they add up to 180. To show an unknown angle leave `angles` out and use `angleLabels` such as ["30°", "x", "90°"]. `rightAngleAt` is the index (0, 1 or 2) of the right angle',
 ].join('\n')
 
