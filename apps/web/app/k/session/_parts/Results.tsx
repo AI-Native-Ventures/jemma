@@ -1,5 +1,6 @@
 'use client'
 
+import { Fragment } from 'react'
 import { Frac, FractionText, hasMath, isFraction, MathText, withFractions } from './Frac'
 import { Bar, type Fill } from './Bars'
 import { Gem } from './Gems'
@@ -126,6 +127,41 @@ function CardHead({ m }: { m: MissedQuestion }) {
   )
 }
 
+/**
+ * One line of worked maths ("x/2 + 6 = 10"), drawn by the same maths text as every answer on this screen (powers raised, fractions stacked), so it
+ * follows when that component is upgraded. A line of terms is kept in whole terms: it wraps only at a space between terms, never between a sign and its number.
+ */
+function StepLine({ line }: { line: string }) {
+  const draw = (t: string) => <MathText text={t} size={20} rule={2} gap={2} side={3} className="mx-0.5 align-middle" />
+  const units = termUnits(line)
+  if (!units) return draw(line)
+  return (
+    <>
+      {units.map((unit, i) => (
+        <Fragment key={i}>
+          {i > 0 ? ' ' : null}
+          <span className="whitespace-nowrap">{draw(unit)}</span>
+        </Fragment>
+      ))}
+    </>
+  )
+}
+
+/** "How to get there": the maths from the question to the answer, one line each, on a card of a question that has worked steps. Nothing is drawn without steps. */
+function Steps({ steps }: { steps?: string[] }) {
+  if (!steps || steps.length === 0) return null
+  return (
+    <div data-steps="true" className="flex flex-col gap-2 rounded-[16px] border border-line px-3.5 py-3">
+      <span className="text-[15px] font-bold">How to get there</span>
+      <ol className="m-0 flex list-none flex-col gap-1.5 p-0">
+        {steps.map((line, i) => (
+          <li key={i} className="text-[18px] leading-[1.6]"><StepLine line={line} /></li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
 /** A right answer: confirmed, with what the learner wrote and why that way works. No line about a usual mistake, nothing to correct. */
 function RightCard({ m }: { m: MissedQuestion }) {
   return (
@@ -141,6 +177,7 @@ function RightCard({ m }: { m: MissedQuestion }) {
         <span className={isLong(m.wrote) ? 'flex-none text-[14px] font-semibold' : 'text-[14px] font-semibold'}>You wrote</span>
         <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
       </span>
+      <Steps steps={m.steps} />
       <p className="m-0 text-[16px] leading-[1.5]"><strong className="font-bold">Why it works:</strong> <FractionText text={m.rightWay} size={22} rule={2} gap={3} side={3} /></p>
     </article>
   )
@@ -170,6 +207,7 @@ function MissedCard({ m }: { m: MissedQuestion }) {
         </span>
       </div>
       <p className="m-0 text-[16px] leading-[1.5]"><strong className="font-bold">Why:</strong> <FractionText text={m.why} size={22} rule={2} gap={3} side={3} /></p>
+      <Steps steps={m.steps} />
       <div className="flex flex-col gap-2 rounded-[16px] bg-[#F7F6FB] p-3.5">
         <span className="text-[15px] font-bold">The right way</span>
         <span className="text-[16px] leading-[1.5]"><FractionText text={m.rightWay} size={22} rule={2} gap={3} side={3} /></span>
@@ -182,8 +220,8 @@ function MissedCard({ m }: { m: MissedQuestion }) {
 /**
  * The results of a practice: every try question in order. A right answer is confirmed and explained, a missed one is corrected (what was written, the
  * right answer, why, the right way). Under the greeting: how many were right and one kind line by the score. A list that does not say which answers
- * were right (only misses, no `correct`) states no count and just says what it holds. Answers on paper come through the same view. Opened again
- * later (P120) the page passes `heading` (the topic) and `note` (the day and the count) in place of the greeting.
+ * were right (only misses, no `correct`) states no count and just says what it holds. Answers on paper come through the same view. After a practice it
+ * greets the learner; opened again later (P120) the page passes `heading` (the topic) and `note` (the day and the count) in place of the greeting.
  */
 export function Results({ firstName, missed, heading, note }: { firstName: string; missed: MissedQuestion[]; heading?: string; note?: string }) {
   const graded = missed.some((m) => m.correct !== undefined)

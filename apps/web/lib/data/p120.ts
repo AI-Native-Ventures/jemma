@@ -95,7 +95,7 @@ export type PastResult = {
   day: string
   /** "4 of 5 right", or '' when nothing was saved to count. */
   score: string
-  /** Every question that was missed, as the screen after the practice shows them. */
+  /** Every try question in order, right ones marked `correct`, as the screen after the practice shows them (P126: right answers are confirmed, missed ones corrected). */
   missed: MissedQuestion[]
   /** False when no answers were saved for this practice: the screen says so instead of "nothing to go over". */
   hasAnswers: boolean
@@ -134,7 +134,7 @@ export async function getPastResult(sessionId: string): Promise<PastResult> {
     topic: session.topic_name?.trim() || 'Practice',
     day: dayStamp(session.finished_at ?? `${session.planned_for}T12:00:00Z`),
     score: scoreLine(right, total),
-    missed: reviewOf(items), // P126: every try question, a right one confirmed and explained
+    missed: reviewOf(items),
     hasAnswers: tries.length > 0,
   }
 }

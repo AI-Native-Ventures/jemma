@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { Results } from '../app/k/session/_parts/Results'
-import { missedOf, reviewOf, scoreLines, type MissedQuestion, type StoredItem } from '../app/k/session/[sessionId]/logic'
+import { missedOf, reviewOf, scoreLines, stripQuestion, type MissedQuestion, type StoredItem } from '../app/k/session/[sessionId]/logic'
 
 // P126: after a practice every question gets feedback. A right answer is confirmed and explained ("Yes, you're right." and "Why it works"),
 // a wrong one is corrected as before (marked "Not yet."), and the heading says how many were right. react-dom/server only: no server, no database.
@@ -229,5 +229,92 @@ describe('reviewOf: every try question, in order, as the results card needs it',
     const unread = { ...stored('try', 4, false, ''), unread: true }
     const q = reviewOf([...items, unread]).find((x) => x.n === 4)!
     expect(q).toMatchObject({ correct: false, wrote: '', unread: true })
+  })
+})
+
+describe('results: worked steps, "How to get there", on every card that has them', () => {
+  const STEPS = ['x/2 + 6 = 10', 'x/2 = 4', 'x = 8']
+  const heading = (card: Element) => [...card.querySelectorAll('span')].find((x) => x.textContent === 'How to get there')
+
+  it('a right card with steps shows the heading and each line, before the explanation', () => {
+    const card = page([right(1, { steps: STEPS })]).querySelector('article')!
+    expect(heading(card)).toBeDefined()
+    expect(card.querySelectorAll('[data-steps] li')).toHaveLength(3)
+    const srLines = [...card.querySelectorAll('[data-steps] li')].map((li) => [...li.querySelectorAll('.sr-only')].map((x) => x.textContent).join(' '))
+    expect(srLines).toEqual(['x/2 + 6 = 10', 'x/2 = 4', 'x = 8'])
+    // steps first, then the "Why it works:" sentence
+    const all = text(card)
+    expect(all.indexOf('How to get there')).toBeGreaterThan(all.indexOf("Yes, you're right."))
+    expect(all.indexOf('How to get there')).toBeLessThan(all.indexOf('Why it works:'))
+  })
+
+  it('a missed card with steps shows them too, after the usual mistake and before the right way', () => {
+    const card = page([wrong(2, { steps: STEPS })]).querySelector('article')!
+    expect(heading(card)).toBeDefined()
+    expect(card.querySelectorAll('[data-steps] li')).toHaveLength(3)
+    const all = text(card)
+    expect(all.indexOf('Why: Learners')).toBeLessThan(all.indexOf('How to get there'))
+    expect(all.indexOf('How to get there')).toBeLessThan(all.indexOf('The right way'))
+    expect(all).toContain('One half is three sixths and one third is two sixths.')
+    expect(all).toContain('Not yet.')
+  })
+
+  it('every card of a practice with steps shows its own steps', () => {
+    const list = [1, 2, 3, 4, 5].map((n) => (n === 2 ? wrong(n, { steps: ['a = 1', 'a + a = 2'] }) : right(n, { steps: ['b = 3', 'b + 1 = 4', 'b + 1 + 1 = 5'] })))
+    const el = page(list)
+    expect(el.querySelectorAll('[data-steps]')).toHaveLength(5)
+    expect(el.querySelectorAll('[data-steps] li')).toHaveLength(4 * 3 + 2)
+  })
+
+  it('a card without steps (primary and older lessons) is as it was: no heading, the right way as today', () => {
+    const el = page(five(2))
+    expect(el.querySelectorAll('[data-steps]')).toHaveLength(0)
+    expect(text(el)).not.toContain('How to get there')
+    expect(text(el)).toContain('Why it works:')
+    expect(text(el)).toContain('The right way')
+    // and an empty list of steps is the same as none
+    const empty = page([right(1, { steps: [] }), wrong(2, { steps: [] })])
+    expect(empty.querySelectorAll('[data-steps]')).toHaveLength(0)
+    expect(text(empty)).not.toContain('How to get there')
+  })
+
+  it('the lines go through the shared maths text: a power is raised, a fraction is stacked, the plain words stay for a screen reader', () => {
+    const card = page([right(1, { steps: ['x^2 + 4x + 4', '1/2 = 3/6'] })]).querySelector('[data-steps]')!
+    const [power, fraction] = [...card.querySelectorAll('li')]
+    expect(power!.querySelector('sup')?.textContent).toBe('2')
+    expect(power!.querySelector('.sr-only')?.textContent).toContain('x^2')
+    expect(fraction!.querySelectorAll('span.inline-flex.flex-col').length).toBe(2)
+  })
+
+  it('a long line of terms is never cut between a sign and its number', () => {
+    const card = page([wrong(2, { steps: ['3x + 12 + 0 = 3x + 12'] })]).querySelector('[data-steps]')!
+    const kept = [...card.querySelectorAll('.whitespace-nowrap')].map((n) => (n.textContent ?? '').replace(/\s+/g, ' ').trim())
+    expect(kept.join(' | ')).toContain('+ 12')
+    expect(kept.some((k) => k.includes('+ 0'))).toBe(true)
+  })
+
+  it('reviewOf carries the steps a question has, only the lines that are words, and no key when there are none', () => {
+    const q = (extra: Record<string, unknown>, position: number): StoredItem => ({
+      phase: 'try',
+      position,
+      question: { prompt: 'Solve', render: 'text', answerKind: 'whole', answer: '8', why: 'w', rightWay: 'r', difficulty: 2, ...extra } as StoredItem['question'],
+      answer: '8',
+      correct: true,
+      difficulty: 2,
+      seconds: 5,
+    })
+    const [withSteps, odd, none, emptyOnes] = reviewOf([q({ steps: STEPS }, 1), q({ steps: ['ok', 3, '', '  ', null, 'fine'] }, 2), q({}, 3), q({ steps: [] }, 4)])
+    expect(withSteps!.steps).toEqual(STEPS)
+    expect(odd!.steps).toEqual(['ok', 'fine'])
+    expect(none).not.toHaveProperty('steps')
+    expect(emptyOnes).not.toHaveProperty('steps')
+    // a steps field that is not a list is ignored
+    expect(reviewOf([q({ steps: 'x = 8' }, 1)])[0]).not.toHaveProperty('steps')
+  })
+
+  it('the question the learner sees while answering never carries the steps', () => {
+    const asked = stripQuestion({ prompt: 'Solve x/2 + 6 = 10', render: 'text', answerKind: 'whole', answer: '8', why: 'w', rightWay: 'r', difficulty: 2, steps: STEPS } as unknown as Parameters<typeof stripQuestion>[0], { position: 3, phase: 'try', index: 1, of: 5 })
+    expect(asked).not.toHaveProperty('steps')
+    expect(JSON.stringify(asked)).not.toContain('x/2 = 4')
   })
 })
