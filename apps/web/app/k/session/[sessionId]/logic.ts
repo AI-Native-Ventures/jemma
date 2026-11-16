@@ -1,4 +1,5 @@
 import {
+  choiceLabel,
   completeAnswer,
   fillMissing,
   finishAnswer,
@@ -10,13 +11,17 @@ import {
   nextStage,
   paperQuestions,
   readNumber,
+  readTrueFalse,
+  reasonKeyHasValue,
   resultCells,
   rightValues,
+  trueFalseLabel,
+  CHOICE_LETTERS,
   type ListParts,
   type MissingPart,
   type Stage,
 } from '@jemma/profiling/logic'
-import type { Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
+import type { Choice, Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -43,7 +48,10 @@ export type QuestionForChild = {
   render: Question['render']
   terms?: string[]
   answerKind: Question['answerKind']
-  choices?: string[]
+  /** The options of a choice question, A to E: a plain string, or (a senior class) words and/or a picture. They are options, not the answer: the key never goes to the browser. */
+  choices?: Choice[]
+  /** A `reason` question that also asks for a value (a box above the list of reasons). A shape hint only: the value itself is never sent. */
+  withValue?: boolean
   /** The form an expression has to be in, when the question asks for one (a senior class only). */
   form?: Form
   /** The picture the question needs, drawn between its words and the answer box (a senior class only). It never holds the answer. */
@@ -114,7 +122,9 @@ export function stripQuestion(
     render: q.render,
     ...(q.terms ? { terms: q.terms } : {}),
     answerKind: q.answerKind,
-    ...(q.choices ? { choices: q.choices } : {}),
+    // A true or false and a reason question ignore any choices they carry (the screen shows True and False, or the list of reasons).
+    ...(q.choices && q.answerKind !== 'truefalse' && q.answerKind !== 'reason' ? { choices: q.choices } : {}),
+    ...(q.answerKind === 'reason' && reasonKeyHasValue(q.answer) ? { withValue: true } : {}),
     ...(q.form ? { form: q.form } : {}),
     ...(q.diagram ? { diagram: q.diagram } : {}),
     // P150: a count, the labels, the items to put in order (shuffled), the table with its blanks: never the key's values or order.
@@ -174,6 +184,10 @@ export type AnswerShape =
   /** The four kinds of a senior class, marked by meaning: a number that may be negative, an expression, an equation, a point. */
   | { kind: 'number' | 'equation' | 'point' }
   | { kind: 'expression'; form: Form }
+  /** P149: two big buttons, True and False. */
+  | { kind: 'truefalse' }
+  /** P149: the reason for a step of a geometry proof, picked from a list, with a box for the value of the step when the question asks for one. */
+  | { kind: 'reason'; withValue: boolean }
   /** P150: several values. A row of boxes (a list), the chips of an order, or the empty cells of a table. */
   | { kind: 'list'; count: number; ordered: boolean; plain: boolean; labels?: string[]; round?: number }
   | { kind: 'order'; items: string[] }
@@ -182,7 +196,9 @@ export type AnswerShape =
 /** What `answerShape` reads besides the old four fields: the parts the server sent (a whole `Question` fits too: its table has no `plain`, so its boxes are the full keyboard). */
 type ShapeParts = { list?: ListParts['list']; items?: string[]; table?: { columns: string[]; rows: (string | null)[][]; plain?: boolean }; round?: number }
 
-export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> & ShapeParts): AnswerShape {
+export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> & ShapeParts & { withValue?: boolean }): AnswerShape {
+  if (q.answerKind === 'truefalse') return { kind: 'truefalse' }
+  if (q.answerKind === 'reason') return { kind: 'reason', withValue: q.withValue === true }
   if (q.choices?.length) return { kind: 'choice' }
   // P150: a list, an order and a table are drawn from the parts the server sent (a question that came without them gets the plain box below).
   const places = q.round !== undefined ? { round: q.round } : {}
@@ -239,10 +255,15 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
   }
 }
 
-/** The text of an answer: a choice letter becomes the choice itself. */
+/** The text of an answer: a choice letter becomes the choice itself (a picture with no words is "Picture B"), and true or false is written True or False. */
 export function answerText(q: Question, value: string): string {
-  const letter = /^\(?([a-d])\)?\.?$/i.exec(value.trim())
-  if (q.choices && letter) return q.choices['ABCD'.indexOf(letter[1]!.toUpperCase())] ?? value
+  if (q.answerKind === 'truefalse') {
+    const side = readTrueFalse(value)
+    return side === null ? value : trueFalseLabel(side)
+  }
+  const letter = /^\(?([a-e])\)?\.?$/i.exec(value.trim())
+  const at = letter && q.answerKind !== 'reason' ? CHOICE_LETTERS.indexOf(letter[1]!.toUpperCase() as (typeof CHOICE_LETTERS)[number]) : -1
+  if (q.choices && at >= 0 && q.choices[at] !== undefined) return choiceLabel(q.choices[at]!, at)
   return value
 }
 

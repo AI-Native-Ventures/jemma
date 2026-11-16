@@ -21,17 +21,30 @@ const Difficulty = z.union([z.literal(1), z.literal(2), z.literal(3)])
  * parsing, and a model that leaves `steps` out of one question never refuses a lesson (the question is saved without them).
  * Everything that READS a saved lesson (the learner's screens, the home, the parent's page) uses `StoredLessonSchema`, the same shape with the
  * counts a save can leave (see below).
+ *
+ * P149 widened the senior shape again: a `choices` entry may be a picture (`ChoiceSchema`), and `truefalse` and `reason` are two more answer kinds that a
+ * learner answers by tapping (`PICK_ANSWER_KINDS`). The primary shape has none of this.
  */
 
 export const PRIMARY_ANSWER_KINDS = ['fraction', 'mixed', 'decimal', 'whole', 'money', 'choice'] as const
 /** The four kinds of a senior class that code marks by meaning (logic/meaning.ts). */
 export const MEANING_ANSWER_KINDS = ['number', 'expression', 'equation', 'point'] as const
+/** The two kinds a senior learner answers by tapping (P149): `truefalse` (the key is `true` or `false`) and `reason` (a reason for a step of a geometry proof, from a fixed list). */
+export const PICK_ANSWER_KINDS = ['truefalse', 'reason'] as const
 /** P150: the three kinds that are several values (logic/answers/lists.ts): a list, an order the learner puts items in, and a table with empty cells. */
 export const LIST_ANSWER_KINDS = ['list', 'order', 'table'] as const
-export const ANSWER_KINDS = [...PRIMARY_ANSWER_KINDS, ...MEANING_ANSWER_KINDS, ...LIST_ANSWER_KINDS] as const
+export const ANSWER_KINDS = [...PRIMARY_ANSWER_KINDS, ...MEANING_ANSWER_KINDS, ...PICK_ANSWER_KINDS, ...LIST_ANSWER_KINDS] as const
 export type AnswerKind = (typeof ANSWER_KINDS)[number]
 export type MeaningKind = (typeof MEANING_ANSWER_KINDS)[number]
+export type PickKind = (typeof PICK_ANSWER_KINDS)[number]
 export type ListKind = (typeof LIST_ANSWER_KINDS)[number]
+
+/**
+ * One option of a senior `choice` question (P149): plain text (as it always was), or an object with `text`, a `diagram`, or both, so the learner can pick
+ * the right graph or shape ("Which graph is y = x^2 - 4?"). A picture never holds the answer: the key is the letter of the option, A to E.
+ */
+export const ChoiceSchema = z.union([z.string(), z.object({ text: z.string().optional(), diagram: SeniorDiagramSpecSchema.optional() })])
+export type Choice = z.infer<typeof ChoiceSchema>
 
 /** The form an `expression` answer must be in: `factorised` (a product of brackets), `expanded` (no brackets, like terms gathered) or `any` (the same value is enough). */
 export const FORMS = ['any', 'factorised', 'expanded'] as const
@@ -71,7 +84,7 @@ const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
     steps,
     answer: z.string(),
     answerKind: z.enum(ANSWER_KINDS),
-    choices: z.array(z.string()).optional(),
+    choices: z.array(ChoiceSchema).optional(),
     form: FormSchema.optional(),
     /** A `list` question: true when the order of the values matters (the next three terms), false or left out when it does not (all the factors of 24). Labels make it true. */
     ordered: z.boolean().optional(),

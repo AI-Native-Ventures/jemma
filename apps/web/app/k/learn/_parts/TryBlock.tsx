@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { CHOICE_LETTERS, choiceLabel, composeReasonAnswer } from '@jemma/profiling/logic'
 import { PendingButton } from '@/components/ui/Button'
 import type { LessonAnswerResult, StrippedQuestion } from '@/lib/teaching'
 import { forScreen } from '@/lib/teaching'
@@ -8,11 +9,11 @@ import { answerShape, answerValue } from '../../session/[sessionId]/logic'
 import { AnswerArea, Choices, MissingQuestion, type Boxes } from '../../session/_parts/QuestionScreen'
 import { CardQuestion } from '../../session/_parts/QuestionPrompt'
 import { QuestionPicture } from '../../session/_parts/QuestionPicture'
+import { ReasonPicker } from '../../session/_parts/answers/ReasonPicker'
+import { TrueFalse } from '../../session/_parts/answers/TrueFalse'
 import type { TypesetMode } from '../../session/_parts/typeset'
 import { answerLessonQuestion } from '../actions'
 import { LessonText } from './LessonText'
-
-const CHOICE_LETTERS = ['A', 'B', 'C', 'D']
 
 const primary =
   'flex min-h-[60px] w-full cursor-pointer items-center justify-center rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white disabled:cursor-default disabled:opacity-40'
@@ -55,9 +56,17 @@ export function TryBlock({ index, question, hint, topicLessonId, topic, typeset,
 
   const q = useMemo(() => forScreen(question, 1, 1), [question])
   const shape = answerShape(q)
-  const value = shape.kind === 'choice' ? (picked ?? '') : answerValue(shape, { whole, top, bottom, text, x, y })
+  // A choice, a true or false and a reason (P149) are picked: the letter, the word or the reason (with its number, when it has one).
+  const value =
+    shape.kind === 'choice' || shape.kind === 'truefalse'
+      ? (picked ?? '')
+      : shape.kind === 'reason'
+        ? composeReasonAnswer({ reason: picked ?? '', value: text, withValue: shape.withValue })
+        : answerValue(shape, { whole, top, bottom, text, x, y })
   const boxes: Boxes = { whole, top, bottom, text, x, y, set: { whole: setWhole, top: setTop, bottom: setBottom, text: setText, x: setX, y: setY } }
-  const wrote = shape.kind === 'choice' ? (q.choices?.[CHOICE_LETTERS.indexOf(picked ?? '')] ?? value) : value
+  // What the learner wrote, as words: a choice letter is the choice (a picture with no words is "Picture B").
+  const at = CHOICE_LETTERS.indexOf((picked ?? '') as (typeof CHOICE_LETTERS)[number])
+  const wrote = shape.kind === 'choice' && q.choices?.[at] !== undefined ? choiceLabel(q.choices[at]!, at) : value
 
   const check = async () => {
     if (!value || busy) return
@@ -118,7 +127,15 @@ export function TryBlock({ index, question, hint, topicLessonId, topic, typeset,
         </div>
       ) : open ? (
         <>
-          {shape.kind === 'choice' ? <Choices q={q} picked={picked} onPick={setPicked} warm={false} /> : shape.kind === 'missing' ? null : <AnswerArea shape={shape} b={boxes} prompt={q.prompt} topic={topic} />}
+          {shape.kind === 'choice' ? (
+            <Choices q={q} picked={picked} onPick={setPicked} warm={false} />
+          ) : shape.kind === 'truefalse' ? (
+            <TrueFalse picked={picked} onPick={setPicked} />
+          ) : shape.kind === 'reason' ? (
+            <ReasonPicker reason={picked ?? ''} onReason={(r) => setPicked(r || null)} withValue={shape.withValue} value={text} onValue={setText} />
+          ) : shape.kind === 'missing' ? null : (
+            <AnswerArea shape={shape} b={boxes} prompt={q.prompt} topic={topic} />
+          )}
           {hintOpen ? (
             <div className="flex flex-col gap-1 rounded-14 bg-soft-2 p-3 text-[16px] leading-[1.45] text-body">
               <p className="m-0 font-semibold text-ink">Hint</p>

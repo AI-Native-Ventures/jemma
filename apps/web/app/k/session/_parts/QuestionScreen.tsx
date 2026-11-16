@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { CHOICE_LETTERS, choiceText, composeReasonAnswer, hasPictureChoices } from '@jemma/profiling/logic'
 import { answerShape, answerValue, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
 import { PendingButton } from '@/components/ui/Button'
 import { Frac, FractionText, withFractions } from './Frac'
@@ -9,8 +10,10 @@ import { MathAnswerField } from './MathAnswerField'
 import { promptLayout } from './prompt-layout'
 import { QuestionContext, QuestionHeading } from './QuestionPrompt'
 import { QuestionPicture } from './QuestionPicture'
+import { PictureChoices } from './answers/PictureChoices'
+import { ReasonPicker } from './answers/ReasonPicker'
+import { TrueFalse } from './answers/TrueFalse'
 
-const CHOICE_LETTERS = ['A', 'B', 'C', 'D']
 const noteClass = 'm-0 flex items-start gap-2.5 text-[15px] leading-[1.45] text-body'
 
 function Note({ children }: { children: string }) {
@@ -266,8 +269,9 @@ export function MissingQuestion({ q, shape, value, onChange }: { q: QuestionForC
   )
 }
 
-/** The answer buttons of a choice question: a fraction in a choice is stacked too. */
+/** The answer buttons of a choice question: a fraction in a choice is stacked too. Options that are pictures (P149) are cards of their own. */
 export function Choices({ q, picked, onPick, warm }: { q: QuestionForChild; picked: string | null; onPick: (letter: string) => void; warm: boolean }) {
+  if (hasPictureChoices(q.choices)) return <PictureChoices choices={q.choices!} picked={picked} onPick={onPick} inCard={!warm} />
   return (
     <div className={`grid gap-3 ${warm ? 'grid-cols-2' : 'w-full grid-cols-2'}`}>
       {(q.choices ?? []).map((choice, i) => {
@@ -283,12 +287,22 @@ export function Choices({ q, picked, onPick, warm }: { q: QuestionForChild; pick
               warm ? 'text-[30px]' : 'text-[26px]'
             } ${on ? 'border-[3px] border-ink bg-ink text-white' : 'border-2 border-edge bg-card text-ink'}`}
           >
-            <FractionText text={choice} size={warm ? 38 : 28} rule={3} gap={warm ? 5 : 4} side={6} color={on ? '#FFFFFF' : '#1F1D36'} className="" />
+            <FractionText text={choiceText(choice) ?? ''} size={warm ? 38 : 28} rule={3} gap={warm ? 5 : 4} side={6} color={on ? '#FFFFFF' : '#1F1D36'} className="" />
           </button>
         )
       })}
     </div>
   )
+}
+
+/** True for the answers that are picked, not typed: a choice, true or false, and a reason from the list (P149). The picked letter, word or reason is in `picked`. */
+const isPick = (shape: AnswerShape) => shape.kind === 'choice' || shape.kind === 'truefalse' || shape.kind === 'reason'
+
+/** The control of a picked answer. A reason keeps its number (when it has one) in the text box of the screen. */
+function PickArea({ q, shape, picked, onPick, text, onText, warm }: { q: QuestionForChild; shape: AnswerShape; picked: string | null; onPick: (v: string | null) => void; text: string; onText: (v: string) => void; warm: boolean }) {
+  if (shape.kind === 'truefalse') return <TrueFalse picked={picked} onPick={onPick} warm={warm} />
+  if (shape.kind === 'reason') return <ReasonPicker reason={picked ?? ''} onReason={(r) => onPick(r || null)} withValue={shape.withValue} value={text} onValue={onText} />
+  return <Choices q={q} picked={picked} onPick={onPick} warm={warm} />
 }
 
 export type QuestionScreenProps = {
@@ -317,8 +331,23 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
   const warm = q.phase === 'warmup'
   const shape = answerShape(q)
   // A question of a senior class (the four typed kinds) has its maths typeset whenever it has a sign in it; any other question when it has algebra in it.
-  const typeset = shape.kind === 'number' || shape.kind === 'expression' || shape.kind === 'equation' || shape.kind === 'point' || isValuesShape(shape) ? 'all' : 'algebra'
-  const value = shape.kind === 'choice' ? (picked ?? '') : answerValue(shape, { whole, top, bottom, text, x, y })
+  // A statement to call true or false, and a step to give the reason for (P149), are maths too.
+  const typeset =
+    shape.kind === 'number' ||
+    shape.kind === 'expression' ||
+    shape.kind === 'equation' ||
+    shape.kind === 'point' ||
+    shape.kind === 'truefalse' ||
+    shape.kind === 'reason' ||
+    isValuesShape(shape)
+      ? 'all'
+      : 'algebra'
+  const value =
+    shape.kind === 'choice' || shape.kind === 'truefalse'
+      ? (picked ?? '')
+      : shape.kind === 'reason'
+        ? composeReasonAnswer({ reason: picked ?? '', value: text, withValue: shape.withValue })
+        : answerValue(shape, { whole, top, bottom, text, x, y })
   const submit = () => value && !busy && onAnswer(value, (Date.now() - shown.current) / 1000)
   const boxes: Boxes = { whole, top, bottom, text, x, y, set: { whole: setWhole, top: setTop, bottom: setBottom, text: setText, x: setX, y: setY } }
   const nextButton = (
@@ -341,7 +370,7 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
           <>
             <QuestionHeading prompt={q.prompt} typeset={typeset} tone="warm" />
             <QuestionPicture spec={q.diagram} />
-            {shape.kind === 'choice' ? <Choices q={q} picked={picked} onPick={setPicked} warm /> : <AnswerArea shape={shape} b={boxes} prompt={q.prompt} topic={topic} />}
+            {isPick(shape) ? <PickArea q={q} shape={shape} picked={picked} onPick={setPicked} text={text} onText={setText} warm /> : <AnswerArea shape={shape} b={boxes} prompt={q.prompt} topic={topic} />}
           </>
         )}
         <Note>No rush. We look at your answers together at the end.</Note>
@@ -393,7 +422,7 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
               <QuestionHeading prompt={q.prompt} typeset={typeset} tone="try" />
             )}
             <QuestionPicture spec={q.diagram} />
-            {shape.kind === 'choice' ? <Choices q={q} picked={picked} onPick={setPicked} warm={false} /> : <AnswerArea shape={shape} b={boxes} prompt={q.prompt} topic={topic} />}
+            {isPick(shape) ? <PickArea q={q} shape={shape} picked={picked} onPick={setPicked} text={text} onText={setText} warm={false} /> : <AnswerArea shape={shape} b={boxes} prompt={q.prompt} topic={topic} />}
           </>
         )}
       </section>
