@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { parseAnswer } from '../../logic/answers'
+import { isListKind, listKeyProblem } from '../../logic/answers/lists'
 import { isSeniorQuestion, quantityProblem, readCents, stripUnit } from '../../logic/answers/quantity'
-import { isMeaningKind, meaningKeyProblem } from '../../logic/meaning'
+import { isMeaningKind, meaningKeyProblem, readNumber } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { pictureProblem } from '../../logic/picture'
 import { cleanSteps } from '../../logic/steps'
@@ -31,6 +32,7 @@ function answerKeyProblem(q: Question): string | null {
   if (setting) return setting
   const key = stripUnit(q.answer, q.unit)
   if (isMeaningKind(q.answerKind)) return meaningKeyProblem(q.answerKind, key)
+  if (isListKind(q.answerKind)) return listKeyProblem(q, readNumber)
   const parsed = parseAnswer(key)
   // A negative whole or decimal key is for a senior class (its box has a minus key); a primary question keeps the rule it always had: the number kind is for it.
   const negative = parsed.kind === 'number' && parsed.value.n < 0n && !isSeniorQuestion(q)

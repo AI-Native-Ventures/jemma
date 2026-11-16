@@ -1,6 +1,6 @@
 'use server'
 
-import { PAPER_QUESTION_COUNT, type Stage } from '@jemma/profiling/logic'
+import { isListKind, PAPER_QUESTION_COUNT, type Stage } from '@jemma/profiling/logic'
 import { QuestionSchema, StoredLessonSchema, type Lesson, type Question } from '@jemma/profiling/schemas'
 import type { JemmaDb, Json } from '@jemma/profiling/db'
 import { sendEvent } from '@/lib/agent'
@@ -13,6 +13,7 @@ import {
   ANSWER_MAX_LENGTH,
   DEFAULT_TRY_COUNT,
   finishAnswer,
+  LIST_ANSWER_MAX_LENGTH,
   nextInSequence,
   paperQuestions,
   reviewOf,
@@ -171,11 +172,13 @@ export async function answer(
   seconds = 0,
 ): Promise<{ next: QuestionForChild | null }> {
   const text = value.trim()
-  if (!text || text.length > ANSWER_MAX_LENGTH) throw new Error('Write an answer first')
+  // A list, an order and a table hold several values and may be longer (P150): the question says which, once it is loaded, below.
+  if (!text || text.length > LIST_ANSWER_MAX_LENGTH) throw new Error('Write an answer first')
   const run = await loadRun(sessionId)
   if (run.session.status !== 'in_progress') throw new Error('This session is not running')
   const current = nextInSequence(run.warmup, run.lesson.questions, run.tryCount, run.items)
   if (!current) return { next: null }
+  if (text.length > ANSWER_MAX_LENGTH && !isListKind(current.question.answerKind)) throw new Error('Write an answer first')
   // A repeated tap on an answer already saved just shows where the child is now.
   if (position !== current.position) {
     if (position < current.position) return { next: stripQuestion(current.question, current) }

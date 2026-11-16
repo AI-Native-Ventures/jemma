@@ -16,7 +16,7 @@ import { MEANING_ANSWER_KINDS } from '../../schemas/lesson'
 
 export type Mark = { correct: boolean; comparable: boolean }
 /** The value of a text made of numbers (no letter), or null. `suffix` drops a % or a degree sign at the end. This is `numeric` of `logic/meaning.ts`. */
-export type Reader = (text: string, suffix: boolean) => number | null
+export type NumberReader = (text: string, suffix: boolean) => number | null
 
 /** The most characters of a unit ("km/h", "cm²", "°C"), and the most places a question may round to. */
 export const MAX_UNIT_LENGTH = 12
@@ -150,7 +150,7 @@ export type QuantityFields = QuantityQuestion & { prompt?: string }
  * keeps its own verdict then. A money question and a number in rand (unit R) compare at the cent. A number, or a decimal or a whole number with a unit or a
  * `round`, is read without its unit, then it is right when it is the key, or rounds to the key at `round` places, or (a number) is the same percent.
  */
-export function markQuantity(q: QuantityQuestion, typed: string, read: Reader): Mark | null {
+export function markQuantity(q: QuantityQuestion, typed: string, read: NumberReader): Mark | null {
   const kind = q.answerKind
   const unit = cleanUnit(q.unit)
 

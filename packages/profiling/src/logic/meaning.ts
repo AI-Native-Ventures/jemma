@@ -4,6 +4,7 @@ import { markQuantity, type QuantityFields } from './answers/quantity'
 import { markRatio, asksSimplest, readRatio } from './answers/ratio'
 import { markTime, readTime } from './answers/time'
 import { completeAnswer } from './complete-answer'
+import { isListKind, markListQuestion } from './answers/lists'
 
 /**
  * Marking by meaning, for the senior classes (Mathematics, Grades 7 to 12): a learner types algebra, a negative number, a point, a percent or an
@@ -902,13 +903,24 @@ export function markByMeaning(kind: MeaningKind, key: string, answer: string, fo
  * P148: an answer that is not right is looked at once more as a quantity (a unit, money to the cent, a percent, a rounded number: logic/answers/quantity.ts),
  * and a ratio asked in its simplest form is marked by that. An answer that was right stays right.
  */
-export function markQuestion(q: { answer: string; answerKind: string; form?: Form }, answer: string): MeaningMark {
-  // The signature is frozen (API freeze, 16 Nov 2026), so the optional fields of a whole question that P148 reads (prompt, unit, round) come from the same argument.
+export function markQuestion(
+  q: { answer: string; answerKind: string; form?: Form; ordered?: boolean; labels?: string[]; round?: number },
+  answer: string,
+): MeaningMark {
+  // P150: a list, an order and a table are several values, each read as a number or an expression (logic/answers/lists.ts).
+  if (isListKind(q.answerKind)) {
+    const { correct, comparable } = markListQuestion(q, answer, readNumber)
+    return { correct, comparable }
+  }
+  // The optional fields of a whole question that P148 reads (prompt, unit) come from the same argument.
   const more = q as QuantityFields
   if (q.answerKind === 'ratio') return markRatio(q.answer, answer, asksSimplest(more.prompt))
   const plain = isMeaningKind(q.answerKind) ? markByMeaning(q.answerKind, q.answer, answer, q.form) : markAnswer(answer, q.answer)
   return plain.correct ? plain : (markQuantity(more, answer, numeric) ?? plain)
 }
+
+/** The value of one number or expression (a % or a degree sign dropped), or null: the reader the values of a list, an order and a table are marked with. */
+export const readNumber = (text: string): number | null => numeric(text, true)
 
 /**
  * Finishes and marks what a learner typed, on the screen or on paper (the server action that takes an answer and `save_practice_answers` both call
@@ -916,10 +928,10 @@ export function markQuestion(q: { answer: string; answerKind: string; form?: For
  * `completeAnswer` exactly as it always did (a missing number put back into its fraction, then `markAnswer`).
  */
 export function finishAnswer(
-  q: { prompt: string; answer: string; answerKind: string; form?: Form; choices?: string[] },
+  q: { prompt: string; answer: string; answerKind: string; form?: Form; choices?: string[]; ordered?: boolean; labels?: string[]; round?: number },
   typed: string,
 ): { stored: string; correct: boolean } {
-  if (isMeaningKind(q.answerKind)) return { stored: typed.trim(), correct: markQuestion(q, typed).correct }
+  if (isMeaningKind(q.answerKind) || isListKind(q.answerKind)) return { stored: typed.trim(), correct: markQuestion(q, typed).correct }
   const done = completeAnswer(q, typed)
   // P148: a money, decimal or whole answer with a unit or a round is looked at once more as a quantity (the unit and the round come from the same argument); a right one stays right.
   return done.correct || !markQuantity(q as QuantityFields, typed, numeric)?.correct ? done : { stored: done.stored, correct: true }

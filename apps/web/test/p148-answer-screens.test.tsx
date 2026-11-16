@@ -369,6 +369,13 @@ describe('the results show the unit', () => {
     ])
   })
 
+  it('a key with more places than the question asks for is shown rounded as asked, with its unit', () => {
+    expect(reviewOf([item(question({ answer: '3.14159', round: 2, unit: 'cm' }), '3.1')])[0]).toMatchObject({ wrote: '3.1 cm', right: '3.14 cm' })
+    expect(reviewOf([item(question({ answer: '3,14159', round: 2 }), '3,1')])[0]).toMatchObject({ right: '3,14' })
+    expect(reviewOf([item(question({ answer: '15%', round: 2 }), '16%')])[0]).toMatchObject({ right: '15%' })
+    expect(reviewOf([item(question({ answer: '3.14159' }), '3,1')])[0]).toMatchObject({ right: '3.14159' })
+  })
+
   it('an answer written with its own unit on paper is shown once', () => {
     expect(reviewOf([item(question({ unit: 'cm\u00b2' }), '24 cm\u00b2', true)])[0]).toMatchObject({ wrote: '24 cm\u00b2', right: '24 cm\u00b2' })
   })
