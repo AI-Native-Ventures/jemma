@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Rich } from './math-label'
 
 export const INK = '#1F1D36'
 export const CORAL = '#FF6A4D'
@@ -51,7 +52,7 @@ type TextProps = {
 export function T({ x, y, size, weight = 400, fill = INK, anchor = 'middle', children }: TextProps) {
   return (
     <text x={x} y={y} fontSize={size} textAnchor={anchor} fill={fill} fontWeight={weight}>
-      {children}
+      {typeof children === 'string' ? <Rich text={children} size={size} /> : children}
     </text>
   )
 }

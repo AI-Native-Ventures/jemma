@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { DiagramSpec } from '@jemma/profiling/schemas'
+import { RichHtml } from './math-label'
 import { BODY, CORAL, CORAL_TEXT, INK, SOFT, Svg, T } from './shared'
 
 export type Shape2DProps = Extract<DiagramSpec, { kind: 'shape_2d' }>
@@ -153,7 +154,9 @@ export function Shape2D(props: Shape2DProps) {
         style={{ listStyle: 'none', margin: '8px 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: 4, fontSize: 14, lineHeight: 1.35, fontWeight: 500, color: INK, textAlign: 'center', overflowWrap: 'anywhere' }}
       >
         {tri.under.map((text, i) => (
-          <li key={i}>{text}</li>
+          <li key={i}>
+            <RichHtml text={text} />
+          </li>
         ))}
       </ul>
     </div>

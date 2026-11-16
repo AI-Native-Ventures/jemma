@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { PracticeRow } from '../Practise'
 import { AppHeader } from '../session/_parts/AppHeader'
 import { ChevronRight } from '../session/_parts/Chips'
+import { FractionText } from '../session/_parts/Frac'
 import { Diamond } from '../session/_parts/Gems'
 import { WorkspaceSwitch } from '../WorkspaceSwitch'
 import { NOT_OWN, homeTestLine, rightLine, wrongLine, type OwnCurriculumRow, type OwnCurriculumState, type OwnTestRow, type OwnTestView } from './format'
@@ -162,7 +163,9 @@ export function TestScreen({ view, firstName }: { view: OwnTestView; firstName?:
           <li key={q.n} className="flex items-start gap-3 border-t border-soft py-3 first:border-t-0">
             <Mark right={q.right} />
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="text-[17px] leading-[1.3] font-semibold text-pretty">{q.prompt}</span>
+              <span className="text-[17px] leading-[1.3] font-semibold text-pretty">
+                <FractionText text={q.prompt} size={22} rule={2} gap={3} side={3} />
+              </span>
               <span className="text-[14px] leading-[1.35] text-body">{q.answer.trim() ? `You wrote: ${q.answer.trim()}` : 'You left this blank.'}</span>
             </span>
           </li>
