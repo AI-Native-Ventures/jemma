@@ -229,8 +229,9 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await checkKeys('390 px', 390)
     await tabFaces('390 px')
     await noHorizontalScroll(page)
-    for (const width of [360, 320, 430, 390]) {
-      await page.setViewportSize({ width, height: 844 })
+    // The phone widths, then a laptop width (the keys stop growing at 64 px and the fonts at their largest): nothing sticks out of a key at any of them.
+    for (const width of [360, 320, 430, 1440, 390]) {
+      await page.setViewportSize({ width, height: width === 1440 ? 900 : 844 })
       await checkKeys(`${width} px`, width)
       await tabFaces(`${width} px`)
       if (width === 360 || width === 390) await noHorizontalScroll(page)
