@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import { buildMyMaths } from '@jemma/profiling/logic'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MyMathsView } from '../lib/data/p80'
+import { textWithoutKey } from './p122-key'
 
 // P87, decision 5: the two "My maths" screens of a Grade 10 learner, drawn from the list `buildMyMaths` makes for a senior class with a map.
 // "All of Mathematics" lists the parts of the learner's own map, and each of them opens. The data, the router and the actions are doubles.
@@ -60,7 +61,8 @@ describe('/k/maths for a Grade 10 learner with a map', () => {
     const all = within(screen.getByRole('region', { name: 'All of Mathematics' }))
     const links = all.getAllByRole('link')
     expect(links.map((l) => l.getAttribute('href'))).toEqual(['/k/maths/algebra', '/k/maths/functions', '/k/maths/trigonometry', '/k/maths/analytical_geometry'])
-    expect(links.map((l) => l.textContent)).toEqual(['Algebra1 of 1 right', 'FunctionsNo score yet', 'TrigonometryNo score yet', 'Analytical geometryNo score yet'])
+    // each part is its circles and one line (P122): algebra has two topics and one of them is 1 of 1
+    expect(links.map((l) => l.textContent)).toEqual(['Algebra1 of 2 secure', 'FunctionsNot started yet', 'TrigonometryNot started yet', 'Analytical geometryNot started yet'])
   })
 
   it('has no "Whole numbers", no "Fractions", no "Decimals" with "No score yet"', async () => {
@@ -71,7 +73,7 @@ describe('/k/maths for a Grade 10 learner with a map', () => {
 
   it('still never says a percent, a grade, a rank, a strand or a subtopic', async () => {
     await page()
-    expect(document.body.textContent ?? '').not.toMatch(/%|percent|grade|rank|classmate|class average|strand|subtopic|out of/i)
+    expect(textWithoutKey()).not.toMatch(/%|percent|grade|rank|classmate|class average|strand|subtopic|out of/i)
   })
 })
 

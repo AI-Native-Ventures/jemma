@@ -301,7 +301,8 @@ describe('the topics of a grade', () => {
     const all = within(screen.getByRole('region', { name: 'All of Mathematics' }))
     expect(all.getByRole('link', { name: /Numbers and operations/ }).getAttribute('href')).toBe('/k/maths/numbers?class=c7')
     expect(all.getByRole('link', { name: /Patterns and algebra/ }).getAttribute('href')).toBe('/k/maths/patterns?class=c7')
-    expect(all.getByText('6 of 10 right')).toBeTruthy()
+    // the one topic of Numbers and operations is 6 of 10: half a circle, started and not yet secure (P122)
+    expect(all.getByText('0 of 1 secure \u00b7 1 started')).toBeTruthy()
   })
 
   it('in My school a part\'s link has no grade', async () => {
