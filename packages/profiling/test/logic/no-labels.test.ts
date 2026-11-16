@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { BANNED_WORDS as FROM_LONG_VIEW, bannedWords as bannedFromLongView } from '../../src/logic/long-view'
-import { BANNED_WORDS, bannedWords, leaveOutLabels, sentencesOf, speaksAboutLearner } from '../../src/logic/no-labels'
+import { BANNED_WORDS, HARMLESS_PHRASES, bannedWords, leaveOutLabels, sentencesOf, speaksAboutLearner } from '../../src/logic/no-labels'
 
 // P104: the "a profile, never a label" check is one shared module. The Long view, the guidance card, the class report and the lesson all use it.
 // No database, no network, no model.
@@ -124,5 +124,59 @@ describe('leaveOutLabels', () => {
   test('names from the data and the learner own name are left alone', () => {
     const r = leaveOutLabels('Clever is doing well. Rank and file is next.', 'x', { people: ['Clever'], exempt: ['Rank and file'] })
     expect(r.dropped).toEqual([])
+  })
+})
+
+describe('"keep track of" and "lose track of" are maths words, not a career track (P116)', () => {
+  // A hint like "Learners may lose track of the minus signs" lost a whole practice on 16 Nov, because `track` is banned. Only these eight phrases are taken out.
+  test('the exact sentence that failed a practice has no banned word', () => {
+    expect(bannedWords('Learners may join the y terms with the number terms or lose track of the minus signs.')).toEqual([])
+  })
+
+  test('the list is exactly the eight harmless phrases', () => {
+    expect([...HARMLESS_PHRASES]).toEqual([
+      'keep track of', 'keeps track of', 'kept track of', 'keeping track of',
+      'lose track of', 'loses track of', 'lost track of', 'losing track of',
+    ])
+  })
+
+  test.each([...['keep', 'keeps', 'kept', 'keeping', 'lose', 'loses', 'lost', 'losing']])('"%s track of" is harmless, in any case and with any run of spaces', (verb) => {
+    expect(bannedWords(`Learners ${verb} track of the signs.`)).toEqual([])
+    expect(bannedWords(`LEARNERS ${verb.toUpperCase()} TRACK OF THE SIGNS.`)).toEqual([])
+    expect(bannedWords(`Learners ${verb}   track \t of the signs.`)).toEqual([])
+    expect(bannedWords(`Learners ${verb}\ntrack\nof the signs.`)).toEqual([])
+  })
+
+  test('"Learners lost track of the minus sign." has none', () => {
+    expect(bannedWords('Learners lost track of the minus sign.')).toEqual([])
+  })
+
+  test('"on track" and the other uses of the word stay banned', () => {
+    expect(bannedWords('You are on track.')).toEqual(['track'])
+    expect(bannedWords('She is on the fast track.')).toEqual(['track'])
+    expect(bannedWords('Amina keeps track.')).toEqual(['track'])
+    expect(bannedWords('She lost track and fell behind.')).toEqual(['track'])
+    expect(bannedWords('The stream and the track.')).toEqual(['stream', 'track'])
+  })
+
+  test('a harmless phrase does not hide a banned use of the same word in the same text', () => {
+    expect(bannedWords('Keep track of the signs, you are on track.')).toEqual(['track'])
+    expect(bannedWords('You are on track and may lose track of the signs.')).toEqual(['track'])
+  })
+
+  test('only whole words: a longer word around the phrase is not the phrase', () => {
+    expect(bannedWords('Learners may relose track of it.')).toEqual(['track'])
+    expect(bannedWords('Learners may lose track offer.')).toEqual(['track'])
+    expect(bannedWords('Learners may lose tracks of the signs.')).toEqual([])
+  })
+
+  test('the other banned words in the same sentence are still found, in order', () => {
+    expect(bannedWords('A gifted learner who may lose track of the signs and wants a career.')).toEqual(['gifted', 'career'])
+  })
+
+  test('leaveOutLabels keeps a sentence that only loses track, and drops one that says "on track"', () => {
+    const r = leaveOutLabels('Learners may lose track of the minus signs. You are on track.', 'why', { aboutLearnerOnly: true })
+    expect(r.text).toBe('Learners may lose track of the minus signs.')
+    expect(r.dropped).toEqual([{ field: 'why', text: 'You are on track.', reason: 'uses the word "track"' }])
   })
 })

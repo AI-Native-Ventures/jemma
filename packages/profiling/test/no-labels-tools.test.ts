@@ -1,10 +1,11 @@
 import { describe, expect, test } from 'vitest'
 import type { z } from 'zod'
 import { MemoryStore } from '../src/ai'
-import type { Lesson, Question } from '../src/schemas/lesson'
+import { bannedWords } from '../src/logic/no-labels'
+import { LessonSchema, type Lesson, type Question } from '../src/schemas/lesson'
 import { isWithImages, type ToolContext, type ToolDef } from '../src/tools/context'
 import { classGapReport } from '../src/tools/save/class-gap-report'
-import { saveLesson } from '../src/tools/save/save-lesson'
+import { RIGHT_WAY_AFTER_LABELS, saveLesson, screenLesson, WHY_AFTER_LABELS } from '../src/tools/save/save-lesson'
 import { subjectGuidance } from '../src/tools/save/subject-guidance'
 import { memoryDb, type MemoryDb } from './helpers/memory-db'
 
@@ -241,6 +242,115 @@ describe('save_lesson leaves out a sentence that speaks about the learner with a
     const out = await plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson: lessonOf('reading', {}, questions) })
     expect(stored(db).questions[2]).toMatchObject({ why: 'The pieces must match.', rightWay: 'Make quarters first.' })
     expect(out.dropped!.map((d) => d.field)).toEqual(['question 3 why', 'question 3 right way'])
+  })
+
+  // P116: a "why" or a "right way" that the word check leaves empty used to refuse the whole lesson (a practice was thrown away on 16 Nov after 6 minutes).
+  // Now the question stays, with a plain line in place of the hint, so the lesson keeps its 15 questions and its warm-up and still opens for the learner.
+  const REPLACED = 'replaced with a plain line: nothing was left after leaving out a label'
+  const fifteen = () => ([1, 2, 3] as const).flatMap((d) => [0, 1, 2, 3, 4].map((i) => question(d, i)))
+
+  test('P116: the "why" that failed a practice on 16 Nov ("lose track of the minus signs") is kept, and the lesson saves whole', async () => {
+    const db = world('reading')
+    const questions = fifteen()
+    questions[9] = question(2, 4, { why: 'Learners may join the y terms with the number terms or lose track of the minus signs.' })
+    const out = await plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson: lessonOf('reading', {}, questions) })
+    expect(out.dropped).toBeUndefined()
+    expect(stored(db).questions).toHaveLength(15)
+    expect(stored(db).questions[9]!.why).toBe('Learners may join the y terms with the number terms or lose track of the minus signs.')
+  })
+
+  test('P116: the two plain lines are fixed, pass the word check and hold no em dash', () => {
+    expect(WHY_AFTER_LABELS).toBe('Go back over each step, one at a time, and check each number.')
+    expect(RIGHT_WAY_AFTER_LABELS).toBe('Work it out again one step at a time, then check the answer.')
+    expect(bannedWords(WHY_AFTER_LABELS)).toEqual([])
+    expect(bannedWords(RIGHT_WAY_AFTER_LABELS)).toEqual([])
+    for (const line of [WHY_AFTER_LABELS, RIGHT_WAY_AFTER_LABELS]) expect(line).not.toContain(String.fromCharCode(0x2014))
+  })
+
+  test('P116: a "why" that is only a label is replaced by the plain line, the question stays, the lesson keeps 15 questions and still parses', async () => {
+    const db = world('reading')
+    const questions = fifteen()
+    const label = 'Slow learners may lose track of the minus signs.'
+    questions[9] = question(2, 4, { why: label })
+    const out = await plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson: lessonOf('reading', {}, questions) })
+    expect(stored(db).questions).toHaveLength(15)
+    expect(stored(db).questions[9]).toEqual({ ...questions[9], why: WHY_AFTER_LABELS })
+    expect(stored(db).questions.filter((_, i) => i !== 9)).toEqual(questions.filter((_, i) => i !== 9))
+    expect(out.dropped).toEqual([
+      { field: 'question 10 why', text: label, reason: 'uses the word "slow"' },
+      { field: 'question 10 why', text: label, reason: REPLACED },
+    ])
+    expect(lastCall(db, 'save_lesson').output).toMatchObject({ dropped: [{ field: 'question 10 why' }, { field: 'question 10 why', reason: REPLACED }] })
+    expect(LessonSchema.safeParse(stored(db)).success).toBe(true)
+  })
+
+  test('P116: a "right way" that is only a label is replaced too, and the "why" next to it is kept', async () => {
+    const db = world('reading')
+    const questions = fifteen()
+    questions[2] = question(1, 2, { rightWay: 'Amina is smart.' })
+    const out = await plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson: lessonOf('reading', {}, questions) })
+    expect(stored(db).questions).toHaveLength(15)
+    expect(stored(db).questions[2]).toEqual({ ...questions[2], rightWay: RIGHT_WAY_AFTER_LABELS })
+    expect(out.dropped).toEqual([
+      { field: 'question 3 right way', text: 'Amina is smart.', reason: 'uses the word "smart"' },
+      { field: 'question 3 right way', text: 'Amina is smart.', reason: REPLACED },
+    ])
+    expect(LessonSchema.safeParse(stored(db)).success).toBe(true)
+  })
+
+  test('P116: a question that loses both is given both plain lines, one replacement recorded for each', async () => {
+    const db = world('reading')
+    const questions = fifteen()
+    questions[0] = question(1, 0, { why: 'You are slow.', rightWay: 'You are lazy.' })
+    const out = await plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson: lessonOf('reading', {}, questions) })
+    expect(stored(db).questions[0]).toMatchObject({ why: WHY_AFTER_LABELS, rightWay: RIGHT_WAY_AFTER_LABELS })
+    expect(out.dropped!.map((d) => `${d.field}: ${d.reason}`)).toEqual([
+      'question 1 why: uses the word "slow"',
+      `question 1 why: ${REPLACED}`,
+      'question 1 right way: uses the word "lazy"',
+      `question 1 right way: ${REPLACED}`,
+    ])
+  })
+
+  test('P116: a "why" that only loses a sentence is not replaced, the rest of it stays', async () => {
+    const db = world('reading')
+    const questions = fifteen()
+    questions[4] = question(1, 4, { why: 'The pieces must match. You are slow at this.' })
+    const out = await plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson: lessonOf('reading', {}, questions) })
+    expect(stored(db).questions[4]!.why).toBe('The pieces must match.')
+    expect(out.dropped!.filter((d) => d.reason === REPLACED)).toEqual([])
+  })
+
+  test('P116: a warm-up question is treated the same way, as "warm-up N", and the stored warm-up keeps its two questions', async () => {
+    const db = world('reading')
+    const lesson = lessonOf('reading')
+    lesson.warmup[1] = question(1, 91, { why: 'You are a genius.' })
+    const out = await plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson })
+    expect(stored(db).warmup).toHaveLength(2)
+    expect(stored(db).warmup[1]).toEqual({ ...lesson.warmup[1], why: WHY_AFTER_LABELS })
+    expect((db.tables.sessions![0] as Row).warmup).toEqual(stored(db).warmup)
+    expect(out.dropped).toEqual([
+      { field: 'warm-up 2 why', text: 'You are a genius.', reason: 'uses the word "genius"' },
+      { field: 'warm-up 2 why', text: 'You are a genius.', reason: REPLACED },
+    ])
+    expect(LessonSchema.safeParse(stored(db)).success).toBe(true)
+  })
+
+  test('P116: even when every "why" is only a label the lesson saves, with 15 questions, and the plain lines are not screened again', async () => {
+    const db = world('reading')
+    const questions = fifteen().map((q) => ({ ...q, why: 'You are slow.' }))
+    const out = await plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson: lessonOf('reading', {}, questions) })
+    expect(stored(db).questions).toHaveLength(15)
+    expect(stored(db).questions.every((q) => q.why === WHY_AFTER_LABELS)).toBe(true)
+    expect(out.dropped!.filter((d) => d.reason === REPLACED)).toHaveLength(15)
+    expect(LessonSchema.safeParse(stored(db)).success).toBe(true)
+    expect(screenLesson(stored(db)).dropped).toEqual([])
+  })
+
+  test('P116: a lesson with no questions to screen is left as it is', () => {
+    const lesson = lessonOf('reading', {}, [])
+    lesson.warmup = []
+    expect(screenLesson(lesson)).toEqual({ lesson, dropped: [] })
   })
 
   test('a card whose text is only a label goes, and the others stay', async () => {

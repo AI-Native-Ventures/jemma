@@ -60,13 +60,25 @@ function how(lesson: Lesson): string {
 }
 
 /**
+ * The plain lines that stand in for a "why" or a "right way" when the word check leaves nothing of it (P116). They say nothing about the learner, so
+ * they pass the word check themselves, and they hold no em dash.
+ */
+export const WHY_AFTER_LABELS = 'Go back over each step, one at a time, and check each number.'
+export const RIGHT_WAY_AFTER_LABELS = 'Work it out again one step at a time, then check the answer.'
+
+/** The reason of the `LabelDrop` that records a plain line put in place of a "why" or a "right way". */
+const REPLACED_WITH_PLAIN_LINE = 'replaced with a plain line: nothing was left after leaving out a label'
+
+/**
  * "A profile, never a label": the lines of a lesson that speak to or about the learner pass the word check before the lesson is saved. No database.
  * A lesson is full of maths, and a maths line may say "a clever trick", "the top and bottom of one half" or "the track is 3/4 km": that is not a
  * label on a child. So only a sentence that names the learner, says you or your, or names learners in general is read, and only in the lines a
  * learner is spoken to in: the spoken script, the reading cards, and the "why" and "right way" under each question. A question, an answer, a
  * choice, a title and a picture are never read.
- * A sentence with a label, a ranking or career talk is left out and the rest is kept. A card with nothing left goes. A script, a "why" or a
- * "right way" with nothing left refuses the lesson.
+ * A sentence with a label, a ranking or career talk is left out and the rest is kept. A card with nothing left goes. A "why" or a "right way"
+ * (in the warm-up or in the questions) with nothing left is replaced by a plain line (`WHY_AFTER_LABELS`, `RIGHT_WAY_AFTER_LABELS`) and the
+ * replacement is recorded in `dropped` (field `question 3 why`), so one hint never throws away a lesson. Every question stays, so the lesson keeps
+ * its 15 questions and its warm-up and still parses as a `Lesson` for the learner. A script with nothing left still refuses the lesson.
  * `check.people` is the learner's first name (Clever, Bright and Smart are first names).
  */
 export function screenLesson(lesson: Lesson, check: Pick<LabelCheck, 'people'> = {}): { lesson: Lesson; dropped: LabelDrop[] } {
@@ -81,11 +93,18 @@ export function screenLesson(lesson: Lesson, check: Pick<LabelCheck, 'people'> =
     if (text.trim() && !kept.text) throw labelsRefused(what, kept.dropped)
     return kept.text
   }
-  const feedback = (questions: Question[], group: string): Question[] =>
+  /** A hint (a "why" or a "right way"): what is left of it, or `plain` when nothing is left, and the replacement is recorded. */
+  const hint = (text: string, field: string, plain: string) => {
+    const kept = read(text, field)
+    if (!text.trim() || kept.text) return kept.text
+    dropped.push({ field, text: kept.dropped.map((d) => d.text).join(' '), reason: REPLACED_WITH_PLAIN_LINE })
+    return plain
+  }
+  const feedback = (questions: Question[], group: 'warm-up' | 'question'): Question[] =>
     questions.map((q, i) => ({
       ...q,
-      why: required(q.why, `${group} ${i + 1} why`, `the "why" of ${group} ${i + 1}`),
-      rightWay: required(q.rightWay, `${group} ${i + 1} right way`, `the "right way" of ${group} ${i + 1}`),
+      why: hint(q.why, `${group} ${i + 1} why`, WHY_AFTER_LABELS),
+      rightWay: hint(q.rightWay, `${group} ${i + 1} right way`, RIGHT_WAY_AFTER_LABELS),
     }))
 
   const audio = lesson.audio ? { ...lesson.audio, script: required(lesson.audio.script, 'spoken script', 'the spoken script') } : undefined
