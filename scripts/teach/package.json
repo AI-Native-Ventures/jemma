@@ -1,0 +1,23 @@
+{
+  "name": "@jemma/teach",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Offline generator of the teaching library: drives OpenCode free models, checks every lesson, writes content/lessons.",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "generate": "node --import tsx --import ../../packages/profiling/scripts/register-md.mjs generate.ts",
+    "import": "node --import tsx --import ../../packages/profiling/scripts/register-md.mjs import.ts"
+  },
+  "dependencies": {
+    "@jemma/profiling": "workspace:*",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5"
+  }
+}
