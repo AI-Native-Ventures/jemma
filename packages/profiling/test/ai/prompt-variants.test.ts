@@ -307,6 +307,99 @@ describe('pictures, for a senior class', () => {
   })
 })
 
+// P127: the maths of a question is written as an expression or an equation, never described in words ("x over 2 plus 6 equals 10" is wrong).
+describe('maths notation, for a senior class', () => {
+  const lesson = (grade: number, country = 'ZA', subject = 'Mathematics') => renderPrompt('write_lesson', md('write_lesson'), klass(subject, grade, country))
+  const QUESTIONS = '- `questions`: exactly 15, five each at difficulty 1, 2 and 3, easiest first.'
+  const RULE = 'Write the maths of every question as an expression or an equation in plain maths notation, never in words.'
+
+  test('a Grade 10 class: the rule is a bullet of "What to write", straight after the questions bullet', () => {
+    const out = lesson(10)
+    expect(out).toContain(`${QUESTIONS}\n- ${RULE}`)
+    expect(out.split(RULE)).toHaveLength(2)
+    expect(out.indexOf(RULE)).toBeLessThan(out.indexOf('## By format'))
+    expect(out.indexOf(RULE)).toBeGreaterThan(out.indexOf('## What to write'))
+    // The next bullet of the file follows it, so nothing of the file is lost.
+    expect(out).toMatch(/\n- Every question has `prompt`, `render`/)
+  })
+
+  test('it names the command words, the examples and the wrong way, with the symbols and the forms of a fraction, a power and a root', () => {
+    const out = lesson(10)
+    for (const word of [
+      'a short command word first (Solve, Expand, Factorise, Simplify, Find, Calculate)',
+      '`Solve: x/2 + 6 = 10`',
+      '`Expand: (x + 2)(x + 3)`',
+      '`Simplify: √48`',
+      '`Find sin θ when θ = 30°`',
+      'Never describe the maths in words: `x over 2 plus 6 equals 10` is wrong.',
+      'a fraction as `a/b`, with brackets when the top or the bottom has more than one term (`(x + 1)/2`)',
+      'a power with `^` (`x^2`)',
+      'a root as `√( )` (`√(x + 4)`)',
+      'the symbols − × ÷ π θ °',
+    ]) {
+      expect(out).toContain(word)
+    }
+  })
+
+  test('a word problem keeps one sentence of context, then the maths; warm-up questions, choices, why, rightWay, cards and diagram steps follow the same rule', () => {
+    const out = lesson(10)
+    for (const word of ['one sentence of context, then the maths on its own line', 'the warm-up questions and their `choices`', '`why` and `rightWay`', 'a card or a diagram step']) {
+      expect(out).toContain(word)
+    }
+  })
+
+  test('the answer is still given in the form of the answer kinds, and an audio script is spoken, so it is said in words', () => {
+    const out = lesson(10)
+    expect(out).toContain('`answer` itself stays as the answer kinds say')
+    expect(out).toContain('the `audio` script is spoken, so there the maths is said in words')
+  })
+
+  test.each([[7], [8], [9], [11], [12]])('Grade %i is told too', (grade) => expect(lesson(grade)).toContain(RULE))
+
+  test('outside South Africa it is the same rule, and it names no rand or decimal comma', () => {
+    const out = lesson(9, 'KE')
+    expect(out).toContain(RULE)
+    expect(out).not.toMatch(/decimal comma|decimals use a comma|\bR5\b|\brand\b|`money`/i)
+    expect(out).not.toContain('Grade 6')
+  })
+
+  test('one rule, on the questions bullet of the file, for a senior class only', () => {
+    const rules = PROMPT_RULES.write_lesson.filter((r) => r.find === QUESTIONS)
+    expect(rules).toHaveLength(1)
+    expect(rules[0]!.when(klass('Mathematics', 10, 'ZA'))).toBe(true)
+    expect(rules[0]!.when(klass('Mathematics', 7, 'KE'))).toBe(true)
+    expect(rules[0]!.when(klass('Mathematics', 6, 'ZA'))).toBe(false)
+    expect(rules[0]!.when(klass('Mathematics', 5, 'ZA'))).toBe(false)
+    expect(rules[0]!.when(klass('Mathematics', 13, 'ZA'))).toBe(false)
+    expect(rules[0]!.when(klass('Natural Sciences', 10, 'ZA'))).toBe(false)
+  })
+
+  test.each([[1], [4], [5], [13]])('Grade %i is told nothing about it: the questions bullet of the file, as it was', (grade) => {
+    const out = lesson(grade)
+    expect(out).not.toContain(RULE)
+    expect(out).not.toContain('x over 2 plus 6 equals 10')
+    expect(out).toContain(`${QUESTIONS}\n- Every question has`)
+  })
+
+  test('another subject, and a Grade 6 class outside South Africa, are told nothing about it', () => {
+    expect(lesson(10, 'ZA', 'Natural Sciences')).not.toContain(RULE)
+    expect(lesson(6, 'KE')).not.toContain(RULE)
+  })
+
+  test('the baseline class still gets the file byte for byte, and the file has no such rule', () => {
+    expect(lesson(6)).toBe(md('write_lesson'))
+    expect(md('write_lesson')).not.toContain('maths notation')
+  })
+
+  test('no em dash, and no text of another rule is cut by it: the senior prompt still has its answers, its pictures and its learner', () => {
+    const out = lesson(10)
+    expect(out).not.toContain(String.fromCharCode(0x2014))
+    expect(out).toContain('`point` (`(2; -3)`)')
+    expect(out).toContain('Use `coordinate_plane` for functions')
+    expect(out).toContain('for a Grade 10 learner')
+  })
+})
+
 describe('the reader of a practice answered on paper, for a senior class', () => {
   const read = (grade: number, country = 'ZA', place?: 'practice') => renderPrompt('read_paper', md('read_paper'), klass('Mathematics', grade, country), place)
   const ALGEBRA = 'Keep algebra as written: letters, powers as `^` or `²`, minus signs, brackets and `√`.'
