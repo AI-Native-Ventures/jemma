@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { IconLabel } from '@/components/ui/IconLabel'
 import { CHOICE_LETTERS, choiceText, hasPictureChoices } from '@jemma/profiling/logic'
 import { answerShape, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
-import { numberWriteLine, plainNumberWriteLine, ratioWriteLine, timeWriteLine } from './answers/hints'
+import { INEQUALITY_WRITE_LINE, numberWriteLine, PAIR_WRITE_LINE, plainNumberWriteLine, ratioWriteLine, timeWriteLine } from './answers/hints'
 import { Frac, FractionText } from './Frac'
 import { QuestionPicture } from './QuestionPicture'
 import { PictureChoices } from './answers/PictureChoices'
@@ -103,7 +103,7 @@ export function writeLine(shape: AnswerShape): string {
           ? 'Write it with no brackets, like x\u00b2 + 4x + 4.'
           : 'Write an expression, like 2x + 3.'
     case 'equation':
-      return 'Write the answer, like x = 4. Two answers: x = 3 or x = -1.'
+      return shape.inequality ? INEQUALITY_WRITE_LINE : shape.pair ? PAIR_WRITE_LINE : 'Write the answer, like x = 4. Two answers: x = 3 or x = -1.'
     case 'point':
       return 'Write the x and the y of the point, like (2; 3).'
     case 'number':

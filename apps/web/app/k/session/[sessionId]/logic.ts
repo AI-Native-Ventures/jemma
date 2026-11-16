@@ -3,8 +3,10 @@ import {
   completeAnswer,
   fillMissing,
   finishAnswer,
+  isInequalityKey,
   isListKind,
   isSeniorQuestion,
+  isPairKey,
   listAnswerParts,
   LIST_MAX_LENGTH,
   missingPart,
@@ -69,6 +71,8 @@ export type QuestionForChild = {
   ratioParts?: 2 | 3
   /** P148: a whole or decimal question of a senior class (Grades 7 to 12): its box gets a minus key. */
   signed?: true
+  /** P147: the SHAPE of the answer when its key is an inequality or an interval ('inequality') or two letters with a value each ('pair'), so the screen can say how to type it. Never the key itself. */
+  answerShape?: 'inequality' | 'pair'
   /** P150, a list: how many boxes, whether the place of a value matters, whether a number pad is enough, and a label over each box. Never a value. */
   list?: ListParts['list']
   /** P150, an order: the items to put in order, shuffled (never in the right order). */
@@ -161,6 +165,7 @@ export function stripQuestion(
     ...(q.form ? { form: q.form } : {}),
     ...(q.diagram ? { diagram: q.diagram } : {}),
     ...quantityHints(q),
+    ...(q.answerKind === 'equation' && isInequalityKey(q.answer) ? { answerShape: 'inequality' as const } : q.answerKind === 'equation' && isPairKey(q.answer) ? { answerShape: 'pair' as const } : {}),
     // P150: a count, the labels, the items to put in order (shuffled), the table with its blanks: never the key's values or order.
     ...listAnswerParts(q),
     ...(isListKind(q.answerKind) && q.round !== undefined ? { round: q.round } : {}),
@@ -218,8 +223,10 @@ export type AnswerShape =
   | { kind: 'fraction' | 'mixed' | 'money' | 'text' }
   /** P148: a number, a whole or a decimal answer may carry a unit, a round and (a whole or a decimal of a senior class) a minus key. */
   | ({ kind: 'number' | 'whole' | 'decimal' } & QuantityExtras)
-  /** The kinds of a senior class, marked by meaning: a number that may be negative, an expression, an equation, a point. */
-  | { kind: 'equation' | 'point' }
+  /** The kinds of a senior class, marked by meaning: a point (a number is above, with its extras). */
+  | { kind: 'point' }
+  /** An equation answer; `inequality` when its key is an inequality or an interval, `pair` when it is two letters with a value each (P147): they change the line under the box. */
+  | { kind: 'equation'; inequality?: true; pair?: true }
   | { kind: 'expression'; form: Form }
   /** P148: a time (the hours and minutes, and am or pm when the key needs it) and a ratio (a box for each part). */
   | { kind: 'time'; style: TimeStyle; young?: true }
@@ -245,11 +252,14 @@ const quantityExtras = (q: QuantityExtras): QuantityExtras => ({
 type ShapeParts = { list?: ListParts['list']; items?: string[]; table?: { columns: string[]; rows: (string | null)[][]; plain?: boolean }; round?: number; young?: true }
 
 export function answerShape(
-  q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> & QuantityExtras & Pick<QuestionForChild, 'timeStyle' | 'ratioParts'> & ShapeParts & { withValue?: boolean },
+  q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> & QuantityExtras & Pick<QuestionForChild, 'timeStyle' | 'ratioParts' | 'answerShape'> & ShapeParts & { withValue?: boolean },
 ): AnswerShape {
   if (q.answerKind === 'truefalse') return { kind: 'truefalse' }
   if (q.answerKind === 'reason') return { kind: 'reason', withValue: q.withValue === true }
   if (q.choices?.length) return { kind: 'choice' }
+  // P147: an equation whose key is an inequality or an interval, or two letters with a value each, says so in its line under the box.
+  if (q.answerKind === 'equation' && q.answerShape === 'inequality') return { kind: 'equation', inequality: true }
+  if (q.answerKind === 'equation' && q.answerShape === 'pair') return { kind: 'equation', pair: true }
   // P150: a list, an order and a table are drawn from the parts the server sent (a question that came without them gets the plain box below).
   const places = { ...(q.round !== undefined ? { round: q.round } : {}), ...(q.young ? { young: true as const } : {}) }
   // A shape with nothing to fill (no box, one chip, no empty cell) could never be answered, so it falls to the plain box rather than leave the learner stuck.
