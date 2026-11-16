@@ -1,5 +1,5 @@
 import { LIMIT_PARK_MS, modelsFromEnv } from './chain'
-import { effortFromEnv, makeOpenRouterRunner, OPENROUTER_PARK_MS, openrouterModelsFromEnv, readKey } from './openrouter'
+import { effortFromEnv, makeKeyUsage, makeOpenRouterRunner, OPENROUTER_PARK_MS, openrouterModelsFromEnv, readKey } from './openrouter'
 import { runOpencode, type Runner } from './opencode'
 
 /** Where the models are called: `TEACH_BACKEND=opencode` (the default: OpenCode's free models) or `TEACH_BACKEND=openrouter` (cheap paid open-weights models). */
@@ -22,4 +22,9 @@ export const limitParkMsFor = (backend: Backend): number => (backend === 'openro
 /** The function that asks one model one question. The OpenRouter key is read here, from its file, and goes nowhere else. */
 export function runnerFor(backend: Backend, env: Record<string, string | undefined> = process.env): Runner {
   return backend === 'openrouter' ? makeOpenRouterRunner({ apiKey: readKey(env), effort: effortFromEnv(env) }) : runOpencode
+}
+
+/** The dollars the key has used, read from the provider itself, for the backends that spend money. OpenCode's free models have none. */
+export function keyUsageFor(backend: Backend, env: Record<string, string | undefined> = process.env): (() => Promise<number | null>) | undefined {
+  return backend === 'openrouter' ? makeKeyUsage(readKey(env)) : undefined
 }

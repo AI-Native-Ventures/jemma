@@ -21,6 +21,8 @@ export type RunResult = {
   /** Tokens of the prompt that the provider served from its cache (OpenRouter reports them). Part of `tokensIn`. */
   tokensCached?: number
   tokensOut?: number
+  /** Tokens the model spent thinking before it answered (part of `tokensOut`), when the provider reports them. */
+  tokensReasoning?: number
   /** What the call cost, in US dollars, when the provider says (OpenRouter), else an estimate marked by `costEstimated`. Free models: undefined. */
   costUsd?: number
   costEstimated?: boolean

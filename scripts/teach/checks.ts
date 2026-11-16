@@ -212,6 +212,51 @@ function questionProblems(q: Question, where: string, ctx: Ctx): string[] {
   return out
 }
 
+// ---- a try block must not give its answer away ------------------------------------------------------------------------------------------
+
+const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen']
+const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
+
+/** A whole number from 0 to 999 as the words a voice says (with and without "and" after hundred), or none for anything else. */
+export function numberWords(n: number): string[] {
+  if (!Number.isInteger(n) || n < 0 || n > 999) return []
+  if (n < 20) return [ONES[n]!]
+  if (n < 100) return [`${TENS[Math.floor(n / 10)]}${n % 10 ? ` ${ONES[n % 10]}` : ''}`, `${TENS[Math.floor(n / 10)]}${n % 10 ? `-${ONES[n % 10]}` : ''}`]
+  const rest = n % 100
+  const head = `${ONES[Math.floor(n / 100)]} hundred`
+  return rest === 0 ? [head] : numberWords(rest).flatMap((w) => [`${head} and ${w}`, `${head} ${w}`])
+}
+
+const standsAlone = (token: string, text: string): boolean => new RegExp(`(?<![\\d/^-])(?<!\\d[.,])${escapeRegExp(token)}(?![\\d/^])(?![.,]\\d)`).test(text)
+const wordIn = (phrase: string, text: string): boolean => new RegExp(`(?<![a-z])${escapeRegExp(phrase)}(?![a-z])`).test(text)
+const optionText = (c: Choice): string => (typeof c === 'string' ? c : (c.text ?? ''))
+
+/**
+ * Does `hint` or `speech` of a `try` block tell the learner the answer? Both reach the browser before the learner answers. The answer as written, a
+ * whole number as words ("twelve"), the letter of the right option ("the answer is B") and the text of the right option all count. A value that is
+ * already in the question is not a leak: the learner can read it there.
+ */
+export function answerLeak(q: Question, text: string): string | null {
+  const flat = squash(text)
+  const prompt = squash(q.prompt)
+  const lower = text.toLowerCase()
+  if (q.answerKind === 'choice') {
+    const index = q.answer.trim().toUpperCase().charCodeAt(0) - 65
+    const letter = q.answer.trim().toUpperCase()
+    if (/^[A-E]$/.test(letter) && new RegExp(`\\b(answer|correct|right|choose|pick|select|option)\\b[^.?!]{0,30}\\b${letter}\\b`, 'i').test(text)) return letter
+    const right = squash(optionText((q.choices ?? [])[index] ?? ''))
+    if (right.length >= 2 && flat.includes(right)) return optionText((q.choices ?? [])[index] ?? '')
+    return null
+  }
+  const answer = squash(q.answer)
+  if (!answer) return null
+  if (standsAlone(answer, prompt)) return null
+  if (standsAlone(answer, flat)) return q.answer
+  const n = /^-?\d+$/.test(answer) ? Number(answer) : NaN
+  if (Number.isInteger(n) && n >= 0) for (const words of numberWords(n)) if (wordIn(words, lower)) return words
+  return null
+}
+
 function blockProblems(b: TeachingBlock, n: number, ctx: Ctx): string[] {
   const where = `block ${n} (${b.kind})`
   const out: string[] = []
@@ -239,7 +284,13 @@ function blockProblems(b: TeachingBlock, n: number, ctx: Ctx): string[] {
     const d = diagramProblem(b.diagram, ctx.grade)
     if (d) add(`picture: ${d}`)
   }
-  if (b.kind === 'try') out.push(...questionProblems(b.question, where, ctx))
+  if (b.kind === 'try') {
+    out.push(...questionProblems(b.question, where, ctx))
+    for (const field of ['hint', 'speech'] as const) {
+      const leak = answerLeak(b.question, b[field])
+      if (leak) add(`the ${field} gives the answer away ("${leak}"): it reaches the learner before they answer, so it must help without giving the answer`)
+    }
+  }
   return out
 }
 

@@ -6,7 +6,7 @@ import { MockLanguageModelV4 } from 'ai/test'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import { backendFromEnv, limitParkMsFor, modelsFor, runnerFor } from '../backend'
 import { FatalBackendError, LIMIT_PARK_MS } from '../chain'
-import { OPENROUTER_MODELS, OPENROUTER_PARK_MS, ESTIMATE_PER_M, effortFromEnv, makeOpenRouterRunner, openrouterModel, openrouterModelsFromEnv, readKey } from '../openrouter'
+import { OPENROUTER_MODELS, OPENROUTER_PARK_MS, ESTIMATE_PER_M, effortFromEnv, makeKeyUsage, makeOpenRouterRunner, openrouterModel, openrouterModelsFromEnv, readKey } from '../openrouter'
 import { runOpencode } from '../opencode'
 
 const KEY = 'test-secret-key-0123456789'
@@ -36,9 +36,17 @@ describe('the OpenRouter runner', () => {
     const run = runnerOf(async () => answer('{"a":1}', { usage: { promptTokens: 20_000, completionTokens: 6_000, promptTokensDetails: { cachedTokens: 18_000 }, cost: 0.0123 } }), seen)
     const r = await run('z-ai/glm-5.3-flash', 'prompt', { timeoutMs: 5000 })
     expect(r).toMatchObject({ text: '{"a":1}', tokensIn: 20_000, tokensCached: 18_000, tokensOut: 6_000, costUsd: 0.0123, limited: false })
+    expect(r.tokensReasoning).toBeUndefined()
     expect(r.costEstimated).toBeUndefined()
     expect(r.error).toBeUndefined()
     expect(seen).toEqual(['z-ai/glm-5.3-flash'])
+  })
+
+  test('the thinking tokens are read from the completion details, and the real cost is kept as reported', async () => {
+    const run = runnerOf(async () => answer('{"a":1}', { usage: { promptTokens: 11_000, completionTokens: 9_000, completionTokensDetails: { reasoningTokens: 8_400 }, promptTokensDetails: { cachedTokens: 0 }, cost: 0.00531 } }))
+    const r = await run('deepseek/deepseek-v4.1-flash-1017', 'p', { timeoutMs: 5000 })
+    expect(r).toMatchObject({ tokensIn: 11_000, tokensCached: 0, tokensOut: 9_000, tokensReasoning: 8_400, costUsd: 0.00531 })
+    expect(r.costEstimated).toBeUndefined()
   })
 
   test('with no cost reported it estimates one, a little high, and says so', async () => {
@@ -149,5 +157,29 @@ describe('the backend switch', () => {
     expect(limitParkMsFor('openrouter')).toBe(OPENROUTER_PARK_MS)
     expect(OPENROUTER_PARK_MS).toBe(2 * 60_000)
     expect(limitParkMsFor('opencode')).toBe(LIMIT_PARK_MS)
+  })
+})
+
+describe('the key usage read from OpenRouter', () => {
+  const fakeFetch = (respond: () => Promise<Response>, seen: { url?: string; auth?: string } = {}) =>
+    (async (url: string | URL | Request, init?: RequestInit) => {
+      seen.url = String(url)
+      seen.auth = (init?.headers as Record<string, string> | undefined)?.authorization
+      return respond()
+    }) as unknown as typeof fetch
+
+  test('reads data.usage from GET /api/v1/key with the key as a bearer token', async () => {
+    const seen: { url?: string; auth?: string } = {}
+    const usage = await makeKeyUsage(KEY, fakeFetch(async () => Response.json({ data: { usage: 0.9122, limit: 50 } }), seen))()
+    expect(usage).toBe(0.9122)
+    expect(seen.url).toBe('https://openrouter.ai/api/v1/key')
+    expect(seen.auth).toBe(`Bearer ${KEY}`)
+  })
+
+  test('a refused request, a network error and a body without a number are null, never an error', async () => {
+    expect(await makeKeyUsage(KEY, fakeFetch(async () => new Response('no', { status: 401 })))()).toBeNull()
+    expect(await makeKeyUsage(KEY, fakeFetch(() => Promise.reject(new Error('offline'))))()).toBeNull()
+    expect(await makeKeyUsage(KEY, fakeFetch(async () => Response.json({ data: { usage: 'a lot' } })))()).toBeNull()
+    expect(await makeKeyUsage(KEY, fakeFetch(async () => Response.json({})))()).toBeNull()
   })
 })

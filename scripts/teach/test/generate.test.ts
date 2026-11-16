@@ -40,7 +40,7 @@ function fake(opts: FakeOpts = {}) {
   const calls: Call[] = []
   const used: Record<string, number> = {}
   let reviews = 0
-  const money = opts.cost ? { costUsd: opts.cost, tokensCached: 1500 } : {}
+  const money = opts.cost ? { costUsd: opts.cost, tokensCached: 1500, tokensReasoning: 700 } : {}
   const run: Runner = async (model, prompt) => {
     used[model] = (used[model] ?? 0) + 1
     if (used[model]! <= (opts.limited?.[model] ?? 0)) return { text: '', limited: true, error: 'Free usage limit reached' }
@@ -257,7 +257,8 @@ describe('generate', () => {
     expect(ledger.every((l) => l.costUsd === 0.01 && l.tokensCached === 1500)).toBe(true)
     const lines = reportLines(ledger)
     expect(lines[0]).toBe('calls in the ledger: 3, $0.03 in all')
-    expect(lines.join('\n')).toMatch(/kind write: 1 calls.*2000 in \(1500 cached\), 4000 out, \$0.01/)
+    expect(lines.join('\n')).toMatch(/kind write: 1 calls.*2000 in \(1500 cached\), 4000 out \(700 thinking\), \$0.01/)
+    expect(ledger.every((l) => l.tokensReasoning === 700)).toBe(true)
     expect(lines.join('\n')).toMatch(/kind review: 1 calls/)
     expect(summarize(ledger).reduce((n, s) => n + s.usd, 0)).toBeCloseTo(0.03, 6)
   })
@@ -278,6 +279,52 @@ describe('generate', () => {
     expect((await more.generateTopic(group, fileName)).status).toBe('done')
     const strict = make(fake({ cost: 0.4 }), { maxUsd: 1.2 })
     expect(strict.spent()).toBeGreaterThanOrEqual(1.2)
+  })
+
+  test('--max-run-usd stops this run at its own spend, however much the ledger already holds', async () => {
+    const f = fake({ lessons: 3, cost: 0.4 })
+    // a ledger that already holds $5 from earlier runs
+    mkdirSync(join(root, 'content/lessons'), { recursive: true })
+    writeFileSync(ledgerPath(root), JSON.stringify({ time: new Date().toISOString(), model: 'x/y', kind: 'write', seconds: 1, ok: true, limited: false, costUsd: 5 }) + '\n')
+    const g = make(f, { maxUsd: 8, maxRunUsd: 0.5 })
+    const result = await g.generateTopic(group, fileName)
+    expect(result.status).toBe('stopped')
+    expect(result.reason).toMatch(/budget of \$0.5/)
+    expect(f.calls).toHaveLength(2)
+    expect(g.spent()).toBeCloseTo(5.8, 6)
+  })
+
+  test('the key guard: the provider\'s own count stops the run even when the ledger shows no cost', async () => {
+    let usage = 1
+    const f = fake({ lessons: 6 })
+    const run: Runner = async (m, p) => {
+      usage += 0.12
+      return f.run(m, p, { timeoutMs: 1 })
+    }
+    const reads: number[] = []
+    const g = make(f, { run, maxUsd: 0.5, keyUsage: async () => (reads.push(usage), usage) })
+    const result = await g.generateTopic(group, fileName)
+    expect(result.status).toBe('stopped')
+    expect(result.reason).toMatch(/budget of \$0.5/)
+    expect(g.budgetReached).toBe(true)
+    // read at the first call and again at the 11th: the stop comes before the 11th call is made
+    expect(reads).toHaveLength(2)
+    expect(reads[0]).toBeCloseTo(1, 6)
+    expect(f.calls).toHaveLength(10)
+    expect(g.spent()).toBe(0)
+  })
+
+  test('a key count that cannot be read never stops the run and never crashes it', async () => {
+    const f = fake({ lessons: 2 })
+    const g = make(f, { maxUsd: 0.5, keyUsage: async () => null })
+    expect((await g.generateTopic(group, fileName)).status).toBe('done')
+    expect(g.budgetReached).toBe(false)
+  })
+
+  test('a key count that has not grown by the budget lets the run go on', async () => {
+    const f = fake({ lessons: 6 })
+    const g = make(f, { maxUsd: 0.5, keyUsage: async () => 3 })
+    expect((await g.generateTopic(group, fileName)).status).toBe('done')
   })
 
   test('the budget counts the dollars of every earlier run, and a run with no cost keeps going', async () => {
@@ -308,6 +355,42 @@ describe('generate', () => {
     await make(f, { chain }).generateTopic(group, fileName)
     expect(f.calls[0]!.model).toBe('opencode/b-free')
     expect(chain.next()).toBe('opencode/a-free')
+  })
+
+  test('recheck marks a lesson that fails a newer check as failed, and --retry-failed writes just that one again', async () => {
+    const f = fake({ lessons: 2 })
+    await make(f).generateTopic(group, fileName)
+    // a file written before the hint check: lesson 2 has a try block whose hint gives the answer
+    const file = TopicLessonsSchema.parse(JSON.parse(readFileSync(filePath(), 'utf8')))
+    const leaking = file.lessons.map((l) => (l.position === 2 ? { ...l, blocks: l.blocks.map((b) => (b.kind === 'try' ? { ...b, hint: 'The answer is 2/3, just add.' } : b)) } : l))
+    writeFileSync(filePath(), JSON.stringify({ ...file, lessons: leaking }))
+    const g = make(fake({ lessons: 2 }))
+    const result = g.recheck([group], new Map([[group, fileName]]))
+    expect(result).toEqual({ checked: 2, demoted: 1 })
+    const after = TopicLessonsSchema.parse(JSON.parse(readFileSync(filePath(), 'utf8')))
+    expect(after.lessons.map((l) => l.position)).toEqual([1])
+    expect(after.status.map((s) => [s.position, s.status])).toEqual([[1, 'ready'], [2, 'failed']])
+    expect(after.status[1]!.problems.join(' ')).toMatch(/hint gives the answer away/)
+    expect(failList().lessons[0]).toMatchObject({ position: 2, title: 'Lesson 2 title' })
+
+    const again = fake({ lessons: 2 })
+    const retry = await make(again, { retryFailed: true }).generateTopic(group, fileName)
+    expect(retry).toMatchObject({ status: 'done', ready: 2 })
+    expect(again.calls.map((c) => c.kind)).toEqual(['write', 'review'])
+    expect(g.recheck([group], new Map([[group, fileName]]))).toEqual({ checked: 2, demoted: 0 })
+  })
+
+  test('recheck of a topic whose every lesson fails removes the file and lists the topic, with no model called', async () => {
+    const f = fake({ lessons: 1 })
+    await make(f).generateTopic(group, fileName)
+    const file = TopicLessonsSchema.parse(JSON.parse(readFileSync(filePath(), 'utf8')))
+    const bad = file.lessons.map((l) => ({ ...l, blocks: l.blocks.map((b) => (b.kind === 'try' ? { ...b, speech: 'The answer is 2/3.' } : b)) }))
+    writeFileSync(filePath(), JSON.stringify({ ...file, lessons: bad }))
+    const calls = f.calls.length
+    expect(make(f).recheck([group], new Map([[group, fileName]]))).toEqual({ checked: 1, demoted: 1 })
+    expect(existsSync(filePath())).toBe(false)
+    expect(failList().topics[0]).toMatchObject({ baseName: 'Common fractions', attempts: 1 })
+    expect(f.calls.length).toBe(calls)
   })
 
   test('a second run skips the finished topic and makes no call', async () => {

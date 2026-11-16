@@ -50,7 +50,7 @@ export function readKey(env: Record<string, string | undefined> = process.env): 
   return key
 }
 
-type Usage = { promptTokens?: number; completionTokens?: number; promptTokensDetails?: { cachedTokens?: number }; cost?: number }
+type Usage = { promptTokens?: number; completionTokens?: number; promptTokensDetails?: { cachedTokens?: number }; completionTokensDetails?: { reasoningTokens?: number }; cost?: number }
 
 /** The model of a call: OpenRouter's chat model with low reasoning effort and usage accounting (cost and cached tokens) switched on. */
 export type Effort = 'minimal' | 'low' | 'medium' | 'none'
@@ -89,6 +89,7 @@ export function makeOpenRouterRunner(opts: OpenRouterOptions): Runner {
       const tokensIn = usage?.promptTokens ?? sdk?.inputTokens
       const tokensOut = usage?.completionTokens ?? sdk?.outputTokens
       const tokensCached = usage?.promptTokensDetails?.cachedTokens
+      const tokensReasoning = usage?.completionTokensDetails?.reasoningTokens
       let costUsd = usage?.cost
       let costEstimated: boolean | undefined
       if (costUsd === undefined && (tokensIn !== undefined || tokensOut !== undefined)) {
@@ -96,7 +97,7 @@ export function makeOpenRouterRunner(opts: OpenRouterOptions): Runner {
         costUsd = (fresh * ESTIMATE_PER_M.input + (tokensCached ?? 0) * ESTIMATE_PER_M.cached + (tokensOut ?? 0) * ESTIMATE_PER_M.output) / 1_000_000
         costEstimated = true
       }
-      const base = { text: result.text, tokensIn, tokensCached, tokensOut, costUsd, costEstimated, limited: false }
+      const base = { text: result.text, tokensIn, tokensCached, tokensOut, tokensReasoning, costUsd, costEstimated, limited: false }
       return result.text.trim() ? base : { ...base, error: 'the model sent no text' }
     } catch (e) {
       if (APICallError.isInstance(e)) {
@@ -109,6 +110,24 @@ export function makeOpenRouterRunner(opts: OpenRouterOptions): Runner {
       const name = e instanceof Error ? e.name : ''
       if (name === 'TimeoutError' || name === 'AbortError') return { text: '', limited: false, error: `timed out after ${Math.round(timeoutMs / 1000)}s` }
       return { text: '', limited: false, error: clean(e instanceof Error ? e.message : String(e)).slice(0, 400) }
+    }
+  }
+}
+
+/**
+ * The dollars the key has used so far, from OpenRouter itself (`GET /api/v1/key`, field `usage`): a second count, independent of what each call
+ * reports, to stop a run on. Null when it cannot be read (no network, a refused request): the run goes on, the ledger count still guards it.
+ */
+export function makeKeyUsage(apiKey: string, fetchImpl: typeof fetch = fetch): () => Promise<number | null> {
+  return async () => {
+    try {
+      const res = await fetchImpl('https://openrouter.ai/api/v1/key', { headers: { authorization: `Bearer ${apiKey}` }, signal: AbortSignal.timeout(15_000) })
+      if (!res.ok) return null
+      const body = (await res.json()) as { data?: { usage?: unknown } }
+      const usage = body.data?.usage
+      return typeof usage === 'number' && Number.isFinite(usage) ? usage : null
+    } catch {
+      return null
     }
   }
 }

@@ -68,7 +68,7 @@ describe('write prompt', () => {
 
   test('the answer rules a model keeps breaking are said plainly: no unit, no space in a number, a negative is a number, the last line shows the answer', () => {
     const p = writePrompt(input(11, 'Functions'))
-    for (const rule of ['never `12 cm`', '`R132000`', 'A negative value is always `number`', 'The last line of the working contains the final answer', 'if the right angle is at B (index 1)']) expect(p, rule).toContain(rule)
+    for (const rule of ['never `12 cm`', '`R132000`', 'A negative value is always `number`', 'The last line of the working contains the final answer', 'if the right angle is at B (index 1)', 'neither may contain the answer']) expect(p, rule).toContain(rule)
   })
 
   test('Grades 1 to 3 need 2 worked blocks, short sentences, and no graphs or senior answer kinds', () => {

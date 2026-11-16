@@ -10,6 +10,9 @@ export type LedgerRecord = {
   tokensIn?: number
   tokensCached?: number
   tokensOut?: number
+  /** Thinking tokens, part of tokensOut. */
+  tokensReasoning?: number
+  /** Dollars, as the provider reported them (`usage.cost`). */
   costUsd?: number
   costEstimated?: boolean
   ok: boolean
@@ -39,7 +42,7 @@ export function readLedger(root: string): LedgerRecord[] {
 
 export const sumCost = (records: LedgerRecord[]): number => records.reduce((n, r) => n + (r.costUsd ?? 0), 0)
 
-export type ModelStats = { model: string; calls: number; failures: number; limited: number; avgSeconds: number; tokensIn: number; tokensCached: number; tokensOut: number; usd: number }
+export type ModelStats = { model: string; calls: number; failures: number; limited: number; avgSeconds: number; tokensIn: number; tokensCached: number; tokensOut: number; tokensReasoning: number; usd: number }
 
 const round = (n: number, places: number) => Math.round(n * 10 ** places) / 10 ** places
 const avgSeconds = (list: LedgerRecord[]) => {
@@ -50,6 +53,7 @@ const totals = (list: LedgerRecord[]) => ({
   tokensIn: list.reduce((n, r) => n + (r.tokensIn ?? 0), 0),
   tokensCached: list.reduce((n, r) => n + (r.tokensCached ?? 0), 0),
   tokensOut: list.reduce((n, r) => n + (r.tokensOut ?? 0), 0),
+  tokensReasoning: list.reduce((n, r) => n + (r.tokensReasoning ?? 0), 0),
   usd: round(sumCost(list), 4),
 })
 
@@ -67,7 +71,7 @@ export function summarize(records: LedgerRecord[]): ModelStats[] {
   }))
 }
 
-export type KindStats = { kind: string; calls: number; avgSeconds: number; tokensIn: number; tokensCached: number; tokensOut: number; usd: number }
+export type KindStats = { kind: string; calls: number; avgSeconds: number; tokensIn: number; tokensCached: number; tokensOut: number; tokensReasoning: number; usd: number }
 
 /** Per kind of call (outline, write, rewrite, review): the same numbers, to see where the money goes. */
 export function summarizeByKind(records: LedgerRecord[]): KindStats[] {

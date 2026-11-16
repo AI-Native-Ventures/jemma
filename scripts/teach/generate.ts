@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { z } from 'zod'
 import { TeachingLessonSchema, TopicLessonsSchema, type TeachingLesson, type TeachingSource, type TopicLessons } from '@jemma/profiling/schemas'
-import { backendFromEnv, limitParkMsFor, modelsFor, runnerFor } from './backend'
+import { backendFromEnv, keyUsageFor, limitParkMsFor, modelsFor, runnerFor } from './backend'
 import { Chain, FatalBackendError, callJson, type Attempt } from './chain'
 import { checkLesson, tidyLesson } from './checks'
 import { appendLedger, readLedger, summarize, summarizeByKind, sumCost, type LedgerRecord } from './ledger'
@@ -41,6 +41,10 @@ export type GenOptions = {
   limitCalls?: number
   /** Stop when the dollars in the ledger (every run, every backend) reach this much. */
   maxUsd?: number
+  /** Stop when THIS run has spent this much (the dollars added to the ledger since it started, and the growth of the key's usage). Without it `maxUsd` is used for the key. */
+  maxRunUsd?: number
+  /** The dollars the provider says the key has used. Read at the first call and every 10 calls: the run also stops when this has grown by `maxUsd` since the first read. */
+  keyUsage?: () => Promise<number | null>
   /** Try again topics that failed twice, and rewrite topics that kept a failed lesson. */
   retryFailed?: boolean
   concurrency?: number
@@ -108,6 +112,9 @@ const lessonSchema = (position: number, item: OutlineItem): z.ZodType<TeachingLe
 export class Generator {
   capReached = false
   budgetReached = false
+  /** The dollar limit that stopped the run. */
+  budgetCap: number | undefined
+  private readonly spentAtStart: number
   stopReason: string | null = null
   private stopRequested = false
   private used: number
@@ -119,6 +126,7 @@ export class Generator {
     this.root = o.root ?? REPO_ROOT
     const records = readLedger(this.root)
     this.used = records.length
+    this.spentAtStart = sumCost(records)
     this.restoreParks(records)
   }
 
@@ -161,12 +169,35 @@ export class Generator {
       this.capReached = true
       return { text: '', limited: false, error: CAP_ERROR }
     }
-    if (this.o.maxUsd !== undefined && this.spent() >= this.o.maxUsd) {
+    const spent = this.spent()
+    if (this.o.maxUsd !== undefined && spent >= this.o.maxUsd) this.budgetCap ??= this.o.maxUsd
+    else if (this.o.maxRunUsd !== undefined && spent - this.spentAtStart >= this.o.maxRunUsd) this.budgetCap ??= this.o.maxRunUsd
+    else if (await this.keyBudgetReached()) this.budgetCap ??= this.o.maxRunUsd ?? this.o.maxUsd
+    if (this.budgetCap !== undefined) {
       this.budgetReached = true
       return { text: '', limited: false, error: BUDGET_ERROR }
     }
     this.used += 1
     return (this.o.run ?? runOpencode)(model, prompt, opts)
+  }
+
+  private keyStart: number | null = null
+  private keyChecks = 0
+
+  /** The second guard: the provider's own count of what the key has used. Read at the first call, then every 10th call. */
+  private async keyBudgetReached(): Promise<boolean> {
+    const read = this.o.keyUsage
+    const cap = this.o.maxRunUsd ?? this.o.maxUsd
+    if (!read || cap === undefined) return false
+    if (this.keyStart === null) {
+      const usage = await read()
+      if (usage !== null) this.keyStart ??= usage
+      return false
+    }
+    this.keyChecks += 1
+    if (this.keyChecks % 10 !== 0) return false
+    const usage = await read()
+    return usage !== null && usage - this.keyStart >= cap
   }
 
   /** The dollars in the ledger, read fresh: other processes may have added to it. */
@@ -184,6 +215,7 @@ export class Generator {
       tokensIn: a.tokensIn,
       tokensCached: a.tokensCached,
       tokensOut: a.tokensOut,
+      tokensReasoning: a.tokensReasoning,
       costUsd: a.costUsd,
       costEstimated: a.costEstimated,
       ok: a.ok,
@@ -223,7 +255,7 @@ export class Generator {
       }
       if (found) return found
       if (this.capReached) throw this.stop('the call cap was reached')
-      if (this.budgetReached) throw this.stop(`the budget of $${this.o.maxUsd} was reached`)
+      if (this.budgetReached) throw this.stop(`the budget of $${this.budgetCap} was reached`)
       const resting = this.o.chain.msUntilAvailable(opts.exclude)
       // Waiting is only for the case where every model that was tried said "free usage limit reached", or none was free. A model that failed
       // for any other reason is not waited for: retrying it at once, in a loop, is what this must never do.
@@ -438,6 +470,52 @@ export class Generator {
     return scrubDashes({ grade: group.grade, baseName: group.baseName, position: r.position, title: item?.title ?? '', objectives: item?.objectives, sections: item?.sections, problems: r.problems, writer: r.writer, reviewer: r.reviewer, at })
   }
 
+  // ---- checking what is already written -------------------------------------------------------------------------------------------------
+
+  /**
+   * Runs the current code checks over every lesson already in the files of `groups`. A lesson that no longer passes (a check was added since it was
+   * written) leaves the file, is marked failed with the problems, and goes to the fail list with its title and objectives, so `--retry-failed`
+   * writes just that lesson again. A topic left with no lesson loses its file and goes to the fail list as a topic. Calls no model.
+   */
+  recheck(groups: TopicGroup[], names: Map<TopicGroup, string>): { checked: number; demoted: number } {
+    let checked = 0
+    let demoted = 0
+    for (const group of groups) {
+      const path = join(this.root, lessonPath(group, names.get(group) ?? group.baseName))
+      const file = this.readTopicFile(path)
+      if (!file) continue
+      const keep: TopicLessons['lessons'] = []
+      const out: { lesson: TeachingLesson; problems: string[] }[] = []
+      for (const lesson of file.lessons) {
+        checked += 1
+        const problems = checkLesson(lesson, { grade: file.grade, source: file.source })
+        if (problems.length === 0) keep.push(lesson)
+        else out.push({ lesson, problems })
+      }
+      if (out.length === 0) continue
+      demoted += out.length
+      const at = this.now().toISOString()
+      const list = this.loadFailList()
+      const same = (x: { grade: number; baseName: string }) => x.grade === group.grade && x.baseName === group.baseName
+      for (const { lesson, problems } of out) {
+        const was = file.status.find((st) => st.position === lesson.position)
+        list.lessons = list.lessons.filter((l) => !(same(l) && l.position === lesson.position))
+        list.lessons.push({ grade: group.grade, baseName: group.baseName, position: lesson.position, title: lesson.title, objectives: lesson.objectives, problems, writer: was?.writer ?? '', reviewer: was?.reviewer ?? '', at })
+      }
+      if (keep.length === 0) {
+        rmSync(path, { force: true })
+        list.topics = [...list.topics.filter((t) => !same(t)), { grade: group.grade, baseName: group.baseName, reason: `every lesson failed the checks: ${out[0]!.problems[0]}`, attempts: 1, at }]
+      } else {
+        const failedPositions = new Set(out.map((o) => o.lesson.position))
+        const status = file.status.map((st) => (failedPositions.has(st.position) ? { ...st, status: 'failed' as const, problems: out.find((o) => o.lesson.position === st.position)!.problems } : st))
+        writeAtomic(path, `${JSON.stringify(TopicLessonsSchema.parse(scrubDashes({ ...file, lessons: keep, status })), null, 2)}\n`)
+      }
+      this.saveFailList(list)
+      this.log(`grade ${group.grade} ${group.baseName}: ${out.length} lesson(s) no longer pass the checks, marked failed`)
+    }
+    return { checked, demoted }
+  }
+
   // ---- many topics ---------------------------------------------------------------------------------------------------------------------
 
   async runAll(groups: TopicGroup[]): Promise<RunSummary> {
@@ -462,7 +540,7 @@ export class Generator {
     await Promise.all(Array.from({ length: Math.max(1, this.o.concurrency ?? 4) }, worker))
     summary.calls = this.used - startedWith
     summary.usd = Math.round((this.spent() - dollarsBefore) * 10000) / 10000
-    summary.stopReason = this.stopReason ?? (this.capReached ? 'the call cap was reached' : this.budgetReached ? `the budget of $${this.o.maxUsd} was reached` : this.stopRequested ? 'stopped on request' : null)
+    summary.stopReason = this.stopReason ?? (this.capReached ? 'the call cap was reached' : this.budgetReached ? `the budget of $${this.budgetCap} was reached` : this.stopRequested ? 'stopped on request' : null)
     return summary
   }
 }
@@ -471,8 +549,8 @@ export class Generator {
 
 /** The ledger as text: per model, then per kind of call, with tokens (in, cached, out), dollars and seconds. */
 export function reportLines(records: LedgerRecord[]): string[] {
-  const line = (name: string, s: { calls: number; avgSeconds: number; tokensIn: number; tokensCached: number; tokensOut: number; usd: number }, extra = '') =>
-    `${name}: ${s.calls} calls${extra}, ${s.avgSeconds}s average, ${s.tokensIn} in (${s.tokensCached} cached), ${s.tokensOut} out, $${s.usd}`
+  const line = (name: string, s: { calls: number; avgSeconds: number; tokensIn: number; tokensCached: number; tokensOut: number; tokensReasoning: number; usd: number }, extra = '') =>
+    `${name}: ${s.calls} calls${extra}, ${s.avgSeconds}s average, ${s.tokensIn} in (${s.tokensCached} cached), ${s.tokensOut} out (${s.tokensReasoning} thinking), $${s.usd}`
   return [
     `calls in the ledger: ${records.length}, $${Math.round(sumCost(records) * 10000) / 10000} in all`,
     ...summarize(records).map((s) => line(s.model, s, `, ${s.failures} failed, ${s.limited} limit hits`)),
@@ -490,12 +568,14 @@ export async function main(argv = process.argv.slice(2), env: Record<string, str
       concurrency: { type: 'string' },
       'limit-calls': { type: 'string' },
       'max-usd': { type: 'string' },
+      'max-run-usd': { type: 'string' },
       'max-lessons': { type: 'string' },
       'retry-failed': { type: 'boolean' },
       'max-wait-min': { type: 'string' },
       'timeout-sec': { type: 'string' },
       'dry-run': { type: 'boolean' },
       report: { type: 'boolean' },
+      recheck: { type: 'boolean' },
     },
     allowPositionals: false,
   })
@@ -521,14 +601,22 @@ export async function main(argv = process.argv.slice(2), env: Record<string, str
     console.log(`${groups.length} topics`)
     return
   }
+  if (values.recheck) {
+    const names = topicFileNames(all)
+    const gen = new Generator({ chain: new Chain([]), allGroups: all })
+    console.log(JSON.stringify(gen.recheck(groups, names)))
+    return
+  }
   const backend = backendFromEnv(env)
   const gen = new Generator({
     chain: new Chain(modelsFor(backend, env), Date.now, limitParkMsFor(backend)),
     run: runnerFor(backend, env),
+    keyUsage: keyUsageFor(backend, env),
     allGroups: all,
     concurrency: number('concurrency', values.concurrency, 1) ?? 4,
     limitCalls: number('limit-calls', values['limit-calls'], 0),
     maxUsd: number('max-usd', values['max-usd'], 0) ?? 8,
+    maxRunUsd: number('max-run-usd', values['max-run-usd'], 0),
     maxLessons: number('max-lessons', values['max-lessons'], 1),
     retryFailed: values['retry-failed'] ?? false,
     maxWaitMs: (number('max-wait-min', values['max-wait-min'], 0) ?? 120) * MIN,

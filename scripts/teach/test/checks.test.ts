@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { TeachingLessonSchema, type TeachingBlock, type TeachingLesson } from '@jemma/profiling/schemas'
-import { checkLesson, evalArithmetic, tidyAnswer, tidyLesson } from '../checks'
+import { answerLeak, checkLesson, evalArithmetic, numberWords, tidyAnswer, tidyLesson } from '../checks'
 import { capsSource, explain, fractionBar, goodLesson, mistake, practice, question, siyavulaSource, tryBlock, worked } from './fixtures'
 
 const ctx6 = { grade: 6, source: capsSource() }
@@ -294,5 +294,61 @@ describe('tidyAnswer and tidyLesson', () => {
     expect(tidy.practice[0]).toMatchObject({ answer: '3', prompt: 'Add 1 + 2 cm.' })
     expect(tidy.title).toBe(lesson.title)
     expect(check(tidy)).toEqual([])
+  })
+})
+
+describe('a try block does not give its answer away', () => {
+  const tryWith = (over: Partial<Parameters<typeof question>[0]>, hint = 'Add the tops and keep the bottom.', speech = 'Now you try.'): TeachingBlock => ({
+    kind: 'try',
+    question: question({ prompt: 'What is 7 + 5?', steps: ['7 + 5', '12'], answer: '12', answerKind: 'whole', ...over }),
+    hint,
+    speech,
+  })
+  const checkTry = (block: TeachingBlock) => check(replaceBlock(goodLesson(), 6, block)).join('\n')
+
+  test('a hint that says "the answer is 12" with answer 12 fails', () => {
+    expect(checkTry(tryWith({}, 'The answer is 12, just add.'))).toMatch(/block 7 \(try\): the hint gives the answer away \("12"\)/)
+  })
+
+  test('the speech is protected too, also when it says the answer in words', () => {
+    expect(checkTry(tryWith({}, 'Count on.', 'Seven plus five makes twelve.'))).toMatch(/the speech gives the answer away \("twelve"\)/)
+    expect(checkTry(tryWith({ answer: '45', steps: ['40 + 5', '45'] }, 'Count on.', 'It is forty-five.'))).toMatch(/speech gives the answer away/)
+    expect(checkTry(tryWith({}, 'Count on.', 'Now you try. What is seven plus five?'))).not.toMatch(/gives the answer away/)
+  })
+
+  test('a number already in the question is not a leak, and a plain hint passes', () => {
+    expect(checkTry(tryWith({ prompt: 'What is 12 - 7?', steps: ['12 - 7', '5'], answer: '5' }, 'Start at 12 and count back 7.'))).not.toMatch(/gives the answer away/)
+    expect(checkTry(tryWith({ prompt: 'Add 3 to 4.', steps: ['3 + 4', '7'], answer: '3' }, 'Count on 3.'))).not.toMatch(/gives the answer away/)
+    expect(checkTry(tryWith({}))).not.toMatch(/gives the answer away/)
+  })
+
+  test('a number inside a longer number is not the answer', () => {
+    expect(checkTry(tryWith({}, 'Think of 120 and 112 as a guide, and of -12 below zero.'))).not.toMatch(/gives the answer away/)
+  })
+
+  test('a choice question: the letter of the right option, or its text, in the hint fails', () => {
+    const choices = ['6 + 6 = 12', '6 - 2 = 4', '6 + 2 = 8', '2 + 2 = 4']
+    const choice = (hint: string, speech = 'Now you try.') => tryWith({ prompt: 'Which sentence matches 6 apples and 2 apples together?', steps: ['6 and 2 together', 'is 8'], answer: 'C', answerKind: 'choice', choices }, hint, speech)
+    expect(checkTry(choice('The correct choice is C.'))).toMatch(/gives the answer away \("C"\)/)
+    expect(checkTry(choice('Pick the one that says 6 + 2 = 8.'))).toMatch(/gives the answer away/)
+    expect(checkTry(choice('Put the groups together: do you add or take away?', 'Read all four choices before you tap.'))).not.toMatch(/gives the answer away/)
+    expect(checkTry(tryWith({ answer: 'C', answerKind: 'choice', choices: [{ text: 'A parabola' }, { text: 'A line' }, { text: 'A hyperbola' }], prompt: 'Which graph is y = 1/x?', steps: ['a', 'b'] }, 'It is a hyperbola.'))).toMatch(/gives the answer away/)
+  })
+
+  test('worked and explain blocks may show answers: only try blocks are protected', () => {
+    const w = worked(1, 2, 4)
+    if (w.kind !== 'worked') throw new Error('fixture')
+    w.speech = 'The answer is three quarters, and here is why.'
+    expect(check(replaceBlock(goodLesson(), 3, w))).toEqual([])
+  })
+
+  test('answerLeak and numberWords by themselves', () => {
+    expect(answerLeak(question({ prompt: 'Q', answer: '3/4', answerKind: 'fraction' }), 'Is it 3/4 of the pie?')).toBe('3/4')
+    expect(answerLeak(question({ prompt: 'Q', answer: '2x + 3', answerKind: 'expression' }), 'The result is 2x+3.')).toBe('2x + 3')
+    expect(answerLeak(question({ prompt: 'Q', answer: '30°', answerKind: 'number' }), 'It is 30 degrees.')).toBe('30°')
+    expect(numberWords(12)).toEqual(['twelve'])
+    expect(numberWords(45)).toEqual(['forty five', 'forty-five'])
+    expect(numberWords(105)).toEqual(['one hundred and five', 'one hundred five'])
+    expect(numberWords(1000)).toEqual([])
   })
 })

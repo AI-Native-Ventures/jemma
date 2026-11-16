@@ -108,6 +108,7 @@ export type Attempt = {
   tokensIn?: number
   tokensCached?: number
   tokensOut?: number
+  tokensReasoning?: number
   costUsd?: number
   costEstimated?: boolean
 }
@@ -148,7 +149,7 @@ export async function callJson<T>(chain: Chain, prompt: string, schema: z.ZodTyp
       if (e instanceof FatalBackendError) throw e
       result = { text: '', limited: false, error: e instanceof Error ? e.message : String(e) }
     }
-    const base = { model, seconds: (Date.now() - started) / 1000, tokensIn: result.tokensIn, tokensCached: result.tokensCached, tokensOut: result.tokensOut, costUsd: result.costUsd, costEstimated: result.costEstimated }
+    const base = { model, seconds: (Date.now() - started) / 1000, tokensIn: result.tokensIn, tokensCached: result.tokensCached, tokensOut: result.tokensOut, tokensReasoning: result.tokensReasoning, costUsd: result.costUsd, costEstimated: result.costEstimated }
     const report = (a: { ok: boolean; limited: boolean; error?: string }) => opts.onAttempt?.({ ...base, ...a })
 
     if (result.limited) {
