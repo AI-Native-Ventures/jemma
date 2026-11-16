@@ -13,6 +13,10 @@ export interface Env {
   TTS_PROVIDER?: string
   TTS_MODEL?: string
   AI_MODE?: 'live' | 'record' | 'replay' | 'cache'
+  /** `artificial-analysis`: the worker picks its free OpenRouter models itself each hour, ranked by Artificial Analysis. Unset: only the model lists above. */
+  AI_MODEL_RANKING?: string
+  /** Key of the Artificial Analysis API (a secret). Without it the dynamic list ranks the newest free models first. */
+  AA_API_KEY?: string
   /** `cloud` (default): the worker does the AI work. `operator`: recorded answers first, then the owner's laptop, then the worker's own model. */
   AI_ROUTE?: 'cloud' | 'operator'
   /** Routing tag of this stack (default `default`). Keeps separate stacks on one database from taking each other's hand-offs; an operator uses the same tag (OPERATOR_TAG). */

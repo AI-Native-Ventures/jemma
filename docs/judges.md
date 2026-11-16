@@ -4,6 +4,8 @@ This page is the shortest path through Jemma on the live link: https://jemma.ain
 
 Every person, school and paper in the demo is made up. Please do not type real information about real children.
 
+The demo can pick the best-ranked free AI model of the hour for each job (a photo job only gets models that take images), so the model that answers may change and may be a closed one; recorded answers are used first, and the open-weights full task is the goose path in [compliance.md](compliance.md). Model rankings: Artificial Analysis (artificialanalysis.ai), free API, used with attribution.
+
 Entry rules and where each one is met are in [compliance.md](compliance.md). The one-page design is in [ARCHITECTURE.md](../ARCHITECTURE.md), and the evals are in [EVALS.md](../EVALS.md).
 
 ## The 5-minute path
