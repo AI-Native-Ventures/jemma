@@ -22,8 +22,8 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * `round`, `table`). Before P150 they were 95bd01bd191e25f2ee7e8325989c3fde9ccb47893163cffb8a2a4172fc94d41a (senior) and a84500e7bc9893b2cf070f2019ea2e17cb739091f9eb50859981fd8804ae2a3c (wide).
  * Every packet that changes the senior schema moves these two: recompute them after a merge.
  */
-const SENIOR_SHA = 'f58d24dcc23661d36fc6b095c0ae0bc8de40814244fb7af38c115e2e5945eefd'
-const WIDE_SHA = '1bb9fb253f950701d7f28d7436d3b4e130f64a279c38500f873a8cec35336a18'
+const SENIOR_SHA = 'd4cd109c883575fcf6159870c8013e511e46cedcca31940d8f92393f51980c96'
+const WIDE_SHA = 'd09794f374c5cd2414a515db515f5d374ea732c602fb19ed584c5cc6111bde5e'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({

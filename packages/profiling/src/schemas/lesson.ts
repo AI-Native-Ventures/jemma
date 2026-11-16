@@ -77,8 +77,8 @@ const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
     ordered: z.boolean().optional(),
     /** A `list` question: a short label over each box (`["min", "Q1", "median", "Q3", "max"]`), one for each value of the answer. */
     labels: z.array(z.string()).optional(),
-    /** A `list` or `table` question that asks for a rounded answer: the number of decimal places ("correct to 1 decimal place" is 1). The answer is the value rounded that way. */
-    round: z.number().int().min(0).max(6).optional(),
+    /** How many decimal places the question asks the answer to be rounded to ("correct to 1 decimal place" is 1): a value that rounds to the key's there is right. 0 to 6, checked by the save gate. */
+    round: z.number().int().optional(),
     /** A `table` question: the table, with `null` in each cell the learner fills. */
     table: TableSchema.optional(),
     /** A picture the question needs (a graph to read, a triangle with an angle to find). It never holds the answer. Senior classes only. */

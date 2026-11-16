@@ -68,7 +68,8 @@ describe('answer: a list, an order and a table are marked value by value on the 
     ['a table, every cell right', { prompt: 'Complete the table', answer: '3; 5', answerKind: 'table', table: { columns: ['x', 'y'], rows: [['1', null], ['2', null]] } }, '3; 5', true],
     ['a table with one cell wrong', { prompt: 'Complete the table', answer: '3; 5', answerKind: 'table', table: { columns: ['x', 'y'], rows: [['1', null], ['2', null]] } }, '3; 6', false],
     ['a rounded answer', { prompt: 'Find the mean, correct to 1 decimal place', answer: '3,14159; 2,71828', answerKind: 'list', ordered: true, round: 1 }, '3,1; 2,7', true],
-    ['a rounded answer, rounded the wrong way', { prompt: 'Find the mean, correct to 1 decimal place', answer: '3,14159; 2,71828', answerKind: 'list', ordered: true, round: 1 }, '3,14; 2,72', false],
+    ['a rounded answer with more places than asked still rounds to the key', { prompt: 'Find the mean, correct to 1 decimal place', answer: '3,14159; 2,71828', answerKind: 'list', ordered: true, round: 1 }, '3,14; 2,72', true],
+    ['a rounded answer, rounded the wrong way', { prompt: 'Find the mean, correct to 1 decimal place', answer: '3,14159; 2,71828', answerKind: 'list', ordered: true, round: 1 }, '3,2; 2,7', false],
   ]
   it.each(cases)('%s', async (_name, q, typed, right) => {
     state.lesson = withFirstTry(q)
