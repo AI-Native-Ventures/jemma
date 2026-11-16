@@ -9,7 +9,7 @@ import { FatalBackendError, LIMIT_PARK_MS } from '../chain'
 import { OPENROUTER_MODELS, OPENROUTER_PARK_MS, ESTIMATE_PER_M, makeOpenRouterRunner, openrouterModel, openrouterModelsFromEnv, readKey } from '../openrouter'
 import { runOpencode } from '../opencode'
 
-const KEY = 'sk-or-v1-test-secret-key-0123456789'
+const KEY = 'test-secret-key-0123456789'
 
 const answer = (text: string, openrouter?: Record<string, unknown>) => ({
   content: [{ type: 'text' as const, text }],

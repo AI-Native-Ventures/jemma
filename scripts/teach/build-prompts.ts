@@ -134,18 +134,25 @@ export type WriteInput = {
 
 const SENIOR_PICTURES = new Set(['coordinate_plane', 'triangle'])
 const SENIOR_ANSWERS_SET = new Set(['number', 'expression', 'equation', 'point'])
+/** Answer kinds the learner screens added later (tapping, lists, tables): no lesson of the library uses them, so the prompt never offers them. */
+const LATER_QUESTION_FIELDS = new Set(['ordered', 'labels', 'round', 'table'])
+const NOT_FOR_LESSONS = new Set(['truefalse', 'reason', 'list', 'order', 'table'])
 
 /** The JSON Schema with the senior pictures and the four senior answer kinds taken out, for Grades 1 to 6 (the checks refuse them there). */
-function primaryOnly(node: unknown): unknown {
-  if (Array.isArray(node)) return node.map(primaryOnly)
+function primaryOnly(node: unknown, primary = true): unknown {
+  if (Array.isArray(node)) return node.map((x) => primaryOnly(x, primary))
   if (!node || typeof node !== 'object') return node
   const out: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
     if (key === 'oneOf' && Array.isArray(value)) {
-      const isSenior = (x: unknown) => SENIOR_PICTURES.has(String(((x as { properties?: { kind?: { const?: unknown } } })?.properties?.kind?.const) ?? ''))
-      out[key] = value.filter((x) => !isSenior(x)).map(primaryOnly)
-    } else if (key === 'enum' && Array.isArray(value) && value.includes('fraction') && value.includes('choice')) out[key] = value.filter((x) => !SENIOR_ANSWERS_SET.has(String(x)))
-    else out[key] = primaryOnly(value)
+      const isSenior = (x: unknown) => primary && SENIOR_PICTURES.has(String(((x as { properties?: { kind?: { const?: unknown } } })?.properties?.kind?.const) ?? ''))
+      out[key] = value.filter((x) => !isSenior(x)).map((x) => primaryOnly(x, primary))
+    } else if (key === 'enum' && Array.isArray(value) && value.includes('fraction') && value.includes('choice')) out[key] = value.filter((x) => !NOT_FOR_LESSONS.has(String(x)) && !(primary && SENIOR_ANSWERS_SET.has(String(x))))
+    else if (key === 'properties' && value && typeof value === 'object' && 'answerKind' in value && 'prompt' in value) {
+      // The fields of a question that the screens added later (a table, labels, rounding): not part of a lesson of the library.
+      const kept = Object.fromEntries(Object.entries(value).filter(([name]) => !LATER_QUESTION_FIELDS.has(name)))
+      out[key] = primaryOnly(kept, primary)
+    } else out[key] = primaryOnly(value, primary)
   }
   return out
 }
@@ -157,7 +164,7 @@ export function lessonSchemaText(primary = false): string {
   if (hit) return hit
   const schema = z.toJSONSchema(TeachingLessonSchema, { io: 'input', unrepresentable: 'any' }) as Record<string, unknown>
   delete schema.$schema
-  const text = JSON.stringify(primary ? primaryOnly(schema) : schema)
+  const text = JSON.stringify(primaryOnly(schema, primary))
   schemaCache.set(primary, text)
   return text
 }

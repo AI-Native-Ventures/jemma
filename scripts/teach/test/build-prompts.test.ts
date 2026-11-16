@@ -97,6 +97,21 @@ describe('write prompt', () => {
     expect(p).toContain('fix every one')
   })
 
+  test('the answer kinds the screens added later (tapping, lists, tables) are never offered to a model', () => {
+    for (const primary of [true, false]) {
+      const s = lessonSchemaText(primary)
+      const enums = [...s.matchAll(/"answerKind":\{"type":"string","enum":\[([^\]]*)\]/g)].map((m) => m[1] ?? '')
+      expect(enums.length).toBeGreaterThan(0)
+      for (const list of enums) {
+        for (const kind of ['truefalse', 'reason', 'list', 'order', 'table']) expect(list, `${kind} primary=${primary}`).not.toContain(`"${kind}"`)
+        expect(list).toContain('"choice"')
+      }
+      for (const field of ['"ordered"', '"round"', '"table"']) expect(s, field).not.toContain(field)
+    }
+    expect(lessonSchemaText(false)).toContain('"expression"')
+    expect(lessonSchemaText(true)).not.toContain('"expression"')
+  })
+
   test('the JSON schema of the lesson is compact and complete', () => {
     const s = lessonSchemaText()
     expect(() => JSON.parse(s)).not.toThrow()

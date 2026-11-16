@@ -1,4 +1,4 @@
-import { PRIMARY_ANSWER_KINDS, type Question, type SeniorDiagramSpec, type TeachingBlock, type TeachingLesson, type TeachingSource } from '@jemma/profiling/schemas'
+import { PRIMARY_ANSWER_KINDS, type Choice, type Question, type SeniorDiagramSpec, type TeachingBlock, type TeachingLesson, type TeachingSource } from '@jemma/profiling/schemas'
 import { markQuestion, pictureProblem } from '@jemma/profiling/logic'
 import { answerProblem } from '../../packages/profiling/src/tools/save/save-lesson'
 import { CAPS_CREDIT } from './sources'
@@ -185,6 +185,9 @@ export function diagramProblem(spec: SeniorDiagramSpec, grade: number): string |
 
 type Ctx = CheckContext
 
+/** A choice is plain text, or (since the screens learned pictures) an object with text and a picture: either way two options must differ. */
+const choiceKey = (c: Choice): string => (typeof c === 'string' ? c.trim() : JSON.stringify(c))
+
 function questionProblems(q: Question, where: string, ctx: Ctx): string[] {
   const out: string[] = []
   const add = (msg: string) => out.push(`${where}: ${msg}`)
@@ -193,7 +196,7 @@ function questionProblems(q: Question, where: string, ctx: Ctx): string[] {
   if (ctx.grade <= 6 && !(PRIMARY_ANSWER_KINDS as readonly string[]).includes(q.answerKind)) add(`Grades 1 to 6 use only the answer kinds ${PRIMARY_ANSWER_KINDS.join(', ')} (not ${q.answerKind})`)
   if (q.answerKind === 'choice') {
     const n = q.choices?.length ?? 0
-    if (n < 3 || n > 5 || new Set(q.choices?.map((c) => c.trim())).size !== n) add('a choice question needs 3 or 4 different options in `choices`')
+    if (n < 3 || n > 5 || new Set(q.choices?.map(choiceKey)).size !== n) add('a choice question needs 3 or 4 different options in `choices`')
     else if (!/^[A-Z]$/.test(q.answer.trim().toUpperCase()) || q.answer.trim().toUpperCase().charCodeAt(0) - 65 >= n) add(`the answer letter "${q.answer}" does not point at one of the ${n} options`)
   }
   const steps = q.steps ?? []
