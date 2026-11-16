@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { createServiceClient, type Json } from '@jemma/profiling/db'
 import { LessonSchema, type Lesson, type Question } from '@jemma/profiling/schemas'
 import { expect, test as base, type Page } from '@playwright/test'
-import { hideKeyboard, mathField, writeAnswer, writtenLatex } from './helpers/math-field'
+import { mathField, writeAnswer, writtenLatex } from './helpers/math-field'
 import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 
 // A learner of a senior class (Mathematics, Grade 10) types algebra, an equation, a point and a negative number, and code marks them by meaning.
@@ -166,7 +166,9 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     expect(await writtenLatex(page)).toBe('7+3')
     await page.locator('.MLK__keycap[data-tooltip="fraction"], .MLK__keycap[data-keycap-value*="frac"]').first().click()
     expect(await writtenLatex(page)).toContain('\\frac')
-    await hideKeyboard(page)
+    // Tapping outside the box puts the keyboard away (the box loses the focus; the editor hides its keyboard a moment after).
+    await page.locator('h1[data-prompt]').click()
+    await expect.poll(() => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible), { timeout: 15_000 }).toBe(false)
     await writeAnswer(page, '3+2x')
     await expect(next(page)).toBeEnabled()
     await noHorizontalScroll(page)

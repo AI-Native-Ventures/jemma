@@ -18,8 +18,7 @@ export async function writeAnswer(page: Page, latex: string): Promise<void> {
     const editor = el as HTMLElement & { setValue(latex: string): void }
     editor.setValue(value)
     editor.dispatchEvent(new Event('input', { bubbles: true }))
-    // The box is left and the keyboard goes, as when a child taps outside: the keyboard would cover the Next button.
-    editor.blur()
+    // The box has not been touched, so there is no keyboard; if one is up from an earlier step it would cover the Next button.
     ;(window as unknown as { mathVirtualKeyboard: { hide(): void } }).mathVirtualKeyboard.hide()
   }, latex)
 }
@@ -28,9 +27,4 @@ export async function writeAnswer(page: Page, latex: string): Promise<void> {
 export async function writtenLatex(page: Page): Promise<string> {
   const field = await mathField(page)
   return field.evaluate((el) => (el as HTMLElement & { getValue(format: string): string }).getValue('latex'))
-}
-
-/** Takes the keyboard of the editor off the screen, so it does not cover the Next button. */
-export async function hideKeyboard(page: Page): Promise<void> {
-  await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { hide(): void } }).mathVirtualKeyboard.hide())
 }
