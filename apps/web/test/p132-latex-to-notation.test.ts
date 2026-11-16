@@ -254,3 +254,49 @@ describe('what the new keys type is marked by meaning', () => {
     expect(mark('equation', 'α = 40', '\\angle ABC=40^\\circ')).toBe(false)
   })
 })
+
+// ---- Arguments without braces (a paste, or the editor's ascii-math input): one token, as TeX reads it -------------------------------
+
+describe('an argument without braces is the one token after the command', () => {
+  const table: [latex: string, plain: string][] = [
+    ['5\\sqrt2', '5√2'],
+    ['\\sqrt2', '√2'],
+    ['\\sqrt x', '√x'],
+    ['\\sqrt\\pi', '√π'],
+    ['\\sqrt[3]8', '∛8'],
+    ['\\sqrt[3]x', '∛x'],
+    ['\\sqrt[4]2', '(2)^(1/4)'],
+    ['6\\sqrt2', '6√2'],
+    ['\\frac12', '1/2'],
+    ['\\frac34', '3/4'],
+    ['\\frac{1}2', '1/2'],
+    ['\\frac1{x}', '1/x'],
+    ['\\frac1{x+1}', '1/(x + 1)'],
+    ['\\frac xy', 'x/y'],
+    ['\\frac\\pi2', 'π/2'],
+    ['\\frac{x+1}2', '(x + 1)/2'],
+    ['\\frac12+\\frac13', '1/2 + 1/3'],
+    ['x^2', 'x^2'],
+    ['x^23', 'x^2 × 3'],
+    ['x^n', 'x^n'],
+    ['2^\\pi', '2^π'],
+    ['x_1', 'x_1'],
+    ['\\sin^2x', 'sin^2(x)'],
+  ]
+  it.each(table)('%s', (latex, plain) => expect(latexToNotation(latex)).toBe(plain))
+
+  it('an argument that is missing is still not readable', () => {
+    for (const latex of ['\\frac1', '\\frac', '\\sqrt', '\\sqrt[3]', '\\frac{1}', '\\frac\\int2']) expect(latexToNotation(latex), latex).toBeNull()
+  })
+
+  it('and it is marked by meaning', () => {
+    const mark = (kind: 'number' | 'expression', key: string, latex: string) => markByMeaning(kind, key, latexToNotation(latex) ?? '').correct
+    expect(mark('number', '5√2', '5\\sqrt2')).toBe(true)
+    expect(mark('number', '√50', '5\\sqrt2')).toBe(true)
+    expect(mark('number', '6√2', '5\\sqrt2')).toBe(false)
+    expect(mark('number', '0,5', '\\frac12')).toBe(true)
+    expect(mark('number', '2', '\\sqrt[3]8')).toBe(true)
+    expect(mark('number', '3', '\\sqrt[3]8')).toBe(false)
+    expect(mark('expression', 'x^2', 'x^2')).toBe(true)
+  })
+})
