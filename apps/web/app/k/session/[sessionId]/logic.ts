@@ -30,8 +30,8 @@ export type QuestionForChild = {
   /** The picture the question needs, drawn between its words and the answer box (a senior class only). It never holds the answer. */
   diagram?: SeniorDiagramSpec
   /**
-   * An equation question only (P146): how many values its key has (2 for "x = 2 or x = 3", 1 for one value, 0 for an inequality). The screen shows that many
-   * boxes. Only the count goes to the browser, never the values.
+   * An equation question only (P146): how many values its key has (2 for "x = 2 or x = 3", 1 for one value). The screen shows that many boxes. An inequality
+   * ("x < -1 or x > 4") is one answer, not a list, so it has none. Only the count goes to the browser, never the values.
    */
   answerCount?: number
   /** An equation question only: the letter of the key ("x"), so a box can start with "x =". */
@@ -95,10 +95,13 @@ export function stripQuestion(
   }
 }
 
-/** The count and the letter of an equation question's key (P146), the only facts about the key the browser gets. */
+/**
+ * The count and the letter of an equation question's key (P146), the only facts about the key the browser gets. A key that is an inequality (count 0) or does
+ * not read (a pair, an interval) has none: it is one answer, in one box.
+ */
 function answerFactsOf(q: Question): Pick<QuestionForChild, 'answerCount' | 'answerLetter'> {
   const facts = q.answerKind === 'equation' ? answerCountOf(q.answer) : null
-  return facts ? { answerCount: facts.count, ...(facts.letter ? { answerLetter: facts.letter } : {}) } : {}
+  return facts && facts.count > 0 ? { answerCount: facts.count, ...(facts.letter ? { answerLetter: facts.letter } : {}) } : {}
 }
 
 const sorted = (items: StoredItem[], phase: Phase) =>
@@ -151,7 +154,7 @@ export type AnswerShape =
   | { kind: 'fraction' | 'mixed' | 'whole' | 'decimal' | 'money' | 'text' }
   /** The four kinds of a senior class, marked by meaning: a number that may be negative, an expression, an equation, a point. */
   | { kind: 'number' | 'point' }
-  /** An equation with one answer, or with more than the screen has boxes for, or an inequality (`count` 0), or a key the screen was not told about: one maths field. */
+  /** An equation with one answer, or with more than the screen has boxes for, or an inequality or a key the screen was not told about (no count): one maths field. */
   | { kind: 'equation'; count?: number }
   /** An equation with 2 to 4 answers (P146): one box for each, "Answer 1", "Answer 2", sent as "x = a or x = b". */
   | { kind: 'answers'; count: number; letter?: string }

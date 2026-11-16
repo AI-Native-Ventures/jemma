@@ -5,7 +5,7 @@ import { answerShape, answerValue, type AnswerShape, type QuestionForChild } fro
 import { PendingButton } from '@/components/ui/Button'
 import { Frac, FractionText, withFractions } from './Frac'
 import { MathAnswerField } from './MathAnswerField'
-import { equationHint, MULTI_HINT, MultiAnswer } from './answers/MultiAnswer'
+import { equationCountHint, MULTI_HINT, MultiAnswer } from './answers/MultiAnswer'
 import { promptLayout } from './prompt-layout'
 import { QuestionContext, QuestionHeading } from './QuestionPrompt'
 import { QuestionPicture } from './QuestionPicture'
@@ -190,7 +190,7 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
     case 'expression':
       return <MathAnswerField kind="expression" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={FORM_HINTS[shape.form]} />
     case 'equation':
-      return <MathAnswerField kind="equation" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={equationHint(shape.count)} />
+      return <MathAnswerField kind="equation" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={equationCountHint(shape.count)} />
     case 'answers':
       return (
         <div className="flex w-full flex-col items-center gap-3.5">

@@ -162,7 +162,7 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await expect.poll(() => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible)).toBe(true)
     const layoutId = await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { layouts: { id: string }[] } }).mathVirtualKeyboard.layouts[0]!.id)
     expect(layoutId).toMatch(/^jemma-expression-/)
-    // The numbers, signs and fraction keys are on every tab; five word tabs change the two rows under them. This question ("Simplify x + x + 3") is algebra,
+    // The numbers, signs and fraction keys are on every tab; four word tabs change the two rows under them. This question ("Simplify x + x + 3") is algebra,
     // so the keyboard opens on Letters.
     const visibleLayer = () => page.locator('.MLK__layer.is-visible').first().getAttribute('id')
     // The editor shows its keyboard a moment after the touch (300 ms) and builds it once more then: it is measured when it has settled.
@@ -208,24 +208,24 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     // Each key is at least 44 px tall (and at least 30 px wide from 360 px up: a tenth of the width less the gap), and nothing sticks out of any key.
     const checkKeys = async (label: string, width: number) => {
       await showKeyboard()
-      // The keys drawn with the keycap class: every key but the blanks and the action keys (the five tabs, backspace and the two arrows, which are
-      // measured below). That is 26 on the tab with the fewest keys (Shapes: P146 took off the signs the marking cannot read, so it has the degree sign, theta
-      // and pi), 33 on Compare (with the word or), 43 on Letters.
-      await expect.poll(async () => (await measureKeys()).length, { timeout: 10_000 }).toBeGreaterThanOrEqual(26)
+      // The keys drawn with the keycap class: every key but the blanks and the action keys (the four tabs, backspace, the two arrows and the key that hides the
+      // keyboard, which are measured below). That is 32 on the tab with the fewest keys (Calculus: P146 took off the signs the marking cannot read), 33 on
+      // Compare (with the word or), 37 on Trig, 43 on Letters.
+      await expect.poll(async () => (await measureKeys()).length, { timeout: 10_000 }).toBeGreaterThanOrEqual(30)
       const keys = await measureKeys()
       // Soft checks: a failure at one width does not hide the others (the test still fails at the end).
       expect.soft(keys.filter((k) => k.height < 44).map((k) => `${k.name} ${k.height}`), `${label}: keys under 44 px tall`).toEqual([])
       if (width >= 360) expect.soft(keys.filter((k) => k.width < 30).map((k) => `${k.name} ${k.width}`), `${label}: keys under 30 px wide`).toEqual([])
       expect.soft(keys.filter((k) => k.overflowX || k.overflowY).map((k) => `${k.name}: ${k.detail}`), `${label}: keys with something sticking out`).toEqual([])
     }
-    // The row of tabs: five words, each one line, 11 to 15 px, and inside its key.
+    // The row of tabs: four words (P146 took the Shapes tab away), each one line, 11 to 15 px, and inside its key.
     const tabFaces = async (label: string) => {
       await showKeyboard()
       const tabs = page.locator('.MLK__layer.is-visible .tab')
-      await expect(tabs).toHaveCount(5)
+      await expect(tabs).toHaveCount(4)
       await expect(tabs.first()).toBeVisible()
-      expect((await tabs.allTextContents()).map((t) => t.trim())).toEqual(['Letters', 'Trig', 'Compare', 'Shapes', 'Calculus'])
-      for (let i = 0; i < 5; i++) {
+      expect((await tabs.allTextContents()).map((t) => t.trim())).toEqual(['Letters', 'Trig', 'Compare', 'Calculus'])
+      for (let i = 0; i < 4; i++) {
         const at = `${label}, tab ${i}`
         const key = await boxOf(tabs.nth(i))
         const face = await boxOf(tabs.nth(i).locator('.tab-face'))
@@ -254,7 +254,7 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await proof(page, 'expression-keyboard')
     // Each tab is opened by clicking its word, and the digits row is there on every one of them.
     const tab = (word: string) => page.locator('.MLK__layer.is-visible .tab', { hasText: word }).first()
-    const TABS: [string, string][] = [['Trig', 'jemma-trig'], ['Compare', 'jemma-compare'], ['Shapes', 'jemma-shapes'], ['Calculus', 'jemma-calculus'], ['Letters', 'jemma-letters']]
+    const TABS: [string, string][] = [['Trig', 'jemma-trig'], ['Compare', 'jemma-compare'], ['Calculus', 'jemma-calculus'], ['Letters', 'jemma-letters']]
     for (const [word, id] of TABS) {
       await tab(word).click()
       await expect.poll(visibleLayer).toBe(id)

@@ -12,8 +12,7 @@ import { MathAnswerField } from '../MathAnswerField'
 export const MULTI_HINT = 'Type each answer in its own box.'
 
 /** The line under a single maths field for an equation, by how many answers the key has (P146). A key the screen was not told about has one. */
-export function equationHint(count?: number): string {
-  if (count === 0) return 'Type the answer, like x < 4.'
+export function equationCountHint(count?: number): string {
   if (count !== undefined && count > 4) return 'Type every answer, with the word or between them.'
   return 'Type the answer, like x = 4.'
 }

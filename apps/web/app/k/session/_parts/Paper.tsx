@@ -94,7 +94,7 @@ export function writeLine(shape: AnswerShape): string {
           ? 'Write it with no brackets, like x\u00b2 + 4x + 4.'
           : 'Write an expression, like 2x + 3.'
     case 'equation':
-      return shape.count === 0 ? 'Write the answer, like x < 4.' : shape.count !== undefined && shape.count > 4 ? 'Write every answer, with the word or between them.' : 'Write the answer, like x = 4.'
+      return shape.count !== undefined && shape.count > 4 ? 'Write every answer, with the word or between them.' : 'Write the answer, like x = 4.'
     // An equation with two answers or more (P146): a blank for each.
     case 'answers':
       return Array.from({ length: shape.count }, (_, i) => `Answer ${i + 1}: ____`).join('  ')

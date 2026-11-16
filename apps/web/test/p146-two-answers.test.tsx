@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
-import { buildAnswers, equationHint, MULTI_HINT, valueOfBox } from '../app/k/session/_parts/answers/MultiAnswer'
+import { buildAnswers, equationCountHint, MULTI_HINT, valueOfBox } from '../app/k/session/_parts/answers/MultiAnswer'
 import { PaperSheet, writeLine } from '../app/k/session/_parts/Paper'
 import { QuestionScreen } from '../app/k/session/_parts/QuestionScreen'
 import { answerShape, answerValue, stripQuestion, type QuestionForChild } from '../app/k/session/[sessionId]/logic'
@@ -51,10 +51,8 @@ describe('stripQuestion: the count and the letter go to the screen, the values n
     expect(q.answerLetter).toBe('x')
   })
 
-  it('one value is 1, an inequality is 0, three values are 3, a plus or minus is 2', () => {
+  it('one value is 1, three values are 3, a plus or minus is 2', () => {
     expect(strip('x = 5').answerCount).toBe(1)
-    expect(strip('x < 4').answerCount).toBe(0)
-    expect(strip('x < -1 or x > 4').answerCount).toBe(0)
     expect(strip('x = 1 or x = 2 or x = 3').answerCount).toBe(3)
     expect(strip('x = ±2').answerCount).toBe(2)
   })
@@ -69,6 +67,13 @@ describe('stripQuestion: the count and the letter go to the screen, the values n
     }
     // the only new fields are the count and the letter
     expect(Object.keys(strip('x = 2 or x = 3')).sort()).toEqual(['answerCount', 'answerKind', 'answerLetter', 'index', 'of', 'phase', 'position', 'prompt', 'render'])
+  })
+
+  it('an inequality, a pair and an interval are ONE answer in one box: no count is sent for them', () => {
+    for (const answer of ['x < 4', 'x < -1 or x > 4', '-2 < x <= 5', 'x != 0', 'x = 2 and y = 3', '(-inf; -1) U (4; inf)']) {
+      expect(strip(answer), answer).not.toHaveProperty('answerCount')
+      expect(strip(answer), answer).not.toHaveProperty('answerLetter')
+    }
   })
 
   it('a question of another kind has no count, and an equation whose key does not read has none either', () => {
@@ -89,9 +94,8 @@ describe('answerShape: two to four answers are boxes, anything else is one field
     expect(shape(4)).toEqual({ kind: 'answers', count: 4 })
   })
 
-  it('one answer, an inequality, more than four and a screen that was not told are one field', () => {
+  it('one answer, more than four and a screen that was not told (an inequality has no count) are one field', () => {
     expect(shape(1, 'x')).toEqual({ kind: 'equation', count: 1 })
-    expect(shape(0, 'x')).toEqual({ kind: 'equation', count: 0 })
     expect(shape(5, 'x')).toEqual({ kind: 'equation', count: 5 })
     expect(shape()).toEqual({ kind: 'equation' })
   })
@@ -267,20 +271,13 @@ describe('an equation with one answer, an inequality, or too many answers keeps 
     expect(out).toContain('Type the answer, like x = 4.')
   })
 
-  it('an inequality: one box and its own simple line', () => {
-    const out = html(ask({ answerCount: 0, answerLetter: 'x', prompt: 'Solve 2x + 1 < 9' }))
-    expect(out.match(/<math-field/g)).toHaveLength(1)
-    expect(out).toContain('Type the answer, like x &lt; 4.')
-  })
-
   it('five answers or more: one box, with the word or between them', () => {
     const out = html(ask({ answerCount: 5, answerLetter: 'x' }))
     expect(out.match(/<math-field/g)).toHaveLength(1)
     expect(out).toContain('Type every answer, with the word or between them.')
-    expect(equationHint(5)).toBe('Type every answer, with the word or between them.')
-    expect(equationHint(1)).toBe('Type the answer, like x = 4.')
-    expect(equationHint(0)).toBe('Type the answer, like x < 4.')
-    expect(equationHint()).toBe('Type the answer, like x = 4.')
+    expect(equationCountHint(5)).toBe('Type every answer, with the word or between them.')
+    expect(equationCountHint(1)).toBe('Type the answer, like x = 4.')
+    expect(equationCountHint()).toBe('Type the answer, like x = 4.')
   })
 
   it('one field sends what was typed, as before', async () => {
@@ -300,10 +297,9 @@ describe('the paper sheet', () => {
     expect(writeLine({ kind: 'answers', count: 4 })).toBe('Answer 1: ____  Answer 2: ____  Answer 3: ____  Answer 4: ____')
   })
 
-  it('one answer, an inequality and a question that was not counted keep a line of their own, with no "Two answers" text', () => {
+  it('one answer and a question that was not counted keep a line of their own, with no "Two answers" text', () => {
     expect(writeLine({ kind: 'equation', count: 1 })).toBe('Write the answer, like x = 4.')
     expect(writeLine({ kind: 'equation' })).toBe('Write the answer, like x = 4.')
-    expect(writeLine({ kind: 'equation', count: 0 })).toBe('Write the answer, like x < 4.')
     expect(writeLine({ kind: 'equation', count: 6 })).toBe('Write every answer, with the word or between them.')
   })
 
