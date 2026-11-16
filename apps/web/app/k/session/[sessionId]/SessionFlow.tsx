@@ -3,9 +3,11 @@
 import { PAPER_QUESTION_COUNT } from '@jemma/profiling/logic'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { LibraryEntry } from '@/lib/teaching'
 import { shrinkPhoto } from '@/lib/shrink-photo'
 import { startAskPoll } from '@/lib/poll-scheduler'
 import { postFiles } from '@/lib/upload-client'
+import { LearnFirstPanel } from '../../learn/_parts/LearnFirstPanel'
 import { AppHeader } from '../_parts/AppHeader'
 import { FractionText } from '../_parts/Frac'
 import { LearnAudio } from '../_parts/LearnAudio'
@@ -43,12 +45,18 @@ export type SessionFlowProps = {
   warmup: QuestionForChild[]
   tryCount: number
   topic: string
+  /**
+   * P144: the lessons the teaching library has for this topic. When there are some (and the id of their topic is given), the Learn step is "Learn it first"
+   * instead of the cards, the diagram or the audio memo. Missing or empty: the Learn step is exactly as it always was.
+   */
+  library?: LibraryEntry[]
+  libraryTopicId?: string
 }
 
 const learnNote = (topic: string, format?: LessonForChild['format']) =>
   format === 'audio' ? 'Recording your memo' : format === 'reading' ? 'Writing your cards' : /fraction/i.test(topic) ? 'Drawing your fraction bars' : 'Drawing your pictures'
 
-export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: SessionFlowProps) {
+export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic, library, libraryTopicId }: SessionFlowProps) {
   const router = useRouter()
   const [phase, setPhase] = useState<Phase>('loading')
   const [lesson, setLesson] = useState<LessonForChild | null>(null)
@@ -208,7 +216,9 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
       )}
       {(phase === 'warmup' || phase === 'try') && q ? <QuestionScreen key={q.position} q={q} topic={topic} busy={busy} onAnswer={submit} /> : null}
       {phase === 'learn' && lesson ? (
-        lesson.format === 'diagram' && lesson.diagram ? (
+        library?.length && libraryTopicId ? (
+          <LearnFirstPanel library={library} topicId={libraryTopicId} sessionId={sessionId} topic={topic} onSkip={startTry} />
+        ) : lesson.format === 'diagram' && lesson.diagram ? (
           <LearnDiagram lesson={lesson} onReady={startTry} />
         ) : lesson.format === 'audio' && lesson.audio ? (
           <LearnAudio lesson={lesson} firstName={firstName} onReady={startTry} />
