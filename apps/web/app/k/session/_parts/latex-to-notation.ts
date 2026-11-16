@@ -11,6 +11,67 @@ const no = (): never => {
 type Tok = { k: 'num'; text: string } | { k: 'letter'; text: string } | { k: 'cmd'; name: string } | { k: 'sym'; c: string }
 
 /** Cuts LaTeX into numbers, letters, commands and signs. A decimal comma written {,} between digits belongs to the number. */
+/**
+ * P147b: a sign typed or pasted as the character itself is the same as its command: \u2264 is \le, \u00b1 is \pm, a minus sign or a dash is a minus, \u221a covers the bracket or the whole
+ * number after it. The editor's own LaTeX has the commands; a phone's keyboard, a paste or a speech tool brings the characters.
+ */
+const SIGN_COMMANDS: Record<string, string> = {
+  '\u2264': '\\le ',
+  '\u2265': '\\ge ',
+  '\u2260': '\\ne ',
+  '\u00b1': '\\pm ',
+  '\u00d7': '\\times ',
+  '\u00f7': '\\div ',
+  '\u00b7': '\\cdot ',
+  '\u22c5': '\\cdot ',
+  '\u221e': '\\infty ',
+  '\u2208': '\\in ',
+  '\u222a': '\\cup ',
+  '\u211d': '\\mathbb{R}',
+  '\u03c0': '\\pi ',
+  '\u03b8': '\\theta ',
+  '\u03b1': '\\alpha ',
+  '\u03b2': '\\beta ',
+  '\u03b3': '\\gamma ',
+  '\u03b4': '\\delta ',
+  '\u03c6': '\\phi ',
+  '\u03bb': '\\lambda ',
+  '\u03c9': '\\omega ',
+  '\u00b0': '^\\circ ',
+}
+const DASHES = /[\u2212\u2010-\u2013]/g
+
+function unicodeSigns(src: string): string {
+  let out = ''
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i]!
+    if (c === '\u221a' || c === '\u221b') {
+      const root = c === '\u221a' ? '\\sqrt' : '\\sqrt[3]'
+      const number = /^\d+(?:[.,]\d+)?/.exec(src.slice(i + 1))
+      if (src[i + 1] === '(') {
+        // the bracket is the radicand: \u221a(x + 1)
+        let depth = 0
+        let end = -1
+        for (let j = i + 1; j < src.length && end < 0; j++) {
+          if (src[j] === '(') depth++
+          else if (src[j] === ')' && --depth === 0) end = j
+        }
+        if (end > 0) {
+          out += `${root}{${unicodeSigns(src.slice(i + 2, end))}}`
+          i = end
+          continue
+        }
+      } else if (number) {
+        out += `${root}{${number[0]}}`
+        i += number[0].length
+        continue
+      }
+      out += `${root} `
+    } else out += SIGN_COMMANDS[c] ?? c
+  }
+  return out.replace(DASHES, '-')
+}
+
 function lex(src: string): Tok[] {
   const out: Tok[] = []
   let i = 0
@@ -22,8 +83,9 @@ function lex(src: string): Tok[] {
     } else if (digit(c) || (c === '.' && digit(src[i + 1]))) {
       let j = i
       while (digit(src[j])) j++
-      if ((src[j] === '.' && digit(src[j + 1])) || (src.startsWith('{,}', j) && digit(src[j + 3]))) {
-        j += src[j] === '.' ? 1 : 3
+      // A decimal point, a decimal comma written {,}, or (P147b) a plain comma between two digits (a keyboard types 2,5 as it is): all one number.
+      if (((src[j] === '.' || src[j] === ',') && digit(src[j + 1])) || (src.startsWith('{,}', j) && digit(src[j + 3]))) {
+        j += src[j] === '{' ? 3 : 1
         while (digit(src[j])) j++
       }
       out.push({ k: 'num', text: src.slice(i, j).replace('{,}', ',') })
@@ -110,6 +172,13 @@ const RELATIONS: Record<string, string> = {
   perp: '\u22a5',
   parallel: '\u2225',
   to: '\u2192',
+  // other names TeX has for the same signs (P147b)
+  lt: '<',
+  gt: '>',
+  leqslant: '\u2264',
+  geqslant: '\u2265',
+  leqq: '\u2264',
+  geqq: '\u2265',
   in: '\u2208',
   cup: '\u222a',
 }
@@ -531,7 +600,7 @@ export function latexToNotation(latex: string): string | null {
   if (!src) return ''
   if (/\\placeholder|\\mathbb\{\}/.test(src)) return null
   try {
-    return write(read(lex(LEIBNIZ(src)))).s
+    return write(read(lex(LEIBNIZ(unicodeSigns(src))))).s
   } catch (e) {
     if (e instanceof Unreadable) return null
     throw e
