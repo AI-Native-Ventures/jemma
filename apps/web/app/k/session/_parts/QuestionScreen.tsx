@@ -448,6 +448,8 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
 
   const warm = q.phase === 'warmup'
   const shape = answerShape(q)
+  // A question of a senior class (the four typed kinds) has its maths typeset whenever it has a sign in it; any other question when it has algebra in it.
+  const typeset = shape.kind === 'number' || shape.kind === 'expression' || shape.kind === 'equation' || shape.kind === 'point' ? 'all' : 'algebra'
   const value = shape.kind === 'choice' ? (picked ?? '') : answerValue(shape, { whole, top, bottom, text, x, y })
   const submit = () => value && !busy && onAnswer(value, (Date.now() - shown.current) / 1000)
   const boxes: Boxes = { whole, top, bottom, text, x, y, set: { whole: setWhole, top: setTop, bottom: setBottom, text: setText, x: setX, y: setY } }
@@ -470,7 +472,7 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
         ) : (
           <>
             <h1 data-prompt={q.prompt} className="m-0 text-[28px] leading-[1.2] font-semibold">
-              <FractionText text={q.prompt} size={34} rule={3} gap={4} side={5} className="mx-1.5 align-middle" />
+              <FractionText text={q.prompt} size={34} rule={3} gap={4} side={5} className="mx-1.5 align-middle" typeset={typeset} />
             </h1>
             <QuestionPicture spec={q.diagram} />
             {shape.kind === 'choice' ? <Choices q={q} picked={picked} onPick={setPicked} warm /> : <AnswerArea shape={shape} b={boxes} prompt={q.prompt} topic={topic} />}
@@ -523,7 +525,7 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
               </h1>
             ) : (
               <h1 data-prompt={q.prompt} className="m-0 text-center text-[30px] leading-[1.2] font-bold">
-                <FractionText text={q.prompt} size={34} rule={3} gap={4} side={5} />
+                <FractionText text={q.prompt} size={34} rule={3} gap={4} side={5} typeset={typeset} />
               </h1>
             )}
             <QuestionPicture spec={q.diagram} />

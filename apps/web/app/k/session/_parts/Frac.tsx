@@ -1,5 +1,7 @@
 import { fractionsIn } from '@jemma/profiling/logic'
+import katex from 'katex'
 import { Fragment, type CSSProperties, type ReactNode } from 'react'
+import { hasTypeset, segments, type TypesetMode } from './typeset'
 
 export type FracProps = {
   /** A number, anything the child types in, or `null` for the part that is not known: an empty box. */
@@ -70,7 +72,21 @@ export function withFractions(text: string, render: (n: string | null, d: string
   return out
 }
 
-export type FractionTextProps = { text: string; size: number; rule: number; gap: number; side: number; color?: string; className?: string }
+export type FractionTextProps = {
+  text: string
+  size: number
+  rule: number
+  gap: number
+  side: number
+  color?: string
+  className?: string
+  /**
+   * Which lines of the text are typeset as maths (P125b): `force` everything that reads, `all` a line with a sign, a power or a root in it, `algebra` the
+   * same when it also has a letter, a power or a root, `off` none. FractionText says `algebra` when not told: a primary line of numbers ("12 + 7", "3/5 = ?/15")
+   * is drawn exactly as it always was.
+   */
+  typeset?: TypesetMode | 'off'
+}
 
 // ---- Powers and roots (P86) -----------------------------------------------------------------------------------------------------
 
@@ -209,11 +225,51 @@ function mathParts(text: string): ReactNode[] {
   return out
 }
 
+/** One line of LaTeX as KaTeX HTML, drawn on the server or in the browser (no network, no script at all), or null when KaTeX cannot draw it. */
+export function katexHtml(latex: string): string | null {
+  try {
+    // throwOnError is on so that any error comes back as null (the text is then drawn as it was typed) and never as KaTeX's red error text.
+    return katex.renderToString(latex, { throwOnError: true, output: 'html', displayMode: false, strict: 'ignore' })
+  } catch {
+    return null
+  }
+}
+
 /**
- * A line of words with its powers raised, its roots lined and its fractions stacked, for a senior class (algebra). The drawing is hidden from a screen
- * reader and the plain words are given to it instead, as `FractionText` does.
+ * A line of words with its maths typeset by KaTeX: fractions stacked, roots with their radical, powers raised, sin cos tan upright, pi and theta as their
+ * signs, a degree sign. The words stay words. The drawing is hidden from a screen reader and the plain text is given to it instead. A text that has no
+ * maths in it that KaTeX can draw is drawn the way it was before KaTeX (powers raised, roots lined).
  */
-export function MathText({ text, size, rule, gap, side, color, className = 'mx-1 align-middle' }: FractionTextProps) {
+export function MathText({ text, size, rule, gap, side, color, className = 'mx-1 align-middle', mode = 'force' }: FractionTextProps & { mode?: TypesetMode }) {
+  const parts = segments(text, mode)
+  const drawn = parts.map((p) => (p.kind === 'math' ? katexHtml(p.latex) : null))
+  if (!parts.some((p, i) => p.kind === 'math' && drawn[i] !== null)) return <LegacyMathText text={text} size={size} rule={rule} gap={gap} side={side} color={color} className={className} />
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true" data-typeset="true">
+        {parts.map((p, i) =>
+          p.kind === 'math' && drawn[i] !== null ? (
+            <span key={i} data-math="true" className="jemma-math" style={{ fontSize: size, color }} dangerouslySetInnerHTML={{ __html: drawn[i]! }} />
+          ) : (
+            // The words around the maths keep their stacked digit fractions and their empty boxes ("?/5"), drawn as they always were.
+            <Fragment key={i}>
+              {withFractions(p.kind === 'math' ? p.plain : p.text, (n, d, k) => (
+                <Frac key={k} top={n} bottom={d} size={size} rule={rule} gap={gap} side={side} color={color} className={className} />
+              ))}
+            </Fragment>
+          ),
+        )}
+      </span>
+    </>
+  )
+}
+
+/**
+ * A line of words with its powers raised, its roots lined and its fractions stacked, drawn by hand (the way it was before KaTeX). It is what is left for a text that
+ * KaTeX is not given: one that does not read yet, like "2x^" while the child is still typing.
+ */
+function LegacyMathText({ text, size, rule, gap, side, color, className = 'mx-1 align-middle' }: FractionTextProps) {
   const parts = withFractions(text, (n, d, k) => <Frac key={k} top={n} bottom={d} size={size} rule={rule} gap={gap} side={side} color={color} className={className} />)
   return (
     <>
@@ -230,8 +286,10 @@ export function MathText({ text, size, rule, gap, side, color, className = 'mx-1
  * so the line is read the way it was written. Words without a fraction are returned as they are. A line with a power or a root
  * (`hasMath`) is drawn by `MathText`; a line without one is drawn exactly as it always was.
  */
-export function FractionText({ text, size, rule, gap, side, color, className = 'mx-1 align-middle' }: FractionTextProps) {
-  if (hasMath(text)) return <MathText text={text} size={size} rule={rule} gap={gap} side={side} color={color} className={className} />
+export function FractionText({ text, size, rule, gap, side, color, className = 'mx-1 align-middle', typeset = 'algebra' }: FractionTextProps) {
+  // A line with algebra in it is typeset whole: its sums of numbers go into the same maths ("1/2 of x^2" has both fractions drawn the same way).
+  if (typeset !== 'off' && hasTypeset(text, typeset)) return <MathText text={text} size={size} rule={rule} gap={gap} side={side} color={color} className={className} mode={typeset === 'force' ? 'force' : 'all'} />
+  if (hasMath(text)) return <MathText text={text} size={size} rule={rule} gap={gap} side={side} color={color} className={className} mode={typeset === 'off' ? 'all' : typeset} />
   const parts = withFractions(text, (n, d, k) => (
     <Frac key={k} top={n} bottom={d} size={size} rule={rule} gap={gap} side={side} color={color} className={className} />
   ))

@@ -47,7 +47,7 @@ const preview = (text: string) => {
 }
 
 /** What is drawn, without the plain words that are there for a screen reader. */
-const hidden = (el: Element) => el.querySelector('[aria-hidden="true"]')!.textContent
+const hidden = (el: Element) => (el.querySelector('[aria-hidden="true"]')!.textContent ?? '').replace(/\u200b/g, '')
 const drawn = (text: string) => hidden(preview(text))
 
 const TRIG = ask({ prompt: 'Work out sin(30°)', answerKind: 'number' })
@@ -361,71 +361,73 @@ describe('typing with the keys', () => {
   })
 })
 
-describe('the line "It reads:"', () => {
+describe('the line "It reads:" (KaTeX, P125b)', () => {
   it('a fraction is stacked, in a number and in an expression, with or without brackets', () => {
-    const plain = preview('3/4')
-    expect(plain.querySelectorAll('span.inline-flex')).toHaveLength(1)
+    expect(preview('3/4').querySelectorAll('.mfrac')).toHaveLength(1)
     const brackets = preview('(x+1)/(x-1)')
-    expect(brackets.querySelectorAll('span.inline-flex')).toHaveLength(1)
-    expect(brackets.textContent).not.toContain('((')
-    const flex = brackets.querySelector('span.inline-flex')!
-    expect(flex.textContent).toBe(`x + 1x ${MINUS} 1`)
+    expect(brackets.querySelectorAll('.mfrac')).toHaveLength(1)
+    expect(hidden(brackets)).not.toContain('(')
+    // KaTeX writes the bottom of a fraction first in its markup.
+    expect(hidden(brackets)).toBe(`x${MINUS}1x+1`)
   })
 
   it('a root has the radical with a line over what is under it, and a root of a bracket does not draw the bracket', () => {
     const root = preview(`${ROOT}(x+1)`)
-    expect(root.querySelector('[data-root]')).not.toBeNull()
-    expect(root.querySelector('[data-radicand]')!.textContent).toBe('x + 1')
-    expect(preview('sqrt(8)').querySelector('[data-radicand]')!.textContent).toBe('8')
+    expect(root.querySelector('.sqrt')).not.toBeNull()
+    expect(hidden(root)).not.toContain('(')
+    expect(preview('sqrt(8)').querySelector('.sqrt')).not.toBeNull()
   })
 
   it('a power is raised, and sin squared has its 2 after the name', () => {
-    expect(preview('x^2').querySelector('sup')!.textContent).toBe('2')
-    expect(preview('x³').querySelector('sup')!.textContent).toBe('3')
+    expect(preview('x^2').querySelector('.msupsub')!.textContent).toBe('2')
+    expect(preview('x³').querySelector('.msupsub')!.textContent).toBe('3')
     const trig = preview('sin^2(x)')
-    expect(trig.querySelector('[data-fn="sin"]')).not.toBeNull()
-    expect(trig.querySelector('sup')!.textContent).toBe('2')
-    expect(hidden(trig)).toBe('sin2(x)')
+    expect(trig.querySelector('.mop')!.textContent).toContain('sin')
+    expect(trig.querySelector('.msupsub')!.textContent).toBe('2')
   })
 
-  it('sin, cos and tan are upright, with their brackets even when the answer had none', () => {
+  it('sin, cos and tan are upright names, with their brackets even when the answer had none', () => {
     const sin = preview('sin 30°')
-    const name = sin.querySelector('[data-fn="sin"]') as HTMLElement
-    expect(name.style.fontStyle).toBe('normal')
-    expect(hidden(sin)).toBe(`sin(30${DEG})`)
-    expect(drawn('cos x')).toBe('cos(x)')
-    expect(preview('tan(45)').querySelector('[data-fn="tan"]')).not.toBeNull()
+    expect(sin.querySelector('.mop')!.textContent).toBe('sin')
+    expect(hidden(sin)).toBe(`sin(30∘)`)
+    expect(hidden(preview('cos x'))).toBe('cos(x)')
+    expect(preview('tan(45)').querySelector('.mop')!.textContent).toBe('tan')
   })
 
   it('pi is drawn as the pi sign, a degree sign stays, a minus is a minus sign', () => {
-    expect(drawn('2pi r')).toBe(`2${PI}r`)
-    expect(drawn(`${PI}r^2`)).toBe(`${PI}r2`)
-    expect(drawn('30°')).toBe(`30${DEG}`)
-    expect(drawn('-3')).toBe(`${MINUS}3`)
-    expect(drawn('x - 1')).toBe(`x ${MINUS} 1`)
+    expect(hidden(preview('2pi r'))).toBe(`2${PI}r`)
+    expect(hidden(preview(`${PI}r^2`))).toBe(`${PI}r2`)
+    expect(hidden(preview('30°'))).toBe('30∘')
+    expect(hidden(preview('-3'))).toBe(`${MINUS}3`)
+    expect(hidden(preview('x - 1'))).toBe(`x${MINUS}1`)
+    expect(hidden(preview('x = 3'))).toBe('x=3')
   })
 
-  it('a number keeps the digits as they were typed, a product with a sign keeps it, one without a sign has none', () => {
-    expect(drawn('0,50')).toBe('0,50')
-    expect(drawn('2*3')).toBe('2 × 3')
-    expect(drawn('3(x+1)')).toBe('3(x + 1)')
+  it('a number keeps its decimal comma, a product with a sign keeps it, a division sign is not made a fraction', () => {
+    expect(hidden(preview('0,50'))).toBe('0,50')
+    expect(hidden(preview('2*3'))).toBe('2×3')
+    expect(hidden(preview('3(x+1)'))).toBe('3(x+1)')
+    const divide = preview('6÷3')
+    expect(divide.querySelectorAll('.mfrac')).toHaveLength(0)
+    expect(hidden(divide)).toBe('6÷3')
   })
 
-  it('an equation is drawn piece by piece: each side of the equals sign and each answer', () => {
+  it('an equation is drawn piece by piece: each side of the equals sign and each answer, and the word between them stays a word', () => {
     const line = preview(`x = 1/2 or x = ${ROOT}2`)
-    expect(line.querySelectorAll('span.inline-flex')).toHaveLength(1)
-    expect(line.querySelectorAll('[data-root]')).toHaveLength(1)
-    expect(line.textContent).toContain(' = ')
-    expect(line.textContent).toContain(' or ')
-    expect(drawn('x = 3; x = 4')).toBe('x = 3; x = 4')
+    expect(line.querySelectorAll('.mfrac')).toHaveLength(1)
+    expect(line.querySelectorAll('.sqrt')).toHaveLength(1)
+    expect(hidden(line)).toContain(' or ')
+    expect(hidden(preview('x = 3; x = 4'))).toBe('x=3; x=4')
   })
 
-  it('text that does not read yet is drawn the way it always was, and the plain words go to a screen reader', () => {
+  it('text that does not read yet is drawn the way it was typed, and the plain words go to a screen reader', () => {
     const partial = preview('2x^')
+    expect(partial.querySelector('.katex')).toBeNull()
     expect(partial.textContent).toContain('2x^')
     const line = preview('3/4')
     expect(line.querySelector('.sr-only')!.textContent).toBe('3/4')
     expect(line.querySelector('[aria-hidden="true"]')).not.toBeNull()
+    expect(line.querySelector('.katex')).not.toBeNull()
   })
 
   it('under the box: an expression always has it, a plain number does not, a number with signs does', () => {
@@ -434,7 +436,7 @@ describe('the line "It reads:"', () => {
     type('-3,5')
     expect(document.querySelector('[data-reads]')).toBeNull()
     type(`${ROOT}8`)
-    expect(document.querySelector('[data-reads] [data-root]')).not.toBeNull()
+    expect(document.querySelector('[data-reads] .sqrt')).not.toBeNull()
     expect(document.querySelector('[data-reads]')!.textContent).toContain('It reads:')
   })
 })

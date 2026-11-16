@@ -40,3 +40,12 @@ body {
   font-family: var(--font-sans);
   font-size: 15px;
 }
+
+/* Maths typeset by KaTeX (P125b). The size comes from the text around it (the component sets it); KaTeX's own 1.21em is taken off so a number is as big
+   as the number next to it. A long line wraps at its signs, and never wider than its box. */
+.jemma-math {
+  max-width: 100%;
+}
+.jemma-math .katex {
+  font-size: 1em;
+}
