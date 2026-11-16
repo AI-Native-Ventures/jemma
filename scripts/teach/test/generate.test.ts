@@ -233,6 +233,13 @@ describe('generate', () => {
     expect(summary).toMatchObject({ failed: 1, done: 1 })
   })
 
+  test('--max-lessons cuts the outline', async () => {
+    const f = fake({ lessons: 4 })
+    const result = await make(f, { maxLessons: 2 }).generateTopic(group, fileName)
+    expect(result).toMatchObject({ status: 'done', ready: 2 })
+    expect(f.calls.filter((c) => c.kind === 'write')).toHaveLength(2)
+  })
+
   test('a second run skips the finished topic and makes no call', async () => {
     const f = fake()
     await make(f).generateTopic(group, fileName)

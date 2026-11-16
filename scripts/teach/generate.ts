@@ -40,6 +40,8 @@ export type GenOptions = {
   /** Try again topics that failed twice, and rewrite topics that kept a failed lesson. */
   retryFailed?: boolean
   concurrency?: number
+  /** At most this many lessons for a topic, whatever the outline says (keeps a trial run inside its call cap). */
+  maxLessons?: number
   /** Every group of every grade, so that file names stay the same whichever groups are asked for. */
   allGroups?: TopicGroup[]
 }
@@ -309,7 +311,7 @@ export class Generator {
         const range = lessonRange(group, ref, pitch)
         const outline = await this.call('outline', group, undefined, outlinePrompt(group, ref, pitch), OutlineSchema)
         if (!outline) return this.topicFailed(group, 'no model produced an outline')
-        progress = { outline: scrubDashes({ lessons: outline.value.lessons.slice(0, range.max) }), results: [] }
+        progress = { outline: scrubDashes({ lessons: outline.value.lessons.slice(0, Math.min(range.max, this.o.maxLessons ?? range.max)) }), results: [] }
         writeAtomic(progressFile, JSON.stringify(progress))
         this.log(`${label}: outline of ${progress.outline.lessons.length} lessons, reference ${ref.source.kind}`)
       } else this.log(`${label}: carrying on, ${progress.results.length} of ${progress.outline.lessons.length} lessons already done`)
@@ -444,6 +446,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
       topic: { type: 'string' },
       concurrency: { type: 'string' },
       'limit-calls': { type: 'string' },
+      'max-lessons': { type: 'string' },
       'retry-failed': { type: 'boolean' },
       'max-wait-min': { type: 'string' },
       'timeout-sec': { type: 'string' },
@@ -479,6 +482,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
     allGroups: all,
     concurrency: number('concurrency', values.concurrency, 1) ?? 4,
     limitCalls: number('limit-calls', values['limit-calls'], 0),
+    maxLessons: number('max-lessons', values['max-lessons'], 1),
     retryFailed: values['retry-failed'] ?? false,
     maxWaitMs: (number('max-wait-min', values['max-wait-min'], 0) ?? 120) * MIN,
     timeoutMs: (number('timeout-sec', values['timeout-sec'], 1) ?? 300) * 1000,

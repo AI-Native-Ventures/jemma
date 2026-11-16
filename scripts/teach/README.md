@@ -12,7 +12,7 @@ pnpm teach:generate --report                        # calls, failures, limit hit
 pnpm teach:import > lessons.sql                     # one SQL transaction with every ready lesson (it connects to nothing)
 ```
 
-Options: `--grade N`, `--topic "<name without (Term N)>"`, `--concurrency 4`, `--limit-calls N` (stops when the ledger holds N calls), `--retry-failed`, `--max-wait-min 120` (the longest the run waits for models that are out of free quota), `--timeout-sec 300`.
+Options: `--grade N`, `--topic "<name without (Term N)>"`, `--concurrency 4`, `--limit-calls N` (stops when the ledger holds N calls), `--max-lessons N` (at most N lessons a topic), `--retry-failed`, `--max-wait-min 120` (the longest the run waits for models that are out of free quota), `--timeout-sec 300`.
 
 `TEACH_MODELS` (a comma list such as `opencode/hy4-flash-free,opencode/beam-free`) replaces the ranked default chain in `chain.ts`. Only `opencode/<name>-free` models are accepted.
 
