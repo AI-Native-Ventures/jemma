@@ -49,6 +49,7 @@ describe('outline prompt', () => {
     expect(OutlineSchema.safeParse({ lessons: [{ title: 'A', objectives: ['You will be able to a', 'You will be able to b'], sections: ['5.1'] }] }).success).toBe(true)
     expect(OutlineSchema.safeParse({ lessons: [{ title: 'A', objectives: ['only one'] }] }).success).toBe(false)
     expect(OutlineSchema.safeParse({ lessons: [] }).success).toBe(false)
+    expect(OutlineSchema.safeParse({ lessons: [{ title: 'Add \\(x\\)', objectives: ['You will be able to a', 'You will be able to b'] }] }).success).toBe(false)
   })
 })
 

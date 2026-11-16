@@ -34,6 +34,34 @@ describe('checkLesson: worked examples', () => {
     expect(problems.join('\n')).toMatch(/block 6.*last step/i)
   })
 
+  test.each([
+    ['3', 'x = -3'],
+    ['12', '= 120'],
+    ['12', '12/5'],
+    ['1/2', '= 11/2'],
+  ])('answer %s is not shown by the last step "%s"', (answer, last) => {
+    const w = worked(1, 2, 4)
+    if (w.kind !== 'worked') throw new Error('fixture')
+    w.steps[2] = { line: last, reason: 'The last line.' }
+    w.answer = answer
+    w.answerKind = answer.includes('/') ? 'fraction' : 'whole'
+    expect(check(replaceBlock(goodLesson(), 3, w)).join('\n')).toMatch(/block 4.*last step/)
+  })
+
+  test.each([
+    ['12', '= 12 apples'],
+    ['3', 'x = 3'],
+    ['3/4', '= 3/4 of the pie'],
+    ['0,75', '= 3/4'],
+  ])('answer %s is shown by the last step "%s"', (answer, last) => {
+    const w = worked(1, 2, 4)
+    if (w.kind !== 'worked') throw new Error('fixture')
+    w.steps[2] = { line: last, reason: 'The last line.' }
+    w.answer = answer
+    w.answerKind = answer.includes('/') ? 'fraction' : answer.includes(',') ? 'decimal' : 'whole'
+    expect(check(replaceBlock(goodLesson(), 3, w)).join('\n')).not.toMatch(/last step/)
+  })
+
   test('a step that is plain arithmetic and is not true fails', () => {
     const bad = worked(1, 2, 4)
     if (bad.kind !== 'worked') throw new Error('fixture')

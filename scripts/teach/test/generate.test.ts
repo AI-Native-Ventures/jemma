@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
@@ -173,6 +173,64 @@ describe('generate', () => {
     const forced = await make(f, { retryFailed: true }).generateTopic(group, fileName)
     expect(forced.status).toBe('failed')
     expect(f.calls.length).toBeGreaterThan(before)
+  })
+
+  test('--retry-failed writes again only the failed lessons and keeps the ready ones as they are', async () => {
+    const first = fake({ lessons: 2, write: (p) => (p === 2 ? badLesson(p) : goodLesson({ position: p })) })
+    await make(first).generateTopic(group, fileName)
+    const before = TopicLessonsSchema.parse(JSON.parse(readFileSync(filePath(), 'utf8')))
+    expect(before.lessons).toHaveLength(1)
+    expect(failList().lessons[0]).toMatchObject({ position: 2, title: 'Lesson 2 title' })
+
+    const second = fake({ lessons: 2 })
+    const plain = await make(second).generateTopic(group, fileName)
+    expect(plain.status).toBe('skipped')
+    expect(second.calls).toEqual([])
+
+    const retry = await make(second, { retryFailed: true }).generateTopic(group, fileName)
+    expect(retry).toMatchObject({ status: 'done', ready: 2, failed: 0 })
+    expect(second.calls.map((c) => c.kind)).toEqual(['write', 'review'])
+    const after = TopicLessonsSchema.parse(JSON.parse(readFileSync(filePath(), 'utf8')))
+    expect(after.lessons.map((l) => [l.position, l.title])).toEqual([[1, 'Lesson 1 title'], [2, 'Lesson 2 title']])
+    expect(after.lessons[0]).toEqual(before.lessons[0])
+    expect(failList().lessons).toEqual([])
+
+    const again = await make(second, { retryFailed: true }).generateTopic(group, fileName)
+    expect(again.status).toBe('skipped')
+  })
+
+  test('a model that fails at once for another reason is not called in a loop while another model rests', async () => {
+    let boom = 0
+    const run: Runner = async (model) => {
+      if (model === 'opencode/a-free') return { text: '', limited: true, error: 'Free usage limit reached' }
+      boom += 1
+      return { text: '', limited: false, error: 'exit code 1' }
+    }
+    const result = await make(fake(), { run, chain: new Chain(['opencode/a-free', 'opencode/b-free'], () => clock) }).generateTopic(group, fileName)
+    expect(result.status).toBe('failed')
+    expect(boom).toBeLessThan(5)
+  })
+
+  test('a restarted run does not ask again a model that said "limit reached" less than an hour ago, and does after an hour', () => {
+    const f = fake()
+    const lineAt = (model: string, minutesAgo: number, limited: boolean) =>
+      JSON.stringify({ time: new Date(Date.now() - minutesAgo * MIN).toISOString(), model, kind: 'probe', seconds: 0, ok: !limited, limited })
+    mkdirSync(join(root, 'content/lessons'), { recursive: true })
+    writeFileSync(ledgerPath(root), [lineAt('opencode/a-free', 10, true), lineAt('opencode/b-free', 90, true), lineAt('opencode/c-free', 20, true), lineAt('opencode/c-free', 5, false)].join('\n') + '\n')
+    const chain = new Chain(['opencode/a-free', 'opencode/b-free', 'opencode/c-free'], () => clock)
+    make(f, { chain })
+    expect(chain.next()).toBe('opencode/b-free')
+    expect(chain.next(['opencode/b-free'])).toBe('opencode/c-free')
+    clock += 51 * MIN
+    expect(chain.next()).toBe('opencode/a-free')
+  })
+
+  test('one topic that breaks does not end the run', async () => {
+    const f = fake()
+    const second = topicGroups().find((g) => g.grade === 6 && g.baseName === 'Decimal fractions')!
+    const g = make(f, { reference: async (x) => (x === group ? Promise.reject(new Error('disk full')) : capsReference(x)) })
+    const summary = await g.runAll([group, second])
+    expect(summary).toMatchObject({ failed: 1, done: 1 })
   })
 
   test('a second run skips the finished topic and makes no call', async () => {

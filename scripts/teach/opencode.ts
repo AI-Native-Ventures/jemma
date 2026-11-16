@@ -112,6 +112,7 @@ type Events = { text: string; tokensIn?: number; tokensOut?: number; toolCalls: 
 /** Reads the raw JSON events of `opencode run --format json` (one object a line): the reply text, the tokens, any tool call, any error. */
 export function readEvents(stdout: string): Events {
   const texts: string[] = []
+  const textIndex = new Map<string, number>()
   const toolCalls: string[] = []
   let tokensIn: number | undefined
   let tokensOut: number | undefined
@@ -126,7 +127,17 @@ export function readEvents(stdout: string): Events {
       continue
     }
     const part = (event.part ?? {}) as Record<string, unknown>
-    if (event.type === 'text' && typeof part.text === 'string') texts.push(part.text)
+    // OpenCode 1.18 sends one `text` event per finished text part; a part of type text counts whatever the event is called.
+    if ((event.type === 'text' || part.type === 'text') && typeof part.text === 'string') {
+      // A part sent again as it grows replaces its earlier text instead of adding to it.
+      const id = typeof part.id === 'string' ? part.id : null
+      const at = id === null ? undefined : textIndex.get(id)
+      if (at !== undefined) texts[at] = part.text
+      else {
+        if (id !== null) textIndex.set(id, texts.length)
+        texts.push(part.text)
+      }
+    }
     else if (event.type === 'tool_use' || part.type === 'tool') toolCalls.push(typeof part.tool === 'string' ? part.tool : 'unknown')
     else if (event.type === 'step_finish') {
       const tokens = (part.tokens ?? {}) as Record<string, unknown>
@@ -166,17 +177,22 @@ export async function runOpencode(model: string, prompt: string, opts: RunOpts &
   writeFileSync(join(work, 'prompt.md'), prompt)
   const args = ['run', '--pure', '--print-logs', '--log-level', 'ERROR', '--format', 'json', '--title', 'teach', '-m', model, 'Follow the attached file. Reply with one JSON object only.', '-f', 'prompt.md']
   // PWD is set as well: OpenCode finds the attached file from $PWD, and a child started with `cwd` does not get it changed by itself.
-  const env = { ...process.env, PWD: work, XDG_CONFIG_HOME: config, OPENCODE_DISABLE_CLAUDE_CODE: '1' }
+  // Config, data and state live in this call's own folders: none of the machine's OpenCode setup is loaded, and no session is left in its history.
+  const env: NodeJS.ProcessEnv = { ...process.env, PWD: work, XDG_CONFIG_HOME: config, XDG_DATA_HOME: join(root, 'data'), XDG_STATE_HOME: join(root, 'state'), OPENCODE_DISABLE_CLAUDE_CODE: '1' }
+  for (const name of ['OPENCODE_CONFIG', 'OPENCODE_CONFIG_DIR', 'OPENCODE_CONFIG_CONTENT', 'OPENCODE_PERMISSION']) delete env[name]
 
   try {
     return await new Promise<RunResult>((resolve) => {
       const child = spawn(bin, args, { cwd: work, env, stdio: ['ignore', 'pipe', 'pipe'] })
       let stdout = ''
       let stderr = ''
+      let tail = ''
       let settled = false
       let killedFor: 'limit' | 'timeout' | 'stream-error' | null = null
       let streamError = ''
       let hardKill: NodeJS.Timeout | undefined
+      let exitGrace: NodeJS.Timeout | undefined
+      let streamTimer: NodeJS.Timeout | undefined
 
       const stop = (why: 'limit' | 'timeout' | 'stream-error') => {
         if (killedFor) return
@@ -186,11 +202,15 @@ export async function runOpencode(model: string, prompt: string, opts: RunOpts &
       }
       const timer = setTimeout(() => stop('timeout'), opts.timeoutMs)
 
+      // The last bit of each stream is kept, so a message split over two chunks is still read.
       const look = (chunk: string, fromStderr: boolean) => {
-        if (LIMIT_TEXT.test(chunk)) return stop('limit')
-        if (fromStderr && STREAM_ERROR.test(chunk)) {
+        const text = tail + chunk
+        tail = text.slice(-200)
+        if (LIMIT_TEXT.test(text)) return stop('limit')
+        if (fromStderr && STREAM_ERROR.test(chunk) && !streamTimer) {
           streamError = chunk.split('\n').find((l) => STREAM_ERROR.test(l))?.slice(0, 400) ?? chunk.slice(0, 400)
-          stop('stream-error')
+          // A moment is given for the rest of the line: the limit message is the end of a stream error line, and it decides how long the model rests.
+          streamTimer = setTimeout(() => stop('stream-error'), 400)
         }
       }
       child.stdout.setEncoding('utf8')
@@ -209,22 +229,29 @@ export async function runOpencode(model: string, prompt: string, opts: RunOpts &
         settled = true
         clearTimeout(timer)
         if (hardKill) clearTimeout(hardKill)
+        if (exitGrace) clearTimeout(exitGrace)
+        if (streamTimer) clearTimeout(streamTimer)
         resolve(result)
       }
-      child.on('error', (e) => finish({ text: '', limited: false, error: `could not start ${bin}: ${e.message}` }))
-      child.on('close', (code) => {
+      const conclude = (code: number | null) => {
         const events = readEvents(stdout)
         const base = { text: events.text, tokensIn: events.tokensIn, tokensOut: events.tokensOut }
-        if (killedFor === 'limit') return finish({ ...base, limited: true, error: 'Free usage limit reached' })
+        // The limit text wins over a timeout: a model that said it is out of quota is rested for the long time, not the short one.
+        if (killedFor === 'limit' || LIMIT_TEXT.test(stderr) || LIMIT_TEXT.test(stdout)) return finish({ ...base, limited: true, error: 'Free usage limit reached' })
         if (killedFor === 'timeout') return finish({ ...base, limited: false, error: `timed out after ${Math.round(opts.timeoutMs / 1000)}s` })
         if (killedFor === 'stream-error') return finish({ ...base, limited: false, error: streamError })
-        if (LIMIT_TEXT.test(stderr) || LIMIT_TEXT.test(stdout)) return finish({ ...base, limited: true, error: 'Free usage limit reached' })
         if (events.toolCalls.length > 0) return finish({ ...base, limited: false, error: `the model made a tool call (${events.toolCalls.join(', ')})` })
         if (events.error) return finish({ ...base, limited: false, error: events.error })
         if (code !== 0 && !events.text) return finish({ ...base, limited: false, error: (stderr.trim().split('\n').slice(-3).join(' ') || `exit code ${code}`).slice(0, 400) })
         if (!events.text.trim()) return finish({ ...base, limited: false, error: 'the model sent no text' })
         finish({ ...base, limited: false })
+      }
+      child.on('error', (e) => finish({ text: '', limited: false, error: `could not start ${bin}: ${e.message}` }))
+      // `close` waits for the pipes to end. A grandchild that keeps them open must not hold the call for ever: two seconds after `exit` it is over.
+      child.on('exit', (code) => {
+        exitGrace = setTimeout(() => conclude(code), 2000)
       })
+      child.on('close', (code) => conclude(code))
     })
   } finally {
     rmSync(root, { recursive: true, force: true })

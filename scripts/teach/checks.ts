@@ -14,7 +14,7 @@ const EM_DASH = String.fromCharCode(0x2014)
 /** What a voice cannot say: a backslash, a caret, a subscript brace, a dollar sign. */
 const SPEECH_BAD = /[\\^$]|_\{/
 /** LaTeX in a line the learner reads: a dollar sign, or a backslash and a command or bracket. */
-const LATEX = /\$|\\[A-Za-z()[\]{}]/
+export const LATEX = /\$|\\[A-Za-z()[\]{}]/
 const NUMERIC_KINDS = new Set(['whole', 'decimal', 'fraction', 'mixed', 'money', 'number'])
 
 export const WORKED_MIN = (grade: number) => (grade <= 3 ? 2 : 3)
@@ -115,15 +115,23 @@ function untrueSteps(lines: string[]): string[] {
 
 const squash = (s: string) => s.replace(/\s+/g, '').replace(/−/g, '-').toLowerCase()
 
-/** Does the last line of a working show this answer (as written, or as the same value after its last equals sign)? */
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/**
+ * Does the last line of a working show this answer? What follows its last equals sign is read as the kind of the answer and compared by value
+ * (so `x = -3` is not the answer 3, and 120 is not 12). Only when that cannot be read (a unit or a word after the number) does the answer have
+ * to stand in the line as a whole token.
+ */
 function endsWithAnswer(lastLine: string, answer: string, kind: string): boolean {
-  if (squash(lastLine).includes(squash(answer))) return true
   const afterEquals = (lastLine.split('=').pop() ?? lastLine).trim()
   try {
-    return markQuestion({ answer, answerKind: kind }, afterEquals).correct
+    const mark = markQuestion({ answer, answerKind: kind }, afterEquals)
+    if (mark.comparable) return mark.correct
   } catch {
-    return false
+    // not readable: fall through to the token test
   }
+  const token = escapeRegExp(squash(answer))
+  return new RegExp(`(?<![\\d.,/^-])${token}(?![\\d.,/^])`).test(squash(lastLine))
 }
 
 // ---- pictures ------------------------------------------------------------------------------------------------------------------------

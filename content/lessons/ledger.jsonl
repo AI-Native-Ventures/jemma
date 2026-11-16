@@ -9,3 +9,7 @@
 {"time":"2026-11-16T18:33:26.791Z","model":"opencode/nemotron-3.5-lightning-free","kind":"probe","seconds":2.9,"ok":false,"limited":true,"error":"Free usage limit reached"}
 {"time": "2026-11-16T18:33:42.000Z", "model": "opencode/minimax-m3.1-flash-free", "kind": "probe", "seconds": 8, "ok": false, "limited": true, "error": "Free usage limit reached (debug probe)"}
 {"time":"2026-11-16T18:34:52.709Z","model":"opencode/deepseek-v4.1-flash-free","kind":"probe","seconds":2.7,"ok":false,"limited":true,"error":"Free usage limit reached"}
+{"time":"2026-11-16T18:38:12.074Z","model":"opencode/glm-5.3-flash-free","kind":"probe","seconds":3.8,"ok":false,"limited":true,"error":"Free usage limit reached"}
+{"time":"2026-11-16T18:39:02.596Z","model":"opencode/mimo-v2.6-flash-free","kind":"probe","seconds":3,"ok":false,"limited":true,"error":"Free usage limit reached"}
+{"time":"2026-11-16T18:45:06.292Z","model":"opencode/hy4-flash-free","kind":"probe","seconds":3.3,"ok":false,"limited":true,"error":"Free usage limit reached"}
+{"time":"2026-11-16T18:51:09.564Z","model":"opencode/inkling-2-small-free","kind":"probe","seconds":2.8,"ok":false,"limited":true,"error":"Free usage limit reached"}

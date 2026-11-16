@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { z } from 'zod'
 import { TeachingLessonSchema, TopicLessonsSchema, type TeachingLesson, type TeachingSource, type TopicLessons } from '@jemma/profiling/schemas'
-import { Chain, callJson, modelsFromEnv, type Attempt } from './chain'
+import { Chain, LIMIT_PARK_MS, callJson, modelsFromEnv, type Attempt } from './chain'
 import { checkLesson } from './checks'
 import { appendLedger, readLedger, summarize, type LedgerRecord } from './ledger'
 import { runOpencode, type Runner } from './opencode'
@@ -52,7 +52,7 @@ type Progress = { outline: Outline; results: LessonResult[] }
 type FailList = {
   updatedAt: string
   topics: { grade: number; baseName: string; reason: string; attempts: number; at: string }[]
-  lessons: { grade: number; baseName: string; position: number; title: string; problems: string[]; writer: string; reviewer: string; at: string }[]
+  lessons: { grade: number; baseName: string; position: number; title: string; objectives?: string[]; sections?: string[]; problems: string[]; writer: string; reviewer: string; at: string }[]
 }
 
 class Stopped extends Error {}
@@ -99,8 +99,6 @@ const lessonSchema = (position: number, item: OutlineItem): z.ZodType<TeachingLe
     return o
   }, TeachingLessonSchema) as unknown as z.ZodType<TeachingLesson>
 
-const isContentError = (error?: string) => !!error && /^(schema:|no JSON)/.test(error)
-
 export class Generator {
   capReached = false
   stopReason: string | null = null
@@ -112,7 +110,20 @@ export class Generator {
   constructor(o: GenOptions) {
     this.o = o
     this.root = o.root ?? REPO_ROOT
-    this.used = readLedger(this.root).length
+    const records = readLedger(this.root)
+    this.used = records.length
+    this.restoreParks(records)
+  }
+
+  /** A model whose latest ledger line is "limit reached" within the last hour is still resting: a restarted run does not ask it again at once. */
+  private restoreParks(records: LedgerRecord[]): void {
+    const latest = new Map<string, LedgerRecord>()
+    for (const r of records) latest.set(r.model, r)
+    const now = this.now().getTime()
+    for (const [model, r] of latest) {
+      const age = now - Date.parse(r.time)
+      if (r.limited && age >= 0 && age < LIMIT_PARK_MS) this.o.chain.park(model, LIMIT_PARK_MS - age)
+    }
   }
 
   /** Stop picking new topics; the topics in progress finish. */
@@ -183,8 +194,10 @@ export class Generator {
       if (found) return found
       if (this.capReached) throw this.stop('the call cap was reached')
       const resting = this.o.chain.msUntilAvailable(opts.exclude)
-      const onlyInfrastructure = attempts.every((a) => a.limited || !isContentError(a.error))
-      if (resting === null || !onlyInfrastructure) {
+      // Waiting is only for the case where every model that was tried said "free usage limit reached", or none was free. A model that failed
+      // for any other reason is not waited for: retrying it at once, in a loop, is what this must never do.
+      const onlyLimited = attempts.every((a) => a.limited)
+      if (resting === null || !onlyLimited) {
         const detail = attempts.map((a) => `${a.model}: ${a.error}`).join('; ')
         this.log(`  ${kind} call gave nothing usable (${detail || 'no model free'})`)
         return null
@@ -274,10 +287,10 @@ export class Generator {
     const label = `grade ${group.grade} ${group.baseName}`
     const path = join(this.root, lessonPath(group, fileName))
     const existing = this.readTopicFile(path)
-    if (existing && !this.o.retryFailed) {
-      const clean = existing.status.length > 0 && existing.status.every((s) => s.status === 'ready')
-      this.log(`${label}: skipped (${clean ? 'done already' : 'has a failed lesson, use --retry-failed'})`)
-      return { status: 'skipped', ready: existing.lessons.length, failed: existing.status.filter((s) => s.status === 'failed').length }
+    const failedInFile = existing?.status.filter((s) => s.status === 'failed').length ?? 0
+    if (existing && (failedInFile === 0 || !this.o.retryFailed)) {
+      this.log(`${label}: skipped (${failedInFile === 0 ? 'done already' : 'has a failed lesson, use --retry-failed'})`)
+      return { status: 'skipped', ready: existing.lessons.length, failed: failedInFile }
     }
     const before = this.loadFailList().topics.find((t) => t.grade === group.grade && t.baseName === group.baseName)
     if (!existing && before && before.attempts >= FAIL_TWICE && !this.o.retryFailed) {
@@ -286,20 +299,23 @@ export class Generator {
     }
 
     const progressFile = this.progressPath(group, fileName)
-    let progress = (readJson(progressFile) as Progress | null) ?? null
+    let progress = this.validProgress(readJson(progressFile))
+    // A topic with a failed lesson, asked for again: the ready lessons stay as they are and only the failed positions are written again.
+    if (!progress && existing) progress = this.progressFromFile(existing, group)
     try {
       const ref = await (this.o.reference ?? ((g: TopicGroup) => referenceFor(g)))(group)
-      if (!progress || !OutlineSchema.safeParse(progress.outline).success || !Array.isArray(progress.results)) {
+      if (!progress) {
         const pitch = PITCH_TOPICS.some((p) => p.grade === group.grade && p.baseName === group.baseName)
         const range = lessonRange(group, ref, pitch)
         const outline = await this.call('outline', group, undefined, outlinePrompt(group, ref, pitch), OutlineSchema)
         if (!outline) return this.topicFailed(group, 'no model produced an outline')
-        progress = { outline: { lessons: outline.value.lessons.slice(0, range.max) }, results: [] }
+        progress = { outline: scrubDashes({ lessons: outline.value.lessons.slice(0, range.max) }), results: [] }
         writeAtomic(progressFile, JSON.stringify(progress))
         this.log(`${label}: outline of ${progress.outline.lessons.length} lessons, reference ${ref.source.kind}`)
-      } else this.log(`${label}: carrying on, ${progress.results.length} of ${progress.outline.lessons.length} lessons done`)
+      } else this.log(`${label}: carrying on, ${progress.results.length} of ${progress.outline.lessons.length} lessons already done`)
 
-      for (let i = progress.results.length; i < progress.outline.lessons.length; i++) {
+      for (let i = 0; i < progress.outline.lessons.length; i++) {
+        if (progress.results.some((r) => r.position === i + 1)) continue
         const result = await this.produceLesson(group, ref, progress.outline, i)
         progress.results.push(result)
         writeAtomic(progressFile, JSON.stringify(progress))
@@ -315,6 +331,33 @@ export class Generator {
     }
   }
 
+  private validProgress(raw: unknown): Progress | null {
+    const p = raw as Progress | null
+    return p && OutlineSchema.safeParse(p.outline).success && Array.isArray(p.results) ? p : null
+  }
+
+  /** The outline and the ready lessons of a topic file, with the titles and objectives of its failed lessons from the fail list. Null when the fail list lacks one of them. */
+  private progressFromFile(file: TopicLessons, group: TopicGroup): Progress | null {
+    const failed = this.loadFailList().lessons.filter((l) => l.grade === group.grade && l.baseName === group.baseName)
+    const results: LessonResult[] = []
+    const lessons: Outline['lessons'] = []
+    for (const status of [...file.status].sort((a, b) => a.position - b.position)) {
+      if (status.position !== lessons.length + 1) return null
+      if (status.status === 'ready') {
+        const lesson = file.lessons.find((l) => l.position === status.position)
+        if (!lesson) return null
+        lessons.push({ title: lesson.title, objectives: lesson.objectives })
+        results.push({ position: status.position, status: 'ready', problems: [], writer: status.writer, reviewer: status.reviewer, lesson })
+      } else {
+        const entry = failed.find((l) => l.position === status.position)
+        if (!entry || !entry.title || !goodObjectives(entry.objectives)) return null
+        lessons.push({ title: entry.title, objectives: entry.objectives, sections: entry.sections })
+      }
+    }
+    const outline = { lessons }
+    return OutlineSchema.safeParse(outline).success ? { outline, results } : null
+  }
+
   private topicFailed(group: TopicGroup, reason: string): TopicResult {
     const list = this.loadFailList()
     const old = list.topics.find((t) => t.grade === group.grade && t.baseName === group.baseName)
@@ -325,8 +368,9 @@ export class Generator {
   }
 
   private finish(group: TopicGroup, fileName: string, path: string, source: TeachingSource, progress: Progress): TopicResult {
-    const ready = progress.results.filter((r) => r.status === 'ready' && r.lesson)
-    const failed = progress.results.filter((r) => r.status === 'failed')
+    const results = [...progress.results].sort((a, b) => a.position - b.position)
+    const ready = results.filter((r) => r.status === 'ready' && r.lesson)
+    const failed = results.filter((r) => r.status === 'failed')
     const list = this.loadFailList()
     const sameTopic = (x: { grade: number; baseName: string }) => x.grade === group.grade && x.baseName === group.baseName
     list.lessons = list.lessons.filter((l) => !sameTopic(l))
@@ -345,10 +389,10 @@ export class Generator {
       terms: group.terms as TopicLessons['terms'],
       source,
       lessons: ready.map((r) => r.lesson!),
-      status: progress.results.map((r) => ({ position: r.position, status: r.status, problems: r.problems, writer: r.writer, reviewer: r.reviewer })),
+      status: results.map((r) => ({ position: r.position, status: r.status, problems: r.problems, writer: r.writer, reviewer: r.reviewer })),
       generatedAt: at,
     }
-    writeAtomic(path, `${JSON.stringify(TopicLessonsSchema.parse(file), null, 2)}\n`)
+    writeAtomic(path, `${JSON.stringify(TopicLessonsSchema.parse(scrubDashes(file)), null, 2)}\n`)
     list.topics = list.topics.filter((t) => !sameTopic(t))
     list.lessons.push(...failed.map((r) => this.failedEntry(group, progress, r, at)))
     this.saveFailList(list)
@@ -359,7 +403,8 @@ export class Generator {
   }
 
   private failedEntry(group: TopicGroup, progress: Progress, r: LessonResult, at: string): FailList['lessons'][number] {
-    return { grade: group.grade, baseName: group.baseName, position: r.position, title: progress.outline.lessons[r.position - 1]?.title ?? '', problems: r.problems, writer: r.writer, reviewer: r.reviewer, at }
+    const item = progress.outline.lessons[r.position - 1]
+    return scrubDashes({ grade: group.grade, baseName: group.baseName, position: r.position, title: item?.title ?? '', objectives: item?.objectives, sections: item?.sections, problems: r.problems, writer: r.writer, reviewer: r.reviewer, at })
   }
 
   // ---- many topics ---------------------------------------------------------------------------------------------------------------------
@@ -372,8 +417,14 @@ export class Generator {
     const worker = async () => {
       while (queue.length > 0 && !this.stopRequested && !this.capReached && !this.stopReason) {
         const group = queue.shift()!
-        const result = await this.generateTopic(group, names.get(group) ?? group.baseName)
-        summary[result.status] += 1
+        try {
+          const result = await this.generateTopic(group, names.get(group) ?? group.baseName)
+          summary[result.status] += 1
+        } catch (e) {
+          // One topic that breaks (a disk error, a bug) is logged and counted; the others go on.
+          this.log(`grade ${group.grade} ${group.baseName}: ERROR ${e instanceof Error ? e.message : String(e)}`)
+          summary.failed += 1
+        }
       }
     }
     await Promise.all(Array.from({ length: Math.max(1, this.o.concurrency ?? 4) }, worker))
@@ -407,8 +458,15 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
     for (const s of summarize(records)) console.log(`${s.model}: ${s.calls} calls, ${s.failures} failed, ${s.limited} limit hits, ${s.avgSeconds}s average, ${s.tokensIn} in, ${s.tokensOut} out`)
     return
   }
+  const number = (name: string, text: string | undefined, min: number): number | undefined => {
+    if (text === undefined) return undefined
+    const n = Number(text)
+    if (!Number.isFinite(n) || n < min) throw new Error(`--${name} needs a number of at least ${min} (got "${text}")`)
+    return n
+  }
   const all = topicGroups()
-  const groups = all.filter((g) => (values.grade === undefined || g.grade === Number(values.grade)) && (values.topic === undefined || g.baseName.toLowerCase() === values.topic.toLowerCase()))
+  const grade = number('grade', values.grade, 1)
+  const groups = all.filter((g) => (grade === undefined || g.grade === grade) && (values.topic === undefined || g.baseName.toLowerCase() === values.topic.toLowerCase()))
   if (groups.length === 0) throw new Error(`no topic matches --grade ${values.grade ?? '*'} --topic ${values.topic ?? '*'}`)
   if (values['dry-run']) {
     const names = topicFileNames(all)
@@ -419,11 +477,11 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   const gen = new Generator({
     chain: new Chain(modelsFromEnv()),
     allGroups: all,
-    concurrency: values.concurrency ? Number(values.concurrency) : 4,
-    limitCalls: values['limit-calls'] ? Number(values['limit-calls']) : undefined,
+    concurrency: number('concurrency', values.concurrency, 1) ?? 4,
+    limitCalls: number('limit-calls', values['limit-calls'], 0),
     retryFailed: values['retry-failed'] ?? false,
-    maxWaitMs: values['max-wait-min'] !== undefined ? Number(values['max-wait-min']) * MIN : 120 * MIN,
-    timeoutMs: values['timeout-sec'] ? Number(values['timeout-sec']) * 1000 : 300_000,
+    maxWaitMs: (number('max-wait-min', values['max-wait-min'], 0) ?? 120) * MIN,
+    timeoutMs: (number('timeout-sec', values['timeout-sec'], 1) ?? 300) * 1000,
   })
   let interrupted = false
   process.on('SIGINT', () => {

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { z } from 'zod'
 import { TeachingLessonSchema, type TeachingLesson } from '@jemma/profiling/schemas'
+import { LATEX } from './checks'
 import { referenceText, type Reference } from './sources'
 import type { TopicGroup } from './topics'
 
@@ -35,7 +36,7 @@ export const OutlineSchema = z.object({
     )
     .min(1)
     .max(8),
-})
+}).refine((o) => !o.lessons.some((l) => LATEX.test([l.title, ...l.objectives].join(' '))), { message: 'the titles and objectives must be plain text, no LaTeX' })
 export type Outline = z.infer<typeof OutlineSchema>
 
 /** How many lessons a topic may have: from the grade, and from how much reference there is. */

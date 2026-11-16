@@ -66,6 +66,23 @@ describe('readEvents', () => {
     expect(r.error).toContain('boom')
   })
 
+  test('a text part counts even when the event has another name', () => {
+    expect(readEvents(JSON.stringify({ type: 'message.part.updated', part: { type: 'text', text: '{"a":2}' } })).text).toBe('{"a":2}')
+  })
+
+  test('a part sent again as it grows replaces its earlier text', () => {
+    const lines = [
+      JSON.stringify({ type: 'text', part: { id: 'p1', type: 'text', text: '{"a":' } }),
+      JSON.stringify({ type: 'text', part: { id: 'p1', type: 'text', text: '{"a":1}' } }),
+    ].join('\n')
+    expect(readEvents(lines).text).toBe('{"a":1}')
+  })
+
+  test('reasoning parts are not part of the reply', () => {
+    const r = readEvents([JSON.stringify({ type: 'reasoning', part: { type: 'reasoning', text: 'thinking {"x":1}' } }), JSON.stringify({ type: 'text', part: { type: 'text', text: '{"a":1}' } })].join('\n'))
+    expect(r.text).toBe('{"a":1}')
+  })
+
   test('ignores lines that are not JSON', () => {
     expect(readEvents('not json\n' + lines).text).toBe('{"a":1}')
   })
@@ -90,7 +107,7 @@ const args = process.argv.slice(2)
 const file = args[args.indexOf('-f') + 1]
 const prompt = fs.readFileSync(file, 'utf8')
 const out = (o) => console.log(JSON.stringify(o))
-out({ type: 'text', part: { type: 'text', text: JSON.stringify({ echoed: prompt, args: args.filter((a) => a.startsWith('--') || a === '-m' || a === 'opencode/fake-free'), cwd: process.cwd(), pwd: process.env.PWD, cfg: process.env.XDG_CONFIG_HOME }) } })
+out({ type: 'text', part: { type: 'text', text: JSON.stringify({ echoed: prompt, args: args.filter((a) => a.startsWith('--') || a === '-m' || a === 'opencode/fake-free'), cwd: process.cwd(), pwd: process.env.PWD, cfg: process.env.XDG_CONFIG_HOME, env: { data: process.env.XDG_DATA_HOME, state: process.env.XDG_STATE_HOME, claudeOff: process.env.OPENCODE_DISABLE_CLAUDE_CODE, config: process.env.OPENCODE_CONFIG } }) } })
 out({ type: 'step_finish', part: { type: 'step-finish', tokens: { input: 11, output: 7 } } })`,
     )
     const r = await runOpencode('opencode/fake-free', 'hello prompt', { timeoutMs: 20_000, bin })
@@ -98,12 +115,14 @@ out({ type: 'step_finish', part: { type: 'step-finish', tokens: { input: 11, out
     expect(r.error).toBeUndefined()
     expect(r.tokensIn).toBe(11)
     expect(r.tokensOut).toBe(7)
-    const got = JSON.parse(r.text) as { echoed: string; args: string[]; cfg: string; cwd: string; pwd: string }
+    const got = JSON.parse(r.text) as { echoed: string; args: string[]; cfg: string; cwd: string; pwd: string; env: Record<string, string | undefined> }
     expect(got.echoed).toBe('hello prompt')
     expect(got.args).toEqual(expect.arrayContaining(['--pure', '--format', '--title', '-m', 'opencode/fake-free']))
     expect(got.cfg).not.toContain('.config')
     // OpenCode resolves the attached file from $PWD: it must be the folder the child runs in
     expect(got.pwd).toBe(got.cwd)
+    expect(got.env).toMatchObject({ data: expect.stringContaining('teach-oc-'), state: expect.stringContaining('teach-oc-'), claudeOff: '1' })
+    expect(got.env.config).toBeUndefined()
   })
 
   test('a limited model is stopped at once and reported as limited', async () => {
@@ -115,6 +134,31 @@ setTimeout(() => {}, 60000)`,
     const t0 = Date.now()
     const r = await runOpencode('opencode/fake-free', 'p', { timeoutMs: 30_000, bin })
     expect(r.limited).toBe(true)
+    expect(Date.now() - t0).toBeLessThan(10_000)
+  })
+
+  test('a limit message split over two chunks is still read, and a timeout does not hide a limit', async () => {
+    const bin = fake(
+      'split.cjs',
+      `process.stderr.write('level=ERROR message="stream error" error.error="AI_APICallError: Free usage li')
+setTimeout(() => process.stderr.write('mit reached. Free models work"\\n'), 150)
+setTimeout(() => {}, 60000)`,
+    )
+    const r = await runOpencode('opencode/fake-free', 'p', { timeoutMs: 20_000, bin })
+    expect(r.limited).toBe(true)
+  })
+
+  test('a grandchild that keeps the pipes open does not hold the call for ever', async () => {
+    const bin = fake(
+      'grandchild.cjs',
+      `const { spawn } = require('node:child_process')
+spawn(process.execPath, ['-e', 'setTimeout(() => {}, 30000)'], { stdio: 'inherit', detached: false })
+console.log(JSON.stringify({ type: 'text', part: { type: 'text', text: '{"a":1}' } }))
+process.exit(0)`,
+    )
+    const t0 = Date.now()
+    const r = await runOpencode('opencode/fake-free', 'p', { timeoutMs: 20_000, bin })
+    expect(r.text).toBe('{"a":1}')
     expect(Date.now() - t0).toBeLessThan(10_000)
   })
 

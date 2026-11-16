@@ -15,12 +15,18 @@ const TAG = '$jemma$'
 
 /** A text as a dollar-quoted SQL string. Quotes, backslashes and $$ inside it need no escaping; the tag itself, or a NUL character, cannot be carried. */
 export function dollarQuote(text: string): string {
-  if (text.includes(TAG)) throw new Error(`a text holds the tag ${TAG}, it cannot be quoted`)
+  // `(text + TAG).indexOf(TAG)` is where the quote would end: only at the very end is safe (a text ending in "$jemma" would close the quote early).
+  if ((text + TAG).indexOf(TAG) !== text.length) throw new Error(`a text holds the tag ${TAG}, it cannot be quoted`)
   if (text.includes(String.fromCharCode(0))) throw new Error('a text holds a NUL character, Postgres cannot store it')
   return `${TAG}${text}${TAG}`
 }
 
-const json = (value: unknown) => `${dollarQuote(JSON.stringify(value))}::jsonb`
+const json = (value: unknown) => {
+  const text = JSON.stringify(value)
+  // JSON.stringify writes a NUL character as the six characters \u0000, and jsonb refuses that.
+  if (text.includes('\\u0000')) throw new Error('a lesson holds a NUL character, jsonb cannot store it')
+  return `${dollarQuote(text)}::jsonb`
+}
 
 export function buildImportSql(root = REPO_ROOT, opts: { version?: number } = {}): { sql: string; lessons: number; topics: number } {
   const version = opts.version ?? 1

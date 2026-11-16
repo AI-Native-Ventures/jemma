@@ -13,6 +13,11 @@ describe('dollarQuote', () => {
     expect(q).toContain(`it's "x" \\ $$ ok`)
   })
 
+  test('refuses a text that ends in the start of the tag: it would close the quote one character early', () => {
+    expect(() => dollarQuote('price $jemma')).toThrow(/\$jemma\$/)
+    expect(dollarQuote('price $jemm')).toBe('$jemma$price $jemm$jemma$')
+  })
+
   test('refuses a text that holds the tag itself, and a text with a NUL character', () => {
     expect(() => dollarQuote('a $jemma$ b')).toThrow(/\$jemma\$/)
     expect(() => dollarQuote(`a${String.fromCharCode(0)}b`)).toThrow(/NUL/)
@@ -67,6 +72,11 @@ describe('buildImportSql', () => {
     // no single quote is ever opened outside a dollar quote: the only quoted strings are the literal 'ready'
     const outside = sql.replace(/\$jemma\$[\s\S]*?\$jemma\$/g, '')
     expect(outside.match(/'/g)?.length ?? 0).toBe(2 * (outside.match(/'ready'/g)?.length ?? 0))
+  })
+
+  test('a lesson with a NUL character in it stops the import: jsonb cannot store it', () => {
+    write(6, 'common-fractions', topicFile({ lessons: [goodLesson({ title: `bad${String.fromCharCode(0)}title` })] }))
+    expect(() => buildImportSql(root, { version: 1 })).toThrow(/NUL/)
   })
 
   test('a file that does not match the lesson shape stops the import with its name', () => {
