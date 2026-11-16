@@ -12,7 +12,7 @@ import { isBaselineClass, isSeniorMaths, subjectProfile, type ClassContext } fro
  *
  * A senior class (Mathematics, Grades 7 to 12: `isSeniorMaths`) also gets the rules of its own: the lesson writer is told the four answer kinds that code marks
  * by meaning (number, expression, equation, point) and the form of an expression, when a question carries a picture (a graph on a grid, a triangle) and how
- * to give one, the child is a "learner", and the reader of a practice answered on paper is told to keep algebra as written. Such a rule is placed before the other rules on the same phrase, so that it wins. The baseline class never meets one (it is Grade 6).
+ * to give one, the child is a "learner", every question states its maths as an expression or an equation and not in words, and the reader of a practice answered on paper is told to keep algebra as written. Such a rule is placed before the other rules on the same phrase, so that it wins. The baseline class never meets one (it is Grade 6).
  *
  * The long view is not here: its prompt belongs to another packet. A rule never reads a file at run time; the tests check that
  * every `find` still occurs in its file, and the sha256 of each file, so an edit of a file cannot go unnoticed.
@@ -79,6 +79,21 @@ const SENIOR_PICTURES =
   'A `trig` graph takes x in degrees. A grid has `xMin` below `xMax` and `yMin` below `yMax`, at most 200 wide (720 across for a `trig` graph), at most 3 graphs and 12 points. ' +
   'A `triangle` has exactly three `vertices` names; give `angles` (they add up to 180) only to draw its shape, and write the angle or side that is asked for as `x` in `angleLabels` or `sides`. ' +
   'Never put the answer in a label. A lesson card or a diagram step may use these two pictures too.'
+
+/**
+ * What a senior class's lesson writer is told about the maths of a question (P127): state it as an expression or an equation in plain notation, never in
+ * words. The bullet of the file stays, and this one follows it in "What to write". Spoken audio is the one place where the maths is said in words.
+ */
+const SENIOR_QUESTIONS_BULLET = '- `questions`: exactly 15, five each at difficulty 1, 2 and 3, easiest first.'
+const SENIOR_NOTATION =
+  'Write the maths of every question as an expression or an equation in plain maths notation, never in words. ' +
+  'The `prompt` of a question has a short command word first (Solve, Expand, Factorise, Simplify, Find, Calculate), then the maths: ' +
+  '`Solve: x/2 + 6 = 10`, `Expand: (x + 2)(x + 3)`, `Simplify: √48`, `Find sin θ when θ = 30°`. ' +
+  'Never describe the maths in words: `x over 2 plus 6 equals 10` is wrong. ' +
+  'Write a fraction as `a/b`, with brackets when the top or the bottom has more than one term (`(x + 1)/2`), a power with `^` (`x^2`), a root as `√( )` (`√(x + 4)`), and use the symbols − × ÷ π θ °. ' +
+  'A word problem (money, data, a real situation) may keep one sentence of context, then the maths on its own line. ' +
+  'The same holds for the warm-up questions and their `choices` (an expression or a number, not a sentence), for `why` and `rightWay` (show each step as maths, such as `x/2 = 4` and then `x = 8`), and for a card or a diagram step. ' +
+  'The `answer` itself stays as the answer kinds say. Only the `audio` script is spoken, so there the maths is said in words.'
 
 export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
   draft_map: [
@@ -164,6 +179,8 @@ export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
     { find: 'for a Grade 6 child', when: (c) => c.grade !== 6, replace: (c) => `for a Grade ${c.grade} child` },
     { find: 'other than the maths.', when: notMaths, replace: () => 'other than the lesson.' },
     { find: 'with the working said out loud', when: notMaths, replace: () => 'with the ideas said out loud' },
+    // A senior class: the maths of a question is written as an expression or an equation, in a bullet after the questions bullet of the file (P127).
+    { find: SENIOR_QUESTIONS_BULLET, when: isSeniorMaths, replace: () => `${SENIOR_QUESTIONS_BULLET}\n- ${SENIOR_NOTATION}` },
     // A senior class: graphs on a grid and triangles, in a card, a step or a question.
     { find: 'Use only the diagram kinds in the schema.', when: isSeniorMaths, replace: () => SENIOR_PICTURES },
   ],
