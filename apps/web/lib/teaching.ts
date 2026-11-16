@@ -26,6 +26,11 @@ export type StrippedQuestion = {
   choices?: string[]
   form?: Question['form']
   diagram?: SeniorDiagramSpec
+  /** P150: what `stripQuestion` sends for a list, an order or a table (a count, labels, shuffled items, the table with its blanks, the places to round to). Never a value of the key. */
+  list?: QuestionForChild['list']
+  items?: QuestionForChild['items']
+  table?: QuestionForChild['table']
+  round?: number
 }
 
 /** A block as the browser holds it: a `try` block has a stripped question. Every other kind is as it was stored. */

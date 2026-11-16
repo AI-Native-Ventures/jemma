@@ -4,7 +4,8 @@ import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { myChild } from '@/lib/data/p27'
 import { storedLesson, underSessionHandover } from '@/lib/data/teaching'
 import { markLessonQuestion, questionAt, type LessonAnswerResult, type LessonWhere } from '@/lib/teaching'
-import { ANSWER_MAX_LENGTH } from '../session/[sessionId]/logic'
+import { isListKind } from '@jemma/profiling/logic'
+import { ANSWER_MAX_LENGTH, LIST_ANSWER_MAX_LENGTH } from '../session/[sessionId]/logic'
 
 // The learner's side of a teaching lesson (P144). The browser holds the lesson without the answers of its questions; an answer is sent here and marked on
 // the server with the same marking a practice session uses. Progress is written with the service client after the learner is found (`myChild`), the way
@@ -26,10 +27,12 @@ async function lessonOf(topicLessonId: string) {
  */
 export async function answerLessonQuestion(topicLessonId: string, where: LessonWhere, answer: string): Promise<LessonAnswerResult> {
   const text = typeof answer === 'string' ? answer.trim() : ''
-  if (!text || text.length > ANSWER_MAX_LENGTH) throw new Error('Write an answer first')
+  // A list, an order and a table hold several values and may be longer (P150): the question says which, once it is found.
+  if (!text || text.length > LIST_ANSWER_MAX_LENGTH) throw new Error('Write an answer first')
   const { lesson } = await lessonOf(topicLessonId)
   const question = questionAt(lesson, where)
   if (!question) throw new Error('That question is not in this lesson')
+  if (text.length > ANSWER_MAX_LENGTH && !isListKind(question.answerKind)) throw new Error('Write an answer first')
   return markLessonQuestion(question, text)
 }
 
