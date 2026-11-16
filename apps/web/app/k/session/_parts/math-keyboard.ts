@@ -106,13 +106,23 @@ export const CAPS = {
 export type TabId = 'numbers' | 'letters' | 'functions' | 'geometry' | 'calculus'
 type Tab = { id: TabId; face: string; tooltip: string; kinds: TypedKind[] }
 
+/**
+ * The face of a tab: ONE element, because a key is a flex column and each loose piece of a label (the f, the bracket, the x) would be a row of its own. It is
+ * on one line, 16 px like the 123 and abc tabs. The angle and the integral are drawn as lines (a sign from a font can be tiny or missing), 22 px.
+ */
+const face = (inner: string): string => `<span class="tab-face">${inner}</span>`
+const ANGLE_FACE = face('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20.5 H21 M3 20.5 L17 5"/><path d="M10 20.5 A7 7 0 0 0 8.2 15.8"/></svg>')
+const INTEGRAL_FACE = face(
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.8 4.6 C15 3.4 13.6 3.3 12.8 4.3 C11.8 5.6 12 9 12 12 C12 15.2 12.2 18.4 11.2 19.7 C10.4 20.7 9 20.6 8.2 19.4"/></svg>',
+)
+
 /** The tabs, in the order they are shown. A key of the tab row has the face of its tab. */
 export const TABS: Tab[] = [
-  { id: 'numbers', face: '123', tooltip: 'numbers and signs', kinds: ['number', 'expression', 'equation'] },
-  { id: 'letters', face: '<i>abc</i>', tooltip: 'letters', kinds: ['expression', 'equation'] },
-  { id: 'functions', face: '<i>f</i>(<i>x</i>)', tooltip: 'functions and constants', kinds: ['number', 'expression', 'equation'] },
-  { id: 'geometry', face: '&#x2220;', tooltip: 'geometry and Greek letters', kinds: ['number', 'expression', 'equation'] },
-  { id: 'calculus', face: '&#x222B;', tooltip: 'calculus', kinds: ['expression', 'equation'] },
+  { id: 'numbers', face: face('123'), tooltip: 'numbers and signs', kinds: ['number', 'expression', 'equation'] },
+  { id: 'letters', face: face('<i>abc</i>'), tooltip: 'letters', kinds: ['expression', 'equation'] },
+  { id: 'functions', face: face('<i>f</i>(<i>x</i>)'), tooltip: 'functions and constants', kinds: ['number', 'expression', 'equation'] },
+  { id: 'geometry', face: ANGLE_FACE, tooltip: 'geometry and Greek letters', kinds: ['number', 'expression', 'equation'] },
+  { id: 'calculus', face: INTEGRAL_FACE, tooltip: 'calculus', kinds: ['expression', 'equation'] },
 ]
 
 export const layerId = (tab: TabId): string => `jemma-${tab}`
@@ -199,9 +209,14 @@ function rowsOf(tab: TabId, kind: TypedKind): (string | Keycap)[][] {
   }
 }
 
-/** The CSS of a layer: the tab you are on is dark, and the face of a tab is a small label. */
-const LAYER_STYLE = `.MLK__rows .tab { font-size: 15px; font-weight: 700; }
-.MLK__rows .tab.is-current-tab { background: #1f1d36 !important; color: #ffffff !important; border-color: #1f1d36 !important; }`
+/**
+ * The CSS of a layer. A key of the keyboard that is an action has 12 px of padding at each side, which leaves a 48 px tab 20 px for its face: the face wrapped
+ * and shrank. A tab has no padding, and a face of its own: on one line, 16 px. The tab you are on is dark.
+ */
+const LAYER_STYLE = `.MLK__rows > .MLK__row .tab { padding: 0 !important; font-size: 16px !important; font-weight: 700; line-height: 1 !important; }
+.MLK__rows > .MLK__row .tab .tab-face { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; line-height: 1; }
+.MLK__rows > .MLK__row .tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.MLK__rows > .MLK__row .tab.is-current-tab { background: #1f1d36 !important; color: #ffffff !important; border-color: #1f1d36 !important; }`
 
 /** The keyboard of one question: a layer for each tab of its kind of answer, the tab that fits the question first (the editor opens on the first). */
 export function keyboardLayout(input: { kind: TypedKind; topic?: string; prompt?: string }): KeyboardLayout {

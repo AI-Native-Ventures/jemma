@@ -115,14 +115,15 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint }: 
     }
     const show = () => window.mathVirtualKeyboard.show()
     el.addEventListener('input', read)
-    el.addEventListener('focusin', show)
+    // A phone's editor shows its keyboard itself, a moment after the box is touched: a second show from here would build the keyboard again under the child's finger.
+    if (!touch) el.addEventListener('focusin', show)
     el.addEventListener('focusout', leave)
     // The page's checks wait for this: the editor is started and listening.
     el.setAttribute('data-ready', 'true')
     return () => {
       clearTimeout(timer)
       el.removeEventListener('input', read)
-      el.removeEventListener('focusin', show)
+      if (!touch) el.removeEventListener('focusin', show)
       el.removeEventListener('focusout', leave)
     }
   }, [status])

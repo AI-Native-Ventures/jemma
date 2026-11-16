@@ -3,7 +3,7 @@ import { createServer, type Server } from 'node:http'
 import { resolve } from 'node:path'
 import { createServiceClient, type Json } from '@jemma/profiling/db'
 import { LessonSchema, type Lesson, type Question } from '@jemma/profiling/schemas'
-import { expect, test as base, type Page } from '@playwright/test'
+import { expect, test as base, type Page, type Locator } from '@playwright/test'
 import { mathField, writeAnswer, writtenLatex } from './helpers/math-field'
 import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 
@@ -114,6 +114,13 @@ async function makeSenior(childId: string, classId: string): Promise<string> {
 const noHorizontalScroll = async (page: Page) =>
   expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false)
 
+/** The box of an element that may be missing for a moment (the editor builds its keyboard again): wait until it has one. */
+async function boxOf(target: Locator): Promise<{ x: number; y: number; width: number; height: number }> {
+  let box: { x: number; y: number; width: number; height: number } | null = null
+  await expect.poll(async () => ((box = await target.boundingBox()) !== null), { timeout: 10_000 }).toBe(true)
+  return box!
+}
+
 const next = (page: Page) => page.getByRole('button', { name: 'Next', exact: true })
 const answerBox = (page: Page) => page.getByLabel('Your answer', { exact: true })
 
@@ -153,13 +160,48 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     expect(layoutId).toMatch(/^jemma-expression-/)
     // The keyboard is tabs by kind of symbol and opens on 123 for this question; each key is at least 44 px and the page does not slide sideways.
     const visibleLayer = () => page.locator('.MLK__layer.is-visible').first().getAttribute('id')
+    // The editor shows its keyboard a moment after the touch (300 ms) and builds it once more then: it is measured when it has settled.
+    await page.waitForTimeout(900)
     expect(await visibleLayer()).toBe('jemma-numbers')
     const keycap = page.locator('.MLK__layer.is-visible .MLK__keycap').first()
     await expect(keycap).toBeVisible()
-    const size = (await keycap.boundingBox())!
+    const size = await boxOf(keycap)
     expect(size.width).toBeGreaterThanOrEqual(44)
     expect(size.height).toBeGreaterThanOrEqual(44)
     await noHorizontalScroll(page)
+    // The row of tabs: five tabs and the key that hides the keyboard. Each face is one line, readable (16 px text, a 22 px drawing), and inside its key,
+    // at 390 px and at 360 px.
+    const showKeyboard = async () => {
+      // A change of the window size may put the keyboard away: it is brought back if it went, and measured when it has settled.
+      const up = await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible)
+      if (!up) await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { show(): void } }).mathVirtualKeyboard.show())
+      await page.waitForTimeout(900)
+    }
+    const tabFaces = async (label: string) => {
+      await showKeyboard()
+      const tabs = page.locator('.MLK__layer.is-visible .tab')
+      await expect(tabs).toHaveCount(5)
+      await expect(tabs.first()).toBeVisible()
+      for (let i = 0; i < 5; i++) {
+        const at = `${label}, tab ${i}`
+        const key = await boxOf(tabs.nth(i))
+        const face = await boxOf(tabs.nth(i).locator('.tab-face'))
+        expect(key.width, at).toBeGreaterThanOrEqual(44)
+        expect(face.height, at).toBeGreaterThanOrEqual(14)
+        expect(face.height, at).toBeLessThanOrEqual(26)
+        expect(face.width, at).toBeGreaterThanOrEqual(14)
+        expect(face.x, at).toBeGreaterThanOrEqual(key.x - 0.5)
+        expect(face.x + face.width, at).toBeLessThanOrEqual(key.x + key.width + 0.5)
+      }
+      for (const i of [0, 1, 2]) expect(await tabs.nth(i).locator('.tab-face').evaluate((el) => getComputedStyle(el).fontSize), `${label}, tab ${i}`).toBe('16px')
+    }
+    await tabFaces('390 px')
+    await page.setViewportSize({ width: 360, height: 844 })
+    await tabFaces('360 px')
+    await noHorizontalScroll(page)
+    await page.setViewportSize({ width: 390, height: 844 })
+    await showKeyboard()
+    await expect(page.locator('.MLK__layer.is-visible .tab').first()).toBeVisible()
     await proof(page, 'expression-keyboard')
     // The abc tab has the letters, italic, apart from the signs; the 123 tab has them back.
     await page.locator('.MLK__layer.is-visible [data-tooltip="letters"], .MLK__layer.is-visible [data-command*="jemma-letters"]').first().click()
