@@ -29,8 +29,8 @@ Copy `.env.example` to `.env.local` at the repo root. `apps/web` reads it, and `
 | Var | What it does |
 | --- | --- |
 | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | The local stack, or your hosted project. The service key is server and agent only. |
-| `LLM_PROVIDER`, `LLM_MODEL` | Text model. Free runs use `openrouter` and an OpenRouter `:free` id. |
-| `LLM_MODEL_FALLBACKS` | Comma list of ids (same provider) tried in order when the model still fails with a 5xx or overload after its retries, or does not answer in 4 minutes. |
+| `LLM_PROVIDER`, `LLM_MODEL` | Text model. Free runs use `openrouter` and an OpenRouter `:free` id. The hosted demo uses the paid listing first: the same id without `:free` (`nvidia/nemotron-3.5-super-vl`, pay per use, credit on the OpenRouter account). |
+| `LLM_MODEL_FALLBACKS` | Comma list of ids (same provider) tried in order when the model still fails with a 5xx or overload after its retries, or does not answer in time: 90 seconds for a paid OpenRouter id (no `:free`), 4 minutes for every other. The hosted demo lists the free ids here: `nvidia/nemotron-3.5-super-vl:free,nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-31b-it:free`. |
 | `VISION_PROVIDER`, `VISION_MODEL`, `VISION_MODEL_FALLBACKS` | Same for photos (memo, papers, the curriculum PDF). |
 | `TTS_PROVIDER`, `TTS_MODEL` | Lesson audio: `workers-ai` and `@cf/deepgram/aura-2-en`. |
 | `AI_MODE` | `live` (call the model), `record` (call it and store the answer in `ai_replays`), `replay` (use the stored answer, never call a model, a miss is an error), `cache` (use the stored answer when the key exists, else call the model and store it). |
@@ -45,16 +45,25 @@ Copy `.env.example` to `.env.local` at the repo root. `apps/web` reads it, and `
 
 ### Judges: `AI_MODE=cache`
 
-Every judge sandbox has the same synthetic inputs, so one warm-up run fills `ai_replays` and every later run is near instant. Set `AI_MODE=cache` on the preview agent, then run the demo path once (`demo-path.spec.ts` or by hand). After that a judge's papers, reports and lessons come from storage in seconds. A miss (an edited paper, a new prompt, a new model id) calls the model live and stores the answer, so live runs still work. Warm up with a healthy primary model: a recording made by a fallback model is stored under the fallback's id and the primary is tried first on the next run.
+Every judge sandbox has the same synthetic inputs, so one warm-up run fills `ai_replays` and every later run is near instant. Set `AI_MODE=cache` on the preview agent, then run the demo path once (`demo-path.spec.ts` or by hand). After that a judge's papers, reports and lessons come from storage in seconds. A miss (an edited paper, a new prompt) calls the model live and stores the answer, so live runs still work.
 
-A replay is keyed by the model id and the call, so record and replay with the same `LLM_MODEL` and `VISION_MODEL` (and the same prompts). Uuids and dates in a call are left out of the key, so an answer recorded in one sandbox replays in another.
+A replay is keyed by the model id and the call, and an answer is stored under the id of the model that wrote it. With more than one id in `LLM_MODEL` and `LLM_MODEL_FALLBACKS` (or the vision pair), `cache` and `replay` look the call up under every id at once, the free ids first, before any model is called. So the paid id can be first and the answers recorded under the free ids (the whole demo path, `fixtures/ai-replays.json.gz`) still hit with no new call. Only a call with no answer under any id goes to the paid model, and its answer is stored under the paid id. Uuids and dates in a call are left out of the key, so an answer recorded in one sandbox replays in another.
+
+### Paid hosting first on the preview
+
+The preview agent (the Cloudflare worker `jemma-agent`) gets these four variables, text and photos alike, and no code change:
+
+- `LLM_MODEL` and `VISION_MODEL`: `nvidia/nemotron-3.5-super-vl`
+- `LLM_MODEL_FALLBACKS` and `VISION_MODEL_FALLBACKS`: `nvidia/nemotron-3.5-super-vl:free,nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-31b-it:free`
+
+`LLM_PROVIDER` and `VISION_PROVIDER` stay `openrouter`, `AI_MODE` stays `cache`. The OpenRouter account needs credit. To go back to free only, put the `:free` id in `LLM_MODEL` and `VISION_MODEL` and drop it from the fallbacks. A local run and CI keep their own values and are unchanged.
 
 ## Free model notes (27 Oct)
 
 - `nvidia/nemotron-3.5-super-vl:free` reads the curriculum PDF, the memo and the papers correctly and also writes text.
 - `nvidia/nemotron-3-ultra-550b-a55b:free` is the text fallback. It often answers `Internal server error` on a whole lesson.
 - `google/gemma-4-31b-it:free` was down (`Internal error encountered`) and cannot do provider-side structured output reliably.
-- Free models fail often. Every model call retries a 429 or 5xx with backoff (2, 5, 10, 20 s), then tries the next id in the fallback list. One call gets 4 minutes: a timeout is not tried again on the same model, the next id in the list gets the call. A job that shows no sign of life for 16 minutes is put back on the queue, twice at most, then marked failed (see "When a job stops half way" in [architecture.md](architecture.md)).
+- Free models fail often. Every model call retries a 429 or 5xx with backoff (2, 5, 10, 20 s), then tries the next id in the fallback list. One call gets 4 minutes (90 seconds for a paid OpenRouter id, one without `:free`): a timeout is not tried again on the same model, the next id in the list gets the call. A job that shows no sign of life for 16 minutes is put back on the queue, twice at most, then marked failed (see "When a job stops half way" in [architecture.md](architecture.md)).
 - OpenRouter's free tier is about 20 requests a minute. Papers are read three at a time and diagnoses three at a time.
 
 ## Run the agent and the web app locally
