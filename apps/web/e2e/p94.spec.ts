@@ -85,7 +85,8 @@ test.describe('My own', () => {
 
     await page.goto('/k/maths')
     await check(page.getByRole('heading', { level: 1, name: 'My maths' })).toBeVisible()
-    expect(await page.locator('main').first().innerText()).toMatch(/3 of 5 right/)
+    // a topic at 3 of 5 is half a circle: started, not yet secure (P122)
+    expect(await page.locator('main').first().innerText()).toMatch(/\d+ of \d+ secure \u00b7 [1-9]\d* started/)
     await noSidewaysScroll(page)
     await proof(page, 'my-maths-own')
 

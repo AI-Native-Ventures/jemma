@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MyMathsView } from '../lib/data/p80'
+import { textWithoutKey } from './p122-key'
 
 // The two "My maths" screens rendered from a count that is handed to them: what they say, which buttons they show, and what they never say.
 // The data, the router and the actions are doubles: no server, no browser.
@@ -93,20 +94,22 @@ describe('/k/maths', () => {
     expect(gaps.getAllByRole('button')).toHaveLength(2)
   })
 
-  it('each part of Mathematics is a row with its count that opens its own screen, and "No score yet" when nothing was asked', async () => {
+  it('each part of Mathematics is a row that opens its own screen: a circle for each topic with a line under them (P122), or its count in words when the map has no topic of it', async () => {
     await page()
     const all = within(screen.getByRole('region', { name: 'All of Mathematics' }))
     expect(all.getByRole('link', { name: /Whole numbers/ }).getAttribute('href')).toBe('/k/maths/whole_numbers')
     expect(all.getByText('17 of 20 right')).toBeTruthy()
     expect(all.getByRole('link', { name: /Fractions/ }).getAttribute('href')).toBe('/k/maths/fractions')
-    expect(all.getByText('9 of 16 right')).toBeTruthy()
+    // Fractions has three topics: 5 of 5 (full), 2 of 6 (empty) and 0 of 0 (not tried)
+    expect([...all.getByRole('link', { name: /Fractions/ }).querySelectorAll('svg[data-dot]')].map((d) => d.getAttribute('data-dot'))).toEqual(['full', 'empty', 'none'])
+    expect(all.getByText('1 of 3 secure \u00b7 1 started')).toBeTruthy()
     expect(all.getByRole('link', { name: /Decimals/ }).getAttribute('href')).toBe('/k/maths/decimals')
     expect(all.getByText('No score yet')).toBeTruthy()
   })
 
   it('never says a percent, a grade, a rank or a classmate, and never says strand or subtopic', async () => {
     await page()
-    const text = document.body.textContent ?? ''
+    const text = textWithoutKey()
     expect(text).not.toMatch(/%|percent|grade|rank|classmate|class average|strand|subtopic|out of/i)
   })
 
@@ -116,8 +119,8 @@ describe('/k/maths', () => {
     expect(screen.queryAllByRole('button', { name: /^Practise/ })).toHaveLength(0)
     expect(screen.getByText(/Finish tonight's lesson first\./)).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Go to today' }).getAttribute('href')).toBe('/k')
-    // the counts and the way into each part stay
-    expect(screen.getByText('9 of 16 right')).toBeTruthy()
+    // the circles and the way into each part stay
+    expect(screen.getByText('1 of 3 secure \u00b7 1 started')).toBeTruthy()
   })
 
   it('while a practice is being written there is no Practise button either', async () => {
@@ -179,6 +182,6 @@ describe('/k/maths/[family]', () => {
 
   it('never says a percent, a grade, a rank or a classmate, and never says strand or subtopic', async () => {
     await part('fractions')
-    expect(document.body.textContent ?? '').not.toMatch(/%|percent|grade|rank|classmate|class average|strand|subtopic|out of/i)
+    expect(textWithoutKey()).not.toMatch(/%|percent|grade|rank|classmate|class average|strand|subtopic|out of/i)
   })
 })
