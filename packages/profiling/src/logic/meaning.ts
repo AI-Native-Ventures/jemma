@@ -93,21 +93,25 @@ const tokenize = (text: string): Tok[] => {
     } else if (isLetter(c)) {
       let j = i
       while (isLetter(s[j])) j++
-      const run = s.slice(i, j).toLowerCase()
-      for (let at = 0; at < run.length; ) {
-        const name = TRIG_NAMES.find((n) => run.startsWith(n, at))
-        if (run.startsWith('sqrt', at)) {
-          out.push({ k: 'sqrt' })
-          at += 4
-        } else if (name) {
-          out.push({ k: 'fn', name })
-          at += 3
-        } else if (run.startsWith('pi', at)) {
-          out.push({ k: 'pi' })
-          at += 2
-        } else {
-          out.push({ k: 'var', c: run[at]! })
-          at++
+      const word = s.slice(i, j)
+      const run = word.toLowerCase()
+      // The word pi is pi only when it stands alone (2pi, pi r, pi/2), and not "Pi" or a longer run: P i n is a product of three letters
+      // (simple interest), not pi times n.
+      if (word === 'pi' || word === 'PI') {
+        out.push({ k: 'pi' })
+      } else {
+        for (let at = 0; at < run.length; ) {
+          const name = TRIG_NAMES.find((n) => run.startsWith(n, at))
+          if (run.startsWith('sqrt', at)) {
+            out.push({ k: 'sqrt' })
+            at += 4
+          } else if (name) {
+            out.push({ k: 'fn', name })
+            at += 3
+          } else {
+            out.push({ k: 'var', c: run[at]! })
+            at++
+          }
         }
       }
       i = j
