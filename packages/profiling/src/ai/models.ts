@@ -24,6 +24,9 @@ export const MODEL_CALL_TIMEOUT_MS = 240_000
 /** A paid model has this long for one try: it answers in seconds or something is wrong, and the next model should get the call sooner. */
 export const PAID_MODEL_CALL_TIMEOUT_MS = 90_000
 
+/** A Cloudflare Workers AI model (DeepSeek V4.1 Flash, GLM 5.3 Flash) has this long for one try: a whole lesson took 47 s and 100 s in the probe of 16 November 2026. */
+export const WORKERS_AI_MODEL_CALL_TIMEOUT_MS = 150_000
+
 /** In the dynamic list (`AI_MODEL_RANKING`) a free model has this long for one try: a longer list must not outlast the queue limit. */
 export const DYNAMIC_FREE_MODEL_CALL_TIMEOUT_MS = 120_000
 
@@ -38,10 +41,11 @@ export function isPaidModel(provider: string, id: string): boolean {
 }
 
 /**
- * The time one try of this model may take: 90 seconds for a paid model, 4 minutes for every other. In the dynamic list (`dynamic`) a free
- * model gets 2 minutes instead, and a paid model keeps 90 seconds.
+ * The time one try of this model may take: 150 seconds for a Workers AI model, 90 seconds for a paid OpenRouter model, 4 minutes for every
+ * other. In the dynamic list (`dynamic`) a free model gets 2 minutes instead, and a paid model keeps 90 seconds.
  */
 export function modelCallTimeoutMs(provider: string, id: string, dynamic = false): number {
+  if (provider === 'workers-ai') return WORKERS_AI_MODEL_CALL_TIMEOUT_MS
   if (isPaidModel(provider, id)) return PAID_MODEL_CALL_TIMEOUT_MS
   return dynamic ? DYNAMIC_FREE_MODEL_CALL_TIMEOUT_MS : MODEL_CALL_TIMEOUT_MS
 }
@@ -106,6 +110,14 @@ function noteRefusals(onRefused: () => void): LanguageModelMiddleware {
       }
     },
   }
+}
+
+/**
+ * The ids of `AI_RECORDED_IDS`: a comma list, blanks and repeats dropped. They are ids that recorded answers were saved under (the old free
+ * OpenRouter ids of the demo path) and that are only looked up, never called.
+ */
+export function recordedIdList(value: string | undefined): string[] {
+  return [...new Set((value ?? '').split(',').map((id) => id.trim()).filter(Boolean))]
 }
 
 /**
@@ -176,6 +188,60 @@ export function withModelRetry(
 
 export type ModelKind = 'text' | 'vision'
 
+/** The Workers AI binding of a Worker (`env.AI`). */
+export type AiBinding = { run(model: string, input: Record<string, unknown>): Promise<unknown> }
+
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
+
+const jsonResponse = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
+const errorResponse = (status: number, message: string) => jsonResponse(status, { error: { message } })
+
+/** A promise that gives up when the signal aborts. The call it wraps is left to finish or fail on its own, and its failure is not an unhandled one. */
+function untilAborted<T>(call: Promise<T>, signal: AbortSignal | undefined): Promise<T> {
+  call.catch(() => {})
+  if (!signal) return call
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(signal.reason ?? new DOMException('This operation was aborted', 'AbortError'))
+    signal.addEventListener('abort', onAbort, { once: true })
+    call.then(resolve, reject).finally(() => signal.removeEventListener('abort', onAbort))
+  })
+}
+
+/**
+ * A `fetch` backed by the Workers AI binding, for the OpenAI provider. For DeepSeek V4.1 Flash and GLM 5.3 Flash the binding takes the OpenAI
+ * chat-completions body (without `model`, which is the first argument of `run`) and returns the OpenAI chat-completion object, so nothing is
+ * translated: the body goes in, the object comes out, with no API token. Errors become the status the retry layer knows: a thrown error that
+ * says capacity, rate or too many is a 429, any other is a 500, both with an OpenAI-shaped error body that holds the message; an output with no
+ * `choices` is a 502 that names the model; a streaming request is a 400 (nothing in Jemma streams). A cancelled call ends the fetch at once.
+ */
+export function bindingFetch(binding: AiBinding): (input: string | URL | Request, init?: RequestInit) => Promise<Response> {
+  return async (input, init) => {
+    const signal = init?.signal ?? (input instanceof Request ? input.signal : undefined) ?? undefined
+    if (signal?.aborted) throw signal.reason ?? new DOMException('This operation was aborted', 'AbortError')
+    const raw = typeof init?.body === 'string' ? init.body : input instanceof Request ? await input.clone().text() : ''
+    let body: unknown
+    try {
+      body = JSON.parse(raw)
+    } catch {
+      body = null
+    }
+    if (!isObject(body)) return errorResponse(400, 'The request body is not a JSON object')
+    const { model, ...rest } = body
+    if (typeof model !== 'string' || model === '') return errorResponse(400, 'The request names no model')
+    if (rest.stream === true) return errorResponse(400, `Streaming is not supported through the Workers AI binding (${model})`)
+    let output: unknown
+    try {
+      output = await untilAborted(binding.run(model, rest), signal)
+    } catch (err) {
+      if (signal?.aborted) throw err
+      const message = err instanceof Error && err.message ? err.message : String(err)
+      return errorResponse(/capacity|rate|too many/i.test(message) ? 429 : 500, message)
+    }
+    if (!isObject(output) || !Array.isArray(output.choices)) return errorResponse(502, `Workers AI returned no choices for ${model}`)
+    return jsonResponse(200, output)
+  }
+}
+
 export type AiEnv = {
   LLM_PROVIDER?: string
   LLM_MODEL?: string
@@ -187,6 +253,20 @@ export type AiEnv = {
   TTS_PROVIDER?: string
   TTS_MODEL?: string
   AI_MODE?: AiMode
+  /**
+   * The Workers AI binding of the Worker (`env.AI`). The `workers-ai` provider runs through it when there is no `CF_AI_TOKEN`: no API token and no
+   * account id are needed inside a Worker.
+   */
+  AI_BINDING?: AiBinding
+  /** Cloudflare account id and an API token (a secret) with Workers AI access: the REST way to use the `workers-ai` provider, outside a Worker. */
+  CF_ACCOUNT_ID?: string
+  CF_AI_TOKEN?: string
+  /**
+   * Comma list of ids that recorded answers were saved under but that are never called (`cache` and `replay` look a call up under them after the
+   * model ids). With the three old free OpenRouter ids here, the demo path's recorded answers still hit while every live call goes to another
+   * provider. Unset: the lookup list is the model ids only.
+   */
+  AI_RECORDED_IDS?: string
   /** `artificial-analysis`: the hosted app picks its free OpenRouter models itself each hour, ranked by Artificial Analysis (see `catalog.ts`). Anything else or unset: the env lists only. */
   AI_MODEL_RANKING?: string
   /** Key of the Artificial Analysis API (secret). Without it the dynamic list ranks the newest free models first. */
@@ -214,6 +294,23 @@ function rawModel(label: string, provider: string, modelId: string, env: AiEnv) 
       return createGoogleGenerativeAI({ apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY })(modelId)
     case 'openai':
       return createOpenAI({ apiKey: env.OPENAI_API_KEY })(modelId)
+    case 'workers-ai': {
+      // Cloudflare Workers AI (DeepSeek V4.1 Flash, GLM 5.3 Flash: `@cf/...` ids). Inside a Worker the binding is used and no token is needed. A
+      // `CF_AI_TOKEN` means the REST endpoint instead (for a run outside a Worker). `replay` never calls a model, so it needs neither.
+      const token = (env.CF_AI_TOKEN ?? '').trim()
+      if (env.AI_BINDING && !token) {
+        return createOpenAI({ name: 'workers-ai', baseURL: 'https://workers-ai.binding/v1', apiKey: 'binding', fetch: bindingFetch(env.AI_BINDING) as typeof fetch }).chat(modelId)
+      }
+      if (env.AI_MODE !== 'replay') {
+        if (!token) throw new Error('CF_AI_TOKEN or the AI binding is not set (the workers-ai provider needs one of them)')
+        if (!env.CF_ACCOUNT_ID?.trim()) throw new Error('CF_ACCOUNT_ID is not set (the workers-ai provider needs it with CF_AI_TOKEN)')
+      }
+      return createOpenAI({
+        name: 'workers-ai',
+        baseURL: `https://api.cloudflare.com/client/v4/accounts/${(env.CF_ACCOUNT_ID ?? '').trim()}/ai/v1`,
+        apiKey: token,
+      }).chat(modelId)
+    }
     case 'opencode':
       return createOpenAI({
         name: 'opencode',
@@ -312,8 +409,10 @@ export function recordedFirst(lookups: Chained[], then: Chained | null, tolerate
  * every id (recorded answers of the free ids still hit when the paid id is first), and only on a miss call the models. In `replay` there is no
  * model to call, so the lookups are the whole chain.
  */
-function buildChain(label: string, provider: string, ids: string[], lookupIds: string[], env: AiEnv, dynamic: boolean, onRefused?: (id: string) => void): Chained {
+function buildChain(label: string, provider: string, ids: string[], baseLookupIds: string[], env: AiEnv, dynamic: boolean, onRefused?: (id: string) => void): Chained {
   const mode = env.AI_MODE ?? 'live'
+  // `AI_RECORDED_IDS` are looked up after the model ids and never called: the old ids that the demo path's answers were saved under.
+  const lookupIds = [...new Set([...baseLookupIds, ...recordedIdList(env.AI_RECORDED_IDS)])]
   const lookupFirst = lookupIds.length > 1 && (mode === 'cache' || mode === 'replay')
   // Each model has its own replay layer, so an answer is recorded and replayed under the id of the model that wrote it. Each has its own
   // time limit: 90 seconds for a paid model, 4 minutes for a free one (2 minutes in the dynamic list).
