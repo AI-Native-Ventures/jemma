@@ -121,3 +121,81 @@ describe('what comes out is marked by meaning, against the key written either wa
     expect(isInequalityKey(latexToNotation('x=\\pm2')!)).toBe(false)
   })
 })
+
+// P147b: a sign typed or pasted as the character itself (≤ ≥ ≠ ± − × ÷), and the other names TeX has for the same signs, are read like the commands.
+describe('the characters themselves and the other names of a sign', () => {
+  const table: [latex: string, plain: string][] = [
+    ['x≤5', 'x ≤ 5'],
+    ['x≥3', 'x ≥ 3'],
+    ['x≠2', 'x ≠ 2'],
+    ['x≤−4', 'x ≤ -4'],
+    ['x\\le−4', 'x ≤ -4'],
+    ['x\\le -4', 'x ≤ -4'],
+    ['−1≤x≤3', '-1 ≤ x ≤ 3'],
+    ['−2<x≤5', '-2 < x ≤ 5'],
+    ['x≥−2,5', 'x ≥ -2,5'],
+    ['x≥−2{,}5', 'x ≥ -2,5'],
+    ['x\\ge-2{,}5', 'x ≥ -2,5'],
+    ['x<−1\\text{ or }x>4', 'x < -1 or x > 4'],
+    ['x=±2', 'x = ±2'],
+    ['x=1±√3', 'x = 1 ± √3'],
+    ['x=(5±√17)/4', 'x = (5 ± √17) ÷ 4'], // a typed slash is a division sign, as it always was: the value is the same
+    ['x=\\frac{5±√17}{4}', 'x = (5 ± √17)/4'],
+    ['√(x+1)', '√(x + 1)'],
+    ['2√17', '2√17'],
+    ['√8', '√8'],
+    ['2×3', '2 × 3'],
+    ['6÷2', '6 ÷ 2'],
+    ['x−3', 'x - 3'],
+    ['3−x', '3 - x'],
+    ['x\\lt4', 'x < 4'],
+    ['x\\gt4', 'x > 4'],
+    ['x\\leqslant5', 'x ≤ 5'],
+    ['x\\geqslant3', 'x ≥ 3'],
+    ['x\\leqq5', 'x ≤ 5'],
+    ['x\\geqq3', 'x ≥ 3'],
+    ['x\\leq5', 'x ≤ 5'],
+    ['x\\geq5', 'x ≥ 5'],
+    ['x\\neq2', 'x ≠ 2'],
+    ['-2\\leqslant x\\lt3', '-2 ≤ x < 3'],
+    ['x∈ℝ', 'x ∈ ℝ'],
+    ['(−∞;3]', '(-∞; 3]'],
+    ['(−∞,3]', '(-∞; 3]'],
+    ['[2;∞)', '[2; ∞)'],
+    ['(−∞;−1)∪(4;∞)', '(-∞; -1) ∪ (4; ∞)'],
+    ['x\\le 5', 'x ≤ 5'],
+    ['x ≤ 5', 'x ≤ 5'],
+  ]
+  it.each(table)('%s', (latex, plain) => expect(latexToNotation(latex)).toBe(plain))
+
+  it('a comma between two digits is a decimal comma, a comma after a number and before a letter is the separator', () => {
+    expect(latexToNotation('x=2,5')).toBe('x = 2,5')
+    expect(latexToNotation('x=2,y=3')).toBe('x = 2; y = 3')
+    expect(latexToNotation('(1,4)')).toBe('(1,4)')
+  })
+
+  it('a sign the reader has no use for is still not readable', () => {
+    for (const latex of ['x\\ll5', 'x\\ngeq5', '≈', 'x≪5']) expect(latexToNotation(latex), latex).toBeNull()
+  })
+
+  it('what comes out is marked by meaning, the key written either way', () => {
+    const mark = (key: string, latex: string) => markByMeaning('equation', key, latexToNotation(latex) ?? '').correct
+    expect(mark('x <= 5', 'x≤5')).toBe(true)
+    expect(mark('x <= 5', 'x<5')).toBe(false)
+    expect(mark('x <= -4', 'x≤−4')).toBe(true)
+    expect(mark('-1 <= x <= 3', '−1≤x≤3')).toBe(true)
+    expect(mark('-1 <= x <= 3', '−1<x≤3')).toBe(false)
+    expect(mark('x >= -2,5', 'x≥−2,5')).toBe(true)
+    expect(mark('x >= -2,5', 'x≥−2')).toBe(false)
+    expect(mark('x != 2', 'x≠2')).toBe(true)
+    expect(mark('x < -1 or x > 4', 'x<−1\\text{ or }x>4')).toBe(true)
+    expect(mark(`(-${INF}; 5]`, 'x≤5')).toBe(true)
+    expect(mark('x <= 5', '(−∞;5]')).toBe(true)
+    expect(mark(`x = 1 ${PM} ${ROOT}3`, 'x=1±√3')).toBe(true)
+    expect(mark(`x = 1 ${PM} ${ROOT}3`, 'x=1+√3')).toBe(false)
+    expect(markByMeaning('number', '2√2', latexToNotation('√8') ?? '').correct).toBe(true)
+    expect(markByMeaning('number', '6', latexToNotation('2×3') ?? '').correct).toBe(true)
+    expect(markByMeaning('number', '3', latexToNotation('6÷2') ?? '').correct).toBe(true)
+    expect(markByMeaning('number', '-5', latexToNotation('2−7') ?? '').correct).toBe(true)
+  })
+})
