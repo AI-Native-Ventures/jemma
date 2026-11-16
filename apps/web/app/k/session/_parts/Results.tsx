@@ -9,6 +9,7 @@ import { CardQuestion } from './QuestionPrompt'
 import { QuestionPicture } from './QuestionPicture'
 import { scoreLines, type MissedQuestion } from '../[sessionId]/logic'
 import { CellResults } from './answers/CellResults'
+import { SignText } from './answers/Signs'
 
 /** A sign (or an equals sign) that stands alone between two terms of an answer. */
 const SIGNS = new Set(['+', '-', '\u2212', '\u00d7', '\u00f7', '*', '='])
@@ -83,7 +84,7 @@ function Stacked({ value, size, rule, gap, side }: { value: string; size: number
         {units.map((unit, i) => (
           <span key={i}>
             {i > 0 ? ' ' : null}
-            <span className="whitespace-nowrap">{textbook ? <MathText text={unit} size={size} rule={rule} gap={gap} side={side} className="" /> : unit}</span>
+            <span className="whitespace-nowrap">{textbook ? <MathText text={unit} size={size} rule={rule} gap={gap} side={side} className="" /> : <SignText text={unit} />}</span>
           </span>
         ))}
       </span>
@@ -98,10 +99,10 @@ function Stacked({ value, size, rule, gap, side }: { value: string; size: number
     )
   }
   const parts = withFractions(value, (n, d, k) => <Frac key={k} top={n} bottom={d} size={size} rule={rule} gap={gap} side={side} />)
-  if (parts.every((p) => typeof p === 'string')) return <span style={{ fontSize: size }} className="font-bold">{value}</span>
+  if (parts.every((p) => typeof p === 'string')) return <span style={{ fontSize: size }} className="font-bold"><SignText text={value} /></span>
   return (
     <span className="flex items-center gap-1.5 font-bold" style={{ fontSize: size }}>
-      {parts.map((part, i) => (typeof part === 'string' ? (part.trim() ? <span key={`t${i}`}>{part.trim()}</span> : null) : part))}
+      {parts.map((part, i) => (typeof part === 'string' ? (part.trim() ? <span key={`t${i}`}><SignText text={part.trim()} /></span> : null) : part))}
     </span>
   )
 }
