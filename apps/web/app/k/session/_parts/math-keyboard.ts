@@ -203,7 +203,8 @@ const rowsOf = (tab: TabId, kind: TypedKind): (string | Keycap)[][] => [...topRo
  * sticks out of a key. A key is a flex column with 12 px of padding on an action key, which left no room for a word: every key has no padding, its content
  * centred, and its text on one line. MathLive's own variables set the height (46 px, so a key is at least 44 px tall), the gap (4 px, so ten keys fit a 320 px
  * screen), the widest a key grows on a laptop (64 px, a row is 640 px) and the sizes of the maths faces (16 to 24 px) and of the small text keys (10.5 to 16 px).
- * The word of a tab is 11 to 15 px. The tab you are on is dark. Two faces are taller than the rest, measured with the editor's own renderer: the fraction is
+ * The word of a tab is 11 to 15 px. The tab you are on is dark. MathLive draws a second face on a key that has a shifted one (the trash that clears everything,
+ * next to the backspace sign): this keyboard has no shift key, so that face is hidden. Two faces are taller than the rest, measured with the editor's own renderer: the fraction is
  * 1.87 times its font size high and the integral 2.23 times, which would not fit a 46 px key at the full 24 px, so the `stack` and `tall` keys have a smaller
  * font (at most 16 px and 15 px: at most 30 px and 34 px high). The inverse sine, cosine and tangent are the widest small keys (2.3 times their font size, a
  * unit wide), so the small text is 10.5 to 16 px and not 11 to 16. The vertical lists a fraction is drawn with are taller than the face (a browser measured a
@@ -217,7 +218,8 @@ const LAYER_STYLE = `.MLK__rows { --keycap-height: 46px; --keycap-gap: 4px; --ke
 .MLK__rows > .MLK__row .MLK__keycap.tall { font-size: clamp(12px, 3.6vw, 15px) !important; }
 .MLK__rows > .MLK__row .tab { padding: 0 !important; font-size: clamp(11px, 3.3vw, 15px) !important; font-weight: 700; line-height: 1 !important; white-space: nowrap; overflow: hidden; text-overflow: clip; }
 .MLK__rows > .MLK__row .tab .tab-face { display: inline-flex; align-items: center; justify-content: center; max-width: 100%; white-space: nowrap; line-height: 1; }
-.MLK__rows > .MLK__row .tab.is-current-tab { background: #1f1d36 !important; color: #ffffff !important; border-color: #1f1d36 !important; }`
+.MLK__rows > .MLK__row .tab.is-current-tab { background: #1f1d36 !important; color: #ffffff !important; border-color: #1f1d36 !important; }
+.MLK__rows > .MLK__row .MLK__shift { display: none !important; }`
 
 /** The keyboard of one question: a layer for each tab of its kind of answer, the tab that fits the question first (the editor opens on the first). */
 export function keyboardLayout(input: { kind: TypedKind; topic?: string; prompt?: string }): KeyboardLayout {
