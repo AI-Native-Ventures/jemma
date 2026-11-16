@@ -30,15 +30,15 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers())
 
 describe('ready', () => {
-  it('shows the first suggestion with its reason and its own count, one Practise button, and a link to choose something else', () => {
+  it('shows the first suggestion with its reason and its own count and one Practise button, and no link to the page it is on', () => {
     render(<PracticeCard state="ready" suggestion={suggestion()} />)
     expect(screen.getByRole('heading', { name: 'Adding fractions' })).toBeTruthy()
-    expect(screen.getByText('Suggested for you')).toBeTruthy()
+    expect(screen.getByText('Suggested next')).toBeTruthy()
     expect(screen.getByText(/To fix\s+·\s+2 of 6 right/)).toBeTruthy()
     expect(screen.getAllByRole('button')).toHaveLength(1)
     expect(screen.getByRole('button', { name: 'Practise Adding fractions' })).toBeTruthy()
     expect(screen.queryByRole('button', { name: /Practise now/ })).toBeNull()
-    expect(screen.getByRole('link', { name: 'Choose something else' }).getAttribute('href')).toBe('/k/maths')
+    expect(screen.queryByRole('link')).toBeNull()
   })
 
   it('says "No score yet" for a suggestion nothing was asked on, never a percent', () => {
@@ -47,7 +47,7 @@ describe('ready', () => {
     expect(document.body.textContent).not.toMatch(/%/)
   })
 
-  it('a tap asks for a practice on that topic (the choice), shows it is working, then sends the learner to today', async () => {
+  it('a tap asks for a practice on that topic (the choice), shows it is working, then sends the learner to My maths (/k), where the card says Jemma is writing', async () => {
     let finish: (v: { ok: true }) => void = () => {}
     vi.mocked(startPractice).mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)))
     render(<PracticeCard state="ready" suggestion={suggestion()} />)
@@ -75,11 +75,11 @@ describe('ready', () => {
     expect(push).not.toHaveBeenCalled()
   })
 
-  it('with nothing to suggest it is the plain line and a link to My maths, and no button', () => {
+  it('with nothing to suggest it is the plain line, with no link and no button', () => {
     render(<PracticeCard state="ready" suggestion={null} />)
     expect(screen.getByText('Practice starts after your teacher marks a test.')).toBeTruthy()
     expect(screen.queryAllByRole('button')).toHaveLength(0)
-    expect(screen.getByRole('link', { name: 'See my maths' }).getAttribute('href')).toBe('/k/maths')
+    expect(screen.queryByRole('link')).toBeNull()
   })
 })
 
@@ -127,10 +127,10 @@ describe('failed', () => {
 })
 
 describe('none', () => {
-  it('is one plain line, a link to My maths and no button', () => {
+  it('is one plain line, with no link (the lists are on the same page) and no button', () => {
     render(<PracticeCard state="none" suggestion={null} />)
     expect(screen.getByText('Practice starts after your teacher marks a test.')).toBeTruthy()
     expect(screen.queryAllByRole('button')).toHaveLength(0)
-    expect(screen.getByRole('link', { name: 'See my maths' }).getAttribute('href')).toBe('/k/maths')
+    expect(screen.queryByRole('link')).toBeNull()
   })
 })

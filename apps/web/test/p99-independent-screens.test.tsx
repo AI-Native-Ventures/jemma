@@ -117,6 +117,7 @@ describe('the home', () => {
 
   it('a school learner’s home (no alone) still has the switch', async () => {
     state.today = today({ alone: false, workspace: 'school' })
+    state.shape = { workspace: 'school' }
     render(await ChildToday())
     expect(screen.getByRole('group', { name: 'Where you practise' })).toBeTruthy()
   })

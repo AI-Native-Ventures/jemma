@@ -4,7 +4,8 @@ import { render } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // P123: the phone's bottom bar is slimmer (a bar of about 60 to 64 px plus the safe-area inset, icons 20 px, labels 12 or 13 px semibold, a smaller pill,
-// a Snap button of 48 px that is only a little raised) and a learner reaches their profile from it: Today, My maths, Me. Every tap target stays at
+// a Snap button of 48 px that is only a little raised) and a learner reaches their profile from it: My maths, Me (P128: the home is My maths, there is no
+// Today tab). Every tap target stays at
 // least 44 by 44 px. A hand-over bar (`only`) keeps its own subset, and the laptop sidebar keeps its tabs. react-dom only: no browser, no server,
 // no database.
 
@@ -25,15 +26,16 @@ const words = (nav: HTMLElement) => links(nav).map((a) => a.textContent?.trim())
 const hrefs = (nav: HTMLElement) => links(nav).map((a) => a.getAttribute('href'))
 const marked = (nav: HTMLElement) => links(nav).filter((a) => a.getAttribute('aria-current') === 'page').map((a) => a.textContent?.trim())
 
-const learner: Bar = { role: 'learner', active: 'today', label: "Amina's Jemma" }
+const learner: Bar = { role: 'learner', active: 'maths', label: "Amina's Jemma" }
 const parent: Bar = { role: 'parent', active: 'profile', label: 'Amina', base: '/p/c1' }
 const teacher: Bar = { role: 'teacher', active: 'class', label: '6B', base: '/t/k1' }
 
-describe('the learner bar: Today, My maths, Me', () => {
-  it('has three tabs with the addresses /k, /k/maths and /k/me, in that order', () => {
+describe('the learner bar: My maths, Me', () => {
+  it('has two tabs with the addresses /k and /k/me, in that order, and no Today', () => {
     const nav = draw(learner)
-    expect(words(nav)).toEqual(['Today', 'My maths', 'Me'])
-    expect(hrefs(nav)).toEqual(['/k', '/k/maths', '/k/me'])
+    expect(words(nav)).toEqual(['My maths', 'Me'])
+    expect(hrefs(nav)).toEqual(['/k', '/k/me'])
+    expect(nav.textContent).not.toContain('Today')
   })
 
   it('marks Me on the account page and on a page under it, and only Me', () => {
@@ -45,15 +47,11 @@ describe('the learner bar: Today, My maths, Me', () => {
     expect(marked(draw(learner))).toEqual(['Me'])
   })
 
-  it('keeps marking Today and My maths where it did, and does not mark Me on a page that only starts with the letters', () => {
-    state.pathname = '/k'
-    expect(marked(draw(learner))).toEqual(['Today'])
-    state.pathname = '/k/maths/fractions'
-    expect(marked(draw(learner))).toEqual(['My maths'])
-    state.pathname = '/k/own'
-    expect(marked(draw(learner))).toEqual(['Today'])
-    state.pathname = '/k/memory'
-    expect(marked(draw(learner))).toEqual(['Today'])
+  it('marks My maths on /k, /k/maths, the screens below it and the learner\'s own work, and does not mark Me on a page that only starts with the letters', () => {
+    for (const path of ['/k', '/k/maths', '/k/maths/fractions', '/k/own', '/k/memory']) {
+      state.pathname = path
+      expect(marked(draw(learner)), path).toEqual(['My maths'])
+    }
   })
 
   it('holds the tab the server passed where the address cannot be read (the first paint)', () => {
@@ -61,10 +59,10 @@ describe('the learner bar: Today, My maths, Me', () => {
     expect(marked(draw({ ...learner, active: 'me' }))).toEqual(['Me'])
   })
 
-  it('a hand-over bar (`only`) keeps its own subset and has no Me', () => {
-    const nav = draw({ ...learner, label: 'Practise at home', only: ['today', 'maths'] })
-    expect(words(nav)).toEqual(['Today', 'My maths'])
-    expect(hrefs(nav)).toEqual(['/k', '/k/maths'])
+  it('a hand-over bar (`only`) is the one tab, My maths, and has no Me', () => {
+    const nav = draw({ ...learner, label: 'Practise at home', only: ['maths'] })
+    expect(words(nav)).toEqual(['My maths'])
+    expect(hrefs(nav)).toEqual(['/k'])
     expect(nav.textContent).not.toContain('Me')
   })
 
@@ -72,12 +70,12 @@ describe('the learner bar: Today, My maths, Me', () => {
     expect(draw({ ...learner, only: [] })).toBeNull()
   })
 
-  it('the laptop sidebar of a learner keeps Today and My maths: Me is a phone tab (the sidebar has Settings)', () => {
+  it('the laptop sidebar of a learner has My maths: Me is a phone tab (the sidebar has Settings)', () => {
     const { container } = render(
-      <Sidebar role="learner" active="today" label="Amina" name="Amina" subtitle="Grade 6" switchHref="/k" user={{ name: 'A', initials: 'A' }} settingsHref="/k/me" />,
+      <Sidebar role="learner" active="maths" label="Amina" name="Amina" subtitle="Grade 6" switchHref="/k" user={{ name: 'A', initials: 'A' }} settingsHref="/k/me" />,
     )
     const nav = container.querySelector('nav') as HTMLElement
-    expect(words(nav)).toEqual(['Today', 'My maths'])
+    expect(words(nav)).toEqual(['My maths'])
     expect(container.querySelector('a[aria-label="Settings"]')?.getAttribute('href')).toBe('/k/me')
   })
 })
@@ -128,7 +126,7 @@ const tabHeight = (a: Element): number => {
 describe('every tab is a tap target of at least 44 by 44 px', () => {
   const bars: [string, Bar][] = [
     ['learner', learner],
-    ['learner hand-over', { ...learner, only: ['today', 'maths'] }],
+    ['learner hand-over', { ...learner, only: ['maths'] }],
     ['parent', parent],
     ['teacher', teacher],
   ]
@@ -198,7 +196,7 @@ describe('the bar is slimmer', () => {
     state.pathname = '/k/me'
     const nav = draw(learner)
     const pills = links(nav).map((a) => (a.querySelector('span') as HTMLElement).className.includes('bg-soft-4'))
-    expect(pills).toEqual([false, false, true])
+    expect(pills).toEqual([false, true])
   })
 
   it('the Snap button is about 48 px and only a little raised', () => {

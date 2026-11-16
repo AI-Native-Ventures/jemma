@@ -54,11 +54,11 @@ describe('the screen of one part', () => {
 
 describe('when no Practise button is shown', () => {
   it('while tonight\'s lesson waits: one line and a link to today', () => {
-    expect(lockOf('due')).toEqual({ text: "Finish tonight's lesson first.", href: '/k', link: 'Go to today' })
+    expect(lockOf('due')).toEqual({ text: "Finish tonight's lesson first.", href: '/k', link: 'Go to My maths' })
   })
 
   it('while a practice is being written: one line and a link to today', () => {
-    expect(lockOf('writing')).toEqual({ text: 'Jemma is writing your practice.', href: '/k', link: 'Go to today' })
+    expect(lockOf('writing')).toEqual({ text: 'Jemma is writing your practice.', href: '/k', link: 'Go to My maths' })
   })
 
   it('otherwise nothing is in the way', () => {

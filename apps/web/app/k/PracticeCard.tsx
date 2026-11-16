@@ -6,7 +6,6 @@ import { IconLabel } from '@/components/ui/IconLabel'
 import type { PracticeState } from '@/lib/data/p27'
 import type { Workspace } from '@/lib/workspace'
 import { useRefreshPoll } from '@/lib/use-refresh-poll'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { retryPractice, type ActionResult } from './actions'
@@ -14,8 +13,6 @@ import { PractiseButton } from './Practise'
 
 const card = 'flex flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(31,29,54,0.06)]'
 const bigButton = 'flex min-h-[68px] w-full cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[24px] disabled:opacity-60'
-const chooseLink = 'flex min-h-11 items-center justify-center text-[16px] font-semibold text-ink underline underline-offset-[3px]'
-const pickLink = 'flex min-h-[68px] w-full items-center justify-center rounded-20 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink no-underline sm:text-[24px]'
 
 /** The same coral ring the lesson-loading screen turns while Jemma works. */
 function Ring() {
@@ -28,11 +25,11 @@ function Ring() {
 }
 
 /**
- * What the learner's home offers when there is no session to start (the state is worked out on the server, see `practiceState`):
- * the first thing "My maths" suggests, with a Practise button and a link to choose something else; the writing state (the screen asks again
+ * The current thing on the learner's one page (My maths, P128) when there is no session to start (the state is worked out on the server, see
+ * `practiceState`): the first thing "My maths" suggests, with a Practise button ("Suggested next"); the writing state (the screen asks again
  * 3 seconds after the last answer came back, the way the teacher's key screen does); the failed state with a retry; or one plain line when
- * there is nothing to practise yet, with a link to "My maths". In My own that last state is the card "Pick something to practise" (no teacher
- * marks anything there), and nothing else on it speaks of the school.
+ * there is nothing to practise yet. In My own that last state is the card "Pick something to practise" (no teacher marks anything there), and
+ * nothing else on it speaks of the school. The lists the card points at are on the same page, right under it: it carries no link to My maths.
  */
 export function PracticeCard({ state, suggestion, workspace = 'school' }: { state: PracticeState; suggestion: MyMathsSuggestion | null; workspace?: Workspace }) {
   const router = useRouter()
@@ -54,17 +51,11 @@ export function PracticeCard({ state, suggestion, workspace = 'school' }: { stat
       return (
         <section aria-labelledby="practice-pick" className={`${card} gap-3.5`}>
           <h2 id="practice-pick" className="m-0 text-[25px] leading-[1.2] font-bold tracking-[-0.01em] text-pretty">Pick something to practise</h2>
-          <p className="m-0 text-[16px] leading-[1.45] text-body">Pick a topic in My maths to start.</p>
-          <Link href="/k/maths" className={pickLink}>See my maths</Link>
+          <p className="m-0 text-[16px] leading-[1.45] text-body">Pick a topic below to start.</p>
         </section>
       )
     }
-    return (
-      <>
-        <p className="m-0 px-1 text-[16px] leading-[1.45] text-body">Practice starts after your teacher marks a test.</p>
-        <Link href="/k/maths" className={chooseLink}>See my maths</Link>
-      </>
-    )
+    return <p className="m-0 px-1 text-[16px] leading-[1.45] text-body">Practice starts after your teacher marks a test.</p>
   }
 
   if (state === 'writing') {
@@ -79,15 +70,12 @@ export function PracticeCard({ state, suggestion, workspace = 'school' }: { stat
 
   if (state === 'ready' && suggestion) {
     return (
-      <>
-        <section aria-labelledby="practice-suggested" className={`${card} gap-3.5`}>
-          <span id="practice-suggested" className="text-[14px] font-semibold text-coral-text">Suggested for you</span>
-          <h2 className="m-0 text-[25px] leading-[1.2] font-bold tracking-[-0.01em] text-pretty">{suggestion.topicName}</h2>
-          <p className="m-0 text-[16px] leading-[1.45] text-body">{suggestion.reason} &middot; {scoreText(suggestion.score)}</p>
-          <PractiseButton choice={{ topicId: suggestion.topicId, topicName: suggestion.topicName }} size="big" />
-        </section>
-        <Link href="/k/maths" className={chooseLink}>Choose something else</Link>
-      </>
+      <section aria-labelledby="practice-suggested" className={`${card} gap-3.5`}>
+        <span id="practice-suggested" className="text-[14px] font-semibold text-coral-text">Suggested next</span>
+        <h2 className="m-0 text-[25px] leading-[1.2] font-bold tracking-[-0.01em] text-pretty">{suggestion.topicName}</h2>
+        <p className="m-0 text-[16px] leading-[1.45] text-body">{suggestion.reason} &middot; {scoreText(suggestion.score)}</p>
+        <PractiseButton choice={{ topicId: suggestion.topicId, topicName: suggestion.topicName }} size="big" />
+      </section>
     )
   }
 

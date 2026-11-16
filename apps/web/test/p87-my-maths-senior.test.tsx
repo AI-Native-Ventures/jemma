@@ -16,6 +16,11 @@ vi.mock('next/navigation', () => ({
 }))
 vi.mock('../app/k/actions', () => ({ startPractice: vi.fn(async () => ({ ok: true })), retryPractice: vi.fn(async () => ({ ok: true })) }))
 vi.mock('../lib/data/p80', () => ({ getMyMaths: async () => state.view }))
+// P128: the page is also the learner's home, so it reads what the home read. Nothing planned and nothing to practise: the card is the one plain line.
+vi.mock('../lib/data/p27', () => ({
+  getLearnerToday: async () => ({ firstName: 'Amina', workspace: 'school', tonight: null, next: null, gems: [], fixed: 0, toGo: 0, practice: 'none', suggestion: null }),
+}))
+vi.mock('../app/k/join/JoinClassCard', () => ({ JoinClassCard: () => null }))
 // P120: "Your practice" on My maths reads the learner's finished practices; this test has none.
 vi.mock('../lib/data/p120', () => ({ getPastPractice: async () => [] }))
 // These tests are the "My school" screens (P95 added the "My own" ones, tested in p95-my-maths-own.test.tsx).
