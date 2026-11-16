@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { parseAnswer } from '../../logic/answers'
 import { choicePictureProblem, isPickQuestion, pickKeyProblem } from '../../logic/answers/pick'
-import { isMeaningKind, meaningKeyProblem } from '../../logic/meaning'
+import { isListKind, listKeyProblem } from '../../logic/answers/lists'
+import { isMeaningKind, meaningKeyProblem, readNumber } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { pictureProblem } from '../../logic/picture'
 import { cleanSteps } from '../../logic/steps'
@@ -31,6 +32,7 @@ function answerKeyProblem(q: Question): string | null {
   // P149: a question with choices (any kind), a true or false and a reason are picked: the key is the letter, true or false, or a reason of the list.
   if (isPickQuestion(q)) return pickKeyProblem(q)
   if (isMeaningKind(q.answerKind)) return meaningKeyProblem(q.answerKind, q.answer)
+  if (isListKind(q.answerKind)) return listKeyProblem(q, readNumber)
   const parsed = parseAnswer(q.answer)
   const fine =
     q.answerKind === 'choice' ? parsed.kind === 'choice'

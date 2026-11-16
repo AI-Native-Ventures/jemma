@@ -5,6 +5,7 @@ import { CHOICE_LETTERS, choiceText, composeReasonAnswer, hasPictureChoices } fr
 import { answerShape, answerValue, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
 import { PendingButton } from '@/components/ui/Button'
 import { Frac, FractionText, withFractions } from './Frac'
+import { isValuesShape, ValuesAnswer } from './answers/ValuesAnswer'
 import { MathAnswerField } from './MathAnswerField'
 import { promptLayout } from './prompt-layout'
 import { QuestionContext, QuestionHeading } from './QuestionPrompt'
@@ -209,6 +210,11 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
       )
     case 'number':
       return <MathAnswerField kind="number" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint="Type a number. It may be negative, like -3." />
+    case 'list':
+    case 'order':
+    case 'table':
+      // P150: several values (a row of boxes, chips to put in order, the empty cells of a table), sent as one text.
+      return <ValuesAnswer shape={shape} onChange={b.set.text} />
     default:
       // The lesson gave no kind we know: one plain box.
       return (
@@ -327,7 +333,15 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
   // A question of a senior class (the four typed kinds) has its maths typeset whenever it has a sign in it; any other question when it has algebra in it.
   // A statement to call true or false, and a step to give the reason for (P149), are maths too.
   const typeset =
-    shape.kind === 'number' || shape.kind === 'expression' || shape.kind === 'equation' || shape.kind === 'point' || shape.kind === 'truefalse' || shape.kind === 'reason' ? 'all' : 'algebra'
+    shape.kind === 'number' ||
+    shape.kind === 'expression' ||
+    shape.kind === 'equation' ||
+    shape.kind === 'point' ||
+    shape.kind === 'truefalse' ||
+    shape.kind === 'reason' ||
+    isValuesShape(shape)
+      ? 'all'
+      : 'algebra'
   const value =
     shape.kind === 'choice' || shape.kind === 'truefalse'
       ? (picked ?? '')

@@ -2,6 +2,7 @@ import { MEANING_ANSWER_KINDS, type Choice, type Form, type MeaningKind } from '
 import { markAnswer } from './answers'
 import { finishPicked } from './answers/pick'
 import { completeAnswer } from './complete-answer'
+import { isListKind, markListQuestion } from './answers/lists'
 
 /**
  * Marking by meaning, for the senior classes (Mathematics, Grades 7 to 12): a learner types algebra, a negative number, a point, a percent or an
@@ -891,9 +892,20 @@ export function markByMeaning(kind: MeaningKind, key: string, answer: string, fo
 }
 
 /** The one place a lesson question is marked: the four new kinds by meaning, every old kind by `markAnswer` exactly as it always was. */
-export function markQuestion(q: { answer: string; answerKind: string; form?: Form }, answer: string): MeaningMark {
+export function markQuestion(
+  q: { answer: string; answerKind: string; form?: Form; ordered?: boolean; labels?: string[]; round?: number },
+  answer: string,
+): MeaningMark {
+  // P150: a list, an order and a table are several values, each read as a number or an expression (logic/answers/lists.ts).
+  if (isListKind(q.answerKind)) {
+    const { correct, comparable } = markListQuestion(q, answer, readNumber)
+    return { correct, comparable }
+  }
   return isMeaningKind(q.answerKind) ? markByMeaning(q.answerKind, q.answer, answer, q.form) : markAnswer(answer, q.answer)
 }
+
+/** The value of one number or expression (a % or a degree sign dropped), or null: the reader the values of a list, an order and a table are marked with. */
+export const readNumber = (text: string): number | null => numeric(text, true)
 
 /**
  * Finishes and marks what a learner typed, on the screen or on paper (the server action that takes an answer and `save_practice_answers` both call
@@ -901,13 +913,13 @@ export function markQuestion(q: { answer: string; answerKind: string; form?: For
  * `completeAnswer` exactly as it always did (a missing number put back into its fraction, then `markAnswer`).
  */
 export function finishAnswer(
-  q: { prompt: string; answer: string; answerKind: string; form?: Form; choices?: readonly Choice[] },
+  q: { prompt: string; answer: string; answerKind: string; form?: Form; choices?: readonly Choice[]; ordered?: boolean; labels?: string[]; round?: number },
   typed: string,
 ): { stored: string; correct: boolean } {
   // P149: a question that is picked (it has choices, or is true or false, or asks for a reason) is marked by its letter or its pick, whatever kind it says it is.
   const picked = finishPicked(q, typed, (key, value) => markByMeaning('number', key, value).correct)
   if (picked) return picked
-  if (isMeaningKind(q.answerKind)) return { stored: typed.trim(), correct: markQuestion(q, typed).correct }
+  if (isMeaningKind(q.answerKind) || isListKind(q.answerKind)) return { stored: typed.trim(), correct: markQuestion(q, typed).correct }
   return completeAnswer(q, typed)
 }
 

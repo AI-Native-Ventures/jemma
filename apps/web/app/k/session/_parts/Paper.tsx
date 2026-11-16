@@ -8,6 +8,8 @@ import { Frac, FractionText } from './Frac'
 import { QuestionPicture } from './QuestionPicture'
 import { PictureChoices } from './answers/PictureChoices'
 import { ReasonList } from './answers/ReasonPicker'
+import { PaperValues } from './answers/PaperValues'
+import { paperValuesLine } from './answers/values-hints'
 
 // A practice answered on paper: the choice before the first Try question, the sheet of five questions with the photo button, the wait while
 // Jemma reads the photo, and the card for a photo that could not be read. All of them are drawn from their props alone (the state lives in
@@ -105,6 +107,11 @@ export function writeLine(shape: AnswerShape): string {
       return 'Write the x and the y of the point, like (2; 3).'
     case 'number':
       return 'Write a number. It may be negative, like -3.'
+    // P150: several values, with a semicolon between them (that is how the photo is read).
+    case 'list':
+    case 'order':
+    case 'table':
+      return paperValuesLine(shape)
     default:
       return 'Write your answer.'
   }
@@ -154,6 +161,7 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
           </ol>
         ) : null}
         {shape.kind === 'reason' ? <ReasonList /> : null}
+        <PaperValues shape={shape} />
         <p className="m-0 text-[15px] leading-[1.4] text-body">{writeLine(shape)}</p>
       </div>
     </li>
