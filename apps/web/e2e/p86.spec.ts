@@ -116,6 +116,8 @@ const noHorizontalScroll = async (page: Page) =>
 const next = (page: Page) => page.getByRole('button', { name: 'Next', exact: true })
 const answerBox = (page: Page) => page.getByLabel('Your answer', { exact: true })
 const key = (page: Page, name: string) => page.getByRole('button', { name, exact: true })
+/** The faces of the keys in view under the answer box (P125: ten of them, the rest are behind "More keys"). */
+const keyFaces = (page: Page) => page.locator('[data-keys] button').allTextContents()
 
 /** From the learner's home to the first question on the screen: the warm-up, the lesson, "I'm ready", "Answer on the screen". */
 async function toTheFirstQuestion(page: Page) {
@@ -147,7 +149,11 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await expect(box).toHaveAttribute('autocapitalize', 'off')
     await expect(box).toHaveAttribute('spellcheck', 'false')
     await expect(box).toHaveAttribute('maxlength', '40')
-    await expect(page.locator('[data-keys] button')).toHaveText(['x', 'y', '²', '^', '(', ')', MINUS, '√'])
+    expect(await keyFaces(page)).toEqual(expect.arrayContaining(['x', 'y', '²', '^', 'a/b', '(', ')', MINUS, '√']))
+    await page.getByRole('button', { name: 'More keys', exact: true }).click()
+    await expect(page.locator('[data-keys-more] button').first()).toBeVisible()
+    await page.getByRole('button', { name: 'Fewer keys', exact: true }).click()
+    await expect(page.locator('[data-keys-more]')).toHaveCount(0)
     await expect(page.getByText('Type an expression, like 2x + 3.')).toBeVisible()
     await expect(next(page)).toBeDisabled()
     await box.fill('3 + 2')
@@ -161,7 +167,7 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
 
     // Question 2: an equation, with the keys x = minus root or. Typed with the keys and a few digits.
     await check(page.getByText('Question 2 of 5')).toBeVisible()
-    await expect(page.locator('[data-keys] button')).toHaveText(['x', '=', MINUS, '√', 'or'])
+    expect(await keyFaces(page)).toEqual(expect.arrayContaining(['x', '=', MINUS, '√', 'or', 'a/b']))
     await expect(page.getByText('Type the answer, like x = 4. Two answers: x = 3 or x = -1.')).toBeVisible()
     await key(page, 'x').click()
     await key(page, 'equals').click()

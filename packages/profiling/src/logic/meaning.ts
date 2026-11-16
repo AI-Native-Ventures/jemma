@@ -14,6 +14,11 @@ import { completeAnswer } from './complete-answer'
  *   expression  2x + 3, x², (x+2)(x-2)               the same value at the same points, and the form when the question asks for one
  *   equation    x = 3 or x = -1                      the same set of values for the letter, in any order
  *   point       (2; -3)                              both coordinates
+ *
+ * P125: the answer box has keys for fractions, roots, pi, theta, degrees, sin, cos and tan, so this reader takes all of them: the signs
+ * `\u2212 \u00d7 \u00f7 \u03c0 \u03b8 \u221a \u00b2 \u00b0 \u00b1` and the words `sin cos tan sqrt pi`, a fraction `a/b` (`(x+1)/(x-1)` too), a mixed number, a
+ * rand sign and a space between thousands in a number, and in an expression the name of a function or a derivative in front (`f(x) =`, `f\u2032(x) =`,
+ * `dy/dx =`, `y =`). The angle of sin, cos and tan is in degrees when it is a plain number, and in radians when it holds a letter or pi.
  */
 
 export const MEANING_MAX_LENGTH = 60
@@ -23,16 +28,32 @@ const SUFFIX = /\s*[%\u00b0\u00ba]\s*$/
 
 // ---- Reading -----------------------------------------------------------------------------------------------------------------
 
-type Tok = { k: 'num'; v: number } | { k: 'var'; c: string } | { k: 'sqrt' } | { k: 'op'; c: '+' | '-' | '*' | '/' | '^' } | { k: 'lp' } | { k: 'rp' }
+export type TrigName = 'sin' | 'cos' | 'tan'
+
+type Tok =
+  | { k: 'num'; v: number; raw: string }
+  | { k: 'var'; c: string }
+  | { k: 'sqrt' }
+  | { k: 'pi' }
+  | { k: 'deg' }
+  | { k: 'fn'; name: TrigName }
+  | { k: 'op'; c: '+' | '-' | '*' | '/' | '^'; explicit?: boolean }
+  | { k: 'lp' }
+  | { k: 'rp' }
 
 export type MathNode =
-  | { t: 'num'; v: number }
+  /** `raw` is the number as it was typed ("0,50"), for the line that shows it back. */
+  | { t: 'num'; v: number; raw?: string }
   | { t: 'var'; name: string }
+  | { t: 'pi' }
+  /** A degree sign after a value. It does not change the value: 30 and 30\u00b0 are the same angle. */
+  | { t: 'deg'; a: MathNode }
+  | { t: 'fn'; name: TrigName; a: MathNode }
   | { t: 'neg'; a: MathNode }
   | { t: 'group'; a: MathNode }
   | { t: 'sqrt'; a: MathNode }
   | { t: 'pow'; a: MathNode; b: MathNode }
-  | { t: 'add' | 'sub' | 'mul' | 'div'; a: MathNode; b: MathNode }
+  | { t: 'add' | 'sub' | 'mul' | 'div'; a: MathNode; b: MathNode; /** a product typed with a sign (2 \u00d7 3), not by writing the two next to each other */ explicit?: boolean }
 
 /** The one way a reader gives up. It never leaves this file. */
 class Unreadable extends Error {}
@@ -44,6 +65,12 @@ const SUPERSCRIPT = '\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u207
 const SUPER_MINUS = '\u207b'
 const isDigit = (c: string | undefined) => c !== undefined && c >= '0' && c <= '9'
 const isLetter = (c: string | undefined) => c !== undefined && ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+const PI_SIGN = '\u03c0'
+const THETA_SIGN = '\u03b8'
+const DEGREE_SIGNS = '\u00b0\u00ba'
+const TRIG_NAMES: TrigName[] = ['sin', 'cos', 'tan']
+/** The letters of a variable besides a to z: theta, the angle of a trigonometry question. */
+const isTheta = (c: string | undefined) => c === THETA_SIGN || c === '\u0398'
 
 /** Cuts a text into tokens. A character that means nothing here makes the whole text unreadable. */
 const tokenize = (text: string): Tok[] => {
@@ -61,22 +88,42 @@ const tokenize = (text: string): Tok[] => {
         j++
         while (isDigit(s[j])) j++
       }
-      out.push({ k: 'num', v: Number(s.slice(i, j).replace(',', '.')) })
+      out.push({ k: 'num', v: Number(s.slice(i, j).replace(',', '.')), raw: s.slice(i, j) })
       i = j
     } else if (isLetter(c)) {
       let j = i
       while (isLetter(s[j])) j++
-      const run = s.slice(i, j).toLowerCase()
-      for (let at = 0; at < run.length; ) {
-        if (run.startsWith('sqrt', at)) {
-          out.push({ k: 'sqrt' })
-          at += 4
-        } else {
-          out.push({ k: 'var', c: run[at]! })
-          at++
+      const word = s.slice(i, j)
+      const run = word.toLowerCase()
+      // The word pi is pi only when it stands alone (2pi, pi r, pi/2), and not "Pi" or a longer run: P i n is a product of three letters
+      // (simple interest), not pi times n.
+      if (word === 'pi' || word === 'PI') {
+        out.push({ k: 'pi' })
+      } else {
+        for (let at = 0; at < run.length; ) {
+          const name = TRIG_NAMES.find((n) => run.startsWith(n, at))
+          if (run.startsWith('sqrt', at)) {
+            out.push({ k: 'sqrt' })
+            at += 4
+          } else if (name) {
+            out.push({ k: 'fn', name })
+            at += 3
+          } else {
+            out.push({ k: 'var', c: run[at]! })
+            at++
+          }
         }
       }
       i = j
+    } else if (c === PI_SIGN) {
+      out.push({ k: 'pi' })
+      i++
+    } else if (isTheta(c)) {
+      out.push({ k: 'var', c: THETA_SIGN })
+      i++
+    } else if (DEGREE_SIGNS.includes(c)) {
+      out.push({ k: 'deg' })
+      i++
     } else if (c === '\u221a') {
       out.push({ k: 'sqrt' })
       i++
@@ -92,13 +139,13 @@ const tokenize = (text: string): Tok[] => {
       if (!digits) giveUp()
       out.push({ k: 'op', c: '^' })
       if (negative) out.push({ k: 'op', c: '-' })
-      out.push({ k: 'num', v: Number(digits) })
+      out.push({ k: 'num', v: Number(digits), raw: digits })
       i = j
     } else if (c === '+' || c === '-' || c === '^') {
       out.push({ k: 'op', c })
       i++
     } else if (c === '*' || c === '\u00d7' || c === '\u00b7' || c === '\u22c5') {
-      out.push({ k: 'op', c: '*' })
+      out.push({ k: 'op', c: '*', explicit: true })
       i++
     } else if (c === '/' || c === '\u00f7' || c === '\u2044') {
       out.push({ k: 'op', c: '/' })
@@ -121,9 +168,11 @@ const tokenize = (text: string): Tok[] => {
  *   sum      := product (('+' | '-') product)*
  *   product  := unary (('*' | '/' | nothing) power)*     nothing is a product too: 2x, 3(x+1), (x+1)(x-1), 2xy, 2√2. It never joins two numbers
  *   unary    := ('-' | '+') unary | power
- *   power    := atom ('^' exponent)?                      x^2, x^(n+1), x², and a power of a power goes from the right
- *   atom     := number | letter | '(' sum ')' | root
- *   root     := ('√' | 'sqrt') (number | letter | '(' sum ')')      the root covers the one number, letter or bracket right after it
+ *   power    := atom '°'* ('^' exponent)?                 x^2, x^(n+1), x², 30°, and a power of a power goes from the right
+ *   atom     := number | letter | 'π' | '(' sum ')' | root | trig
+ *   root     := ('√' | 'sqrt') (number | letter | 'π' | '(' sum ')')      the root covers the one number, letter or bracket right after it
+ *   trig     := ('sin' | 'cos' | 'tan') ('^' exponent)? argument         sin(30°), sin 30, sin²x, sin^2(x), sin 2x
+ *   argument := '(' sum ')' | '-'? term                   a term is numbers, letters, π and roots written next to each other, with their powers and degree signs
  */
 const parseTokens = (toks: Tok[]): MathNode => {
   let pos = 0
@@ -144,8 +193,11 @@ const parseTokens = (toks: Tok[]): MathNode => {
       const t = peek()
       if (opIs(t, '*', '/')) {
         pos++
-        left = { t: (t as { c: string }).c === '*' ? 'mul' : 'div', a: left, b: unary() }
-      } else if (t && (t.k === 'var' || t.k === 'lp' || t.k === 'sqrt')) {
+        left =
+          (t as { c: string }).c === '*'
+            ? { t: 'mul', a: left, b: unary(), ...((t as { explicit?: boolean }).explicit ? { explicit: true } : {}) }
+            : { t: 'div', a: left, b: unary() }
+      } else if (t && (t.k === 'var' || t.k === 'lp' || t.k === 'sqrt' || t.k === 'pi' || t.k === 'fn')) {
         left = { t: 'mul', a: left, b: power() }
       } else {
         return left
@@ -165,7 +217,11 @@ const parseTokens = (toks: Tok[]): MathNode => {
     return power()
   }
   const power = (): MathNode => {
-    const base = atom()
+    let base = atom()
+    while (peek()?.k === 'deg') {
+      pos++
+      base = { t: 'deg', a: base }
+    }
     if (opIs(peek(), '^')) {
       pos++
       return { t: 'pow', a: base, b: exponent() }
@@ -195,17 +251,47 @@ const parseTokens = (toks: Tok[]): MathNode => {
     pos++
     return { t: 'group', a: inner }
   }
+  /** What a trig name works on: a bracket, or a term (2x, 30°, π, √2) with an optional minus in front. A name inside another needs a bracket. */
+  const argument = (): MathNode => {
+    const t = peek()
+    if (opIs(t, '-')) {
+      pos++
+      return { t: 'neg', a: argument() }
+    }
+    if (t?.k === 'lp') {
+      pos++
+      return bracket()
+    }
+    const term = (): MathNode => {
+      const k = peek()?.k
+      return k === 'num' || k === 'var' || k === 'pi' || k === 'sqrt' ? power() : giveUp()
+    }
+    let arg = term()
+    for (let k = peek()?.k; k === 'var' || k === 'pi' || k === 'sqrt'; k = peek()?.k) arg = { t: 'mul', a: arg, b: term() }
+    return arg
+  }
   const atom = (): MathNode => {
     const t = toks[pos++]
     if (!t) return giveUp()
-    if (t.k === 'num') return { t: 'num', v: t.v }
+    if (t.k === 'num') return { t: 'num', v: t.v, raw: t.raw }
     if (t.k === 'var') return { t: 'var', name: t.c }
+    if (t.k === 'pi') return { t: 'pi' }
     if (t.k === 'lp') return bracket()
+    if (t.k === 'fn') {
+      let to: MathNode | null = null
+      if (opIs(peek(), '^')) {
+        pos++
+        to = exponent()
+      }
+      const call: MathNode = { t: 'fn', name: t.name, a: argument() }
+      return to ? { t: 'pow', a: call, b: to } : call
+    }
     if (t.k === 'sqrt') {
       const r = toks[pos++]
       if (!r) return giveUp()
-      if (r.k === 'num') return { t: 'sqrt', a: { t: 'num', v: r.v } }
+      if (r.k === 'num') return { t: 'sqrt', a: { t: 'num', v: r.v, raw: r.raw } }
       if (r.k === 'var') return { t: 'sqrt', a: { t: 'var', name: r.c } }
+      if (r.k === 'pi') return { t: 'sqrt', a: { t: 'pi' } }
       if (r.k === 'lp') return { t: 'sqrt', a: bracket() }
     }
     return giveUp()
@@ -215,6 +301,15 @@ const parseTokens = (toks: Tok[]): MathNode => {
   if (pos !== toks.length) giveUp()
   return tree
 }
+
+/**
+ * The name of a function or of a derivative that may stand in front of an expression answer, with its equals sign: y =, f(x) =, f\u2032(x) =, f'(x) =, y\u2032 =,
+ * dy/dx =, d/dx =. The keys of a function question and of a derivative question type it. A letter of an answer is never taken away: x = 3 is not one.
+ */
+const NAMED = /^\s*(?:dy\s*\/\s*dx|d\s*\/\s*dx|[fgh]\s*['\u2032\u2019]*\s*\(\s*[a-z\u03b8]\s*\)|y\s*['\u2032\u2019]*)\s*=\s*/i
+
+/** An expression as it is marked: with the name in front of it taken off. */
+export const readExpression = (text: string): MathNode | null => readMath(text.replace(NAMED, ''))
 
 /** The tree of a text, or null when it is empty, too long or not readable. */
 export const readMath = (text: string): MathNode | null => {
@@ -233,6 +328,25 @@ export const readMath = (text: string): MathNode | null => {
 type Env = Record<string, number>
 const defined = (x: number) => (Number.isFinite(x) ? x : NaN)
 
+/** True when a tree has no letter and no pi in it: a plain angle, which sin, cos and tan take in degrees. With a letter or pi in it the angle is in radians. */
+const inDegrees = (n: MathNode): boolean => {
+  switch (n.t) {
+    case 'num':
+      return true
+    case 'var':
+    case 'pi':
+      return false
+    case 'neg':
+    case 'group':
+    case 'sqrt':
+    case 'deg':
+    case 'fn':
+      return inDegrees(n.a)
+    default:
+      return inDegrees(n.a) && inDegrees(n.b)
+  }
+}
+
 /** The value of a tree, or NaN where it is not defined (a division by zero, a root of a negative number, a number too large to hold). */
 const valueOf = (n: MathNode, env: Env): number => {
   switch (n.t) {
@@ -240,8 +354,20 @@ const valueOf = (n: MathNode, env: Env): number => {
       return n.v
     case 'var':
       return env[n.name] ?? NaN
+    case 'pi':
+      return Math.PI
+    case 'deg':
     case 'group':
       return valueOf(n.a, env)
+    case 'fn': {
+      const v = valueOf(n.a, env)
+      if (Number.isNaN(v)) return NaN
+      const angle = inDegrees(n.a) ? (v * Math.PI) / 180 : v
+      if (n.name === 'sin') return defined(Math.sin(angle))
+      if (n.name === 'cos') return defined(Math.cos(angle))
+      // The tangent of an angle with no cosine (90 degrees) is not defined.
+      return Math.abs(Math.cos(angle)) < 1e-12 ? NaN : defined(Math.tan(angle))
+    }
     case 'neg':
       return -valueOf(n.a, env)
     case 'sqrt': {
@@ -271,8 +397,8 @@ const valueOf = (n: MathNode, env: Env): number => {
 
 export const lettersOf = (n: MathNode, into = new Set<string>()): Set<string> => {
   if (n.t === 'var') into.add(n.name)
-  else if (n.t === 'num') return into
-  else if (n.t === 'neg' || n.t === 'group' || n.t === 'sqrt') lettersOf(n.a, into)
+  else if (n.t === 'num' || n.t === 'pi') return into
+  else if (n.t === 'neg' || n.t === 'group' || n.t === 'sqrt' || n.t === 'deg' || n.t === 'fn') lettersOf(n.a, into)
   else {
     lettersOf(n.a, into)
     lettersOf(n.b, into)
@@ -287,10 +413,13 @@ const close = (a: number, b: number) => Math.abs(a - b) <= 1e-9 * Math.max(1, Ma
 
 /** The value of a text made of numbers only (no letter), or null. `suffix` drops a % or a ° at the end. A mixed number "1 1/2" is one and a half. */
 const numeric = (text: string, suffix: boolean): number | null => {
-  let s = text.replace(MINUS_SIGNS, '-').trim()
+  let s = text.replace(MINUS_SIGNS, '-').replace(/[\u00a0\u2009\u202f]/g, ' ').trim()
   // A long text is not read at all (no pattern below is run on it).
   if (!s || s.length > MEANING_MAX_LENGTH) return null
   if (suffix) s = s.replace(SUFFIX, '')
+  // A rand sign in front of the amount (the R key), and a space between the thousands: R1 250,50 is 1250,5.
+  s = s.replace(/^(-?)\s*R\s*(?=[\d.,])/, '$1')
+  if (/^-?\d{1,3}( \d{3})+([.,]\d+)?$/.test(s)) s = s.replace(/ /g, '')
   const mixed = /^(-?)\s*(\d+)\s+(\d+)\s*\/\s*(\d+)$/.exec(s)
   if (mixed) {
     const d = Number(mixed[4])
@@ -389,12 +518,15 @@ const bracketLeft = (n: MathNode, allowed: boolean): boolean => {
   switch (n.t) {
     case 'num':
     case 'var':
+    case 'pi':
       return false
     case 'group':
       return !allowed || bracketLeft(n.a, allowed)
     case 'neg':
+    case 'deg':
       return bracketLeft(n.a, allowed)
     case 'sqrt':
+    case 'fn':
       return bracketLeft(n.a, true)
     case 'pow':
       return bracketLeft(n.a, allowed) || bracketLeft(n.b, true)
@@ -420,6 +552,7 @@ const signature = (n: MathNode): string => {
   const walk = (m: MathNode, by: number): void => {
     switch (m.t) {
       case 'num':
+      case 'pi':
         return
       case 'var':
         return add(m.name, by)
@@ -508,16 +641,19 @@ const readEquation = (text: string): Equation | null => {
     if (sides.length > 2) return null
     let valueText = piece
     if (sides.length === 2) {
-      const name = /^\s*([a-zA-Z])\s*$/.exec(sides[0]!)
+      const name = /^\s*([a-zA-Z\u03b8\u0398])\s*$/.exec(sides[0]!)
       if (!name) return null
       const found = name[1]!.toLowerCase()
       if (letter !== null && letter !== found) return null
       letter = found
       valueText = sides[1]!
     }
-    const v = numeric(valueText, false)
+    // x = \u00b12 is two values: 2 and -2.
+    const both = /^\s*(?:\u00b1|\+\s*\/?\s*-)\s*/.exec(valueText)
+    const v = numeric(both ? valueText.slice(both[0].length) : valueText, false)
     if (v === null) return null
     values.push(v)
+    if (both) values.push(-v)
   }
   return values.length > 0 ? { letter, values } : null
 }
@@ -571,8 +707,8 @@ export function markByMeaning(kind: MeaningKind, key: string, answer: string, fo
       return k === null || a === null ? UNREAD : { correct: close(k, a), comparable: true }
     }
     case 'expression': {
-      const k = readMath(key)
-      const a = readMath(answer)
+      const k = readExpression(key)
+      const a = readExpression(answer)
       if (!k || !a) return UNREAD
       const allowed = lettersOf(k)
       for (const letter of lettersOf(a)) if (!allowed.has(letter)) return WRONG
@@ -622,7 +758,7 @@ export function meaningKeyProblem(kind: MeaningKind, key: string): string | null
   const fine =
     kind === 'number' ? numeric(key, true) !== null
     : kind === 'expression' ? (() => {
-        const tree = readMath(key)
+        const tree = readExpression(key)
         return !!tree && lettersOf(tree).size > 0
       })()
     : kind === 'equation' ? readEquation(key) !== null

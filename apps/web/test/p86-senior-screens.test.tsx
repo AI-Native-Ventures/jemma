@@ -105,9 +105,9 @@ describe('an expression', () => {
     expect(screen.getByText('Type an expression, like 2x + 3.')).toBeTruthy()
   })
 
-  it('one row of maths keys: x y, the little 2, the caret, two brackets, the minus and the root', () => {
+  it('two rows of maths keys: x y, the little 2, the caret, the fraction, two brackets, the minus, the plus and the root (P125 added the fraction and the plus)', () => {
     show(EXPRESSION)
-    expect(keyNames()).toEqual(['x', 'y', '²', '^', '(', ')', MINUS, '√'])
+    expect(keyNames()).toEqual(['x', 'y', '²', '^', 'a/b', '(', ')', MINUS, '+', '√'])
     for (const b of document.querySelectorAll<HTMLButtonElement>('[data-keys] button')) {
       expect(b.type).toBe('button')
       expect(b.getAttribute('aria-label') ?? '').not.toBe('')
@@ -185,11 +185,11 @@ describe('an expression', () => {
 })
 
 describe('an equation', () => {
-  it('the same box, the keys x = minus root or, and its help line', () => {
+  it('the same box, the keys x = minus or plus-or-minus fraction root squared and two brackets, and its help line (P125)', () => {
     show(EQUATION)
     expect(screen.getAllByRole('textbox')).toHaveLength(1)
     expect(box('Your answer').maxLength).toBe(40)
-    expect(keyNames()).toEqual(['x', '=', MINUS, '√', 'or'])
+    expect(keyNames()).toEqual(['x', '=', MINUS, 'or', '±', 'a/b', '√', '²', '(', ')'])
     expect(screen.getByText('Type the answer, like x = 4. Two answers: x = 3 or x = -1.')).toBeTruthy()
   })
 
@@ -271,18 +271,21 @@ describe('a number', () => {
     expect(screen.getAllByRole('textbox')).toHaveLength(1)
     const input = box('Your answer')
     expect(input.getAttribute('inputmode')).toBe('decimal')
+    // The minus key beside the box flips the sign (P125 added a row of keys under the box: its minus is named "subtract").
     expect(screen.getAllByRole('button', { name: /minus/i })).toHaveLength(1)
     expect(screen.getByText('Type a number. It may be negative, like -3.')).toBeTruthy()
   })
 
-  it('the box takes a minus, a comma or a point, and nothing else', () => {
+  it('the box takes digits, a comma or a point and the signs of the keys, and no other sign or letter (P125 lets a sum, a fraction and a root in)', () => {
     show(NUMBER)
-    type('Your answer', 'ab-3,5x')
+    type('Your answer', '#?-3,5!x')
     expect(box('Your answer').value).toBe('-3,5')
     type('Your answer', `${MINUS}3.5`)
-    expect(box('Your answer').value).toBe('-3.5')
+    expect(box('Your answer').value).toBe(`${MINUS}3.5`)
     type('Your answer', '3-5')
-    expect(box('Your answer').value).toBe('35')
+    expect(box('Your answer').value).toBe('3-5')
+    type('Your answer', 'y@3')
+    expect(box('Your answer').value).toBe('3')
   })
 
   it('the minus key makes the number negative, and Next sends it', () => {

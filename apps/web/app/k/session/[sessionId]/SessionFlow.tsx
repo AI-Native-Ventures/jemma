@@ -205,7 +205,7 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
       ) : (
         <StepHeader current={step} closeLabel={phase === 'results' ? 'Close' : 'Stop for now'} />
       )}
-      {(phase === 'warmup' || phase === 'try') && q ? <QuestionScreen key={q.position} q={q} busy={busy} onAnswer={submit} /> : null}
+      {(phase === 'warmup' || phase === 'try') && q ? <QuestionScreen key={q.position} q={q} topic={topic} busy={busy} onAnswer={submit} /> : null}
       {phase === 'learn' && lesson ? (
         lesson.format === 'diagram' && lesson.diagram ? (
           <LearnDiagram lesson={lesson} onReady={startTry} />
