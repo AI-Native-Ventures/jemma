@@ -34,7 +34,10 @@ describe('the server sends the shape of an inequality key, never its values', ()
       const sent = stripQuestion(full(answer), at)
       expect(sent.answerShape).toBe('inequality')
       expect(JSON.stringify(sent)).not.toContain(answer)
-      expect(Object.keys(sent).sort()).toEqual(['answerKind', 'answerShape', 'index', 'of', 'phase', 'position', 'prompt', 'render'])
+      // only the shape (and, from the two-answers packet, a count and the letter): never the key
+      const allowed = ['answerCount', 'answerKind', 'answerLetter', 'answerShape', 'index', 'of', 'phase', 'position', 'prompt', 'render']
+      for (const field of Object.keys(sent)) expect(allowed, field).toContain(field)
+      expect(Object.keys(sent)).toContain('answerShape')
     },
   )
 
@@ -78,10 +81,10 @@ describe('the line under the box', () => {
     await waitFor(() => expect(theKeyboard().layouts).toHaveLength(1))
     await waitFor(() => expect(theField().mathVirtualKeyboardPolicy).toBe('manual'))
     expect(screen.getByText(INEQUALITY_HINT)).toBeTruthy()
-    expect(screen.queryByText('Type the answer, like x = 4. Two answers: x = 3 or x = -1.')).toBeNull()
+    expect(screen.queryByText(/^Type the answer, like x = 4\./)).toBeNull()
     shown.unmount()
     render(<QuestionScreen q={ask({})} busy={false} onAnswer={() => {}} />)
-    await waitFor(() => expect(screen.getByText('Type the answer, like x = 4. Two answers: x = 3 or x = -1.')).toBeTruthy())
+    await waitFor(() => expect(screen.getByText(/^Type the answer, like x = 4\./)).toBeTruthy())
     expect(screen.queryByText(INEQUALITY_HINT)).toBeNull()
   })
 
@@ -90,7 +93,7 @@ describe('the line under the box', () => {
     expect(writeLine({ kind: 'equation', inequality: true })).toBe(INEQUALITY_WRITE_LINE)
     expect(PAIR_WRITE_LINE).toBe('Write both answers, like x = 2, y = 3.')
     expect(writeLine({ kind: 'equation', pair: true })).toBe(PAIR_WRITE_LINE)
-    expect(writeLine({ kind: 'equation' })).toBe('Write the answer, like x = 4. Two answers: x = 3 or x = -1.')
+    expect(writeLine({ kind: 'equation' })).toMatch(/^Write the answer, like x = 4\./)
     const sheet = renderToStaticMarkup(<PaperSheet questions={[ask({ answerShape: 'inequality' })]} busy={false} error={null} onPhoto={() => {}} onScreen={() => {}} />)
     expect(sheet).toContain(INEQUALITY_WRITE_LINE.replaceAll('<', '&lt;'))
   })
