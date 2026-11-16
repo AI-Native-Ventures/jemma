@@ -16,7 +16,9 @@ export const dynamic = 'force-dynamic'
 
 const card = 'flex flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(31,29,54,0.06)]'
 
+/** "You've fixed N gaps so far": there from one fixed gap on. At none it says nothing (a line that reads "fixed 0" is a dead line). */
 function GapsCard({ today, tone }: { today: LearnerToday; tone: 'today' | 'rest' }) {
+  if (today.fixed < 1) return null
   const stroke = tone === 'today' ? '#8C89A3' : '#1F1D36'
   return (
     <Link
@@ -44,6 +46,25 @@ export default async function ChildToday() {
   const { firstName, tonight, next } = today
 
   if (!tonight) {
+    // Nothing planned. On a learner's own record no teacher ever plans anything, so the home asks what to practise instead of waiting for a lesson
+    // that never comes. A school learner is told plainly that no lesson comes from the class tonight (and which day the next one is, when one is booked).
+    const own = today.workspace === 'own'
+    const heading = own
+      ? `What will you practise today, ${firstName}?`
+      : next
+        ? `No new lesson from your class tonight. Your next lesson is on ${next.day}.`
+        : 'No new lesson from your class tonight.'
+    const pickLine = !own && today.practice === 'ready' && today.suggestion !== null
+    const nextCard = next ? (
+      <section aria-labelledby="wed" className={`${card} gap-3.5`}>
+        <span className="text-[14px] font-semibold text-coral-text">{next.day}</span>
+        <h2 id="wed" className="m-0 text-[25px] leading-[1.2] font-bold">{next.topic}</h2>
+        <span className="flex flex-wrap gap-2">
+          {next.minutes ? <MinutesChip minutes={next.minutes} /> : null}
+          {next.format ? <FormatChip format={next.format} /> : null}
+        </span>
+      </section>
+    ) : null
     return (
       <div className="flex min-h-[calc(100dvh-84px)] flex-col font-sans leading-[normal] lg:min-h-dvh">
         <AppHeader firstName={firstName} />
@@ -51,21 +72,12 @@ export default async function ChildToday() {
           <WorkspaceSwitch current={today.workspace} alone={today.alone} />
           <div className="flex items-start gap-2.5">
             <Diamond size={16} className="mt-3 flex-none" />
-            <h1 className="m-0 text-[30px] leading-[1.14] font-bold tracking-[-0.02em] text-pretty">
-              {next ? `Nothing new tonight, ${firstName}! Your next lesson is on ${next.day}.` : `Nothing new tonight, ${firstName}.`}
-            </h1>
+            <h1 className="m-0 text-[30px] leading-[1.14] font-bold tracking-[-0.02em] text-pretty">{heading}</h1>
           </div>
-          {next ? (
-            <section aria-labelledby="wed" className={`${card} gap-3.5`}>
-              <span className="text-[14px] font-semibold text-coral-text">{next.day}</span>
-              <h2 id="wed" className="m-0 text-[25px] leading-[1.2] font-bold">{next.topic}</h2>
-              <span className="flex flex-wrap gap-2">
-                {next.minutes ? <MinutesChip minutes={next.minutes} /> : null}
-                {next.format ? <FormatChip format={next.format} /> : null}
-              </span>
-            </section>
-          ) : null}
+          {own ? null : nextCard}
+          {pickLine ? <p className="m-0 -mb-2 px-1 text-[16px] leading-[1.45] text-body">Pick something to practise.</p> : null}
           <PracticeCard state={today.practice} suggestion={today.suggestion} workspace={today.workspace} />
+          {own ? nextCard : null}
           <GapsCard today={today} tone="rest" />
           {today.workspace === 'own' ? <OwnWorkLink /> : null}
           <JoinClassCard where="home" />
