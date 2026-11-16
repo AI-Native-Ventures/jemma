@@ -21,6 +21,8 @@ vi.mock('../lib/data/p27', () => ({
   tonightFrom: async (_s: unknown, _sessions: unknown, asked: unknown) => (state.asked.push(asked), state.tonight),
   myMathsOf: async (childId: string) => (state.asked.push(childId), state.maths),
 }))
+// Where the map came from (P115) is a database read of its own: a stand-in here.
+vi.mock('../lib/data/map-source', () => ({ mapSourceOf: async () => ({ caps: true, grade: 9 }) }))
 
 import { getMyMaths, mathsStatus } from '../lib/data/p80'
 
@@ -45,7 +47,7 @@ describe('mathsStatus', () => {
 describe('getMyMaths', () => {
   it('answers the learner\'s first name and initial, the count for this learner, and what may be offered', async () => {
     const view = await getMyMaths()
-    expect(view).toEqual({ firstName: 'amina', initial: 'A', maths: state.maths, status: 'free' })
+    expect(view).toEqual({ firstName: 'amina', initial: 'A', maths: state.maths, status: 'free', source: { caps: true, grade: 9 } })
     expect(state.asked).toContain('child-1')
   })
 

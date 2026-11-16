@@ -1,6 +1,9 @@
 import type { MyMaths } from '@jemma/profiling/logic'
 import { isOwnRecord } from '@jemma/profiling/own-names'
+import type { MapSource } from '@/lib/map-source'
 import { defaultOwnClass } from '@/lib/own-workspace'
+import { createSupabaseAdmin } from '@/lib/supabase/admin'
+import { mapSourceOf } from './map-source'
 import { loadLearnerSessions, myChild, myMathsOf, newestPracticeEvent, tonightFrom } from './p27'
 
 /**
@@ -16,7 +19,8 @@ export function mathsStatus(input: { event: string | null; due: boolean }): MyMa
   return input.event === 'queued' || input.event === 'running' ? 'writing' : 'free'
 }
 
-export type MyMathsView = { firstName: string; initial: string; maths: MyMaths; status: MyMathsStatus }
+/** `source` says where the map of the class shown came from (P115): CAPS maps are listed by term, with a line saying so. Absent: a flat list, no line. */
+export type MyMathsView = { firstName: string; initial: string; maths: MyMaths; status: MyMathsStatus; source?: MapSource }
 
 /**
  * What the learner sees on "My maths": their own count in each part of Mathematics, from the answers of THIS learner only (read with the
@@ -29,12 +33,18 @@ export async function getMyMaths(classId?: string): Promise<MyMathsView> {
   const { supabase, child } = await myChild()
   const now = new Date()
   const shown = classId ?? (isOwnRecord(child) ? ((await defaultOwnClass(child.id)) ?? undefined) : undefined)
-  const [sessions, asked, maths] = await Promise.all([loadLearnerSessions(supabase, child.id), newestPracticeEvent(child.id), myMathsOf(child.id, now, shown)])
+  const [sessions, asked, maths, source] = await Promise.all([
+    loadLearnerSessions(supabase, child.id),
+    newestPracticeEvent(child.id),
+    myMathsOf(child.id, now, shown),
+    mapSourceOf(createSupabaseAdmin(), child.id, shown),
+  ])
   const tonight = await tonightFrom(supabase, sessions, asked, now.toISOString().slice(0, 10))
   return {
     firstName: child.first_name,
     initial: child.first_name.slice(0, 1).toUpperCase(),
     maths,
     status: mathsStatus({ event: asked?.status ?? null, due: tonight !== null }),
+    source,
   }
 }

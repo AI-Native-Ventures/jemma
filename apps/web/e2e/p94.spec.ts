@@ -91,9 +91,14 @@ test.describe('My own', () => {
 
     await page.goto('/k/maths/fractions')
     await check(page.getByRole('heading', { level: 1, name: 'Fractions' })).toBeVisible()
+    // Grade 6 CAPS teaches common fractions twice (Term 1 and Term 4): one row under each term heading, with the name CAPS gives it (P115).
     const fractions = page.getByRole('listitem').filter({ has: page.getByText('Common fractions', { exact: true }) })
-    await expect(fractions).toHaveCount(1)
-    await expect(fractions).toContainText('3 of 5 right')
+    await expect(fractions).toHaveCount(2)
+    await expect(page.getByRole('region', { name: 'Term 1' }).getByRole('listitem').filter({ hasText: 'Common fractions' })).toContainText('3 of 5 right')
+    // her marked answers on "Common fractions (Term 4)" are counted on that topic, and the gap on it is still new
+    await expect(page.getByRole('region', { name: 'Term 4' }).getByRole('listitem').filter({ hasText: 'Common fractions' })).toContainText('2 of 4 right')
+    await expect(page.getByText('From the CAPS curriculum for Grade 6.')).toBeVisible()
+    await expect(page.getByText('(Term', { exact: false })).toHaveCount(0)
 
     await page.goto('/k/maths/whole_numbers')
     await check(page.getByRole('heading', { level: 1, name: 'Whole numbers' })).toBeVisible()
