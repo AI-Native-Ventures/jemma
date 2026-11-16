@@ -99,7 +99,7 @@ One gap per session, 10 to 15 minutes, built on retrieval practice, spacing and 
 1. **Warm-up:** 2 quick questions on gaps fixed earlier, so they stay fixed.
 2. **Learn:** one gap in one format: 4 short cards, 1 diagram, or a 3 minute audio memo. Uses an example from the child's own textbook.
 3. **Try:** 5 questions, one at a time. No right or wrong shown during the quiz. After a miss, Jemma quietly makes the next question easier or steps back to a missing basic.
-4. **Results at the end:** each missed question shows why and the right way, framed as "let's look at these 2 together". Total score hidden by default.
+4. **Results at the end:** every question gets feedback. A right answer is confirmed and explained ("Yes, you're right." and why it works); a missed one shows what was written, the right answer, why and the right way. The heading says "You got 4 of 5 right." with one kind line by the score. Never a ranking against anyone.
 5. **Progress:** the gap moves stage and effort is praised.
 
 Adults can switch feedback to after each question, per test or per subject.

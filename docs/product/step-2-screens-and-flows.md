@@ -88,7 +88,7 @@ Four tabs: Today, My gaps, Ask Jemma, Wins. No marks or totals anywhere unless a
 1. Warm-up: 2 quick questions on gaps fixed earlier.
 2. Learn: one gap in one format (4 cards, 1 diagram, or a 3 minute audio memo).
 3. Try: 5 questions, no right or wrong shown. Jemma quietly eases the next question after a miss.
-4. Results: "Let's look at these 2 together", with why and the right way.
+4. Results: "You got 4 of 5 right.", every right answer confirmed with why it works, every missed one with why and the right way.
 5. Progress: the gap moves stage, effort is praised, and the parent gets a summary.
 
 ## Patterns every screen shares

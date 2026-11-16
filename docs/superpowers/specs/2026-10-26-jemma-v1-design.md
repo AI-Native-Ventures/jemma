@@ -170,8 +170,8 @@ correct answers from the memo photo; the teacher approves that key before papers
    - Audio: a script of about 3 minutes, turned into speech, with the transcript shown.
 3. Try: 5 questions, one at a time, no right or wrong shown. After a miss the next question drops one
    difficulty level; after two correct in a row it rises one.
-4. Results at the end: each missed question with why and the right way ("Let's look at these 2 together").
-   No total score for the child. Parent and teacher see everything.
+4. Results at the end: every question with feedback, a right answer confirmed with why it works and a missed one with why
+   and the right way ("You got 4 of 5 right."; changed by P126, it first showed only the missed ones). Parent and teacher see everything.
 5. Progress: gap stage moves. Stages: new, practising (after the first session), fixed (after a later
    session at least N days on scores 4 or 5 of 5; N configurable, short for the demo).
 

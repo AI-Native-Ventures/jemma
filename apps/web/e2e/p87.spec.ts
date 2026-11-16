@@ -215,9 +215,11 @@ test.describe('a learner of a Grade 10 class meets a graph and a triangle in a q
     await page.getByRole('button', { name: 'Minus sign', exact: true }).click()
     await next(page).click()
 
-    // The results show only the question that was missed, with its picture under the heading; now the answer is shown, the description has the equation.
+    // The results show every question (P126); the one that was missed has its picture under the heading; now the answer is shown, the description has the equation.
     await check(page.getByRole('heading', { name: 'You finished, Amina!' })).toBeVisible()
-    await expect(page.getByRole('article')).toHaveCount(1)
+    await expect(page.getByRole('article')).toHaveCount(5)
+    await expect(page.locator('article[data-verdict="missed"]')).toHaveCount(1)
+    await expect(page.getByText('You got 4 of 5 right.')).toBeVisible()
     const three = page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'Question 3' }) })
     await expect(three).toBeVisible()
     await expect(three.getByRole('img', { name: 'A grid from -5 to 5 with the line y = -x + 3', exact: true })).toBeVisible()

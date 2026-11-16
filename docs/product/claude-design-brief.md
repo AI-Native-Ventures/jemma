@@ -52,7 +52,7 @@ Parent (tabs: Profile, Learn, Snap, Tests)
 
 Child: Amina (tabs: Today, My gaps)
 - Today ("What do I do now?"): one big Start button with topic, minutes and format; gaps fixed so far.
-- Session: warm-up question, then Learn in one of three formats (reading cards, a fraction-bar diagram, an audio player with transcript), then 5 questions one at a time with no right/wrong shown, then results ("Let's look at these 2 together" with why and the right way), then progress (gap moves from New to Practising).
+- Session: warm-up question, then Learn in one of three formats (reading cards, a fraction-bar diagram, an audio player with transcript), then 5 questions one at a time with no right/wrong shown, then results ("You got 4 of 5 right.", each right answer confirmed with why it works, each missed one with why and the right way), then progress (gap moves from New to Practising).
 - My gaps: topics grouped by stage: New, Practising, Fixed.
 
 STATES TO SHOW
