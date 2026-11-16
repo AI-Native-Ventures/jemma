@@ -12,7 +12,7 @@ import { isBaselineClass, isSeniorMaths, subjectProfile, type ClassContext } fro
  *
  * A senior class (Mathematics, Grades 7 to 12: `isSeniorMaths`) also gets the rules of its own: the lesson writer is told the four answer kinds that code marks
  * by meaning (number, expression, equation, point) and the form of an expression, when a question carries a picture (a graph on a grid, a triangle) and how
- * to give one, the child is a "learner", every question states its maths as an expression or an equation and not in words and has worked steps, and the reader of a practice answered on paper is told to keep algebra as written. Such a rule is placed before the other rules on the same phrase, so that it wins. The baseline class never meets one (it is Grade 6).
+ * to give one, the child is a "learner", every question states its maths as an expression or an equation and not in words and has worked steps, every question is worded plainly (what is given, then what to find) and every card, step and audio script says what its idea means (P131), and the reader of a practice answered on paper is told to keep algebra as written. Such a rule is placed before the other rules on the same phrase, so that it wins. The baseline class never meets one (it is Grade 6).
  *
  * The long view is not here: its prompt belongs to another packet. A rule never reads a file at run time; the tests check that
  * every `find` still occurs in its file, and the sha256 of each file, so an edit of a file cannot go unnoticed.
@@ -91,7 +91,7 @@ const SENIOR_NOTATION =
   '`Solve: x/2 + 6 = 10`, `Expand: (x + 2)(x + 3)`, `Simplify: √48`, `Find sin θ when θ = 30°`. ' +
   'Never describe the maths in words: `x over 2 plus 6 equals 10` is wrong. ' +
   'Write a fraction as `a/b`, with brackets when the top or the bottom has more than one term (`(x + 1)/2`), a power with `^` (`x^2`), a root as `√( )` (`√(x + 4)`), and use the symbols − × ÷ π θ °. ' +
-  'A word problem (money, data, a real situation) may keep one sentence of context, then the maths on its own line. ' +
+  'A word problem (money, data, a real situation) may keep one or two short sentences of context, then the maths on its own line. ' +
   'The same holds for the warm-up questions and their `choices` (an expression or a number, not a sentence), for `why` and `rightWay` (show each step as maths, such as `x/2 = 4` and then `x = 8`), and for a card or a diagram step. ' +
   'The `answer` itself stays as the answer kinds say. Only the `audio` script is spoken, so there the maths is said in words.'
 
@@ -104,6 +104,34 @@ const SENIOR_STEPS =
   'for example `["x/2 + 6 = 10", "x/2 = 4", "x = 8"]` for `Solve: x/2 + 6 = 10`. ' +
   'Write them in the same notation, one move on each line, with no sentences and no names, so that the learner can follow the working on paper. ' +
   'The last line is the result that the `answer` comes from. Work the steps out before you write the `answer`, and check that they agree.'
+
+/**
+ * The third bullet a senior class's lesson writer gets after the questions bullet (P131): a question is worded the way a teacher would say it. What is given
+ * comes first and what to find second, there is one idea in a question, and the context (one or two short sentences) comes before the maths line, which is last.
+ */
+const SENIOR_PLAIN =
+  'Write every question the way a teacher would say it: first what is given, then what to find, in that order, and one idea in each question. ' +
+  'Write `f(x) = 3x + 1. Find x when f(x) = 10.` or `Solve 3x + 1 = 10.`, never `Solve f(x) = 10 when f(x) = 3x + 1`. ' +
+  'When a question gives a function or an expression first, the command word comes after it. ' +
+  'Use the command words Find, Solve, Expand, Factorise, Simplify and Calculate, and no double negatives. ' +
+  'A question may have one or two short sentences of context before the maths (a word problem, a graph, money), and the maths line comes last, written in maths notation.'
+
+/**
+ * The fourth bullet a senior class's lesson writer gets after the questions bullet (P131): meaning. Every card, diagram step and the audio script says in one
+ * plain sentence what its idea means or where it shows up, and the lesson is built warm-up, then the idea, then the questions. A taxi fare is in rand in
+ * South Africa only; elsewhere the amounts have no currency sign.
+ */
+const seniorMeaning = (c: ClassContext) => {
+  const fare = notSouthAfrica(c) ? '3 to start, 2 for every km' : 'R3 to start, R2 for every km'
+  return (
+    'Every card, every diagram step and the audio script says in one plain sentence what the idea means or where it shows up: ' +
+    `a straight line \`y = 2x + 3\` is a taxi fare (${fare}), ` +
+    'the roots of `y = x^2 − 4` are where the graph crosses the x-axis, and the point where two lines meet is where both plans cost the same. ' +
+    'Start the body of a card and the caption of a step with that sentence. ' +
+    'Never give a formula, a graph or a method without a word on what it is for. ' +
+    'Build the lesson in this order: the warm-up recalls what the learner needs, the cards or steps build the idea one small piece at a time, then the questions use it.'
+  )
+}
 
 export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
   draft_map: [
@@ -189,8 +217,13 @@ export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
     { find: 'for a Grade 6 child', when: (c) => c.grade !== 6, replace: (c) => `for a Grade ${c.grade} child` },
     { find: 'other than the maths.', when: notMaths, replace: () => 'other than the lesson.' },
     { find: 'with the working said out loud', when: notMaths, replace: () => 'with the ideas said out loud' },
-    // A senior class: the maths of a question is written as an expression or an equation, and every question has worked steps: two bullets after the questions bullet of the file (P127).
-    { find: SENIOR_QUESTIONS_BULLET, when: isSeniorMaths, replace: () => `${SENIOR_QUESTIONS_BULLET}\n- ${SENIOR_NOTATION}\n- ${SENIOR_STEPS}` },
+    // A senior class: the maths of a question is written as an expression or an equation (P127), a question is worded plainly, what is given then what to find, and every card
+    // and step says what its idea means (P131), and every question has worked steps (P127): four bullets after the questions bullet of the file.
+    {
+      find: SENIOR_QUESTIONS_BULLET,
+      when: isSeniorMaths,
+      replace: (c) => `${SENIOR_QUESTIONS_BULLET}\n- ${SENIOR_NOTATION}\n- ${SENIOR_PLAIN}\n- ${seniorMeaning(c)}\n- ${SENIOR_STEPS}`,
+    },
     // A senior class: graphs on a grid and triangles, in a card, a step or a question.
     { find: 'Use only the diagram kinds in the schema.', when: isSeniorMaths, replace: () => SENIOR_PICTURES },
   ],

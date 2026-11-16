@@ -341,9 +341,10 @@ describe('maths notation, for a senior class', () => {
     }
   })
 
-  test('a word problem keeps one sentence of context, then the maths; warm-up questions, choices, why, rightWay, cards and diagram steps follow the same rule', () => {
+  // P131: the context may be one or two short sentences (it was one in P127), the maths line still comes last.
+  test('a word problem keeps one or two short sentences of context, then the maths; warm-up questions, choices, why, rightWay, cards and diagram steps follow the same rule', () => {
     const out = lesson(10)
-    for (const word of ['one sentence of context, then the maths on its own line', 'the warm-up questions and their `choices`', '`why` and `rightWay`', 'a card or a diagram step']) {
+    for (const word of ['one or two short sentences of context, then the maths on its own line', 'the warm-up questions and their `choices`', '`why` and `rightWay`', 'a card or a diagram step']) {
       expect(out).toContain(word)
     }
   })
@@ -417,6 +418,110 @@ describe('maths notation, for a senior class', () => {
     expect(out).toContain('`point` (`(2; -3)`)')
     expect(out).toContain('Use `coordinate_plane` for functions')
     expect(out).toContain('for a Grade 10 learner')
+  })
+})
+
+// P131: a senior lesson has meaning and plain wording. Every card, step and the audio says what the idea means or where it shows up; a question gives what is
+// given and then what to find, one idea at a time; a question may have one or two short sentences of context before the maths line.
+describe('meaning and plain questions, for a senior class (P131)', () => {
+  const lesson = (grade: number, country = 'ZA', subject = 'Mathematics') => renderPrompt('write_lesson', md('write_lesson'), klass(subject, grade, country))
+  const QUESTIONS = '- `questions`: exactly 15, five each at difficulty 1, 2 and 3, easiest first.'
+  const RULE = 'Write the maths of every question as an expression or an equation in plain maths notation, never in words.'
+  const MEANING = 'Every card, every diagram step and the audio script says in one plain sentence what the idea means or where it shows up'
+  const PLAIN = 'Write every question the way a teacher would say it: first what is given, then what to find, in that order, and one idea in each question.'
+
+  test('the meaning rule: one plain sentence on what the idea means or where it shows up, with the taxi fare, the roots and the two plans', () => {
+    const out = lesson(10)
+    for (const word of [
+      MEANING,
+      'a straight line `y = 2x + 3` is a taxi fare (R3 to start, R2 for every km)',
+      'the roots of `y = x^2 − 4` are where the graph crosses the x-axis',
+      'the point where two lines meet is where both plans cost the same',
+      'Never give a formula, a graph or a method without a word on what it is for.',
+    ]) {
+      expect(out).toContain(word)
+    }
+    expect(out.split(MEANING)).toHaveLength(2)
+  })
+
+  test('outside South Africa the taxi fare has no rand: the same rule, the amounts without a currency sign', () => {
+    const out = lesson(9, 'KE')
+    expect(out).toContain('a straight line `y = 2x + 3` is a taxi fare (3 to start, 2 for every km)')
+    expect(out).not.toMatch(/\bR[0-9]/)
+    expect(out).toContain(MEANING)
+  })
+
+  test('the lesson is built in an order: the warm-up recalls what is needed, the cards or steps build the idea, then the questions', () => {
+    const out = lesson(10)
+    expect(out).toContain('the warm-up recalls what the learner needs, the cards or steps build the idea one small piece at a time, then the questions use it')
+  })
+
+  test('the plain questions rule: what is given first, then what to find, with the f(x) example and the wrong way', () => {
+    const out = lesson(10)
+    for (const word of [
+      PLAIN,
+      '`f(x) = 3x + 1. Find x when f(x) = 10.`',
+      '`Solve 3x + 1 = 10.`',
+      'never `Solve f(x) = 10 when f(x) = 3x + 1`',
+      'Use the command words Find, Solve, Expand, Factorise, Simplify and Calculate, and no double negatives.',
+    ]) {
+      expect(out).toContain(word)
+    }
+    expect(out.split(PLAIN)).toHaveLength(2)
+  })
+
+  test('the context rule: one or two short sentences before the maths line, which comes last and stays in maths notation', () => {
+    const out = lesson(10)
+    expect(out).toContain('A question may have one or two short sentences of context before the maths (a word problem, a graph, money)')
+    expect(out).toContain('the maths line comes last, written in maths notation')
+  })
+
+  test('the three bullets sit after the notation bullet and before the next bullet of the file, each once, and the notation and steps rules are kept', () => {
+    const out = lesson(10)
+    expect(out).toContain(`${QUESTIONS}\n- ${RULE}`)
+    expect(out).toContain('\n- Every question, and every warm-up question, also has `steps`: 2 to 6 short lines')
+    const next = out.indexOf('- Every question has `prompt`')
+    for (const bullet of [`\n- ${PLAIN}`, `\n- ${MEANING}`]) {
+      expect(out.split(bullet)).toHaveLength(2)
+      expect(out.indexOf(bullet)).toBeGreaterThan(out.indexOf(RULE))
+      expect(out.indexOf(bullet)).toBeLessThan(next)
+    }
+    expect(out.indexOf('also has `steps`')).toBeLessThan(next)
+  })
+
+  test.each([[7], [8], [9], [11], [12]])('Grade %i is told too, in South Africa and outside it', (grade) => {
+    for (const country of ['ZA', 'KE']) {
+      const out = lesson(grade, country)
+      expect(out).toContain(MEANING)
+      expect(out).toContain(PLAIN)
+      expect(out).toContain('`f(x) = 3x + 1. Find x when f(x) = 10.`')
+    }
+  })
+
+  test.each([[1], [4], [5], [13]])('Grade %i is told none of it: the questions bullet of the file, as it was', (grade) => {
+    const out = lesson(grade)
+    for (const word of ['taxi fare', 'what is given, then what to find', 'f(x) = 3x + 1', 'what the idea means or where it shows up', 'one or two short sentences of context']) {
+      expect(out).not.toContain(word)
+    }
+    expect(out).toContain(`${QUESTIONS}\n- Every question has`)
+  })
+
+  test('another subject, and a Grade 6 class outside South Africa, are told none of it', () => {
+    for (const out of [lesson(10, 'ZA', 'Natural Sciences'), lesson(6, 'KE')]) {
+      expect(out).not.toContain('taxi fare')
+      expect(out).not.toContain(PLAIN)
+      expect(out).not.toContain('what the idea means or where it shows up')
+    }
+  })
+
+  test('the Grade 6 baseline still gets the file byte for byte, and the file itself has none of this', () => {
+    expect(lesson(6)).toBe(md('write_lesson'))
+    for (const word of ['taxi fare', 'f(x)', 'where it shows up', 'what to find']) expect(md('write_lesson')).not.toContain(word)
+  })
+
+  test('still one rule on the questions bullet, and no em dash in the senior prompt', () => {
+    expect(PROMPT_RULES.write_lesson.filter((r) => r.find === QUESTIONS)).toHaveLength(1)
+    expect(lesson(10)).not.toContain(String.fromCharCode(0x2014))
   })
 })
 

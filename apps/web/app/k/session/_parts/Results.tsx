@@ -4,6 +4,8 @@ import { Fragment } from 'react'
 import { Frac, FractionText, hasMath, isFraction, MathText, withFractions } from './Frac'
 import { Bar, type Fill } from './Bars'
 import { Gem } from './Gems'
+import { besideNumber } from './prompt-layout'
+import { CardQuestion } from './QuestionPrompt'
 import { QuestionPicture } from './QuestionPicture'
 import { scoreLines, type MissedQuestion } from '../[sessionId]/logic'
 
@@ -108,20 +110,29 @@ const stack = (m: MissedQuestion) => !m.unread && (isLong(m.wrote) || isLong(m.r
 
 /** A question's card starts the same way, right or missed: its number, the question and its picture. */
 function CardHead({ m }: { m: MissedQuestion }) {
+  const fractionSum = m.terms && m.terms.length === 2
   return (
     <>
-      <div className="flex items-center justify-between gap-3">
-        <h2 id={`r${m.n}`} className="m-0 text-[14px] font-semibold text-body">Question {m.n}</h2>
-        <span data-question="true" className="flex items-center justify-end gap-2 text-right text-[24px] font-bold">
-          {m.terms && m.terms.length === 2 ? (
-            <>
-              <Stacked value={m.terms[0]!} size={24} rule={2.5} gap={3} side={3} />+<Stacked value={m.terms[1]!} size={24} rule={2.5} gap={3} side={3} />
-            </>
-          ) : (
-            <FractionText text={m.prompt} size={26} rule={2.5} gap={3} side={3} />
-          )}
-        </span>
-      </div>
+      {fractionSum || besideNumber(m.prompt) ? (
+        <div className="flex items-center justify-between gap-3">
+          <h2 id={`r${m.n}`} className="m-0 text-[14px] font-semibold text-body">Question {m.n}</h2>
+          <span data-question="true" className="flex items-center justify-end gap-2 text-right text-[24px] font-bold">
+            {fractionSum ? (
+              <>
+                <Stacked value={m.terms![0]!} size={24} rule={2.5} gap={3} side={3} />+<Stacked value={m.terms![1]!} size={24} rule={2.5} gap={3} side={3} />
+              </>
+            ) : (
+              <FractionText text={m.prompt} size={26} rule={2.5} gap={3} side={3} />
+            )}
+          </span>
+        </div>
+      ) : (
+        // A long question (P130) has the whole width of the card under its number, its context in normal text and its maths line large.
+        <div className="flex flex-col gap-2">
+          <h2 id={`r${m.n}`} className="m-0 text-[14px] font-semibold text-body">Question {m.n}</h2>
+          <CardQuestion prompt={m.prompt} />
+        </div>
+      )}
       <QuestionPicture spec={m.diagram} variant="card" />
     </>
   )
