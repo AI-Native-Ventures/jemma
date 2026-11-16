@@ -57,8 +57,9 @@ describe('everything else is as it was', () => {
   test('a wrong answer that the reader by meaning can read is still sent to the teacher, not marked wrong with confidence', async () => {
     const { out, rows } = await run(['3', '2x + 4', 'x = 3', '(-3; 2)', '2/3', '16', 'B'])
     expect(rows.map((r) => r.correct)).toEqual([false, false, false, false, false, false, false])
-    // The first four and the percent are text for the old reader: they cannot be compared, so they are unsure, as before. The fraction and the letter are compared.
-    expect(out.unsure).toEqual([1, 2, 3, 4, 6])
+    // The expression, the equation, the point and the percent are text for the old reader: they cannot be compared, so they are unsure, as before. The fraction and the letter are compared.
+    // P148: a minus in front of a number is a number now (parseNumber reads it), so the first one (3 against -3) is compared too, and is wrong with confidence.
+    expect(out.unsure).toEqual([2, 3, 4, 6])
     expect(out.status).toBe('needs_you')
   })
 

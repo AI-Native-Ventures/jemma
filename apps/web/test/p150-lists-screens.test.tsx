@@ -64,7 +64,8 @@ describe('what the server sends: counts and shapes, never the key', () => {
   it('a question of another kind has none of these fields', () => {
     const old = stripQuestion({ ...base, answer: '3/4', answerKind: 'fraction' }, at)
     for (const key of ['list', 'items', 'table', 'round']) expect(old).not.toHaveProperty(key)
-    const senior = stripQuestion({ ...base, answer: '-3', answerKind: 'number', round: 2 }, at)
+    // P148 sends `round` for a number, a whole and a decimal (the screen says "Round it to 2 decimal places"); an expression has no rounding to say.
+    const senior = stripQuestion({ ...base, answer: '2x + 3', answerKind: 'expression', round: 2 }, at)
     expect(senior).not.toHaveProperty('round')
   })
 })

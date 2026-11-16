@@ -17,11 +17,17 @@ export const YOUNG_SIZE = [
   '[&_[data-values=items]_button]:min-h-14 [&_[data-values=items]_button]:min-w-16',
 ].join(' ')
 
-/** Wraps a list, an order or a table for a young learner; any other learner gets the input as it is (no box at all). */
-export function YoungSize({ young, children }: { young: boolean | undefined; children: ReactNode }) {
+/**
+ * The time boxes (P148): the hours and the minutes are already 64 px high, and the am and pm keys of a 12 hour clock are 34 px, under a touch target of 44. For a
+ * young learner they are 48 px high and 64 px wide.
+ */
+export const YOUNG_TIME_SIZE = ['w-full', '[&_[data-time]_button]:h-12 [&_[data-time]_button]:w-16 [&_[data-time]_button]:text-[20px]'].join(' ')
+
+/** Wraps a list, an order, a table or a time for a young learner; any other learner gets the input as it is (no box at all). */
+export function YoungSize({ young, kind = 'values', children }: { young: boolean | undefined; kind?: 'values' | 'time'; children: ReactNode }) {
   if (!young) return <>{children}</>
   return (
-    <div data-young="true" className={YOUNG_SIZE}>
+    <div data-young="true" className={kind === 'time' ? YOUNG_TIME_SIZE : YOUNG_SIZE}>
       {children}
     </div>
   )

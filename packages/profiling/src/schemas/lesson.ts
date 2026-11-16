@@ -24,8 +24,8 @@ const Difficulty = z.union([z.literal(1), z.literal(2), z.literal(3)])
  */
 
 export const PRIMARY_ANSWER_KINDS = ['fraction', 'mixed', 'decimal', 'whole', 'money', 'choice'] as const
-/** The four kinds of a senior class that code marks by meaning (logic/meaning.ts). */
-export const MEANING_ANSWER_KINDS = ['number', 'expression', 'equation', 'point'] as const
+/** The kinds of a senior class that code marks by meaning (logic/meaning.ts): four from P86, and `time` and `ratio` (P148). */
+export const MEANING_ANSWER_KINDS = ['number', 'expression', 'equation', 'point', 'time', 'ratio'] as const
 /** P150: the three kinds that are several values (logic/answers/lists.ts): a list, an order the learner puts items in, and a table with empty cells. */
 export const LIST_ANSWER_KINDS = ['list', 'order', 'table'] as const
 export const ANSWER_KINDS = [...PRIMARY_ANSWER_KINDS, ...MEANING_ANSWER_KINDS, ...LIST_ANSWER_KINDS] as const
@@ -77,7 +77,9 @@ const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
     ordered: z.boolean().optional(),
     /** A `list` question: a short label over each box (`["min", "Q1", "median", "Q3", "max"]`), one for each value of the answer. */
     labels: z.array(z.string()).optional(),
-    /** How many decimal places the question asks the answer to be rounded to ("correct to 1 decimal place" is 1): a value that rounds to the key's there is right. 0 to 6, checked by the save gate. */
+    /** The unit of the answer ("cm²", "ml", "km/h", "°C", "kg"), shown after the box. The `answer` is the number alone (P148). */
+    unit: z.string().optional(),
+    /** The places a question asks the answer to be rounded to ("correct to 2 decimal places": a number, a whole, a decimal, or a `list` or `table` question): an answer that rounds to the key there is right. 0 to 6, checked by the save gate (P148, P150). */
     round: z.number().int().optional(),
     /** A `table` question: the table, with `null` in each cell the learner fills. */
     table: TableSchema.optional(),
