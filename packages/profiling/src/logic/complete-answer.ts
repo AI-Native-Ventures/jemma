@@ -14,7 +14,7 @@ export const fillMissing = (part: MissingPart, typed: string) => (part.unknown =
  * into its fraction, and counts as right when the fraction OR the bare number matches the key (a key can be "9/15" or "9").
  * A whole fraction, and every other question, is marked as typed. The server does this again whatever the browser sent.
  */
-export function completeAnswer(q: { prompt: string; answer: string; choices?: string[] }, typed: string): { stored: string; correct: boolean } {
+export function completeAnswer(q: { prompt: string; answer: string; choices?: readonly unknown[] }, typed: string): { stored: string; correct: boolean } {
   const text = typed.trim()
   const part = q.choices?.length ? null : missingPart(q.prompt)
   if (part && /^\d+$/.test(text)) {

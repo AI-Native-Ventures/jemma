@@ -1,6 +1,7 @@
-import { MEANING_ANSWER_KINDS, type Form, type MeaningKind } from '../schemas/lesson'
+import { MEANING_ANSWER_KINDS, type Choice, type Form, type MeaningKind } from '../schemas/lesson'
 import { markAnswer } from './answers'
 import { equationFamilyReadable, expandPlusMinus, isLetteredPairKey, isSetKey, markEquationFamily, type EquationTools } from './answers/equation-family'
+import { finishPicked } from './answers/pick'
 import { completeAnswer } from './complete-answer'
 import { isListKind, markListQuestion } from './answers/lists'
 
@@ -962,9 +963,12 @@ export const readNumber = (text: string): number | null => numeric(text, true)
  * `completeAnswer` exactly as it always did (a missing number put back into its fraction, then `markAnswer`).
  */
 export function finishAnswer(
-  q: { prompt: string; answer: string; answerKind: string; form?: Form; choices?: string[]; ordered?: boolean; labels?: string[]; round?: number },
+  q: { prompt: string; answer: string; answerKind: string; form?: Form; choices?: readonly Choice[]; ordered?: boolean; labels?: string[]; round?: number },
   typed: string,
 ): { stored: string; correct: boolean } {
+  // P149: a question that is picked (it has choices, or is true or false, or asks for a reason) is marked by its letter or its pick, whatever kind it says it is.
+  const picked = finishPicked(q, typed, (key, value) => markByMeaning('number', key, value).correct)
+  if (picked) return picked
   if (isMeaningKind(q.answerKind) || isListKind(q.answerKind)) return { stored: typed.trim(), correct: markQuestion(q, typed).correct }
   return completeAnswer(q, typed)
 }
