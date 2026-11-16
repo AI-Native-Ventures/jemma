@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { EventSchema } from '../src/schemas/events'
+import { runEvent } from '../src/orchestrator'
 import { jobPlan, postconditions } from '../src/plans'
 import { memoryDb, type MemoryDb } from './helpers/memory-db'
 
@@ -147,5 +148,123 @@ describe('the postcondition of practice.requested', () => {
 
   test('met: no session, no open gap and nothing for pickPractice to pick', async () => {
     expect(await unmet(world())).toEqual([])
+  })
+})
+
+// P118: a learner who taps Start the moment the lesson appears (or even finishes it) before Jemma has checked its own work must not turn a good practice
+// into "could not write". `dueSession` only sees a planned session, so with `since` (when the event was created) the check also looks at a session of any
+// status whose lesson (or the session itself) was made after the event.
+describe('the postcondition of practice.requested when the learner already started the practice (P118)', () => {
+  // Made-up times in the order of the live run: the event, the session, the lesson, the check.
+  const SINCE = '2026-11-13T14:18:18.000Z'
+  const BEFORE = '2026-11-13T09:00:00.000Z'
+  const SESSION_MADE = '2026-11-13T14:18:44.000Z'
+  const LESSON_MADE = '2026-11-13T14:19:17.000Z'
+  const MISSING = [`no practice written for child ${CHILD}`]
+  const open = { id: 'g1', child_id: CHILD, topic_id: null, topic_name: 'Adding decimals', stage: 'new' }
+  const since = (db: MemoryDb, at: Date | string | undefined = SINCE) => postconditions(EventSchema.parse(event), db, NOW, at)
+  const made = (status: string, sessionAt: string, lessonAt: string, over: { content?: unknown; planned_for?: string; child_id?: string } = {}) => {
+    const { content = withQuestions, planned_for = TODAY, child_id = CHILD } = over
+    return world({
+      gaps: [open],
+      sessions: [session(planned_for, 'l1', { status, created_at: sessionAt, child_id })],
+      lessons: [{ ...lesson('l1', content), created_at: lessonAt, child_id }],
+    })
+  }
+
+  test('a session already done whose lesson was written after the event: met', async () => {
+    expect(await since(made('done', SESSION_MADE, LESSON_MADE))).toEqual([])
+  })
+
+  test('a session the learner started and has not finished: met', async () => {
+    expect(await since(made('in_progress', SESSION_MADE, LESSON_MADE))).toEqual([])
+  })
+
+  test('without `since` it is exactly as it was: the done and the started session are not seen', async () => {
+    expect(await unmet(made('done', SESSION_MADE, LESSON_MADE))).toEqual(MISSING)
+    expect(await unmet(made('in_progress', SESSION_MADE, LESSON_MADE))).toEqual(MISSING)
+    expect(await postconditions(EventSchema.parse(event), made('done', SESSION_MADE, LESSON_MADE), NOW, undefined)).toEqual(MISSING)
+  })
+
+  test('the lesson or the session made after the event is enough, each alone', async () => {
+    expect(await since(made('done', BEFORE, LESSON_MADE))).toEqual([])
+    expect(await since(made('done', SESSION_MADE, BEFORE))).toEqual([])
+  })
+
+  test('a practice from earlier today (lesson and session made before the event) is not this practice: still not written', async () => {
+    expect(await since(made('done', BEFORE, BEFORE))).toEqual(MISSING)
+    expect(await since(made('in_progress', BEFORE, BEFORE))).toEqual(MISSING)
+  })
+
+  test('the moment of the event itself counts as after it', async () => {
+    expect(await since(made('done', SINCE, SINCE))).toEqual([])
+  })
+
+  test('a lesson with no questions is not a practice, started or not', async () => {
+    for (const content of [{}, { questions: [] }, null]) expect(await since(made('done', SESSION_MADE, LESSON_MADE, { content }))).toEqual(MISSING)
+  })
+
+  test('a session with no lesson row at all, or planned for a later day, or of another learner, does not count', async () => {
+    const noLesson = world({ gaps: [open], sessions: [session(TODAY, null, { status: 'done', created_at: SESSION_MADE })] })
+    expect(await since(noLesson)).toEqual(MISSING)
+    expect(await since(made('done', SESSION_MADE, LESSON_MADE, { planned_for: '2026-11-14' }))).toEqual(MISSING)
+    expect(await since(made('done', SESSION_MADE, LESSON_MADE, { child_id: '99999999-9999-4999-8999-999999999999' }))).toEqual(MISSING)
+  })
+
+  test('a session planned for an earlier day counts too, as a planned one does', async () => {
+    expect(await since(made('done', SESSION_MADE, LESSON_MADE, { planned_for: '2026-11-10' }))).toEqual([])
+  })
+
+  test('`since` may be a Date; one that is not a date is ignored (the rule is then as it was)', async () => {
+    expect(await since(made('done', SESSION_MADE, LESSON_MADE), new Date(SINCE))).toEqual([])
+    expect(await since(made('done', SESSION_MADE, LESSON_MADE), 'not a date')).toEqual(MISSING)
+  })
+
+  test('the rules that came first still come first: a planned session with questions is met, nothing to practise is met, with or without `since`', async () => {
+    const planned = world({ sessions: [session(TODAY, 'l1', { created_at: BEFORE })], lessons: [{ ...lesson('l1', withQuestions), created_at: BEFORE }] })
+    expect(await since(planned)).toEqual([])
+    expect(await since(world())).toEqual([])
+  })
+
+  test('something to practise and no session at all is still not written, with `since`', async () => {
+    expect(await since(world({ gaps: [open] }))).toEqual(MISSING)
+  })
+
+  test('only a practice.requested event looks at `since`: any other event ignores it', async () => {
+    const observed = EventSchema.parse({ type: 'observation.added', childId: CHILD })
+    expect(await postconditions(observed, world(), NOW, SINCE)).toEqual([])
+  })
+})
+
+// The wiring: `runEvent` hands the event's own `created_at` to the postconditions, so a practice the learner started meanwhile ends the event done.
+describe('runEvent of a practice the learner already started (P118)', () => {
+  const EVENT = '99999999-9999-4999-8999-999999999999'
+  const SINCE = '2026-11-13T14:18:18.000Z'
+  const BEFORE = '2026-11-13T09:00:00.000Z'
+  const AFTER = '2026-11-13T14:19:17.000Z'
+  const open = { id: 'g1', child_id: CHILD, topic_id: null, topic_name: 'Adding decimals', stage: 'new' }
+  const asked = (): Row => ({ id: EVENT, school_id: 's', type: 'practice.requested', status: 'queued', runner: 'cloud', claimed_by: null, attempts: 0, payload: { type: 'practice.requested', childId: CHILD }, created_at: SINCE })
+  // The planning and writing steps are stand-ins that write nothing: the learner has already got the session and its lesson (written at `at`).
+  const run = (db: MemoryDb) =>
+    runEvent(EVENT, { db, env: {} as never, jobs: { plan_next_session: async () => {}, write_lesson: async () => {} }, sleep: async () => {}, now: () => NOW })
+  const ended = (at: string): MemoryDb =>
+    world({
+      schools: [{ id: 's' }],
+      events: [asked()],
+      gaps: [open],
+      sessions: [session(TODAY, 'l1', { status: 'done', created_at: at })],
+      lessons: [{ ...lesson('l1', withQuestions), created_at: at }],
+    })
+
+  test('the session was started and finished after the event was asked: the event ends done, not failed', async () => {
+    const db = ended(AFTER)
+    expect(await run(db)).toEqual({ status: 'done' })
+    expect(db.tables.events![0]).toMatchObject({ status: 'done', error: null })
+  })
+
+  test('only an earlier practice today is there: the event still ends failed, with the same words as before', async () => {
+    const db = ended(BEFORE)
+    expect(await run(db)).toEqual({ status: 'failed' })
+    expect(db.tables.events![0]).toMatchObject({ status: 'failed', error: `Jemma did not finish: no practice written for child ${CHILD}` })
   })
 })

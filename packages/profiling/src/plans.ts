@@ -109,6 +109,33 @@ async function dueSession(db: JemmaDb, childId: string, now: Date): Promise<{ id
   return { id: latest.id, written: Array.isArray(questions) && questions.length > 0 }
 }
 
+/**
+ * True when the learner already started (or finished) a practice that was written after `since` (the moment the practice was asked for): a session for
+ * today or earlier, of any status, whose lesson has questions and whose lesson or session was made at or after `since`. `dueSession` only reads a planned
+ * session, so a learner who taps Start the moment the lesson appears, or who finishes it, would make a good practice look unwritten. A `since` that is not
+ * a date answers false. The postcondition of `practice.requested` and the learner's home both ask it, so they always agree.
+ */
+export async function practiceStartedSince(db: JemmaDb, childId: string, now: Date, since: Date | string): Promise<boolean> {
+  const from = new Date(since)
+  if (Number.isNaN(from.getTime())) return false
+  const at = from.toISOString()
+  const today = now.toISOString().slice(0, 10)
+  const [newSessions, newLessons] = await Promise.all([
+    ok(db.from('sessions').select('id, lesson_id').eq('child_id', childId).lte('planned_for', today).gte('created_at', at)),
+    ok(db.from('lessons').select('id').eq('child_id', childId).gte('created_at', at)),
+  ])
+  const ofNewLessons = newLessons.length
+    ? await ok(db.from('sessions').select('id, lesson_id').eq('child_id', childId).lte('planned_for', today).in('lesson_id', newLessons.map((l) => l.id)))
+    : []
+  const lessonIds = [...new Set([...newSessions, ...ofNewLessons].flatMap((s) => (s.lesson_id ? [s.lesson_id] : [])))]
+  if (lessonIds.length === 0) return false
+  const lessons = await ok(db.from('lessons').select('id, content').in('id', lessonIds))
+  return lessons.some((l) => {
+    const questions = (l.content as { questions?: unknown } | null)?.questions
+    return Array.isArray(questions) && questions.length > 0
+  })
+}
+
 /** What follows a finished session, however its answers came: the profile moves, the next session is planned, its lesson is written. */
 async function afterSession(db: JemmaDb, sessionId: string): Promise<JobStep[]> {
   const session = await ok(db.from('sessions').select('child_id').eq('id', sessionId).single())
@@ -205,8 +232,10 @@ const UNREAD = ['queued', 'reading']
  * What an event must have produced once its job plan is done. Empty means met.
  * A test's tail (reteach plan, a planned session per learner with an open gap) is due once no paper of the test is still being read; papers waiting in Needs you count as resolved.
  * The planned sessions are only due once the test is shared with parents (`held` is false): `test.shared` asks for them for the learners with a marked paper.
+ * `since` is when the event was created (its `created_at`). Only `practice.requested` reads it: a practice the learner already started or finished still counts
+ * as written (`practiceStartedSince`). Without it the rule is exactly as it always was.
  */
-export async function postconditions(event: JemmaEvent, db: JemmaDb, now: Date = new Date()): Promise<string[]> {
+export async function postconditions(event: JemmaEvent, db: JemmaDb, now: Date = new Date(), since?: Date | string): Promise<string[]> {
   const missing: string[] = []
   /** Every learner in `childIds` with an open gap needs a planned session. */
   const sessionsFor = async (childIds: string[]) => {
@@ -303,6 +332,8 @@ export async function postconditions(event: JemmaEvent, db: JemmaDb, now: Date =
         const open = await ok(db.from('gaps').select('id').eq('child_id', event.childId).neq('stage', 'fixed').limit(1))
         if (open.length === 0 && pickPractice(await loadPracticeInput(db, event.childId, now)) === null) break
       }
+      // The learner may have started (or finished) the practice before this check: a session that is no longer planned is not seen above.
+      if (since !== undefined && (await practiceStartedSince(db, event.childId, now, since))) break
       missing.push(`no practice written for child ${event.childId}`)
       break
     }

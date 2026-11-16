@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import { HANDOVER_COOKIE, verifyHandover } from '../handover'
 import { buildMyMaths, type MyMaths, type MyMathsSuggestion } from '@jemma/profiling/logic'
-import { loadMyMathsInput } from '@jemma/profiling/orchestrator'
+import { loadMyMathsInput, practiceStartedSince } from '@jemma/profiling/orchestrator'
 import { isIndependent, isOwnRecord } from '@jemma/profiling/own-names'
 import { QuestionSchema, StoredLessonSchema, type Lesson, type SeniorDiagramSpec } from '@jemma/profiling/schemas'
 import { notFound } from 'next/navigation'
@@ -161,11 +161,19 @@ export async function schoolChildOfRequest() {
 /**
  * The newest `practice.requested` event of this learner (by this learner's id only), or null. Read with the service client: a learner's
  * own session cannot read `events`. A read that fails answers null, so the home never waits on it.
+ * An event that ended `failed` is told as `done` when the learner already started or finished the practice it asked for: a session for today or
+ * earlier, of any status, whose lesson has questions and was written after the event (`practiceStartedSince`, the rule the agent's own check uses).
+ * The agent's check of its work can run a moment after a quick learner has tapped Start, and that is not a practice that could not be written.
+ * Every screen and the "Try again" action read the event here, so they all agree.
  */
-export async function newestPracticeEvent(childId: string): Promise<{ id: string; status: string } | null> {
+export async function newestPracticeEvent(childId: string, now: Date = new Date()): Promise<{ id: string; status: string } | null> {
   try {
-    const { data } = await createSupabaseAdmin().from('events').select('id, status').eq('type', 'practice.requested').eq('payload->>childId', childId).order('created_at', { ascending: false }).limit(1)
-    return data?.[0] ?? null
+    const admin = createSupabaseAdmin()
+    const { data } = await admin.from('events').select('id, status, created_at').eq('type', 'practice.requested').eq('payload->>childId', childId).order('created_at', { ascending: false }).limit(1)
+    const newest = data?.[0]
+    if (!newest) return null
+    if (newest.status === 'failed' && newest.created_at && (await practiceStartedSince(admin, childId, now, newest.created_at))) return { id: newest.id, status: 'done' }
+    return { id: newest.id, status: newest.status }
   } catch {
     return null
   }

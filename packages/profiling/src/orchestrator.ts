@@ -11,7 +11,7 @@ import { planNextSession } from './tools/save/plan-next-session'
 import { updateLearnerProfile } from './tools/save/update-learner-profile'
 
 // Re-exported so a plain Node process (the operator runner) gets them without the tools barrel, which imports job prompts (.md files).
-export { jobPlan, postconditions } from './plans'
+export { jobPlan, postconditions, practiceStartedSince } from './plans'
 // The loaders the learner's screens and the server action that asks for a practice use (the web app reaches the package through this entry).
 export { loadChoiceRules, loadMyMathsInput } from './tools/read/practice-input'
 export type { JobStep } from './plans'
@@ -236,7 +236,7 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
   const now = deps.now ?? (() => new Date())
   const startedAt = now().toISOString()
 
-  const row = await maybe(db.from('events').select('id, school_id, type, payload, status').eq('id', eventId).maybeSingle())
+  const row = await maybe(db.from('events').select('id, school_id, type, payload, status, created_at').eq('id', eventId).maybeSingle())
   if (!row) return { status: 'cancelled' }
   if (row.status === 'done' || row.status === 'failed' || row.status === 'cancelled') return { status: row.status }
   if (row.status === 'queued') {
@@ -349,7 +349,7 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
       }
     }
     await walk()
-    let unmet = await postconditions(parsed, db, now())
+    let unmet = await postconditions(parsed, db, now(), row.created_at)
     // The papers of a test are read at the same time. This event can finish before a sibling marks its paper, so the
     // sibling's run owns the tail: wait for it while it runs, and plan again if nothing is left running and something is unmet.
     for (let waited = 0; unmet.length && waited < MAX_SIBLING_WAITS; waited++) {
@@ -357,11 +357,11 @@ export async function runEvent(eventId: string, deps: RunDeps): Promise<RunResul
       if (others.length === 0) break
       await sleep(2000)
       await guard()
-      unmet = await postconditions(parsed, db, now())
+      unmet = await postconditions(parsed, db, now(), row.created_at)
     }
     if (unmet.length) {
       await walk()
-      unmet = await postconditions(parsed, db, now())
+      unmet = await postconditions(parsed, db, now(), row.created_at)
     }
     if (unmet.length) return await fail(`Jemma did not finish: ${unmet.join('; ')}`)
     await db
