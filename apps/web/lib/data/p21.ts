@@ -135,22 +135,25 @@ export async function getTeacherClasses(): Promise<ClassesView> {
   const rows = classes ?? []
   const ids = rows.map((c) => c.id)
 
-  const [enrol, tests, needs, unread] = await Promise.all([
+  const [enrol, tests, needs, unread, joins] = await Promise.all([
     supabase.from('enrolments').select('class_id, child_id').in('class_id', ids),
     supabase.from('tests').select('id, class_id, title').in('class_id', ids),
     supabase.from('needs_you_items').select('child_id, kind, ref_id').eq('owner_id', userId).eq('status', 'open'),
     supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', userId).is('read_at', null),
+    // P112: a learner asking to join a class has no child in it yet: the request says which class the item is for.
+    supabase.from('class_join_requests').select('id, class_id').in('class_id', ids).eq('status', 'pending'),
   ])
 
   const classOfChild = new Map<string, string[]>()
   for (const e of enrol.data ?? []) classOfChild.set(e.child_id, [...(classOfChild.get(e.child_id) ?? []), e.class_id])
   const classOfTest = new Map((tests.data ?? []).map((t) => [t.id, t.class_id]))
+  const classOfJoin = new Map((joins.data ?? []).map((j) => [j.id, j.class_id]))
 
   const needsBy = new Map<string, { n: number; papers: number }>()
   for (const item of needs.data ?? []) {
     const target = needClass(ids, {
       childClasses: (item.child_id && classOfChild.get(item.child_id)) || [],
-      itemClass: classOfTest.get(item.ref_id) ?? null,
+      itemClass: classOfTest.get(item.ref_id) ?? classOfJoin.get(item.ref_id) ?? null,
     })
     if (!target) continue
     const cur = needsBy.get(target) ?? { n: 0, papers: 0 }

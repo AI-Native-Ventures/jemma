@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { IconLabel } from '@/components/ui/IconLabel'
 import { getLearnerToday, type LearnerToday } from '@/lib/data/p27'
+import { JoinClassCard } from './join/JoinClassCard'
 import { AppHeader } from './session/_parts/AppHeader'
 import { ChevronRight, FormatChip, MinutesChip } from './session/_parts/Chips'
 import { Diamond, Gem } from './session/_parts/Gems'
@@ -67,6 +68,7 @@ export default async function ChildToday() {
           <PracticeCard state={today.practice} suggestion={today.suggestion} workspace={today.workspace} />
           <GapsCard today={today} tone="rest" />
           {today.workspace === 'own' ? <OwnWorkLink /> : null}
+          <JoinClassCard where="home" />
         </div>
       </div>
     )
@@ -102,6 +104,7 @@ export default async function ChildToday() {
         </section>
         <GapsCard today={today} tone="today" />
         {today.workspace === 'own' ? <OwnWorkLink /> : null}
+        <JoinClassCard where="home" />
       </div>
     </div>
   )

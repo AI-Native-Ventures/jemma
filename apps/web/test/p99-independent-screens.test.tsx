@@ -13,6 +13,8 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: 
 vi.mock('../app/k/actions', () => ({ startPractice: vi.fn(async () => ({ ok: true })), retryPractice: vi.fn(async () => ({ ok: true })) }))
 vi.mock('../app/k/own-actions', () => ({ setWorkspace: vi.fn(async () => ({ ok: true })), addMyGrade: vi.fn(async () => ({ ok: true })) }))
 vi.mock('../lib/data/p27', () => ({ getLearnerToday: async () => state.today }))
+// P112: the "Join your school class" card reads the database by itself; it has its own tests (p112-join-card.test.tsx).
+vi.mock('../app/k/join/JoinClassCard', () => ({ JoinClassCard: () => null }))
 vi.mock('../lib/data/p80', () => ({ getMyMaths: async () => state.view }))
 vi.mock('../lib/data/own-screens', () => ({ getScreenShape: async () => state.shape }))
 vi.mock('../lib/data/own-uploads', () => ({ getOwnHome: async () => state.own }))
