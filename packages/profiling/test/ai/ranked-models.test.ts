@@ -73,6 +73,9 @@ type Net = {
   /** Called for each model call. Return a Response, or a promise that never settles to hang. */
   chat?: (model: string, init: RequestInit) => Response | Promise<Response>
   aa?: 'ok' | 'fail'
+  /** The AA pages served (default: the two pages of the fixture), and a page number that answers 500. */
+  aaPages?: unknown[]
+  aaFailPage?: number
   openrouter?: 'ok' | 'fail'
   /** The OpenRouter list served: default is the whole fixture. */
   list?: unknown[]
@@ -88,7 +91,9 @@ function network(net: Net = {}) {
     if (url === OPENROUTER_MODELS_URL) return net.openrouter === 'fail' ? json({}, 503) : json({ data: net.list ?? OR.data })
     if (url.startsWith(AA_FREE_MODELS_URL)) {
       const page = Number(new URL(url).searchParams.get('page'))
-      return net.aa === 'fail' ? json({}, 401) : json(AA_PAGES[page - 1] ?? { data: [] })
+      if (net.aa === 'fail') return json({}, 401)
+      if (net.aaFailPage === page) return json({}, 500)
+      return json((net.aaPages ?? AA_PAGES)[page - 1] ?? { data: [] })
     }
     if (url === CHAT_URL) {
       const model = JSON.parse(init?.body as string).model as string
@@ -193,6 +198,49 @@ describe('the dynamic list in a live call', () => {
     const { asked } = network({ chat: gone, aa: 'fail' })
     await expect(getModel('text', env()).doGenerate(params)).rejects.toThrow()
     expect(asked.slice(0, 3)).toEqual([PAID, LING, ERNIE])
+  })
+
+  const row = (slug: string, name: string, score: number) => ({ slug, name, evaluations: { artificial_analysis_intelligence_index: score } })
+  const page = (n: number, hasMore: boolean, data: unknown[]) => ({ tier: 'free', pagination: { page: n, page_size: 3, total_pages: 2, has_more: hasMore }, data })
+  /** The best models of the hour are on page 2, as the best of the real list were on later pages. */
+  const lateBest = [
+    page(1, true, [row('nemotron-3-5-lightning', 'Nemotron 3.5 Lightning', 35), row('north-mini-code', 'North Mini Code', 32), row('claude-opus-5-5', 'Claude Opus 5.5', 70)]),
+    page(2, false, [row('inkling-2-small', 'Inkling 2 Small', 44), row('nemotron-3-5-super-vl', 'Nemotron 3.5 Super VL', 41), row('nvidia-nemotron-3-ultra-550b-a55b', 'Nemotron 3 Ultra', 38)]),
+  ]
+
+  test('the best model can be on page 2 of the AA list: it still ranks first, and page 1 alone would not have found it', async () => {
+    const { asked, catalogCalls } = network({ chat: gone, aaPages: lateBest })
+    await expect(getModel('text', env()).doGenerate(params)).rejects.toThrow()
+    expect(asked).toEqual([PAID, INKLING, SUPER, ULTRA, LIGHTNING, GEMMA31])
+    expect(catalogCalls()).toEqual([OPENROUTER_MODELS_URL, aaPageUrl(1), aaPageUrl(2)])
+    // The same answer cut to page 1 (what reading one page gives) puts the late models nowhere.
+    resetCatalogMemo()
+    vi.unstubAllGlobals()
+    const first = network({ chat: gone, aaPages: [{ ...lateBest[0] as object, pagination: { page: 1, has_more: false } }] })
+    await expect(getModel('text', env()).doGenerate(params)).rejects.toThrow()
+    expect(first.asked).toEqual([PAID, LIGHTNING, 'cohere/north-mini-code:free', SUPER, ULTRA, GEMMA31])
+  })
+
+  test('the best model can be on page 2 for a photo job as well', async () => {
+    const { asked } = network({ chat: gone, aaPages: lateBest })
+    const vision = getModel('vision', env({ VISION_PROVIDER: 'openrouter', VISION_MODEL: PAID, VISION_MODEL_FALLBACKS: [SUPER, ULTRA, GEMMA31].join(',') }))
+    await expect(vision.doGenerate(params)).rejects.toThrow()
+    expect(asked).toEqual([PAID, INKLING, SUPER, GEMMA31])
+  })
+
+  test('if page 2 fails the AA list is unavailable: the newest free models come first, and the list is asked for again after 5 minutes', async () => {
+    const { asked, catalogCalls } = network({ chat: gone, aaFailPage: 2 })
+    await expect(getModel('text', env()).doGenerate(params)).rejects.toThrow()
+    expect(asked).toEqual([PAID, LING, ERNIE, INKLING, LFM, SUPER, ULTRA, GEMMA31])
+    expect(catalogCalls()).toEqual([OPENROUTER_MODELS_URL, aaPageUrl(1), aaPageUrl(2)])
+  })
+
+  test('an AA answer with no pagination block is read as one page', async () => {
+    const onlyPage = { data: [row('inkling-2-small', 'Inkling 2 Small', 44), row('nemotron-3-5-lightning', 'Nemotron 3.5 Lightning', 35)] }
+    const { asked, catalogCalls } = network({ chat: gone, aaPages: [onlyPage] })
+    await expect(getModel('text', env()).doGenerate(params)).rejects.toThrow()
+    expect(asked).toEqual([PAID, INKLING, LIGHTNING, SUPER, ULTRA, GEMMA31])
+    expect(catalogCalls()).toEqual([OPENROUTER_MODELS_URL, aaPageUrl(1)])
   })
 
   test('with the OpenRouter list unreadable the pinned list is called as it is', async () => {
