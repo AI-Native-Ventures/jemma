@@ -1,18 +1,23 @@
 import { strandOf, type Strand, type TypedKind } from './maths-keys'
 
-// P132: the keyboard of the maths editor, as tabs by kind of symbol, the way a graphing calculator keyboard is laid out: the signs and numbers, the letters
-// that stand for numbers, the functions and constants, the signs of geometry and the Greek letters, and calculus. A letter never looks like a sign: the
-// letters are italic maths letters on their own tab, and the times key is the cross. Pure functions: MathLive is given the object they return (its custom
-// layout format, one layer for each tab); nothing here touches the editor or the page.
+// P132: the keyboard of the maths editor. P140 made it simpler: every tab has the same three rows on top, so the numbers, the signs and the fraction, root
+// and power keys are always there, and five word tabs (Letters, Trig, Compare, Shapes, Calculus) change only the two rows under them. The last row is the strip
+// of tabs. A letter never looks like a sign: the letters are italic maths letters, and the times key is the cross. Pure functions: MathLive is given the object
+// they return (its custom layout format, one layer for each tab); nothing here touches the editor or the page.
 //
-// Every row is seven keys wide, so each key is 48 px on a 360 px phone (the editor's default is ten to a row, 36 px).
-//   123    the signs + - x / = ( ), then fraction, square root, cube root, x squared, x to a power and backspace, then the digits, the decimal comma, the arrows
-//   abc    the letters, italic: x y k p n t a b c m first, then the rest
-//   f(x)   sin cos tan and their inverses, |x|, log ln e, pi, f(x), % and R, the relations < > <= >= != and plus or minus
-//   angle  the degree sign, theta and the Greek letters, the signs of geometry (angle, triangle, perpendicular, parallel, congruent, similar)
-//   calc   d/dx, f'(x), the integral, lim, the sum, infinity, e, ln
-// A number has no letters, so its keyboard has no abc and no calculus tab. The faces of the keys are textbook maths (LaTeX drawn by the editor), never
-// text with a slash or a caret.
+// Every row is ten units wide. Rows 1 to 3 are the same on every tab:
+//   1  the digits 1 2 3 4 5 6 7 8 9 0
+//   2  + - x / = ( ) and the decimal comma, then backspace (two units)
+//   3  fraction (2), square root, cube root, x squared, x to a power (1.5 each), move left, move right
+// Rows 4 and 5 depend on the tab (blank keys fill a row, so every tab is as tall as the others):
+//   Letters   x y z a b c k m n p / d f g h q r s t u v
+//   Trig      sin cos tan and their inverses, the degree sign, theta, alpha, beta / pi, gamma, delta, phi
+//   Compare   < > <= >= != plus-or-minus |x| % R
+//   Shapes    angle, triangle, perpendicular, parallel, congruent, similar, the degree sign, theta, pi
+//   Calculus  d/dx, f'(x), the integral, lim, the sum, infinity, to, e / ln, log, f(x), x, y
+// Row 6 is the tabs, one key for each tab of this kind of answer (the one you are on is dark). A number has no letters and no calculus, so it has Trig, Compare
+// and Shapes, then blanks, then the key that hides the keyboard. The faces of the keys are textbook maths (LaTeX drawn by the editor), never text with a slash
+// or a caret. The size of everything follows the width of the screen (LAYER_STYLE).
 
 /** One key, in the shape the editor takes: `latex` is its face and what it types unless `insert` says more (#@ is what is before the cursor, #? an empty box). */
 export type Keycap = {
@@ -27,8 +32,8 @@ export type Keycap = {
 export type KeyboardLayer = { id: string; style: string; rows: (string | Keycap)[][] }
 export type KeyboardLayout = { id: string; label: string; tooltip: string; displayEditToolbar: false; displayShiftedKeycaps: false; layers: KeyboardLayer[] }
 
-/** Units a row is wide. */
-export const ROW_WIDTH = 7
+/** Units a row is wide: ten keys, so a 360 px phone has keys 36 px wide (32 px with the gap) and 46 px tall. */
+export const ROW_WIDTH = 10
 
 const cap = (tooltip: string, extra: Keycap): Keycap => ({ tooltip, ...extra })
 const BLANK = '[separator]'
@@ -44,13 +49,12 @@ export const CAPS = {
   equals: cap('equals', { latex: '=', class: 'big-op' }),
   open: cap('open bracket', { latex: '(', class: 'big-op' }),
   close: cap('close bracket', { latex: ')', class: 'big-op' }),
-  fraction: cap('fraction', { latex: '\\frac{\\square}{\\square}', insert: '\\frac{#@}{#?}' }),
+  fraction: cap('fraction', { latex: '\\frac{\\square}{\\square}', insert: '\\frac{#@}{#?}', class: 'stack' }),
   sqrt: cap('square root', { latex: '\\sqrt{\\square}', insert: '\\sqrt{#0}' }),
   cbrt: cap('cube root', { latex: '\\sqrt[3]{\\square}', insert: '\\sqrt[3]{#0}' }),
   squared: cap('squared', { latex: 'x^2', insert: '#@^2' }),
   power: cap('to the power of', { latex: 'x^{\\square}', insert: '#@^{#?}' }),
   backspace: cap('backspace', { label: '[backspace]', class: 'action', width: 2 }),
-  backspaceNarrow: cap('backspace', { label: '[backspace]', class: 'action', width: 1 }),
   left: cap('move left', { label: '[left]' }),
   right: cap('move right', { label: '[right]' }),
   hide: cap('hide the keyboard', { label: '[hide-keyboard]', width: 2 }),
@@ -94,50 +98,51 @@ export const CAPS = {
   // calculus
   ddx: cap('d by d x', { latex: '\\frac{d}{dx}', insert: '\\frac{d}{dx}', class: 'small' }),
   fPrime: cap('f prime of x', { latex: "f'(x)", insert: 'f^{\\prime}\\left(x\\right)', class: 'small' }),
-  integral: cap('integral', { latex: '\\int' }),
+  integral: cap('integral', { latex: '\\int', class: 'tall' }),
   limit: cap('limit', { latex: '\\lim', class: 'small' }),
-  sum: cap('sum', { latex: '\\sum' }),
+  sum: cap('sum', { latex: '\\sum', class: 'tall' }),
   infinity: cap('infinity', { latex: '\\infty' }),
   arrow: cap('tends to', { latex: '\\to' }),
 } as const satisfies Record<string, Keycap>
 
 // ---- The tabs ----------------------------------------------------------------------------------------------------------------
 
-export type TabId = 'numbers' | 'letters' | 'functions' | 'geometry' | 'calculus'
+export type TabId = 'letters' | 'trig' | 'compare' | 'shapes' | 'calculus'
 type Tab = { id: TabId; face: string; tooltip: string; kinds: TypedKind[] }
 
 /**
- * The face of a tab: ONE element, because a key is a flex column and each loose piece of a label (the f, the bracket, the x) would be a row of its own. It is
- * on one line, 16 px like the 123 and abc tabs. The angle and the integral are drawn as lines (a sign from a font can be tiny or missing), 22 px.
+ * The face of a tab: ONE element holding the word, on one line (a key is a flex column, so loose pieces of a label would each be a row of their own). The
+ * size of the word follows the screen (LAYER_STYLE).
  */
-const face = (inner: string): string => `<span class="tab-face">${inner}</span>`
-const ANGLE_FACE = face('<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20.5 H21 M3 20.5 L17 5"/><path d="M10 20.5 A7 7 0 0 0 8.2 15.8"/></svg>')
-const INTEGRAL_FACE = face(
-  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.8 4.6 C15 3.4 13.6 3.3 12.8 4.3 C11.8 5.6 12 9 12 12 C12 15.2 12.2 18.4 11.2 19.7 C10.4 20.7 9 20.6 8.2 19.4"/></svg>',
-)
+const face = (word: string): string => `<span class="tab-face">${word}</span>`
 
-/** The tabs, in the order they are shown. A key of the tab row has the face of its tab. */
+/** The tabs, in the order they are shown. A key of the tab strip has the face of its tab. */
 export const TABS: Tab[] = [
-  { id: 'numbers', face: face('123'), tooltip: 'numbers and signs', kinds: ['number', 'expression', 'equation'] },
-  { id: 'letters', face: face('<i>abc</i>'), tooltip: 'letters', kinds: ['expression', 'equation'] },
-  { id: 'functions', face: face('<i>f</i>(<i>x</i>)'), tooltip: 'functions and constants', kinds: ['number', 'expression', 'equation'] },
-  { id: 'geometry', face: ANGLE_FACE, tooltip: 'geometry and Greek letters', kinds: ['number', 'expression', 'equation'] },
-  { id: 'calculus', face: INTEGRAL_FACE, tooltip: 'calculus', kinds: ['expression', 'equation'] },
+  { id: 'letters', face: face('Letters'), tooltip: 'letters', kinds: ['expression', 'equation'] },
+  { id: 'trig', face: face('Trig'), tooltip: 'trigonometry and Greek letters', kinds: ['number', 'expression', 'equation'] },
+  { id: 'compare', face: face('Compare'), tooltip: 'comparing and other signs', kinds: ['number', 'expression', 'equation'] },
+  { id: 'shapes', face: face('Shapes'), tooltip: 'shapes and angles', kinds: ['number', 'expression', 'equation'] },
+  { id: 'calculus', face: face('Calculus'), tooltip: 'calculus', kinds: ['expression', 'equation'] },
 ]
 
 export const layerId = (tab: TabId): string => `jemma-${tab}`
 
-/** The tabs a kind of answer has: a number has no letters, so it has no abc and no calculus tab. */
+/** The tabs a kind of answer has: a number has no letters, so it has no Letters and no Calculus tab. */
 export const tabsFor = (kind: TypedKind): Tab[] => TABS.filter((t) => t.kinds.includes(kind))
 
-/** The tab a question opens on: calculus for a derivative, the functions tab for trigonometry, geometry for angles and shapes, the numbers otherwise. */
+/**
+ * The tab a question opens on: Calculus for a derivative, Trig for trigonometry, Shapes for angles and shapes, otherwise Letters (Compare for an answer that is
+ * a number, which has no letters). A tab this kind of answer does not have is replaced by the first tab it has.
+ */
 export function openingTab(kind: TypedKind, strand: Strand): TabId {
   const wanted: TabId =
     strand === 'calculus' ? 'calculus'
-    : strand === 'trigonometry' ? (kind === 'equation' ? 'geometry' : 'functions')
-    : strand === 'geometry' ? 'geometry'
-    : 'numbers'
-  return tabsFor(kind).some((t) => t.id === wanted) ? wanted : 'numbers'
+    : strand === 'trigonometry' ? 'trig'
+    : strand === 'geometry' ? 'shapes'
+    : kind === 'number' ? 'compare'
+    : 'letters'
+  const tabs = tabsFor(kind)
+  return tabs.some((t) => t.id === wanted) ? wanted : tabs[0]!.id
 }
 
 // ---- The rows ----------------------------------------------------------------------------------------------------------------
@@ -146,76 +151,72 @@ const unitsOf = (key: string | Keycap): number => (typeof key === 'string' ? 1 :
 /** The units of a row, for a test of the layout. */
 export const rowUnits = (row: (string | Keycap)[]): number => row.reduce((n, k) => n + unitsOf(k), 0)
 
-/** A row of exactly seven units: the keys, then blank keys to fill it. */
+/** A key with a width of its own (the keys of the third row are 1.5 and 2 units wide). */
+const wide = (key: Keycap, width: NonNullable<Keycap['width']>): Keycap => ({ ...key, width })
+
+/** A row of exactly ten units: the keys, then blank keys to fill it. */
 const filled = (keys: (string | Keycap)[]): (string | Keycap)[] => [...keys, ...Array.from({ length: Math.max(0, ROW_WIDTH - rowUnits(keys)) }, () => BLANK)]
 
-/** The row of tabs at the top of every tab: the tab you are on is dark. Then blanks, and the key that hides the keyboard. */
+/** The strip of tabs, the last row of every tab: one key for each tab of this kind of answer, the tab you are on dark. A number has three tabs, then blanks, and the key that hides the keyboard. */
 function tabRow(kind: TypedKind, current: TabId): (string | Keycap)[] {
   const keys: Keycap[] = tabsFor(kind).map((t) =>
-    cap(t.tooltip, { label: t.face, command: ['switchKeyboardLayer', layerId(t.id)], class: `action tab${t.id === current ? ' is-current-tab' : ''}`, width: 1 }),
+    cap(t.tooltip, { label: t.face, command: ['switchKeyboardLayer', layerId(t.id)], class: `action tab${t.id === current ? ' is-current-tab' : ''}`, width: 2 }),
   )
-  return filled([...keys, ...Array.from({ length: Math.max(0, ROW_WIDTH - 2 - keys.length) }, () => BLANK), CAPS.hide])
+  // The five tabs fill the row. With fewer, the hide key is the last key of the row.
+  return keys.length >= 5 ? keys : filled([...keys, ...Array.from({ length: Math.max(0, ROW_WIDTH - 2 - rowUnits(keys)) }, () => BLANK), CAPS.hide])
 }
 
-const LETTERS = ['x', 'y', 'k', 'p', 'n', 't', 'a', 'b', 'c', 'm', 'd', 'f', 'g', 'h', 'i', 'j', 'l', 'o', 'q', 'r', 's', 'u', 'v', 'w', 'z']
+/** The three rows on top of every tab: the digits, the signs with the comma and backspace, and fraction, roots, powers and the arrows. */
+const topRows = (): (string | Keycap)[][] => [
+  ['[1]', '[2]', '[3]', '[4]', '[5]', '[6]', '[7]', '[8]', '[9]', '[0]'],
+  [CAPS.plus, CAPS.minus, CAPS.times, CAPS.divide, CAPS.equals, CAPS.open, CAPS.close, CAPS.comma, CAPS.backspace],
+  [wide(CAPS.fraction, 2), wide(CAPS.sqrt, 1.5), wide(CAPS.cbrt, 1.5), wide(CAPS.squared, 1.5), wide(CAPS.power, 1.5), CAPS.left, CAPS.right],
+]
 
-/** The last row of a tab that is not the numbers: the arrows to move the cursor, the brackets, equals (an answer that is a number has none) and backspace. */
-const lastRow = (kind: TypedKind): (string | Keycap)[] => [CAPS.left, CAPS.right, CAPS.open, CAPS.close, kind === 'number' ? BLANK : CAPS.equals, CAPS.backspace]
-
-function rowsOf(tab: TabId, kind: TypedKind): (string | Keycap)[][] {
-  const word = kind !== 'number'
+/** The two rows under the top rows: they are what a tab changes. */
+function tabRows(tab: TabId): [(string | Keycap)[], (string | Keycap)[]] {
   switch (tab) {
-    case 'numbers':
+    case 'letters':
+      return [['x', 'y', 'z', 'a', 'b', 'c', 'k', 'm', 'n', 'p'].map(letter), ['d', 'f', 'g', 'h', 'q', 'r', 's', 't', 'u', 'v'].map(letter)]
+    case 'trig':
       return [
-        [CAPS.plus, CAPS.minus, CAPS.times, CAPS.divide, CAPS.equals, CAPS.open, CAPS.close],
-        [CAPS.fraction, CAPS.sqrt, CAPS.cbrt, CAPS.squared, CAPS.power, CAPS.backspace],
-        ['[1]', '[2]', '[3]', '[4]', '[5]', CAPS.left, CAPS.right],
-        ['[6]', '[7]', '[8]', '[9]', '[0]', CAPS.comma, word ? letter('x') : CAPS.percent],
+        [CAPS.sin, CAPS.cos, CAPS.tan, CAPS.asin, CAPS.acos, CAPS.atan, CAPS.degree, CAPS.theta, CAPS.alpha, CAPS.beta],
+        filled([CAPS.pi, CAPS.gamma, CAPS.delta, CAPS.phi]),
       ]
-    case 'letters': {
-      const rows: (string | Keycap)[][] = []
-      for (let i = 0; i < LETTERS.length; i += ROW_WIDTH) rows.push(LETTERS.slice(i, i + ROW_WIDTH).map(letter))
-      // The last row of letters has room for the arrows and a narrow backspace.
-      const tail = rows.pop()!
-      return [...rows, filled([...tail, CAPS.left, CAPS.right].slice(0, ROW_WIDTH - 1).concat(CAPS.backspaceNarrow))]
-    }
-    case 'functions':
-      return word
-        ? [
-            [CAPS.sin, CAPS.cos, CAPS.tan, CAPS.asin, CAPS.acos, CAPS.atan, CAPS.abs],
-            [CAPS.log, CAPS.ln, CAPS.e, CAPS.pi, CAPS.fx, CAPS.percent, CAPS.rand],
-            filled([CAPS.less, CAPS.greater, CAPS.lessEqual, CAPS.greaterEqual, CAPS.notEqual, CAPS.plusMinus]),
-            lastRow(kind),
-          ]
-        : [
-            [CAPS.sin, CAPS.cos, CAPS.tan, CAPS.asin, CAPS.acos, CAPS.atan, CAPS.abs],
-            filled([CAPS.log, CAPS.ln, CAPS.e, CAPS.pi, CAPS.percent, CAPS.rand]),
-            lastRow(kind),
-          ]
-    case 'geometry':
-      return word
-        ? [
-            [CAPS.degree, CAPS.theta, CAPS.alpha, CAPS.beta, CAPS.gamma, CAPS.pi, CAPS.angle],
-            [CAPS.triangle, CAPS.perpendicular, CAPS.parallel, CAPS.congruent, CAPS.similar, CAPS.delta, CAPS.phi],
-            lastRow(kind),
-          ]
-        : [filled([CAPS.degree, CAPS.pi, CAPS.percent]), lastRow(kind)]
+    case 'compare':
+      return [filled([CAPS.less, CAPS.greater, CAPS.lessEqual, CAPS.greaterEqual, CAPS.notEqual, CAPS.plusMinus, CAPS.abs, CAPS.percent, CAPS.rand]), filled([])]
+    case 'shapes':
+      return [filled([CAPS.angle, CAPS.triangle, CAPS.perpendicular, CAPS.parallel, CAPS.congruent, CAPS.similar, CAPS.degree, CAPS.theta, CAPS.pi]), filled([])]
     case 'calculus':
       return [
-        [CAPS.ddx, CAPS.fPrime, CAPS.integral, CAPS.limit, CAPS.sum, CAPS.infinity, CAPS.e],
-        filled([CAPS.ln, letter('x'), letter('y'), CAPS.arrow]),
-        lastRow(kind),
+        [wide(CAPS.ddx, 2), wide(CAPS.fPrime, 2), CAPS.integral, CAPS.limit, CAPS.sum, CAPS.infinity, CAPS.arrow, CAPS.e],
+        filled([CAPS.ln, CAPS.log, CAPS.fx, letter('x'), letter('y')]),
       ]
   }
 }
 
+/** The rows of one tab for one kind of answer: the three rows every tab has, the two of the tab, and the strip of tabs. Six rows, whatever the tab. */
+const rowsOf = (tab: TabId, kind: TypedKind): (string | Keycap)[][] => [...topRows(), ...tabRows(tab), tabRow(kind, tab)]
+
 /**
- * The CSS of a layer. A key of the keyboard that is an action has 12 px of padding at each side, which leaves a 48 px tab 20 px for its face: the face wrapped
- * and shrank. A tab has no padding, and a face of its own: on one line, 16 px. The tab you are on is dark.
+ * The CSS of a layer, so that the keyboard is responsive: the size of the keys and of what is written on them follows the width of the screen, and nothing
+ * sticks out of a key. A key is a flex column with 12 px of padding on an action key, which left no room for a word: every key has no padding, its content
+ * centred, and its text on one line. MathLive's own variables set the height (46 px, so a key is at least 44 px tall), the gap (4 px, so ten keys fit a 320 px
+ * screen), the widest a key grows on a laptop (64 px, a row is 640 px) and the sizes of the maths faces (16 to 24 px) and of the small text keys (10.5 to 16 px).
+ * The word of a tab is 11 to 15 px. The tab you are on is dark. Two faces are taller than the rest, measured with the editor's own renderer: the fraction is
+ * 1.87 times its font size high and the integral 2.23 times, which would not fit a 46 px key at the full 24 px, so the `stack` and `tall` keys have a smaller
+ * font (at most 16 px and 15 px: at most 30 px and 34 px high). The inverse sine, cosine and tangent are the widest small keys (2.3 times their font size, a
+ * unit wide), so the small text is 10.5 to 16 px and not 11 to 16. The vertical lists a fraction is drawn with are taller than the face (a browser measured a
+ * 18.7 px fraction as sticking out of a 46 px key), so the fraction has more room than the others.
  */
-const LAYER_STYLE = `.MLK__rows > .MLK__row .tab { padding: 0 !important; font-size: 16px !important; font-weight: 700; line-height: 1 !important; }
-.MLK__rows > .MLK__row .tab .tab-face { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; line-height: 1; }
-.MLK__rows > .MLK__row .tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+const LAYER_STYLE = `.MLK__rows { --keycap-height: 46px; --keycap-gap: 4px; --keycap-max-width: 64px; --keycap-font-size: clamp(16px, 5.2vw, 24px); --keycap-small-font-size: clamp(10.5px, 3.1vw, 16px); }
+.MLK__rows > .MLK__row .MLK__keycap { padding: 0 !important; min-width: 0; align-items: center; justify-content: center; overflow: hidden; }
+.MLK__rows > .MLK__row .action { padding: 0 !important; min-width: 0; align-items: center; justify-content: center; }
+.MLK__rows > .MLK__row .MLK__keycap.small { font-size: clamp(10.5px, 3.1vw, 16px) !important; line-height: 1; white-space: nowrap; }
+.MLK__rows > .MLK__row .MLK__keycap.stack { font-size: clamp(13px, 4vw, 16px) !important; }
+.MLK__rows > .MLK__row .MLK__keycap.tall { font-size: clamp(12px, 3.6vw, 15px) !important; }
+.MLK__rows > .MLK__row .tab { padding: 0 !important; font-size: clamp(11px, 3.3vw, 15px) !important; font-weight: 700; line-height: 1 !important; white-space: nowrap; overflow: hidden; text-overflow: clip; }
+.MLK__rows > .MLK__row .tab .tab-face { display: inline-flex; align-items: center; justify-content: center; max-width: 100%; white-space: nowrap; line-height: 1; }
 .MLK__rows > .MLK__row .tab.is-current-tab { background: #1f1d36 !important; color: #ffffff !important; border-color: #1f1d36 !important; }`
 
 /** The keyboard of one question: a layer for each tab of its kind of answer, the tab that fits the question first (the editor opens on the first). */
@@ -230,7 +231,7 @@ export function keyboardLayout(input: { kind: TypedKind; topic?: string; prompt?
     tooltip: 'Jemma maths keys',
     displayEditToolbar: false,
     displayShiftedKeycaps: false,
-    layers: order.map((t) => ({ id: layerId(t.id), style: LAYER_STYLE, rows: [tabRow(input.kind, t.id), ...rowsOf(t.id, input.kind)] })),
+    layers: order.map((t) => ({ id: layerId(t.id), style: LAYER_STYLE, rows: rowsOf(t.id, input.kind) })),
   }
 }
 
