@@ -424,6 +424,50 @@ describe('the teacher pages', () => {
     expect(class_.textContent).toContain('worked out from that one real call')
   })
 
+  it('keeps the name of the tour learner whole on a phone: "You" sits under the name, and the name and the pill never share a line', async () => {
+    render(await TourTeacherTopicPage({ params: Promise.resolve({ part: 'algebra', topic: 'equations' }) }))
+    const you = document.querySelector('[data-learner="Lwazi"]')!
+    const name = you.querySelector('[data-learner-name]') as HTMLElement
+    expect(name.textContent).toBe('Lwazi')
+    // the name and the pill are in one column: the pill is the second line, so the name has the whole width of the column
+    const column = name.parentElement as HTMLElement
+    expect(column.className).toContain('flex-col')
+    expect(Array.from(column.children).map((c) => c.textContent)).toEqual(['Lwazi', 'You'])
+    // the other eight have a name and no pill
+    for (const l of TOUR_CLASS.learners) {
+      const row = document.querySelector(`[data-learner="${l.name}"]`)!
+      expect(row.querySelector('[data-learner-name]')?.textContent).toBe(l.name)
+      expect(row.querySelector('[data-learner-name]')?.parentElement?.children).toHaveLength(1)
+    }
+  })
+
+  it('gives the name the room: on a phone the five marks are 20 px circles and the score column is narrower, and both go back to full size on a laptop', async () => {
+    render(await TourTeacherTopicPage({ params: Promise.resolve({ part: 'algebra', topic: 'equations' }) }))
+    const row = document.querySelector('[data-learner="Refilwe"]') as HTMLElement
+    const marks = row.querySelector('[aria-label^="Refilwe:"]') as HTMLElement
+    expect(marks.className).toContain('gap-1')
+    expect(marks.className).toContain('lg:gap-1.5')
+    for (const mark of Array.from(marks.children)) {
+      expect((mark as HTMLElement).className).toContain('size-5')
+      expect((mark as HTMLElement).className).toContain('lg:size-6')
+    }
+    // the header and the footer of the list use the same cell sizes, so the Q1 to Q5 labels sit over the marks
+    const header = document.querySelector('[data-marks-head]') as HTMLElement
+    for (const cell of Array.from(header.children)) expect((cell as HTMLElement).className).toContain('w-5')
+    const footer = document.querySelectorAll('[data-column]')
+    expect(footer).toHaveLength(5)
+    for (const cell of Array.from(footer)) expect((cell as HTMLElement).className).toContain('w-5')
+  })
+
+  it('has no learner by learner token table: the tokens card names no learner and holds none of the old made-up numbers', async () => {
+    render(await TourTeacherTopicPage({ params: Promise.resolve({ part: 'algebra', topic: 'equations' }) }))
+    const card = document.querySelector('section[aria-labelledby="tokens"]') as HTMLElement
+    for (const l of TOUR_CLASS.learners) expect(card.textContent).not.toContain(l.name)
+    expect(card.textContent).not.toMatch(/\b230\b|\b52\b/)
+    expect(card.querySelector('table')?.querySelectorAll('thead th')).toHaveLength(4)
+    expect(Array.from(card.querySelectorAll('thead th')).map((th) => th.textContent)).toEqual(['Job', 'Read', 'Written', 'Total'])
+  })
+
   it('shows the result of the lesson done in this tab in the tour learner row', async () => {
     sessionStorage.setItem(TOUR_RESULT_KEY, JSON.stringify([true, true, true, false, false]))
     render(await TourTeacherTopicPage({ params: Promise.resolve({ part: 'algebra', topic: 'equations' }) }))
