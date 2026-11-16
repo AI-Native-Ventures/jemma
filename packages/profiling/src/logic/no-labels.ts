@@ -40,6 +40,25 @@ export const BANNED_WORDS = [
 
 const BANNED_PATTERNS = BANNED_WORDS.map((w) => ({ word: w, re: new RegExp(`\\b${w.split(' ').join('\\s+')}\\b`, 'i') }))
 
+/**
+ * Phrases that carry a banned word and mean something harmless in a maths hint: "Learners may lose track of the minus signs" says nothing about a
+ * career or a ranking, and `track` alone is banned (a "track" is a school stream, "on track" is a verdict). Each phrase is taken out of the text,
+ * whole and in any case, before the check, the same way an `exempt` name is. Nothing else is on this list: "on track", "fast track" and "stream"
+ * stay banned. (A practice was thrown away on 16 Nov 2026 over one such hint.)
+ */
+export const HARMLESS_PHRASES = [
+  'keep track of',
+  'keeps track of',
+  'kept track of',
+  'keeping track of',
+  'lose track of',
+  'loses track of',
+  'lost track of',
+  'losing track of',
+] as const
+
+const HARMLESS_PATTERN = new RegExp(`\\b(?:${HARMLESS_PHRASES.map((p) => p.split(' ').join('\\s+')).join('|')})\\b`, 'gi')
+
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 const nameRe = (name: string, flags: string) => new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(name)}(?![\\p{L}\\p{N}])`, flags)
@@ -52,12 +71,13 @@ const nameRe = (name: string, flags: string) => new RegExp(`(?<![\\p{L}\\p{N}])$
  * `people` are the first names of the learners the text is about. Clever, Bright, Smart and Genius are real first names, and "Clever is doing
  * well" is not a label. A first name is taken out too, even when it is a banned word, but only as it is written (capital letter and all), so
  * that "Clever is a clever learner" still has its one banned word.
+ * The phrases of `HARMLESS_PHRASES` ("lose track of", "keep track of") are taken out last, so "Keep track of the signs, you are on track" still has "track".
  */
 export function bannedWords(text: string, exempt: readonly string[] = [], people: readonly string[] = []): string[] {
   const names = [...new Set(exempt.map((n) => n.trim()).filter((n) => n && !BANNED_WORDS.some((w) => w === n.toLowerCase())))].sort((a, b) => b.length - a.length)
   const firstNames = [...new Set(people.map((n) => n.trim()).filter(Boolean))].sort((a, b) => b.length - a.length)
   const named = names.reduce((out, name) => out.replace(nameRe(name, 'giu'), ' '), text)
-  const clean = firstNames.reduce((out, name) => out.replace(nameRe(name, 'gu'), ' '), named)
+  const clean = firstNames.reduce((out, name) => out.replace(nameRe(name, 'gu'), ' '), named).replace(HARMLESS_PATTERN, ' ')
   return BANNED_PATTERNS.flatMap(({ word, re }) => {
     const hit = re.exec(clean)
     return hit ? [{ word, at: hit.index }] : []

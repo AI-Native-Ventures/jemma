@@ -4,7 +4,7 @@ import { MemoryStore } from '../src/ai'
 import type { Lesson, Question } from '../src/schemas/lesson'
 import { isWithImages, type ToolContext, type ToolDef } from '../src/tools/context'
 import { classGapReport } from '../src/tools/save/class-gap-report'
-import { saveLesson } from '../src/tools/save/save-lesson'
+import { saveLesson, screenLesson } from '../src/tools/save/save-lesson'
 import { subjectGuidance } from '../src/tools/save/subject-guidance'
 import { memoryDb, type MemoryDb } from './helpers/memory-db'
 
@@ -241,6 +241,103 @@ describe('save_lesson leaves out a sentence that speaks about the learner with a
     const out = await plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson: lessonOf('reading', {}, questions) })
     expect(stored(db).questions[2]).toMatchObject({ why: 'The pieces must match.', rightWay: 'Make quarters first.' })
     expect(out.dropped!.map((d) => d.field)).toEqual(['question 3 why', 'question 3 right way'])
+  })
+
+  // P116: a hint that the word check leaves empty used to refuse the whole lesson (a practice was thrown away on 16 Nov after 6 minutes). Now only that question goes.
+  const WHOLE = 'left out whole: nothing was left of its "why" or its "right way"'
+  const fifteen = () => ([1, 2, 3] as const).flatMap((d) => [0, 1, 2, 3, 4].map((i) => question(d, i)))
+
+  test('P116: the "why" that failed a practice on 16 Nov ("lose track of the minus signs") is kept, and the lesson saves whole', async () => {
+    const db = world('reading')
+    const questions = fifteen()
+    questions[9] = question(2, 4, { why: 'Learners may join the y terms with the number terms or lose track of the minus signs.' })
+    const out = await plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson: lessonOf('reading', {}, questions) })
+    expect(out.dropped).toBeUndefined()
+    expect(stored(db).questions).toHaveLength(15)
+    expect(stored(db).questions[9]!.why).toBe('Learners may join the y terms with the number terms or lose track of the minus signs.')
+  })
+
+  test('P116: a question whose "why" is only a label is dropped whole, the lesson still saves, and the drop is recorded', async () => {
+    const db = world('reading')
+    const questions = fifteen()
+    questions[9] = question(2, 4, { why: 'Learners are slow with the minus signs.' })
+    const out = await plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson: lessonOf('reading', {}, questions) })
+    expect(stored(db).questions).toHaveLength(14)
+    expect(stored(db).questions.map((q) => q.prompt)).toEqual(questions.filter((_, i) => i !== 9).map((q) => q.prompt))
+    expect(out.dropped).toEqual([
+      { field: 'question 10 why', text: 'Learners are slow with the minus signs.', reason: 'uses the word "slow"' },
+      { field: 'question 10', text: questions[9]!.prompt, reason: WHOLE },
+    ])
+    expect(lastCall(db, 'save_lesson').output).toMatchObject({ dropped: [{ field: 'question 10 why' }, { field: 'question 10' }] })
+  })
+
+  test('P116: a question whose "right way" is only a label is dropped whole too, and the others keep their feedback', async () => {
+    const db = world('reading')
+    const questions = fifteen()
+    questions[2] = question(1, 2, { rightWay: 'Amina is smart.' })
+    questions[3] = question(1, 3, { why: 'The pieces must match. You are slow at this.' })
+    const out = await plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson: lessonOf('reading', {}, questions) })
+    expect(stored(db).questions).toHaveLength(14)
+    expect(stored(db).questions[2]!.prompt).toBe(questions[3]!.prompt)
+    expect(stored(db).questions[2]).toMatchObject({ why: 'The pieces must match.', rightWay: 'Make quarters: 2/4 + 1/4 = 3/4.' })
+    expect(out.dropped!.map((d) => d.field)).toEqual(['question 3 right way', 'question 3', 'question 4 why'])
+    expect(out.dropped![1]).toEqual({ field: 'question 3', text: questions[2]!.prompt, reason: WHOLE })
+  })
+
+  test('P116: a warm-up question with nothing left is dropped whole, as "warm-up N", and the stored warm-up follows', async () => {
+    const db = world('reading')
+    const lesson = lessonOf('reading')
+    lesson.warmup[1] = question(1, 91, { why: 'You are a genius.' })
+    const out = await plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson })
+    expect(stored(db).warmup.map((q) => q.prompt)).toEqual([lesson.warmup[0]!.prompt])
+    expect((db.tables.sessions![0] as Row).warmup).toEqual([lesson.warmup[0]])
+    expect(out.dropped).toEqual([
+      { field: 'warm-up 2 why', text: 'You are a genius.', reason: 'uses the word "genius"' },
+      { field: 'warm-up 2', text: lesson.warmup[1]!.prompt, reason: WHOLE },
+    ])
+  })
+
+  test('P116: a lesson whose every question loses its "why" is still refused, with a plain error, and no lesson is written', async () => {
+    const db = world('reading')
+    const questions = fifteen().map((q) => ({ ...q, why: 'You are slow.' }))
+    await expect(plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson: lessonOf('reading', {}, questions) })).rejects.toThrow(
+      /Not saved: the "why" or the "right way" of every question had nothing left after leaving out sentences? that uses the word "slow"\. Write it again about what was seen, with no labels, rankings or careers\./,
+    )
+    expect(db.tables.lessons![0]!.content).toEqual({})
+  })
+
+  test('P116: the save path\'s own minimum still holds: a level left with fewer than 4 questions is refused, two levels with 4 are saved', async () => {
+    const refused = world('reading')
+    const two = fifteen()
+    two[5] = question(2, 0, { why: 'You are slow.' })
+    two[6] = question(2, 1, { rightWay: 'You are lazy.' })
+    await expect(plain(saveLesson, ctxOf(refused), { sessionId: SESSION, lesson: lessonOf('reading', {}, two) })).rejects.toThrow(
+      /Not saved: .* 2 questions of level 2 had nothing left .* leaves level 2 with 3\. Each level needs at least 4 questions\. Write it again about what was seen, with no labels, rankings or careers\./,
+    )
+    expect(refused.tables.lessons![0]!.content).toEqual({})
+
+    const saved = world('reading')
+    const apart = fifteen()
+    apart[2] = question(1, 2, { why: 'You are slow.' })
+    apart[9] = question(2, 4, { why: 'You are lazy.' })
+    const out = await plain(saveLesson, ctxOf(saved), { sessionId: SESSION, lesson: lessonOf('reading', {}, apart) })
+    expect(stored(saved).questions).toHaveLength(13)
+    expect(out.dropped!.filter((d) => d.reason === WHOLE).map((d) => d.field)).toEqual(['question 3', 'question 10'])
+  })
+
+  test('P116: a question dropped for its label and one dropped for a bad answer count together against the minimum of 4', async () => {
+    const db = world('reading')
+    const questions = fifteen()
+    questions[5] = question(2, 0, { answer: 'banana' })
+    questions[9] = question(2, 4, { why: 'You are slow.' })
+    await expect(plain(saveLesson, ctxOf(db), { sessionId: SESSION, lesson: lessonOf('reading', {}, questions), dropInvalid: true })).rejects.toThrow(/leaves level 2 with fewer than 4/)
+    expect(db.tables.lessons![0]!.content).toEqual({})
+  })
+
+  test('P116: a lesson with no questions to screen is not refused (nothing was dropped)', () => {
+    const lesson = lessonOf('reading', {}, [])
+    lesson.warmup = []
+    expect(screenLesson(lesson)).toEqual({ lesson, dropped: [] })
   })
 
   test('a card whose text is only a label goes, and the others stay', async () => {
