@@ -299,13 +299,13 @@ describe('the keyboard is responsive: the CSS of a layer', () => {
   it('the two tall faces (the fraction, 1.87 em high, and the integral, 2.23 em) have a smaller font so they stay inside a 46 px key even on a laptop', () => {
     expect(CAPS.fraction.class).toContain('stack')
     expect(CAPS.integral.class).toContain('tall')
-    expect(style).toMatch(/\.MLK__keycap\.stack \{[^}]*font-size: clamp\(15px, 4\.8vw, 20px\) !important/)
+    expect(style).toMatch(/\.MLK__keycap\.stack \{[^}]*font-size: clamp\(13px, 4vw, 16px\) !important/)
     expect(style).toMatch(/\.MLK__keycap\.tall \{[^}]*font-size: clamp\(13px, 4vw, 17px\) !important/)
     // measured with the editor's own renderer: a fraction is 1.87 times its font size high, an integral 2.23 times; a 46 px key has 44 px inside its border
-    expect(1.87 * 20).toBeLessThanOrEqual(44)
+    expect(1.87 * 16).toBeLessThanOrEqual(32)
     expect(2.23 * 17).toBeLessThanOrEqual(44)
     for (const width of [320, 360, 390, 430, 1440]) {
-      expect(1.87 * Math.min(20, Math.max(15, 0.048 * width)), `fraction at ${width}`).toBeLessThanOrEqual(44)
+      expect(1.87 * Math.min(16, Math.max(13, 0.04 * width)), `fraction at ${width}`).toBeLessThanOrEqual(32)
       expect(2.23 * Math.min(17, Math.max(13, 0.04 * width)), `integral at ${width}`).toBeLessThanOrEqual(44)
       // every other maths face is at most 1.21 em high (a root), and the biggest font is 1.25 times 24 px for the signs
       expect(1.21 * Math.min(24, Math.max(16, 0.052 * width))).toBeLessThanOrEqual(44)

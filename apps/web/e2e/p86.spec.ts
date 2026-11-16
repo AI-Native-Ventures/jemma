@@ -171,12 +171,22 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
       await page.waitForTimeout(900)
     }
     // Every key of the visible tab (the blank ones apart): its size and whether what is on it sticks out of it.
-    type KeyBox = { name: string; width: number; height: number; overflowX: boolean; overflowY: boolean }
+    type KeyBox = { name: string; width: number; height: number; overflowX: boolean; overflowY: boolean; detail: string }
     const measureKeys = (): Promise<KeyBox[]> =>
       page.locator('.MLK__layer.is-visible .MLK__keycap:not(.separator)').evaluateAll((els) =>
         els.map((el) => {
           const r = el.getBoundingClientRect()
-          return { name: (el.getAttribute('data-tooltip') ?? el.textContent ?? '').trim(), width: r.width, height: r.height, overflowX: el.scrollWidth > el.clientWidth + 1, overflowY: el.scrollHeight > el.clientHeight + 1 }
+          // How far anything inside the key reaches past the key (the parts of a drawn fraction are positioned, so they can reach further than the face).
+          let right = 0
+          let bottom = 0
+          for (const d of Array.from(el.querySelectorAll('*'))) {
+            const b = d.getBoundingClientRect()
+            if (b.width === 0 && b.height === 0) continue
+            right = Math.max(right, b.right - r.right)
+            bottom = Math.max(bottom, b.bottom - r.bottom)
+          }
+          const detail = `scroll ${el.scrollWidth}x${el.scrollHeight}, client ${el.clientWidth}x${el.clientHeight}, inside reaches ${right.toFixed(1)} right and ${bottom.toFixed(1)} below`
+          return { name: (el.getAttribute('data-tooltip') ?? el.textContent ?? '').trim(), width: r.width, height: r.height, overflowX: el.scrollWidth > el.clientWidth + 1, overflowY: el.scrollHeight > el.clientHeight + 1, detail }
         }),
       )
     // Each key is at least 44 px tall (and at least 30 px wide from 360 px up: a tenth of the width less the gap), and nothing sticks out of any key.
@@ -184,9 +194,10 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
       await showKeyboard()
       await expect.poll(async () => (await measureKeys()).length, { timeout: 10_000 }).toBeGreaterThanOrEqual(40)
       const keys = await measureKeys()
-      expect(keys.filter((k) => k.height < 44).map((k) => `${k.name} ${k.height}`), `${label}: keys under 44 px tall`).toEqual([])
-      if (width >= 360) expect(keys.filter((k) => k.width < 30).map((k) => `${k.name} ${k.width}`), `${label}: keys under 30 px wide`).toEqual([])
-      expect(keys.filter((k) => k.overflowX || k.overflowY).map((k) => k.name), `${label}: keys with something sticking out`).toEqual([])
+      // Soft checks: a failure at one width does not hide the others (the test still fails at the end).
+      expect.soft(keys.filter((k) => k.height < 44).map((k) => `${k.name} ${k.height}`), `${label}: keys under 44 px tall`).toEqual([])
+      if (width >= 360) expect.soft(keys.filter((k) => k.width < 30).map((k) => `${k.name} ${k.width}`), `${label}: keys under 30 px wide`).toEqual([])
+      expect.soft(keys.filter((k) => k.overflowX || k.overflowY).map((k) => `${k.name}: ${k.detail}`), `${label}: keys with something sticking out`).toEqual([])
     }
     // The row of tabs: five words, each one line, 11 to 15 px, and inside its key.
     const tabFaces = async (label: string) => {

@@ -205,12 +205,13 @@ const rowsOf = (tab: TabId, kind: TypedKind): (string | Keycap)[][] => [...topRo
  * screen), the widest a key grows on a laptop (64 px, a row is 640 px) and the sizes of the maths faces (16 to 24 px) and of the small text keys (11 to 16 px).
  * The word of a tab is 11 to 15 px. The tab you are on is dark. Two faces are taller than the rest, measured with the editor's own renderer: the fraction is
  * 1.87 times its font size high and the integral 2.23 times, which would not fit a 46 px key at the full 24 px, so the `stack` and `tall` keys have a smaller
- * font (at most 20 px and 17 px: at most 38 px high).
+ * font (at most 16 px and 17 px: at most 30 px and 38 px high). The vertical lists a fraction is drawn with are taller than the face (a browser measured a
+ * 18.7 px fraction as sticking out of a 46 px key), so the fraction has more room than the others.
  */
 const LAYER_STYLE = `.MLK__rows { --keycap-height: 46px; --keycap-gap: 4px; --keycap-max-width: 64px; --keycap-font-size: clamp(16px, 5.2vw, 24px); --keycap-small-font-size: clamp(11px, 3.4vw, 16px); }
 .MLK__rows > .MLK__row .MLK__keycap { padding: 0 !important; min-width: 0; align-items: center; justify-content: center; overflow: hidden; }
 .MLK__rows > .MLK__row .MLK__keycap.small { font-size: clamp(11px, 3.4vw, 16px) !important; line-height: 1; white-space: nowrap; }
-.MLK__rows > .MLK__row .MLK__keycap.stack { font-size: clamp(15px, 4.8vw, 20px) !important; }
+.MLK__rows > .MLK__row .MLK__keycap.stack { font-size: clamp(13px, 4vw, 16px) !important; }
 .MLK__rows > .MLK__row .MLK__keycap.tall { font-size: clamp(13px, 4vw, 17px) !important; }
 .MLK__rows > .MLK__row .tab { padding: 0 !important; font-size: clamp(11px, 3.3vw, 15px) !important; font-weight: 700; line-height: 1 !important; white-space: nowrap; overflow: hidden; text-overflow: clip; }
 .MLK__rows > .MLK__row .tab .tab-face { display: inline-flex; align-items: center; justify-content: center; max-width: 100%; white-space: nowrap; line-height: 1; }
