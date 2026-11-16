@@ -153,6 +153,10 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await expect(page.locator('input#answer')).toHaveCount(0)
     await expect(page.getByText('Type an expression, like 2x + 3.')).toBeVisible()
     await expect(next(page)).toBeDisabled()
+    // In development the page has a round indicator at its bottom left (the Next.js dev tools, "Compiling"). The row of tabs is the last row of the keyboard
+    // now, so the indicator sits on the Letters tab and takes the tap (CI run 3: "<nextjs-portal> intercepts pointer events"). It is not part of the app: it
+    // is put away for this test.
+    await page.addStyleTag({ content: 'nextjs-portal { display: none !important }' })
     // The keyboard of the editor comes up when the box is touched: our layout, six rows of ten keys (P140).
     await field.click()
     await expect.poll(() => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible)).toBe(true)
