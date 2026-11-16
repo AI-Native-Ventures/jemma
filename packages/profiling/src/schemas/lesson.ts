@@ -82,7 +82,7 @@ export type Question = z.infer<typeof QuestionSchema>
 export type PrimaryQuestion = z.infer<typeof PrimaryQuestionSchema>
 
 /** One lesson around one kind of question and one set of pictures. The fields, their order and the two rules are the same for both shapes. */
-const lessonAround = <Q extends z.ZodType<{ difficulty: 1 | 2 | 3 }>, D extends z.ZodType>(question: Q, picture: D) =>
+export const lessonAround = <Q extends z.ZodType<{ difficulty: 1 | 2 | 3 }>, D extends z.ZodType>(question: Q, picture: D) =>
   z
     .object({
       format: FormatSchema,
