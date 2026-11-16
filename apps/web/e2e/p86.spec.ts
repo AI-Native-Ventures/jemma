@@ -151,20 +151,30 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await expect.poll(() => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible)).toBe(true)
     const layoutId = await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { layouts: { id: string }[] } }).mathVirtualKeyboard.layouts[0]!.id)
     expect(layoutId).toMatch(/^jemma-expression-/)
-    const keycap = page.locator('.MLK__keycap').first()
+    // The keyboard is tabs by kind of symbol and opens on 123 for this question; each key is at least 44 px and the page does not slide sideways.
+    const visibleLayer = () => page.locator('.MLK__layer.is-visible').first().getAttribute('id')
+    expect(await visibleLayer()).toBe('jemma-numbers')
+    const keycap = page.locator('.MLK__layer.is-visible .MLK__keycap').first()
     await expect(keycap).toBeVisible()
     const size = (await keycap.boundingBox())!
     expect(size.width).toBeGreaterThanOrEqual(44)
     expect(size.height).toBeGreaterThanOrEqual(44)
     await noHorizontalScroll(page)
     await proof(page, 'expression-keyboard')
-    // The keys of the keyboard write into the box: a digit, the plus on the top row, and the fraction (a top and a bottom).
-    const keycap7 = page.locator('.MLK__keycap[data-keycap-value="7"]').first()
-    await keycap7.click()
-    await page.locator('.MLK__keycap[data-tooltip="plus"], .MLK__keycap[data-keycap-value="+"]').first().click()
-    await page.locator('.MLK__keycap[data-keycap-value="3"]').first().click()
-    expect(await writtenLatex(page)).toBe('7+3')
-    await page.locator('.MLK__keycap[data-tooltip="fraction"], .MLK__keycap[data-keycap-value*="frac"]').first().click()
+    // The abc tab has the letters, italic, apart from the signs; the 123 tab has them back.
+    await page.locator('.MLK__layer.is-visible [data-tooltip="letters"], .MLK__layer.is-visible [data-command*="jemma-letters"]').first().click()
+    await expect.poll(visibleLayer).toBe('jemma-letters')
+    await page.locator('.MLK__layer.is-visible .MLK__keycap[data-keycap-value="k"]').first().click()
+    expect(await writtenLatex(page)).toBe('k')
+    await proof(page, 'expression-letters')
+    await page.locator('.MLK__layer.is-visible [data-tooltip="numbers and signs"], .MLK__layer.is-visible [data-command*="jemma-numbers"]').first().click()
+    await expect.poll(visibleLayer).toBe('jemma-numbers')
+    // The keys of the 123 tab write into the box: a digit, the plus on the top row, and the fraction (a top and a bottom).
+    await page.locator('.MLK__layer.is-visible .MLK__keycap[data-keycap-value="7"]').first().click()
+    await page.locator('.MLK__layer.is-visible .MLK__keycap[data-tooltip="plus"], .MLK__layer.is-visible .MLK__keycap[data-keycap-value="+"]').first().click()
+    await page.locator('.MLK__layer.is-visible .MLK__keycap[data-keycap-value="3"]').first().click()
+    expect(await writtenLatex(page)).toBe('k7+3')
+    await page.locator('.MLK__layer.is-visible .MLK__keycap[data-tooltip="fraction"], .MLK__layer.is-visible .MLK__keycap[data-keycap-value*="frac"]').first().click()
     expect(await writtenLatex(page)).toContain('\\frac')
     // Tapping outside the box puts the keyboard away (the box loses the focus; the editor hides its keyboard a moment after).
     await page.locator('h1[data-prompt]').click()

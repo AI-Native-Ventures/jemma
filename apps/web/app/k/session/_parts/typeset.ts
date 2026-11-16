@@ -5,6 +5,16 @@ import { readMath, type MathNode } from '@jemma/profiling/logic'
 
 const inner = (n: MathNode): MathNode => (n.t === 'group' ? inner(n.a) : n)
 
+/** The Greek letters a variable can be, and their LaTeX. */
+const GREEK_LATEX: Record<string, string> = { θ: '\\theta ', α: '\\alpha ', β: '\\beta ', γ: '\\gamma ', δ: '\\delta ', φ: '\\phi ', λ: '\\lambda ', ω: '\\omega ' }
+
+/** A function drawn as a book draws it: sin cos tan ln log upright, the inverse functions with a little -1, the absolute value between two bars. */
+const functionLatex = (name: string, arg: string): string => {
+  if (name === 'abs') return `\\left|${arg}\\right|`
+  if (name === 'asin' || name === 'acos' || name === 'atan') return `\\${name.slice(1)}^{-1}\\left(${arg}\\right)`
+  return `\\${name}\\left(${arg}\\right)`
+}
+
 /** The LaTeX of a tree. A command that a letter could follow ends with a space (`\pi r`), so it is never glued to the next letter. */
 export function toLatex(n: MathNode): string {
   switch (n.t) {
@@ -12,9 +22,11 @@ export function toLatex(n: MathNode): string {
       // A decimal comma is kept and not spaced: 0{,}5 is "0,5".
       return (n.raw ?? String(n.v)).replace(/,/g, '{,}')
     case 'var':
-      return n.name === 'θ' ? '\\theta ' : n.name
+      return GREEK_LATEX[n.name] ?? n.name
     case 'pi':
       return '\\pi '
+    case 'e':
+      return '\\mathrm{e}'
     case 'deg':
       return `{${toLatex(n.a)}}^{\\circ}`
     case 'neg':
@@ -24,10 +36,10 @@ export function toLatex(n: MathNode): string {
     case 'sqrt':
       return n.cube ? `\\sqrt[3]{${toLatex(inner(n.a))}}` : `\\sqrt{${toLatex(inner(n.a))}}`
     case 'fn':
-      return `\\${n.name}\\left(${toLatex(inner(n.a))}\\right)`
+      return functionLatex(n.name, toLatex(inner(n.a)))
     case 'pow':
       // sin squared of x is written sin^2(x): the power goes on the name.
-      if (n.a.t === 'fn') return `\\${n.a.name}^{${toLatex(inner(n.b))}}\\left(${toLatex(inner(n.a.a))}\\right)`
+      if (n.a.t === 'fn' && (n.a.name === 'sin' || n.a.name === 'cos' || n.a.name === 'tan')) return `\\${n.a.name}^{${toLatex(inner(n.b))}}\\left(${toLatex(inner(n.a.a))}\\right)`
       return `{${toLatex(n.a)}}^{${toLatex(inner(n.b))}}`
     case 'add':
       return `${toLatex(n.a)}+${toLatex(n.b)}`
@@ -109,8 +121,8 @@ export type TypesetMode = 'force' | 'all' | 'algebra'
 type Kind = 'word' | 'op' | 'letter' | 'math'
 type Tok = { start: number; end: number; core: string; trail: string; kind: Kind }
 
-const ALLOWED = /^[A-Za-z0-9+\-−×÷*/=<>≤≥≠^√∛πθ°⁰¹²³⁴⁵⁶⁷⁸⁹⁻()[\].,·]+$/
-const FUNCTION_WORDS = new Set(['sin', 'cos', 'tan', 'sqrt', 'pi', 'PI'])
+const ALLOWED = /^[A-Za-z0-9+\-−×÷*/=<>≤≥≠^√∛πθαβγδφλω°⁰¹²³⁴⁵⁶⁷⁸⁹⁻()[\].,·]+$/
+const FUNCTION_WORDS = new Set(['sin', 'cos', 'tan', 'sqrt', 'cbrt', 'pi', 'PI', 'ln', 'log', 'abs', 'asin', 'acos', 'atan', 'arcsin', 'arccos', 'arctan'])
 
 /** What a piece of text without spaces is: a word, a sign, a lone letter, or maths. A letter run of two or more that is not a function is a word. */
 function classify(core: string): Kind {
@@ -118,12 +130,12 @@ function classify(core: string): Kind {
   // A comma or a point is a decimal one only between two digits.
   if (/(^|[^0-9])[.,]|[.,]($|[^0-9])/.test(core)) return 'word'
   for (const run of core.match(/[A-Za-z]+/g) ?? []) if (run.length > 1 && !FUNCTION_WORDS.has(run)) return 'word'
-  if (!/[A-Za-z0-9√∛πθ°⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/.test(core)) return 'op'
-  return /^[A-Za-z]$/.test(core) ? 'letter' : 'math'
+  if (!/[A-Za-z0-9√∛πθαβγδφλω°⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/.test(core)) return 'op'
+  return /^[A-Za-zθαβγδφλω]$/.test(core) ? 'letter' : 'math'
 }
 
-const HAS_STRUCTURE = /[+\-−×÷*/=<>≤≥≠^√∛πθ°⁰¹²³⁴⁵⁶⁷⁸⁹⁻]|sin|cos|tan|sqrt|pi|PI/
-const HAS_SYMBOL = /[\^√∛πθ⁰¹²³⁴⁵⁶⁷⁸⁹⁻]|sin|cos|tan|sqrt|pi|PI/
+const HAS_STRUCTURE = /[+\-−×÷*/=<>≤≥≠^√∛πθαβγδφλω°⁰¹²³⁴⁵⁶⁷⁸⁹⁻]|sin|cos|tan|sqrt|cbrt|pi|PI|ln|log|abs|asin|acos|atan/
+const HAS_SYMBOL = /[\^√∛πθαβγδφλω⁰¹²³⁴⁵⁶⁷⁸⁹⁻]|sin|cos|tan|sqrt|cbrt|pi|PI|ln|log|abs|asin|acos|atan/
 
 /**
  * Algebra: a power, a root, pi, theta or a function; or a letter joined to a number or a sign inside one piece (2x, x/2, (x); or a letter and a number

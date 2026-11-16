@@ -147,7 +147,7 @@ describe('an expression', () => {
     expect(next().disabled).toBe(true)
     act(() => theField().dispatchEvent(new Event('focusout')))
     expect(screen.getByRole('status').textContent).toBe('Fill in every box, or take the empty one away.')
-    await write('\\alpha')
+    await write('\\aleph')
     act(() => theField().dispatchEvent(new Event('focusout')))
     expect(screen.getByRole('status').textContent).toContain('cannot read that sign')
     expect(next().disabled).toBe(true)

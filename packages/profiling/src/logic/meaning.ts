@@ -19,6 +19,10 @@ import { completeAnswer } from './complete-answer'
  * `\u2212 \u00d7 \u00f7 \u03c0 \u03b8 \u221a \u00b2 \u00b0 \u00b1` and the words `sin cos tan sqrt pi`, a fraction `a/b` (`(x+1)/(x-1)` too), a mixed number, a
  * rand sign and a space between thousands in a number, and in an expression the name of a function or a derivative in front (`f(x) =`, `f\u2032(x) =`,
  * `dy/dx =`, `y =`). The angle of sin, cos and tan is in degrees when it is a plain number, and in radians when it holds a letter or pi.
+ *
+ * P132: the cube root sign \u221b (and cbrt). P132b: Euler's number (the letter e on its own), ln and log (base 10), asin acos atan (arcsin too: the answer is
+ * in degrees for a plain number), abs for |x|, the Greek letters alpha beta gamma delta phi lambda omega as letters, and in an equation the relations
+ * < > <= >= != (and the signs of them): "x <= 3", "3 > x", "-2 < x <= 5", "x < -1 or x > 4" are the same when the same numbers are on the line.
  */
 
 export const MEANING_MAX_LENGTH = 60
@@ -28,7 +32,8 @@ const SUFFIX = /\s*[%\u00b0\u00ba]\s*$/
 
 // ---- Reading -----------------------------------------------------------------------------------------------------------------
 
-export type TrigName = 'sin' | 'cos' | 'tan'
+/** sin, cos and tan; asin, acos and atan are the inverse functions (sin with a little -1 in a book); ln and log are the logarithms (log is base 10); abs is |x|. */
+export type TrigName = 'sin' | 'cos' | 'tan' | 'asin' | 'acos' | 'atan' | 'ln' | 'log' | 'abs'
 
 type Tok =
   | { k: 'num'; v: number; raw: string }
@@ -36,6 +41,8 @@ type Tok =
   /** A square root, or a cube root (the cube root sign, or the word cbrt). */
   | { k: 'sqrt'; cube?: true }
   | { k: 'pi' }
+  /** Euler's number, written e on its own. */
+  | { k: 'e' }
   | { k: 'deg' }
   | { k: 'fn'; name: TrigName }
   | { k: 'op'; c: '+' | '-' | '*' | '/' | '^'; explicit?: boolean }
@@ -47,6 +54,7 @@ export type MathNode =
   | { t: 'num'; v: number; raw?: string }
   | { t: 'var'; name: string }
   | { t: 'pi' }
+  | { t: 'e' }
   /** A degree sign after a value. It does not change the value: 30 and 30\u00b0 are the same angle. */
   | { t: 'deg'; a: MathNode }
   | { t: 'fn'; name: TrigName; a: MathNode }
@@ -69,9 +77,26 @@ const isLetter = (c: string | undefined) => c !== undefined && ((c >= 'a' && c <
 const PI_SIGN = '\u03c0'
 const THETA_SIGN = '\u03b8'
 const DEGREE_SIGNS = '\u00b0\u00ba'
-const TRIG_NAMES: TrigName[] = ['sin', 'cos', 'tan']
+/** The words of the functions, the longest first, and the function each one is. arcsin is asin. */
+const FUNCTION_WORDS: [word: string, name: TrigName][] = [
+  ['arcsin', 'asin'],
+  ['arccos', 'acos'],
+  ['arctan', 'atan'],
+  ['asin', 'asin'],
+  ['acos', 'acos'],
+  ['atan', 'atan'],
+  ['sin', 'sin'],
+  ['cos', 'cos'],
+  ['tan', 'tan'],
+  ['log', 'log'],
+  ['abs', 'abs'],
+  ['ln', 'ln'],
+]
 /** The letters of a variable besides a to z: theta, the angle of a trigonometry question. */
 const isTheta = (c: string | undefined) => c === THETA_SIGN || c === '\u0398'
+/** The Greek letters a geometry answer names an angle or a length with, besides theta: alpha beta gamma delta phi lambda omega. */
+const GREEK = '\u03b1\u03b2\u03b3\u03b4\u03c6\u03bb\u03c9'
+const isGreek = (c: string | undefined) => c !== undefined && GREEK.includes(c)
 
 /** Cuts a text into tokens. A character that means nothing here makes the whole text unreadable. */
 const tokenize = (text: string): Tok[] => {
@@ -100,18 +125,21 @@ const tokenize = (text: string): Tok[] => {
       // (simple interest), not pi times n.
       if (word === 'pi' || word === 'PI') {
         out.push({ k: 'pi' })
+      } else if (word === 'e') {
+        // The letter e on its own is Euler's number (e^x, 2e). A longer run is letters: ex is e times x as two letters.
+        out.push({ k: 'e' })
       } else {
         for (let at = 0; at < run.length; ) {
-          const name = TRIG_NAMES.find((n) => run.startsWith(n, at))
+          const found = FUNCTION_WORDS.find(([w]) => run.startsWith(w, at))
           if (run.startsWith('sqrt', at)) {
             out.push({ k: 'sqrt' })
             at += 4
           } else if (run.startsWith('cbrt', at)) {
             out.push({ k: 'sqrt', cube: true })
             at += 4
-          } else if (name) {
-            out.push({ k: 'fn', name })
-            at += 3
+          } else if (found) {
+            out.push({ k: 'fn', name: found[1] })
+            at += found[0].length
           } else {
             out.push({ k: 'var', c: run[at]! })
             at++
@@ -124,6 +152,9 @@ const tokenize = (text: string): Tok[] => {
       i++
     } else if (isTheta(c)) {
       out.push({ k: 'var', c: THETA_SIGN })
+      i++
+    } else if (isGreek(c)) {
+      out.push({ k: 'var', c })
       i++
     } else if (DEGREE_SIGNS.includes(c)) {
       out.push({ k: 'deg' })
@@ -205,7 +236,7 @@ const parseTokens = (toks: Tok[]): MathNode => {
           (t as { c: string }).c === '*'
             ? { t: 'mul', a: left, b: unary(), ...((t as { explicit?: boolean }).explicit ? { explicit: true } : {}) }
             : { t: 'div', a: left, b: unary(), ...((t as { explicit?: boolean }).explicit ? { explicit: true } : {}) }
-      } else if (t && (t.k === 'var' || t.k === 'lp' || t.k === 'sqrt' || t.k === 'pi' || t.k === 'fn')) {
+      } else if (t && (t.k === 'var' || t.k === 'lp' || t.k === 'sqrt' || t.k === 'pi' || t.k === 'e' || t.k === 'fn')) {
         left = { t: 'mul', a: left, b: power() }
       } else {
         return left
@@ -272,10 +303,10 @@ const parseTokens = (toks: Tok[]): MathNode => {
     }
     const term = (): MathNode => {
       const k = peek()?.k
-      return k === 'num' || k === 'var' || k === 'pi' || k === 'sqrt' ? power() : giveUp()
+      return k === 'num' || k === 'var' || k === 'pi' || k === 'e' || k === 'sqrt' ? power() : giveUp()
     }
     let arg = term()
-    for (let k = peek()?.k; k === 'var' || k === 'pi' || k === 'sqrt'; k = peek()?.k) arg = { t: 'mul', a: arg, b: term() }
+    for (let k = peek()?.k; k === 'var' || k === 'pi' || k === 'e' || k === 'sqrt'; k = peek()?.k) arg = { t: 'mul', a: arg, b: term() }
     return arg
   }
   const atom = (): MathNode => {
@@ -284,6 +315,7 @@ const parseTokens = (toks: Tok[]): MathNode => {
     if (t.k === 'num') return { t: 'num', v: t.v, raw: t.raw }
     if (t.k === 'var') return { t: 'var', name: t.c }
     if (t.k === 'pi') return { t: 'pi' }
+    if (t.k === 'e') return { t: 'e' }
     if (t.k === 'lp') return bracket()
     if (t.k === 'fn') {
       let to: MathNode | null = null
@@ -301,6 +333,7 @@ const parseTokens = (toks: Tok[]): MathNode => {
       if (r.k === 'num') return { t: 'sqrt', a: { t: 'num', v: r.v, raw: r.raw }, ...cube }
       if (r.k === 'var') return { t: 'sqrt', a: { t: 'var', name: r.c }, ...cube }
       if (r.k === 'pi') return { t: 'sqrt', a: { t: 'pi' }, ...cube }
+      if (r.k === 'e') return { t: 'sqrt', a: { t: 'e' }, ...cube }
       if (r.k === 'lp') return { t: 'sqrt', a: bracket(), ...cube }
     }
     return giveUp()
@@ -344,6 +377,7 @@ const inDegrees = (n: MathNode): boolean => {
       return true
     case 'var':
     case 'pi':
+    case 'e':
       return false
     case 'neg':
     case 'group':
@@ -365,12 +399,23 @@ const valueOf = (n: MathNode, env: Env): number => {
       return env[n.name] ?? NaN
     case 'pi':
       return Math.PI
+    case 'e':
+      return Math.E
     case 'deg':
     case 'group':
       return valueOf(n.a, env)
     case 'fn': {
       const v = valueOf(n.a, env)
       if (Number.isNaN(v)) return NaN
+      if (n.name === 'ln') return v > 0 ? defined(Math.log(v)) : NaN
+      if (n.name === 'log') return v > 0 ? defined(Math.log10(v)) : NaN
+      if (n.name === 'abs') return Math.abs(v)
+      // The inverse functions give an angle: in degrees when what they are given is a plain number (sin^-1 of 0,5 is 30), in radians when it holds a letter.
+      if (n.name === 'asin' || n.name === 'acos' || n.name === 'atan') {
+        if (n.name !== 'atan' && Math.abs(v) > 1) return NaN
+        const radians = n.name === 'asin' ? Math.asin(v) : n.name === 'acos' ? Math.acos(v) : Math.atan(v)
+        return defined(inDegrees(n.a) ? (radians * 180) / Math.PI : radians)
+      }
       const angle = inDegrees(n.a) ? (v * Math.PI) / 180 : v
       if (n.name === 'sin') return defined(Math.sin(angle))
       if (n.name === 'cos') return defined(Math.cos(angle))
@@ -407,7 +452,7 @@ const valueOf = (n: MathNode, env: Env): number => {
 
 export const lettersOf = (n: MathNode, into = new Set<string>()): Set<string> => {
   if (n.t === 'var') into.add(n.name)
-  else if (n.t === 'num' || n.t === 'pi') return into
+  else if (n.t === 'num' || n.t === 'pi' || n.t === 'e') return into
   else if (n.t === 'neg' || n.t === 'group' || n.t === 'sqrt' || n.t === 'deg' || n.t === 'fn') lettersOf(n.a, into)
   else {
     lettersOf(n.a, into)
@@ -529,6 +574,7 @@ const bracketLeft = (n: MathNode, allowed: boolean): boolean => {
     case 'num':
     case 'var':
     case 'pi':
+    case 'e':
       return false
     case 'group':
       return !allowed || bracketLeft(n.a, allowed)
@@ -563,6 +609,7 @@ const signature = (n: MathNode): string => {
     switch (m.t) {
       case 'num':
       case 'pi':
+      case 'e':
         return
       case 'var':
         return add(m.name, by)
@@ -651,7 +698,7 @@ const readEquation = (text: string): Equation | null => {
     if (sides.length > 2) return null
     let valueText = piece
     if (sides.length === 2) {
-      const name = /^\s*([a-zA-Z\u03b8\u0398])\s*$/.exec(sides[0]!)
+      const name = /^\s*([a-zA-Z\u03b8\u0398\u03b1\u03b2\u03b3\u03b4\u03c6\u03bb\u03c9])\s*$/.exec(sides[0]!)
       if (!name) return null
       const found = name[1]!.toLowerCase()
       if (letter !== null && letter !== found) return null
@@ -666,6 +713,78 @@ const readEquation = (text: string): Equation | null => {
     if (both) values.push(-v)
   }
   return values.length > 0 ? { letter, values } : null
+}
+
+// ---- An inequality: one letter, and the part of the number line it may be on --------------------------------------------------
+
+type Op = '<' | '<=' | '>' | '>=' | '!=' | '='
+/** All of these hold at once. */
+type Branch = { op: Op; v: number }[]
+type Inequality = { letter: string; branches: Branch[] }
+
+const RELATION = /(<=|>=|!=|≤|≥|≠|<|>|=)/
+const OPS: Record<string, Op> = { '<=': '<=', '≤': '<=', '>=': '>=', '≥': '>=', '!=': '!=', '≠': '!=', '<': '<', '>': '>', '=': '=' }
+const FLIPPED: Record<Op, Op> = { '<': '>', '<=': '>=', '>': '<', '>=': '<=', '!=': '!=', '=': '=' }
+const LETTER_ALONE = /^\s*([a-zA-ZθΘαβγδφλω])\s*$/
+
+/**
+ * "x < 3", "3 <= x", "-2 < x <= 5", "x != 0", "x < -1 or x > 4", "x > 1 and x < 5". `needed` says a sign of inequality must be in the text (the key of an
+ * inequality has one); an answer may be a plain "x = 3" too. Null when it does not read: more than one letter, or a side that is not a number.
+ */
+const readInequality = (text: string, needed: boolean): Inequality | null => {
+  const s = text.replace(MINUS_SIGNS, '-').trim()
+  if (!s || s.length > MEANING_MAX_LENGTH) return null
+  if (needed && !/[<>≤≥≠]|!=/.test(s)) return null
+  let letter: string | null = null
+  const branches: Branch[] = []
+  for (const alternative of s.split(/\bor\b/i)) {
+    const branch: Branch = []
+    for (const part of alternative.replace(/(\d),(\d)/g, '$1.$2').split(/\band\b|;|,/i)) {
+      const items = part.split(RELATION)
+      if (items.length < 3) return null
+      for (let i = 1; i < items.length; i += 2) {
+        const [left, right] = [items[i - 1]!, items[i + 1]!]
+        const op = OPS[items[i]!]!
+        const [l, r] = [LETTER_ALONE.exec(left), LETTER_ALONE.exec(right)]
+        const name = (l ?? r)?.[1]?.toLowerCase()
+        if (!name || (l && r)) return null
+        if (letter !== null && letter !== name) return null
+        letter = name
+        const v = numeric(l ? right : left, false)
+        if (v === null) return null
+        branch.push({ op: l ? op : FLIPPED[op], v })
+      }
+    }
+    branches.push(branch)
+  }
+  return letter === null ? null : { letter, branches }
+}
+
+const holds = (c: { op: Op; v: number }, x: number): boolean => {
+  const same = close(x, c.v)
+  switch (c.op) {
+    case '=':
+      return same
+    case '!=':
+      return !same
+    case '<':
+      return x < c.v && !same
+    case '<=':
+      return x < c.v || same
+    case '>':
+      return x > c.v && !same
+    case '>=':
+      return x > c.v || same
+  }
+}
+const inside = (q: Inequality, x: number): boolean => q.branches.some((b) => b.every((c) => holds(c, x)))
+
+/** Two inequalities are the same when the same numbers are on them: tried at every number they name, between each two of them, and beyond the first and the last. */
+const sameInequality = (a: Inequality, b: Inequality): boolean => {
+  const named = [...a.branches, ...b.branches].flat().map((c) => c.v).sort((x, y) => x - y)
+  const values = named.filter((v, i) => i === 0 || !close(v, named[i - 1]!))
+  const samples = [...values, values[0]! - 1, values[values.length - 1]! + 1, ...values.slice(1).map((v, i) => (v + values[i]!) / 2)]
+  return samples.every((x) => inside(a, x) === inside(b, x))
 }
 
 const distinct = (values: number[]): number[] => {
@@ -725,6 +844,14 @@ export function markByMeaning(kind: MeaningKind, key: string, answer: string, fo
       return { correct: agreeAtPoints(k, a) && inForm(a, form), comparable: true }
     }
     case 'equation': {
+      // An inequality (x <= 3, -2 < x < 5, x != 0): the same numbers must be on it. An answer that is not one (x = 3) is a different answer.
+      const ki = readInequality(key, true)
+      if (ki) {
+        const ai = readInequality(answer, false)
+        if (!ai) return UNREAD
+        return ai.letter !== ki.letter ? WRONG : { correct: sameInequality(ki, ai), comparable: true }
+      }
+      if (readInequality(answer, true)) return WRONG
       const k = readEquation(key)
       const a = readEquation(answer)
       if (!k || !a) return UNREAD
@@ -771,7 +898,7 @@ export function meaningKeyProblem(kind: MeaningKind, key: string): string | null
         const tree = readExpression(key)
         return !!tree && lettersOf(tree).size > 0
       })()
-    : kind === 'equation' ? readEquation(key) !== null
+    : kind === 'equation' ? readEquation(key) !== null || readInequality(key, true) !== null
     : readPoint(key) !== null
   return fine ? null : `answer "${key}" is not ${ARTICLE[kind]}`
 }
