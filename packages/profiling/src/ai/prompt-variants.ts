@@ -42,6 +42,25 @@ const numberFormat = (c: ClassContext) => notSouthAfrica(c) || notMaths(c)
 const outsidePrimary = (c: ClassContext) => c.grade < 1 || c.grade > 7
 
 /**
+ * What a senior class's lesson writer is told about quantities (P148): the kinds `time` and `ratio`, the optional `unit` and `round` of a question, and money to
+ * the cent, one example each. Finance questions (interest, tax, a loan, a deposit) are money answers rounded to 2 places. Decimals use a comma and money is in
+ * rand in South Africa only.
+ */
+const seniorQuantities = (c: ClassContext) => {
+  const za = !notSouthAfrica(c)
+  const pi = za ? '`3,14`' : '`3.14`'
+  const finance = za
+    ? ' A price, and every finance answer (interest, VAT, a loan, a deposit), is a `money` answer with `round` set to `2`, written with no spaces: `answer` `R15386,42`.'
+    : ' A price, and every finance answer (interest, tax, a loan, a deposit), is a `number` with `round` set to `2`: `answer` `15386.42`.'
+  return (
+    ' Two more kinds: `time` (`14:30`, `2:30 pm`, or a length of time such as `2 h 15 min`) and `ratio` (`3 : 4`, or `2 : 3 : 5` with three parts). ' +
+    'When the answer has a unit (`cm²`, `ml`, `km/h`, `°C`, `kg`), set `unit` to it and write only the number in `answer`: `answer` `24` with `unit` `cm²`. ' +
+    `When a question says "correct to 2 decimal places", set \`round\` to that number of places (here \`2\`) and write \`answer\` rounded the same way: ${pi} with \`round\` \`2\`.` +
+    finance
+  )
+}
+
+/**
  * The forms an `equation` answer takes, each as the writer is shown it (P147). Every one is read by the save gate and marked right when typed back; a test checks
  * both, and that each is in the prompt. A learner may type an inequality as an interval and the other way round, and an equation in any equivalent form.
  */
@@ -100,6 +119,7 @@ const seniorAnswers = (c: ClassContext) => {
     '`point` (`(2; -3)`). ' +
     SENIOR_EQUATION_FORMS +
     'When a question asks for the answer factorised or expanded, set `form` to `factorised` or `expanded`.' +
+    seniorQuantities(c) +
     (za ? ' Money is in rand, decimals use a comma.' : '')
   )
 }

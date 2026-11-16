@@ -5,6 +5,7 @@ import {
   finishAnswer,
   isInequalityKey,
   isListKind,
+  isSeniorQuestion,
   isPairKey,
   listAnswerParts,
   LIST_MAX_LENGTH,
@@ -12,16 +13,20 @@ import {
   nextDifficulty,
   nextStage,
   paperQuestions,
+  ratioPartsOf,
   readNumber,
   readTrueFalse,
   reasonKeyHasValue,
   resultCells,
   rightValues,
+  showWithUnit,
+  timeStyleOf,
   trueFalseLabel,
   CHOICE_LETTERS,
   type ListParts,
   type MissingPart,
   type Stage,
+  type TimeStyle,
 } from '@jemma/profiling/logic'
 import type { Choice, Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 
@@ -58,6 +63,14 @@ export type QuestionForChild = {
   form?: Form
   /** The picture the question needs, drawn between its words and the answer box (a senior class only). It never holds the answer. */
   diagram?: SeniorDiagramSpec
+  /** P148: the unit of the answer, shown after the box ("cm²"). A number, a whole or a decimal answer of a senior class. */
+  unit?: string
+  /** P148: how a `time` answer is asked for (a shape hint from the key, never its value): the hours and minutes of a 24 hour clock, of a 12 hour clock with am and pm, or of a length of time. */
+  timeStyle?: TimeStyle
+  /** P148: how many boxes a `ratio` answer has, from its key: 2 or 3. */
+  ratioParts?: 2 | 3
+  /** P148: a whole or decimal question of a senior class (Grades 7 to 12): its box gets a minus key. */
+  signed?: true
   /** P147: the SHAPE of the answer when its key is an inequality or an interval ('inequality') or two letters with a value each ('pair'), so the screen can say how to type it. Never the key itself. */
   answerShape?: 'inequality' | 'pair'
   /** P150, a list: how many boxes, whether the place of a value matters, whether a number pad is enough, and a label over each box. Never a value. */
@@ -66,8 +79,10 @@ export type QuestionForChild = {
   items?: ListParts['items']
   /** P150, a table: its columns and rows with each blank cell as null. The given cells are in the question anyway. */
   table?: ListParts['table']
-  /** P150: the places the answer is rounded to, when the question asks for it ("correct to 1 decimal place"). A count, so it may be sent. */
+  /** P148 (a number, a whole or a decimal) and P150 (a list or a table): the places the answer is rounded to, when the question asks for it ("correct to 1 decimal place"). A count, so it may be sent. */
   round?: number
+  /** P151: the learner is in Grade 1 to 6, so the lists, orders, tables and times are drawn bigger and worded simply. Only ever true. */
+  young?: true
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -113,9 +128,29 @@ export type MissedQuestion = {
   ordered?: boolean
 }
 
+/** The P148 fields of a question for the child. Shape hints only: how many boxes, which clock, which unit. Never the key. */
+function quantityHints(q: Question): Pick<QuestionForChild, 'unit' | 'round' | 'timeStyle' | 'ratioParts' | 'signed'> {
+  const unit = q.unit?.trim()
+  const shown = q.answerKind === 'number' || q.answerKind === 'whole' || q.answerKind === 'decimal'
+  const timeStyle = q.answerKind === 'time' ? timeStyleOf(q.answer) : null
+  const ratioParts = q.answerKind === 'ratio' ? ratioPartsOf(q.answer) : null
+  return {
+    ...(shown && unit ? { unit } : {}),
+    ...(shown && q.round !== undefined ? { round: q.round } : {}),
+    ...(timeStyle ? { timeStyle } : {}),
+    ...(ratioParts ? { ratioParts } : {}),
+    ...((q.answerKind === 'whole' || q.answerKind === 'decimal') && isSeniorQuestion(q) ? { signed: true as const } : {}),
+  }
+}
+
+/** A learner of Grade 1 to 6 (P151): the screens of the new answer kinds are drawn bigger for them. */
+export const isYoungGrade = (grade: unknown): boolean => typeof grade === 'number' && Number.isInteger(grade) && grade >= 1 && grade <= 6
+
+const withoutSign = ({ signed: _signed, ...rest }: ReturnType<typeof quantityHints>) => rest
+
 export function stripQuestion(
   q: Question,
-  at: { position: number; phase: Phase; index: number; of: number },
+  at: { position: number; phase: Phase; index: number; of: number; young?: boolean },
 ): QuestionForChild {
   return {
     position: at.position,
@@ -131,10 +166,13 @@ export function stripQuestion(
     ...(q.answerKind === 'reason' && reasonKeyHasValue(q.answer) ? { withValue: true } : {}),
     ...(q.form ? { form: q.form } : {}),
     ...(q.diagram ? { diagram: q.diagram } : {}),
+    // A learner of Grade 1 to 6 never gets the minus key (P151), whatever the question holds: they work with whole numbers and measures.
+    ...(at.young ? withoutSign(quantityHints(q)) : quantityHints(q)),
     ...(q.answerKind === 'equation' && isInequalityKey(q.answer) ? { answerShape: 'inequality' as const } : q.answerKind === 'equation' && isPairKey(q.answer) ? { answerShape: 'pair' as const } : {}),
     // P150: a count, the labels, the items to put in order (shuffled), the table with its blanks: never the key's values or order.
     ...listAnswerParts(q),
     ...(isListKind(q.answerKind) && q.round !== undefined ? { round: q.round } : {}),
+    ...(at.young ? { young: true as const } : {}),
   }
 }
 
@@ -185,25 +223,43 @@ export type AnswerShape =
   | { kind: 'choice' }
   /** One number is missing from a fraction in the question ("3/5 = ?/15"): the child types it where it is missing. */
   | { kind: 'missing'; part: MissingPart }
-  | { kind: 'fraction' | 'mixed' | 'whole' | 'decimal' | 'money' | 'text' }
-  /** The four kinds of a senior class, marked by meaning: a number that may be negative, an expression, an equation, a point. */
-  | { kind: 'number' | 'point' }
+  | { kind: 'fraction' | 'mixed' | 'money' | 'text' }
+  /** P148: a number, a whole or a decimal answer may carry a unit, a round and (a whole or a decimal of a senior class) a minus key. */
+  | ({ kind: 'number' | 'whole' | 'decimal' } & QuantityExtras)
+  /** A point of a senior class, marked by meaning. */
+  | { kind: 'point' }
   /** An equation answer; `inequality` when its key is an inequality or an interval, `pair` when it is two letters with a value each (P147): they change the line under the box. */
   | { kind: 'equation'; inequality?: true; pair?: true }
   | { kind: 'expression'; form: Form }
+  /** P148: a time (the hours and minutes, and am or pm when the key needs it) and a ratio (a box for each part). */
+  | { kind: 'time'; style: TimeStyle; young?: true }
+  | { kind: 'ratio'; parts: 2 | 3 }
   /** P149: two big buttons, True and False. */
   | { kind: 'truefalse' }
   /** P149: the reason for a step of a geometry proof, picked from a list, with a box for the value of the step when the question asks for one. */
   | { kind: 'reason'; withValue: boolean }
   /** P150: several values. A row of boxes (a list), the chips of an order, or the empty cells of a table. */
-  | { kind: 'list'; count: number; ordered: boolean; plain: boolean; labels?: string[]; round?: number }
-  | { kind: 'order'; items: string[] }
-  | { kind: 'table'; table: NonNullable<ListParts['table']>; round?: number }
+  | { kind: 'list'; count: number; ordered: boolean; plain: boolean; labels?: string[]; round?: number; young?: true }
+  | { kind: 'order'; items: string[]; young?: true }
+  | { kind: 'table'; table: NonNullable<ListParts['table']>; round?: number; young?: true }
+
+/** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
+export type QuantityExtras = { unit?: string; round?: number; signed?: true }
+const quantityExtras = (q: QuantityExtras): QuantityExtras => ({
+  ...(q.unit ? { unit: q.unit } : {}),
+  ...(q.round !== undefined ? { round: q.round } : {}),
+  ...(q.signed ? { signed: true as const } : {}),
+})
 
 /** What `answerShape` reads besides the old four fields: the parts the server sent (a whole `Question` fits too: its table has no `plain`, so its boxes are the full keyboard). */
-type ShapeParts = { list?: ListParts['list']; items?: string[]; table?: { columns: string[]; rows: (string | null)[][]; plain?: boolean }; round?: number }
+type ShapeParts = { list?: ListParts['list']; items?: string[]; table?: { columns: string[]; rows: (string | null)[][]; plain?: boolean }; round?: number; young?: true }
 
-export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> & ShapeParts & { withValue?: boolean } & Pick<QuestionForChild, 'answerShape'>): AnswerShape {
+export function answerShape(
+  q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> &
+    QuantityExtras &
+    Pick<QuestionForChild, 'timeStyle' | 'ratioParts' | 'answerShape'> &
+    ShapeParts & { withValue?: boolean },
+): AnswerShape {
   if (q.answerKind === 'truefalse') return { kind: 'truefalse' }
   if (q.answerKind === 'reason') return { kind: 'reason', withValue: q.withValue === true }
   if (q.choices?.length) return { kind: 'choice' }
@@ -211,16 +267,20 @@ export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices
   if (q.answerKind === 'equation' && q.answerShape === 'inequality') return { kind: 'equation', inequality: true }
   if (q.answerKind === 'equation' && q.answerShape === 'pair') return { kind: 'equation', pair: true }
   // P150: a list, an order and a table are drawn from the parts the server sent (a question that came without them gets the plain box below).
-  const places = q.round !== undefined ? { round: q.round } : {}
+  const places = { ...(q.round !== undefined ? { round: q.round } : {}), ...(q.young ? { young: true as const } : {}) }
   // A shape with nothing to fill (no box, one chip, no empty cell) could never be answered, so it falls to the plain box rather than leave the learner stuck.
   if (q.answerKind === 'list' && q.list && q.list.count > 0) return { kind: 'list', ...q.list, ...places }
-  if (q.answerKind === 'order' && q.items && q.items.length > 1) return { kind: 'order', items: q.items }
+  if (q.answerKind === 'order' && q.items && q.items.length > 1) return { kind: 'order', items: q.items, ...(q.young ? { young: true as const } : {}) }
   if (q.answerKind === 'table' && q.table && q.table.rows.some((row) => row.includes(null))) return { kind: 'table', table: { ...q.table, plain: q.table.plain ?? false }, ...places }
   // A question marked by meaning is never a missing number in a fraction, whatever its prompt holds.
+  if (q.answerKind === 'time') return { kind: 'time', style: q.timeStyle ?? 'clock24', ...(q.young ? { young: true as const } : {}) }
+  if (q.answerKind === 'ratio') return { kind: 'ratio', parts: q.ratioParts ?? 2 }
   if (q.answerKind === 'expression') return { kind: 'expression', form: q.form ?? 'any' }
-  if (q.answerKind === 'number' || q.answerKind === 'equation' || q.answerKind === 'point') return { kind: q.answerKind }
+  if (q.answerKind === 'number') return { kind: 'number', ...quantityExtras(q) }
+  if (q.answerKind === 'equation' || q.answerKind === 'point') return { kind: q.answerKind }
   const part = missingPart(q.prompt)
   if (part) return { kind: 'missing', part }
+  if (q.answerKind === 'whole' || q.answerKind === 'decimal') return { kind: q.answerKind, ...quantityExtras(q) }
   return { kind: q.answerKind === 'choice' || q.answerKind === 'list' || q.answerKind === 'order' || q.answerKind === 'table' ? 'text' : q.answerKind }
 }
 
@@ -253,6 +313,10 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
       return whole && top && bottom ? `${whole} ${top}/${bottom}` : ''
     case 'money':
       return text ? `R${text}` : ''
+    case 'whole':
+    case 'decimal':
+      // A minus key makes a minus alone possible (P148): a number holds a digit.
+      return hasDigit(text) ? text : ''
     case 'number':
       // A number answer holds a digit, or pi (the pi key types a whole answer, like 2\u03c0 or \u03c0/2).
       return hasDigit(text) || /\u03c0|\bpi\b/i.test(text) ? text : ''
@@ -298,9 +362,9 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       ...(item.question.terms ? { terms: item.question.terms } : {}),
       ...(item.question.diagram ? { diagram: item.question.diagram } : {}),
       // An answer saved before the missing number was put back into its fraction is shown completed too.
-      wrote: item.unread ? '' : answerText(item.question, finishAnswer(item.question, item.answer).stored),
+      wrote: item.unread ? '' : showWithUnit(answerText(item.question, finishAnswer(item.question, item.answer).stored), item.question),
       ...(item.unread ? { unread: true } : {}),
-      right: answerText(item.question, item.question.answer),
+      right: showWithUnit(answerText(item.question, rightText(item.question)), item.question),
       why: item.question.why,
       rightWay: item.question.rightWay,
       ...(stepsOf(item.question).length > 0 ? { steps: stepsOf(item.question) } : {}),
@@ -321,6 +385,10 @@ function cellsOf(item: StoredItem): Partial<Pick<MissedQuestion, 'cells' | 'tabl
     ...(parts.table ? { table: parts.table } : {}),
   }
 }
+
+/** P148: the key of a number or a decimal question that asks for a rounded answer, shown rounded as the question asks ("3.14" for a key of 3.14159 to 2 places). Any other key as it is. */
+const rightText = (q: Question): string =>
+  q.round !== undefined && (q.answerKind === 'number' || q.answerKind === 'decimal') && /^-?\d[\d ]*(?:[.,]\d+)?$/.test(q.answer.trim()) ? rightValues(q, readNumber).join('; ') : q.answer
 
 /** The try questions that were missed, numbered as in `reviewOf`. */
 export function missedOf(items: StoredItem[]): MissedQuestion[] {

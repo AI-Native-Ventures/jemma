@@ -1,0 +1,622 @@
+{
+ "Mathematics|6|ZA|Equivalent fractions": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "fee196f6018a360c987ab3882b5efc6bc7d46e0ad323a45b1cad6af7906aace3"
+ },
+ "Mathematics|6|ZA|Adding and subtracting fractions with different denominators": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "d7f6bc1e77c0a82303349812373e0084d015cc1a8f565ebf01e11846c258e9b1"
+ },
+ "Mathematics|6|ZA|adding and subtracting fractions with different denominators": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "51765287886e8d32884a493b66532b9d8be6ce492d87eac872eabbac756302a3"
+ },
+ "Mathematics|6|ZA|Comparing fractions": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "ca53831dfe20a7cd743e2a515f2ce154f10358d07c53ba9cf8286c7203b8087a"
+ },
+ "Mathematics|6|ZA|Mixed numbers": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "198636ab9516f4832a07a53b56138f6250456d46905febaaeb30664a4889c8ff"
+ },
+ "Mathematics|6|ZA|Fractions": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "754a38e263661fef334a48c99c74a36e00d07c1c9f081d2891c4da94ba509f2e"
+ },
+ "Mathematics|6|ZA|Common fractions": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "58579aed1edb387de11c2349d1a66b2fbbd3fc17867cf23e08ea27cdd4ef8fdc"
+ },
+ "Mathematics|6|ZA|Sharing leading to fractions": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "7eb6d02b76d709befaf94e769c05108092f6b4233a58cca6e4a6bc02cdddae3f"
+ },
+ "Mathematics|6|ZA|Division": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "eac9faa2f441f7c3f32041f8f56bba30c0c64353813c9988a16046a6c243c1f7"
+ },
+ "Mathematics|6|ZA|Multiplication": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "e48ef039f9ba88bd3b2f7716e84f8dded88ca73ccc1f9a716fb181513b176058"
+ },
+ "Mathematics|6|ZA|Multiplication and division": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "a3f554513faf1ddf5f49d6c153aaca94fd7337b89d754ccfb985744d13865c48"
+ },
+ "Mathematics|6|ZA|Addition and subtraction": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "0ce566570ea49cdd2fc047efc54bbbf86717a2bc39a2162b76fa804cd61bc4ea"
+ },
+ "Mathematics|6|ZA|Count objects": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "333b7defa8c7ed6b4c209fa669f2e37639e6b7e341546278a609fb9344514086"
+ },
+ "Mathematics|6|ZA|Count forwards and backwards": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "a6df973e50f3e5825bb3c33705709f2245398640eb12fcc4848ef707156aa5f5"
+ },
+ "Mathematics|6|ZA|Number symbols and number names": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "17de6bfb0148efb93a49d1fd26501fb4d841f2cde045dd7d0db2f1dcc8a59460"
+ },
+ "Mathematics|6|ZA|Geometric patterns": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "c9758599c10f5d827f2c79bebd383a164c411d98da1d040fdc2c8a65d074d223"
+ },
+ "Mathematics|6|ZA|Number sentences": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "a91ac3fe95abd026d607e595e4aebbc3b91f24352a576d9b5f4c37083c0d78ad"
+ },
+ "Mathematics|6|ZA|Symmetry": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "7b7f09585d3e6a40c97457bc04329a37e7234a3701d833893bb937885cc43c39"
+ },
+ "Mathematics|6|ZA|Probability": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "e9c3e3e0f0ec667426fa944002eaafcc29ae4be131004d258fa31bd3c86a1a28"
+ },
+ "Mathematics|6|ZA|Decimal fractions": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "c352e2aa4c2e82fe6c1a05dde509fcd207f00bd89810981cdd5184a9e1ebadad"
+ },
+ "Mathematics|6|ZA|Percentages": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "d6d7aad47df20e0ee8bd4ba2a09b2691e44ae1fe2525ed37fb10d663ebfc7b9d"
+ },
+ "Mathematics|6|ZA|Transformations": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "9e3a0beae847edc3dbc421542088eb5a9866702ba0610ea942c650e9ea6dd54b"
+ },
+ "Mathematics|6|ZA|2-D shapes": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "c1e1f0013abb11c913486b759241dd6e23ba7af374cdbabfb2994372f1c904d7"
+ },
+ "Mathematics|6|ZA|3-D objects": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "43aed243e20d7f7de714fa15e9fa6ba9f76791ae05bb8b0be2208297fbd26344"
+ },
+ "Mathematics|6|ZA|Properties of 2-D shapes": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "5a3768b2789db645a8845b1b5dbb425ef19cacc5b7742e0bc100e28320dee9c8"
+ },
+ "Mathematics|6|ZA|Position and movement": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "651929488e19036bc3edd8dfdd9d53dd48b03481687ff5d854f3597edc9f93a3"
+ },
+ "Mathematics|6|ZA|Viewing objects": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "f8fa2139c7bed1c864c4d09f136a51dc02dd3b4ef5e38f0f07b66334d245c0d4"
+ },
+ "Mathematics|6|ZA|Repeated addition leading to multiplication": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "bd7d27c23c9abada146babd7340709769b55d5f6fdfafc6b4cb579d23308efb9"
+ },
+ "Mathematics|6|ZA|Grouping and sharing leading to division": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "fb7159a4899c9a5d226cae4a665a60f41446fd7f4317491832cc3f1371b209cb"
+ },
+ "Mathematics|6|ZA|Problems in context: addition and subtraction": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "500f6a5fc59e52872557bbd713f5a3caeab4a6c9d0c0d9b87a13b408660dbffe"
+ },
+ "Mathematics|6|ZA|Number symbols and number names (Term 2)": {
+  "system": "fc14a53f496cd03f227f3e3d8e93a52cb05c7789ec4fb5926ca94ed003680fd8",
+  "user": "71680ea8b99eb2b1a8169283c7015243f13ae0ec8ba03d648b4d64dfe1405b5e"
+ },
+ "Mathematics|4|ZA|Equivalent fractions": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "fee196f6018a360c987ab3882b5efc6bc7d46e0ad323a45b1cad6af7906aace3"
+ },
+ "Mathematics|4|ZA|Adding and subtracting fractions with different denominators": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "d7f6bc1e77c0a82303349812373e0084d015cc1a8f565ebf01e11846c258e9b1"
+ },
+ "Mathematics|4|ZA|adding and subtracting fractions with different denominators": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "51765287886e8d32884a493b66532b9d8be6ce492d87eac872eabbac756302a3"
+ },
+ "Mathematics|4|ZA|Comparing fractions": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "ca53831dfe20a7cd743e2a515f2ce154f10358d07c53ba9cf8286c7203b8087a"
+ },
+ "Mathematics|4|ZA|Mixed numbers": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "198636ab9516f4832a07a53b56138f6250456d46905febaaeb30664a4889c8ff"
+ },
+ "Mathematics|4|ZA|Fractions": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "754a38e263661fef334a48c99c74a36e00d07c1c9f081d2891c4da94ba509f2e"
+ },
+ "Mathematics|4|ZA|Common fractions": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "58579aed1edb387de11c2349d1a66b2fbbd3fc17867cf23e08ea27cdd4ef8fdc"
+ },
+ "Mathematics|4|ZA|Sharing leading to fractions": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "7eb6d02b76d709befaf94e769c05108092f6b4233a58cca6e4a6bc02cdddae3f"
+ },
+ "Mathematics|4|ZA|Division": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "eac9faa2f441f7c3f32041f8f56bba30c0c64353813c9988a16046a6c243c1f7"
+ },
+ "Mathematics|4|ZA|Multiplication": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "e48ef039f9ba88bd3b2f7716e84f8dded88ca73ccc1f9a716fb181513b176058"
+ },
+ "Mathematics|4|ZA|Multiplication and division": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "a3f554513faf1ddf5f49d6c153aaca94fd7337b89d754ccfb985744d13865c48"
+ },
+ "Mathematics|4|ZA|Addition and subtraction": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "0ce566570ea49cdd2fc047efc54bbbf86717a2bc39a2162b76fa804cd61bc4ea"
+ },
+ "Mathematics|4|ZA|Count objects": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "333b7defa8c7ed6b4c209fa669f2e37639e6b7e341546278a609fb9344514086"
+ },
+ "Mathematics|4|ZA|Count forwards and backwards": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "a6df973e50f3e5825bb3c33705709f2245398640eb12fcc4848ef707156aa5f5"
+ },
+ "Mathematics|4|ZA|Number symbols and number names": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "17de6bfb0148efb93a49d1fd26501fb4d841f2cde045dd7d0db2f1dcc8a59460"
+ },
+ "Mathematics|4|ZA|Geometric patterns": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "c9758599c10f5d827f2c79bebd383a164c411d98da1d040fdc2c8a65d074d223"
+ },
+ "Mathematics|4|ZA|Number sentences": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "a91ac3fe95abd026d607e595e4aebbc3b91f24352a576d9b5f4c37083c0d78ad"
+ },
+ "Mathematics|4|ZA|Symmetry": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "7b7f09585d3e6a40c97457bc04329a37e7234a3701d833893bb937885cc43c39"
+ },
+ "Mathematics|4|ZA|Probability": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "e9c3e3e0f0ec667426fa944002eaafcc29ae4be131004d258fa31bd3c86a1a28"
+ },
+ "Mathematics|4|ZA|Decimal fractions": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "c352e2aa4c2e82fe6c1a05dde509fcd207f00bd89810981cdd5184a9e1ebadad"
+ },
+ "Mathematics|4|ZA|Percentages": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "d6d7aad47df20e0ee8bd4ba2a09b2691e44ae1fe2525ed37fb10d663ebfc7b9d"
+ },
+ "Mathematics|4|ZA|Transformations": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "9e3a0beae847edc3dbc421542088eb5a9866702ba0610ea942c650e9ea6dd54b"
+ },
+ "Mathematics|4|ZA|2-D shapes": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "c1e1f0013abb11c913486b759241dd6e23ba7af374cdbabfb2994372f1c904d7"
+ },
+ "Mathematics|4|ZA|3-D objects": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "43aed243e20d7f7de714fa15e9fa6ba9f76791ae05bb8b0be2208297fbd26344"
+ },
+ "Mathematics|4|ZA|Properties of 2-D shapes": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "5a3768b2789db645a8845b1b5dbb425ef19cacc5b7742e0bc100e28320dee9c8"
+ },
+ "Mathematics|4|ZA|Position and movement": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "651929488e19036bc3edd8dfdd9d53dd48b03481687ff5d854f3597edc9f93a3"
+ },
+ "Mathematics|4|ZA|Viewing objects": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "f8fa2139c7bed1c864c4d09f136a51dc02dd3b4ef5e38f0f07b66334d245c0d4"
+ },
+ "Mathematics|4|ZA|Repeated addition leading to multiplication": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "bd7d27c23c9abada146babd7340709769b55d5f6fdfafc6b4cb579d23308efb9"
+ },
+ "Mathematics|4|ZA|Grouping and sharing leading to division": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "fb7159a4899c9a5d226cae4a665a60f41446fd7f4317491832cc3f1371b209cb"
+ },
+ "Mathematics|4|ZA|Problems in context: addition and subtraction": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "500f6a5fc59e52872557bbd713f5a3caeab4a6c9d0c0d9b87a13b408660dbffe"
+ },
+ "Mathematics|4|ZA|Number symbols and number names (Term 2)": {
+  "system": "7003d1853b7f4335f3f4989dba1c1f1e44dc1c5910f22acfe624d163e4279343",
+  "user": "71680ea8b99eb2b1a8169283c7015243f13ae0ec8ba03d648b4d64dfe1405b5e"
+ },
+ "Mathematics|1|ZA|Equivalent fractions": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "fee196f6018a360c987ab3882b5efc6bc7d46e0ad323a45b1cad6af7906aace3"
+ },
+ "Mathematics|1|ZA|Adding and subtracting fractions with different denominators": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "d7f6bc1e77c0a82303349812373e0084d015cc1a8f565ebf01e11846c258e9b1"
+ },
+ "Mathematics|1|ZA|adding and subtracting fractions with different denominators": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "51765287886e8d32884a493b66532b9d8be6ce492d87eac872eabbac756302a3"
+ },
+ "Mathematics|1|ZA|Comparing fractions": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "ca53831dfe20a7cd743e2a515f2ce154f10358d07c53ba9cf8286c7203b8087a"
+ },
+ "Mathematics|1|ZA|Mixed numbers": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "198636ab9516f4832a07a53b56138f6250456d46905febaaeb30664a4889c8ff"
+ },
+ "Mathematics|1|ZA|Fractions": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "754a38e263661fef334a48c99c74a36e00d07c1c9f081d2891c4da94ba509f2e"
+ },
+ "Mathematics|1|ZA|Common fractions": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "58579aed1edb387de11c2349d1a66b2fbbd3fc17867cf23e08ea27cdd4ef8fdc"
+ },
+ "Mathematics|1|ZA|Sharing leading to fractions": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "7eb6d02b76d709befaf94e769c05108092f6b4233a58cca6e4a6bc02cdddae3f"
+ },
+ "Mathematics|1|ZA|Division": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "eac9faa2f441f7c3f32041f8f56bba30c0c64353813c9988a16046a6c243c1f7"
+ },
+ "Mathematics|1|ZA|Multiplication": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "e48ef039f9ba88bd3b2f7716e84f8dded88ca73ccc1f9a716fb181513b176058"
+ },
+ "Mathematics|1|ZA|Multiplication and division": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "a3f554513faf1ddf5f49d6c153aaca94fd7337b89d754ccfb985744d13865c48"
+ },
+ "Mathematics|1|ZA|Addition and subtraction": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "0ce566570ea49cdd2fc047efc54bbbf86717a2bc39a2162b76fa804cd61bc4ea"
+ },
+ "Mathematics|1|ZA|Count objects": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "333b7defa8c7ed6b4c209fa669f2e37639e6b7e341546278a609fb9344514086"
+ },
+ "Mathematics|1|ZA|Count forwards and backwards": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "a6df973e50f3e5825bb3c33705709f2245398640eb12fcc4848ef707156aa5f5"
+ },
+ "Mathematics|1|ZA|Number symbols and number names": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "17de6bfb0148efb93a49d1fd26501fb4d841f2cde045dd7d0db2f1dcc8a59460"
+ },
+ "Mathematics|1|ZA|Geometric patterns": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "c9758599c10f5d827f2c79bebd383a164c411d98da1d040fdc2c8a65d074d223"
+ },
+ "Mathematics|1|ZA|Number sentences": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "a91ac3fe95abd026d607e595e4aebbc3b91f24352a576d9b5f4c37083c0d78ad"
+ },
+ "Mathematics|1|ZA|Symmetry": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "7b7f09585d3e6a40c97457bc04329a37e7234a3701d833893bb937885cc43c39"
+ },
+ "Mathematics|1|ZA|Probability": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "e9c3e3e0f0ec667426fa944002eaafcc29ae4be131004d258fa31bd3c86a1a28"
+ },
+ "Mathematics|1|ZA|Decimal fractions": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "c352e2aa4c2e82fe6c1a05dde509fcd207f00bd89810981cdd5184a9e1ebadad"
+ },
+ "Mathematics|1|ZA|Percentages": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "d6d7aad47df20e0ee8bd4ba2a09b2691e44ae1fe2525ed37fb10d663ebfc7b9d"
+ },
+ "Mathematics|1|ZA|Transformations": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "9e3a0beae847edc3dbc421542088eb5a9866702ba0610ea942c650e9ea6dd54b"
+ },
+ "Mathematics|1|ZA|2-D shapes": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "c1e1f0013abb11c913486b759241dd6e23ba7af374cdbabfb2994372f1c904d7"
+ },
+ "Mathematics|1|ZA|3-D objects": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "43aed243e20d7f7de714fa15e9fa6ba9f76791ae05bb8b0be2208297fbd26344"
+ },
+ "Mathematics|1|ZA|Properties of 2-D shapes": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "5a3768b2789db645a8845b1b5dbb425ef19cacc5b7742e0bc100e28320dee9c8"
+ },
+ "Mathematics|1|ZA|Position and movement": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "651929488e19036bc3edd8dfdd9d53dd48b03481687ff5d854f3597edc9f93a3"
+ },
+ "Mathematics|1|ZA|Viewing objects": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "f8fa2139c7bed1c864c4d09f136a51dc02dd3b4ef5e38f0f07b66334d245c0d4"
+ },
+ "Mathematics|1|ZA|Repeated addition leading to multiplication": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "bd7d27c23c9abada146babd7340709769b55d5f6fdfafc6b4cb579d23308efb9"
+ },
+ "Mathematics|1|ZA|Grouping and sharing leading to division": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "fb7159a4899c9a5d226cae4a665a60f41446fd7f4317491832cc3f1371b209cb"
+ },
+ "Mathematics|1|ZA|Problems in context: addition and subtraction": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "500f6a5fc59e52872557bbd713f5a3caeab4a6c9d0c0d9b87a13b408660dbffe"
+ },
+ "Mathematics|1|ZA|Number symbols and number names (Term 2)": {
+  "system": "8668d71ea6ba06f5a6ee1a0e96e3d1a57efd5ce9e4f382c40e07befb89883063",
+  "user": "71680ea8b99eb2b1a8169283c7015243f13ae0ec8ba03d648b4d64dfe1405b5e"
+ },
+ "Mathematics|6|KE|Equivalent fractions": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "fee196f6018a360c987ab3882b5efc6bc7d46e0ad323a45b1cad6af7906aace3"
+ },
+ "Mathematics|6|KE|Adding and subtracting fractions with different denominators": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "d7f6bc1e77c0a82303349812373e0084d015cc1a8f565ebf01e11846c258e9b1"
+ },
+ "Mathematics|6|KE|adding and subtracting fractions with different denominators": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "51765287886e8d32884a493b66532b9d8be6ce492d87eac872eabbac756302a3"
+ },
+ "Mathematics|6|KE|Comparing fractions": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "ca53831dfe20a7cd743e2a515f2ce154f10358d07c53ba9cf8286c7203b8087a"
+ },
+ "Mathematics|6|KE|Mixed numbers": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "198636ab9516f4832a07a53b56138f6250456d46905febaaeb30664a4889c8ff"
+ },
+ "Mathematics|6|KE|Fractions": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "754a38e263661fef334a48c99c74a36e00d07c1c9f081d2891c4da94ba509f2e"
+ },
+ "Mathematics|6|KE|Common fractions": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "58579aed1edb387de11c2349d1a66b2fbbd3fc17867cf23e08ea27cdd4ef8fdc"
+ },
+ "Mathematics|6|KE|Sharing leading to fractions": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "7eb6d02b76d709befaf94e769c05108092f6b4233a58cca6e4a6bc02cdddae3f"
+ },
+ "Mathematics|6|KE|Division": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "eac9faa2f441f7c3f32041f8f56bba30c0c64353813c9988a16046a6c243c1f7"
+ },
+ "Mathematics|6|KE|Multiplication": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "e48ef039f9ba88bd3b2f7716e84f8dded88ca73ccc1f9a716fb181513b176058"
+ },
+ "Mathematics|6|KE|Multiplication and division": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "a3f554513faf1ddf5f49d6c153aaca94fd7337b89d754ccfb985744d13865c48"
+ },
+ "Mathematics|6|KE|Addition and subtraction": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "0ce566570ea49cdd2fc047efc54bbbf86717a2bc39a2162b76fa804cd61bc4ea"
+ },
+ "Mathematics|6|KE|Count objects": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "333b7defa8c7ed6b4c209fa669f2e37639e6b7e341546278a609fb9344514086"
+ },
+ "Mathematics|6|KE|Count forwards and backwards": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "a6df973e50f3e5825bb3c33705709f2245398640eb12fcc4848ef707156aa5f5"
+ },
+ "Mathematics|6|KE|Number symbols and number names": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "17de6bfb0148efb93a49d1fd26501fb4d841f2cde045dd7d0db2f1dcc8a59460"
+ },
+ "Mathematics|6|KE|Geometric patterns": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "c9758599c10f5d827f2c79bebd383a164c411d98da1d040fdc2c8a65d074d223"
+ },
+ "Mathematics|6|KE|Number sentences": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "a91ac3fe95abd026d607e595e4aebbc3b91f24352a576d9b5f4c37083c0d78ad"
+ },
+ "Mathematics|6|KE|Symmetry": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "7b7f09585d3e6a40c97457bc04329a37e7234a3701d833893bb937885cc43c39"
+ },
+ "Mathematics|6|KE|Probability": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "e9c3e3e0f0ec667426fa944002eaafcc29ae4be131004d258fa31bd3c86a1a28"
+ },
+ "Mathematics|6|KE|Decimal fractions": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "c352e2aa4c2e82fe6c1a05dde509fcd207f00bd89810981cdd5184a9e1ebadad"
+ },
+ "Mathematics|6|KE|Percentages": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "d6d7aad47df20e0ee8bd4ba2a09b2691e44ae1fe2525ed37fb10d663ebfc7b9d"
+ },
+ "Mathematics|6|KE|Transformations": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "9e3a0beae847edc3dbc421542088eb5a9866702ba0610ea942c650e9ea6dd54b"
+ },
+ "Mathematics|6|KE|2-D shapes": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "c1e1f0013abb11c913486b759241dd6e23ba7af374cdbabfb2994372f1c904d7"
+ },
+ "Mathematics|6|KE|3-D objects": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "43aed243e20d7f7de714fa15e9fa6ba9f76791ae05bb8b0be2208297fbd26344"
+ },
+ "Mathematics|6|KE|Properties of 2-D shapes": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "5a3768b2789db645a8845b1b5dbb425ef19cacc5b7742e0bc100e28320dee9c8"
+ },
+ "Mathematics|6|KE|Position and movement": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "651929488e19036bc3edd8dfdd9d53dd48b03481687ff5d854f3597edc9f93a3"
+ },
+ "Mathematics|6|KE|Viewing objects": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "f8fa2139c7bed1c864c4d09f136a51dc02dd3b4ef5e38f0f07b66334d245c0d4"
+ },
+ "Mathematics|6|KE|Repeated addition leading to multiplication": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "bd7d27c23c9abada146babd7340709769b55d5f6fdfafc6b4cb579d23308efb9"
+ },
+ "Mathematics|6|KE|Grouping and sharing leading to division": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "fb7159a4899c9a5d226cae4a665a60f41446fd7f4317491832cc3f1371b209cb"
+ },
+ "Mathematics|6|KE|Problems in context: addition and subtraction": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "500f6a5fc59e52872557bbd713f5a3caeab4a6c9d0c0d9b87a13b408660dbffe"
+ },
+ "Mathematics|6|KE|Number symbols and number names (Term 2)": {
+  "system": "4dc6f28dbcd2d058da3a6a41b9b08477895b4f0ce54404201b078e54c81a29a4",
+  "user": "71680ea8b99eb2b1a8169283c7015243f13ae0ec8ba03d648b4d64dfe1405b5e"
+ },
+ "Natural Sciences|5|ZA|Equivalent fractions": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "fee196f6018a360c987ab3882b5efc6bc7d46e0ad323a45b1cad6af7906aace3"
+ },
+ "Natural Sciences|5|ZA|Adding and subtracting fractions with different denominators": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "d7f6bc1e77c0a82303349812373e0084d015cc1a8f565ebf01e11846c258e9b1"
+ },
+ "Natural Sciences|5|ZA|adding and subtracting fractions with different denominators": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "51765287886e8d32884a493b66532b9d8be6ce492d87eac872eabbac756302a3"
+ },
+ "Natural Sciences|5|ZA|Comparing fractions": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "ca53831dfe20a7cd743e2a515f2ce154f10358d07c53ba9cf8286c7203b8087a"
+ },
+ "Natural Sciences|5|ZA|Mixed numbers": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "198636ab9516f4832a07a53b56138f6250456d46905febaaeb30664a4889c8ff"
+ },
+ "Natural Sciences|5|ZA|Fractions": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "754a38e263661fef334a48c99c74a36e00d07c1c9f081d2891c4da94ba509f2e"
+ },
+ "Natural Sciences|5|ZA|Common fractions": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "58579aed1edb387de11c2349d1a66b2fbbd3fc17867cf23e08ea27cdd4ef8fdc"
+ },
+ "Natural Sciences|5|ZA|Sharing leading to fractions": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "7eb6d02b76d709befaf94e769c05108092f6b4233a58cca6e4a6bc02cdddae3f"
+ },
+ "Natural Sciences|5|ZA|Division": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "eac9faa2f441f7c3f32041f8f56bba30c0c64353813c9988a16046a6c243c1f7"
+ },
+ "Natural Sciences|5|ZA|Multiplication": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "e48ef039f9ba88bd3b2f7716e84f8dded88ca73ccc1f9a716fb181513b176058"
+ },
+ "Natural Sciences|5|ZA|Multiplication and division": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "a3f554513faf1ddf5f49d6c153aaca94fd7337b89d754ccfb985744d13865c48"
+ },
+ "Natural Sciences|5|ZA|Addition and subtraction": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "0ce566570ea49cdd2fc047efc54bbbf86717a2bc39a2162b76fa804cd61bc4ea"
+ },
+ "Natural Sciences|5|ZA|Count objects": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "333b7defa8c7ed6b4c209fa669f2e37639e6b7e341546278a609fb9344514086"
+ },
+ "Natural Sciences|5|ZA|Count forwards and backwards": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "a6df973e50f3e5825bb3c33705709f2245398640eb12fcc4848ef707156aa5f5"
+ },
+ "Natural Sciences|5|ZA|Number symbols and number names": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "17de6bfb0148efb93a49d1fd26501fb4d841f2cde045dd7d0db2f1dcc8a59460"
+ },
+ "Natural Sciences|5|ZA|Geometric patterns": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "c9758599c10f5d827f2c79bebd383a164c411d98da1d040fdc2c8a65d074d223"
+ },
+ "Natural Sciences|5|ZA|Number sentences": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "a91ac3fe95abd026d607e595e4aebbc3b91f24352a576d9b5f4c37083c0d78ad"
+ },
+ "Natural Sciences|5|ZA|Symmetry": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "7b7f09585d3e6a40c97457bc04329a37e7234a3701d833893bb937885cc43c39"
+ },
+ "Natural Sciences|5|ZA|Probability": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "e9c3e3e0f0ec667426fa944002eaafcc29ae4be131004d258fa31bd3c86a1a28"
+ },
+ "Natural Sciences|5|ZA|Decimal fractions": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "c352e2aa4c2e82fe6c1a05dde509fcd207f00bd89810981cdd5184a9e1ebadad"
+ },
+ "Natural Sciences|5|ZA|Percentages": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "d6d7aad47df20e0ee8bd4ba2a09b2691e44ae1fe2525ed37fb10d663ebfc7b9d"
+ },
+ "Natural Sciences|5|ZA|Transformations": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "9e3a0beae847edc3dbc421542088eb5a9866702ba0610ea942c650e9ea6dd54b"
+ },
+ "Natural Sciences|5|ZA|2-D shapes": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "c1e1f0013abb11c913486b759241dd6e23ba7af374cdbabfb2994372f1c904d7"
+ },
+ "Natural Sciences|5|ZA|3-D objects": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "43aed243e20d7f7de714fa15e9fa6ba9f76791ae05bb8b0be2208297fbd26344"
+ },
+ "Natural Sciences|5|ZA|Properties of 2-D shapes": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "5a3768b2789db645a8845b1b5dbb425ef19cacc5b7742e0bc100e28320dee9c8"
+ },
+ "Natural Sciences|5|ZA|Position and movement": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "651929488e19036bc3edd8dfdd9d53dd48b03481687ff5d854f3597edc9f93a3"
+ },
+ "Natural Sciences|5|ZA|Viewing objects": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "f8fa2139c7bed1c864c4d09f136a51dc02dd3b4ef5e38f0f07b66334d245c0d4"
+ },
+ "Natural Sciences|5|ZA|Repeated addition leading to multiplication": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "bd7d27c23c9abada146babd7340709769b55d5f6fdfafc6b4cb579d23308efb9"
+ },
+ "Natural Sciences|5|ZA|Grouping and sharing leading to division": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "fb7159a4899c9a5d226cae4a665a60f41446fd7f4317491832cc3f1371b209cb"
+ },
+ "Natural Sciences|5|ZA|Problems in context: addition and subtraction": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "500f6a5fc59e52872557bbd713f5a3caeab4a6c9d0c0d9b87a13b408660dbffe"
+ },
+ "Natural Sciences|5|ZA|Number symbols and number names (Term 2)": {
+  "system": "7ed5f1c3af10c3770d8fdc1b39304ca8dfea564b2e0fe2eeccf196693c580d3c",
+  "user": "71680ea8b99eb2b1a8169283c7015243f13ae0ec8ba03d648b4d64dfe1405b5e"
+ }
+}

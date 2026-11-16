@@ -13,6 +13,7 @@ import {
   ANSWER_MAX_LENGTH,
   DEFAULT_TRY_COUNT,
   finishAnswer,
+  isYoungGrade,
   LIST_ANSWER_MAX_LENGTH,
   nextInSequence,
   paperQuestions,
@@ -44,6 +45,8 @@ type Run = {
   warmup: Question[]
   tryCount: number
   items: StoredItem[]
+  /** The learner is in Grade 1 to 6 (P151): every question handed to the screen carries the flag that makes the new inputs bigger. */
+  young: boolean
 }
 
 const dayOf = (iso: string) => ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date(`${iso}T00:00:00Z`).getUTCDay()]!
@@ -58,7 +61,7 @@ async function loadRun(sessionId: string): Promise<Run> {
   if (!auth.user) throw new Error('Not signed in')
   const { data: session, error } = await supabase
     .from('sessions')
-    .select('id, child_id, status, lesson_id, warmup, topic_id, topic_name, question_count, right, minutes, finished_at')
+    .select('id, child_id, status, lesson_id, warmup, topic_id, topic_name, question_count, right, minutes, finished_at, children(grade)')
     .eq('id', sessionId)
     .maybeSingle()
   if (error || !session) throw new Error('Session not found')
@@ -85,7 +88,9 @@ async function loadRun(sessionId: string): Promise<Run> {
   }
   const sessionWarmup = QuestionSchema.array().safeParse(session.warmup)
   const warmup = sessionWarmup.success && sessionWarmup.data.length > 0 ? sessionWarmup.data : lesson.data.warmup
-  const { lesson_id: _lessonId, warmup: _warmup, ...rest } = session
+  // The child's grade comes with the session in the same query (an embedded row, or nothing when it cannot be read: then the learner is not young).
+  const { lesson_id: _lessonId, warmup: _warmup, children, ...rest } = session
+  const grade = children && typeof children === 'object' && !Array.isArray(children) ? (children as { grade?: unknown }).grade : null
   return {
     admin,
     session: rest,
@@ -94,6 +99,7 @@ async function loadRun(sessionId: string): Promise<Run> {
     warmup,
     tryCount: session.question_count ?? DEFAULT_TRY_COUNT,
     items,
+    young: isYoungGrade(grade),
   }
 }
 
@@ -118,9 +124,12 @@ function moveAlreadyMade(
   return { from: 'new', to: 'practising' }
 }
 
+/** The question as the learner's screen may hold it, with the flag of a young learner (Grade 1 to 6) when the learner is one. */
+const strip = (run: Run, q: Question, at: Parameters<typeof stripQuestion>[1]): QuestionForChild => stripQuestion(q, run.young ? { ...at, young: true } : at)
+
 const stripNext = (run: Run, items: StoredItem[]): QuestionForChild | null => {
   const next = nextInSequence(run.warmup, run.lesson.questions, run.tryCount, items)
-  return next ? stripQuestion(next.question, next) : null
+  return next ? strip(run, next.question, next) : null
 }
 
 /**
@@ -158,7 +167,7 @@ export async function beginSession(sessionId: string): Promise<{ lesson: LessonF
       // The five questions of a practice answered on paper, as the sheet numbers them. None when the lesson cannot put five on paper.
       paper:
         onPaper.length === PAPER_QUESTION_COUNT
-          ? onPaper.map((index, i) => stripQuestion(lesson.questions[index]!, { position: i + 1, phase: 'try', index: i + 1, of: onPaper.length }))
+          ? onPaper.map((index, i) => strip(run, lesson.questions[index]!, { position: i + 1, phase: 'try', index: i + 1, of: onPaper.length }))
           : [],
     },
   }
@@ -181,7 +190,7 @@ export async function answer(
   if (text.length > ANSWER_MAX_LENGTH && !isListKind(current.question.answerKind)) throw new Error('Write an answer first')
   // A repeated tap on an answer already saved just shows where the child is now.
   if (position !== current.position) {
-    if (position < current.position) return { next: stripQuestion(current.question, current) }
+    if (position < current.position) return { next: strip(run, current.question, current) }
     throw new Error('That question is not next')
   }
 
