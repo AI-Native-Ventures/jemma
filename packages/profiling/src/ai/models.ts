@@ -20,6 +20,33 @@ export function isRetryableModelError(err: unknown): boolean {
 /** One live model call that has not answered after this long ends with a timeout error. It is one try, not the sum of the retries. */
 export const MODEL_CALL_TIMEOUT_MS = 240_000
 
+/** A paid model has this long for one try: it answers in seconds or something is wrong, and the next model should get the call sooner. */
+export const PAID_MODEL_CALL_TIMEOUT_MS = 90_000
+
+const isFreeId = (id: string) => /:free$/i.test(id)
+
+/**
+ * Paid hosting of a model, as far as the id says. On OpenRouter a model without the `:free` suffix is the paid listing of it. No other
+ * provider marks the price in the id, so nothing else counts as paid here and keeps the old limit.
+ */
+export function isPaidModel(provider: string, id: string): boolean {
+  return provider === 'openrouter' && id !== '' && !isFreeId(id)
+}
+
+/** The time one try of this model may take: 90 seconds for a paid model, 4 minutes for every other. */
+export function modelCallTimeoutMs(provider: string, id: string): number {
+  return isPaidModel(provider, id) ? PAID_MODEL_CALL_TIMEOUT_MS : MODEL_CALL_TIMEOUT_MS
+}
+
+/**
+ * The ids to try, in order: the model, then the comma list of fallbacks. Blanks and repeats are dropped. With no model set the list is one
+ * empty id, as it always was (the provider then says what is missing). The hosted app puts the paid id first and the free ids after it.
+ */
+export function modelList(primary: string | undefined, fallbacks: string | undefined): string[] {
+  const rest = (fallbacks ?? '').split(',').map((id) => id.trim()).filter(Boolean)
+  return [...new Set([(primary ?? '').trim(), ...rest])]
+}
+
 /**
  * A model call that did not answer in time. The message holds `timeout` and the status is 408, so `isRetryableModelError` and the
  * orchestrator's `isTransient` both treat it as worth another try.
@@ -167,23 +194,71 @@ export function withFallbacks(models: Chained[]): Chained {
   } as Chained
 }
 
+/**
+ * Looks a call up under every id of the list before any model is called. An answer is stored under the id of the model that wrote it, and
+ * the answers of the demo path were all written by free listings: with the paid id first, a plain chain would look under the paid id,
+ * miss, and pay for a call the free id already has an answer for. The lookups run at once (one read of storage in time, not one per id).
+ * When several ids hold the answer the free id wins, then the order of the list. Nothing here calls a model: `lookups` are models behind a
+ * `replay` layer, which answers or says it missed.
+ *
+ * A miss everywhere hands the call to `then` (the live models, `cache` mode) or is the first model's miss (`replay`, nothing else to try).
+ * A store that fails is a miss in `cache` (`tolerateStoreErrors`: the model is asked, as in a single layer) and an error in `replay`,
+ * unless some id did answer.
+ */
+export function recordedFirst(lookups: Chained[], then: Chained | null, tolerateStoreErrors: boolean): Chained {
+  const first = lookups[0]!
+  const byPriority = lookups.map((_, i) => i).sort((a, b) => Number(isFreeId(lookups[b]!.modelId)) - Number(isFreeId(lookups[a]!.modelId)) || a - b)
+  const go = async <T>(look: (m: Chained) => PromiseLike<T>, live: (() => PromiseLike<T>) | null): Promise<T> => {
+    const settled = await Promise.allSettled(lookups.map(async (m) => look(m)))
+    for (const i of byPriority) {
+      const s = settled[i]!
+      if (s.status === 'fulfilled') return s.value
+    }
+    const failures = settled.flatMap((s) => (s.status === 'rejected' ? [s.reason as unknown] : []))
+    const storeError = failures.find((e) => !(e instanceof ReplayMissError))
+    if (storeError !== undefined && !tolerateStoreErrors) throw storeError
+    if (storeError !== undefined) console.error(`recorded answer not read, the model is asked: ${storeError instanceof Error ? storeError.message : String(storeError)}`)
+    if (live) return live()
+    throw failures[0]
+  }
+  return {
+    specificationVersion: first.specificationVersion,
+    get provider() {
+      return first.provider
+    },
+    get modelId() {
+      return first.modelId
+    },
+    get supportedUrls() {
+      return first.supportedUrls
+    },
+    doGenerate: (options: Parameters<Chained['doGenerate']>[0]) => go((m) => m.doGenerate(options), then ? () => then.doGenerate(options) : null),
+    doStream: (options: Parameters<Chained['doStream']>[0]) => go((m) => m.doStream(options), then ? () => then.doStream(options) : null),
+  } as Chained
+}
+
 export function getModel(kind: ModelKind, env: AiEnv): Chained {
   const label = kind === 'vision' ? 'VISION_PROVIDER' : 'LLM_PROVIDER'
   const provider = (kind === 'vision' ? env.VISION_PROVIDER : env.LLM_PROVIDER) ?? 'deepseek'
-  const modelId = (kind === 'vision' ? env.VISION_MODEL : env.LLM_MODEL) ?? ''
-  const fallbacks = ((kind === 'vision' ? env.VISION_MODEL_FALLBACKS : env.LLM_MODEL_FALLBACKS) ?? '')
-    .split(',')
-    .map((id) => id.trim())
-    .filter((id) => id && id !== modelId)
-  // Each model has its own replay layer, so a fallback's answer is recorded and replayed under its own id.
-  return withFallbacks(
-    [modelId, ...fallbacks].map((id) =>
-      wrapLanguageModel({
-        model: rawModel(label, provider, id, env),
-        middleware: [withReplay(env.replayStore, env.AI_MODE ?? 'live'), withModelRetry()],
-      }),
-    ),
-  )
+  const ids = modelList(kind === 'vision' ? env.VISION_MODEL : env.LLM_MODEL, kind === 'vision' ? env.VISION_MODEL_FALLBACKS : env.LLM_MODEL_FALLBACKS)
+  const mode = env.AI_MODE ?? 'live'
+  // With several ids, `cache` and `replay` first look the call up under every id (recorded answers of the free ids still hit when the paid id is
+  // first), and only on a miss call the models. In `replay` there is no model to call, so the lookups are the whole chain.
+  const lookupFirst = ids.length > 1 && (mode === 'cache' || mode === 'replay')
+  // Each model has its own replay layer, so an answer is recorded and replayed under the id of the model that wrote it. Each has its own
+  // time limit: 90 seconds for a paid model, 4 minutes for a free one.
+  const live = () =>
+    withFallbacks(
+      ids.map((id) =>
+        wrapLanguageModel({
+          model: rawModel(label, provider, id, env),
+          middleware: [withReplay(env.replayStore, mode), withModelRetry(undefined, undefined, modelCallTimeoutMs(provider, id))],
+        }),
+      ),
+    )
+  if (!lookupFirst) return live()
+  const lookups = ids.map((id) => wrapLanguageModel({ model: rawModel(label, provider, id, env), middleware: withReplay(env.replayStore, 'replay') }))
+  return recordedFirst(lookups, mode === 'cache' ? live() : null, mode === 'cache')
 }
 
 export function getSpeechModel(env: AiEnv): SpeechModel {
