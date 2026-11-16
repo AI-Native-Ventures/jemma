@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useId, useState, useTransition } from 'react'
 import { sendGuidanceToFamily } from '@/app/t/[classId]/guidance/actions'
+import { Maths } from '../Maths'
 import { Button } from '../ui/Button'
 import { ReviewDocIcon } from '../ui/icons'
 
@@ -70,7 +71,7 @@ export function GuidanceNeedItem({ guidance, wide = false }: { guidance: Guidanc
             {guidance.focus.map((f, i) => (
               <li key={f.title} className={i > 0 ? 'mt-2' : ''}>
                 <span className="block font-semibold">{f.title}</span>
-                <span className="block text-body">{f.why}</span>
+                <span className="block text-body"><Maths text={f.why} size={16} /></span>
               </li>
             ))}
           </ol>

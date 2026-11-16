@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { addMadeUpLearners } from '../../../../../../supabase/seed/demo-learners'
+import { addMadeUpPractice } from '../../../../../../supabase/seed/made-up-practice'
 import { requireRole } from '@/lib/auth'
 import { requestLongView } from '@/lib/long-view'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
@@ -20,8 +21,11 @@ export async function addMadeUpLearnersAction(classId: string): Promise<MadeUpRe
   if (!cls || cls.teacher_id !== userId) return { ok: false, reason: 'You do not teach this class.' }
   const made = await addMadeUpLearners(admin, { classId })
   if (!made.ok) return { ok: false, reason: made.error }
+  // Practice they did at home, so the Topics screens have something to show. Best effort: it never fails the adding.
+  await addMadeUpPractice(admin, { classId, childIds: made.childIds })
   const asked = await requestLongView(made.childIds)
   revalidatePath('/t/[classId]/learners', 'page')
   revalidatePath('/t/[classId]', 'page')
+  revalidatePath('/t/[classId]/topics', 'layout')
   return { ok: true, added: made.childIds.length, asked: asked.sent.length }
 }

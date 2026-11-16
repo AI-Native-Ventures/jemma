@@ -1,5 +1,7 @@
+import { AiTokens } from '@/components/AiTokens'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Maths } from '@/components/Maths'
 import { getLearnerView } from '@/lib/data/p19'
 import { twinOfChild } from '@/lib/own-workspace'
 import { Avatar, BackHeader, Chevron, Diamond, Page, card, font } from '../_parts'
@@ -67,7 +69,7 @@ export default async function LearnerPage({ params }: { params: Promise<{ classI
             {v.notes.map((n, i) => (
               <li key={n.id} style={{ display: 'flex', flexDirection: 'column', gap: 3, ...(i > 0 ? { paddingTop: 12, borderTop: '1px solid #EFEEF4' } : {}) }}>
                 <span style={{ fontSize: 13, color: '#5D5A73' }}>{n.label}</span>
-                <span style={{ fontSize: 15, lineHeight: 1.45 }}>{n.text}</span>
+                <span style={{ fontSize: 15, lineHeight: 1.45 }}><Maths text={n.text} size={16} /></span>
               </li>
             ))}
           </ul>
@@ -90,6 +92,7 @@ export default async function LearnerPage({ params }: { params: Promise<{ classI
             {v.awayLabel ? `Away on ${v.awayLabel}. ` : ''}Today&apos;s register comes next.
           </p>
         </section>
+        <AiTokens childId={v.id} />
       </div>
     </Page>
   )

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Maths } from '@/components/Maths'
 import { requireRole } from '@/lib/auth'
 import { getProfile, type MarkRow } from '@/lib/data/p23'
 import { getSharedLongView } from '@/lib/data/p52'
@@ -152,7 +153,7 @@ export default async function ParentProfilePage({ params }: { params: Promise<{ 
           <ul style={css('list-style:none;margin:0;padding:0')}>
             {data.notices.map((n, i) => (
               <li key={`${i}-${n.text}`} style={css(`display:flex;flex-direction:column;gap:10px;padding:14px 0;${i ? 'border-top:1px solid #EFEEF4' : ''}`)}>
-                <span style={css('font-size:16px;line-height:1.45;font-weight:500')}>{n.text}</span>
+                <span style={css('font-size:16px;line-height:1.45;font-weight:500')}><Maths text={n.text} size={17} /></span>
                 <Chips chips={n.chips} />
               </li>
             ))}
@@ -172,7 +173,7 @@ export default async function ParentProfilePage({ params }: { params: Promise<{ 
                 <span style={css(`width:26px;height:26px;flex:none;border-radius:999px;background:${i === 0 ? '#FF6A4D' : '#FFFFFF'};color:#1F1D36;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center`)}>{i + 1}</span>
                 <span style={css('display:flex;flex-direction:column;gap:4px')}>
                   <span style={css('font-size:16px;font-weight:600')}>{f.title}</span>
-                  <span style={css('font-size:15px;line-height:1.5;color:#DCDAE8')}>{f.why}</span>
+                  <span style={css('font-size:15px;line-height:1.5;color:#DCDAE8')}><Maths text={f.why} size={16} /></span>
                   <Chips chips={f.chips} dark />
                 </span>
               </li>

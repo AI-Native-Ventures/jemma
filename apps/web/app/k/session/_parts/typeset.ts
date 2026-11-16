@@ -15,8 +15,18 @@ const functionLatex = (name: string, arg: string): string => {
   return `\\${name}\\left(${arg}\\right)`
 }
 
-/** The LaTeX of a tree. A command that a letter could follow ends with a space (`\pi r`), so it is never glued to the next letter. */
-export function toLatex(n: MathNode): string {
+/**
+ * The plus-minus and minus-plus signs of one side of a line, in the order they are written (P135). The marking cannot read them, so `readMath` is given a
+ * plain + or - in their place, and the tree it makes is walked in the order the signs were written: each sign that is a sign of something (a binary
+ * one after a term, a unary one in front of a term) takes the next place in this list, a `\pm` or `\mp` where the writer had one and null where not.
+ */
+type Marks = { list: (string | null)[]; at: number }
+const next = (q: Marks | null): string | null => (q ? (q.list[q.at++] ?? null) : null)
+
+/** `\pm` or `\mp` between two terms: a space is added only where a letter follows, so the command is never glued to it. */
+const joined = (a: string, mark: string | null, plain: string, b: string): string => (mark ? `${a}${mark}${/^[A-Za-z]/.test(b) ? ' ' : ''}${b}` : `${a}${plain}${b}`)
+
+function latexOf(n: MathNode, q: Marks | null): string {
   switch (n.t) {
     case 'num':
       // A decimal comma is kept and not spaced: 0{,}5 is "0,5".
@@ -28,39 +38,96 @@ export function toLatex(n: MathNode): string {
     case 'e':
       return '\\mathrm{e}'
     case 'deg':
-      return `{${toLatex(n.a)}}^{\\circ}`
-    case 'neg':
-      return `-${toLatex(n.a)}`
+      return `{${latexOf(n.a, q)}}^{\\circ}`
+    case 'neg': {
+      const mark = next(q)
+      return `${mark ? `${mark} ` : '-'}${latexOf(n.a, q)}`
+    }
     case 'group':
-      return `\\left(${toLatex(n.a)}\\right)`
+      return `\\left(${latexOf(n.a, q)}\\right)`
     case 'sqrt':
-      return n.cube ? `\\sqrt[3]{${toLatex(inner(n.a))}}` : `\\sqrt{${toLatex(inner(n.a))}}`
+      return n.cube ? `\\sqrt[3]{${latexOf(inner(n.a), q)}}` : `\\sqrt{${latexOf(inner(n.a), q)}}`
     case 'fn':
-      return functionLatex(n.name, toLatex(inner(n.a)))
+      return functionLatex(n.name, latexOf(inner(n.a), q))
     case 'pow':
       // sin squared of x is written sin^2(x): the power goes on the name.
-      if (n.a.t === 'fn' && (n.a.name === 'sin' || n.a.name === 'cos' || n.a.name === 'tan')) return `\\${n.a.name}^{${toLatex(inner(n.b))}}\\left(${toLatex(inner(n.a.a))}\\right)`
-      return `{${toLatex(n.a)}}^{${toLatex(inner(n.b))}}`
-    case 'add':
-      return `${toLatex(n.a)}+${toLatex(n.b)}`
-    case 'sub':
-      return `${toLatex(n.a)}-${toLatex(n.b)}`
+      if (n.a.t === 'fn' && (n.a.name === 'sin' || n.a.name === 'cos' || n.a.name === 'tan')) return `\\${n.a.name}^{${latexOf(inner(n.b), q)}}\\left(${latexOf(inner(n.a.a), q)}\\right)`
+      return `{${latexOf(n.a, q)}}^{${latexOf(inner(n.b), q)}}`
+    case 'add': {
+      const a = latexOf(n.a, q)
+      const mark = next(q)
+      return joined(a, mark, '+', latexOf(n.b, q))
+    }
+    case 'sub': {
+      const a = latexOf(n.a, q)
+      const mark = next(q)
+      return joined(a, mark, '-', latexOf(n.b, q))
+    }
     case 'mul':
-      return n.explicit ? `${toLatex(n.a)}\\times ${toLatex(n.b)}` : `${toLatex(n.a)}${toLatex(n.b)}`
+      return n.explicit ? `${latexOf(n.a, q)}\\times ${latexOf(n.b, q)}` : `${latexOf(n.a, q)}${latexOf(n.b, q)}`
     case 'div':
-      return n.explicit ? `${toLatex(n.a)}\\div ${toLatex(n.b)}` : `\\frac{${toLatex(inner(n.a))}}{${toLatex(inner(n.b))}}`
+      return n.explicit ? `${latexOf(n.a, q)}\\div ${latexOf(n.b, q)}` : `\\frac{${latexOf(inner(n.a), q)}}{${latexOf(inner(n.b), q)}}`
   }
+}
+
+/** The LaTeX of a tree. A command that a letter could follow ends with a space (`\pi r`), so it is never glued to the next letter. */
+export function toLatex(n: MathNode): string {
+  return latexOf(n, null)
 }
 
 const RELATION = /(<=|>=|≤|≥|≠|=|<|>)/
 const RELATION_LATEX: Record<string, string> = { '=': '=', '<': '<', '>': '>', '<=': '\\leq ', '≤': '\\leq ', '>=': '\\geq ', '≥': '\\geq ', '≠': '\\neq ' }
 const MIXED = /^([-−])?\s*(\d+)\s+(\d+)\s*\/\s*(\d+)$/
 
+const PM = /[±∓]/
+/** What a sign follows when it is a binary one: a number, a letter, a closing bracket, a degree sign or a little digit. Anything else (the start, an opening bracket, another sign, a relation, a caret, a root) makes it a sign in front of a term. */
+const ENDS_A_TERM = /[0-9A-Za-zπθαβγδφλω°⁰¹²³⁴⁵⁶⁷⁸⁹)\]]/
+
+/**
+ * The sign list of a side that has a plus-minus or a minus-plus in it (P135), and the side with each of those two signs swapped for a plain + or - that the
+ * marking can read: a binary ± is a +, a binary ∓ is a -, and one in front of a term is a - (a minus in front of a term is a node of the tree; a plus is not).
+ */
+function readSigns(side: string): { text: string; list: (string | null)[] } {
+  let text = ''
+  let prev = ''
+  const list: (string | null)[] = []
+  for (const ch of side) {
+    if (ch === ' ') {
+      text += ch
+      continue
+    }
+    if ('+-−±∓'.includes(ch)) {
+      const binary = ENDS_A_TERM.test(prev)
+      if (ch === '±' || ch === '∓') {
+        list.push(ch === '±' ? '\\pm' : '\\mp')
+        text += binary && ch === '±' ? '+' : '-'
+      } else {
+        // A plus in front of a term is not a node of the tree: it takes no place in the list.
+        if (binary || ch !== '+') list.push(null)
+        text += ch
+      }
+    } else {
+      text += ch
+    }
+    prev = ch
+  }
+  return { text, list }
+}
+
 /** One side of an equation: a mixed number ("1 1/2") or an expression the marking can read. A plus sign in front is kept (the tree has no plus). */
 function sideLatex(side: string): string | null {
   const t = side.trim()
   const mixed = MIXED.exec(t)
   if (mixed) return `${mixed[1] ? '-' : ''}${mixed[2]}\\frac{${mixed[3]}}{${mixed[4]}}`
+  if (PM.test(t)) {
+    // P135: the signs are found in the order they were written; if the tree does not hold exactly that many, it is not drawn (it stays text).
+    const { text, list } = readSigns(t)
+    const tree = readMath(text)
+    if (!tree) return null
+    const q: Marks = { list, at: 0 }
+    const latex = latexOf(tree, q)
+    return q.at === list.length ? latex : null
+  }
   const plus = t.startsWith('+')
   const tree = readMath(plus ? t.slice(1) : t)
   return tree ? (plus ? '+' : '') + toLatex(tree) : null
@@ -103,7 +170,7 @@ function latexOfRun(run: string): string | null {
   }
   if (!out) return null
   // A sign or a relation at the start of a piece that was cut from a longer line ("+ 6", "= 10") is spaced as a sign between two things: {} stands before it.
-  const binary = /^\s*([+\-−]\s+\S|[=<>≤≥≠])/.test(run)
+  const binary = /^\s*([+\-−±∓]\s+\S|[=<>≤≥≠])/.test(run)
   return `\\displaystyle ${binary ? '{}' : ''}${out}`
 }
 
@@ -121,20 +188,29 @@ export type TypesetMode = 'force' | 'all' | 'algebra'
 type Kind = 'word' | 'op' | 'letter' | 'math'
 type Tok = { start: number; end: number; core: string; trail: string; kind: Kind }
 
-const ALLOWED = /^[A-Za-z0-9+\-−×÷*/=<>≤≥≠^√∛πθαβγδφλω°⁰¹²³⁴⁵⁶⁷⁸⁹⁻()[\].,·]+$/
+const ALLOWED = /^[A-Za-z0-9+\-−±∓×÷*/=<>≤≥≠^√∛πθαβγδφλω°⁰¹²³⁴⁵⁶⁷⁸⁹⁻()[\].,·]+$/
 const FUNCTION_WORDS = new Set(['sin', 'cos', 'tan', 'sqrt', 'cbrt', 'pi', 'PI', 'ln', 'log', 'abs', 'asin', 'acos', 'atan', 'arcsin', 'arccos', 'arctan'])
 
+/** The letters that follow a number as the name of a unit or as an ordinal ("20cm", "3rd", "5pm"): words, never the product of two letters. */
+const UNIT_LETTERS = new Set(['cm', 'mm', 'km', 'kg', 'mg', 'ml', 'ms', 'hr', 'hrs', 'am', 'pm', 'st', 'nd', 'rd', 'th', 'min', 'mins', 'sec', 'secs', 'kph', 'mph', 'ha', 'cl', 'dl', 'lb', 'lbs', 'oz', 'ft', 'yd', 'mi', 'cc'])
+
+/**
+ * Two or three letters straight after a number or a bracket ("4ac", "2ab", "3xy") are letters multiplied, in a senior class (P135): the quadratic formula has
+ * 4ac in it. Letters that are a unit or an ordinal are words. Two letters with no number before them ("ab", "and/or") are words in every class.
+ */
+const isProduct = (core: string, run: string): boolean => run.length <= 3 && /^[a-z]+$/.test(run) && !UNIT_LETTERS.has(run) && new RegExp(`[0-9)]${run}(?![A-Za-z])`).test(core)
+
 /** What a piece of text without spaces is: a word, a sign, a lone letter, or maths. A letter run of two or more that is not a function is a word. */
-function classify(core: string): Kind {
+function classify(core: string, products = false): Kind {
   if (!core || /^R\d/.test(core) || !ALLOWED.test(core)) return 'word'
   // A comma or a point is a decimal one only between two digits.
   if (/(^|[^0-9])[.,]|[.,]($|[^0-9])/.test(core)) return 'word'
-  for (const run of core.match(/[A-Za-z]+/g) ?? []) if (run.length > 1 && !FUNCTION_WORDS.has(run)) return 'word'
+  for (const run of core.match(/[A-Za-z]+/g) ?? []) if (run.length > 1 && !FUNCTION_WORDS.has(run) && !(products && isProduct(core, run))) return 'word'
   if (!/[A-Za-z0-9√∛πθαβγδφλω°⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/.test(core)) return 'op'
   return /^[A-Za-zθαβγδφλω]$/.test(core) ? 'letter' : 'math'
 }
 
-const HAS_STRUCTURE = /[+\-−×÷*/=<>≤≥≠^√∛πθαβγδφλω°⁰¹²³⁴⁵⁶⁷⁸⁹⁻]|sin|cos|tan|sqrt|cbrt|pi|PI|ln|log|abs|asin|acos|atan/
+const HAS_STRUCTURE = /[+\-−±∓×÷*/=<>≤≥≠^√∛πθαβγδφλω°⁰¹²³⁴⁵⁶⁷⁸⁹⁻]|sin|cos|tan|sqrt|cbrt|pi|PI|ln|log|abs|asin|acos|atan/
 const HAS_SYMBOL = /[\^√∛πθαβγδφλω⁰¹²³⁴⁵⁶⁷⁸⁹⁻]|sin|cos|tan|sqrt|cbrt|pi|PI|ln|log|abs|asin|acos|atan/
 
 /**
@@ -143,14 +219,29 @@ const HAS_SYMBOL = /[\^√∛πθαβγδφλω⁰¹²³⁴⁵⁶⁷⁸⁹⁻]|s
  */
 const isAlgebra = (group: Tok[], run: string): boolean =>
   HAS_SYMBOL.test(run) || group.some((t) => t.kind === 'math' && /[A-Za-z]/.test(t.core)) || (group.some((t) => t.kind === 'letter') && /[0-9]/.test(run))
-const OPENS_A_RUN = /^[(\-−+]/
+/**
+ * A bare algebra term (P135): a number with one letter after it (2x, 5a, 3y), alone in a sentence of a senior class. It is maths there ("Subtract 2x from both
+ * sides") and is not in any other class. A letter that is the unit of a measure (5m, 3s, 2h, 4g, 6l, 3d) and a capital letter are words, so are "Step 2" and "Grade 11".
+ */
+const BARE_TERM = /^[0-9]+(?:[.,][0-9]+)?[a-ce-fi-kn-rt-zθαβγδφλω]$/
+const OPENS_A_RUN = /^[(\-−+±∓]/
+/**
+ * A lone variable (P141): x, y, z or n standing as a word of its own ("for every x, so", "Solve for x.", "(x)"), in a senior line. It is maths there, like the
+ * equations around it. Another letter is text: a capital, the article "a", a letter that is part of a word ("x-axis" is one word, so it never gets here).
+ */
+const LONE_VARIABLE = /^\(?[xyzn]\)?$/
 
-function tokens(text: string): Tok[] {
+const PM_TYPED = /^\+\/?[-−](?=$|[0-9A-Za-z√(πθ])/
+
+function tokens(text: string, products: boolean): Tok[] {
   const out: Tok[] = []
   for (const m of text.matchAll(/\S+/g)) {
     const word = m[0]
-    const core = word.replace(/[:;,?!.]+$/, '')
-    out.push({ start: m.index!, end: m.index! + core.length, core, trail: word.slice(core.length), kind: classify(core) })
+    const typed = word.replace(/[:;,?!.]+$/, '')
+    // P135: "+/-" and "+-" typed on a keyboard, alone or in front of a term, are a plus-minus sign ("x = +/-3"). In the middle of a token ("3+-2") they are not.
+    // The place of the token in the text is that of what was typed; the core is what is read.
+    const core = typed.replace(PM_TYPED, '\u00b1')
+    out.push({ start: m.index!, end: m.index! + typed.length, core, trail: word.slice(typed.length), kind: classify(core, products) })
   }
   // P129: an x between two numbers is a times sign ("3 x 4"), drawn as one. A letter next to a letter or a sign is still a letter.
   out.forEach((t, i) => {
@@ -175,7 +266,7 @@ export function segments(text: string, mode: TypesetMode): Segment[] {
     if (cur.length > 0) groups.push(cur)
     cur = []
   }
-  for (const t of tokens(text)) {
+  for (const t of tokens(text, mode !== 'algebra')) {
     if (t.kind === 'word') {
       close()
       continue
@@ -194,7 +285,8 @@ export function segments(text: string, mode: TypesetMode): Segment[] {
     while (group.length > 0 && group[group.length - 1]!.kind === 'op' && !/\)$/.test(group[group.length - 1]!.core)) group.pop()
     if (group.length === 0) continue
     const run = group.map((t) => t.core).join(' ')
-    if (mode !== 'force' && (!HAS_STRUCTURE.test(run) || (mode === 'algebra' && !isAlgebra(group, run)))) continue
+    const loneVariable = mode === 'all' && group.length === 1 && LONE_VARIABLE.test(run)
+    if (mode !== 'force' && ((!HAS_STRUCTURE.test(run) && !loneVariable && !(mode === 'all' && group.length === 1 && BARE_TERM.test(run))) || (mode === 'algebra' && !isAlgebra(group, run)))) continue
     if (mode === 'force' && group.every((t) => t.kind === 'op')) continue
     const latex = toLatexRun(run)
     if (latex === null) continue
@@ -210,3 +302,58 @@ export function segments(text: string, mode: TypesetMode): Segment[] {
 
 /** True when `segments` found maths in the text. */
 export const hasTypeset = (text: string, mode: TypesetMode): boolean => segments(text, mode).some((s) => s.kind === 'math')
+
+// ---- A piece of maths that does not fit its box (P135) -----------------------------------------------------------------------------------
+
+/** The smallest a typeset piece is scaled to when it is wider than its box: about 70 percent of the size it was given. */
+export const FIT_MIN = 0.7
+
+/** How a piece of maths is shown in its box: as it is, scaled down to fit, or cut in two after its equals sign (the right side on a line of its own). */
+export type FitPlan = { kind: 'full' | 'scaled' | 'broken'; scale: number; wrap: boolean }
+
+/**
+ * What to do with a piece of maths that is `natural` px wide when it has `available` px. A piece that fits is left alone. One that is too wide is scaled
+ * down to fit, to `FIT_MIN` at the least. Only a piece that is still too wide at that size is cut after its equals sign (`canBreak`), each half then
+ * scaled on its own (the caller measures the halves). A piece with no sign to cut at stays one piece at the smallest size and may wrap at its own signs,
+ * as a last resort. A width that is not known (0: no layout yet) leaves the piece alone.
+ */
+export function fitPlan(natural: number, available: number, canBreak: boolean): FitPlan {
+  if (!(natural > 0) || !(available > 0) || natural <= available + 0.5) return { kind: 'full', scale: 1, wrap: false }
+  // Rounded down to a hundredth so that the scaled piece is never a pixel wider than its box.
+  const scale = Math.floor((available / natural) * 100) / 100
+  if (scale >= FIT_MIN) return { kind: 'scaled', scale, wrap: false }
+  if (canBreak) return { kind: 'broken', scale: FIT_MIN, wrap: false }
+  return { kind: 'scaled', scale: FIT_MIN, wrap: true }
+}
+
+const RELATION_LATEX_AT = /^(=|<|>|\\leq |\\geq |\\neq )/
+
+/**
+ * A line of LaTeX cut after its first top-level relation (an equals sign, or <, >, \leq, \geq, \neq): the left side with its sign, and the right side. "Top-level"
+ * is outside every brace, so an equals sign inside a fraction or a root is never cut at. Null when there is none, or nothing after it.
+ */
+export function splitAtRelation(latex: string): { left: string; right: string } | null {
+  const prefix = latex.startsWith('\\displaystyle ') ? '\\displaystyle ' : ''
+  const body = latex.slice(prefix.length)
+  let depth = 0
+  for (let i = 0; i < body.length; i++) {
+    const c = body[i]!
+    if (c === '\\') {
+      // A command (\frac, \left, \leq ...) is read whole; \leq \geq \neq are relations.
+      const rel = RELATION_LATEX_AT.exec(body.slice(i))
+      if (rel && depth === 0 && rel[1]!.startsWith('\\')) {
+        const end = i + rel[1]!.length
+        return end < body.length ? { left: prefix + body.slice(0, end), right: prefix + body.slice(end) } : null
+      }
+      i += 1
+      continue
+    }
+    if (c === '{') depth++
+    else if (c === '}') depth--
+    else if (depth === 0 && (c === '=' || c === '<' || c === '>')) {
+      const end = i + 1
+      return end < body.length ? { left: prefix + body.slice(0, end), right: prefix + body.slice(end) } : null
+    }
+  }
+  return null
+}

@@ -1,6 +1,7 @@
 import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Maths } from '@/components/Maths'
 import { requireRole } from '@/lib/auth'
 import { getFlagTarget } from '@/lib/data/p24'
 import { BackHeader, Diamond, PaperSheet } from '../../_parts'
@@ -40,7 +41,10 @@ export default async function ParentFlagMarkPage({
         >
           <span aria-hidden="true" style={{ alignSelf: 'center', width: 44, height: 5, borderRadius: 999, background: '#CFCDDC' }} />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-            <h2 id="flagq" style={{ margin: 0, fontSize: 21, fontWeight: 600 }}>{`Question ${result.n} · ${result.prompt}`}</h2>
+            <h2 id="flagq" style={{ margin: 0, fontSize: 21, fontWeight: 600 }}>
+              {`Question ${result.n} · `}
+              <Maths text={result.prompt} grade={paper.child.grade} size={22} />
+            </h2>
             <Link href={back} aria-label="Close" style={{ width: 44, height: 44, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12, color: '#1F1D36' }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                 <path d="M6 6l12 12M18 6 6 18" />
@@ -48,14 +52,18 @@ export default async function ParentFlagMarkPage({
             </Link>
           </div>
           <div aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 14, background: '#FBFAF5', border: '1px solid #E3E1D8', fontFamily: 'Arial, Helvetica, sans-serif', color: '#2A2A2A' }}>
-            <span style={{ fontSize: 15 }}>{`${result.n}.  ${result.prompt} =`}</span>
-            <span style={{ width: 84, height: 44, border: '2px solid #FF6A4D', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "Kalam, 'Comic Sans MS', cursive", color: '#2F3A56', fontSize: 26, lineHeight: 1 }}>{result.answer}</span>
+            <span style={{ fontSize: 15, minWidth: 0 }}>
+              {`${result.n}.  `}
+              <Maths text={result.prompt} grade={paper.child.grade} size={17} />
+              {' ='}
+            </span>
+            <span style={{ minWidth: 84, maxWidth: '50%', padding: '0 4px', height: 44, border: '2px solid #FF6A4D', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "Kalam, 'Comic Sans MS', cursive", color: '#2F3A56', fontSize: 26, lineHeight: 1 }}><Maths text={result.answer} grade={paper.child.grade} size={24} /></span>
           </div>
           <p style={{ margin: 0, fontSize: 15, lineHeight: 1.45, color: '#5D5A73' }}>
             {result.correct ? 'Jemma marked it right.' : 'Jemma marked it wrong.'}
             {result.rightAnswer ? (
               <>
-                {' '}Right answer <strong style={{ color: '#1F1D36', fontWeight: 600 }}>{result.rightAnswer}</strong>.
+                {' '}Right answer <strong style={{ color: '#1F1D36', fontWeight: 600 }}><Maths text={result.rightAnswer} grade={paper.child.grade} size={16} /></strong>.
               </>
             ) : null}
           </p>

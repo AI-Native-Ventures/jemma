@@ -127,11 +127,17 @@ describe('the words and the maths of a line', () => {
     expect(view('Which is bigger: 1/2 or 3/4?', 'algebra')).toBe('[Which is bigger: 1/2 or 3/4?]')
   })
 
-  it('words only, a lone letter, a list of numbers, money and a date are words', () => {
-    for (const text of ['Which shape has four sides?', 'Solve for x', 'Find the median of 3, 5, 9', 'It costs R12,50 today', 'Level 2 - fractions', 'Walk 60 km/h', '']) {
+  it('words only, a list of numbers, money and a date are words', () => {
+    for (const text of ['Which shape has four sides?', 'Find the median of 3, 5, 9', 'It costs R12,50 today', 'Level 2 - fractions', 'Walk 60 km/h', '']) {
       expect(view(text, 'all'), text).toBe(`[${text}]`)
       expect(hasTypeset(text, 'algebra'), text).toBe(false)
     }
+  })
+
+  it('a lone x, y, z or n is words for any question but a senior one (P141: there it is maths, like the equations round it)', () => {
+    expect(view('Solve for x', 'algebra')).toBe('[Solve for x]')
+    expect(hasTypeset('Solve for x', 'algebra')).toBe(false)
+    expect(view('Solve for x', 'all')).toBe('[Solve for ]<x>')
   })
 
   it('two letters and a minus are words for any question but a senior one', () => {
@@ -139,9 +145,11 @@ describe('the words and the maths of a line', () => {
     expect(view('a - b', 'all')).toBe('<a - b>')
   })
 
-  it('a sentence that has x in it but no sign has no maths', () => {
-    expect(view('Find x: 2x + 3 = 11', 'all')).toBe('[Find x: ]<2x + 3 = 11>')
-    expect(view('Find x', 'all')).toBe('[Find x]')
+  it('a sentence that has x in it but no sign: the x is maths in a senior line (P141) and a letter in any other', () => {
+    expect(view('Find x: 2x + 3 = 11', 'all')).toBe('[Find ]<x>[: ]<2x + 3 = 11>')
+    expect(view('Find x', 'all')).toBe('[Find ]<x>')
+    expect(view('Find x: 2x + 3 = 11', 'algebra')).toBe('[Find x: ]<2x + 3 = 11>')
+    expect(view('Find x', 'algebra')).toBe('[Find x]')
   })
 
   it('a line that does not read is words: the maths stays as it was typed', () => {

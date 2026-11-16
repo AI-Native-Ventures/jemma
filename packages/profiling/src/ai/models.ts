@@ -214,6 +214,62 @@ export function withModelRetry(
   }
 }
 
+/**
+ * What one completed model call used, as the provider reported it (P137): the provider and the model id that actually answered (after any fallback),
+ * and the three counts. A reply that carries no usage has null counts and `reported: false`: Jemma never estimates a count.
+ */
+export type ModelUsage = {
+  provider: string
+  model: string
+  promptTokens: number | null
+  completionTokens: number | null
+  totalTokens: number | null
+  reported: boolean
+}
+
+const count = (v: unknown): number | undefined => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : undefined)
+
+/**
+ * Reads the usage of one model reply (the `usage` the AI SDK gives a model: input and output token totals, and the provider's own object under `raw`).
+ * A reply whose counts are all missing or zero reports nothing, as a real call always has a prompt: it is `reported: false` with null counts.
+ * With only one count known the other stays null, and the total is the provider's own `total_tokens` or else the two added up when both are known.
+ */
+export function modelUsage(provider: string, model: string, usage: unknown): ModelUsage {
+  const u = isObject(usage) ? usage : {}
+  const input = isObject(u.inputTokens) ? count(u.inputTokens.total) : undefined
+  const output = isObject(u.outputTokens) ? count(u.outputTokens.total) : undefined
+  const given = isObject(u.raw) ? count(u.raw.total_tokens) : undefined
+  if ((input ?? 0) + (output ?? 0) + (given ?? 0) === 0) return { provider, model, promptTokens: null, completionTokens: null, totalTokens: null, reported: false }
+  return {
+    provider,
+    model,
+    promptTokens: input ?? null,
+    completionTokens: output ?? null,
+    totalTokens: given ?? (input !== undefined && output !== undefined ? input + output : null),
+    reported: true,
+  }
+}
+
+/**
+ * Hands the usage of every live try that completed to `onUsage`, with the provider and the id of the model it is wrapped around, so after a fallback it is
+ * the model that answered. Innermost layer of a model: a recorded answer that is replayed never gets here (it cost nothing), and the reply is passed on as
+ * it is. A reporter that throws never touches the call.
+ */
+function reportUsage(ref: ModelRef, onUsage: (usage: ModelUsage) => void): LanguageModelMiddleware {
+  return {
+    specificationVersion: 'v4',
+    wrapGenerate: async ({ doGenerate }) => {
+      const result = await doGenerate()
+      try {
+        onUsage(modelUsage(ref.provider, ref.id, (result as { usage?: unknown }).usage))
+      } catch {
+        // Counting is a side job: it never fails a model call.
+      }
+      return result
+    },
+  }
+}
+
 export type ModelKind = 'text' | 'vision'
 
 /** The Workers AI binding of a Worker (`env.AI`). */
@@ -307,6 +363,11 @@ export type AiEnv = {
   OPENCODE_API_KEY?: string
   OPENCODE_BASE_URL?: string
   replayStore: ReplayStore
+  /**
+   * Called once for every model call that completed live (not for a recorded answer that was replayed), with its real token usage and the model that
+   * answered. The agent sets it for each job step to record the usage of the step (`ai_usage`). Unset: nothing is reported and nothing else changes.
+   */
+  onUsage?: (usage: ModelUsage) => void
 }
 
 function rawModel(label: string, provider: string, modelId: string, env: AiEnv) {
@@ -460,6 +521,7 @@ function buildChain(label: string, provider: string, refs: ModelRef[], baseLooku
             withReplay(env.replayStore, mode),
             ...(onRefused ? [noteRefusals(() => onRefused(ref.id))] : []),
             withModelRetry(undefined, undefined, modelCallTimeoutMs(ref.provider, ref.id, dynamic || (mixed && freeOpenRouter(ref) && refs.slice(0, i).some((r) => !freeOpenRouter(r))))),
+            ...(env.onUsage ? [reportUsage(ref, env.onUsage)] : []),
           ],
         }),
       ),

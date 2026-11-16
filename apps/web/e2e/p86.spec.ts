@@ -280,7 +280,8 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
 
     // Question 3: a point. A bracket, a box, a semicolon, a box and a bracket, with a minus key beside each box. Next waits for both.
     await check(page.getByText('Question 3 of 5')).toBeVisible()
-    await expect(page.getByText('Type the x and the y of the point.')).toBeVisible()
+    // P141: the x and the y of the hint are maths now, so the words are in two places (the screen reader's line and the drawn one): the drawn one is looked at.
+    await expect(page.locator('[data-typeset="true"]', { hasText: 'Type the x and the y of the point.' })).toBeVisible()
     await expect(page.getByRole('button', { name: /minus sign/i })).toHaveCount(2)
     await page.getByLabel('x of the point').fill('3')
     await page.getByRole('button', { name: 'Minus sign for x' }).click()

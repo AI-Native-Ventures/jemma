@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { Maths } from '@/components/Maths'
 import { Button, Card, Chip, ChevronDownIcon, ChevronRightIcon, NoteIcon, Pill, ReportIcon, Sheet } from '@/components/ui'
 import type { LvEvidence, LvPattern, LvSheet } from '@/lib/data/p52'
 import { approvePattern, dismissPattern, markDiscussed, restorePattern, type ActionResult } from './actions'
@@ -61,7 +62,7 @@ function EvidenceSheet({ sheet, onClose }: { sheet: LvSheet | null; onClose: () 
         <Fact label="Date">{sheet.date}</Fact>
         {sheet.marks ? <Fact label="Marks">{sheet.marks}</Fact> : null}
       </dl>
-      {sheet.text ? <p className="m-0 rounded-14 bg-soft-2 p-3 text-[15px] leading-[1.5] [overflow-wrap:anywhere]">{sheet.text}</p> : null}
+      {sheet.text ? <p className="m-0 rounded-14 bg-soft-2 p-3 text-[15px] leading-[1.5] [overflow-wrap:anywhere]"><Maths text={sheet.text} size={16} /></p> : null}
       {sheet.origin ? (
         <p className="m-0 text-[14px] leading-[1.4] text-body [overflow-wrap:anywhere]" data-origin>
           {sheet.origin}
@@ -115,7 +116,7 @@ export function PatternCard({ p, parentName }: { p: LvPattern; parentName: strin
       <h3 id={`pattern-${p.id}`} className="m-0 text-[17px] leading-[1.3] font-semibold text-pretty">
         {p.title}
       </h3>
-      <p className="m-0 text-[15px] leading-[1.45]">{p.statement}</p>
+      <p className="m-0 text-[15px] leading-[1.45]"><Maths text={p.statement} size={16} /></p>
       {p.since ? <p className="m-0 text-[14px] leading-[1.4] text-body">{p.since}</p> : null}
 
       <section aria-label={`Where this comes from, ${p.title}`} className="flex flex-col gap-1.5">

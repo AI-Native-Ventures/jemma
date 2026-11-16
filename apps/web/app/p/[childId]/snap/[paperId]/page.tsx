@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import {
   earlierSameSlip, firstPageUrl, getReadAnswers, getSnapPaper, getUpcomingLessons, shortDate, UNSURE_BELOW,
 } from '@/lib/data/p32'
+import { getChildGrade } from '@/lib/data/maths-grade'
 import { FlowShell, joinNumbers, lower } from '../_parts'
 import { KIND_LABEL } from '@/lib/data/p32'
 import { CheckScreen } from './CheckScreen'
@@ -24,7 +25,7 @@ export default async function SnapPaperPage({ params }: { params: Promise<{ chil
   if (paper.status === 'marked') redirect(`/p/${childId}/snap/${paperId}/saved`)
   if (paper.status === 'failed') return shell('Check the photo', 2, <ErrorScreen problem={paper.error} photoUrl={photoUrl} retakeHref={retake} />)
 
-  const answers = await getReadAnswers(paperId)
+  const [answers, grade] = await Promise.all([getReadAnswers(paperId), getChildGrade(childId)])
   if (paper.status !== 'needs_you') {
     return shell('Reading', 2, <ReadingScreen name={paper.childFirstName} nameRead={paper.name_read} answers={answers.length} reading={paper.status === 'reading'} photoUrl={photoUrl} />)
   }
@@ -53,6 +54,7 @@ export default async function SnapPaperPage({ params }: { params: Promise<{ chil
       photoUrl={photoUrl}
       next={next}
       retakeHref={retake}
+      grade={grade}
     />,
   )
 }
