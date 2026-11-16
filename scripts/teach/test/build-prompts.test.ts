@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, test } from 'vitest'
-import { OutlineSchema, ReviewSchema, fill, lessonRange, lessonSchemaText, outlinePrompt, reviewPrompt, writePrompt } from '../build-prompts'
+import { OutlineSchema, REVIEW_VARIES_FROM, ReviewSchema, WRITE_VARIES_FROM, fill, lessonRange, lessonSchemaText, outlinePrompt, reviewPrompt, writePrompt } from '../build-prompts'
 import { capsReference, overview } from '../sources'
 import { topicGroups } from '../topics'
 import { goodLesson } from './fixtures'
@@ -98,6 +98,50 @@ describe('write prompt', () => {
     expect(s).toContain('"worked"')
     expect(s).toContain('"mistake"')
     expect(s.length).toBeLessThan(40_000)
+  })
+})
+
+describe('prompt caching: the fixed text first, the changing part last', () => {
+  const g = group(11, 'Functions')
+  const sections = Array.from({ length: 3 }, (_, i) => ({ id: `5.${i + 1}`, title: `Section ${i + 1}`, text: `facts of section ${i + 1} `.repeat(2000) }))
+  const ref = { ...capsReference(g), sections, text: overview(sections) }
+  const base = { group: g, ref, titles: ['One', 'Two', 'Three'], objectives: ['You will be able to a.', 'You will be able to b.'] }
+  const head = (p: string, marker: string) => p.slice(0, p.indexOf(marker))
+  const tail = (p: string, marker: string) => p.slice(p.indexOf(marker))
+
+  test('two lessons of one topic, and a rewrite of one of them, share every character before the lesson part', () => {
+    const one = writePrompt({ ...base, position: 1, title: 'One', sections: ['5.1'] })
+    const two = writePrompt({ ...base, position: 2, title: 'Two', sections: ['5.2', '5.3'], objectives: ['You will be able to c.', 'You will be able to d.'] })
+    const rewrite = writePrompt({ ...base, position: 1, title: 'One', sections: ['5.1'], rewrite: { problems: ['block 2: wrong'], previous: goodLesson() } })
+    expect(head(one, WRITE_VARIES_FROM).length).toBeGreaterThan(15_000)
+    expect(head(two, WRITE_VARIES_FROM)).toBe(head(one, WRITE_VARIES_FROM))
+    expect(head(rewrite, WRITE_VARIES_FROM)).toBe(head(one, WRITE_VARIES_FROM))
+    expect(tail(two, WRITE_VARIES_FROM)).not.toBe(tail(one, WRITE_VARIES_FROM))
+  })
+
+  test('everything that changes is after the marker: the position, the title, the objectives, the sections in full and the problems', () => {
+    const p = writePrompt({ ...base, position: 2, title: 'Hyperbolas', sections: ['5.3'], rewrite: { problems: ['block 9: the answer is 4'], previous: goodLesson() } })
+    const fixed = head(p, WRITE_VARIES_FROM)
+    const varying = tail(p, WRITE_VARIES_FROM)
+    for (const text of ['Hyperbolas', 'You will be able to a.', 'lesson 2 of 3', 'block 9: the answer is 4']) {
+      expect(fixed, text).not.toContain(text)
+      expect(varying, text).toContain(text)
+    }
+    // the chosen section is given in full after the marker; the fixed reference only holds the start of each section
+    const times = (text: string) => text.split('facts of section 3').length - 1
+    expect(times(varying)).toBeGreaterThan(1000)
+    expect(times(fixed)).toBeLessThan(times(varying) / 2)
+    expect(fixed).not.toMatch(/\{\{/)
+    expect(fixed).toContain('Section 3')
+  })
+
+  test('two reviews of the same topic share the text before the lesson, which comes last', () => {
+    const a = reviewPrompt(g, ref, goodLesson({ position: 1, title: 'One' }), 3)
+    const b = reviewPrompt(g, ref, goodLesson({ position: 2, title: 'Two' }), 3)
+    expect(head(a, REVIEW_VARIES_FROM)).toBe(head(b, REVIEW_VARIES_FROM))
+    expect(head(a, REVIEW_VARIES_FROM).length).toBeGreaterThan(3_000)
+    expect(tail(a, REVIEW_VARIES_FROM)).toContain('"n":1')
+    expect(head(a, REVIEW_VARIES_FROM)).not.toContain('"n":1')
   })
 })
 

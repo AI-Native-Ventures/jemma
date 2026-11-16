@@ -3,8 +3,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import { TopicLessonsSchema, type TeachingLesson } from '@jemma/profiling/schemas'
-import { Chain } from '../chain'
-import { Generator, scrubDashes } from '../generate'
+import { Chain, FatalBackendError } from '../chain'
+import { Generator, reportLines, scrubDashes } from '../generate'
 import { ledgerPath, readLedger, summarize } from '../ledger'
 import { capsReference } from '../sources'
 import { topicFileNames, topicGroups, lessonPath } from '../topics'
@@ -26,6 +26,8 @@ type FakeOpts = {
   /** Models that answer "Free usage limit reached" for their first `n` calls. */
   limited?: Record<string, number>
   fence?: boolean
+  /** Every call costs this much and reports cached tokens. */
+  cost?: number
 }
 
 const badLesson = (position: number): TeachingLesson => {
@@ -38,6 +40,7 @@ function fake(opts: FakeOpts = {}) {
   const calls: Call[] = []
   const used: Record<string, number> = {}
   let reviews = 0
+  const money = opts.cost ? { costUsd: opts.cost, tokensCached: 1500 } : {}
   const run: Runner = async (model, prompt) => {
     used[model] = (used[model] ?? 0) + 1
     if (used[model]! <= (opts.limited?.[model] ?? 0)) return { text: '', limited: true, error: 'Free usage limit reached' }
@@ -45,19 +48,19 @@ function fake(opts: FakeOpts = {}) {
     if (prompt.includes('# Task: plan the lessons of one topic')) {
       calls.push({ model, kind: 'outline' })
       const n = opts.lessons ?? 1
-      return { text: wrap({ lessons: Array.from({ length: n }, (_, i) => ({ title: `Lesson ${i + 1} title`, objectives: [`You will be able to do thing ${i + 1}.`, 'You will be able to explain it.'] })) }), limited: false, tokensIn: 100, tokensOut: 50 }
+      return { text: wrap({ lessons: Array.from({ length: n }, (_, i) => ({ title: `Lesson ${i + 1} title`, objectives: [`You will be able to do thing ${i + 1}.`, 'You will be able to explain it.'] })) }), limited: false, tokensIn: 100, tokensOut: 50, ...money }
     }
     if (prompt.includes('# Task: write ONE full maths lesson')) {
       const position = Number(/This is lesson (\d+) of/.exec(prompt)![1])
       const rewrite = prompt.includes('fix every one')
       calls.push({ model, kind: rewrite ? 'rewrite' : 'write' })
       const lesson = (opts.write ?? ((p) => goodLesson({ position: p })))(position, rewrite)
-      return { text: wrap(lesson), limited: false, tokensIn: 2000, tokensOut: 4000 }
+      return { text: wrap(lesson), limited: false, tokensIn: 2000, tokensOut: 4000, ...money }
     }
     const position = Number(/Lesson (\d+) of/.exec(prompt)![1])
     calls.push({ model, kind: 'review' })
     reviews += 1
-    return { text: wrap((opts.review ?? (() => ({ ok: true, problems: [] })))(position, reviews)), limited: false }
+    return { text: wrap((opts.review ?? (() => ({ ok: true, problems: [] })))(position, reviews)), limited: false, ...money }
   }
   return { run, calls }
 }
@@ -238,6 +241,66 @@ describe('generate', () => {
     const result = await make(f, { maxLessons: 2 }).generateTopic(group, fileName)
     expect(result).toMatchObject({ status: 'done', ready: 2 })
     expect(f.calls.filter((c) => c.kind === 'write')).toHaveLength(2)
+  })
+
+  test('the ledger holds the cost and the cached tokens of every call, and the report adds them up per model and per kind', async () => {
+    const f = fake({ cost: 0.01 })
+    await make(f).generateTopic(group, fileName)
+    const ledger = readLedger(root)
+    expect(ledger.every((l) => l.costUsd === 0.01 && l.tokensCached === 1500)).toBe(true)
+    const lines = reportLines(ledger)
+    expect(lines[0]).toBe('calls in the ledger: 3, $0.03 in all')
+    expect(lines.join('\n')).toMatch(/kind write: 1 calls.*2000 in \(1500 cached\), 4000 out, \$0.01/)
+    expect(lines.join('\n')).toMatch(/kind review: 1 calls/)
+    expect(summarize(ledger).reduce((n, s) => n + s.usd, 0)).toBeCloseTo(0.03, 6)
+  })
+
+  test('--max-usd stops the run when the ledger holds that many dollars, and says so', async () => {
+    const f = fake({ lessons: 3, cost: 0.4 })
+    const g = make(f, { maxUsd: 1 })
+    const result = await g.generateTopic(group, fileName)
+    expect(result.status).toBe('stopped')
+    expect(result.reason).toMatch(/budget of \$1/)
+    expect(g.budgetReached).toBe(true)
+    expect(f.calls).toHaveLength(3)
+    expect(readLedger(root)).toHaveLength(3)
+    expect(g.spent()).toBeCloseTo(1.2, 6)
+    expect(existsSync(filePath())).toBe(false)
+    // a later run with a higher budget carries on from the saved lessons; the dollars already spent still count
+    const more = make(f, { maxUsd: 5 })
+    expect((await more.generateTopic(group, fileName)).status).toBe('done')
+    const strict = make(fake({ cost: 0.4 }), { maxUsd: 1.2 })
+    expect(strict.spent()).toBeGreaterThanOrEqual(1.2)
+  })
+
+  test('the budget counts the dollars of every earlier run, and a run with no cost keeps going', async () => {
+    const f = fake({ lessons: 2 })
+    const g = make(f, { maxUsd: 0.5 })
+    expect((await g.generateTopic(group, fileName)).status).toBe('done')
+    expect(g.budgetReached).toBe(false)
+  })
+
+  test('a backend that cannot go on (no credit, key refused) stops the run and keeps what was done', async () => {
+    let n = 0
+    const run: Runner = async (model, prompt) => {
+      n += 1
+      if (n >= 3) throw new FatalBackendError('OpenRouter says payment is required: no credit is left on the key')
+      return fake({ lessons: 2 }).run(model, prompt, { timeoutMs: 1 })
+    }
+    const g = make(fake(), { run })
+    const result = await g.generateTopic(group, fileName)
+    expect(result.status).toBe('stopped')
+    expect(result.reason).toMatch(/payment is required/)
+    expect(g.stopReason).toMatch(/payment/)
+    expect(existsSync(join(root, 'content/lessons/fail-list.json'))).toBe(false)
+  })
+
+  test('a model rests as long as the chain says: two minutes on a paid rate limit', async () => {
+    const f = fake({ limited: { 'opencode/a-free': 1 } })
+    const chain = new Chain(['opencode/a-free', 'opencode/b-free'], () => clock, 2 * MIN)
+    await make(f, { chain }).generateTopic(group, fileName)
+    expect(f.calls[0]!.model).toBe('opencode/b-free')
+    expect(chain.next()).toBe('opencode/a-free')
   })
 
   test('a second run skips the finished topic and makes no call', async () => {

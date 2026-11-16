@@ -1,5 +1,5 @@
 import type { z } from 'zod'
-import { extractJson, runOpencode, type Runner } from './opencode'
+import { extractJson, runOpencode, type RunResult, type Runner } from './opencode'
 
 /** The ranked list (owner, 16 Nov 2026): OpenCode free open-weights models, best first by Artificial Analysis score. */
 export const DEFAULT_MODELS = [
@@ -20,6 +20,9 @@ export const LIMIT_PARK_MS = 60 * 60 * 1000
 /** A model that crashes or times out this many times in a row is left alone for a quarter of an hour. */
 export const FAILURE_STREAK = 4
 export const FAILURE_PARK_MS = 15 * 60 * 1000
+
+/** A backend that cannot go on at all (no credit left, the key is refused): the run stops, no other model is tried. */
+export class FatalBackendError extends Error {}
 
 const BANNED = /iceman|big-pickle|jev-/i
 
@@ -46,6 +49,8 @@ export class Chain {
   constructor(
     readonly models: string[],
     private readonly now: () => number = Date.now,
+    /** How long a model rests after "limit reached" (an hour for OpenCode's free models, a couple of minutes for a paid rate limit). */
+    readonly limitParkMs: number = LIMIT_PARK_MS,
   ) {}
 
   /** The best model that is not excluded and not resting, or null. `prefer` is tried before the rest when it is in the chain and free. */
@@ -101,7 +106,10 @@ export type Attempt = {
   limited: boolean
   error?: string
   tokensIn?: number
+  tokensCached?: number
   tokensOut?: number
+  costUsd?: number
+  costEstimated?: boolean
 }
 
 export type CallOpts = {
@@ -133,17 +141,18 @@ export async function callJson<T>(chain: Chain, prompt: string, schema: z.ZodTyp
     if (!model) return null
     tried.push(model)
     const started = Date.now()
-    let result: Awaited<ReturnType<Runner>>
+    let result: RunResult
     try {
       result = await run(model, prompt, { timeoutMs: opts.timeoutMs })
     } catch (e) {
+      if (e instanceof FatalBackendError) throw e
       result = { text: '', limited: false, error: e instanceof Error ? e.message : String(e) }
     }
-    const base = { model, seconds: (Date.now() - started) / 1000, tokensIn: result.tokensIn, tokensOut: result.tokensOut }
-    const report = (a: Omit<Attempt, 'model' | 'seconds' | 'tokensIn' | 'tokensOut'>) => opts.onAttempt?.({ ...base, ...a })
+    const base = { model, seconds: (Date.now() - started) / 1000, tokensIn: result.tokensIn, tokensCached: result.tokensCached, tokensOut: result.tokensOut, costUsd: result.costUsd, costEstimated: result.costEstimated }
+    const report = (a: { ok: boolean; limited: boolean; error?: string }) => opts.onAttempt?.({ ...base, ...a })
 
     if (result.limited) {
-      chain.park(model, LIMIT_PARK_MS)
+      chain.park(model, chain.limitParkMs)
       report({ ok: false, limited: true, error: 'Free usage limit reached' })
       continue
     }

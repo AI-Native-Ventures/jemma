@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { z } from 'zod'
-import { Chain, DEFAULT_MODELS, LIMIT_PARK_MS, callJson, modelsFromEnv, type Attempt } from '../chain'
+import { Chain, DEFAULT_MODELS, FatalBackendError, LIMIT_PARK_MS, callJson, modelsFromEnv, type Attempt } from '../chain'
 import type { RunResult, Runner } from '../opencode'
 
 const MIN = 60_000
@@ -135,6 +135,25 @@ describe('callJson', () => {
     expect(calls).toEqual(['a', 'b', 'b'])
     k.advance(61 * MIN)
     expect(chain.next()).toBe('a')
+  })
+
+  test('a limit rests the model as long as the chain says, and the cost and cached tokens reach the attempt', async () => {
+    const k = clock()
+    const chain = new Chain(['a', 'b'], k.now, 2 * MIN)
+    const { run } = scripted({ a: [reply('', { limited: true })], b: [reply('{"n":1,"word":"x"}', { tokensIn: 900, tokensCached: 800, tokensOut: 50, costUsd: 0.002 })] })
+    const attempts: Attempt[] = []
+    await callJson(chain, 'p', Shape, { timeoutMs: 1000, run, onAttempt: (x) => attempts.push(x) })
+    expect(chain.next()).toBe('b')
+    k.advance(3 * MIN)
+    expect(chain.next()).toBe('a')
+    expect(attempts[1]).toMatchObject({ tokensIn: 900, tokensCached: 800, tokensOut: 50, costUsd: 0.002, ok: true })
+  })
+
+  test('a fatal backend error is not turned into a failed attempt: it ends the call', async () => {
+    const run: Runner = async () => {
+      throw new FatalBackendError('no credit')
+    }
+    await expect(callJson(new Chain(['a', 'b']), 'p', Shape, { timeoutMs: 1000, run })).rejects.toBeInstanceOf(FatalBackendError)
   })
 
   test('returns null when every model fails, and tries each model once', async () => {

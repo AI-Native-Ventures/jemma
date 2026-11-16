@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { PITCH_TOPICS, lessonPath, loadCapsFile, topicFileNames, topicGroups, topicSlug } from '../topics'
+import { PITCH_TOPICS, SAMPLE_TOPICS, lessonPath, loadCapsFile, topicFileNames, topicGroups, topicSlug } from '../topics'
 
 const rows = () => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].reduce((n, g) => n + loadCapsFile(g).terms.reduce((m, t) => m + t.topics.length, 0), 0)
 
@@ -58,6 +58,15 @@ describe('topicGroups', () => {
     const g = groups.find((x) => x.grade === 1 && x.baseName === 'Count objects')!
     expect(g.terms.length).toBeGreaterThan(1)
     expect(g.capsNames).toEqual(['Count objects'])
+  })
+})
+
+describe('sample topics', () => {
+  test('the five sample topics are the three pitch topics, a Grade 1 topic and a Grade 9 topic, and all of them exist', () => {
+    const groups = topicGroups()
+    expect(SAMPLE_TOPICS.slice(0, 3)).toEqual(PITCH_TOPICS)
+    expect(SAMPLE_TOPICS.map((t) => t.grade).slice(3)).toEqual([1, 9])
+    for (const t of SAMPLE_TOPICS) expect(groups.some((g) => g.grade === t.grade && g.baseName === t.baseName), `${t.grade} ${t.baseName}`).toBe(true)
   })
 })
 

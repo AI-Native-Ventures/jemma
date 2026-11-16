@@ -15,7 +15,18 @@ import { join } from 'node:path'
  * - `--title` stops OpenCode from spending a model call on a session title.
  */
 
-export type RunResult = { text: string; tokensIn?: number; tokensOut?: number; limited: boolean; error?: string }
+export type RunResult = {
+  text: string
+  tokensIn?: number
+  /** Tokens of the prompt that the provider served from its cache (OpenRouter reports them). Part of `tokensIn`. */
+  tokensCached?: number
+  tokensOut?: number
+  /** What the call cost, in US dollars, when the provider says (OpenRouter), else an estimate marked by `costEstimated`. Free models: undefined. */
+  costUsd?: number
+  costEstimated?: boolean
+  limited: boolean
+  error?: string
+}
 export type RunOpts = { timeoutMs: number }
 /** Anything that can answer a prompt with one model: `runOpencode` for real, a fake in the tests. */
 export type Runner = (model: string, prompt: string, opts: RunOpts) => Promise<RunResult>

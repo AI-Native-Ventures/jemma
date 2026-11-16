@@ -2,25 +2,19 @@
 
 You are a maths teacher in South Africa. You write one lesson of a topic of the CAPS Mathematics curriculum. The learner has no teacher nearby and will learn the lesson from what you write, the way a good textbook chapter teaches: an explanation, pictures, worked examples shown line by line, a "your turn", the usual mistake, a summary, and then practice on this lesson only. This is a real lesson with real depth, not a short teaser.
 
-## The lesson to write
+This text has two parts. The first part (everything down to the line "The lesson to write now") is the same for every lesson of the topic. The last part says which lesson to write now.
 
 - Grade: {{GRADE}}
 - Topic: {{TOPIC}}
-- This is lesson {{POSITION}} of {{TOTAL}}. The lessons of this topic, in order:
-{{LESSON_TITLES}}
-- Title of this lesson (use it as `title`): {{TITLE}}
-- Objectives (use them as `objectives`, in the same words):
-{{OBJECTIVES}}
-- Teach exactly this lesson. Do not teach what belongs to an earlier or a later lesson of the list; a one-line reminder of an earlier idea is fine.
-{{PROBLEMS}}
+
 ## How the lesson is built
 
 The learner opens the same lesson in one of three ways: Read (mostly words), Pictures (mostly diagrams, words shortened) or Listen (a voice explains, the diagrams stay). The blocks and their order are the same in every way, so EVERY block carries both its words and its `speech`, and every key idea has a picture where a picture kind fits.
 
 The lesson is one JSON object with these fields:
 
-- `position`: {{POSITION}}. `title`. `minutes`: a whole number from 10 to 25.
-- `objectives`: 2 to 4 lines.
+- `position`: the number of the lesson you are asked to write. `title`. `minutes`: a whole number from 10 to 25.
+- `objectives`: 2 to 4 lines (given to you below: copy them in the same words).
 - `keyWords`: 0 to 8 objects `{"word": "...", "meaning": "..."}` for words the learner must know. Say what each word means in one plain sentence. {{KEYWORDS_HINT}}
 - `blocks`: {{BLOCK_RANGE}} blocks in teaching order (see below).
 - `summary`: 3 to 6 short lines, the things to remember.
@@ -34,7 +28,7 @@ There are five kinds of block. Every block has `kind` and `speech`.
 
 1. `explain`: `{"kind": "explain", "text": "...", "speech": "..."}`. `text` is two or three short paragraphs at most, separated by a blank line (\n\n). {{EXPLAIN_LIMIT}} One idea per block.
 2. `diagram`: `{"kind": "diagram", "spec": {...}, "caption": "...", "speech": "..."}`. A picture (see "Pictures" below) with a caption that says what to look at. `speech` describes the picture in words so a listener sees it too.
-3. `worked`: `{"kind": "worked", "problem": "...", "steps": [{"line": "...", "reason": "..."}], "answer": "...", "answerKind": "...", "speech": "...", "diagram": {...}}`. A worked example, shown line by line. `problem` is the question. `steps` has 2 to 8 items: `line` is one line of working (a line of maths, or a short sentence), `reason` says in plain words what was done and why. The LAST line shows the final answer, and `answer` repeats that final answer exactly. `diagram` is optional. `answerKind` is how the answer is written (see "Answers"). If the answer is a sentence, a set or a description, set `answerKind` to `choice` (it is only shown, never typed).
+3. `worked`: `{"kind": "worked", "problem": "...", "steps": [{"line": "...", "reason": "..."}], "answer": "...", "answerKind": "...", "speech": "...", "diagram": {...}}`. A worked example, shown line by line. `problem` is the question. `steps` has 2 to 8 items: `line` is one line of working (a line of maths, or a short sentence), `reason` says in plain words what was done and why. The LAST line shows the final answer, and `answer` repeats that final answer exactly. `diagram` is optional. `answerKind` is how the answer is written (see "Questions"). If the answer is a sentence, a set or a description, set `answerKind` to `choice` (it is only shown, never typed).
 4. `try`: `{"kind": "try", "question": {...}, "hint": "...", "speech": "..."}`. The learner answers it. `question` is a full question (see "Questions"). `hint` is one short sentence that nudges without giving the answer away.
 5. `mistake`: `{"kind": "mistake", "wrong": "...", "right": "...", "why": "...", "speech": "...", "diagram": {...}}`. The usual mistake next to the right way. `wrong` is the wrong working or answer as one short line, `right` is the right working or answer, `why` says in plain words why the wrong way goes wrong. Never blame the learner and never talk about the learner's ability, scores or feelings. `diagram` is optional.
 
@@ -92,6 +86,15 @@ No links, no questions about the learner's family or body, no instructions to th
 
 {{SCHEMA}}
 
+## The lesson to write now
+
+- This is lesson {{POSITION}} of {{TOTAL}}. The lessons of this topic, in order:
+{{LESSON_TITLES}}
+- Title of this lesson (use it as `title`): {{TITLE}}
+- Objectives (use them as `objectives`, in the same words):
+{{OBJECTIVES}}
+- Teach exactly this lesson. Do not teach what belongs to an earlier or a later lesson of the list; a one-line reminder of an earlier idea is fine.
+{{FOCUS}}{{PROBLEMS}}
 ## Reply
 
 Reply with ONE JSON object, the lesson, and nothing else: no code fence and no words around it. Check the JSON is complete and valid before you answer.

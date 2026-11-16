@@ -29,6 +29,9 @@ export const PITCH_TOPICS: { grade: number; baseName: string }[] = [
   { grade: 11, baseName: 'Functions' },
 ]
 
+/** The five topics of the sample gate: the three pitch topics, one Grade 1 topic (CAPS facts only) and one Grade 9 topic (a Siyavula chapter found by its words). */
+export const SAMPLE_TOPICS: { grade: number; baseName: string }[] = [...PITCH_TOPICS, { grade: 1, baseName: 'Addition and subtraction' }, { grade: 9, baseName: 'Theorem of Pythagoras' }]
+
 /** After the pitch topics: Grades 12 down to 1 (owner's order, 16 Nov: the oldest learners first). */
 const GRADE_ORDER = [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 const NEIGHBOURS = 4

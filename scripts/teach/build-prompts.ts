@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { z } from 'zod'
 import { TeachingLessonSchema, type TeachingLesson } from '@jemma/profiling/schemas'
 import { LATEX } from './checks'
-import { referenceText, type Reference } from './sources'
+import { REFERENCE_CAP, referenceText, type Reference } from './sources'
 import type { TopicGroup } from './topics'
 
 const dir = join(import.meta.dirname, 'prompts')
@@ -158,21 +158,23 @@ export function lessonSchemaText(primary = false): string {
   return text
 }
 
+/** The first line of the part of a write prompt that changes from lesson to lesson. Everything above it is the same for every lesson of a topic, so a provider's prompt cache serves it. */
+export const WRITE_VARIES_FROM = '## The lesson to write now'
+/** The same for a review prompt. */
+export const REVIEW_VARIES_FROM = '## The lesson to check now'
+
 export function writePrompt(input: WriteInput): string {
   const { group } = input
   const g = group.grade
   const problems = input.rewrite
-    ? `\n## Your last attempt had problems: fix every one\n\n${input.rewrite.problems.map((p) => `- ${p}`).join('\n')}\n\nHere is the lesson you wrote. Write the whole lesson again with every problem fixed and everything else as good as before or better:\n\n${JSON.stringify(input.rewrite.previous)}\n\n`
-    : '\n'
+    ? `\n## Your last attempt had problems: fix every one\n\n${input.rewrite.problems.map((p) => `- ${p}`).join('\n')}\n\nHere is the lesson you wrote. Write the whole lesson again with every problem fixed and everything else as good as before or better:\n\n${JSON.stringify(input.rewrite.previous)}\n`
+    : ''
+  // The sections this lesson draws on, in full, go with the part that changes: the fixed reference above is the same for every lesson of the topic.
+  const picked = input.sections?.length ? input.ref.sections.filter((s) => input.sections!.includes(s.id)) : []
+  const focus = picked.length ? `\n## The sections of the reference to teach this lesson from, in full\n\n${referenceText(input.ref, input.sections)}\n` : ''
   return fill(read('write.md'), {
     GRADE: String(g),
     TOPIC: group.baseName,
-    POSITION: String(input.position),
-    TOTAL: String(input.titles.length),
-    LESSON_TITLES: input.titles.map((t, i) => `  ${i + 1}. ${t}`).join('\n'),
-    TITLE: input.title,
-    OBJECTIVES: input.objectives.map((o) => `  - ${o}`).join('\n'),
-    PROBLEMS: problems,
     KEYWORDS_HINT: g >= 7 ? 'Include every technical term of the lesson.' : 'Use it only for words the learner may not know yet.',
     BLOCK_RANGE: isFoundation(g) ? '8 to 14' : '14 to 24 (never more than 30)',
     EXPLAIN_LIMIT: isFoundation(g) ? 'At most 30 words in `text`.' : 'At most about 90 words in `text`.',
@@ -180,8 +182,15 @@ export function writePrompt(input: WriteInput): string {
     VOICE: VOICE[band(g)],
     ANSWER_KINDS: isPrimary(g) ? PRIMARY_ANSWERS : SENIOR_ANSWERS,
     DIAGRAMS: isPrimary(g) ? PRIMARY_DIAGRAMS : SENIOR_DIAGRAMS,
-    REFERENCE: referenceText(input.ref, input.sections),
+    REFERENCE: input.ref.text.slice(0, REFERENCE_CAP),
     SCHEMA: lessonSchemaText(isPrimary(g)),
+    POSITION: String(input.position),
+    TOTAL: String(input.titles.length),
+    LESSON_TITLES: input.titles.map((t, i) => `  ${i + 1}. ${t}`).join('\n'),
+    TITLE: input.title,
+    OBJECTIVES: input.objectives.map((o) => `  - ${o}`).join('\n'),
+    FOCUS: focus,
+    PROBLEMS: problems,
   })
 }
 
@@ -190,16 +199,16 @@ export function writePrompt(input: WriteInput): string {
 export const ReviewSchema = z.object({ ok: z.boolean(), problems: z.array(z.string()).default([]) })
 export type Review = z.infer<typeof ReviewSchema>
 
-export function reviewPrompt(group: TopicGroup, ref: Reference, lesson: TeachingLesson, total: number, sections?: string[]): string {
+export function reviewPrompt(group: TopicGroup, ref: Reference, lesson: TeachingLesson, total: number): string {
   return fill(read('review.md'), {
     GRADE: String(group.grade),
     TOPIC: group.baseName,
+    REFERENCE: ref.text.slice(0, 12_000),
     POSITION: String(lesson.position),
     TOTAL: String(total),
     TITLE: lesson.title,
     OBJECTIVES: lesson.objectives.map((o) => `  - ${o}`).join('\n'),
     LESSON: JSON.stringify(numbered(lesson)),
-    REFERENCE: referenceText(ref, sections, 12_000),
   })
 }
 
