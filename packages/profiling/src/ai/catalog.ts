@@ -8,6 +8,10 @@ import type { ModelKind } from './models'
 
 export const OPENROUTER_MODELS_URL = 'https://openrouter.ai/api/v1/models'
 export const AA_FREE_MODELS_URL = 'https://artificialanalysis.ai/api/v2/language/models/free'
+/** The Artificial Analysis free list comes in pages of up to 200 models (about 750 models in 4 pages on 16 November 2026). At most this many pages are read. */
+export const AA_MAX_PAGES = 10
+/** The address of one page (1, 2, ...) of the Artificial Analysis free list. */
+export const aaPageUrl = (page: number) => `${AA_FREE_MODELS_URL}?page=${page}`
 
 /** A list that was read is kept for this long (per isolate). */
 export const CATALOG_TTL_MS = 60 * 60_000
@@ -63,7 +67,11 @@ function aaScoreOf(row: Record<string, unknown>): number | null {
   return null
 }
 
-function parseAa(body: unknown): AaModel[] | null {
+/**
+ * One page of the Artificial Analysis list: its rows, and whether `pagination.has_more` says another page follows. A page with no
+ * pagination block (or a bare list of rows) is the only page. A page that is not a list of rows at all is `null`.
+ */
+function parseAaPage(body: unknown): { rows: AaModel[]; hasMore: boolean } | null {
   const rows = Array.isArray(body) ? body : isRecord(body) ? body.data : null
   if (!Array.isArray(rows)) return null
   const models = rows.flatMap((r): AaModel[] => {
@@ -72,7 +80,8 @@ function parseAa(body: unknown): AaModel[] | null {
     const name = text(r.name) ?? text(r.slug)
     return slug && name ? [{ slug, name, score: aaScoreOf(r) }] : []
   })
-  return models.length > 0 ? models : null
+  const hasMore = isRecord(body) && isRecord(body.pagination) && body.pagination.has_more === true
+  return { rows: models, hasMore }
 }
 
 /** One read with a time limit. Any failure is `null` and one line in the log (never a header, never the key). */
@@ -124,9 +133,23 @@ async function openrouterList(fetchFn: CatalogFetch, now: () => number): Promise
 
 async function aaList(key: string, fetchFn: CatalogFetch, now: () => number): Promise<AaModel[] | null> {
   if (aaSlot && aaSlot.key === key && now() < aaSlot.until) return aaSlot.value
-  const body = await readJson(fetchFn, AA_FREE_MODELS_URL, { accept: 'application/json', 'x-api-key': key }, 'artificial analysis')
-  const value = body === null ? null : parseAa(body)
-  if (body !== null && value === null) console.error('model list not read (artificial analysis): the answer has no models')
+  // The pages are read one after the other (each says whether another follows), each with its own 5 second limit. If one page fails the
+  // whole list counts as unread: half a ranking would favour whatever happens to be on the first pages.
+  const rows: AaModel[] = []
+  let ok = true
+  for (let page = 1; page <= AA_MAX_PAGES; page++) {
+    const body = await readJson(fetchFn, aaPageUrl(page), { accept: 'application/json', 'x-api-key': key }, 'artificial analysis')
+    const parsed = body === null ? null : parseAaPage(body)
+    if (!parsed) {
+      if (body !== null) console.error(`model list not read (artificial analysis): page ${page} is not a list of models`)
+      ok = false
+      break
+    }
+    rows.push(...parsed.rows)
+    if (!parsed.hasMore) break
+  }
+  const value = ok && rows.length > 0 ? rows : null
+  if (ok && value === null) console.error('model list not read (artificial analysis): the answer has no models')
   aaSlot = { value, until: now() + (value ? CATALOG_TTL_MS : CATALOG_FAILURE_TTL_MS), key }
   return value
 }
@@ -164,26 +187,62 @@ export function normaliseAaName(value: string): string {
   return squash(value.toLowerCase().replace(/\([^)]*\)/g, ' '))
 }
 
-/** The one word that may follow a name without making it another model: `-it`, `-vl`, `-a4b`, `-31b`. */
-const VARIANT = /^(?:it|instruct|chat|preview|vl|a\d+b|\d+b|free)$/
+/**
+ * Words that may end a name without making it another model. Size words (`31b`, `a4b`, `e4b`) and `vl` are NOT here: they tell models apart
+ * (`gemma-4-26b-a4b` is not `gemma-4-31b`, and a `-vl` model is not its text-only sibling).
+ */
+const TRAILING_WORDS = new Set(['it', 'instruct', 'chat', 'preview', 'free', 'reasoning'])
 
-const plusVariant = (long: string, short: string) => long.startsWith(`${short}-`) && VARIANT.test(long.slice(short.length + 1))
-
-const sameModel = (a: string, b: string) => a !== '' && b !== '' && (a === b || plusVariant(a, b) || plusVariant(b, a))
+/** Takes the words of `TRAILING_WORDS` off the end of a normalised name, again and again (`x-instruct-chat` becomes `x`). A name is never emptied. */
+export function stripVariantWords(name: string): string {
+  const parts = name.split('-')
+  while (parts.length > 1 && TRAILING_WORDS.has(parts[parts.length - 1]!)) parts.pop()
+  return parts.join('-')
+}
 
 /**
- * The Intelligence Index of an OpenRouter model, or null when it is unrated. A row matches when its slug or its name, once normalised, is
- * the model's normalised id, or that id with one variant word added or taken off. With several matching rows (a reasoning and a
- * non-reasoning run of one model) the highest score counts. A matching row with no score does not count.
+ * The names an OpenRouter id may go by in Artificial Analysis: its base name, and the creator plus the base name (AA slugs sometimes start
+ * with the creator: `nvidia-nemotron-3-ultra-550b-a55b` for `nvidia/nemotron-3-ultra-550b-a55b:free`).
  */
-export function aaScore(model: { id: string }, aa: AaModel[]): number | null {
-  const id = normaliseOpenRouterId(model.id)
-  let best: number | null = null
+export function openRouterKeys(id: string): string[] {
+  const base = stripVariantWords(normaliseOpenRouterId(id))
+  if (!base) return []
+  const creator = id.indexOf('/') > 0 ? squash(id.slice(0, id.indexOf('/')).toLowerCase()) : ''
+  return creator ? [base, `${creator}-${base}`] : [base]
+}
+
+/** The names of an Artificial Analysis row: its slug and its name, normalised and stripped the same way. */
+export function aaKeys(row: { slug: string; name: string }): string[] {
+  return [...new Set([stripVariantWords(normaliseAaName(row.slug)), stripVariantWords(normaliseAaName(row.name))].filter(Boolean))]
+}
+
+/** Each name of the rated rows, with the highest score among the rows that share it (a reasoning and a non-reasoning run of one model). */
+function aaIndex(aa: AaModel[]): Map<string, number> {
+  const index = new Map<string, number>()
   for (const row of aa) {
     if (row.score === null) continue
-    if (sameModel(id, normaliseAaName(row.slug)) || sameModel(id, normaliseAaName(row.name))) best = best === null ? row.score : Math.max(best, row.score)
+    for (const key of aaKeys(row)) index.set(key, Math.max(index.get(key) ?? row.score, row.score))
+  }
+  return index
+}
+
+function scoreIn(index: Map<string, number>, id: string): number | null {
+  let best: number | null = null
+  for (const key of openRouterKeys(id)) {
+    const score = index.get(key)
+    if (score !== undefined && (best === null || score > best)) best = score
   }
   return best
+}
+
+/**
+ * The Intelligence Index of an OpenRouter model, or null when it is unrated. The names are compared after the trailing words `it`,
+ * `instruct`, `chat`, `preview`, `free` and `reasoning` are taken off both sides: the model's base name and its creator plus base name
+ * against the row's slug and its name (without parenthesised words). With several matching rows the highest score counts. A matching row with no
+ * score does not count.
+ */
+export function aaScore(model: { id: string }, aa: AaModel[]): number | null {
+  return scoreIn(aaIndex(aa), model.id)
 }
 
 // ---- the ordered list ----
@@ -224,12 +283,12 @@ export function rankModels({ kind, openrouter, aa, pinned, top = RANKED_TOP, min
     (m) => isFreeModelId(m.id) && m.supported_parameters?.includes('tools') === true && bigger(m) >= minContext && (kind !== 'vision' || takesImages(m)),
   )
   const order = (a: OpenRouterModel, b: OpenRouterModel) => bigger(b) - bigger(a) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
-  const withScore = aa && aa.length > 0 ? aa : null
+  const index = aa && aa.length > 0 ? aaIndex(aa) : null
   const ranked = (
-    withScore
+    index
       ? candidates
           .flatMap((m) => {
-            const score = aaScore(m, withScore)
+            const score = scoreIn(index, m.id)
             return score === null ? [] : [{ m, score }]
           })
           .sort((a, b) => b.score - a.score || order(a.m, b.m))

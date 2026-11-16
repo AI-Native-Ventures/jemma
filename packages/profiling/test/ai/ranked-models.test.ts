@@ -10,6 +10,7 @@ import {
   ModelTimeoutError,
   OPENROUTER_MODELS_URL,
   ReplayMissError,
+  aaPageUrl,
   getModel,
   isModelGoneError,
   modelCallTimeoutMs,
@@ -26,7 +27,8 @@ import {
 
 const fixture = (name: string) => JSON.parse(readFileSync(join(import.meta.dirname, '../fixtures', name), 'utf8')) as { data: Array<{ id: string }> }
 const OR = fixture('openrouter-models-2026-11-16.json')
-const AA = fixture('aa-free-models.synthetic.json')
+/** The invented Artificial Analysis answer: real model names, invented scores, in 2 pages. */
+const AA_PAGES = [fixture('aa-free-models.synthetic.page1.json'), fixture('aa-free-models.synthetic.page2.json')]
 
 const PAID = 'nvidia/nemotron-3.5-super-vl'
 const SUPER = 'nvidia/nemotron-3.5-super-vl:free'
@@ -37,6 +39,7 @@ const ERNIE = 'baidu/ernie-5.5-flash-preview:free'
 const LING = 'inclusionai/ling-3.2-flash:free'
 const INKLING = 'thinkingmachines/inkling-2-small:free'
 const LFM = 'liquid/lfm-3-1.7b:free'
+const LIGHTNING = 'nvidia/nemotron-3.5-lightning:free'
 
 /** What the preview agent holds today, plus the two switches of P121. */
 const PREVIEW = {
@@ -83,7 +86,10 @@ function network(net: Net = {}) {
     const url = String(input)
     urls.push(url)
     if (url === OPENROUTER_MODELS_URL) return net.openrouter === 'fail' ? json({}, 503) : json({ data: net.list ?? OR.data })
-    if (url === AA_FREE_MODELS_URL) return net.aa === 'fail' ? json({}, 401) : json(AA)
+    if (url.startsWith(AA_FREE_MODELS_URL)) {
+      const page = Number(new URL(url).searchParams.get('page'))
+      return net.aa === 'fail' ? json({}, 401) : json(AA_PAGES[page - 1] ?? { data: [] })
+    }
     if (url === CHAT_URL) {
       const model = JSON.parse(init?.body as string).model as string
       asked.push(model)
@@ -92,7 +98,7 @@ function network(net: Net = {}) {
     throw new Error(`unexpected url ${url}`)
   })
   vi.stubGlobal('fetch', fetchMock)
-  const catalogCalls = () => urls.filter((u) => u === OPENROUTER_MODELS_URL || u === AA_FREE_MODELS_URL)
+  const catalogCalls = () => urls.filter((u) => u === OPENROUTER_MODELS_URL || u.startsWith(AA_FREE_MODELS_URL))
   return { urls, asked, fetchMock, catalogCalls }
 }
 
@@ -156,20 +162,21 @@ describe('the dynamic list in a live call', () => {
   test('text: the paid pinned id first, then the best-ranked free models, then the rest of the pinned list, and no repeats', async () => {
     const { asked } = network({ chat: gone })
     await expect(getModel('text', env()).doGenerate(params)).rejects.toThrow('No endpoints found for nvidia/nemotron-3.5-super-vl')
-    expect(asked).toEqual([PAID, ULTRA, ERNIE, SUPER, GEMMA31])
+    expect(asked).toEqual([PAID, INKLING, SUPER, ULTRA, LIGHTNING, GEMMA31])
   })
 
   test('text with a pinned free model outside the top 4: it comes last', async () => {
     const { asked } = network({ chat: gone })
     await expect(getModel('text', env({ LLM_MODEL_FALLBACKS: GEMMA26 })).doGenerate(params)).rejects.toThrow()
-    expect(asked).toEqual([PAID, ULTRA, ERNIE, SUPER, GEMMA31, GEMMA26])
+    expect(asked).toEqual([PAID, INKLING, SUPER, ULTRA, LIGHTNING, GEMMA26])
   })
 
   test('photo job: only models that take images, and a pinned text-only model is left out', async () => {
     const { asked } = network({ chat: gone })
     const vision = getModel('vision', env({ VISION_PROVIDER: 'openrouter', VISION_MODEL: PAID, VISION_MODEL_FALLBACKS: [SUPER, ULTRA, GEMMA31].join(',') }))
     await expect(vision.doGenerate(params)).rejects.toThrow()
-    expect(asked).toEqual([PAID, SUPER, GEMMA31, LING, GEMMA26])
+    // Only three rated models take images; the pinned ones follow, and the text-only ultra model is left out.
+    expect(asked).toEqual([PAID, INKLING, SUPER, GEMMA31])
     expect(asked).not.toContain(ULTRA)
     const byId = new Map(OR.data.map((m) => [m.id, m as unknown as { architecture: { input_modalities: string[] } }]))
     for (const id of asked) expect(byId.get(id)?.architecture.input_modalities, id).toContain('image')
@@ -199,7 +206,7 @@ describe('the dynamic list in a live call', () => {
     const { asked } = network({ chat: (m) => (m === ULTRA ? completion(m, 'ultra answered') : gone(m)), list })
     const out = await getModel('text', env()).doGenerate(params)
     expect(textOf(out)).toBe('ultra answered')
-    expect(asked).toEqual([PAID, ULTRA])
+    expect(asked).toEqual([PAID, INKLING, ULTRA])
     asked.length = 0
     await expect(getModel('text', env({ LLM_MODEL_FALLBACKS: [SUPER, GEMMA31].join(',') })).doGenerate(params)).resolves.toBeDefined()
     expect(asked).not.toContain(SUPER)
@@ -211,7 +218,7 @@ describe('the dynamic list in a live call', () => {
     await model.doGenerate(params)
     await model.doGenerate(params)
     await getModel('text', env()).doGenerate(params)
-    expect(catalogCalls()).toEqual([OPENROUTER_MODELS_URL, AA_FREE_MODELS_URL])
+    expect(catalogCalls()).toEqual([OPENROUTER_MODELS_URL, aaPageUrl(1), aaPageUrl(2)])
     expect(asked).toEqual([PAID, PAID, PAID])
   })
 
@@ -219,7 +226,7 @@ describe('the dynamic list in a live call', () => {
     const { catalogCalls } = network()
     await getModel('text', env()).doGenerate(params)
     await getModel('vision', env({ VISION_PROVIDER: 'openrouter', VISION_MODEL: PAID, VISION_MODEL_FALLBACKS: SUPER })).doGenerate(params)
-    expect(catalogCalls()).toHaveLength(2)
+    expect(catalogCalls()).toHaveLength(3)
   })
 
   test('both lists failing is today\'s behaviour: the pinned list, and the call is made', async () => {
@@ -241,17 +248,17 @@ describe('time limits in the dynamic list', () => {
     expect(asked).toEqual([PAID])
     await vi.advanceTimersByTimeAsync(1)
     await until(() => asked.length === 2)
-    expect(asked).toEqual([PAID, ULTRA])
+    expect(asked).toEqual([PAID, INKLING])
     await vi.advanceTimersByTimeAsync(119_999)
-    expect(asked).toEqual([PAID, ULTRA])
+    expect(asked).toEqual([PAID, INKLING])
     await vi.advanceTimersByTimeAsync(1)
     await until(() => asked.length === 3)
-    expect(asked).toEqual([PAID, ULTRA, ERNIE])
-    for (const next of [SUPER, GEMMA31]) {
+    expect(asked).toEqual([PAID, INKLING, SUPER])
+    for (const next of [ULTRA, LIGHTNING, GEMMA31]) {
       await vi.advanceTimersByTimeAsync(120_000)
       await until(() => asked.includes(next))
     }
-    expect(asked).toEqual([PAID, ULTRA, ERNIE, SUPER, GEMMA31])
+    expect(asked).toEqual([PAID, INKLING, SUPER, ULTRA, LIGHTNING, GEMMA31])
     await vi.advanceTimersByTimeAsync(120_000)
     const err = await call
     expect(err).toBeInstanceOf(ModelTimeoutError)
@@ -296,7 +303,7 @@ describe('recorded answers with a dynamic list', () => {
     expect(catalogCalls().length).toBeGreaterThan(0)
   })
 
-  test.each([SUPER, ULTRA, GEMMA31, PAID, ERNIE])('cache: an answer saved under %s is found too', async (id) => {
+  test.each([SUPER, ULTRA, GEMMA31, PAID, INKLING, LIGHTNING])('cache: an answer saved under %s is found too', async (id) => {
     const { asked } = network({ chat: noModel })
     const store = new MemoryStore()
     await store.put(await replayKey(id, params), id, answer(`saved under ${id}`))
@@ -336,11 +343,11 @@ describe('recorded answers with a dynamic list', () => {
   })
 
   test('cache with nothing recorded and the first models gone: the next ranked model answers and its id gets the record', async () => {
-    const { asked } = network({ chat: (m) => (m === PAID ? unpaid() : m === ULTRA ? gone(m) : completion(m, `from ${m}`)) })
+    const { asked } = network({ chat: (m) => (m === PAID ? unpaid() : m === INKLING ? gone(m) : completion(m, `from ${m}`)) })
     const store = new MemoryStore()
-    expect(textOf(await getModel('text', env({ AI_MODE: 'cache' }, store)).doGenerate(params))).toBe(`from ${ERNIE}`)
-    expect(asked).toEqual([PAID, ULTRA, ERNIE])
-    expect(await store.get(await replayKey(ERNIE, params))).not.toBeNull()
+    expect(textOf(await getModel('text', env({ AI_MODE: 'cache' }, store)).doGenerate(params))).toBe(`from ${SUPER}`)
+    expect(asked).toEqual([PAID, INKLING, SUPER])
+    expect(await store.get(await replayKey(SUPER, params))).not.toBeNull()
   })
 
   test('replay: a recorded answer is found, a call that was never recorded is a miss naming the first model, and no model is asked', async () => {
@@ -459,9 +466,9 @@ describe('a model that is gone or unpaid does not stop the chain', () => {
   })
 
   test('a real chain, dynamic list: a 404 and a 402 move on to the next ranked model', async () => {
-    const { asked } = network({ chat: (m) => (m === PAID ? gone(m) : m === ULTRA ? unpaid() : completion(m, `from ${m}`)) })
+    const { asked } = network({ chat: (m) => (m === PAID ? gone(m) : m === INKLING ? unpaid() : completion(m, `from ${m}`)) })
     const out = await getModel('text', env()).doGenerate(params)
-    expect(textOf(out)).toBe(`from ${ERNIE}`)
-    expect(asked).toEqual([PAID, ULTRA, ERNIE])
+    expect(textOf(out)).toBe(`from ${SUPER}`)
+    expect(asked).toEqual([PAID, INKLING, SUPER])
   })
 })
