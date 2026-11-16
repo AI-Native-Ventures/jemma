@@ -30,10 +30,12 @@ Copy `.env.example` to `.env.local` at the repo root. `apps/web` reads it, and `
 | --- | --- |
 | `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | The local stack, or your hosted project. The service key is server and agent only. |
 | `LLM_PROVIDER`, `LLM_MODEL` | Text model. Free runs use `openrouter` and an OpenRouter `:free` id. The hosted demo uses the paid listing first: the same id without `:free` (`nvidia/nemotron-3.5-super-vl`, pay per use, credit on the OpenRouter account). |
-| `LLM_MODEL_FALLBACKS` | Comma list of ids (same provider) tried in order when the model still fails with a 5xx or overload after its retries, or does not answer in time: 90 seconds for a paid OpenRouter id (no `:free`), 4 minutes for every other. The hosted demo lists the free ids here: `nvidia/nemotron-3.5-super-vl:free,nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-31b-it:free`. |
+| `LLM_MODEL_FALLBACKS` | Comma list of ids (same provider) tried in order when the model still fails with a 5xx or overload after its retries, or is gone or unpaid (404, 402), or does not answer in time: 90 seconds for a paid OpenRouter id (no `:free`), 4 minutes for every other. The hosted demo lists the free ids here: `nvidia/nemotron-3.5-super-vl:free,nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-31b-it:free`. |
 | `VISION_PROVIDER`, `VISION_MODEL`, `VISION_MODEL_FALLBACKS` | Same for photos (memo, papers, the curriculum PDF). |
 | `TTS_PROVIDER`, `TTS_MODEL` | Lesson audio: `workers-ai` and `@cf/deepgram/aura-2-en`. |
 | `AI_MODE` | `live` (call the model), `record` (call it and store the answer in `ai_replays`), `replay` (use the stored answer, never call a model, a miss is an error), `cache` (use the stored answer when the key exists, else call the model and store it). |
+| `AI_MODEL_RANKING` | Agent only, with `LLM_PROVIDER=openrouter`. `artificial-analysis` switches on the dynamic model list (below). Unset or anything else: the model lists above, exactly as before. |
+| `AA_API_KEY` | Agent only, a secret. The key of the Artificial Analysis API, sent as `x-api-key`. Used only with `AI_MODEL_RANKING`. Without it the dynamic list ranks the newest free models first. |
 | `AI_ROUTE` | `cloud` (default): the agent does the AI work as above. `operator`: each job tries recorded answers first, then the owner's laptop (the operator runner below), and only when no laptop is online the agent's own model. |
 | `AI_ROUTE_TAG` | Routing tag of this stack, default `default`. A hand-off carries it and only an operator runner with the same `OPERATOR_TAG` takes the event, so two stacks that share one database never take each other's events. |
 | `DEMO_SANDBOX_DAYS` | Agent only. An unused demo copy older than this many days is removed by the agent's hourly cron. Default 7, `0` switches the sweep off. |
@@ -57,6 +59,23 @@ The preview agent (the Cloudflare worker `jemma-agent`) gets these four variable
 - `LLM_MODEL_FALLBACKS` and `VISION_MODEL_FALLBACKS`: `nvidia/nemotron-3.5-super-vl:free,nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-31b-it:free`
 
 `LLM_PROVIDER` and `VISION_PROVIDER` stay `openrouter`, `AI_MODE` stays `cache`. The OpenRouter account needs credit. To go back to free only, put the `:free` id in `LLM_MODEL` and `VISION_MODEL` and drop it from the fallbacks. A local run and CI keep their own values and are unchanged.
+
+### Dynamic model list
+
+With `AI_MODEL_RANKING=artificial-analysis` (and `LLM_PROVIDER` or `VISION_PROVIDER` set to `openrouter`) the agent picks its free models itself, every hour, instead of using only the ids in the env. Without that variable nothing changes: CI, local runs, the evals and goose keep using the env lists. For each model call:
+
+1. **Read two lists.** OpenRouter's public list of models (`https://openrouter.ai/api/v1/models`, no key) says what each model can do. Artificial Analysis's free list (`https://artificialanalysis.ai/api/v2/language/models/free`, key in `AA_API_KEY`, sent as `x-api-key`) gives each model an Intelligence Index score. It comes in pages (`?page=1`, `?page=2`, and so on, up to 200 models a page): the pages are read one after the other while the answer says `has_more`, at most 10 pages. Each read (each page) has 5 seconds. If one page fails, the whole Artificial Analysis list counts as unread. An answer is kept for 1 hour in each worker, so most calls read nothing. A list that could not be read is asked for again after 5 minutes.
+2. **Keep only models that can do the job.** A free listing (the id ends in `:free`) that takes tools and has a context of at least 131072 tokens. For a photo job it must also take images, so a text-only model never gets a photo job. Closed and open models are both allowed.
+3. **Rank them.** With Artificial Analysis data: only models that have a score, best first (a tie goes to the larger context, then the id), and the first 4 are kept. A model is matched to its Artificial Analysis row by name. Both names are written in lowercase, `.`, `_` and spaces become `-`, parenthesised words in an Artificial Analysis name (`(Reasoning)`, `(Max)`) are dropped, and the trailing words `it`, `instruct`, `chat`, `preview`, `free` and `reasoning` are taken off, again and again. Size words (`31b`, `a4b`) and `vl` are kept, because they separate different models. The OpenRouter name, with and without its creator (`nemotron-3-ultra-550b-a55b` and `nvidia-nemotron-3-ultra-550b-a55b`), must equal the row's slug or its name, because Artificial Analysis slugs sometimes start with the creator. When several rows match (a reasoning and a non-reasoning run) the highest score counts. A model with no match, or with a match that has no score, is unrated and left out. Most rows of the free list have no score.
+4. **No Artificial Analysis data** (no `AA_API_KEY`, or the read failed): the 4 newest free models instead.
+5. **Add the env ids.** The ids of `LLM_MODEL` and `LLM_MODEL_FALLBACKS` (or the vision pair) follow in their order, with no repeats. A paid id (no `:free`, the first model of "Paid hosting first on the preview") goes before the ranked ones and stays even if it is not free. A free id that OpenRouter no longer lists is skipped. For a photo job an id that OpenRouter lists as text-only is skipped.
+6. **When a list is missing.** Without OpenRouter's list the env list is used as it is. If nothing is left after the filters, the env list is used. The list is never empty.
+
+A model that is gone or unpaid (status 404 or 402, or a message such as "no endpoints", "not a valid model" or "insufficient credits") is not tried again: the next model gets the call. This holds with the switch off as well. In the dynamic list a free model gets 2 minutes a try instead of 4 (a paid model keeps 90 seconds), so the longer list stays inside the 15-minute limit of a queued job. `cache` and `replay` look a recorded answer up under every id of the list and every id of the env, so answers recorded under a free id still hit with no model call.
+
+The preview agent needs `AI_MODEL_RANKING=artificial-analysis` and `AA_API_KEY` (a secret); the model variables above stay as they are. To switch it off, remove `AI_MODEL_RANKING`: the next call uses the env lists.
+
+Model rankings: Artificial Analysis (artificialanalysis.ai), free API, used with attribution.
 
 ## Free model notes (27 Oct)
 

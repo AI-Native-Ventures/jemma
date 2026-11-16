@@ -4,6 +4,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAI } from '@ai-sdk/openai'
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { wrapLanguageModel, type LanguageModelMiddleware, type SpeechModel } from 'ai'
+import { isFreeModelId, loadCatalog, rankModels } from './catalog'
 import { withReplay, type AiMode } from './replay'
 import { ReplayMissError, type ReplayStore } from './stores'
 
@@ -23,7 +24,10 @@ export const MODEL_CALL_TIMEOUT_MS = 240_000
 /** A paid model has this long for one try: it answers in seconds or something is wrong, and the next model should get the call sooner. */
 export const PAID_MODEL_CALL_TIMEOUT_MS = 90_000
 
-const isFreeId = (id: string) => /:free$/i.test(id)
+/** In the dynamic list (`AI_MODEL_RANKING`) a free model has this long for one try: a longer list must not outlast the queue limit. */
+export const DYNAMIC_FREE_MODEL_CALL_TIMEOUT_MS = 120_000
+
+const isFreeId = isFreeModelId
 
 /**
  * Paid hosting of a model, as far as the id says. On OpenRouter a model without the `:free` suffix is the paid listing of it. No other
@@ -33,9 +37,13 @@ export function isPaidModel(provider: string, id: string): boolean {
   return provider === 'openrouter' && id !== '' && !isFreeId(id)
 }
 
-/** The time one try of this model may take: 90 seconds for a paid model, 4 minutes for every other. */
-export function modelCallTimeoutMs(provider: string, id: string): number {
-  return isPaidModel(provider, id) ? PAID_MODEL_CALL_TIMEOUT_MS : MODEL_CALL_TIMEOUT_MS
+/**
+ * The time one try of this model may take: 90 seconds for a paid model, 4 minutes for every other. In the dynamic list (`dynamic`) a free
+ * model gets 2 minutes instead, and a paid model keeps 90 seconds.
+ */
+export function modelCallTimeoutMs(provider: string, id: string, dynamic = false): number {
+  if (isPaidModel(provider, id)) return PAID_MODEL_CALL_TIMEOUT_MS
+  return dynamic ? DYNAMIC_FREE_MODEL_CALL_TIMEOUT_MS : MODEL_CALL_TIMEOUT_MS
 }
 
 /**
@@ -45,6 +53,23 @@ export function modelCallTimeoutMs(provider: string, id: string): number {
 export function modelList(primary: string | undefined, fallbacks: string | undefined): string[] {
   const rest = (fallbacks ?? '').split(',').map((id) => id.trim()).filter(Boolean)
   return [...new Set([(primary ?? '').trim(), ...rest])]
+}
+
+/** Words in an error that say the model is gone, not served to this account, or not paid for. */
+const MODEL_GONE_MESSAGE = /no endpoints|not a valid model|model.*not found|no allowed providers|not available|deprecated|insufficient credit|requires more credits|payment required/i
+
+/**
+ * An error that says this model cannot answer at all, now: it was removed (404, "no endpoints", "not a valid model"), is not served
+ * ("no allowed providers", "not available", "deprecated") or is not paid for (402, "insufficient credit"). Asking it again changes
+ * nothing, so it is neither retried nor allowed to stop the chain: the next model gets the call.
+ */
+export function isModelGoneError(err: unknown): boolean {
+  if (typeof err !== 'object' || err === null) return false
+  const e = err as { statusCode?: number; status?: number; message?: unknown; cause?: unknown }
+  const code = e.statusCode ?? e.status
+  if (code === 402 || code === 404) return true
+  if (typeof e.message === 'string' && MODEL_GONE_MESSAGE.test(e.message)) return true
+  return e.cause ? isModelGoneError(e.cause) : false
 }
 
 /**
@@ -88,8 +113,8 @@ async function withTimeLimit<T>(ms: number, parent: AbortSignal | undefined, cal
 /**
  * Retries a failed model call with backoff, and gives each live try `timeoutMs` to answer (a free model that never answers would
  * hold the whole run until Cloudflare ends it). A timeout is not tried again on the same model: a model that hangs once usually
- * hangs again, so the error is thrown at once and the next model in the chain (`withFallbacks`) gets the call. Every other
- * retryable error keeps its retries. Sits inside the replay layer, so only live calls are retried and timed: a recorded
+ * hangs again, so the error is thrown at once and the next model in the chain (`withFallbacks`) gets the call. So is an error that says the
+ * model is gone or unpaid (`isModelGoneError`). Every other retryable error keeps its retries. Sits inside the replay layer, so only live calls are retried and timed: a recorded
  * answer is never timed, and the replay layer sees the call as it was (the signal is added below it, and the key leaves it out anyway).
  * Streams are left alone: nothing in Jemma streams, and this layer has never wrapped them.
  */
@@ -105,7 +130,7 @@ export function withModelRetry(
         try {
           return await withTimeLimit(timeoutMs, params.abortSignal, (abortSignal) => model.doGenerate({ ...params, abortSignal }))
         } catch (err) {
-          if (err instanceof ModelTimeoutError || i >= waits.length || !isRetryableModelError(err)) throw err
+          if (err instanceof ModelTimeoutError || isModelGoneError(err) || i >= waits.length || !isRetryableModelError(err)) throw err
           await sleep(waits[i]!)
         }
       }
@@ -126,6 +151,10 @@ export type AiEnv = {
   TTS_PROVIDER?: string
   TTS_MODEL?: string
   AI_MODE?: AiMode
+  /** `artificial-analysis`: the hosted app picks its free OpenRouter models itself each hour, ranked by Artificial Analysis (see `catalog.ts`). Anything else or unset: the env lists only. */
+  AI_MODEL_RANKING?: string
+  /** Key of the Artificial Analysis API (secret). Without it the dynamic list ranks the newest free models first. */
+  AA_API_KEY?: string
   OPENROUTER_API_KEY?: string
   DEEPSEEK_API_KEY?: string
   ANTHROPIC_API_KEY?: string
@@ -162,7 +191,7 @@ function rawModel(label: string, provider: string, modelId: string, env: AiEnv) 
 
 type Chained = ReturnType<typeof wrapLanguageModel>
 
-/** Tries each model in order. Moves on after a 5xx, overload, timeout or replay miss; any other error is the caller's. With no model left, the first error goes up. */
+/** Tries each model in order. Moves on after a 5xx, overload, timeout, replay miss, or a model that is gone or unpaid (404, 402); any other error is the caller's. With no model left, the first error goes up. */
 export function withFallbacks(models: Chained[]): Chained {
   if (models.length === 1) return models[0]!
   const first = models[0]!
@@ -172,7 +201,7 @@ export function withFallbacks(models: Chained[]): Chained {
       try {
         return await call(m)
       } catch (err) {
-        if (!(err instanceof ReplayMissError) && !(err instanceof ModelTimeoutError) && !isRetryableModelError(err)) throw err
+        if (!(err instanceof ReplayMissError) && !(err instanceof ModelTimeoutError) && !isRetryableModelError(err) && !isModelGoneError(err)) throw err
         firstError ??= err
       }
     }
@@ -237,28 +266,66 @@ export function recordedFirst(lookups: Chained[], then: Chained | null, tolerate
   } as Chained
 }
 
-export function getModel(kind: ModelKind, env: AiEnv): Chained {
-  const label = kind === 'vision' ? 'VISION_PROVIDER' : 'LLM_PROVIDER'
-  const provider = (kind === 'vision' ? env.VISION_PROVIDER : env.LLM_PROVIDER) ?? 'deepseek'
-  const ids = modelList(kind === 'vision' ? env.VISION_MODEL : env.LLM_MODEL, kind === 'vision' ? env.VISION_MODEL_FALLBACKS : env.LLM_MODEL_FALLBACKS)
+/**
+ * The chain of models for one call. `ids` are the models that may be called, in order; `lookupIds` are the ids a recorded answer is looked up
+ * under (the same ids in the env lists, more in the dynamic list). With several lookup ids, `cache` and `replay` first look the call up under
+ * every id (recorded answers of the free ids still hit when the paid id is first), and only on a miss call the models. In `replay` there is no
+ * model to call, so the lookups are the whole chain.
+ */
+function buildChain(label: string, provider: string, ids: string[], lookupIds: string[], env: AiEnv, dynamic: boolean): Chained {
   const mode = env.AI_MODE ?? 'live'
-  // With several ids, `cache` and `replay` first look the call up under every id (recorded answers of the free ids still hit when the paid id is
-  // first), and only on a miss call the models. In `replay` there is no model to call, so the lookups are the whole chain.
-  const lookupFirst = ids.length > 1 && (mode === 'cache' || mode === 'replay')
+  const lookupFirst = lookupIds.length > 1 && (mode === 'cache' || mode === 'replay')
   // Each model has its own replay layer, so an answer is recorded and replayed under the id of the model that wrote it. Each has its own
-  // time limit: 90 seconds for a paid model, 4 minutes for a free one.
+  // time limit: 90 seconds for a paid model, 4 minutes for a free one (2 minutes in the dynamic list).
   const live = () =>
     withFallbacks(
       ids.map((id) =>
         wrapLanguageModel({
           model: rawModel(label, provider, id, env),
-          middleware: [withReplay(env.replayStore, mode), withModelRetry(undefined, undefined, modelCallTimeoutMs(provider, id))],
+          middleware: [withReplay(env.replayStore, mode), withModelRetry(undefined, undefined, modelCallTimeoutMs(provider, id, dynamic))],
         }),
       ),
     )
   if (!lookupFirst) return live()
-  const lookups = ids.map((id) => wrapLanguageModel({ model: rawModel(label, provider, id, env), middleware: withReplay(env.replayStore, 'replay') }))
+  const lookups = lookupIds.map((id) => wrapLanguageModel({ model: rawModel(label, provider, id, env), middleware: withReplay(env.replayStore, 'replay') }))
   return recordedFirst(lookups, mode === 'cache' ? live() : null, mode === 'cache')
+}
+
+/**
+ * The model of the dynamic list (`AI_MODEL_RANKING=artificial-analysis`, OpenRouter only). `getModel` stays synchronous: the lists are read, and
+ * the ids ranked, when a call is made (`loadCatalog` keeps them for an hour, so most calls read nothing). The chain is then built exactly as for
+ * the env lists. Recorded answers are looked up under the ranked ids and under every pinned id, also a pinned free id that OpenRouter has
+ * removed (a lookup calls no model). From outside the model is the first pinned id, as the chain of the env lists is.
+ */
+function rankedModel(kind: ModelKind, label: string, provider: string, pinned: string[], env: AiEnv): Chained {
+  const head = rawModel(label, provider, pinned[0]!, env)
+  const chain = async () => {
+    const catalog = await loadCatalog(env, (url, init) => globalThis.fetch(url, init))
+    const ids = rankModels({ kind, openrouter: catalog.openrouter, aa: catalog.aa, pinned })
+    return buildChain(label, provider, ids, [...new Set([...ids, ...pinned.filter(Boolean)])], env, true)
+  }
+  return {
+    specificationVersion: head.specificationVersion,
+    get provider() {
+      return head.provider
+    },
+    get modelId() {
+      return head.modelId
+    },
+    get supportedUrls() {
+      return head.supportedUrls
+    },
+    doGenerate: async (options: Parameters<Chained['doGenerate']>[0]) => (await chain()).doGenerate(options),
+    doStream: async (options: Parameters<Chained['doStream']>[0]) => (await chain()).doStream(options),
+  } as Chained
+}
+
+export function getModel(kind: ModelKind, env: AiEnv): Chained {
+  const label = kind === 'vision' ? 'VISION_PROVIDER' : 'LLM_PROVIDER'
+  const provider = (kind === 'vision' ? env.VISION_PROVIDER : env.LLM_PROVIDER) ?? 'deepseek'
+  const ids = modelList(kind === 'vision' ? env.VISION_MODEL : env.LLM_MODEL, kind === 'vision' ? env.VISION_MODEL_FALLBACKS : env.LLM_MODEL_FALLBACKS)
+  if (provider === 'openrouter' && env.AI_MODEL_RANKING === 'artificial-analysis') return rankedModel(kind, label, provider, ids, env)
+  return buildChain(label, provider, ids, ids, env, false)
 }
 
 export function getSpeechModel(env: AiEnv): SpeechModel {

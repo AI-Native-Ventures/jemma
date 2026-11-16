@@ -1,0 +1,20 @@
+{
+  "note": "SYNTHETIC. The shape follows the Artificial Analysis V2 free list (a tier, a pagination block, data rows). The slugs and names are real model names, every score is invented for tests. It is not a copy of any real response, and no real score is in this repository.",
+  "tier": "free",
+  "intelligence_index_version": 5,
+  "pagination": { "page": 1, "page_size": 12, "total_pages": 2, "has_more": true },
+  "data": [
+    { "slug": "claude-opus-5-5", "name": "Claude Opus 5.5 (Max, Default Fallback)", "model_creator": { "name": "Anthropic" }, "evaluations": { "artificial_analysis_intelligence_index": 70.0 } },
+    { "slug": "gpt-5-5", "name": "GPT-5.5 (Xhigh)", "model_creator": { "name": "OpenAI" }, "evaluations": { "artificial_analysis_intelligence_index": 68.0 } },
+    { "slug": "inkling", "name": "Inkling (Xhigh)", "model_creator": { "name": "Thinking Machines" }, "evaluations": { "artificial_analysis_intelligence_index": 50.0 } },
+    { "slug": "inkling-2-small", "name": "Inkling 2 Small", "model_creator": { "name": "Thinking Machines" }, "evaluations": { "artificial_analysis_intelligence_index": 44.0 } },
+    { "slug": "inkling-small", "name": "Inkling Small", "model_creator": { "name": "Thinking Machines" }, "evaluations": { "artificial_analysis_intelligence_index": 20.0 } },
+    { "slug": "nemotron-3-5-super-vl", "name": "Nemotron 3.5 Super VL", "model_creator": { "name": "NVIDIA" }, "evaluations": { "artificial_analysis_intelligence_index": 41.0 } },
+    { "slug": "nvidia-nemotron-3-ultra-550b-a55b", "name": "Nemotron 3 Ultra 550B A55B (Reasoning)", "model_creator": { "name": "NVIDIA" }, "evaluations": { "artificial_analysis_intelligence_index": 38.0 } },
+    { "slug": "nemotron-3-5-lightning", "name": "Nemotron 3.5 Lightning", "model_creator": { "name": "NVIDIA" }, "evaluations": { "artificial_analysis_intelligence_index": 35.0 } },
+    { "slug": "north-mini-code", "name": "North Mini Code", "model_creator": { "name": "Cohere" }, "evaluations": { "artificial_analysis_intelligence_index": 32.0 } },
+    { "slug": "gemma-4-31b", "name": "Gemma 4 31B (Reasoning)", "model_creator": { "name": "Google" }, "evaluations": { "artificial_analysis_intelligence_index": 30.0, "artificial_analysis_coding_index": 99.0 } },
+    { "slug": "gemma-4-31b-non-reasoning", "name": "Gemma 4 31B (Non-reasoning)", "model_creator": { "name": "Google" }, "evaluations": { "artificial_analysis_intelligence_index": 22.0 } },
+    { "slug": "mistral-large-4-preview", "name": "Mistral Large 4 Preview", "model_creator": { "name": "Mistral" }, "evaluations": { "artificial_analysis_intelligence_index": 46.0 } }
+  ]
+}

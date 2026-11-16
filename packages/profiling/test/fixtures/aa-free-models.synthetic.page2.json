@@ -1,0 +1,19 @@
+{
+  "note": "SYNTHETIC. Page 2 of 2 of the invented Artificial Analysis free list: real model names, invented scores, some with no score (null means unrated).",
+  "tier": "free",
+  "intelligence_index_version": 5,
+  "pagination": { "page": 2, "page_size": 12, "total_pages": 2, "has_more": false },
+  "data": [
+    { "slug": "gemma-4-26b-a4b", "name": "Gemma 4 26B A4B (Reasoning)", "model_creator": { "name": "Google" }, "evaluations": { "artificial_analysis_intelligence_index": null } },
+    { "slug": "gemma-4-26b-a4b-non-reasoning", "name": "Gemma 4 26B A4B (Non-reasoning)", "model_creator": { "name": "Google" }, "evaluations": { "artificial_analysis_intelligence_index": null } },
+    { "slug": "gemma-4-12b", "name": "Gemma 4 12B (Reasoning)", "model_creator": { "name": "Google" }, "evaluations": { "artificial_analysis_intelligence_index": 25.0 } },
+    { "slug": "nemotron-3-nano-omni-30b-a3b", "name": "Nemotron 3 Nano Omni 30B A3B Reasoning", "model_creator": { "name": "NVIDIA" }, "evaluations": { "artificial_analysis_intelligence_index": null } },
+    { "slug": "nvidia-nemotron-3-nano-30b-a3b-reasoning", "name": "NVIDIA Nemotron 3 Nano 30B A3B (Reasoning)", "model_creator": { "name": "NVIDIA" }, "evaluations": { "artificial_analysis_intelligence_index": 18.0 } },
+    { "slug": "ling-3-1-flash", "name": "Ling 3.1 Flash 1019", "model_creator": { "name": "InclusionAI" }, "evaluations": { "artificial_analysis_intelligence_index": 27.0 } },
+    { "slug": "ernie-5-0-thinking-preview", "name": "ERNIE 5.0 Thinking Preview", "model_creator": { "name": "Baidu" }, "evaluations": { "artificial_analysis_intelligence_index": 29.0 } },
+    { "slug": "lfm2-24b-a2b", "name": "LFM2 24B A2B", "model_creator": { "name": "Liquid AI" }, "evaluations": { "artificial_analysis_intelligence_index": 12.0 } },
+    { "slug": "glm-4-5v", "name": "GLM-4.5V (Non-reasoning)", "model_creator": { "name": "Z AI" }, "evaluations": { "artificial_analysis_intelligence_index": 24.0 } },
+    { "slug": "glm-4.5", "name": "GLM-4.5 (Reasoning)", "model_creator": { "name": "Z AI" }, "evaluations": { "artificial_analysis_intelligence_index": 26.0 } },
+    { "slug": "ling-3-0-flash", "name": "Ling 3.0 Flash", "model_creator": { "name": "InclusionAI" } }
+  ]
+}
