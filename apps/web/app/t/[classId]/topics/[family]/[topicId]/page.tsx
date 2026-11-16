@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { AiTokens } from '@/components/AiTokens'
 import { withoutTermSuffix } from '@/lib/map-source'
 import { loadTopicItems, loadTopicsClass } from '../../data'
 import { learnerResults, mostMissed, needHelpFirst, partsOf, percentOf, sessionsByTopic, tally } from '../../logic'
@@ -30,7 +31,7 @@ export default async function TopicDetailPage({ params }: { params: Promise<{ cl
 
   return (
     <Shell href={`${base}/topics/${part.family}`} backLabel={`Back to ${part.label}`} eyebrow={`${c.name} · ${part.label}`} title={name}>
-      {/* P137 token card */}
+      <AiTokens classId={classId} acrossTopics learners={c.learners} />
       <Heading title={name} line={all.sessions === 0 ? 'No one has practised this topic yet.' : null} />
       <div className="grid grid-cols-3 gap-2.5">
         <Stat value={average === null ? '-' : `${average}%`} label="Class average" />

@@ -7,7 +7,12 @@ export type UsageRow = {
   completion_tokens: number | null
   total_tokens: number | null
   reported: boolean
+  /** The learner the call was for, when it was for one (a class report has none). Read for the split by learner. */
+  child_id?: string | null
 }
+
+/** A learner of the class, as the Topics screens already have them. */
+export type Learner = { id: string; name: string }
 
 /** The kinds of work in plain words. Every job the agent runs is under one of them; a job nobody listed is "Other". */
 const KIND: Record<string, string> = {
@@ -45,13 +50,39 @@ export function summariseUsage(rows: UsageRow[]): { total: number; unreported: n
 }
 
 /**
+ * The tokens of each learner of `learners`, biggest first, only learners with some. At most `limit` are shown and `more` says how many were left out.
+ * A row with no learner (a class report) or a learner who is not in the list is not in the split (it is still in the total).
+ */
+export function byLearner(rows: UsageRow[], learners: Learner[], limit = 5): { shown: { name: string; tokens: number }[]; more: number } {
+  const tokens = new Map<string, number>()
+  for (const r of rows) if (r.child_id) tokens.set(r.child_id, (tokens.get(r.child_id) ?? 0) + tokensOf(r))
+  const all = learners.flatMap((l) => ((tokens.get(l.id) ?? 0) > 0 ? [{ name: l.name, tokens: tokens.get(l.id)! }] : [])).sort((a, b) => b.tokens - a.tokens)
+  return { shown: all.slice(0, limit), more: Math.max(0, all.length - limit) }
+}
+
+/**
  * The words on the screen, from rows already read. "AI used 12,345 tokens" with a small split by kind of work. A call whose reply held no usage is never
  * given a made-up count: it is said so in words. With no rows it shows nothing.
  */
-export function AiTokensView({ rows, whose, atLeast = false }: { rows: UsageRow[]; whose: 'class' | 'learner'; atLeast?: boolean }) {
+export function AiTokensView({
+  rows,
+  whose,
+  atLeast = false,
+  acrossTopics = false,
+  learners,
+}: {
+  rows: UsageRow[]
+  whose: 'class' | 'learner'
+  atLeast?: boolean
+  /** On a topic page: the rows cannot be told by topic, so the figure says it is the whole class, every topic together. */
+  acrossTopics?: boolean
+  /** The learners of the class: when given, a "By learner" line is added. */
+  learners?: Learner[]
+}) {
   if (rows.length === 0) return null
   const { total, unreported, groups } = summariseUsage(rows)
-  const owner = whose === 'class' ? 'for this class' : 'for this learner'
+  const owner = whose === 'learner' ? 'for this learner' : acrossTopics ? 'for this class, all topics together' : 'for this class'
+  const split = total > 0 && learners ? byLearner(rows, learners) : null
   return (
     <section aria-label="AI use" className="flex flex-col gap-0.5 text-[13px] leading-[1.4] text-body">
       {total > 0 ? (
@@ -68,6 +99,12 @@ export function AiTokensView({ rows, whose, atLeast = false }: { rows: UsageRow[
         </p>
       )}
       {total > 0 && groups.length > 0 ? <p className="m-0">{groups.map((g) => `${g.label} ${thousands(g.tokens)}`).join(' · ')}</p> : null}
+      {split && split.shown.length > 0 ? (
+        <p className="m-0">
+          By learner: {split.shown.map((l) => `${l.name} ${thousands(l.tokens)}`).join(' · ')}
+          {split.more > 0 ? ` and ${split.more} more` : ''}
+        </p>
+      ) : null}
       {total > 0 && unreported > 0 ? (
         <p className="m-0">
           {unreported} AI {unreported === 1 ? 'call' : 'calls'} did not report {unreported === 1 ? 'its' : 'their'} tokens, so the number is a little low.
@@ -93,7 +130,7 @@ async function readRows(scope: { classId?: string; childId?: string }): Promise<
     for (let page = 0; page < MAX_PAGES; page++) {
       const query = supabase
         .from('ai_usage')
-        .select('job, prompt_tokens, completion_tokens, total_tokens, reported')
+        .select('job, prompt_tokens, completion_tokens, total_tokens, reported, child_id')
         .order('created_at', { ascending: true })
         .range(page * PAGE, page * PAGE + PAGE - 1)
       const { data, error } = await (scope.childId ? query.eq('child_id', scope.childId) : query.eq('class_id', scope.classId!))
@@ -111,8 +148,8 @@ async function readRows(scope: { classId?: string; childId?: string }): Promise<
  * What the AI has used, in real tokens, for a class (`classId`) or for one learner (`childId`): a server component that reads `ai_usage` under the
  * teacher's own row-level security. The table missing, empty or unreadable shows nothing and never an error.
  */
-export async function AiTokens({ classId, childId }: { classId?: string; childId?: string }) {
+export async function AiTokens({ classId, childId, acrossTopics, learners }: { classId?: string; childId?: string; acrossTopics?: boolean; learners?: Learner[] }) {
   const found = await readRows({ classId, childId })
   if (!found) return null
-  return <AiTokensView rows={found.rows} whose={childId ? 'learner' : 'class'} atLeast={found.atLeast} />
+  return <AiTokensView rows={found.rows} whose={childId ? 'learner' : 'class'} atLeast={found.atLeast} acrossTopics={acrossTopics} learners={learners} />
 }

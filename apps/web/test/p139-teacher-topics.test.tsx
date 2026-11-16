@@ -9,6 +9,8 @@ import { describe, expect, it, vi } from 'vitest'
 // committed fixture of real AI-written questions. No server, no browser, no database, no model.
 
 vi.mock('../lib/supabase/server', () => ({ createSupabaseServer: vi.fn() }))
+// P137b: the token card is an async server component, which a plain render cannot draw. It has its own test (p137-ai-tokens).
+vi.mock('../components/AiTokens', () => ({ AiTokens: () => null }))
 vi.mock('next/navigation', () => ({
   notFound: () => {
     throw new Error('NEXT_NOT_FOUND')
@@ -311,10 +313,11 @@ describe('screen 3: one topic', () => {
     await expect(render('t-fun')).rejects.toThrow('NEXT_NOT_FOUND')
   })
 
-  it('keeps the marked spots for the token card at the top of screen 1 and screen 3', () => {
+  it('has the token card at the top of screen 1 and screen 3 (P137b filled the spots P139 marked)', () => {
     for (const file of ['app/t/[classId]/topics/page.tsx', 'app/t/[classId]/topics/[family]/[topicId]/page.tsx']) {
       const source = readFileSync(resolve(webRoot, file), 'utf8')
-      expect(source.match(/\{\/\* P137 token card \*\/\}/g), file).toHaveLength(1)
+      expect(source.match(/<AiTokens /g), file).toHaveLength(1)
+      expect(source, file).not.toContain('P137 token card')
     }
   })
 })
