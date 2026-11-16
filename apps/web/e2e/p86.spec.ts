@@ -210,12 +210,14 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await proof(page, 'factorised')
     await next(page).click()
 
-    // The results show only the two that were missed, and the answers with their notation.
+    // The results show every question (P126): 3 and 5 were missed and are corrected, with the answers in their notation; the other three are confirmed.
     await check(page.getByRole('heading', { name: 'You finished, Amina!' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Question 3' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Question 5' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: /^Question [124]$/ })).toHaveCount(0)
-    await expect(page.getByRole('article')).toHaveCount(2)
+    await expect(page.getByRole('article')).toHaveCount(5)
+    await expect(page.locator('article[data-verdict="missed"]')).toHaveCount(2)
+    await expect(page.locator('article[data-verdict="right"]')).toHaveCount(3)
+    await expect(page.getByText('You got 3 of 5 right.')).toBeVisible()
     const five = page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'Question 5' }) })
     await expect(five.locator('[data-question] sup')).toHaveText('2')
     await expect(five.locator('sup').first()).toBeVisible()

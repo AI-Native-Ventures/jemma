@@ -42,9 +42,15 @@ export type StoredItem = {
   unread?: boolean
 }
 
+/**
+ * One try question as its card on the results screen has it. The name is old: since P126 the results list holds EVERY try question (`reviewOf`), a right
+ * one confirmed and explained and a missed one corrected, and `correct` tells them apart. A list of misses only (`missedOf`) carries no `correct`.
+ */
 export type MissedQuestion = {
   /** Number among the try questions, as the results screen titles it. */
   n: number
+  /** True when the answer was right (the card confirms it and says why it works), false when it was missed. Absent in a list that only holds misses. */
+  correct?: boolean
   prompt: string
   render: Question['render']
   terms?: string[]
@@ -186,12 +192,13 @@ export function answerText(q: Question, value: string): string {
   return value
 }
 
-export function missedOf(items: StoredItem[]): MissedQuestion[] {
+/** Every try question in order, each marked right or missed: what the results screen draws one card for. */
+export function reviewOf(items: StoredItem[]): MissedQuestion[] {
   return sorted(items, 'try')
     .map((item, i) => ({ item, n: i + 1 }))
-    .filter(({ item }) => !item.correct)
     .map(({ item, n }) => ({
       n,
+      correct: item.correct,
       prompt: item.question.prompt,
       render: item.question.render,
       ...(item.question.terms ? { terms: item.question.terms } : {}),
@@ -203,6 +210,27 @@ export function missedOf(items: StoredItem[]): MissedQuestion[] {
       why: item.question.why,
       rightWay: item.question.rightWay,
     }))
+}
+
+/** The try questions that were missed, numbered as in `reviewOf`. */
+export function missedOf(items: StoredItem[]): MissedQuestion[] {
+  return reviewOf(items)
+    .filter((q) => !q.correct)
+    .map(({ correct: _correct, ...q }) => q)
+}
+
+/**
+ * The two lines at the top of the results: how many were right, then one kind line by the score. No ranking against anyone.
+ * Every one right is praised, three fifths or more is "good work" with the number left to fix, anything less is "let's go through them together".
+ */
+export function scoreLines(right: number, total: number): { score: string; cheer: string } {
+  const score = `You got ${right} of ${total} right.`
+  if (right >= total) return { score, cheer: 'Every one right. Well done.' }
+  if (right * 5 >= total * 3) {
+    const left = total - right
+    return { score, cheer: `Good work. Look at ${left === 1 ? 'the one' : `the ${left}`} to fix below.` }
+  }
+  return { score, cheer: "Let's go through them together." }
 }
 
 export type StageMove = { from: Stage; to: Stage }

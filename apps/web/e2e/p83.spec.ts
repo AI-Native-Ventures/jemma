@@ -210,9 +210,11 @@ test.describe('a learner answers a practice on paper', () => {
 
     // the screen asks again by itself and shows the Results of today, built from the stored items
     await check(page.getByRole('heading', { name: 'You finished, Amina!' })).toBeVisible({ timeout: 60_000 })
-    await expect(page.getByRole('heading', { name: 'Question 2' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Question 4' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: /^Question [135]$/ })).toHaveCount(0)
+    // every question has its card (P126): 1, 3 and 5 are confirmed, 2 and 4 (one of them unread) are corrected
+    await expect(page.getByRole('article')).toHaveCount(5)
+    await expect(page.locator('article[data-verdict="right"]')).toHaveCount(3)
+    await expect(page.locator('article[data-verdict="missed"]')).toHaveCount(2)
+    await expect(page.getByText('You got 3 of 5 right.')).toBeVisible()
     // the question Jemma could not read says so under "You wrote", in place of an empty answer
     await expect(page.getByText('Jemma could not read this one')).toHaveCount(1)
     await expect(page.getByText('Jemma could not read this one')).toBeVisible()

@@ -123,11 +123,12 @@ describe('reading one finished practice again', () => {
     admin = fakeDb({ session_items: items })
   })
 
-  it('gives the missed question with what was written and the right answer, and the count', async () => {
+  it('gives every try question (P126), the missed one with what was written and the right answer, and the count', async () => {
     const r = await getPastResult(SESSION)
     expect(r).toMatchObject({ firstName: 'Amina', topic: 'Algebraic expressions', day: 'Mon 16 Nov', score: '4 of 5 right', hasAnswers: true })
-    expect(r.missed).toHaveLength(1)
-    expect(r.missed[0]).toMatchObject({ n: 1, wrote: 'zzz', right: Q.answer, why: Q.why, rightWay: Q.rightWay })
+    expect(r.missed).toHaveLength(5)
+    expect(r.missed.filter((m) => m.correct === false)).toHaveLength(1)
+    expect(r.missed.find((m) => m.correct === false)).toMatchObject({ n: 1, wrote: 'zzz', right: Q.answer, why: Q.why, rightWay: Q.rightWay })
   })
 
   it("does not open another learner's practice", async () => {

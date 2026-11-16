@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { QuestionSchema } from '@jemma/profiling/schemas'
-import { missedOf, type MissedQuestion, type StoredItem } from '@/app/k/session/[sessionId]/logic'
+import { reviewOf, type MissedQuestion, type StoredItem } from '@/app/k/session/[sessionId]/logic'
 import { demoCookie } from '@/lib/demo'
 import { demoParentKey, handbackTarget, practiceResultsHref, type HandbackTarget } from '@/lib/handback'
 import { HANDOVER_COOKIE, verifyHandover } from '@/lib/handover'
@@ -134,7 +134,7 @@ export async function getPastResult(sessionId: string): Promise<PastResult> {
     topic: session.topic_name?.trim() || 'Practice',
     day: dayStamp(session.finished_at ?? `${session.planned_for}T12:00:00Z`),
     score: scoreLine(right, total),
-    missed: missedOf(items),
+    missed: reviewOf(items), // P126: every try question, a right one confirmed and explained
     hasAnswers: tries.length > 0,
   }
 }

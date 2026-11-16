@@ -145,11 +145,17 @@ test('the whole session: no right or wrong, only missed questions at the end, ga
   }
 
   await expect(page.getByRole('heading', { name: 'You finished, Amina!' })).toBeVisible({ timeout: 20_000 })
-  await expect(page.getByRole('heading', { name: 'Question 2' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Question 5' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: /^Question [134]$/ })).toHaveCount(0)
+  // Every question has its card (P126): the 3 right ones are confirmed and explained, the 2 missed ones (2 and 5) are corrected.
+  for (const n of [1, 2, 3, 4, 5]) await expect(page.getByRole('heading', { name: `Question ${n}`, exact: true })).toBeVisible()
+  await expect(page.getByRole('article')).toHaveCount(5)
+  await expect(page.locator('article[data-verdict="right"]')).toHaveCount(3)
+  await expect(page.locator('article[data-verdict="missed"]')).toHaveCount(2)
+  await expect(page.getByText("Yes, you're right.")).toHaveCount(3)
+  await expect(page.getByText('Why it works:')).toHaveCount(3)
+  await expect(page.getByText('Not yet.')).toHaveCount(2)
   await expect(page.getByText('you added the tops and the bottoms.').first()).toBeVisible()
-  await expect(page.getByText("Let's look at these 2 together.")).toBeVisible()
+  await expect(page.getByText('You got 3 of 5 right.')).toBeVisible()
+  await expect(page.getByText('Good work. Look at the 2 to fix below.')).toBeVisible()
   await shot(page, testInfo, 'child-results')
 
   const { data: session } = await admin().from('sessions').select('status, right').eq('id', sessionId).single()
