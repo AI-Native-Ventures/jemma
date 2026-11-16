@@ -2,6 +2,7 @@
 
 import { useId, useState } from 'react'
 import { GEOMETRY_REASONS, filterReasons } from '@jemma/profiling/logic'
+import { SignText } from './Signs'
 
 /**
  * The reason for a step of a geometry proof (P149), picked from the fixed list of CAPS reasons (`GEOMETRY_REASONS`, the one list the lesson prompt and the
@@ -51,7 +52,7 @@ export function ReasonPicker({ reason, onReason, withValue, value, onValue }: Re
         <p className="m-0 text-[16px] font-semibold text-ink">{withValue ? '2. The reason' : 'The reason'}</p>
         {reason ? (
           <div className="flex items-center justify-between gap-3 rounded-18 border-[3px] border-ink bg-soft-2 px-4 py-3" data-reason-chip="true">
-            <span className="min-w-0 text-[18px] leading-[1.3] font-bold text-ink">{reason}</span>
+            <span className="min-w-0 text-[18px] leading-[1.3] font-bold text-ink"><SignText text={reason} /></span>
             <button
               type="button"
               onClick={() => onReason('')}
@@ -84,7 +85,7 @@ export function ReasonPicker({ reason, onReason, withValue, value, onValue }: Re
                     }}
                     className="flex min-h-12 w-full cursor-pointer items-center rounded-14 border-2 border-edge bg-card px-4 py-2.5 text-left text-[17px] leading-[1.3] font-semibold text-ink"
                   >
-                    {item}
+                    <SignText text={item} />
                   </button>
                 </li>
               ))}
@@ -105,7 +106,7 @@ export function ReasonList() {
       <summary className="min-h-11 cursor-pointer py-2.5 text-[16px] font-semibold text-ink">See the list of reasons</summary>
       <ul aria-label="Reasons" className="m-0 flex list-none flex-col gap-1 p-0 pb-2 text-[16px] leading-[1.35] text-body">
         {GEOMETRY_REASONS.map((reason) => (
-          <li key={reason}>{reason}</li>
+          <li key={reason}><SignText text={reason} /></li>
         ))}
       </ul>
     </details>
