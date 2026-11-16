@@ -95,7 +95,8 @@ test.describe('My own', () => {
     const fractions = page.getByRole('listitem').filter({ has: page.getByText('Common fractions', { exact: true }) })
     await expect(fractions).toHaveCount(2)
     await expect(page.getByRole('region', { name: 'Term 1' }).getByRole('listitem').filter({ hasText: 'Common fractions' })).toContainText('3 of 5 right')
-    await expect(page.getByRole('region', { name: 'Term 4' }).getByRole('listitem').filter({ hasText: 'Common fractions' })).toContainText('No score yet')
+    // her marked answers on "Common fractions (Term 4)" are counted on that topic, and the gap on it is still new
+    await expect(page.getByRole('region', { name: 'Term 4' }).getByRole('listitem').filter({ hasText: 'Common fractions' })).toContainText('2 of 4 right')
     await expect(page.getByText('From the CAPS curriculum for Grade 6.')).toBeVisible()
     await expect(page.getByText('(Term', { exact: false })).toHaveCount(0)
 
