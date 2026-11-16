@@ -3,7 +3,7 @@ import { createServer, type Server } from 'node:http'
 import { resolve } from 'node:path'
 import { createServiceClient, type Json } from '@jemma/profiling/db'
 import { LessonSchema, type Lesson, type Question } from '@jemma/profiling/schemas'
-import { expect, test as base, type Page } from '@playwright/test'
+import { expect, test as base, type Page, type Locator } from '@playwright/test'
 import { mathField, writeAnswer, writtenLatex } from './helpers/math-field'
 import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 
@@ -114,6 +114,13 @@ async function makeSenior(childId: string, classId: string): Promise<string> {
 const noHorizontalScroll = async (page: Page) =>
   expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false)
 
+/** The box of an element that may be missing for a moment (the editor builds its keyboard again): wait until it has one. */
+async function boxOf(target: Locator): Promise<{ x: number; y: number; width: number; height: number }> {
+  let box: { x: number; y: number; width: number; height: number } | null = null
+  await expect.poll(async () => ((box = await target.boundingBox()) !== null), { timeout: 10_000 }).toBe(true)
+  return box!
+}
+
 const next = (page: Page) => page.getByRole('button', { name: 'Next', exact: true })
 const answerBox = (page: Page) => page.getByLabel('Your answer', { exact: true })
 
@@ -158,7 +165,7 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     expect(await visibleLayer()).toBe('jemma-numbers')
     const keycap = page.locator('.MLK__layer.is-visible .MLK__keycap').first()
     await expect(keycap).toBeVisible()
-    const size = (await keycap.boundingBox())!
+    const size = await boxOf(keycap)
     expect(size.width).toBeGreaterThanOrEqual(44)
     expect(size.height).toBeGreaterThanOrEqual(44)
     await noHorizontalScroll(page)
@@ -177,11 +184,8 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
       await expect(tabs.first()).toBeVisible()
       for (let i = 0; i < 5; i++) {
         const at = `${label}, tab ${i}`
-        const key = await tabs.nth(i).boundingBox()
-        const face = await tabs.nth(i).locator('.tab-face').boundingBox()
-        expect(key, `${at}: the key has a box`).not.toBeNull()
-        expect(face, `${at}: the face has a box`).not.toBeNull()
-        if (!key || !face) continue
+        const key = await boxOf(tabs.nth(i))
+        const face = await boxOf(tabs.nth(i).locator('.tab-face'))
         expect(key.width, at).toBeGreaterThanOrEqual(44)
         expect(face.height, at).toBeGreaterThanOrEqual(14)
         expect(face.height, at).toBeLessThanOrEqual(26)
