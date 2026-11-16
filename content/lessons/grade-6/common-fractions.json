@@ -1,0 +1,2462 @@
+{
+  "grade": 6,
+  "baseName": "Common fractions",
+  "family": "fractions",
+  "capsNames": [
+    "Common fractions"
+  ],
+  "terms": [
+    1,
+    4
+  ],
+  "source": {
+    "kind": "siyavula",
+    "title": "Siyavula Mathematics, Grade 7",
+    "address": "https://www.siyavula.com/read/za/mathematics/grade-7/fractions",
+    "licence": "All Siyavula textbook content made available on this site is released under the terms of a Creative Commons Attribution License",
+    "credit": "Based on Siyavula Mathematics, Grade 7, Chapter 7: Fractions, CC BY 3.0"
+  },
+  "lessons": [
+    {
+      "position": 1,
+      "title": "Parts of a whole and fraction names",
+      "minutes": 20,
+      "objectives": [
+        "You will be able to say and write fractions like one sixth and five eighths from pictures of equal parts.",
+        "You will be able to name the numerator and the denominator of a fraction and say what each tells you."
+      ],
+      "keyWords": [
+        {
+          "word": "whole",
+          "meaning": "The one complete thing that is being cut into equal parts."
+        },
+        {
+          "word": "fraction",
+          "meaning": "A number that names equal parts of a whole, written as a top number over a bottom number."
+        },
+        {
+          "word": "numerator",
+          "meaning": "The top number of a fraction; it counts how many equal parts are taken."
+        },
+        {
+          "word": "denominator",
+          "meaning": "The bottom number of a fraction; it names the parts, like sixths or eighths."
+        },
+        {
+          "word": "unit fraction",
+          "meaning": "A fraction with numerator 1, like 1/6 or 1/8."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "Whole numbers count whole things, but they cannot say exactly how long something is when it lies between two whole numbers. That is why fractions were invented. A fraction names an equal part of a whole thing.\n\nThink of a loaf of bread cut into slices, a strip of licorice broken into pieces, or a garden dug into plots. If you take one part of the whole, a fraction tells you which part and how much.",
+          "speech": "Whole numbers are good for counting whole things. But they cannot tell you exactly how long something is when it is between two whole numbers. That is why fractions were invented. A fraction names an equal part of a whole thing. Think of a loaf of bread cut into slices, a strip of licorice broken into pieces, or a garden dug into plots. A fraction tells you which part of the whole you have and how much."
+        },
+        {
+          "kind": "explain",
+          "text": "Before you can use a fraction, the whole must be cut into EQUAL parts. If the parts are not the same size, they are not fractions of the whole.\n\nA whole cut into 6 equal parts gives pieces called sixths. One piece is one sixth, written 1/6. A fraction with numerator 1 is called a unit fraction.",
+          "speech": "Before you can use a fraction, the whole must be cut into equal parts. If the parts are not the same size, they are not fractions of the whole. A whole cut into six equal parts gives pieces called sixths. One piece is one sixth, written one over six. A fraction with a numerator of one is called a unit fraction."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 4,
+                "shaded": 1,
+                "label": "1/4"
+              },
+              {
+                "parts": 6,
+                "shaded": 1,
+                "label": "1/6"
+              },
+              {
+                "parts": 8,
+                "shaded": 1,
+                "label": "1/8"
+              }
+            ]
+          },
+          "caption": "Each bar is one whole. The first is cut into 4 equal parts, the second into 6, the third into 8. In each bar one part is shaded.",
+          "speech": "Three bars. Each bar is one whole. The first bar is cut into four equal parts and one part is shaded, that is one quarter. The second bar is cut into six equal parts and one part is shaded, that is one sixth. The third bar is cut into eight equal parts and one part is shaded, that is one eighth."
+        },
+        {
+          "kind": "explain",
+          "text": "The name of the parts depends on how many equal parts the whole was cut into. Cut into 3 equal parts, each part is one third. Cut into 5 equal parts, each part is one fifth. Cut into 10 equal parts, each part is one tenth.\n\nQuarters are the same as fourths. The bottom number of the fraction is the name of the parts: 3 parts means thirds, 8 parts means eighths.",
+          "speech": "The name of the parts depends on how many equal parts the whole was cut into. Cut into three equal parts, each part is one third. Cut into five equal parts, each part is one fifth. Cut into ten equal parts, each part is one tenth. Quarters are the same as fourths. The bottom number of the fraction gives the name of the parts: three parts means thirds, eight parts means eighths."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 3,
+                "shaded": 1,
+                "label": "1/3"
+              },
+              {
+                "parts": 5,
+                "shaded": 1,
+                "label": "1/5"
+              },
+              {
+                "parts": 10,
+                "shaded": 1,
+                "label": "1/10"
+              },
+              {
+                "parts": 12,
+                "shaded": 1,
+                "label": "1/12"
+              }
+            ]
+          },
+          "caption": "One whole cut into thirds, fifths, tenths and twelfths. One part is shaded in each bar.",
+          "speech": "Four bars. The first whole is cut into three equal parts, one part shaded, one third. The second is cut into five equal parts, one part shaded, one fifth. The third is cut into ten equal parts, one part shaded, one tenth. The fourth is cut into twelve equal parts, one part shaded, one twelfth."
+        },
+        {
+          "kind": "explain",
+          "text": "The top number of a fraction is the numerator. It counts how many equal parts you are talking about. The bottom number is the denominator. It names the parts and tells you how many equal parts the whole was cut into.\n\nIn 5/8 the numerator is 5 and the denominator is 8. The whole was cut into 8 equal parts, and 5 of them are counted.",
+          "speech": "The top number of a fraction is the numerator. It counts how many equal parts you are talking about. The bottom number is the denominator. It names the parts and tells you how many equal parts the whole was cut into. In the fraction five eighths, the numerator is five and the denominator is eight. The whole was cut into eight equal parts, and five of them are counted."
+        },
+        {
+          "kind": "worked",
+          "problem": "A rectangle is cut into 10 equal small blocks. 7 of the blocks are shaded. What fraction of the rectangle is shaded?",
+          "steps": [
+            {
+              "line": "The rectangle is cut into 10 equal blocks.",
+              "reason": "Count every block, shaded and unshaded."
+            },
+            {
+              "line": "The parts are tenths, so the denominator is 10.",
+              "reason": "The denominator names the parts, and the whole has 10 equal parts."
+            },
+            {
+              "line": "7 blocks are shaded, so the numerator is 7.",
+              "reason": "The numerator counts the parts you are talking about."
+            },
+            {
+              "line": "Fraction shaded = 7/10",
+              "reason": "Write the numerator over the denominator."
+            }
+          ],
+          "answer": "7/10",
+          "answerKind": "fraction",
+          "speech": "A rectangle is cut into ten equal small blocks. Seven of the blocks are shaded. What fraction of the rectangle is shaded? First we count every block: the rectangle is cut into ten equal blocks, so the parts are tenths and the denominator is ten. Then we count the shaded blocks: seven are shaded, so the numerator is seven. We write the numerator over the denominator, so the fraction shaded is seven tenths.",
+          "diagram": {
+            "kind": "area_model",
+            "rows": 2,
+            "cols": 5,
+            "shaded": 7
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "A strip is cut into 8 equal parts. 5 parts are red and 3 parts are yellow. What fraction of the strip is yellow?",
+          "steps": [
+            {
+              "line": "The strip is cut into 8 equal parts.",
+              "reason": "The denominator names the parts, so the parts are eighths and the denominator is 8."
+            },
+            {
+              "line": "3 parts are yellow.",
+              "reason": "Count only the yellow parts, not all the parts."
+            },
+            {
+              "line": "5 red parts plus 3 yellow parts = 8 parts.",
+              "reason": "This checks that red and yellow together use up the whole strip."
+            },
+            {
+              "line": "Fraction yellow = 3/8",
+              "reason": "Write the numerator over the denominator; this is the answer."
+            }
+          ],
+          "answer": "3/8",
+          "answerKind": "fraction",
+          "speech": "A strip is cut into eight equal parts. Five parts are red and three parts are yellow. What fraction of the strip is yellow? The strip is cut into eight equal parts, so the parts are eighths and the denominator is eight. Three parts are yellow, so the numerator is three. As a check, five red parts plus three yellow parts gives eight parts, which is the whole strip. The fraction yellow is three eighths.",
+          "diagram": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 8,
+                "shaded": 3,
+                "label": "3/8"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mistake",
+          "wrong": "A strip has 7 equal parts and 3 are shaded, so the fraction is 7/3.",
+          "right": "A strip has 7 equal parts and 3 are shaded, so the fraction is 3/7.",
+          "why": "The numerator counts the parts you are talking about, which is 3 here. The denominator counts all the equal parts, which is 7. Swapping them gives a different number: 7/3 is more than two wholes, but 3 shaded parts out of 7 is less than one whole.",
+          "speech": "Here is the usual mistake. A strip has seven equal parts and three of them are shaded. The wrong answer is seven thirds. The right answer is three sevenths. The numerator counts the parts you are talking about, which is three here. The denominator counts all the equal parts, which is seven. Swapping them gives a different number: seven thirds is more than two wholes, but three shaded parts out of seven is less than one whole.",
+          "diagram": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 7,
+                "shaded": 3,
+                "label": "3/7"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "A school garden is divided into 12 equal plots. 7 plots are planted with mealies. What fraction of the garden is planted with mealies?",
+          "steps": [
+            {
+              "line": "The garden has 12 equal plots.",
+              "reason": "Equal plots mean the garden is the whole and the plots are the parts."
+            },
+            {
+              "line": "The parts are twelfths, so the denominator is 12.",
+              "reason": "The denominator names the total number of equal parts."
+            },
+            {
+              "line": "7 plots have mealies, so the numerator is 7.",
+              "reason": "The numerator counts the parts you are talking about."
+            },
+            {
+              "line": "The other 5 plots are still bare: 5/12.",
+              "reason": "12 minus 7 leaves 5 plots, and the two fractions use up the whole garden."
+            },
+            {
+              "line": "Fraction planted = 7/12",
+              "reason": "Write the 7 mealie plots over the 12 equal plots; this is the answer."
+            }
+          ],
+          "answer": "7/12",
+          "answerKind": "fraction",
+          "speech": "A school garden is divided into twelve equal plots. Seven plots are planted with mealies. What fraction of the garden is planted with mealies? The garden has twelve equal plots, so the parts are twelfths and the denominator is twelve. Seven plots have mealies, so the numerator is seven. The other five plots are still bare, which is five twelfths. So the fraction planted is seven twelfths.",
+          "diagram": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 12,
+                "shaded": 7,
+                "label": "7/12"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "explain",
+          "text": "When the numerator and the denominator are the same, every part is counted. Then you have the whole thing, so the fraction is equal to 1.\n\nA strip cut into 4 equal parts with all 4 parts shaded is 4/4, which is the whole strip. In the same way 8/8 is 1 and 5/5 is 1. If the numerator is smaller than the denominator, the fraction is less than 1.",
+          "speech": "When the numerator and the denominator are the same, every part is counted. Then you have the whole thing, so the fraction is equal to one. A strip cut into four equal parts with all four parts shaded is four quarters, which is the whole strip. In the same way eight eighths is one, and five fifths is one. If the numerator is smaller than the denominator, the fraction is less than one."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 4,
+                "shaded": 4,
+                "label": "4/4 = 1"
+              },
+              {
+                "parts": 5,
+                "shaded": 5,
+                "label": "5/5 = 1"
+              },
+              {
+                "parts": 8,
+                "shaded": 8,
+                "label": "8/8 = 1"
+              }
+            ]
+          },
+          "caption": "In every bar all the equal parts are shaded, so each fraction is the whole bar, which is 1.",
+          "speech": "Three bars. In the first bar all four equal parts are shaded, so four quarters, which is the whole bar, one. In the second bar all five parts are shaded, five fifths, one. In the third bar all eight parts are shaded, eight eighths, one. Each bar is completely shaded, so each fraction is one whole bar."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "A rectangle is cut into 12 equal small blocks. 5 of the blocks are shaded. What fraction of the rectangle is shaded?",
+            "render": "text",
+            "steps": [
+              "Total equal blocks = 12",
+              "Shaded blocks = 5",
+              "Fraction shaded = 5/12"
+            ],
+            "answer": "5/12",
+            "answerKind": "fraction",
+            "diagram": {
+              "kind": "area_model",
+              "rows": 3,
+              "cols": 4,
+              "shaded": 5
+            },
+            "difficulty": 1,
+            "why": "Learners sometimes count only the shaded blocks, or count the unshaded blocks as the total.",
+            "rightWay": "Count all 12 equal blocks for the denominator, then count only the 5 shaded blocks for the numerator."
+          },
+          "hint": "Count every small block first, then count only the shaded ones.",
+          "speech": "A rectangle is cut into twelve equal small blocks. Five of the blocks are shaded. What fraction of the rectangle is shaded? Count every small block for the denominator, then count only the shaded blocks for the numerator."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "A strip of licorice is cut into 9 equal pieces. Thandi eats 4 of the pieces. What fraction of the whole strip did Thandi eat?",
+            "render": "text",
+            "steps": [
+              "The strip is cut into 9 equal pieces, so the denominator is 9.",
+              "Thandi eats 4 pieces, so the numerator is 4.",
+              "Fraction eaten = 4/9"
+            ],
+            "answer": "4/9",
+            "answerKind": "fraction",
+            "difficulty": 2,
+            "why": "Learners often put the total number of pieces on top instead of the pieces that were eaten.",
+            "rightWay": "The pieces eaten go on top, the total number of equal pieces goes below: 4/9."
+          },
+          "hint": "Ask yourself first how many equal pieces the whole strip has.",
+          "speech": "A strip of licorice is cut into nine equal pieces. Thandi eats four of the pieces. What fraction of the whole strip did Thandi eat? The strip is cut into nine equal pieces, so the denominator is nine. Thandi eats four pieces, so the numerator is four. The fraction eaten is four ninths."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "A strip is cut into 10 equal parts. 3 parts are painted red and 4 parts are painted blue. The rest is not painted yet. What fraction of the strip is not painted yet?",
+            "render": "text",
+            "steps": [
+              "The strip has 10 equal parts, so the denominator is 10.",
+              "Red and blue parts: 3 + 4 = 7 parts",
+              "Not painted: 10 - 7 = 3 parts",
+              "Fraction not painted = 3/10"
+            ],
+            "answer": "3/10",
+            "answerKind": "fraction",
+            "difficulty": 3,
+            "why": "Learners often give the red or blue fraction and forget the parts that are still empty.",
+            "rightWay": "First add the coloured parts, then take them away from 10, and put the answer over 10."
+          },
+          "hint": "How many parts are not red and not blue?",
+          "speech": "A strip is cut into ten equal parts. Three parts are painted red and four parts are painted blue. The rest is not painted yet. What fraction of the strip is not painted yet? The strip has ten equal parts, so the denominator is ten. Red and blue together are three plus four, that is seven parts. Ten minus seven leaves three parts not painted. So the fraction not painted is three tenths."
+        },
+        {
+          "kind": "explain",
+          "text": "To name a fraction from a picture, first check that the whole is cut into equal parts. Then count all the equal parts for the denominator. Then count only the parts you want for the numerator. Write the numerator over the denominator.\n\nSay the fraction in words too: five twelfths is written 5/12.",
+          "speech": "To name a fraction from a picture, first check that the whole is cut into equal parts. Then count all the equal parts for the denominator. Then count only the parts you want for the numerator. Write the numerator over the denominator. Say the fraction in words too: five twelfths is written five over twelve."
+        }
+      ],
+      "summary": [
+        "A fraction names equal parts of one whole.",
+        "The whole must be cut into equal parts before a fraction can be used.",
+        "The denominator is the bottom number. It names the parts and counts all the equal parts: thirds, sixths, tenths.",
+        "The numerator is the top number. It counts the parts you are talking about.",
+        "When all the parts are counted, the fraction is the whole: 4/4 = 1."
+      ],
+      "practice": [
+        {
+          "prompt": "A strip is cut into 5 equal parts. 2 of the parts are shaded. What fraction of the strip is shaded?",
+          "render": "text",
+          "steps": [
+            "The strip has 5 equal parts, so the denominator is 5.",
+            "2 parts are shaded, so the numerator is 2.",
+            "Fraction shaded = 2/5"
+          ],
+          "answer": "2/5",
+          "answerKind": "fraction",
+          "diagram": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 5,
+                "shaded": 2,
+                "label": "2/5"
+              }
+            ]
+          },
+          "difficulty": 1,
+          "why": "Learners count only the shaded parts and forget the total number of parts.",
+          "rightWay": "All 5 equal parts go below the line, and the 2 shaded parts go above it."
+        },
+        {
+          "prompt": "A strip is cut into 10 equal parts. 3 of the parts are shaded. What fraction of the strip is shaded?",
+          "render": "text",
+          "steps": [
+            "The strip has 10 equal parts, so the denominator is 10.",
+            "3 parts are shaded, so the numerator is 3.",
+            "Fraction shaded = 3/10"
+          ],
+          "answer": "3/10",
+          "answerKind": "fraction",
+          "diagram": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 10,
+                "shaded": 3,
+                "label": "3/10"
+              }
+            ]
+          },
+          "difficulty": 1,
+          "why": "Learners sometimes count the parts that are not shaded as the denominator.",
+          "rightWay": "Count all 10 equal parts for the denominator, and the 3 shaded parts for the numerator."
+        },
+        {
+          "prompt": "In the fraction 7/8, what is the denominator?",
+          "render": "text",
+          "steps": [
+            "The numerator is the top number, which is 7.",
+            "The denominator is the bottom number, which is 8.",
+            "Denominator = 8"
+          ],
+          "answer": "8",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "The top number is often given because it is read first.",
+          "rightWay": "The denominator is the bottom number of the fraction, so it is 8."
+        },
+        {
+          "prompt": "A chocolate is broken into 12 equal pieces. Thabo eats 5 of the pieces. What fraction of the chocolate did Thabo eat?",
+          "render": "text",
+          "steps": [
+            "The chocolate has 12 equal pieces, so the denominator is 12.",
+            "Thabo eats 5 pieces, so the numerator is 5.",
+            "Fraction eaten = 5/12"
+          ],
+          "answer": "5/12",
+          "answerKind": "fraction",
+          "difficulty": 2,
+          "why": "Learners use the total number of pieces as the numerator.",
+          "rightWay": "The pieces Thabo eats go on top, and the 12 equal pieces go below."
+        },
+        {
+          "prompt": "Which of these fractions means 4 out of 9 equal parts?",
+          "render": "text",
+          "steps": [
+            "The 4 parts taken go on top.",
+            "The 9 equal parts go below.",
+            "Answer: C, which is 4/9"
+          ],
+          "answer": "C",
+          "answerKind": "choice",
+          "choices": [
+            "4/13",
+            "9/4",
+            "4/9",
+            "9/13"
+          ],
+          "difficulty": 2,
+          "why": "The numbers are often written the wrong way round.",
+          "rightWay": "The 4 parts are on top and the 9 equal parts are below, so the answer is 4/9."
+        },
+        {
+          "prompt": "A taxi has 14 equal seats. All 14 seats are full. What fraction of the seats are full?",
+          "render": "text",
+          "steps": [
+            "The taxi has 14 equal seats, so the denominator is 14.",
+            "All 14 seats are full, so the numerator is 14.",
+            "Fraction full = 14/14"
+          ],
+          "answer": "14/14",
+          "answerKind": "fraction",
+          "difficulty": 3,
+          "why": "Learners think a fraction must always be smaller than one whole.",
+          "rightWay": "Every part is full, so the numerator and the denominator are both 14, and the fraction is the whole taxi."
+        },
+        {
+          "prompt": "A school garden is divided into 9 equal beds. 4 beds have cabbage, 2 beds have spinach and the rest are still empty. What fraction of the garden is empty?",
+          "render": "text",
+          "steps": [
+            "The garden has 9 equal beds, so the denominator is 9.",
+            "Used beds: 4 + 2 = 6",
+            "Empty beds: 9 - 6 = 3",
+            "Fraction empty = 3/9"
+          ],
+          "answer": "3/9",
+          "answerKind": "fraction",
+          "difficulty": 3,
+          "why": "Learners give the fraction of cabbage or spinach and forget the empty beds.",
+          "rightWay": "Add the used beds, take them away from 9, and put the answer over 9."
+        }
+      ]
+    },
+    {
+      "position": 2,
+      "title": "Equivalent fractions",
+      "minutes": 20,
+      "objectives": [
+        "You will be able to find fractions that describe the same portion, like two thirds and four sixths.",
+        "You will be able to make equivalent fractions by multiplying the numerator and the denominator by the same number."
+      ],
+      "keyWords": [
+        {
+          "word": "numerator",
+          "meaning": "The top number of a fraction; it says how many parts we have."
+        },
+        {
+          "word": "denominator",
+          "meaning": "The bottom number of a fraction; it says what kind of parts, like sixths."
+        },
+        {
+          "word": "equivalent",
+          "meaning": "Two fractions are equivalent when they describe the same portion, even with different numbers."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "In the last lesson you learned that a fraction has two parts. In 3/4, the numerator is 3 (how many parts) and the denominator is 4 (what kind of parts: quarters).\n\nNow think about a chocolate bar. If you break it into 2 equal pieces and take 1 piece, you have half. If you break the same bar into 4 equal pieces and take 2, you also have half! Two fractions can describe exactly the same amount.",
+          "speech": "In the last lesson you learned that a fraction has a numerator on top, which counts the parts, and a denominator on the bottom, which names the kind of parts. Now think about a chocolate bar. Break it into two equal pieces and take one piece: you have one half. Break the same bar into four equal pieces and take two: you still have one half! Two different fractions can describe exactly the same amount."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 2,
+                "shaded": 1,
+                "label": "1/2"
+              },
+              {
+                "parts": 4,
+                "shaded": 2,
+                "label": "2/4"
+              },
+              {
+                "parts": 8,
+                "shaded": 4,
+                "label": "4/8"
+              }
+            ]
+          },
+          "caption": "All three shaded portions are the same size: one half.",
+          "speech": "The picture shows three bars of the same length. The first bar is cut into two parts with one part shaded: one half. The second bar is cut into four parts with two shaded: two quarters. The third bar is cut into eight parts with four shaded: four eighths. The shaded parts are all exactly the same size. So one half, two quarters and four eighths are equivalent fractions."
+        },
+        {
+          "kind": "explain",
+          "text": "When two fractions describe the same portion, we say they are equivalent. Equivalent means equal in value.\n\nHere is why it happens: when you cut each piece of a bar into 2 smaller equal pieces, you double the number of pieces you have AND double the number of pieces in the whole bar. The portion you have stays the same size.\n\nThat gives us the rule: multiply the numerator and the denominator by the SAME number, and the new fraction is equivalent to the old one.",
+          "speech": "When two fractions describe the same portion, we say they are equivalent, which means equal in value. Here is why it works. If you cut every piece of a bar into two smaller equal pieces, you double the number of pieces you have, and you also double the number of pieces in the whole bar. Your portion stays the same size. So the rule is: multiply the numerator and the denominator by the same number, and the new fraction is equivalent to the old one."
+        },
+        {
+          "kind": "worked",
+          "problem": "Find an equivalent fraction for 3/4 by multiplying the numerator and the denominator by 2.",
+          "steps": [
+            {
+              "line": "3/4",
+              "reason": "Start with three quarters."
+            },
+            {
+              "line": "(3 x 2)/(4 x 2)",
+              "reason": "Multiply the numerator by 2 and the denominator by 2, the same number."
+            },
+            {
+              "line": "= 6/8",
+              "reason": "Work out the two multiplications."
+            }
+          ],
+          "answer": "6/8",
+          "answerKind": "fraction",
+          "speech": "Find an equivalent fraction for three quarters by multiplying top and bottom by two. Step one: start with three quarters. Step two: multiply the numerator, three, by two to get six, and the denominator, four, by two to get eight. We used the same number, two, on top and bottom. Step three: the new fraction is six eighths. The picture shows that three quarters and six eighths shade exactly the same amount, so they are equivalent.",
+          "diagram": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 4,
+                "shaded": 3,
+                "label": "3/4"
+              },
+              {
+                "parts": 8,
+                "shaded": 6,
+                "label": "6/8"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "Find the fraction equivalent to 2/3 that has denominator 12.",
+          "steps": [
+            {
+              "line": "2/3 = ?/12",
+              "reason": "We want twelfths. Ask: 3 times what makes 12?"
+            },
+            {
+              "line": "3 x 4 = 12, so multiply both numbers by 4",
+              "reason": "From thirds to twelfths, the denominator is multiplied by 4."
+            },
+            {
+              "line": "(2 x 4)/(3 x 4) = 8/12",
+              "reason": "Multiply the numerator by the same 4."
+            }
+          ],
+          "answer": "8/12",
+          "answerKind": "fraction",
+          "speech": "Find the fraction equivalent to two thirds that has denominator twelve. Step one: write two thirds equals what over twelve. Step two: three times four is twelve, so we multiply the denominator by four. Step three: multiply the numerator by the same four, so two times four is eight. The answer is eight twelfths. The picture shows two thirds and eight twelfths shade exactly the same amount, so they are equivalent.",
+          "diagram": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 3,
+                "shaded": 2,
+                "label": "2/3"
+              },
+              {
+                "parts": 12,
+                "shaded": 8,
+                "label": "8/12"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "Thandi walks 5/10 of the way to school. Her friend says she walks 1/2 of the way. Who is right?",
+          "steps": [
+            {
+              "line": "5/10",
+              "reason": "Thandi walked five tenths of the way."
+            },
+            {
+              "line": "10 divided by 5 = 2, so divide both numbers by 5",
+              "reason": "Ten tenths is the whole, so five tenths is half. From 10 to 2 we divide by 5."
+            },
+            {
+              "line": "(5 divided by 5)/(10 divided by 5) = 1/2",
+              "reason": "Dividing the numerator and denominator by the same number also gives an equivalent fraction."
+            }
+          ],
+          "answer": "Both are right: 5/10 = 1/2",
+          "answerKind": "choice",
+          "speech": "Thandi walks five tenths of the way to school. Her friend says she walks one half of the way. Who is right? Five tenths means five parts out of ten, and ten parts make the whole, so that is exactly half. To check: divide the numerator and the denominator by five. Five divided by five is one, and ten divided by five is two, so five tenths equals one half. Both girls are right. Multiplying or dividing the numerator and the denominator by the same number keeps the fraction equivalent.",
+          "diagram": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 10,
+                "shaded": 5,
+                "label": "5/10"
+              },
+              {
+                "parts": 2,
+                "shaded": 1,
+                "label": "1/2"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mistake",
+          "wrong": "3/4 = 3 x 2 / 4 = 6/4",
+          "right": "3/4 = (3 x 2)/(4 x 2) = 6/8",
+          "why": "If you multiply only the numerator, you get more parts but the parts stay the same size, so the portion becomes bigger. The denominator must also be multiplied so the parts become smaller in the same way.",
+          "speech": "Here is a common mistake. Someone writes three quarters equals six over four, multiplying only the top number. That is wrong. The right way is to multiply the numerator and the denominator both by two, to get six eighths. Why does the wrong way fail? If you multiply only the numerator, you have more parts but the parts stay the same size, so your portion gets bigger and the fraction is no longer equivalent. Both the top and the bottom must be multiplied by the same number."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "Find the missing number: 2/5 = ?/20",
+            "render": "text",
+            "steps": [
+              "From 5 to 20: 5 x 4 = 20",
+              "Multiply the numerator by 4 too: 2 x 4 = 8",
+              "So the missing number is 8"
+            ],
+            "answer": "8",
+            "answerKind": "whole",
+            "difficulty": 2,
+            "why": "Learners often multiply only the numerator and forget the denominator must be multiplied by the same number.",
+            "rightWay": "Ask: five times what makes twenty? Four. Then multiply the numerator by the same four: two times four is eight."
+          },
+          "hint": "Ask yourself: 5 times what number gives 20? Then use the same number on top.",
+          "speech": "Here is one for you to try. Find the missing number: two fifths equals what over twenty? Hint: ask yourself, five times what number gives twenty? Then use the same number on top."
+        },
+        {
+          "kind": "worked",
+          "problem": "A strip of licorice is shared so that 3/5 of it is given to Sipho. Write this as an equivalent fraction with denominator 15, to say how many fifteenths Sipho gets.",
+          "steps": [
+            {
+              "line": "3/5 = ?/15",
+              "reason": "We want fifteenths."
+            },
+            {
+              "line": "5 x 3 = 15",
+              "reason": "From fifths to fifteenths, multiply the denominator by 3."
+            },
+            {
+              "line": "(3 x 3)/(5 x 3) = 9/15",
+              "reason": "Multiply the numerator by the same 3."
+            }
+          ],
+          "answer": "9/15",
+          "answerKind": "fraction",
+          "speech": "A strip of licorice is shared so that three fifths of it goes to Sipho. Write this as an equivalent fraction in fifteenths. Step one: write three fifths equals what over fifteen. Step two: five times three is fifteen, so multiply the denominator by three. Step three: multiply the numerator by the same three, so three times three is nine. Sipho gets nine fifteenths of the strip. The picture shows three fifths and nine fifteenths shade the same amount.",
+          "diagram": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 5,
+                "shaded": 3,
+                "label": "3/5"
+              },
+              {
+                "parts": 15,
+                "shaded": 9,
+                "label": "9/15"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "Sindile ate 4/6 of his vetkoek. Which fraction below is equivalent to 4/6?",
+            "render": "text",
+            "steps": [
+              "4/6: divide numerator and denominator by 2",
+              "(4 divided by 2)/(6 divided by 2) = 2/3",
+              "So the answer is option A, 2/3"
+            ],
+            "answer": "A",
+            "answerKind": "choice",
+            "choices": [
+              "2/3",
+              "3/4",
+              "4/3",
+              "5/6"
+            ],
+            "difficulty": 2,
+            "why": "Learners often pick a fraction with the same top or bottom number instead of checking the portion is the same.",
+            "rightWay": "Divide the numerator and the denominator by the same number. Four and six both divide by 2, giving two thirds."
+          },
+          "hint": "Divide the numerator and the denominator by the same number.",
+          "speech": "Another one for you. Sindile ate four sixths of his vetkoek. Which of these is equivalent to four sixths: A, two thirds; B, three quarters; C, four thirds; or D, five sixths? Hint: divide the numerator and the denominator by the same number."
+        },
+        {
+          "kind": "explain",
+          "text": "You now have two skills that work together:\n\n1. To make bigger parts into smaller parts, multiply the numerator and denominator by the same number: 1/2 = 4/8.\n2. To make smaller parts into bigger parts, divide both by the same number: 8/12 = 2/3.\n\nEither way, the portion stays the same size. That is what equivalent means. In the next lesson you will use this to add fractions that have different denominators.",
+          "speech": "You now have two skills that work together. To make bigger parts into smaller parts, multiply the numerator and the denominator by the same number: one half equals four eighths. To make smaller parts into bigger parts, divide both by the same number: eight twelfths equals two thirds. Either way, the portion stays the same size, and that is what equivalent means. In the next lesson you will use this to add fractions with different denominators."
+        }
+      ],
+      "summary": [
+        "Equivalent fractions describe the same portion with different numbers, like 1/2 and 2/4.",
+        "Multiply the numerator AND the denominator by the same number to make an equivalent fraction.",
+        "Dividing the numerator and denominator by the same number also gives an equivalent fraction.",
+        "Multiplying only the numerator, or only the denominator, changes the portion, so it is not equivalent."
+      ],
+      "practice": [
+        {
+          "prompt": "Write an equivalent fraction for 1/2 by multiplying the numerator and the denominator by 3.",
+          "render": "text",
+          "steps": [
+            "Multiply top and bottom by 3",
+            "(1 x 3)/(2 x 3)",
+            "= 3/6"
+          ],
+          "answer": "3/6",
+          "answerKind": "fraction",
+          "difficulty": 1,
+          "why": "Learners sometimes multiply only the top number.",
+          "rightWay": "Multiply both the numerator and the denominator by 3: one times three is three, two times three is six."
+        },
+        {
+          "prompt": "Find the missing number: 1/3 = ?/9",
+          "render": "text",
+          "steps": [
+            "From 3 to 9: 3 x 3 = 9, so multiply by 3",
+            "Multiply the numerator by 3 too: 1 x 3 = 3",
+            "So the missing number is 3"
+          ],
+          "answer": "3",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Learners may add instead of multiply: 3 plus 6 is 9, so they wrongly think the numerator becomes 7.",
+          "rightWay": "The denominator 3 is multiplied by 3 to make 9, so multiply the numerator 1 by 3 as well."
+        },
+        {
+          "prompt": "Find the missing number: 3/4 = 9/?",
+          "render": "text",
+          "steps": [
+            "From 3 to 9: 3 x 3 = 9, so multiply by 3",
+            "Multiply the denominator by 3 too: 4 x 3 = 12",
+            "So the missing number is 12"
+          ],
+          "answer": "12",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Learners may work on the wrong pair of numbers and forget that the denominator must be multiplied by the same number.",
+          "rightWay": "The numerator 3 is multiplied by 3 to make 9, so multiply the denominator 4 by 3 as well, giving 12."
+        },
+        {
+          "prompt": "Simplify 6/8 by dividing the numerator and the denominator by the same number.",
+          "render": "text",
+          "steps": [
+            "6 and 8 both divide by 2",
+            "(6 divided by 2)/(8 divided by 2)",
+            "= 3/4"
+          ],
+          "answer": "3/4",
+          "answerKind": "fraction",
+          "difficulty": 2,
+          "why": "Learners sometimes divide only one of the numbers, or divide by different numbers.",
+          "rightWay": "Both 6 and 8 divide by 2, so six eighths simplifies to three quarters."
+        },
+        {
+          "prompt": "A taxi fills 2/3 of its seats. Write this as an equivalent fraction in twelfths.",
+          "render": "text",
+          "steps": [
+            "2/3 = ?/12",
+            "From 3 to 12: 3 x 4 = 12, so multiply by 4",
+            "(2 x 4)/(3 x 4) = 8/12"
+          ],
+          "answer": "8/12",
+          "answerKind": "fraction",
+          "difficulty": 2,
+          "why": "Learners may multiply the numerator by a different number than the denominator.",
+          "rightWay": "Three times four makes twelve, so multiply both the numerator and the denominator by four: eight twelfths."
+        },
+        {
+          "prompt": "Zanele drank 4/8 of a bottle of juice. Which fraction below is equivalent to 4/8?",
+          "render": "text",
+          "steps": [
+            "4/8: divide numerator and denominator by 4",
+            "(4 divided by 4)/(8 divided by 4) = 1/2",
+            "So the answer is option C, 1/2"
+          ],
+          "answer": "C",
+          "answerKind": "choice",
+          "choices": [
+            "3/4",
+            "2/8",
+            "1/2",
+            "4/4"
+          ],
+          "difficulty": 3,
+          "why": "Learners may pick a fraction with the same numerator or denominator instead of comparing the portions.",
+          "rightWay": "Divide the numerator and the denominator by 4: four eighths equals one half."
+        },
+        {
+          "prompt": "Sipho says 5/6 is equivalent to 10/18 because you multiply 5 by 2 and 6 by 3. Is he correct?",
+          "render": "text",
+          "steps": [
+            "5 x 2 = 10 but 6 x 3 = 18: different numbers",
+            "The rule says multiply numerator AND denominator by the SAME number",
+            "So he is not correct: the answer is option A"
+          ],
+          "answer": "A",
+          "answerKind": "choice",
+          "choices": [
+            "No, he must multiply top and bottom by the same number",
+            "Yes, the numbers grew",
+            "No, because 18 is too big"
+          ],
+          "difficulty": 3,
+          "why": "Learners may think any multiplication of the two numbers keeps the fraction equivalent.",
+          "rightWay": "The numerator and denominator must be multiplied by the SAME number. Five times two is ten, but six times three is eighteen, so different numbers were used and the portions differ: 5/6 is much bigger than 10/18."
+        }
+      ]
+    },
+    {
+      "position": 3,
+      "title": "Adding and subtracting fractions",
+      "minutes": 22,
+      "objectives": [
+        "You will be able to add and subtract fractions with the same denominator.",
+        "You will be able to add and subtract mixed numbers, changing more than one whole into fractions.",
+        "You will be able to add fractions with different denominators by using equivalent fractions."
+      ],
+      "keyWords": [
+        {
+          "word": "numerator",
+          "meaning": "The top number of a fraction, the number of parts you have."
+        },
+        {
+          "word": "denominator",
+          "meaning": "The bottom number of a fraction. It tells you the name of the parts, like fifths."
+        },
+        {
+          "word": "mixed number",
+          "meaning": "A whole number and a fraction together, like 2 1/4."
+        },
+        {
+          "word": "equivalent fractions",
+          "meaning": "Two fractions that describe the same amount, like 1/2 and 2/4."
+        },
+        {
+          "word": "improper fraction",
+          "meaning": "A fraction where the numerator is bigger than or equal to the denominator, like 18/12."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "You already know that 3 apples and 2 apples make 5 apples. Fractions work the same way when the parts are the same size. 3 eighths of a chocolate plus 2 eighths of the same chocolate is 5 eighths.\n\nYou can only add parts that are the same type. You cannot just add eighths and fifths, just like you cannot add apples and oranges into one count. In this lesson you will learn what to do when the parts are the same, and how to make them the same when they are not.",
+          "speech": "You already know that three apples and two apples make five apples. Fractions work the same way when the parts are the same size. Three eighths of a chocolate plus two eighths of the same chocolate is five eighths. You can only add parts that are the same type. You cannot just add eighths and fifths together, just like you cannot count apples and oranges as one thing. In this lesson you will add and subtract fractions with the same denominator, work with mixed numbers, and use equivalent fractions to make denominators the same."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 8,
+                "shaded": 3,
+                "label": "3/8"
+              },
+              {
+                "parts": 8,
+                "shaded": 2,
+                "label": "2/8"
+              },
+              {
+                "parts": 8,
+                "shaded": 5,
+                "label": "5/8"
+              }
+            ]
+          },
+          "caption": "Three eighths plus two eighths makes five eighths: the parts stay eighths.",
+          "speech": "The picture shows three bars, each cut into eight equal parts. The first bar has three parts shaded, that is three eighths. The second bar has two parts shaded, that is two eighths. The last bar shows five parts shaded, because three eighths plus two eighths makes five eighths. The parts stay eighths; only the number of parts changes."
+        },
+        {
+          "kind": "worked",
+          "problem": "A road team built 8/12 km of road in one week and 10/12 km in the next week. How much road did they build in total?",
+          "steps": [
+            {
+              "line": "8/12 + 10/12",
+              "reason": "Write the question. The parts are the same size, twelfths, so we can add them."
+            },
+            {
+              "line": "= 18/12",
+              "reason": "Add the numerators: 8 plus 10 is 18. The denominator stays 12."
+            },
+            {
+              "line": "= 1 6/12",
+              "reason": "12 twelfths make one whole, so 18 twelfths is 1 whole and 6 twelfths."
+            },
+            {
+              "line": "= 1 1/2",
+              "reason": "6/12 is equivalent to 1/2, so the answer in its lowest form is 1 1/2."
+            }
+          ],
+          "answer": "1 1/2",
+          "answerKind": "mixed",
+          "speech": "A road team built eight twelfths of a kilometre in one week and ten twelfths in the next week. How much in total? The parts are all twelfths, so we add the numerators: eight plus ten is eighteen, giving eighteen twelfths. Twelve twelfths make one whole, so eighteen twelfths is one whole and six twelfths. Six twelfths is equivalent to one half, so the answer is one and a half kilometres.",
+          "diagram": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 12,
+                "shaded": 8,
+                "label": "8/12"
+              },
+              {
+                "parts": 12,
+                "shaded": 10,
+                "label": "10/12"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "Senthereng has 4 7/12 bottles of cooking oil. He gives 1 5/12 bottles to his friend Willem. How much oil is left?",
+          "steps": [
+            {
+              "line": "4 7/12 - 1 5/12",
+              "reason": "Write the question."
+            },
+            {
+              "line": "= (4 - 1) and (7/12 - 5/12)",
+              "reason": "Subtract the whole numbers and the fractions separately, because the denominators are the same."
+            },
+            {
+              "line": "= 3 2/12",
+              "reason": "4 minus 1 is 3, and 7 twelfths minus 5 twelfths is 2 twelfths."
+            },
+            {
+              "line": "= 3 1/6",
+              "reason": "2/12 is equivalent to 1/6, so the answer is 3 1/6 bottles."
+            }
+          ],
+          "answer": "3 1/6",
+          "answerKind": "mixed",
+          "speech": "Senthereng has four and seven twelfths bottles of oil and gives one and five twelfths bottles to Willem. How much is left? Subtract the wholes first: four minus one is three. Then subtract the fractions: seven twelfths minus five twelfths is two twelfths. Two twelfths simplifies to one sixth, so Senthereng has three and one sixth bottles of oil left."
+        },
+        {
+          "kind": "worked",
+          "problem": "Neo writes a report. The first chapter is 3/4 of a page and the second chapter is 2 1/2 pages. How many pages are the two chapters together?",
+          "steps": [
+            {
+              "line": "3/4 + 2 1/2",
+              "reason": "Write the question. The denominators are different, so we cannot add yet."
+            },
+            {
+              "line": "2 1/2 = 2 2/4",
+              "reason": "1/2 is equivalent to 2/4. Now both fractions count quarters."
+            },
+            {
+              "line": "= 2 + (2/4 + 3/4)",
+              "reason": "Add the fractions: 2 quarters plus 3 quarters is 5 quarters."
+            },
+            {
+              "line": "= 2 5/4",
+              "reason": "Write the wholes and the fraction together."
+            },
+            {
+              "line": "= 3 1/4",
+              "reason": "5/4 is 1 whole and 1/4, so the answer is 3 1/4 pages."
+            }
+          ],
+          "answer": "3 1/4",
+          "answerKind": "mixed",
+          "speech": "The first chapter of a report is three quarters of a page and the second chapter is two and a half pages. How many pages together? The denominators are different, so first change one half into two quarters. Then add: two quarters plus three quarters is five quarters, so we have two wholes and five quarters. Five quarters is one whole and one quarter, so the total is three and a quarter pages."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "How much is 5/8 + 5/8 + 5/8? Give your answer as a mixed number in its lowest form.",
+            "render": "text",
+            "steps": [
+              "5/8 + 5/8 + 5/8 = 15/8",
+              "15/8 = 8/8 and 7/8",
+              "= 1 7/8"
+            ],
+            "answer": "1 7/8",
+            "answerKind": "mixed",
+            "difficulty": 2,
+            "why": "Some learners add the denominators as well, getting 15/24, or forget to change 15/8 into a mixed number.",
+            "rightWay": "The denominators stay 8; add only the numerators: 5 plus 5 plus 5 is 15, so 15/8, which is 1 7/8."
+          },
+          "hint": "Add the numerators. Then ask: how many eighths make a whole?",
+          "speech": "Your turn. How much is five eighths plus five eighths plus five eighths? Add the numerators, keep the denominator, and then change any wholes you find. Hint: add the numerators, then ask how many eighths make a whole."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "3/8 + 2/8 = 5/16",
+          "right": "3/8 + 2/8 = 5/8",
+          "why": "When you add fractions with the same denominator, the denominator does not change. It tells you the name of the parts, and the parts stay eighths. Only the number of parts grows: 3 parts plus 2 parts is 5 parts, so the answer is 5 eighths.",
+          "speech": "A common mistake: three eighths plus two eighths is NOT five sixteenths. The right answer is five eighths. The denominator tells you the name of the parts, and the parts stay eighths. Only the number of parts grows: three parts plus two parts is five parts, so five eighths.",
+          "diagram": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 8,
+                "shaded": 3,
+                "label": "3/8"
+              },
+              {
+                "parts": 8,
+                "shaded": 2,
+                "label": "2/8"
+              },
+              {
+                "parts": 16,
+                "shaded": 5,
+                "label": "5/16 is wrong"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "How much is 4 2/7 - 3 6/7?",
+          "steps": [
+            {
+              "line": "4 2/7 = 3 9/7",
+              "reason": "We cannot take 6/7 from 2/7, so break one whole of the 4 into 7 sevenths: 3 wholes and 9 sevenths."
+            },
+            {
+              "line": "9/7 - 6/7 = 3/7",
+              "reason": "Now the top fraction is big enough. Subtract the numerators: 9 minus 6 is 3."
+            },
+            {
+              "line": "3 - 3 = 0",
+              "reason": "Subtract the whole numbers: 3 wholes minus 3 wholes is nothing."
+            },
+            {
+              "line": "= 3/7",
+              "reason": "The answer is 3/7."
+            }
+          ],
+          "answer": "3/7",
+          "answerKind": "fraction",
+          "speech": "How much is four and two sevenths minus three and six sevenths? We cannot take six sevenths from two sevenths, so we break one whole of the four into seven sevenths. That gives three wholes and nine sevenths. Nine sevenths minus six sevenths is three sevenths. Three wholes minus three wholes leaves nothing, so the answer is three sevenths."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 10,
+                "shaded": 6,
+                "label": "3/5 = 6/10"
+              },
+              {
+                "parts": 10,
+                "shaded": 3,
+                "label": "3/10"
+              },
+              {
+                "parts": 10,
+                "shaded": 9,
+                "label": "9/10"
+              }
+            ]
+          },
+          "caption": "To add 3/5 and 3/10, change fifths into tenths first, then add.",
+          "speech": "The picture shows three bars cut into ten parts each. Three fifths is the same as six tenths, shown shaded on the first bar. Three tenths is shaded on the second bar. Together they cover nine of the ten parts: nine tenths. Equivalent fractions let us make the parts the same size before adding."
+        },
+        {
+          "kind": "worked",
+          "problem": "At the tuckshop, Thabo buys 3/5 of a metre of ribbon and Lerato buys 3/10 of a metre. How much ribbon did they buy together?",
+          "steps": [
+            {
+              "line": "3/5 + 3/10",
+              "reason": "Write the question. The denominators are different, so we need equivalent fractions."
+            },
+            {
+              "line": "3/5 = 6/10",
+              "reason": "Multiply numerator and denominator of 3/5 by 2, because 5 times 2 is 10."
+            },
+            {
+              "line": "6/10 + 3/10 = 9/10",
+              "reason": "Now the parts are the same, so add the numerators."
+            },
+            {
+              "line": "= 9/10",
+              "reason": "The total is 9/10 of a metre of ribbon."
+            }
+          ],
+          "answer": "9/10",
+          "answerKind": "fraction",
+          "speech": "Thabo buys three fifths of a metre of ribbon and Lerato buys three tenths of a metre. How much together? The denominators are different, so change three fifths into six tenths by multiplying the top and bottom by two. Now add six tenths and three tenths to get nine tenths. They bought nine tenths of a metre of ribbon."
+        },
+        {
+          "kind": "explain",
+          "text": "Now you have the full picture. When the denominators are the same, add or subtract the numerators and keep the denominator. With mixed numbers, work with the wholes and the fractions, and borrow from a whole if the fraction you subtract is too big. When the denominators are different, first use equivalent fractions to make them the same. Always write your final answer in its lowest form.",
+          "speech": "Here is the full picture. When the denominators are the same, add or subtract the numerators and keep the denominator. With mixed numbers, work with the wholes and the fractions, and borrow from a whole if the fraction you subtract is too big. When the denominators are different, first use equivalent fractions to make them the same. Always finish by writing the answer in its lowest form."
+        }
+      ],
+      "summary": [
+        "Add or subtract only fractions with the same denominator: add the numerators, keep the denominator.",
+        "Never add the denominators.",
+        "12 twelfths is 1 whole; change improper fractions to mixed numbers.",
+        "With mixed numbers, subtract wholes and fractions separately, and borrow from a whole if needed.",
+        "Different denominators? First make equivalent fractions with the same denominator.",
+        "Write the final answer in its lowest form."
+      ],
+      "practice": [
+        {
+          "prompt": "How much is 2/9 + 5/9?",
+          "render": "text",
+          "steps": [
+            "2/9 + 5/9",
+            "= 7/9"
+          ],
+          "answer": "7/9",
+          "answerKind": "fraction",
+          "difficulty": 1,
+          "why": "Learners sometimes add the denominators and write 7/18.",
+          "rightWay": "The parts are both ninths, so add the numerators: 2 plus 5 is 7, giving 7/9."
+        },
+        {
+          "prompt": "How much is 7/8 - 3/8? Write the answer in its lowest form.",
+          "render": "text",
+          "steps": [
+            "7/8 - 3/8",
+            "= 4/8",
+            "= 1/2"
+          ],
+          "answer": "1/2",
+          "answerKind": "fraction",
+          "difficulty": 1,
+          "why": "Learners stop at 4/8 and forget to write it in its lowest form.",
+          "rightWay": "7 eighths minus 3 eighths is 4 eighths, and 4/8 is equivalent to 1/2."
+        },
+        {
+          "prompt": "How much is 3/5 + 1/5 + 4/5? Give your answer as a mixed number.",
+          "render": "text",
+          "steps": [
+            "3/5 + 1/5 + 4/5",
+            "= 8/5",
+            "= 1 3/5"
+          ],
+          "answer": "1 3/5",
+          "answerKind": "mixed",
+          "difficulty": 2,
+          "why": "Learners may leave the answer as 8/5 instead of writing the whole part.",
+          "rightWay": "Add the numerators: 8 fifths. Five fifths is one whole, so the answer is 1 3/5."
+        },
+        {
+          "prompt": "How much is 5 3/10 - 2 1/10? Give your answer in its lowest form.",
+          "render": "text",
+          "steps": [
+            "5 3/10 - 2 1/10",
+            "= 3 2/10",
+            "= 3 1/5"
+          ],
+          "answer": "3 1/5",
+          "answerKind": "mixed",
+          "difficulty": 2,
+          "why": "Learners subtract the fractions the wrong way round, or forget to simplify 2/10.",
+          "rightWay": "Subtract wholes and fractions separately: 3 wholes and 2 tenths, which simplifies to 3 1/5."
+        },
+        {
+          "prompt": "How much is 2/3 + 1/6?",
+          "render": "text",
+          "steps": [
+            "2/3 = 4/6",
+            "4/6 + 1/6",
+            "= 5/6"
+          ],
+          "answer": "5/6",
+          "answerKind": "fraction",
+          "difficulty": 2,
+          "why": "Learners add the denominators, or change 1/6 into sixths of the wrong size.",
+          "rightWay": "Six is in the three times table, so change 2/3 into 4/6, then add: 5/6."
+        },
+        {
+          "prompt": "How much is 4 2/7 - 3 6/7?",
+          "render": "text",
+          "steps": [
+            "4 2/7 = 3 9/7",
+            "9/7 - 6/7 = 3/7",
+            "3 - 3 = 0",
+            "= 3/7"
+          ],
+          "answer": "3/7",
+          "answerKind": "fraction",
+          "difficulty": 3,
+          "why": "Learners try to subtract 6/7 from 2/7 directly or subtract the fractions the wrong way round.",
+          "rightWay": "Borrow one whole from the 4 to get 3 wholes and 9 sevenths. Then 9 sevenths minus 6 sevenths is 3 sevenths, and the wholes cancel, so the answer is 3/7."
+        },
+        {
+          "prompt": "Sipho mixes 1/4 of a litre of juice with 2/5 of a litre of water. How much is the drink?",
+          "render": "text",
+          "steps": [
+            "1/4 + 2/5",
+            "1/4 = 5/20 and 2/5 = 8/20",
+            "5/20 + 8/20",
+            "= 13/20"
+          ],
+          "answer": "13/20",
+          "answerKind": "fraction",
+          "difficulty": 3,
+          "why": "Learners add without making the denominators the same, getting 3/9.",
+          "rightWay": "Use 20 as a common denominator: 1/4 is 5/20 and 2/5 is 8/20. Together that is 13/20 of a litre."
+        }
+      ]
+    },
+    {
+      "position": 4,
+      "title": "Fractions of amounts and percentage",
+      "minutes": 22,
+      "objectives": [
+        "You will be able to work out a fraction of a quantity, like three fifths of R60.",
+        "You will be able to connect tenths and hundredths to percentages and calculate a percentage of an amount."
+      ],
+      "keyWords": [
+        {
+          "word": "numerator",
+          "meaning": "The top number of a fraction. It says how many parts we have."
+        },
+        {
+          "word": "denominator",
+          "meaning": "The bottom number of a fraction. It says what size the parts are."
+        },
+        {
+          "word": "per cent",
+          "meaning": "Another word for hundredth. Per cent means out of every hundred."
+        },
+        {
+          "word": "%",
+          "meaning": "The symbol for per cent, so 30% means 30 hundredths."
+        },
+        {
+          "word": "quantity",
+          "meaning": "An amount of something, like R60 or 40 sweets."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "Sipho has R60 and he wants to spend three fifths of it on airtime.\n\nTo find a fraction of an amount, first find ONE part, then take as many parts as the numerator says. One fifth of R60 is R60 divided by 5. That is R12. So three fifths is 3 times R12, which is R36.\n\nThis way of working, find one part first, makes every fraction of an amount easy.",
+          "speech": "Sipho has sixty rand and wants to spend three fifths of it. To find a fraction of an amount, find one part first, then take as many parts as the top number says. One fifth of sixty rand is sixty divided by five, which is twelve rand. Three fifths is three times twelve, thirty six rand."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 5,
+                "shaded": 3,
+                "label": "3/5 of R60 = R36"
+              }
+            ]
+          },
+          "caption": "The bar is R60 cut into 5 equal parts. Each part is R12, and 3 parts are shaded.",
+          "speech": "Look at a bar worth sixty rand, cut into five equal parts. Each part is twelve rand. Three of the five parts are shaded, and together they are thirty six rand."
+        },
+        {
+          "kind": "worked",
+          "problem": "How much is 3/5 of R60?",
+          "steps": [
+            {
+              "line": "1/5 of R60 = R60 ÷ 5 = R12",
+              "reason": "The denominator 5 tells us to cut the amount into 5 equal parts, so one fifth is 60 divided by 5."
+            },
+            {
+              "line": "3/5 of R60 = 3 × R12",
+              "reason": "The numerator 3 tells us to take 3 of those parts."
+            },
+            {
+              "line": "= R36",
+              "reason": "3 times 12 is 36."
+            }
+          ],
+          "answer": "R36",
+          "answerKind": "money",
+          "speech": "How much is three fifths of sixty rand? Step one: one fifth of sixty rand is sixty divided by five, twelve rand, because the bottom number cuts the amount into five equal parts. Step two: three fifths is three times twelve, because the top number says take three parts. Step three: three times twelve is thirty six. The answer is thirty six rand."
+        },
+        {
+          "kind": "worked",
+          "problem": "How much is 7/10 of R80?",
+          "steps": [
+            {
+              "line": "1/10 of R80 = R80 ÷ 10 = R8",
+              "reason": "Tenths are easy: divide by 10 to get one tenth."
+            },
+            {
+              "line": "7/10 of R80 = 7 × R8",
+              "reason": "The numerator 7 says take 7 tenths."
+            },
+            {
+              "line": "= R56",
+              "reason": "7 times 8 is 56."
+            }
+          ],
+          "answer": "R56",
+          "answerKind": "money",
+          "speech": "How much is seven tenths of eighty rand? Step one: one tenth of eighty rand is eighty divided by ten, eight rand. Step two: seven tenths is seven times eight rand. Step three: seven times eight is fifty six. The answer is fifty six rand. In the picture you see a bar of ten parts with seven shaded.",
+          "diagram": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 10,
+                "shaded": 7,
+                "label": "7/10 of R80 = R56"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "Thabo buys 3/8 of a strip of licorice that costs R2,40. How much does he pay?",
+          "steps": [
+            {
+              "line": "R2,40 = 240 cents",
+              "reason": "Changing rands to cents makes the numbers whole, so dividing is easy."
+            },
+            {
+              "line": "240 ÷ 8 = 30",
+              "reason": "One eighth of the strip is 240 cents divided by 8."
+            },
+            {
+              "line": "30 × 3 = 90",
+              "reason": "The numerator 3 says take 3 eighths."
+            },
+            {
+              "line": "90 cents = R0,90",
+              "reason": "Change the cents back to rands."
+            }
+          ],
+          "answer": "R0,90",
+          "answerKind": "money",
+          "speech": "Thabo buys three eighths of a licorice strip costing two rand forty. Step one: change two rand forty into two hundred and forty cents, so the numbers stay whole. Step two: one eighth of two hundred and forty cents is thirty cents. Step three: three eighths is three times thirty, ninety cents. Step four: ninety cents is zero point nine zero rand. He pays ninety cents."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "How much is 3/4 of R24?",
+            "render": "text",
+            "steps": [
+              "1/4 of R24 = R24 ÷ 4 = R6",
+              "3/4 of R24 = 3 × R6",
+              "= R18"
+            ],
+            "answer": "R18",
+            "answerKind": "money",
+            "difficulty": 2,
+            "why": "Learners often divide by 4 and stop, forgetting to multiply by the numerator 3.",
+            "rightWay": "Divide by the denominator to find one part, then multiply by the numerator to take the parts you need."
+          },
+          "hint": "Find one quarter of R24 first, then take 3 of them.",
+          "speech": "Your turn. How much is three quarters of twenty four rand? Hint: find one quarter first, then take three of them."
+        },
+        {
+          "kind": "explain",
+          "text": "A strip of licorice has 100 very small pieces. Each piece is one hundredth of the whole strip.\n\nAnother word for hundredth is per cent, and the symbol is %. So 30 hundredths of a strip is 30 per cent, written 30%. This also means 30% of an amount is 30 hundredths of it.\n\nOne tenth is the same as ten hundredths, so 1/10 = 10%. This link helps you move between fractions and percentages.",
+          "speech": "A strip of licorice has one hundred very small pieces, so each piece is one hundredth of the strip. Another word for hundredth is per cent, and the symbol for per cent is the two little circles with a line. Thirty hundredths is thirty per cent. One tenth is ten hundredths, so one tenth is ten per cent."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 10,
+                "shaded": 3,
+                "label": "3/10 = 30/100 = 30%"
+              }
+            ]
+          },
+          "caption": "A bar cut into tenths. The shaded 3 tenths is the same as 30 hundredths, that is 30%.",
+          "speech": "Look at a bar cut into ten equal parts with three shaded. Three tenths is the same as thirty hundredths, and thirty hundredths is thirty per cent."
+        },
+        {
+          "kind": "worked",
+          "problem": "How much is 30% of R500?",
+          "steps": [
+            {
+              "line": "1% of R500 = R500 ÷ 100 = R5",
+              "reason": "One per cent means one hundredth, so divide by 100."
+            },
+            {
+              "line": "30% of R500 = 30 × R5",
+              "reason": "Thirty per cent means 30 hundredths, so take 30 of them."
+            },
+            {
+              "line": "= R150",
+              "reason": "30 times 5 is 150."
+            }
+          ],
+          "answer": "R150",
+          "answerKind": "money",
+          "speech": "How much is thirty per cent of five hundred rand? Step one: one per cent of five hundred rand is five hundred divided by one hundred, which is five rand, because one per cent means one hundredth. Step two: thirty per cent is thirty times five rand. Step three: thirty times five is one hundred and fifty. The answer is one hundred and fifty rand."
+        },
+        {
+          "kind": "worked",
+          "problem": "How much is 15% of R480?",
+          "steps": [
+            {
+              "line": "1% of R480 = R480 ÷ 100 = R4,80",
+              "reason": "Divide by 100 to find one hundredth."
+            },
+            {
+              "line": "15 × R4,80 = R72",
+              "reason": "Fifteen per cent means 15 hundredths, so multiply by 15."
+            },
+            {
+              "line": "= R72",
+              "reason": "That is the final amount."
+            }
+          ],
+          "answer": "R72",
+          "answerKind": "money",
+          "speech": "How much is fifteen per cent of four hundred and eighty rand? Step one: one per cent is four hundred and eighty divided by one hundred, four rand eighty. Step two: fifteen per cent is fifteen times four rand eighty. Step three: that is seventy two rand. The answer is seventy two rand."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "How much is 8% of R2 400?",
+            "render": "text",
+            "steps": [
+              "1% of R2 400 = R2 400 ÷ 100 = R24",
+              "8% of R2 400 = 8 × R24",
+              "= R192"
+            ],
+            "answer": "R192",
+            "answerKind": "money",
+            "difficulty": 2,
+            "why": "Learners sometimes divide by 8 instead of finding one hundredth first.",
+            "rightWay": "Per cent means hundredth, so divide the amount by 100 to get 1%, then multiply by the number of per cent."
+          },
+          "hint": "Find 1% of R2 400 first, then multiply by 8.",
+          "speech": "Your turn. How much is eight per cent of two thousand four hundred rand? Hint: find one per cent first, then multiply by eight."
+        },
+        {
+          "kind": "worked",
+          "problem": "The building cost of a house increases by 20%. The house cost R110 000 to build. What is the new building cost?",
+          "steps": [
+            {
+              "line": "20% of R110 000 = R110 000 ÷ 100 × 20",
+              "reason": "Find 1% first, then take 20 of them."
+            },
+            {
+              "line": "= R1 100 × 20 = R22 000",
+              "reason": "One per cent is R1 100, and 20 of them is R22 000."
+            },
+            {
+              "line": "New cost = R110 000 + R22 000",
+              "reason": "An increase means we ADD the increase to the old cost."
+            },
+            {
+              "line": "= R132 000",
+              "reason": "That is the new building cost."
+            }
+          ],
+          "answer": "R132000",
+          "answerKind": "money",
+          "speech": "A house costs one hundred and ten thousand rand to build, and the cost increases by twenty per cent. Step one: one per cent is one thousand one hundred rand. Step two: twenty per cent is twenty times that, twenty two thousand rand. Step three: an increase is added to the old cost, so the new cost is one hundred and ten thousand plus twenty two thousand. The answer is one hundred and thirty two thousand rand."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "3/5 of R60: R60 ÷ 5 = R12, so the answer is R12",
+          "right": "R60 ÷ 5 = R12, then R12 × 3 = R36",
+          "why": "R12 is only ONE fifth. The numerator 3 tells us to take three of those fifths, so we must multiply again.",
+          "speech": "Here is a common slip. Someone finds three fifths of sixty rand by dividing sixty by five and stops at twelve rand. That is only one fifth. The top number three says take three of the five parts, so the right answer is twelve times three, thirty six rand."
+        },
+        {
+          "kind": "explain",
+          "text": "A fraction of an amount and a percentage of an amount use the same idea: find one part first, then take the parts you need.\n\nFor 3/5 of R60 you find one fifth and take 3 of them. For 30% of R500 you find one hundredth and take 30 of them. Even an increase or a decrease is just a percentage of the amount, added or subtracted.\n\nFind one part. Count the parts. That is the whole skill.",
+          "speech": "A fraction of an amount and a percentage of an amount use the same idea. Find one part first, then take the parts you need. For three fifths, find one fifth and take three. For thirty per cent, find one hundredth and take thirty. Find one part, count the parts, and you have the whole skill."
+        }
+      ],
+      "summary": [
+        "To find a fraction of an amount, divide by the denominator to find one part, then multiply by the numerator.",
+        "Change rands to cents when dividing gives you trouble, then change back.",
+        "Per cent means hundredth, so 1% of an amount is the amount divided by 100.",
+        "To find a percentage of an amount, find 1% first, then multiply by the number of per cent.",
+        "For an increase, add the percentage amount to the old amount. For a decrease, subtract it."
+      ],
+      "practice": [
+        {
+          "prompt": "How much is 1/5 of R60?",
+          "render": "text",
+          "steps": [
+            "1/5 of R60 = R60 ÷ 5",
+            "= R12"
+          ],
+          "answer": "R12",
+          "answerKind": "money",
+          "difficulty": 1,
+          "why": "Learners sometimes confuse the numerator and denominator and divide by the top number.",
+          "rightWay": "The denominator 5 says cut R60 into 5 equal parts, so divide 60 by 5."
+        },
+        {
+          "prompt": "How much is 3/5 of R60?",
+          "render": "text",
+          "steps": [
+            "1/5 of R60 = R60 ÷ 5 = R12",
+            "3/5 of R60 = 3 × R12",
+            "= R36"
+          ],
+          "answer": "R36",
+          "answerKind": "money",
+          "difficulty": 1,
+          "why": "Learners often find one fifth and forget to multiply by 3.",
+          "rightWay": "Find one fifth first, then take 3 of them."
+        },
+        {
+          "prompt": "How much is 7/10 of R80?",
+          "render": "text",
+          "steps": [
+            "1/10 of R80 = R80 ÷ 10 = R8",
+            "7/10 of R80 = 7 × R8",
+            "= R56"
+          ],
+          "answer": "R56",
+          "answerKind": "money",
+          "difficulty": 2,
+          "why": "Learners sometimes divide by 7 instead of by 10.",
+          "rightWay": "One tenth is 80 divided by 10, then multiply by the numerator 7."
+        },
+        {
+          "prompt": "A licorice strip costs R2,40. How much does 3/8 of a strip cost?",
+          "render": "text",
+          "steps": [
+            "R2,40 = 240 cents",
+            "1/8 of 240 cents = 240 ÷ 8 = 30 cents",
+            "3 eighths of 240 cents = 3 × 30 cents = 90 cents",
+            "90 cents = R0,90"
+          ],
+          "answer": "R0,90",
+          "answerKind": "money",
+          "difficulty": 2,
+          "why": "Dividing R2,40 by 8 directly is hard; many learners forget to change rands to cents first.",
+          "rightWay": "Change R2,40 to 240 cents, find one eighth, multiply by 3, then change back to rands."
+        },
+        {
+          "prompt": "How much is 30% of R480?",
+          "render": "text",
+          "steps": [
+            "1% of R480 = R480 ÷ 100 = R4,80",
+            "30% of R480 = 30 × R4,80",
+            "= R144"
+          ],
+          "answer": "R144",
+          "answerKind": "money",
+          "difficulty": 2,
+          "why": "Learners sometimes divide by 30 instead of by 100.",
+          "rightWay": "Per cent means hundredth, so find 1% by dividing by 100, then multiply by 30."
+        },
+        {
+          "prompt": "A house cost R110 000 to build. The building cost increases by 20%. What is the new building cost?",
+          "render": "text",
+          "steps": [
+            "20% of R110 000 = R110 000 ÷ 100 × 20 = R22 000",
+            "New cost = R110 000 + R22 000",
+            "= R132 000"
+          ],
+          "answer": "R132000",
+          "answerKind": "money",
+          "difficulty": 3,
+          "why": "Learners often calculate the percentage but forget to add it to the old cost.",
+          "rightWay": "Find 20% of the cost, then add it to the original R110 000."
+        },
+        {
+          "prompt": "Which of these is the correct way to find 15% of R500?",
+          "render": "text",
+          "steps": [
+            "15% means 15 hundredths of R500",
+            "1% of R500 = R5",
+            "15 × R5 = R75"
+          ],
+          "answer": "B",
+          "answerKind": "choice",
+          "choices": [
+            "A: R500 ÷ 15 = R33,33",
+            "B: R500 ÷ 100 × 15 = R75",
+            "C: R500 + 15% = R515",
+            "D: R500 × 15 = R7 500"
+          ],
+          "difficulty": 3,
+          "why": "Learners mix up dividing by the percentage and dividing by 100, or forget that per cent means hundredth.",
+          "rightWay": "Divide by 100 to find 1%, then multiply by 15 to get R75."
+        }
+      ]
+    },
+    {
+      "position": 5,
+      "title": "Multiplying with fractions",
+      "minutes": 20,
+      "objectives": [
+        "You will be able to find a fraction of a fraction using pictures of rectangles.",
+        "You will be able to multiply fractions by multiplying numerators and denominators and check the answer makes sense."
+      ],
+      "keyWords": [
+        {
+          "word": "numerator",
+          "meaning": "The top number of a fraction. It tells how many parts you have."
+        },
+        {
+          "word": "denominator",
+          "meaning": "The bottom number of a fraction. It tells what kind of parts, like halves or eighths."
+        },
+        {
+          "word": "equivalent",
+          "meaning": "Two fractions are equivalent when they describe the same amount, like 2/4 and 1/2."
+        },
+        {
+          "word": "simplify",
+          "meaning": "To write a fraction in its smallest equivalent form, like 6/8 written as 3/4."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "In an earlier lesson you learnt to find a fraction of an amount. You know that 1/2 of R60 is R30, because you divide 60 by 2.\n\nNow we go one step further. What is 1/2 of 1/2? That is a fraction of a fraction, not a fraction of a whole number. In this lesson you will learn to work this out with pictures and with a quick rule.",
+          "speech": "In an earlier lesson you learnt how to find a fraction of an amount, like one half of sixty rand. Now we go one step further. What is one half of one half? That is a fraction of a fraction. In this lesson you will learn to work these out with pictures first, and then with a quick rule."
+        },
+        {
+          "kind": "explain",
+          "text": "The word \"of\" between two fractions means multiply. So 1/2 of 1/3 is the same sum as 1/2 × 1/3.\n\nWhy do we need a new method? When you take a part of a part, the pieces get smaller. Half of a half is a smaller piece than either half. Pictures will show you exactly what happens.",
+          "speech": "The word of, between two fractions, means multiply. So one half of one third is the same sum as one half times one third. When you take a part of a part, the pieces get smaller, so we need a new method. Pictures will show you exactly what happens."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "area_model",
+            "rows": 5,
+            "cols": 4,
+            "shaded": 6
+          },
+          "caption": "A rectangle cut into 4 columns and 5 rows. The 3 columns on the left show 3/4. Inside them, 2 of the 5 rows are dark: that is 2/5 of the 3/4.",
+          "speech": "Look at the picture. The rectangle is cut into four columns from left to right and five rows from top to bottom. First we shade three quarters of the rectangle, which is the three columns on the left. Then we shade two fifths of that part, which is two of the five rows inside it. The dark part is two fifths of three quarters, and it is six little squares out of twenty squares in total."
+        },
+        {
+          "kind": "worked",
+          "problem": "Work out 1/2 × 1/3 using a picture.",
+          "steps": [
+            {
+              "line": "Draw a rectangle and shade 1/3 of it.",
+              "reason": "We want one third first."
+            },
+            {
+              "line": "Now shade 1/2 of the shaded part.",
+              "reason": "We want half of that part."
+            },
+            {
+              "line": "The rectangle now has 6 equal parts, and 1 part is shaded twice.",
+              "reason": "Halving each of 3 parts gives 6 parts."
+            },
+            {
+              "line": "1/2 × 1/3 = 1/6",
+              "reason": "The part shaded twice is 1 out of 6 parts."
+            }
+          ],
+          "answer": "1/6",
+          "answerKind": "fraction",
+          "speech": "We work out one half times one third using a picture. Draw a rectangle and shade one third of it, because we want one third first. Now shade half of that shaded part, because we want half of that part. The rectangle now has six equal parts, and only one part is shaded twice. So one half times one third is one sixth.",
+          "diagram": {
+            "kind": "area_model",
+            "rows": 2,
+            "cols": 3,
+            "shaded": 1
+          }
+        },
+        {
+          "kind": "explain",
+          "text": "Did you see the pattern? In 1/2 × 1/3 = 1/6 the bottom numbers were multiplied: 2 × 3 = 6. The top numbers were multiplied too: 1 × 1 = 1.\n\nHere is why. The bottom number tells how small the pieces are. When you cut the pieces again, the piece sizes multiply. The top number tells how many pieces you take, and those numbers multiply as well.\n\nSo the rule is: multiply the numerators, and multiply the denominators.",
+          "speech": "Did you see the pattern? In one half times one third equals one sixth, the bottom numbers were multiplied: two times three is six. The top numbers were multiplied too: one times one is one. The bottom number tells how small the pieces are, and when you cut the pieces again the piece sizes multiply. The top number tells how many pieces you take, and those numbers multiply as well. So the rule is: multiply the numerators, and multiply the denominators."
+        },
+        {
+          "kind": "worked",
+          "problem": "Work out 2/3 × 3/4 and simplify the answer.",
+          "steps": [
+            {
+              "line": "2/3 × 3/4",
+              "reason": "Write the sum with the multiply sign."
+            },
+            {
+              "line": "Top: 2 × 3 = 6. Bottom: 3 × 4 = 12.",
+              "reason": "Multiply the numerators, then multiply the denominators."
+            },
+            {
+              "line": "= 6/12",
+              "reason": "Put the two results together as one fraction."
+            },
+            {
+              "line": "= 1/2",
+              "reason": "Divide top and bottom by 6 to simplify six twelfths to one half."
+            }
+          ],
+          "answer": "1/2",
+          "answerKind": "fraction",
+          "speech": "We work out two thirds times three quarters and simplify. First multiply the numerators: two times three is six. Then multiply the denominators: three times four is twelve. So the answer is six twelfths. Divide top and bottom by six to simplify, and the answer is one half. The picture shows six little squares shaded out of twelve, which is exactly half, so the answer makes sense.",
+          "diagram": {
+            "kind": "area_model",
+            "rows": 4,
+            "cols": 3,
+            "shaded": 6
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "Work out 2/5 × 1/2. Give the answer in its smallest form.",
+            "render": "text",
+            "steps": [
+              "Top: 2 × 1 = 2",
+              "Bottom: 5 × 2 = 10",
+              "2/10 = 1/5"
+            ],
+            "answer": "1/5",
+            "answerKind": "fraction",
+            "difficulty": 2,
+            "why": "Learners often multiply one numerator with one denominator instead of top with top and bottom with bottom.",
+            "rightWay": "Multiply the top numbers together and the bottom numbers together, then simplify."
+          },
+          "hint": "Top times top, bottom times bottom, then simplify.",
+          "speech": "Your turn. Work out two fifths times one half. Give the answer in its smallest form. Hint: top times top, bottom times bottom, then simplify."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "3/5 × 2/3 = 5/8",
+          "right": "3/5 × 2/3 = 6/15 = 2/5",
+          "why": "The denominators were added instead of multiplied. To multiply fractions, top times top and bottom times bottom: 3 × 2 on top and 5 × 3 underneath.",
+          "speech": "Here is a mistake to watch out for. In three fifths times two thirds, the wrong working says five eighths. The top numbers were added and the bottom numbers were added. The right way is to multiply: three times two is six on top, and five times three is fifteen underneath. Six fifteenths simplifies to two fifths."
+        },
+        {
+          "kind": "explain",
+          "text": "Check that your answer makes sense. When both fractions are smaller than 1, the answer must be smaller than both of them. A part of a part is always smaller.\n\nExample: 2/3 × 3/4 = 1/2. One half is smaller than both two thirds and three quarters, so it can be right.\n\nIf your answer is bigger than both fractions, go back and check your working.",
+          "speech": "Always check that your answer makes sense. When both fractions are smaller than one, the answer must be smaller than both of them, because a part of a part is always smaller. If your answer is bigger than both fractions, go back and check your working."
+        },
+        {
+          "kind": "worked",
+          "problem": "John normally practises soccer for 3/4 of an hour every day. Today he practised for only 1/2 of his usual time. How long did he practise today?",
+          "steps": [
+            {
+              "line": "1/2 × 3/4",
+              "reason": "Half of his usual time means half of three quarters of an hour."
+            },
+            {
+              "line": "Top: 1 × 3 = 3. Bottom: 2 × 4 = 8.",
+              "reason": "Multiply the numerators and the denominators."
+            },
+            {
+              "line": "= 3/8",
+              "reason": "Put the results together."
+            },
+            {
+              "line": "3/8 is smaller than 3/4, so the answer makes sense.",
+              "reason": "Half of a time must be shorter than the usual time."
+            }
+          ],
+          "answer": "3/8",
+          "answerKind": "fraction",
+          "speech": "John normally practises soccer for three quarters of an hour every day. Today he practised for only half of his usual time. How long did he practise today? Half of his usual time means one half times three quarters. Multiply the top numbers: one times three is three. Multiply the bottom numbers: two times four is eight. So he practised for three eighths of an hour. That is smaller than three quarters, so the answer makes sense."
+        },
+        {
+          "kind": "worked",
+          "problem": "A bag of peanuts weighs 3/8 of a kilogram. Thabo wants 3/4 of a bag. What mass of peanuts is that?",
+          "steps": [
+            {
+              "line": "3/4 × 3/8",
+              "reason": "Three quarters of three eighths of a kilogram."
+            },
+            {
+              "line": "Top: 3 × 3 = 9. Bottom: 4 × 8 = 32.",
+              "reason": "Multiply the numerators and the denominators."
+            },
+            {
+              "line": "= 9/32",
+              "reason": "Put the results together as one fraction."
+            },
+            {
+              "line": "Mass = 9/32 kg of peanuts",
+              "reason": "The mass Thabo wants."
+            }
+          ],
+          "answer": "9/32",
+          "answerKind": "fraction",
+          "speech": "A bag of peanuts weighs three eighths of a kilogram. Thabo wants three quarters of a bag. What mass of peanuts is that? We work out three quarters times three eighths. Top numbers: three times three is nine. Bottom numbers: four times eight is thirty two. So the mass is nine thirty seconds of a kilogram."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "Sipho takes 1/2 of 2/3 of a pocket of R60 sweets. How much money is that?",
+            "render": "text",
+            "steps": [
+              "1/2 × 2/3 = 2/6",
+              "2/6 = 1/3",
+              "1/3 of R60 = R60 ÷ 3 = R20",
+              "Money = R20"
+            ],
+            "answer": "R20",
+            "answerKind": "money",
+            "difficulty": 3,
+            "why": "Learners multiply only by the last fraction and forget to work out the fraction of the whole amount.",
+            "rightWay": "First multiply the fractions: one half times two thirds is one third. Then find one third of sixty rand."
+          },
+          "hint": "First multiply the two fractions, then find that fraction of R60.",
+          "speech": "Your turn. Sipho takes one half of two thirds of a pocket of sixty rand sweets. How much money is that? Hint: first multiply the two fractions, then find that fraction of sixty rand."
+        },
+        {
+          "kind": "explain",
+          "text": "Now you can put the whole idea together.\n\nThe word \"of\" between fractions means multiply. To multiply fractions, multiply the numerators to get the new numerator, and multiply the denominators to get the new denominator. Simplify your answer if you can. Check that a part of a part comes out smaller than both starting fractions.",
+          "speech": "Now you can put the whole idea together. The word of between fractions means multiply. Multiply the numerators to get the new numerator, and multiply the denominators to get the new denominator. Simplify your answer if you can, and check that a part of a part comes out smaller than both starting fractions."
+        }
+      ],
+      "summary": [
+        "The word \"of\" between two fractions means multiply.",
+        "Multiply the numerators together, and multiply the denominators together.",
+        "Simplify the answer if you can.",
+        "When both fractions are smaller than 1, the answer is smaller than both of them."
+      ],
+      "practice": [
+        {
+          "prompt": "Work out 1/2 × 1/4. Give the answer in its smallest form.",
+          "render": "text",
+          "steps": [
+            "Top: 1 × 1 = 1",
+            "Bottom: 2 × 4 = 8",
+            "Answer = 1/8"
+          ],
+          "answer": "1/8",
+          "answerKind": "fraction",
+          "difficulty": 1,
+          "why": "Learners sometimes add the fractions instead of multiplying.",
+          "rightWay": "Multiply top with top and bottom with bottom: one eighth."
+        },
+        {
+          "prompt": "Work out 2/3 × 1/2. Give the answer in its smallest form.",
+          "render": "text",
+          "steps": [
+            "Top: 2 × 1 = 2",
+            "Bottom: 3 × 2 = 6",
+            "2/6 = 1/3"
+          ],
+          "answer": "1/3",
+          "answerKind": "fraction",
+          "difficulty": 1,
+          "why": "Learners forget to simplify two sixths to one third.",
+          "rightWay": "Two sixths simplifies to one third, divide top and bottom by two."
+        },
+        {
+          "prompt": "Which answer is correct for 3/4 × 2/3?",
+          "render": "text",
+          "steps": [
+            "Top: 3 × 2 = 6",
+            "Bottom: 4 × 3 = 12",
+            "6/12 = 1/2"
+          ],
+          "answer": "B",
+          "answerKind": "choice",
+          "choices": [
+            "1/4",
+            "1/2",
+            "5/7",
+            "3/2"
+          ],
+          "difficulty": 2,
+          "why": "Learners may add top and bottom numbers instead of multiplying.",
+          "rightWay": "Multiply top with top and bottom with bottom, then simplify six twelfths to one half."
+        },
+        {
+          "prompt": "Work out 2/5 × 5/6. Give the answer in its smallest form.",
+          "render": "text",
+          "steps": [
+            "Top: 2 × 5 = 10",
+            "Bottom: 5 × 6 = 30",
+            "10/30 = 1/3"
+          ],
+          "answer": "1/3",
+          "answerKind": "fraction",
+          "difficulty": 2,
+          "why": "Learners leave the answer as ten thirtieths instead of simplifying.",
+          "rightWay": "Ten thirtieths simplifies to one third, divide top and bottom by ten."
+        },
+        {
+          "prompt": "A bag of mealie meal weighs 2/5 of a kilogram. What is the mass of 3/4 of the bag?",
+          "render": "text",
+          "steps": [
+            "3/4 × 2/5",
+            "Top: 3 × 2 = 6",
+            "Bottom: 4 × 5 = 20",
+            "6/20 = 3/10 kg"
+          ],
+          "answer": "3/10",
+          "answerKind": "fraction",
+          "difficulty": 3,
+          "why": "Learners multiply only the numerators and forget the denominators.",
+          "rightWay": "Three quarters times two fifths is six twentieths, which simplifies to three tenths of a kilogram."
+        },
+        {
+          "prompt": "Lerato spends 1/2 of 3/4 of her R80 tuckshop money. How much does she spend?",
+          "render": "text",
+          "steps": [
+            "1/2 × 3/4 = 3/8",
+            "1/8 of R80 = R10",
+            "3/8 of R80 = 3 × R10 = R30"
+          ],
+          "answer": "R30",
+          "answerKind": "money",
+          "difficulty": 3,
+          "why": "Learners multiply the fractions but forget to work the result out of the full amount.",
+          "rightWay": "One half times three quarters is three eighths, and three eighths of eighty rand is thirty rand."
+        }
+      ]
+    },
+    {
+      "position": 6,
+      "title": "Ordering and comparing fractions",
+      "minutes": 22,
+      "objectives": [
+        "You will be able to compare and order fractions by giving them the same denominator or using pictures.",
+        "You will be able to use the symbols =, greater than and less than correctly with fractions."
+      ],
+      "keyWords": [
+        {
+          "word": "compare",
+          "meaning": "To decide which of two amounts is bigger or smaller."
+        },
+        {
+          "word": "common denominator",
+          "meaning": "A denominator that two fractions can both share after making equivalent fractions."
+        },
+        {
+          "word": "equivalent fractions",
+          "meaning": "Fractions that show the same amount, like 1/2 and 3/6."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "You already know how to make equivalent fractions and how to add fractions with a common denominator. Today you will use those skills to compare fractions and to put them in order from smallest to biggest.\n\nWhy does it matter? If Thabo drinks 1/2 of a cooldrink and Ayanda drinks 3/8 of one, who drank more? You cannot answer by just looking at the numbers. You need a fair way to compare.",
+          "speech": "You already know how to make equivalent fractions and how to add fractions with a common denominator. Today you will use those skills to compare fractions and put them in order. Imagine Thabo drinks half a cooldrink and Ayanda drinks three eighths of one. Who drank more? You cannot just look at the numbers. You need a fair way to compare, and that is what this lesson teaches."
+        },
+        {
+          "kind": "explain",
+          "text": "Fractions with the SAME denominator are easy to compare. Five eighths is more than three eighths, because 5 parts of that size is more than 3 parts of the same size.\n\nSo to compare any two fractions: make them equivalent fractions with the same denominator, then compare the numerators. Use the smallest number that both denominators fit into.",
+          "speech": "Fractions with the same denominator are easy to compare. Five eighths is more than three eighths, because five parts of the same size is more than three parts. So to compare any two fractions, make them equivalent fractions with the same denominator, then compare the numerators."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 4,
+                "shaded": 3,
+                "label": "3/4 = 6/8"
+              },
+              {
+                "parts": 8,
+                "shaded": 5,
+                "label": "5/8"
+              }
+            ]
+          },
+          "caption": "Two bars of the same length. Three quarters shaded on top reaches further than five eighths below, so 3/4 > 5/8.",
+          "speech": "The picture shows two bars of the same length. The top bar is cut into four parts with three shaded: three quarters, which is the same as six eighths. The bottom bar is cut into eight parts with five shaded: five eighths. Six eighths reaches further than five eighths, so three quarters is bigger than five eighths."
+        },
+        {
+          "kind": "worked",
+          "problem": "Which is bigger: 5/8 or 3/4?",
+          "steps": [
+            {
+              "line": "Denominators are 8 and 4",
+              "reason": "Look at the two denominators to find a common one"
+            },
+            {
+              "line": "8 is a common denominator: 4 x 2 = 8",
+              "reason": "Both 8 and 4 divide into 8, so use 8"
+            },
+            {
+              "line": "3/4 = 6/8 (multiply top and bottom by 2)",
+              "reason": "Make 3/4 into eighths"
+            },
+            {
+              "line": "5/8 stays as 5/8",
+              "reason": "It already has the right denominator"
+            },
+            {
+              "line": "6/8 > 5/8, so 3/4 > 5/8",
+              "reason": "Compare the numerators: 6 is bigger than 5"
+            }
+          ],
+          "answer": "3/4 is bigger",
+          "answerKind": "choice",
+          "speech": "Which is bigger, five eighths or three quarters? Look at the denominators, eight and four. Eight fits both, so use eight. Make three quarters into six eighths by multiplying top and bottom by two. Five eighths stays the same. Compare the numerators: six is bigger than five. So three quarters is bigger than five eighths.",
+          "diagram": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 4,
+                "shaded": 3,
+                "label": "3/4 = 6/8"
+              },
+              {
+                "parts": 8,
+                "shaded": 5,
+                "label": "5/8"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "Which is bigger: 7/12 or 3/5?",
+          "steps": [
+            {
+              "line": "Denominators are 12 and 5",
+              "reason": "Look at the two denominators"
+            },
+            {
+              "line": "Common denominator: 12 x 5 = 60",
+              "reason": "12 and 5 have no small common multiple, so multiply them"
+            },
+            {
+              "line": "7/12 = 35/60 (multiply top and bottom by 5)",
+              "reason": "Make 7/12 into sixtieths"
+            },
+            {
+              "line": "3/5 = 36/60 (multiply top and bottom by 12)",
+              "reason": "Make 3/5 into sixtieths"
+            },
+            {
+              "line": "36/60 > 35/60, so 3/5 > 7/12",
+              "reason": "Compare the numerators: 36 is bigger than 35"
+            }
+          ],
+          "answer": "3/5 is bigger",
+          "answerKind": "choice",
+          "speech": "Which is bigger, seven twelfths or three fifths? The denominators are twelve and five. There is no small common multiple, so multiply them to get sixty. Seven twelfths becomes thirty five sixtieths, because seven times five is thirty five. Three fifths becomes thirty six sixtieths, because three times twelve is thirty six. Thirty six is bigger than thirty five, so three fifths is bigger."
+        },
+        {
+          "kind": "worked",
+          "problem": "Put in order from smallest to biggest: 2/3, 1/2 and 5/6.",
+          "steps": [
+            {
+              "line": "Denominators: 3, 2 and 6",
+              "reason": "List all three denominators to find a common one"
+            },
+            {
+              "line": "Common denominator is 6",
+              "reason": "2, 3 and 6 all divide into 6"
+            },
+            {
+              "line": "2/3 = 4/6",
+              "reason": "Multiply top and bottom by 2"
+            },
+            {
+              "line": "1/2 = 3/6",
+              "reason": "Multiply top and bottom by 3"
+            },
+            {
+              "line": "5/6 stays as 5/6",
+              "reason": "It already has denominator 6"
+            },
+            {
+              "line": "3/6 < 4/6 < 5/6, so 1/2 < 2/3 < 5/6",
+              "reason": "Compare the numerators in order"
+            }
+          ],
+          "answer": "1/2 < 2/3 < 5/6",
+          "answerKind": "choice",
+          "speech": "Put in order from smallest to biggest: two thirds, one half and five sixths. The denominators are three, two and six. The smallest number all three divide into is six. Two thirds becomes four sixths. One half becomes three sixths. Five sixths stays the same. Now compare the numerators: three, then four, then five. So the order is one half, then two thirds, then five sixths."
+        },
+        {
+          "kind": "worked",
+          "problem": "Thabo drank 1/2 of a cooldrink and Ayanda drank 3/8 of the same size cooldrink. Who drank more?",
+          "steps": [
+            {
+              "line": "Common denominator of 2 and 8 is 8",
+              "reason": "8 divides into 8 and 2 divides into 8"
+            },
+            {
+              "line": "1/2 = 4/8",
+              "reason": "Multiply top and bottom by 4"
+            },
+            {
+              "line": "4/8 > 3/8",
+              "reason": "Compare the numerators: 4 is bigger than 3"
+            },
+            {
+              "line": "Thabo drank more",
+              "reason": "1/2 (four eighths) is more than 3/8"
+            }
+          ],
+          "answer": "Thabo drank more",
+          "answerKind": "choice",
+          "speech": "Thabo drank one half of a cooldrink and Ayanda drank three eighths of the same size one. Who drank more? The common denominator is eight. One half becomes four eighths. Four eighths is more than three eighths. So Thabo drank more."
+        },
+        {
+          "kind": "explain",
+          "text": "Use these symbols:\n\n= means is equal to, like 1/2 = 4/8.\n> means is greater than, like 3/4 > 5/8.\n< means is less than, like 5/8 < 3/4.\n\nA quick check: the open, wider side of the symbol always faces the bigger number, and the point faces the smaller number.",
+          "speech": "Use these symbols. Equals means is equal to, like one half equals four eighths. The greater than sign opens towards the bigger number: three quarters is greater than five eighths. The less than sign points its small side at the smaller number: five eighths is less than three quarters. The open, wider side always faces the bigger number."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "Use =, < or > to fill the gap: 7/17 ☐ 21/51. Which symbol is correct?",
+            "render": "text",
+            "steps": [
+              "21/51 = 7/17 (divide top and bottom by 3)",
+              "7/17 = 7/17",
+              "The correct symbol is ="
+            ],
+            "answer": "B",
+            "answerKind": "choice",
+            "choices": [
+              "<",
+              "=",
+              ">"
+            ],
+            "difficulty": 2,
+            "why": "Some learners compare 7 with 21 and say 7/17 is smaller, without noticing the denominators differ too.",
+            "rightWay": "Simplify 21/51 by dividing top and bottom by 3. It equals 7/17, so the fractions are equal."
+          },
+          "hint": "Check whether 21/51 can be simplified by dividing both numbers by 3.",
+          "speech": "Try this. Fill the gap between seven seventeenths and twenty one fifty firsts with equals, less than or greater than. Hint: check whether twenty one fifty firsts can be simplified by dividing both numbers by three."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "3/8 > 1/2 because 3 is bigger than 1",
+          "right": "1/2 = 4/8, and 4/8 > 3/8, so 1/2 > 3/8",
+          "why": "You may only compare numerators when the denominators are the same. Eighths are smaller than halves, so 3 eighths is actually less than 1 half.",
+          "speech": "Here is a common mistake. Three eighths is NOT greater than one half, even though three is bigger than one. The denominators are different, so you cannot just compare the numerators. Eighths are smaller than halves. Make one half into four eighths, and four eighths is bigger than three eighths, so one half is greater than three eighths.",
+          "diagram": {
+            "kind": "fraction_bar",
+            "rows": [
+              {
+                "parts": 2,
+                "shaded": 1,
+                "label": "1/2"
+              },
+              {
+                "parts": 8,
+                "shaded": 3,
+                "label": "3/8"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "explain",
+          "text": "There is also a quick trick for fractions with the SAME numerator.\n\nIf two fractions have the same numerator, the one with the SMALLER denominator is bigger. Example: 1/17 vs 1/19. A seventeenth is a bigger piece than a nineteenth, because the bar is cut into fewer parts. So 1/17 > 1/19.\n\nThink of a chocolate bar: a piece from a bar cut into 4 is bigger than a piece from the same bar cut into 10.",
+          "speech": "Here is a quick trick for fractions with the same numerator. The one with the smaller denominator is bigger, because the pieces are cut into fewer parts. Think of a chocolate bar: a piece from a bar cut into four is bigger than a piece from the same bar cut into ten. So one seventeenth is bigger than one nineteenth."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "Use =, < or > to fill the gap: 4/9 ☐ 5/9. Which symbol is correct?",
+            "render": "text",
+            "steps": [
+              "Same denominator (9)",
+              "Compare numerators: 4 < 5",
+              "4/9 < 5/9"
+            ],
+            "answer": "A",
+            "answerKind": "choice",
+            "choices": [
+              "<",
+              "=",
+              ">"
+            ],
+            "difficulty": 1,
+            "why": "With the same denominator the bigger numerator is the bigger fraction; some learners mix up the direction of the symbol.",
+            "rightWay": "Both fractions are ninths, so compare 4 and 5. Four is less than five, so 4/9 < 5/9."
+          },
+          "hint": "The denominators are the same, so just compare the two numerators.",
+          "speech": "Try this. Fill the gap between four ninths and five ninths with equals, less than or greater than. Hint: the denominators are the same, so just compare the numerators."
+        },
+        {
+          "kind": "worked",
+          "problem": "Sipho runs the soccer field in 3/4 of an hour and Sanele in 5/6 of an hour. Who is faster?",
+          "steps": [
+            {
+              "line": "Denominators: 4 and 6, common denominator is 12",
+              "reason": "Both 4 and 6 divide into 12"
+            },
+            {
+              "line": "3/4 = 9/12 (multiply top and bottom by 3)",
+              "reason": "Make 3/4 into twelfths"
+            },
+            {
+              "line": "5/6 = 10/12 (multiply top and bottom by 2)",
+              "reason": "Make 5/6 into twelfths"
+            },
+            {
+              "line": "9/12 < 10/12, so 3/4 < 5/6",
+              "reason": "Compare the numerators: 9 is less than 10"
+            },
+            {
+              "line": "Sipho is faster",
+              "reason": "A smaller time means a faster runner"
+            }
+          ],
+          "answer": "Sipho is faster",
+          "answerKind": "choice",
+          "speech": "Sipho runs the soccer field in three quarters of an hour and Sanele in five sixths of an hour. Who is faster? The common denominator is twelve. Three quarters becomes nine twelfths and five sixths becomes ten twelfths. Nine twelfths is less than ten twelfths, so Sipho takes less time. Sipho is faster."
+        },
+        {
+          "kind": "explain",
+          "text": "Now you can put it all together. To order fractions:\n\n1. Find a common denominator that all of them can share.\n2. Change every fraction to that denominator.\n3. Compare the numerators and write them in the order asked for.\n\nAlways read carefully: some questions ask from smallest to biggest, others from biggest to smallest.",
+          "speech": "Now you can put it all together. To order fractions, first find a common denominator all of them can share. Second, change every fraction to that denominator. Third, compare the numerators and write the fractions in the order asked for. Read carefully: some questions want smallest to biggest, others biggest to smallest."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "Put in order from smallest to biggest: 3/8, 5/8 and 1/4. Which order is correct?",
+            "render": "text",
+            "steps": [
+              "Common denominator is 8",
+              "1/4 = 2/8",
+              "Compare numerators: 2 < 3 < 5",
+              "Order: 1/4 < 3/8 < 5/8"
+            ],
+            "answer": "B",
+            "answerKind": "choice",
+            "choices": [
+              "3/8 < 1/4 < 5/8",
+              "1/4 < 3/8 < 5/8",
+              "5/8 < 3/8 < 1/4"
+            ],
+            "difficulty": 2,
+            "why": "Learners often leave 1/4 unchanged because it does not look like it belongs with the eighths, and compare it wrongly.",
+            "rightWay": "Make 1/4 into 2/8 using the common denominator 8, then order the numerators: 2, then 3, then 5."
+          },
+          "hint": "Change 1/4 into eighths first, then compare all three numerators.",
+          "speech": "Try this. Put three eighths, five eighths and one quarter in order from smallest to biggest. Hint: change one quarter into eighths first, then compare all three numerators."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "1/2 < 1/3 because 2 < 3",
+          "right": "1/2 > 1/3, because halves are bigger pieces than thirds",
+          "why": "With the same numerator, the smaller denominator makes the bigger fraction. A half is cut into fewer parts, so each part is bigger.",
+          "speech": "Here is another common mistake. One half is NOT less than one third, even though two is less than three. The numerators are the same, so the smaller denominator wins. A half is one of two pieces, a third is one of three pieces. Fewer pieces means bigger pieces. So one half is greater than one third."
+        }
+      ],
+      "summary": [
+        "To compare fractions, make them equivalent fractions with the same denominator, then compare the numerators.",
+        "Use = for equal, > for greater than and < for less than. The open side of > or < faces the bigger number.",
+        "Same numerator? The fraction with the smaller denominator is the bigger one.",
+        "To order several fractions, give them all one common denominator, then order by the numerators."
+      ],
+      "practice": [
+        {
+          "prompt": "Use =, < or >: 5/9 ☐ 7/9. Which symbol is correct?",
+          "render": "text",
+          "steps": [
+            "Same denominator 9",
+            "Compare numerators: 5 < 7",
+            "5/9 < 7/9"
+          ],
+          "answer": "A",
+          "answerKind": "choice",
+          "choices": [
+            "<",
+            "=",
+            ">"
+          ],
+          "difficulty": 1,
+          "why": "Learners sometimes reverse the symbol; the smaller number gets the pointed side.",
+          "rightWay": "Same denominator, so compare 5 and 7. Five is less than seven, so 5/9 < 7/9."
+        },
+        {
+          "prompt": "Which is bigger: 2/3 or 3/4?",
+          "render": "text",
+          "steps": [
+            "Common denominator is 12",
+            "2/3 = 8/12",
+            "3/4 = 9/12",
+            "9/12 > 8/12, so 3/4 is bigger"
+          ],
+          "answer": "C",
+          "answerKind": "choice",
+          "choices": [
+            "2/3",
+            "They are equal",
+            "3/4",
+            "Cannot compare them"
+          ],
+          "difficulty": 2,
+          "why": "Learners compare 2 and 3 with 3 and 4 without making the denominators the same first.",
+          "rightWay": "Make both fractions twelfths: 8/12 and 9/12. Nine twelfths is bigger, so 3/4 is bigger."
+        },
+        {
+          "prompt": "Use =, < or >: 6/8 ☐ 3/4. Which symbol is correct?",
+          "render": "text",
+          "steps": [
+            "6/8 = 3/4 (divide top and bottom by 2)",
+            "3/4 = 3/4",
+            "The correct symbol is ="
+          ],
+          "answer": "B",
+          "answerKind": "choice",
+          "choices": [
+            "<",
+            "=",
+            ">"
+          ],
+          "difficulty": 2,
+          "why": "Learners see 6 is bigger than 3 and forget to check the denominators.",
+          "rightWay": "Simplify 6/8 by dividing top and bottom by 2. It equals 3/4, so the fractions are equal."
+        },
+        {
+          "prompt": "Use =, < or >: 5/11 ☐ 5/7. Which symbol is correct?",
+          "render": "text",
+          "steps": [
+            "Same numerator: 5",
+            "Smaller denominator means bigger fraction",
+            "7 < 11, so 5/7 > 5/11",
+            "5/11 < 5/7"
+          ],
+          "answer": "A",
+          "answerKind": "choice",
+          "choices": [
+            "<",
+            "=",
+            ">"
+          ],
+          "difficulty": 3,
+          "why": "Learners think the bigger denominator makes the bigger fraction; with the same numerator it is the opposite.",
+          "rightWay": "The numerators are both 5, so compare the sizes of the pieces. Sevenths are bigger than elevenths, so 5/7 is bigger and 5/11 < 5/7."
+        },
+        {
+          "prompt": "Put in order from smallest to biggest: 1/2, 2/5 and 7/10. Which order is correct?",
+          "render": "text",
+          "steps": [
+            "Common denominator is 10",
+            "1/2 = 5/10",
+            "2/5 = 4/10",
+            "Compare numerators: 4 < 5 < 7",
+            "Order: 2/5 < 1/2 < 7/10"
+          ],
+          "answer": "B",
+          "answerKind": "choice",
+          "choices": [
+            "1/2 < 2/5 < 7/10",
+            "2/5 < 1/2 < 7/10",
+            "7/10 < 1/2 < 2/5"
+          ],
+          "difficulty": 3,
+          "why": "Learners compare the original numerators instead of first making a common denominator of 10.",
+          "rightWay": "Change all three fractions to tenths: 4/10, 5/10 and 7/10. Order the numerators: 4, then 5, then 7."
+        },
+        {
+          "prompt": "A taxi trip takes 2/3 of an hour and a train trip takes 3/5 of an hour. Which trip takes longer?",
+          "render": "text",
+          "steps": [
+            "Common denominator of 3 and 5 is 15",
+            "2/3 = 10/15",
+            "3/5 = 9/15",
+            "10/15 > 9/15, so 2/3 is longer"
+          ],
+          "answer": "A",
+          "answerKind": "choice",
+          "choices": [
+            "The taxi trip (2/3 of an hour)",
+            "They take the same time",
+            "The train trip (3/5 of an hour)",
+            "Cannot compare them"
+          ],
+          "difficulty": 3,
+          "why": "Learners compare 2 with 3 only, forgetting the denominators are different.",
+          "rightWay": "Make both fractions fifteenths: 10/15 and 9/15. Ten fifteenths is bigger, so 2/3 of an hour takes longer."
+        }
+      ]
+    }
+  ],
+  "status": [
+    {
+      "position": 1,
+      "status": "ready",
+      "problems": [],
+      "writer": "deepseek/deepseek-v4.1-flash-1017",
+      "reviewer": "z-ai/glm-5.3-flash"
+    },
+    {
+      "position": 2,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    },
+    {
+      "position": 3,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    },
+    {
+      "position": 4,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    },
+    {
+      "position": 5,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    },
+    {
+      "position": 6,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    }
+  ],
+  "generatedAt": "2026-11-16T20:06:43.968Z"
+}

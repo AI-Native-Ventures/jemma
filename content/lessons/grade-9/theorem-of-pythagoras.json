@@ -1,0 +1,2386 @@
+{
+  "grade": 9,
+  "baseName": "Theorem of Pythagoras",
+  "family": "measurement",
+  "capsNames": [
+    "Theorem of Pythagoras"
+  ],
+  "terms": [
+    2
+  ],
+  "source": {
+    "kind": "siyavula",
+    "title": "Siyavula Mathematics, Grade 9",
+    "address": "https://www.siyavula.com/read/za/mathematics/grade-9/pythagoras-theorem",
+    "licence": "All Siyavula textbook content made available on this site is released under the terms of a Creative Commons Attribution License",
+    "credit": "Based on Siyavula Mathematics, Grade 9, Chapter 14: Pythagoras' theorem, CC BY 3.0"
+  },
+  "lessons": [
+    {
+      "position": 1,
+      "title": "The hypotenuse and squares on the sides",
+      "minutes": 20,
+      "objectives": [
+        "You will be able to identify the hypotenuse in a right-angled triangle.",
+        "You will be able to explain Pythagoras' Theorem using the areas of squares on the sides."
+      ],
+      "keyWords": [
+        {
+          "word": "right angle",
+          "meaning": "An angle of exactly 90°, the square corner you see in a rectangle."
+        },
+        {
+          "word": "right-angled triangle",
+          "meaning": "A triangle with one right angle of 90°."
+        },
+        {
+          "word": "hypotenuse",
+          "meaning": "The side opposite the right angle in a right-angled triangle; it is always the longest side."
+        },
+        {
+          "word": "theorem",
+          "meaning": "A rule or statement that has been proved by reasoning."
+        },
+        {
+          "word": "Pythagoras' Theorem",
+          "meaning": "In a right-angled triangle, the square on the hypotenuse has the same area as the squares on the two shorter sides added together."
+        },
+        {
+          "word": "square on a side",
+          "meaning": "The square drawn with that side as one of its edges; its area is the side length multiplied by itself."
+        },
+        {
+          "word": "area",
+          "meaning": "The amount of flat space a shape covers, measured in square units such as cm²."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "A right-angled triangle is a triangle with one angle of exactly 90°. A 90° angle is the square corner you see in a rectangle, a door frame or a page of your book.\n\nPythagoras' Theorem is a rule that works for every right-angled triangle, and for no other triangle. It links the three sides of the triangle through the areas of squares drawn on those sides.\n\nThe rule is named after Pythagoras, a Greek mathematician who lived about 2500 years ago. Chinese and Babylonian writers used the same rule a thousand years before him.",
+          "speech": "A right-angled triangle is a triangle with one angle of exactly 90 degrees. A 90 degree angle is the square corner you see in a rectangle, a door frame or a page of your book. Pythagoras' Theorem is a rule that works for every right-angled triangle, and for no other triangle. It links the three sides of the triangle through the areas of squares drawn on those sides. The rule is named after Pythagoras, a Greek mathematician who lived about 2500 years ago. Chinese and Babylonian writers used the same rule a thousand years before him."
+        },
+        {
+          "kind": "explain",
+          "text": "The hypotenuse is the side opposite the 90° angle. Opposite means it does not touch the right angle: it is the side right across the square corner.\n\nIt is always the longest side, because it lies opposite the biggest angle.\n\nSay it like this: high-pot-eh-news, with the stress on the second part.",
+          "speech": "The hypotenuse is the side opposite the 90 degree angle. Opposite means it does not touch the right angle. It is the side right across the square corner. It is always the longest side, because it lies opposite the biggest angle. Say it like this: high-pot-eh-news, with the stress on the second part."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "angles": [
+              36.9,
+              53.1,
+              90
+            ],
+            "sides": [
+              "3 cm",
+              "4 cm",
+              "5 cm"
+            ],
+            "angleLabels": [
+              "36,9°",
+              "53,1°",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          },
+          "caption": "The right angle is at C. The side across from it, AB, is the hypotenuse and it is the longest side.",
+          "speech": "A right-angled triangle A B C. The square corner is at C, where the three centimetre side and the four centimetre side meet. The side A B joins the other two corners, so it lies across from the right angle. A B is five centimetres long and it is the longest side. That side is the hypotenuse. The other two sides, three centimetres and four centimetres, are the shorter sides."
+        },
+        {
+          "kind": "worked",
+          "problem": "Triangle ABC has the right angle at C. AB = 13 cm, BC = 5 cm and CA = 12 cm. Which side is the hypotenuse?",
+          "steps": [
+            {
+              "line": "The right angle is at C, so the hypotenuse is opposite C.",
+              "reason": "The hypotenuse always lies opposite the 90° angle."
+            },
+            {
+              "line": "The side opposite C is AB.",
+              "reason": "AB joins A and B, the two corners that are not C."
+            },
+            {
+              "line": "Check: AB = 13 cm, the longest side.",
+              "reason": "The hypotenuse is always the longest side."
+            },
+            {
+              "line": "Hypotenuse = AB",
+              "reason": "This names the side we found."
+            }
+          ],
+          "answer": "AB",
+          "answerKind": "choice",
+          "speech": "Triangle A B C has the right angle at C, with A B equal to thirteen centimetres, B C equal to five centimetres and C A equal to twelve centimetres. Which side is the hypotenuse? The right angle is at C, so the hypotenuse is opposite C. The side opposite C is A B. As a check, A B is thirteen centimetres, which is the longest side. The hypotenuse is A B."
+        },
+        {
+          "kind": "explain",
+          "text": "Now draw a square on each side of a right-angled triangle, using that side as one edge of the square.\n\nA square of side 3 cm has area 3 × 3 = 9 cm², so it holds 9 unit squares. A square of side 4 cm has area 16 cm², so it holds 16 unit squares.\n\nPythagoras' Theorem says: the square on the hypotenuse has the same area as the squares on the two shorter sides added together. In symbols: hypotenuse² = side1² + side2².",
+          "speech": "Now draw a square on each side of a right-angled triangle, using that side as one edge of the square. A square of side three centimetres has area three times three, which is nine square centimetres, so it holds nine unit squares. A square of side four centimetres has area sixteen square centimetres, so it holds sixteen unit squares. Pythagoras' Theorem says that the square on the hypotenuse has the same area as the squares on the two shorter sides added together. In symbols: hypotenuse squared equals side one squared plus side two squared."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "area_model",
+            "rows": 3,
+            "cols": 3,
+            "shaded": 9
+          },
+          "caption": "The square on the 3 cm side: 3 × 3 = 9 unit squares, so its area is 9 cm².",
+          "speech": "A grid of three rows and three columns, with all nine small squares shaded. This is the square drawn on the three centimetre side of the triangle. It holds nine unit squares, so its area is nine square centimetres."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "area_model",
+            "rows": 4,
+            "cols": 4,
+            "shaded": 16
+          },
+          "caption": "The square on the 4 cm side: 4 × 4 = 16 unit squares, so its area is 16 cm².",
+          "speech": "A grid of four rows and four columns, with all sixteen small squares shaded. This is the square drawn on the four centimetre side of the triangle. It holds sixteen unit squares, so its area is sixteen square centimetres."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "area_model",
+            "rows": 5,
+            "cols": 5,
+            "shaded": 25
+          },
+          "caption": "The square on the hypotenuse: 5 × 5 = 25 unit squares, and 9 + 16 = 25.",
+          "speech": "A grid of five rows and five columns, with all twenty five small squares shaded. This is the square drawn on the hypotenuse, the five centimetre side. It holds twenty five unit squares. Notice that nine plus sixteen also gives twenty five. The two smaller squares together fill exactly the same space as the big square."
+        },
+        {
+          "kind": "explain",
+          "text": "Notice what the pictures show: the two smaller squares together hold exactly as many unit squares as the big square on the hypotenuse.\n\nPictures like these do not prove the theorem. They only show that it works for that one triangle. Euclid and others proved it by reasoning, for every right-angled triangle of any size. A rule proved in this way is called a theorem.\n\nSo you may use Pythagoras' Theorem on every right-angled triangle.",
+          "speech": "Notice what the pictures show: the two smaller squares together hold exactly as many unit squares as the big square on the hypotenuse. Pictures like these do not prove the theorem. They only show that it works for that one triangle. Euclid and others proved it by reasoning, for every right-angled triangle of any size. A rule proved in this way is called a theorem. So you may use Pythagoras' Theorem on every right-angled triangle."
+        },
+        {
+          "kind": "worked",
+          "problem": "A right-angled triangle has shorter sides of 6 cm and 8 cm. What is the area of the square drawn on the hypotenuse?",
+          "steps": [
+            {
+              "line": "Area of square on the 6 cm side = 6 × 6 = 36 cm²",
+              "reason": "The area of a square is its side multiplied by itself."
+            },
+            {
+              "line": "Area of square on the 8 cm side = 8 × 8 = 64 cm²",
+              "reason": "Same rule for the other shorter side."
+            },
+            {
+              "line": "36 + 64 = 100 cm²",
+              "reason": "Add the areas of the squares on the two shorter sides."
+            },
+            {
+              "line": "Area = 100",
+              "reason": "Pythagoras' Theorem: the square on the hypotenuse has the same area as the other two squares together."
+            }
+          ],
+          "answer": "100",
+          "answerKind": "whole",
+          "speech": "A right-angled triangle has shorter sides of six centimetres and eight centimetres. What is the area of the square drawn on the hypotenuse? The square on the six centimetre side has area six times six, which is thirty six square centimetres. The square on the eight centimetre side has area eight times eight, which is sixty four square centimetres. Add the two areas: thirty six plus sixty four is one hundred square centimetres. By Pythagoras' Theorem the square on the hypotenuse has the same area as those two squares together, so the area is one hundred square centimetres."
+        },
+        {
+          "kind": "worked",
+          "problem": "In a right-angled triangle the squares on the two shorter sides have areas 49 cm² and 576 cm². Find the area of the square on the hypotenuse, and then the length of the hypotenuse.",
+          "steps": [
+            {
+              "line": "49 + 576 = 625",
+              "reason": "Add the areas of the squares on the two shorter sides."
+            },
+            {
+              "line": "Area of square on hypotenuse = 625 cm²",
+              "reason": "Pythagoras' Theorem: the square on the hypotenuse equals the other two squares together."
+            },
+            {
+              "line": "625 = 25 × 25, so the side of that square is 25 cm",
+              "reason": "The side of a square is the number that multiplied by itself gives the area."
+            },
+            {
+              "line": "Hypotenuse = 25",
+              "reason": "That side of the square is also the hypotenuse of the triangle."
+            }
+          ],
+          "answer": "25",
+          "answerKind": "whole",
+          "speech": "In a right-angled triangle the squares on the two shorter sides have areas forty nine square centimetres and five hundred and seventy six square centimetres. Find the area of the square on the hypotenuse, and then the length of the hypotenuse. First add the two areas: forty nine plus five hundred and seventy six is six hundred and twenty five. So the square on the hypotenuse has area six hundred and twenty five square centimetres. Twenty five times twenty five is six hundred and twenty five, so the side of that square is twenty five centimetres. That side is the hypotenuse, so the hypotenuse is twenty five centimetres."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "3² + 4² = 9 + 16 = 25, so the hypotenuse is 25 cm",
+          "right": "3² + 4² = 9 + 16 = 25, so the square on the hypotenuse has area 25 cm², and the hypotenuse is 5 cm",
+          "why": "The theorem gives you the area of the square on the hypotenuse, not the length of the hypotenuse itself. The length is the number that multiplied by itself gives that area.",
+          "speech": "Here is a common slip. A learner writes three squared plus four squared equals nine plus sixteen equals twenty five, so the hypotenuse is twenty five centimetres. That is wrong. The right way: three squared plus four squared equals twenty five, so the square on the hypotenuse has area twenty five square centimetres. Five times five is twenty five, so the hypotenuse is five centimetres. The theorem gives the area of the square on the hypotenuse, not the length of the hypotenuse itself. The length is the number that multiplied by itself gives that area.",
+          "diagram": {
+            "kind": "area_model",
+            "rows": 5,
+            "cols": 5,
+            "shaded": 25
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "Triangle DEF has the right angle at E. Which side is the hypotenuse?",
+            "render": "text",
+            "steps": [
+              "The right angle is at E.",
+              "The hypotenuse is the side opposite E.",
+              "The side opposite E is DF.",
+              "Hypotenuse = DF"
+            ],
+            "answer": "C",
+            "answerKind": "choice",
+            "choices": [
+              "DE",
+              "EF",
+              "DF",
+              "It cannot be decided"
+            ],
+            "difficulty": 1,
+            "why": "Many learners choose the side at the bottom of the picture instead of the side opposite the right angle.",
+            "rightWay": "Find the right angle first, then take the side that does not touch it. Here that side is DF."
+          },
+          "hint": "Find the right angle first, then look for the side that does not touch it.",
+          "speech": "Triangle D E F has the right angle at E. Which side is the hypotenuse? Remember that the hypotenuse is the side opposite the right angle. The right angle is at E, so the side across from E is D F. The hypotenuse is D F."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "A right-angled triangle has shorter sides of 9 cm and 12 cm. What is the area, in cm², of the square drawn on the hypotenuse?",
+            "render": "text",
+            "steps": [
+              "9 × 9 = 81",
+              "12 × 12 = 144",
+              "81 + 144 = 225",
+              "Area = 225"
+            ],
+            "answer": "225",
+            "answerKind": "whole",
+            "difficulty": 2,
+            "why": "Multiplying 9 by 2 and 12 by 2 instead of multiplying each side by itself.",
+            "rightWay": "Square each shorter side, then add: 81 + 144 = 225 cm²."
+          },
+          "hint": "Square each shorter side first, then add the two areas.",
+          "speech": "A right-angled triangle has shorter sides of nine centimetres and twelve centimetres. What is the area, in square centimetres, of the square drawn on the hypotenuse? Square each shorter side: nine times nine is eighty one, and twelve times twelve is one hundred and forty four. Add them: eighty one plus one hundred and forty four is two hundred and twenty five. So the area is two hundred and twenty five square centimetres."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "In a right-angled triangle the square on the hypotenuse has area 169 cm² and the square on one shorter side has area 25 cm². What is the area, in cm², of the square on the other shorter side?",
+            "render": "text",
+            "steps": [
+              "169 = 25 + area of the other square",
+              "area of the other square = 169 - 25",
+              "= 144",
+              "Area = 144"
+            ],
+            "answer": "144",
+            "answerKind": "whole",
+            "difficulty": 3,
+            "why": "Adding the two given areas instead of subtracting, because the big square is the sum of the two small ones.",
+            "rightWay": "The two small areas add to the big one, so subtract: 169 - 25 = 144 cm²."
+          },
+          "hint": "The two small areas add up to the big area, so work backwards with a subtraction.",
+          "speech": "In a right-angled triangle the square on the hypotenuse has area one hundred and sixty nine square centimetres, and the square on one shorter side has area twenty five square centimetres. What is the area of the square on the other shorter side? The two small areas add up to the big area, so one hundred and sixty nine equals twenty five plus the unknown area. Subtract: one hundred and sixty nine minus twenty five is one hundred and forty four. The area is one hundred and forty four square centimetres."
+        },
+        {
+          "kind": "explain",
+          "text": "Pythagoras' Theorem only works when the triangle has a 90° angle. So always find the right angle first, then name the side opposite it: that side is the hypotenuse.\n\nThe heart of the theorem is about areas: the square on the hypotenuse equals the squares on the two other sides added.\n\nIf you know the area of the square on the hypotenuse, the length of the hypotenuse is the number that multiplied by itself gives that area.",
+          "speech": "Pythagoras' Theorem only works when the triangle has a 90 degree angle. So always find the right angle first, then name the side opposite it. That side is the hypotenuse. The heart of the theorem is about areas: the square on the hypotenuse equals the squares on the two other sides added. If you know the area of the square on the hypotenuse, the length of the hypotenuse is the number that multiplied by itself gives that area."
+        }
+      ],
+      "summary": [
+        "The hypotenuse is the side opposite the 90° angle. It is always the longest side.",
+        "Pythagoras' Theorem: the square on the hypotenuse has the same area as the squares on the two shorter sides added together.",
+        "In symbols: hypotenuse² = side1² + side2².",
+        "The theorem is true only for right-angled triangles.",
+        "The square on a side of length s has area s × s, and the side of a square is the number that multiplied by itself gives the area."
+      ],
+      "practice": [
+        {
+          "prompt": "In triangle PQR the angle at Q is 90°. Which side is the hypotenuse?",
+          "render": "text",
+          "steps": [
+            "The right angle is at Q.",
+            "The hypotenuse is the side opposite Q.",
+            "The side opposite Q is PR.",
+            "Hypotenuse = PR"
+          ],
+          "answer": "C",
+          "answerKind": "choice",
+          "choices": [
+            "PQ",
+            "QR",
+            "PR",
+            "It cannot be decided"
+          ],
+          "difficulty": 1,
+          "why": "Learners often pick the side drawn at the bottom or the longest-looking side instead of the side opposite the right angle.",
+          "rightWay": "Find the right angle at Q, then take the side that does not touch Q. That side is PR."
+        },
+        {
+          "prompt": "A right-angled triangle has shorter sides of 6 cm and 8 cm. What is the area, in cm², of the square drawn on the hypotenuse?",
+          "render": "text",
+          "steps": [
+            "6 × 6 = 36",
+            "8 × 8 = 64",
+            "36 + 64 = 100",
+            "Area = 100"
+          ],
+          "answer": "100",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Adding the sides, 6 + 8, instead of adding the areas of their squares.",
+          "rightWay": "Square each shorter side, then add: 36 + 64 = 100 cm²."
+        },
+        {
+          "prompt": "The squares on the two shorter sides of a right-angled triangle have areas 9 cm² and 16 cm². What is the area, in cm², of the square on the hypotenuse?",
+          "render": "text",
+          "steps": [
+            "9 + 16 = 25",
+            "Area = 25"
+          ],
+          "answer": "25",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Subtracting the areas instead of adding them.",
+          "rightWay": "The square on the hypotenuse is the two small areas added: 9 + 16 = 25 cm²."
+        },
+        {
+          "prompt": "In a right-angled triangle the square on the hypotenuse has area 169 cm² and the square on one shorter side has area 25 cm². What is the area, in cm², of the square on the other shorter side?",
+          "render": "text",
+          "steps": [
+            "169 = 25 + area of the other square",
+            "area of the other square = 169 - 25",
+            "= 144",
+            "Area = 144"
+          ],
+          "answer": "144",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Adding 169 and 25, when the big area is the one that is the sum.",
+          "rightWay": "Work backwards: 169 - 25 = 144 cm²."
+        },
+        {
+          "prompt": "Which statement is Pythagoras' Theorem for a right-angled triangle with shorter sides a and b and hypotenuse c?",
+          "render": "text",
+          "steps": [
+            "The square on the hypotenuse equals the two other squares added.",
+            "So c² = a² + b²."
+          ],
+          "answer": "B",
+          "answerKind": "choice",
+          "choices": [
+            "a + b = c",
+            "a² + b² = c²",
+            "a² - b² = c²",
+            "c² + a² = b²"
+          ],
+          "difficulty": 2,
+          "why": "The theorem is about adding the squares of the two shorter sides, not adding the sides themselves.",
+          "rightWay": "Square both shorter sides and add them: c² = a² + b²."
+        },
+        {
+          "prompt": "A right-angled triangle has shorter sides of 5 cm and 12 cm. The square on the hypotenuse has area 169 cm². What is the length, in cm, of the hypotenuse?",
+          "render": "text",
+          "steps": [
+            "The square on the hypotenuse has area 169.",
+            "13 × 13 = 169",
+            "Hypotenuse = 13"
+          ],
+          "answer": "13",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Giving 169 as the length instead of finding which number multiplied by itself gives 169.",
+          "rightWay": "Look for the number that squares to 169: 13 × 13 = 169, so the hypotenuse is 13 cm."
+        },
+        {
+          "prompt": "A right-angled triangle has shorter sides of 9 cm and 12 cm. Squares are drawn on all three sides. What is the total area, in cm², of the three squares?",
+          "render": "text",
+          "steps": [
+            "9 × 9 = 81",
+            "12 × 12 = 144",
+            "81 + 144 = 225, the square on the hypotenuse",
+            "Total = 81 + 144 + 225 = 450"
+          ],
+          "answer": "450",
+          "answerKind": "whole",
+          "difficulty": 3,
+          "why": "Forgetting that the big square is not extra: it also has to be counted in the total.",
+          "rightWay": "Find all three areas, 81, 144 and 225, then add: 81 + 144 + 225 = 450 cm²."
+        },
+        {
+          "prompt": "In a right-angled triangle the square on the hypotenuse has area 400 cm². The squares on the two shorter sides have equal areas. What is the area, in cm², of each of those two squares?",
+          "render": "text",
+          "steps": [
+            "The two equal areas add to 400.",
+            "400 ÷ 2 = 200",
+            "Each area = 200"
+          ],
+          "answer": "200",
+          "answerKind": "whole",
+          "difficulty": 3,
+          "why": "Halving the wrong number, such as the side of the big square, instead of halving the area.",
+          "rightWay": "The two equal areas add to 400, so each is 400 ÷ 2 = 200 cm²."
+        }
+      ]
+    },
+    {
+      "position": 2,
+      "title": "Finding the hypotenuse",
+      "minutes": 20,
+      "objectives": [
+        "You will be able to calculate the length of the hypotenuse when the two shorter sides are given.",
+        "You will be able to leave answers in surd form or round off correctly."
+      ],
+      "keyWords": [
+        {
+          "word": "hypotenuse",
+          "meaning": "The side opposite the 90° angle in a right-angled triangle, always the longest side."
+        },
+        {
+          "word": "right-angled triangle",
+          "meaning": "A triangle with one angle of exactly 90°."
+        },
+        {
+          "word": "Pythagoras' theorem",
+          "meaning": "In a right-angled triangle, (hypotenuse)^2 = (side 1)^2 + (side 2)^2."
+        },
+        {
+          "word": "square root",
+          "meaning": "The number that, multiplied by itself, gives the number inside the root, for example sqrt(25) = 5."
+        },
+        {
+          "word": "perfect square",
+          "meaning": "A number made by squaring a whole number, like 9, 25, 49 or 169."
+        },
+        {
+          "word": "surd form",
+          "meaning": "A square root written exactly as it is, like sqrt(52), instead of as a decimal."
+        },
+        {
+          "word": "round off",
+          "meaning": "Shortening a decimal to a given number of places, here two decimal places."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "In the last lesson you saw that in a right-angled triangle the square on the hypotenuse has the same area as the two squares on the other sides put together. That fact is Pythagoras' theorem.\n\nToday you use the theorem to do a job: two shorter sides are given and you must find the longest side. Carpenters, builders and engineers use this to work out a diagonal brace or a sloping roof beam.",
+          "speech": "In the last lesson you saw that in a right-angled triangle, the square on the hypotenuse has the same area as the two squares on the other sides put together. That fact is Pythagoras' theorem. Today you use the theorem to do a job. Two shorter sides are given, and you must find the longest side, called the hypotenuse. Carpenters, builders and engineers use this to work out a diagonal brace or a sloping roof beam."
+        },
+        {
+          "kind": "explain",
+          "text": "In a right-angled triangle:\n\n(hypotenuse)^2 = (side 1)^2 + (side 2)^2\n\nThe hypotenuse is the side opposite the 90° angle. It is always the longest side, so whatever answer you get must be bigger than each of the two sides you started with.",
+          "speech": "In a right-angled triangle, the hypotenuse squared equals side one squared plus side two squared. The hypotenuse is the side opposite the 90 degree angle. It is always the longest side, so whatever answer you get must be bigger than each of the two sides you started with."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "3",
+              "4",
+              "5"
+            ],
+            "rightAngleAt": 2
+          },
+          "caption": "A right-angled triangle with shorter sides 3 and 4. The side opposite the right angle is the hypotenuse, 5.",
+          "speech": "Here is a right-angled triangle. The right angle is at the bottom right corner. The two shorter sides are 3 and 4. The side opposite the right angle, the slanted longest side, is 5. That slanted side is the hypotenuse."
+        },
+        {
+          "kind": "explain",
+          "text": "Three steps every time:\n\n1. Write down (hypotenuse)^2 = (side 1)^2 + (side 2)^2 and put your two numbers in place.\n2. Square both numbers and add the squares.\n3. Take the square root of that sum. That gives the hypotenuse itself, not the square of it.",
+          "speech": "There are three steps every time. First, write down hypotenuse squared equals side one squared plus side two squared, and put your two numbers in place. Second, square both numbers and add the squares. Third, take the square root of that sum. That gives the hypotenuse itself, not the square of it."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "6",
+              "8",
+              "h"
+            ],
+            "rightAngleAt": 2
+          },
+          "caption": "The two sides that meet at the right angle are 6 and 8. The hypotenuse h is opposite the right angle.",
+          "speech": "This triangle has a right angle at the bottom right. The two sides that meet at the right angle are 6 and 8. The side opposite the right angle is labelled h, and that is the hypotenuse we want to find."
+        },
+        {
+          "kind": "worked",
+          "problem": "In a right-angled triangle the two shorter sides are 3 cm and 4 cm. Find the hypotenuse.",
+          "steps": [
+            {
+              "line": "h^2 = 3^2 + 4^2",
+              "reason": "Pythagoras: the square of the hypotenuse is the sum of the squares of the two shorter sides."
+            },
+            {
+              "line": "h^2 = 9 + 16",
+              "reason": "Square each shorter side: 3 squared is 9 and 4 squared is 16."
+            },
+            {
+              "line": "h^2 = 25",
+              "reason": "Add the two squares."
+            },
+            {
+              "line": "h = sqrt(25)",
+              "reason": "Take the positive square root of both sides to get h on its own."
+            },
+            {
+              "line": "h = 5",
+              "reason": "The square root of 25 is 5 because 5 times 5 is 25."
+            }
+          ],
+          "answer": "5",
+          "answerKind": "whole",
+          "speech": "In a right-angled triangle the two shorter sides are 3 centimetres and 4 centimetres. Find the hypotenuse. First, write the hypotenuse squared equals 3 squared plus 4 squared, because Pythagoras' theorem says the square of the hypotenuse is the sum of the squares of the two shorter sides. Second, 3 squared is 9 and 4 squared is 16. Third, add them to get 25. Fourth, take the positive square root of both sides. Fifth, the square root of 25 is 5, because 5 times 5 is 25. So the hypotenuse is 5 centimetres.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "3",
+              "4",
+              "h"
+            ],
+            "rightAngleAt": 2
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "A right-angled triangle has shorter sides of 6 cm and 8 cm. Calculate the length of the hypotenuse.",
+          "steps": [
+            {
+              "line": "h^2 = 6^2 + 8^2",
+              "reason": "Put the two given sides into Pythagoras' theorem."
+            },
+            {
+              "line": "h^2 = 36 + 64",
+              "reason": "Square each side: 6 squared is 36 and 8 squared is 64."
+            },
+            {
+              "line": "h^2 = 100",
+              "reason": "Add the squares."
+            },
+            {
+              "line": "h = sqrt(100)",
+              "reason": "Take the square root of both sides."
+            },
+            {
+              "line": "h = 10",
+              "reason": "10 times 10 is 100, so the square root of 100 is 10."
+            }
+          ],
+          "answer": "10",
+          "answerKind": "whole",
+          "speech": "A right-angled triangle has shorter sides of 6 centimetres and 8 centimetres. Calculate the length of the hypotenuse. First, hypotenuse squared equals 6 squared plus 8 squared. Second, 6 squared is 36 and 8 squared is 64. Third, 36 plus 64 is 100. Fourth, take the square root of both sides. Fifth, the square root of 100 is 10, because 10 times 10 is 100. The hypotenuse is 10 centimetres.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "6",
+              "8",
+              "h"
+            ],
+            "rightAngleAt": 2
+          }
+        },
+        {
+          "kind": "explain",
+          "text": "Sometimes the sum is not a perfect square. sqrt(49) = 7, but sqrt(52) cannot be written as a whole number or a simple decimal.\n\nLeave such an answer in surd form, like sqrt(52), or simplify it using a square factor: sqrt(52) = sqrt(4 × 13) = 2sqrt(13). If you need a number, round at the end: 2sqrt(13) ≈ 7,21.",
+          "speech": "Sometimes the sum is not a perfect square. The square root of 49 is 7, but the square root of 52 cannot be written as a whole number or a simple decimal. Leave such an answer in surd form, like the square root of 52, or simplify it using a square factor. Since 52 is 4 times 13, the square root of 52 is 2 times the square root of 13. If you need a number, round at the end: 2 times the square root of 13 is about 7 comma 21."
+        },
+        {
+          "kind": "worked",
+          "problem": "In a right-angled triangle the two shorter sides are 4 cm and 6 cm. Find the hypotenuse, leaving the answer in simplest surd form.",
+          "steps": [
+            {
+              "line": "h^2 = 4^2 + 6^2",
+              "reason": "Put the two given sides into Pythagoras' theorem."
+            },
+            {
+              "line": "h^2 = 16 + 36",
+              "reason": "Square each side."
+            },
+            {
+              "line": "h^2 = 52",
+              "reason": "Add the two squares."
+            },
+            {
+              "line": "h = sqrt(52)",
+              "reason": "Take the square root of both sides."
+            },
+            {
+              "line": "h = sqrt(4 × 13) = 2sqrt(13)",
+              "reason": "Split out the perfect square 4 and take its root, since sqrt(4) = 2."
+            },
+            {
+              "line": "h = 2sqrt(13) ≈ 7,21",
+              "reason": "As a check, 2 times 3,6056 is about 7,21, which is longer than 6."
+            }
+          ],
+          "answer": "2sqrt(13)",
+          "answerKind": "number",
+          "speech": "In a right-angled triangle the two shorter sides are 4 centimetres and 6 centimetres. Find the hypotenuse, leaving the answer in simplest surd form. First, hypotenuse squared equals 4 squared plus 6 squared. Second, 4 squared is 16 and 6 squared is 36. Third, the sum is 52. Fourth, take the square root of both sides, so the hypotenuse is the square root of 52. Fifth, since 52 is 4 times 13, this becomes 2 times the square root of 13. As a check, that is about 7 comma 21, which is longer than 6, so it makes sense.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "4",
+              "6",
+              "h"
+            ],
+            "rightAngleAt": 2
+          }
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "4",
+              "6",
+              "2sqrt(13)"
+            ],
+            "rightAngleAt": 2
+          },
+          "caption": "The finished triangle: the hypotenuse is exactly 2sqrt(13) cm, which is about 7,21 cm.",
+          "speech": "Here is the finished triangle from the last example. The two shorter sides are 4 and 6. The hypotenuse, opposite the right angle, is 2 times the square root of 13, which is about 7 comma 21. Notice the hypotenuse is the longest side."
+        },
+        {
+          "kind": "worked",
+          "problem": "A roof truss is shaped like a right-angled triangle. The two shorter beams are 7 m and 9 m long. How long is the longest beam? Round your answer to two decimal places.",
+          "steps": [
+            {
+              "line": "h^2 = 7^2 + 9^2",
+              "reason": "The longest beam is the hypotenuse, so use Pythagoras' theorem."
+            },
+            {
+              "line": "h^2 = 49 + 81",
+              "reason": "Square the two shorter beams."
+            },
+            {
+              "line": "h^2 = 130",
+              "reason": "Add the squares."
+            },
+            {
+              "line": "h = sqrt(130)",
+              "reason": "Take the square root of both sides."
+            },
+            {
+              "line": "h = sqrt(130) ≈ 11,4017...",
+              "reason": "Use a calculator. Keep all the digits for now."
+            },
+            {
+              "line": "h ≈ 11,40",
+              "reason": "Round only now, to two decimal places, so the longest beam is 11,40 m."
+            }
+          ],
+          "answer": "11,40",
+          "answerKind": "decimal",
+          "speech": "A roof truss is shaped like a right-angled triangle. The two shorter beams are 7 metres and 9 metres long. How long is the longest beam? Round your answer to two decimal places. The longest beam is the hypotenuse. First, hypotenuse squared equals 7 squared plus 9 squared. Second, 49 plus 81 is 130. Third, take the square root of both sides, so the hypotenuse is the square root of 130, which is 11 comma 4017 and more. Round only now, to two decimal places: the longest beam is 11 comma 40 metres."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "In a right-angled triangle the two shorter sides are 9 cm and 12 cm. Calculate the length of the hypotenuse.",
+            "render": "text",
+            "steps": [
+              "h^2 = 9^2 + 12^2",
+              "h^2 = 81 + 144",
+              "h^2 = 225",
+              "h = 15"
+            ],
+            "answer": "15",
+            "answerKind": "whole",
+            "difficulty": 2,
+            "why": "Many learners add 9 and 12 first, or stop at h^2 = 225 and forget the square root.",
+            "rightWay": "Square each side, add the squares to get 225, then take the square root: h = 15 cm."
+          },
+          "hint": "Square each side first, add, and only then take the square root.",
+          "speech": "Your turn. In a right-angled triangle the two shorter sides are 9 centimetres and 12 centimetres. Calculate the length of the hypotenuse. Square each side first, add, and only then take the square root."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "h = 3^2 + 4^2 = 9 + 16 = 25 cm",
+          "right": "h^2 = 3^2 + 4^2 = 25, so h = 5 cm",
+          "why": "Pythagoras' theorem gives the square of the hypotenuse, not the hypotenuse. After adding the squares you must still take the square root.",
+          "speech": "Here is a very common mistake. A learner writes: hypotenuse equals 3 squared plus 4 squared, that is 9 plus 16, which is 25 centimetres. That is wrong, because the theorem gives the square of the hypotenuse, not the hypotenuse itself. The right way is: the hypotenuse squared equals 9 plus 16, that is 25, and then the hypotenuse is the square root of 25, which is 5 centimetres. Never forget the last square root."
+        },
+        {
+          "kind": "explain",
+          "text": "Always test whether your answer is sensible. The hypotenuse is the longest side, so it must be longer than each shorter side, and shorter than the two shorter sides added together.\n\nFor sides 7 and 9, an answer of 11,40 is bigger than 9 and smaller than 16, so it passes the test. An answer like 6 or 20 would be wrong at once.",
+          "speech": "Always test whether your answer is sensible. The hypotenuse is the longest side, so it must be longer than each shorter side, and shorter than the two shorter sides added together. For sides 7 and 9, an answer of 11 comma 40 is bigger than 9 and smaller than 16, so it passes the test. An answer like 6 or 20 would be wrong at once."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "In a right-angled triangle the two shorter sides are 2 cm and 6 cm. Find the hypotenuse, rounded to two decimal places.",
+            "render": "text",
+            "steps": [
+              "h^2 = 2^2 + 6^2 = 4 + 36 = 40",
+              "h = sqrt(40) ≈ 6,3245...",
+              "h ≈ 6,32"
+            ],
+            "answer": "6,32",
+            "answerKind": "decimal",
+            "difficulty": 3,
+            "why": "Learners often round the square root too early, or think an answer must be a whole number.",
+            "rightWay": "h = sqrt(40) = 6,3245... which rounds to 6,32 cm, and 6,32 is longer than 6, as it should be."
+          },
+          "hint": "The sum 40 is not a perfect square, so use the square root button and round at the end.",
+          "speech": "Your turn. In a right-angled triangle the two shorter sides are 2 centimetres and 6 centimetres. Find the hypotenuse, rounded to two decimal places. The sum 40 is not a perfect square, so use the square root button on your calculator and round only at the end."
+        },
+        {
+          "kind": "explain",
+          "text": "You now have a recipe that works for every right-angled triangle: square the two shorter sides, add, then take the square root.\n\nKeep the answer exact in surd form where you can, round only at the very end when a decimal is needed, and check that the hypotenuse is the longest side.",
+          "speech": "You now have a recipe that works for every right-angled triangle. Square the two shorter sides, add, then take the square root. Keep the answer exact in surd form where you can, round only at the very end when a decimal is needed, and check that the hypotenuse is the longest side."
+        }
+      ],
+      "summary": [
+        "Pythagoras' theorem: (hypotenuse)^2 = (side 1)^2 + (side 2)^2 in a right-angled triangle.",
+        "The hypotenuse is opposite the 90° angle and is always the longest side.",
+        "Square both shorter sides, add, then take the square root.",
+        "If the sum is not a perfect square, leave the answer in surd form, for example sqrt(52) = 2sqrt(13).",
+        "For a decimal answer, round only the final answer to two decimal places."
+      ],
+      "practice": [
+        {
+          "prompt": "In a right-angled triangle the two shorter sides are 6 cm and 8 cm. Which line correctly finds the hypotenuse?",
+          "render": "text",
+          "steps": [
+            "6^2 + 8^2 = 36 + 64 = 100",
+            "hypotenuse = sqrt(100) = 10 cm"
+          ],
+          "answer": "B",
+          "answerKind": "choice",
+          "choices": [
+            "hypotenuse = 6 + 8 = 14 cm",
+            "hypotenuse^2 = 6^2 + 8^2 = 100, so hypotenuse = 10 cm",
+            "hypotenuse^2 = 8^2 - 6^2 = 28, so hypotenuse = sqrt(28) cm",
+            "hypotenuse = 8 - 6 = 2 cm"
+          ],
+          "difficulty": 1,
+          "why": "Adding or subtracting the sides instead of squaring them is the usual slip.",
+          "rightWay": "Square both sides, add, then take the square root: sqrt(36 + 64) = sqrt(100) = 10 cm."
+        },
+        {
+          "prompt": "In a right-angled triangle the two shorter sides are 5 cm and 12 cm. Find the length of the hypotenuse.",
+          "render": "text",
+          "steps": [
+            "h^2 = 5^2 + 12^2",
+            "h^2 = 25 + 144",
+            "h^2 = 169",
+            "h = 13"
+          ],
+          "answer": "13",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Learners sometimes answer 169, which is the square of the hypotenuse, not the hypotenuse.",
+          "rightWay": "h^2 = 169, then h = sqrt(169) = 13 cm."
+        },
+        {
+          "prompt": "In a right-angled triangle the two shorter sides are 8 mm and 15 mm. Find the length of the hypotenuse.",
+          "render": "text",
+          "steps": [
+            "h^2 = 8^2 + 15^2",
+            "h^2 = 64 + 225",
+            "h^2 = 289",
+            "h = 17"
+          ],
+          "answer": "17",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Adding 64 and 225 wrongly, or forgetting the square root, gives a wrong answer.",
+          "rightWay": "64 + 225 = 289, and the square root of 289 is 17, so h = 17 mm."
+        },
+        {
+          "prompt": "In a right-angled triangle the two shorter sides are 5 cm and 6 cm. Find the hypotenuse and leave the answer in surd form.",
+          "render": "text",
+          "steps": [
+            "h^2 = 5^2 + 6^2 = 25 + 36 = 61",
+            "h = sqrt(61)"
+          ],
+          "answer": "sqrt(61)",
+          "answerKind": "number",
+          "difficulty": 2,
+          "why": "Learners try to round or force a whole number when 61 is not a perfect square.",
+          "rightWay": "h^2 = 61, so h = sqrt(61) cm, and 61 has no square factor, so it stays as it is."
+        },
+        {
+          "prompt": "In a right-angled triangle the two shorter sides are 2 cm and 7 cm. Find the hypotenuse and leave the answer in surd form.",
+          "render": "text",
+          "steps": [
+            "h^2 = 2^2 + 7^2 = 4 + 49 = 53",
+            "h = sqrt(53)"
+          ],
+          "answer": "sqrt(53)",
+          "answerKind": "number",
+          "difficulty": 2,
+          "why": "Adding the sides first (2 + 7 = 9) instead of adding their squares gives a wrong answer.",
+          "rightWay": "Add the squares: 4 + 49 = 53, so h = sqrt(53) cm."
+        },
+        {
+          "prompt": "In a right-angled triangle the two shorter sides are 1 cm and 3 cm. Find the hypotenuse, rounded to two decimal places.",
+          "render": "text",
+          "steps": [
+            "h^2 = 1^2 + 3^2 = 1 + 9 = 10",
+            "h = sqrt(10) ≈ 3,1622...",
+            "h ≈ 3,16"
+          ],
+          "answer": "3,16",
+          "answerKind": "decimal",
+          "difficulty": 3,
+          "why": "Rounding the square root too early, or writing 3,2 instead of two decimal places, loses marks.",
+          "rightWay": "h = sqrt(10) = 3,1622..., which rounds to 3,16 cm."
+        },
+        {
+          "prompt": "In a right-angled triangle the two shorter sides are 7 m and 9 m. Find the hypotenuse, rounded to two decimal places.",
+          "render": "text",
+          "steps": [
+            "h^2 = 7^2 + 9^2 = 49 + 81 = 130",
+            "h = sqrt(130) ≈ 11,4017...",
+            "h ≈ 11,40"
+          ],
+          "answer": "11,40",
+          "answerKind": "decimal",
+          "difficulty": 3,
+          "why": "Learners round each square root along the way, or write 11,4 which is not two decimal places.",
+          "rightWay": "h = sqrt(130) = 11,4017..., so h ≈ 11,40 m, which is longer than 9 as it must be."
+        }
+      ]
+    },
+    {
+      "position": 3,
+      "title": "Finding a shorter side",
+      "minutes": 20,
+      "objectives": [
+        "You will be able to calculate the length of a shorter side when the hypotenuse and one other side are given.",
+        "You will be able to sketch a triangle first to set up the calculation correctly."
+      ],
+      "keyWords": [
+        {
+          "word": "hypotenuse",
+          "meaning": "The side opposite the 90° angle in a right-angled triangle; it is always the longest side."
+        },
+        {
+          "word": "shorter side",
+          "meaning": "One of the two sides next to the right angle, which are shorter than the hypotenuse."
+        },
+        {
+          "word": "surd",
+          "meaning": "An answer left as a square root, like √10, when the root is not a whole number."
+        },
+        {
+          "word": "square root",
+          "meaning": "The number that, multiplied by itself, gives the value under the root sign."
+        },
+        {
+          "word": "round off",
+          "meaning": "Write a decimal to a given number of decimal places, like 4,90 to two decimal places."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "In the last lesson you found the hypotenuse by adding squares: (Hypotenuse)² = (Side 1)² + (Side 2)². The two shorter sides make the big square together. Now imagine you know the big square and one small square: how big is the other small square?\n\nYou take it away. So to find a shorter side, you subtract: (Shorter side)² = (Hypotenuse)² - (Other side)². You still need a right-angled triangle, and the hypotenuse must be the longest side.",
+          "speech": "Last time we added squares to find the hypotenuse. This time the question turns around: we know the hypotenuse and one shorter side, and we want the other shorter side. Because the two small squares add up to the big square, we subtract the one we know from the big one. That is the whole idea of today's lesson."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "5",
+              "?",
+              "13"
+            ],
+            "angleLabels": [
+              "90°",
+              "",
+              ""
+            ],
+            "rightAngleAt": 0
+          },
+          "caption": "The hypotenuse 13 and one shorter side 5 are given. The other shorter side is unknown.",
+          "speech": "Look at this right-angled triangle. The right angle is at A. The hypotenuse BC is thirteen, the shorter side AB is five, and the other shorter side AC is marked with a question mark. The thirteen must go on top in the formula, because it is the hypotenuse."
+        },
+        {
+          "kind": "explain",
+          "text": "The formula (Hypotenuse)² = (Side 1)² + (Side 2)² always holds. If one shorter side is unknown, call it x:\n\n(Hypotenuse)² = x² + (Known side)²\n\nSo x² = (Hypotenuse)² - (Known side)², and x is the square root of that. The subtraction is the opposite of the addition you used last lesson.",
+          "speech": "Write the theorem with the unknown shorter side called x. The hypotenuse squared equals x squared plus the known side squared. Then move the known square to the other side by subtracting it, so x squared equals hypotenuse squared minus known side squared. Finally take the square root to find x."
+        },
+        {
+          "kind": "worked",
+          "problem": "A right-angled triangle has hypotenuse 13 cm and one shorter side 5 cm. Find the other shorter side.",
+          "steps": [
+            {
+              "line": "x² = 13² - 5²",
+              "reason": "Rearrange the theorem: the unknown shorter side squared is the hypotenuse squared minus the known side squared."
+            },
+            {
+              "line": "x² = 169 - 25",
+              "reason": "Square the numbers: 13 squared is 169 and 5 squared is 25."
+            },
+            {
+              "line": "x² = 144",
+              "reason": "Subtract 25 from 169."
+            },
+            {
+              "line": "x = √144 = 12",
+              "reason": "Take the square root of both sides to get x itself."
+            }
+          ],
+          "answer": "12",
+          "answerKind": "whole",
+          "speech": "The hypotenuse is thirteen and one shorter side is five. The unknown x squared equals thirteen squared minus five squared. Thirteen squared is one hundred sixty nine, five squared is twenty five, so x squared is one hundred forty four. The square root of one hundred forty four is twelve, so the missing side is twelve centimetres. Notice twelve is shorter than thirteen, which makes sense.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "5",
+              "x",
+              "13"
+            ],
+            "angleLabels": [
+              "90°",
+              "",
+              ""
+            ],
+            "rightAngleAt": 0
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "In triangle DEF, angle F = 90°, the hypotenuse DE = 10 cm and DF = 6 cm. Calculate EF, leaving the answer in surd form if necessary.",
+          "steps": [
+            {
+              "line": "Sketch: right angle at F, hypotenuse DE = 10, DF = 6, EF = x",
+              "reason": "Sketch first so the hypotenuse and the shorter sides are in the right places."
+            },
+            {
+              "line": "x² = 10² - 6²",
+              "reason": "The unknown is a shorter side, so subtract the known side squared from the hypotenuse squared."
+            },
+            {
+              "line": "x² = 100 - 36 = 64",
+              "reason": "Square 10 and 6, then subtract."
+            },
+            {
+              "line": "x = √64 = 8",
+              "reason": "Take the square root; 64 is a perfect square so the answer is whole."
+            }
+          ],
+          "answer": "8",
+          "answerKind": "whole",
+          "speech": "Triangle D E F has the right angle at F, hypotenuse D E is ten and D F is six. Sketch the triangle first. The unknown shorter side squared equals ten squared minus six squared, which is one hundred minus thirty six, that is sixty four. The square root of sixty four is eight, so E F is eight centimetres."
+        },
+        {
+          "kind": "worked",
+          "problem": "A ladder of length 6 m leans against a wall. The bottom of the ladder is 2 m from the wall. How far up the wall does the ladder reach? Round off to two decimal places.",
+          "steps": [
+            {
+              "line": "Sketch: wall and ground make a 90° angle; ladder (hypotenuse) = 6, ground side = 2, wall side = x",
+              "reason": "The ladder, the ground and the wall form a right-angled triangle; the ladder is the longest side, so it is the hypotenuse."
+            },
+            {
+              "line": "x² = 6² - 2²",
+              "reason": "The unknown is a shorter side, so subtract the known square from the hypotenuse squared."
+            },
+            {
+              "line": "x² = 36 - 4 = 32",
+              "reason": "Square 6 and 2, then subtract."
+            },
+            {
+              "line": "x = √32",
+              "reason": "Take the square root; 32 is not a perfect square, so the answer is a surd."
+            },
+            {
+              "line": "x = 5,66 (to 2 decimal places)",
+              "reason": "Use a calculator for √32 and round off to two decimal places."
+            }
+          ],
+          "answer": "5,66",
+          "answerKind": "decimal",
+          "speech": "A six metre ladder leans on a wall, two metres from the bottom of the wall. The ladder is the longest side, so it is the hypotenuse. The height up the wall is x. x squared equals six squared minus two squared, that is thirty six minus four, thirty two. The square root of thirty two is about five point six six, so the ladder reaches five point six six metres up the wall."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "x² = 5² + 13² = 25 + 169 = 194, so x = √194",
+          "right": "x² = 13² - 5² = 169 - 25 = 144, so x = 12",
+          "why": "Adding squares gives the hypotenuse, not a shorter side. A shorter side must be smaller than the hypotenuse, so you subtract, and the hypotenuse squared is the number you take the other square away from.",
+          "speech": "Here is a common mistake: adding five squared and thirteen squared, which gives root of one hundred ninety four. That is wrong, because that answer is bigger than thirteen, and a shorter side can never be bigger than the hypotenuse. The right way is thirteen squared minus five squared, giving twelve. Always put the hypotenuse squared first and subtract from it.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "5",
+              "?",
+              "13"
+            ],
+            "angleLabels": [
+              "90°",
+              "",
+              ""
+            ],
+            "rightAngleAt": 0
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "A right-angled triangle has a hypotenuse of 15 cm and one shorter side of 9 cm. Calculate the other shorter side.",
+            "render": "text",
+            "steps": [
+              "x² = 15² - 9²",
+              "x² = 225 - 81 = 144",
+              "x = √144 = 12"
+            ],
+            "answer": "12",
+            "answerKind": "whole",
+            "diagram": {
+              "kind": "triangle",
+              "vertices": [
+                "A",
+                "B",
+                "C"
+              ],
+              "sides": [
+                "9",
+                "x",
+                "15"
+              ],
+              "angleLabels": [
+                "90°",
+                "",
+                ""
+              ],
+              "rightAngleAt": 0
+            },
+            "difficulty": 1,
+            "why": "Adding the squares instead of subtracting gives the wrong, too big answer.",
+            "rightWay": "Square the hypotenuse and the known side, subtract the smaller square from the bigger one, then take the square root."
+          },
+          "hint": "Which number is the hypotenuse? Its square is the one you subtract from.",
+          "speech": "Try this one. A right-angled triangle has a hypotenuse of fifteen and one shorter side of nine. Find the other shorter side. Hint: the hypotenuse squared is the one you subtract from."
+        },
+        {
+          "kind": "worked",
+          "problem": "In triangle PQR, angle Q = 90°, PR = 14 cm and QR = 4 cm. Calculate PQ, rounding off to two decimal places.",
+          "steps": [
+            {
+              "line": "Sketch: right angle at Q; hypotenuse PR = 14, QR = 4, PQ = x",
+              "reason": "PR is opposite the right angle, so it is the hypotenuse; sketch this first."
+            },
+            {
+              "line": "x² = 14² - 4²",
+              "reason": "The unknown is a shorter side, so subtract the known side squared from the hypotenuse squared."
+            },
+            {
+              "line": "x² = 196 - 16 = 180",
+              "reason": "Square 14 and 4, then subtract."
+            },
+            {
+              "line": "x = √180 ≈ 13,42 (to 2 decimal places)",
+              "reason": "√180 is not a whole number; use a calculator and round off to two decimal places."
+            }
+          ],
+          "answer": "13,42",
+          "answerKind": "decimal",
+          "speech": "Triangle P Q R has the right angle at Q, hypotenuse P R is fourteen and Q R is four. The unknown P Q squared equals fourteen squared minus four squared, which is one hundred ninety six minus sixteen, one hundred eighty. The square root of one hundred eighty is about thirteen point four two centimetres. Check it is smaller than fourteen, which it is."
+        },
+        {
+          "kind": "explain",
+          "text": "Word problems hide the triangle. Look for three things: the right angle, the longest side (the hypotenuse) and the unknown side. Ladders against walls, diagonals of rectangles and ramps are all right-angled triangles.\n\nAlways sketch first and mark which side is the hypotenuse. Then decide: if the unknown is the hypotenuse, add; if the unknown is a shorter side, subtract.",
+          "speech": "In word problems, the triangle is hidden inside the story. Find the right angle, find the longest side, that is the hypotenuse, and find what you must calculate. Draw a sketch and mark the sides. If the unknown is the hypotenuse you add the squares; if it is a shorter side you subtract. A quick sketch saves many mistakes."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "A ladder of length 10 m leans against a wall. The bottom of the ladder is 6 m from the wall. How far up the wall does the ladder reach?",
+            "render": "text",
+            "steps": [
+              "x² = 10² - 6²",
+              "x² = 100 - 36 = 64",
+              "x = √64 = 8"
+            ],
+            "answer": "8",
+            "answerKind": "whole",
+            "difficulty": 2,
+            "why": "Treating the ladder's height as the hypotenuse instead of the ladder itself leads to the wrong set-up.",
+            "rightWay": "The ladder is the longest side, so it is the hypotenuse: x² = 10² - 6², then take the square root."
+          },
+          "hint": "The ladder is the longest side of the triangle, so it is the hypotenuse.",
+          "speech": "Now try this. A ten metre ladder leans on a wall with its bottom six metres from the wall. How far up the wall does it reach? Hint: the ladder itself is the hypotenuse."
+        },
+        {
+          "kind": "explain",
+          "text": "To find a shorter side: sketch, mark the hypotenuse, then (Shorter side)² = (Hypotenuse)² - (Other side)², and take the square root.\n\nCheck your answer: the shorter side must be less than the hypotenuse. If it is not, you have added instead of subtracted.",
+          "speech": "Let us tie it together. Sketch the triangle, mark the hypotenuse, then subtract the square of the known shorter side from the square of the hypotenuse and take the square root. Always check that your answer is smaller than the hypotenuse. Next time we will use this idea to test whether a triangle is right-angled at all."
+        }
+      ],
+      "summary": [
+        "To find a shorter side: (Shorter side)² = (Hypotenuse)² - (Other side)².",
+        "Take the square root at the end; leave a surd like √10 if it is not whole.",
+        "The hypotenuse is the longest side, opposite the 90° angle; its square is the one you subtract from.",
+        "Sketch the triangle first and mark the hypotenuse before you calculate.",
+        "Check: a shorter side must be smaller than the hypotenuse."
+      ],
+      "practice": [
+        {
+          "prompt": "A right-angled triangle has a hypotenuse of 10 cm and one shorter side of 8 cm. Calculate the other shorter side.",
+          "render": "text",
+          "steps": [
+            "x² = 10² - 8²",
+            "x² = 100 - 64 = 36",
+            "x = √36 = 6"
+          ],
+          "answer": "6",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Adding the squares instead of subtracting gives a number too big to be a shorter side.",
+          "rightWay": "Subtract 8² from 10², then take the square root: x² = 100 - 64 = 36, so x = 6."
+        },
+        {
+          "prompt": "A right-angled triangle has a hypotenuse of 25 cm and one shorter side of 7 cm. Calculate the other shorter side.",
+          "render": "text",
+          "steps": [
+            "x² = 25² - 7²",
+            "x² = 625 - 49 = 576",
+            "x = √576 = 24"
+          ],
+          "answer": "24",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Squaring 25 or 7 incorrectly, or adding instead of subtracting, gives the wrong answer.",
+          "rightWay": "x² = 625 - 49 = 576, so x = 24 cm."
+        },
+        {
+          "prompt": "A right-angled triangle has a hypotenuse of 15 cm and one shorter side of 9 cm. Calculate the other shorter side.",
+          "render": "text",
+          "steps": [
+            "x² = 15² - 9²",
+            "x² = 225 - 81 = 144",
+            "x = √144 = 12"
+          ],
+          "answer": "12",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Forgetting which side is the hypotenuse leads to subtracting the wrong square.",
+          "rightWay": "The hypotenuse 15 has the biggest square: x² = 225 - 81 = 144, so x = 12 cm."
+        },
+        {
+          "prompt": "In triangle DEF, angle F = 90°, DE = 11 cm and DF = 5 cm. Calculate EF, leaving your answer in surd form.",
+          "render": "text",
+          "steps": [
+            "x² = 11² - 5²",
+            "x² = 121 - 25 = 96",
+            "x = √96"
+          ],
+          "answer": "sqrt(96)",
+          "answerKind": "number",
+          "difficulty": 2,
+          "why": "Rounding too early or adding the squares instead of subtracting gives the wrong value.",
+          "rightWay": "x² = 121 - 25 = 96, and since 96 is not a perfect square, leave the answer as √96 cm."
+        },
+        {
+          "prompt": "A ladder of length 10 m leans against a wall. The bottom of the ladder is 6 m from the wall. How far up the wall does the ladder reach?",
+          "render": "text",
+          "steps": [
+            "x² = 10² - 6²",
+            "x² = 100 - 36 = 64",
+            "x = √64 = 8"
+          ],
+          "answer": "8",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Using the height up the wall as the hypotenuse instead of the ladder gives the wrong set-up.",
+          "rightWay": "The ladder is the hypotenuse: x² = 10² - 6² = 64, so the ladder reaches 8 m up the wall."
+        },
+        {
+          "prompt": "In triangle PQR, angle Q = 90°, PR = 14 cm and QR = 4 cm. Calculate PQ, rounding off to two decimal places.",
+          "render": "text",
+          "steps": [
+            "x² = 14² - 4²",
+            "x² = 196 - 16 = 180",
+            "x = √180 ≈ 13,42"
+          ],
+          "answer": "13,42",
+          "answerKind": "decimal",
+          "difficulty": 2,
+          "why": "Rounding off before the last step, or forgetting to take the square root at the end.",
+          "rightWay": "x² = 196 - 16 = 180, so x = √180 = 13,42 cm to two decimal places."
+        },
+        {
+          "prompt": "A ladder of length 5 m leans against a wall and reaches a height of 4,5 m. How far from the wall is the bottom of the ladder? Round off to two decimal places.",
+          "render": "text",
+          "steps": [
+            "x² = 5² - 4,5²",
+            "x² = 25 - 20,25 = 4,75",
+            "x = √4,75 ≈ 2,18"
+          ],
+          "answer": "2,18",
+          "answerKind": "decimal",
+          "difficulty": 3,
+          "why": "Adding the squares (4,5² + 5²) instead of subtracting, because the hypotenuse in the story is not obvious.",
+          "rightWay": "The ladder is the hypotenuse: x² = 5² - 4,5² = 25 - 20,25 = 4,75, so x = √4,75 = 2,18 m."
+        },
+        {
+          "prompt": "A rectangle has sides of 6 cm and 8 cm. A diagonal is drawn inside it. How long is the diagonal?",
+          "render": "text",
+          "steps": [
+            "The diagonal and the two sides form a right-angled triangle.",
+            "d² = 6² + 8²",
+            "d² = 36 + 64 = 100",
+            "d = √100 = 10"
+          ],
+          "answer": "10",
+          "answerKind": "whole",
+          "difficulty": 3,
+          "why": "Treating the diagonal as a shorter side and subtracting, when the diagonal is actually the longest side.",
+          "rightWay": "The diagonal is the hypotenuse of the triangle formed by the two sides, so add: d² = 6² + 8² = 100, and d = 10 cm."
+        }
+      ]
+    },
+    {
+      "position": 4,
+      "title": "Testing if a triangle is right-angled",
+      "minutes": 20,
+      "objectives": [
+        "You will be able to use the converse of Pythagoras' Theorem to test whether a triangle is right-angled.",
+        "You will be able to decide whether a triangle is right-angled, acute or obtuse from its side lengths."
+      ],
+      "keyWords": [
+        {
+          "word": "theorem",
+          "meaning": "A maths rule that has been proved by reasoning."
+        },
+        {
+          "word": "converse",
+          "meaning": "The converse of a theorem swaps its if and then parts, so it works backwards."
+        },
+        {
+          "word": "right-angled triangle",
+          "meaning": "A triangle with one angle of 90°."
+        },
+        {
+          "word": "hypotenuse",
+          "meaning": "The side opposite the 90° angle in a right-angled triangle, and it is always the longest side."
+        },
+        {
+          "word": "acute",
+          "meaning": "An angle smaller than 90°."
+        },
+        {
+          "word": "obtuse",
+          "meaning": "An angle between 90° and 180°."
+        },
+        {
+          "word": "Pythagorean triple",
+          "meaning": "Three whole numbers that can be the side lengths of a right-angled triangle, such as 3, 4 and 5."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "In earlier lessons you used Pythagoras' Theorem to find a missing side of a right-angled triangle. The rule was: hypotenuse squared equals side 1 squared plus side 2 squared.\n\nNow we go the other way. If we know the three side lengths, we can test whether the triangle is right-angled, without needing a protractor.",
+          "speech": "In earlier lessons you used Pythagoras' Theorem to find a missing side of a right-angled triangle. The rule was: the hypotenuse squared equals side one squared plus side two squared. Now we go the other way. If we know the three side lengths, we can test whether the triangle is right-angled, without needing a protractor."
+        },
+        {
+          "kind": "explain",
+          "text": "Pythagoras' Theorem says: if a triangle is right-angled, then the longest side squared equals the sum of the squares of the other two sides.\n\nThe converse says: if the longest side squared equals the sum of the squares of the other two sides, then the triangle is right-angled. The converse is the test we use here.",
+          "speech": "Pythagoras' Theorem says: if a triangle is right-angled, then the longest side squared equals the sum of the squares of the other two sides. The converse says: if the longest side squared equals the sum of the squares of the other two sides, then the triangle is right-angled. The converse is the test we use here."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "3",
+              "4",
+              "5"
+            ],
+            "rightAngleAt": 2
+          },
+          "caption": "The side of length 5 is opposite the right angle, so it is the hypotenuse. Check: 3 squared plus 4 squared equals 9 plus 16, which is 25, and 5 squared is 25.",
+          "speech": "The picture shows a triangle with side lengths three, four and five. The right angle is at C. The side of length five is opposite the right angle, so it is the hypotenuse. Three squared plus four squared equals nine plus sixteen, which is twenty five. Five squared is also twenty five."
+        },
+        {
+          "kind": "explain",
+          "text": "To test a triangle, always do these steps:\n1. Find the longest side. Call it c.\n2. Square the longest side on its own.\n3. Square the two shorter sides and add them.\n4. Compare the two answers.\nIf they are equal, the triangle is right-angled.",
+          "speech": "To test a triangle, always do these steps. First, find the longest side. Call it c. Second, square the longest side on its own. Third, square the two shorter sides and add them. Fourth, compare the two answers. If they are equal, the triangle is right-angled."
+        },
+        {
+          "kind": "worked",
+          "problem": "A triangle has sides 6 cm, 8 cm and 10 cm. Is it right-angled?",
+          "steps": [
+            {
+              "line": "Longest side = 10 cm",
+              "reason": "The longest side is the one we square on its own."
+            },
+            {
+              "line": "6^2 + 8^2 = 36 + 64 = 100",
+              "reason": "Square the two shorter sides and add them."
+            },
+            {
+              "line": "10^2 = 100",
+              "reason": "Square the longest side on its own."
+            },
+            {
+              "line": "100 = 100",
+              "reason": "The two answers are equal, so the converse of Pythagoras' Theorem holds."
+            },
+            {
+              "line": "The triangle is right-angled.",
+              "reason": "Equal squares mean a right angle opposite the longest side."
+            }
+          ],
+          "answer": "right-angled",
+          "answerKind": "choice",
+          "speech": "The problem is: is a triangle with sides six centimetres, eight centimetres and ten centimetres right-angled? The longest side is ten. Six squared is thirty six. Eight squared is sixty four. Thirty six plus sixty four is one hundred. Ten squared is one hundred. One hundred equals one hundred, so the triangle is right-angled."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "6",
+              "8",
+              "10"
+            ],
+            "rightAngleAt": 2
+          },
+          "caption": "In a 6, 8, 10 triangle the two shorter squares add to the square on the longest side. The right angle is opposite the side of length 10.",
+          "speech": "The picture shows a triangle with sides six, eight and ten. The right angle is opposite the side of length ten. Six squared plus eight squared equals ten squared."
+        },
+        {
+          "kind": "worked",
+          "problem": "A triangle has sides 8 cm, 15 cm and 17 cm. Is it right-angled?",
+          "steps": [
+            {
+              "line": "Longest side = 17 cm",
+              "reason": "The longest side is the one we square on its own."
+            },
+            {
+              "line": "8^2 + 15^2 = 64 + 225 = 289",
+              "reason": "Square the two shorter sides and add them."
+            },
+            {
+              "line": "17^2 = 289",
+              "reason": "Square the longest side on its own."
+            },
+            {
+              "line": "289 = 289",
+              "reason": "The two answers are equal, so the triangle is right-angled."
+            },
+            {
+              "line": "The triangle is right-angled.",
+              "reason": "The converse of Pythagoras' Theorem is true for these sides."
+            }
+          ],
+          "answer": "right-angled",
+          "answerKind": "choice",
+          "speech": "The problem is: is a triangle with sides eight centimetres, fifteen centimetres and seventeen centimetres right-angled? The longest side is seventeen. Eight squared is sixty four. Fifteen squared is two hundred and twenty five. Sixty four plus two hundred and twenty five is two hundred and eighty nine. Seventeen squared is two hundred and eighty nine. The answers are equal, so the triangle is right-angled."
+        },
+        {
+          "kind": "worked",
+          "problem": "A triangle has sides 7 cm, 9 cm and 12 cm. Is it right-angled?",
+          "steps": [
+            {
+              "line": "Longest side = 12 cm",
+              "reason": "The longest side is the one we square on its own."
+            },
+            {
+              "line": "7^2 + 9^2 = 49 + 81 = 130",
+              "reason": "Square the two shorter sides and add them."
+            },
+            {
+              "line": "12^2 = 144",
+              "reason": "Square the longest side on its own."
+            },
+            {
+              "line": "130 is not equal to 144",
+              "reason": "The two answers are different, so the converse of Pythagoras' Theorem does not hold."
+            },
+            {
+              "line": "The triangle is not right-angled.",
+              "reason": "A right angle needs the two answers to be exactly equal."
+            }
+          ],
+          "answer": "not right-angled",
+          "answerKind": "choice",
+          "speech": "The problem is: is a triangle with sides seven centimetres, nine centimetres and twelve centimetres right-angled? The longest side is twelve. Seven squared plus nine squared is forty nine plus eighty one, which is one hundred and thirty. Twelve squared is one hundred and forty four. One hundred and thirty is not equal to one hundred and forty four. So the triangle is not right-angled."
+        },
+        {
+          "kind": "explain",
+          "text": "The same comparison also tells us about the biggest angle when the triangle is not right-angled.\n\nIf the longest side squared is less than the sum of the squares of the other two sides, the biggest angle is acute. If it is more, the biggest angle is obtuse.",
+          "speech": "The same comparison also tells us about the biggest angle when the triangle is not right-angled. If the longest side squared is less than the sum of the squares of the other two sides, the biggest angle is acute. If it is more, the biggest angle is obtuse."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "6",
+              "8",
+              "9"
+            ]
+          },
+          "caption": "In a 6, 8, 9 triangle, 9 squared is 81, which is less than 6 squared plus 8 squared, 100. The biggest angle is acute.",
+          "speech": "The picture shows a triangle with sides six, eight and nine. Nine squared is eighty one. Six squared plus eight squared is one hundred. Eighty one is less than one hundred, so the biggest angle is acute."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "6",
+              "8",
+              "11"
+            ]
+          },
+          "caption": "In a 6, 8, 11 triangle, 11 squared is 121, which is more than 6 squared plus 8 squared, 100. The biggest angle is obtuse.",
+          "speech": "The picture shows a triangle with sides six, eight and eleven. Eleven squared is one hundred and twenty one. Six squared plus eight squared is one hundred. One hundred and twenty one is more than one hundred, so the biggest angle is obtuse."
+        },
+        {
+          "kind": "worked",
+          "problem": "Classify the triangle with sides 6 cm, 8 cm and 9 cm as right-angled, acute or obtuse.",
+          "steps": [
+            {
+              "line": "Longest side = 9 cm",
+              "reason": "The longest side is the one we square on its own."
+            },
+            {
+              "line": "6^2 + 8^2 = 36 + 64 = 100",
+              "reason": "Square the two shorter sides and add them."
+            },
+            {
+              "line": "9^2 = 81",
+              "reason": "Square the longest side on its own."
+            },
+            {
+              "line": "81 < 100",
+              "reason": "The square of the longest side is less than the sum of the squares of the other two sides."
+            },
+            {
+              "line": "The biggest angle is acute, so the triangle is acute.",
+              "reason": "If the biggest angle is acute, all three angles are acute."
+            }
+          ],
+          "answer": "acute",
+          "answerKind": "choice",
+          "speech": "The problem is: classify the triangle with sides six centimetres, eight centimetres and nine centimetres as right-angled, acute or obtuse. The longest side is nine. Six squared plus eight squared is thirty six plus sixty four, which is one hundred. Nine squared is eighty one. Eighty one is less than one hundred. The square of the longest side is less than the sum, so the biggest angle is acute. The triangle is acute."
+        },
+        {
+          "kind": "worked",
+          "problem": "Classify the triangle with sides 6 cm, 8 cm and 11 cm as right-angled, acute or obtuse.",
+          "steps": [
+            {
+              "line": "Longest side = 11 cm",
+              "reason": "The longest side is the one we square on its own."
+            },
+            {
+              "line": "6^2 + 8^2 = 36 + 64 = 100",
+              "reason": "Square the two shorter sides and add them."
+            },
+            {
+              "line": "11^2 = 121",
+              "reason": "Square the longest side on its own."
+            },
+            {
+              "line": "121 > 100",
+              "reason": "The square of the longest side is more than the sum of the squares of the other two sides."
+            },
+            {
+              "line": "The biggest angle is obtuse, so the triangle is obtuse.",
+              "reason": "A square that is bigger than the sum means the biggest angle is obtuse."
+            }
+          ],
+          "answer": "obtuse",
+          "answerKind": "choice",
+          "speech": "The problem is: classify the triangle with sides six centimetres, eight centimetres and eleven centimetres as right-angled, acute or obtuse. The longest side is eleven. Six squared plus eight squared is thirty six plus sixty four, which is one hundred. Eleven squared is one hundred and twenty one. One hundred and twenty one is more than one hundred. The square of the longest side is more than the sum, so the biggest angle is obtuse. The triangle is obtuse."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "For sides 5, 12 and 13: 5^2 + 13^2 = 194 and 12^2 = 144, so it is not right-angled.",
+          "right": "For sides 5, 12 and 13: 5^2 + 12^2 = 25 + 144 = 169 and 13^2 = 169, so it is right-angled.",
+          "why": "The longest side must be squared on its own. Adding the longest side to one of the shorter sides compares the wrong pair of sides.",
+          "speech": "A common mistake is to square the longest side together with one of the shorter sides. The wrong way says: for sides five, twelve and thirteen, five squared plus thirteen squared is one hundred and ninety four, and twelve squared is one hundred and forty four, so it is not right-angled. That compares the wrong sides. The right way is: five squared plus twelve squared is twenty five plus one hundred and forty four, which is one hundred and sixty nine. Thirteen squared is also one hundred and sixty nine. So the triangle is right-angled. The longest side must be squared on its own.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "5",
+              "12",
+              "13"
+            ],
+            "rightAngleAt": 2
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "A triangle has sides 9 cm, 12 cm and 15 cm. Is it right-angled?",
+            "render": "text",
+            "steps": [
+              "Longest side = 15 cm",
+              "9^2 + 12^2 = 81 + 144 = 225",
+              "15^2 = 225",
+              "225 = 225, so yes, right-angled. Option A."
+            ],
+            "answer": "A",
+            "answerKind": "choice",
+            "choices": [
+              "Yes, because 9^2 + 12^2 = 15^2",
+              "No, because 9 + 12 is not 15",
+              "Yes, because 9 + 12 = 15",
+              "No, because 12^2 + 15^2 = 9^2"
+            ],
+            "diagram": {
+              "kind": "triangle",
+              "vertices": [
+                "A",
+                "B",
+                "C"
+              ],
+              "sides": [
+                "9",
+                "12",
+                "15"
+              ],
+              "rightAngleAt": 2
+            },
+            "difficulty": 1,
+            "why": "A common error is to add the side lengths instead of squaring them.",
+            "rightWay": "Compare 9 squared plus 12 squared with 15 squared."
+          },
+          "hint": "Find the longest side first and square it on its own.",
+          "speech": "A triangle has sides nine centimetres, twelve centimetres and fifteen centimetres. Is it right-angled? Find the longest side, which is fifteen. Nine squared plus twelve squared is eighty one plus one hundred and forty four, which is two hundred and twenty five. Fifteen squared is two hundred and twenty five. The answers are equal, so it is right-angled. The correct option is A."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "A triangle has sides 5 cm, 7 cm and 9 cm. Is it right-angled, acute or obtuse?",
+            "render": "text",
+            "steps": [
+              "Longest side = 9 cm",
+              "5^2 + 7^2 = 25 + 49 = 74",
+              "9^2 = 81",
+              "81 > 74, so the biggest angle is obtuse. Option C."
+            ],
+            "answer": "C",
+            "answerKind": "choice",
+            "choices": [
+              "right-angled",
+              "acute",
+              "obtuse",
+              "cannot tell"
+            ],
+            "diagram": {
+              "kind": "triangle",
+              "vertices": [
+                "A",
+                "B",
+                "C"
+              ],
+              "sides": [
+                "5",
+                "7",
+                "9"
+              ]
+            },
+            "difficulty": 2,
+            "why": "A common error is to compare the square of the longest side with only one square instead of the sum of both shorter squares.",
+            "rightWay": "Compare 9 squared with 5 squared plus 7 squared."
+          },
+          "hint": "Square the longest side and compare it with the sum of the squares of the other two sides.",
+          "speech": "A triangle has sides five centimetres, seven centimetres and nine centimetres. Is it right-angled, acute or obtuse? The longest side is nine. Five squared plus seven squared is twenty five plus forty nine, which is seventy four. Nine squared is eighty one. Eighty one is more than seventy four, so the biggest angle is obtuse. The triangle is obtuse. The correct option is C."
+        },
+        {
+          "kind": "explain",
+          "text": "Always start by finding the longest side. Square it on its own. Then square the other two sides and add. Equal means right-angled. Less means acute. More means obtuse. This test uses only the side lengths, so no angle measuring is needed.",
+          "speech": "Always start by finding the longest side. Square it on its own. Then square the other two sides and add. Equal means right-angled. Less means acute. More means obtuse. This test uses only the side lengths, so no angle measuring is needed."
+        }
+      ],
+      "summary": [
+        "In a right-angled triangle, the hypotenuse squared equals the sum of the squares of the other two sides.",
+        "The converse: if the longest side squared equals the sum of the squares of the other two sides, the triangle is right-angled.",
+        "To test a triangle, find the longest side first and square it on its own.",
+        "If the longest side squared is less than the sum, the triangle is acute.",
+        "If the longest side squared is more than the sum, the triangle is obtuse."
+      ],
+      "practice": [
+        {
+          "prompt": "A triangle has sides 6 cm, 8 cm and 10 cm. What type of triangle is it?",
+          "render": "text",
+          "steps": [
+            "Longest side = 10 cm",
+            "6^2 + 8^2 = 36 + 64 = 100",
+            "10^2 = 100",
+            "100 = 100, so right-angled. Option A."
+          ],
+          "answer": "A",
+          "answerKind": "choice",
+          "choices": [
+            "right-angled",
+            "acute",
+            "obtuse",
+            "not a triangle"
+          ],
+          "difficulty": 1,
+          "why": "Learners may add the side lengths instead of squaring them.",
+          "rightWay": "Compare 6 squared plus 8 squared with 10 squared."
+        },
+        {
+          "prompt": "A triangle has sides 7 cm, 24 cm and 25 cm. What type of triangle is it?",
+          "render": "text",
+          "steps": [
+            "Longest side = 25 cm",
+            "7^2 + 24^2 = 49 + 576 = 625",
+            "25^2 = 625",
+            "625 = 625, so right-angled. Option B."
+          ],
+          "answer": "B",
+          "answerKind": "choice",
+          "choices": [
+            "acute",
+            "right-angled",
+            "obtuse",
+            "cannot tell"
+          ],
+          "difficulty": 1,
+          "why": "A common error is to use 24 as the longest side.",
+          "rightWay": "The longest side is 25, so compare 25 squared with 7 squared plus 24 squared."
+        },
+        {
+          "prompt": "A triangle has sides 8 cm, 10 cm and 12 cm. What type of triangle is it?",
+          "render": "text",
+          "steps": [
+            "Longest side = 12 cm",
+            "8^2 + 10^2 = 64 + 100 = 164",
+            "12^2 = 144",
+            "144 < 164, so the biggest angle is acute. Option C."
+          ],
+          "answer": "C",
+          "answerKind": "choice",
+          "choices": [
+            "right-angled",
+            "obtuse",
+            "acute",
+            "not a triangle"
+          ],
+          "difficulty": 2,
+          "why": "A common error is to think that more than means obtuse without checking which side was squared.",
+          "rightWay": "Compare 12 squared with 8 squared plus 10 squared."
+        },
+        {
+          "prompt": "A triangle has sides 9 cm, 10 cm and 15 cm. What type of triangle is it?",
+          "render": "text",
+          "steps": [
+            "Longest side = 15 cm",
+            "9^2 + 10^2 = 81 + 100 = 181",
+            "15^2 = 225",
+            "225 > 181, so the biggest angle is obtuse. Option A."
+          ],
+          "answer": "A",
+          "answerKind": "choice",
+          "choices": [
+            "obtuse",
+            "right-angled",
+            "acute",
+            "cannot tell"
+          ],
+          "difficulty": 2,
+          "why": "Learners may compare 15 squared with 9 squared only.",
+          "rightWay": "Compare 15 squared with the sum 9 squared plus 10 squared."
+        },
+        {
+          "prompt": "A triangle has sides 12 cm, 16 cm and 20 cm. What type of triangle is it?",
+          "render": "text",
+          "steps": [
+            "Longest side = 20 cm",
+            "12^2 + 16^2 = 144 + 256 = 400",
+            "20^2 = 400",
+            "400 = 400, so right-angled. Option C."
+          ],
+          "answer": "C",
+          "answerKind": "choice",
+          "choices": [
+            "acute",
+            "obtuse",
+            "right-angled",
+            "not a triangle"
+          ],
+          "difficulty": 2,
+          "why": "A common error is to square only one of the shorter sides.",
+          "rightWay": "Compare 20 squared with 12 squared plus 16 squared."
+        },
+        {
+          "prompt": "A triangle has sides 1,5 m, 2 m and 2,5 m. What type of triangle is it?",
+          "render": "text",
+          "steps": [
+            "Longest side = 2,5 m",
+            "1,5^2 + 2^2 = 2,25 + 4 = 6,25",
+            "2,5^2 = 6,25",
+            "6,25 = 6,25, so right-angled. Option B."
+          ],
+          "answer": "B",
+          "answerKind": "choice",
+          "choices": [
+            "acute",
+            "right-angled",
+            "obtuse",
+            "cannot tell"
+          ],
+          "difficulty": 3,
+          "why": "A common error is to treat the decimal comma as a multiplication sign.",
+          "rightWay": "Square 1,5 and square 2, then add the results and compare with 2,5 squared."
+        }
+      ]
+    },
+    {
+      "position": 5,
+      "title": "Pythagoras in problems and other shapes",
+      "minutes": 22,
+      "objectives": [
+        "You will be able to use Pythagoras' Theorem to solve word problems such as ladders and diagonals of rectangles.",
+        "You will be able to find lengths inside rectangles and parallelograms by forming right-angled triangles."
+      ],
+      "keyWords": [
+        {
+          "word": "Pythagoras' Theorem",
+          "meaning": "In a right-angled triangle, the square on the hypotenuse equals the sum of the squares on the other two sides."
+        },
+        {
+          "word": "hypotenuse",
+          "meaning": "The side opposite the 90 degree angle in a right-angled triangle; it is always the longest side."
+        },
+        {
+          "word": "diagonal",
+          "meaning": "A straight line joining two opposite corners of a rectangle."
+        },
+        {
+          "word": "height",
+          "meaning": "The perpendicular distance from the base of a shape to its highest point, drawn at right angles to the base."
+        },
+        {
+          "word": "sketch",
+          "meaning": "A rough drawing of the problem, labelled with the lengths you know."
+        },
+        {
+          "word": "round off",
+          "meaning": "Writing a decimal answer to a stated number of decimal places."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "In the earlier lessons you learned Pythagoras' Theorem: in a right-angled triangle, hypotenuse squared equals side squared plus side squared. Now we use it where the right-angled triangle is not drawn for us.\n\nLadders against walls, diagonals of rectangles and heights of parallelograms all hide right-angled triangles. Your job is to find the triangle inside the picture.",
+          "speech": "In earlier lessons you learned Pythagoras' Theorem. In a right-angled triangle, the hypotenuse squared equals one side squared plus the other side squared. Now we use the theorem where the right-angled triangle is not drawn for us. A ladder leaning on a wall, a diagonal of a rectangle, and the height of a parallelogram all hide a right-angled triangle. Your first job in every problem is to find that triangle inside the picture."
+        },
+        {
+          "kind": "explain",
+          "text": "A plan for every word problem:\n\n1. Draw a rough sketch and mark the right angle.\n2. Label the two sides you know and the side you want.\n3. Decide which side is the hypotenuse, opposite the right angle.\n4. Use hypotenuse squared = side squared + side squared. Subtract if the unknown is a shorter side.\n\nAlways end with the unit, like cm or m.",
+          "speech": "Here is a plan for every word problem. One: draw a rough sketch and mark the right angle. Two: label the two sides you know and the side you want. Three: decide which side is the hypotenuse, the side opposite the right angle. Four: use hypotenuse squared equals side squared plus side squared. If the unknown is a shorter side, you subtract instead of add. Always end with the unit, like centimetres or metres."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "T",
+              "G",
+              "W"
+            ],
+            "sides": [
+              "5 m",
+              "1 m",
+              "? m"
+            ],
+            "rightAngleAt": 1
+          },
+          "caption": "The ladder is the hypotenuse; the wall and the ground are the two shorter sides.",
+          "speech": "The picture shows a ladder leaning against a wall. The ladder is five metres long and its foot is one metre from the wall. The wall meets the ground at a right angle, so this is a right-angled triangle. The ladder is the hypotenuse, the distance from the wall is one metre, and the height up the wall is the unknown side."
+        },
+        {
+          "kind": "worked",
+          "problem": "A ladder of length 5 m leans against a wall. The foot of the ladder is 1 m from the wall. How far up the wall does the ladder reach? Round off to two decimal places.",
+          "steps": [
+            {
+              "line": "Sketch: wall and ground make 90 degrees, ladder = 5 m is the hypotenuse, foot is 1 m from wall.",
+              "reason": "A sketch shows the right-angled triangle hiding in the problem."
+            },
+            {
+              "line": "h^2 + 1^2 = 5^2",
+              "reason": "The hypotenuse squared equals the sum of the squares of the two shorter sides."
+            },
+            {
+              "line": "h^2 + 1 = 25",
+              "reason": "Square the numbers: 1 squared is 1 and 5 squared is 25."
+            },
+            {
+              "line": "h^2 = 24",
+              "reason": "Subtract 1 from both sides to isolate h squared."
+            },
+            {
+              "line": "h = sqrt(24) = 4,8989...",
+              "reason": "Take the square root of both sides."
+            },
+            {
+              "line": "h = 4,90 m (two decimal places)",
+              "reason": "Round off to two decimal places and add the unit."
+            }
+          ],
+          "answer": "4,90",
+          "answerKind": "decimal",
+          "speech": "A ladder of length five metres leans against a wall. Its foot is one metre from the wall. How far up the wall does it reach? First sketch: the wall and ground meet at ninety degrees, so the ladder, five metres, is the hypotenuse. So h squared plus one squared equals five squared. One squared is one and five squared is twenty five, so h squared plus one equals twenty five. Subtract one: h squared equals twenty four. Take the square root: h is the square root of twenty four, about four point eight nine eight nine. Rounded to two decimal places, the ladder reaches four point nine nought metres up the wall.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "T",
+              "G",
+              "W"
+            ],
+            "sides": [
+              "5 m",
+              "1 m",
+              "? m"
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "A rectangle has sides of length 36 mm and 77 mm. Find the length of its diagonal in mm.",
+          "steps": [
+            {
+              "line": "The diagonal cuts the rectangle into two right-angled triangles.",
+              "reason": "The corner of a rectangle is 90 degrees, so Pythagoras applies."
+            },
+            {
+              "line": "d^2 = 36^2 + 77^2",
+              "reason": "The diagonal is opposite the right angle, so it is the hypotenuse."
+            },
+            {
+              "line": "d^2 = 1296 + 5929",
+              "reason": "Square each side: 36 squared is 1296 and 77 squared is 5929."
+            },
+            {
+              "line": "d^2 = 7225",
+              "reason": "Add the two squares."
+            },
+            {
+              "line": "d = 85 mm",
+              "reason": "Take the square root: 85 squared is 7225, so the answer is exact."
+            }
+          ],
+          "answer": "85",
+          "answerKind": "whole",
+          "speech": "A rectangle has sides of thirty six millimetres and seventy seven millimetres. Find the length of its diagonal in millimetres. The diagonal cuts the rectangle into two right-angled triangles, and the diagonal is the hypotenuse because it is opposite the right angle. So d squared equals thirty six squared plus seventy seven squared. Thirty six squared is one thousand two hundred and ninety six. Seventy seven squared is five thousand nine hundred and twenty nine. Add them: d squared is seven thousand two hundred and twenty five. Take the square root: d is eighty five. The diagonal is eighty five millimetres.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "36 mm",
+              "77 mm",
+              "d"
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "A rectangle has sides of 9 cm and 12 cm. Calculate the length of its diagonal, in cm.",
+            "render": "text",
+            "steps": [
+              "d^2 = 9^2 + 12^2",
+              "d^2 = 81 + 144 = 225",
+              "d = 15"
+            ],
+            "answer": "15",
+            "answerKind": "whole",
+            "difficulty": 1,
+            "why": "Forgetting that the diagonal is the hypotenuse and squaring the wrong sides.",
+            "rightWay": "The diagonal is opposite the right angle, so square the two sides, add, then take the square root."
+          },
+          "hint": "The diagonal is the hypotenuse, so add the squares.",
+          "speech": "A rectangle has sides of nine centimetres and twelve centimetres. Calculate the length of its diagonal in centimetres. Hint: the diagonal is the hypotenuse, so add the squares."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "h = sqrt(5^2 + 1^2) = sqrt(26) = 5,10 m",
+          "right": "h = sqrt(5^2 - 1^2) = sqrt(24) = 4,90 m",
+          "why": "The ladder is the hypotenuse, so its square must stand alone on one side. You subtract the known short side from the ladder squared, not add it.",
+          "speech": "Here is a common mistake. For the ladder problem, someone wrote h equals the square root of five squared plus one squared, which gives five point one zero metres. That is wrong, and it even gives a height longer than the ladder. The right way is h equals the square root of five squared minus one squared, the square root of twenty four, about four point nine nought metres. Why? The ladder is the hypotenuse, the longest side, so its square stands alone and you subtract the known short side from it.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "T",
+              "G",
+              "W"
+            ],
+            "sides": [
+              "5 m",
+              "1 m",
+              "h"
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "explain",
+          "text": "Inside a rectangle, the two diagonals each cut the rectangle into two right-angled triangles. So a diagonal, a side and another side always form a right-angled triangle.\n\nThis also lets you find the perimeter of the triangle formed by two sides and a diagonal: add all three lengths.",
+          "speech": "Inside a rectangle, each diagonal cuts the rectangle into two right-angled triangles. So one diagonal together with two sides of the rectangle always forms a right-angled triangle, and the diagonal is the hypotenuse. This also lets you find the perimeter of that triangle. Once you know the diagonal, you just add all three lengths together."
+        },
+        {
+          "kind": "worked",
+          "problem": "KLMN is a rectangle with KL = 8 cm and LM = 6 cm. Calculate the perimeter of triangle KLM, in cm.",
+          "steps": [
+            {
+              "line": "KM^2 = 8^2 + 6^2",
+              "reason": "The diagonal KM is the hypotenuse of right-angled triangle KLM."
+            },
+            {
+              "line": "KM^2 = 64 + 36 = 100",
+              "reason": "Square each side and add."
+            },
+            {
+              "line": "KM = 10 cm",
+              "reason": "Take the square root of 100."
+            },
+            {
+              "line": "Perimeter = 8 + 6 + 10",
+              "reason": "The perimeter is the sum of all three sides of the triangle."
+            },
+            {
+              "line": "Perimeter = 24 cm",
+              "reason": "Add the three lengths."
+            }
+          ],
+          "answer": "24",
+          "answerKind": "whole",
+          "speech": "K L M N is a rectangle with K L eight centimetres and L M six centimetres. Calculate the perimeter of triangle K L M in centimetres. The diagonal K M is the hypotenuse of the right-angled triangle K L M. So K M squared equals eight squared plus six squared, which is sixty four plus thirty six, one hundred. The square root of one hundred is ten, so K M is ten centimetres. The perimeter is eight plus six plus ten, which is twenty four centimetres.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "K",
+              "L",
+              "M"
+            ],
+            "sides": [
+              "8 cm",
+              "6 cm",
+              "10 cm"
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "In rectangle PQRS, PQ = 5 cm and QR = 12 cm. Calculate the length of the diagonal PR, in cm.",
+            "render": "text",
+            "steps": [
+              "PR^2 = 5^2 + 12^2",
+              "PR^2 = 25 + 144 = 169",
+              "PR = 13"
+            ],
+            "answer": "13",
+            "answerKind": "whole",
+            "difficulty": 2,
+            "why": "Adding the side lengths instead of their squares, or forgetting the final square root.",
+            "rightWay": "Square the two sides, add the squares, then take the square root to get the diagonal."
+          },
+          "hint": "Square the two sides, add, then take the square root.",
+          "speech": "In rectangle P Q R S, P Q is five centimetres and Q R is twelve centimetres. Calculate the length of the diagonal P R in centimetres. Hint: square the two sides, add, then take the square root."
+        },
+        {
+          "kind": "explain",
+          "text": "A parallelogram has no right angle, but you can create one: drop a height from one corner straight down to the base, at right angles to the base.\n\nThe height, the slant side and part of the base form a right-angled triangle. The slant side is the hypotenuse. Now Pythagoras can find the missing length, and height times base gives the area.",
+          "speech": "A parallelogram has no right angle, but you can create one. Drop a height from one corner straight down to the base, at right angles to the base. The height, the slant side, and the part of the base under them form a right-angled triangle. The slant side is the hypotenuse. Now Pythagoras can find a missing length, and height times base gives the area."
+        },
+        {
+          "kind": "worked",
+          "problem": "MNST is a parallelogram. NR is the height, drawn perpendicular to MS, with NR = 9 mm and MR = 12 mm. Calculate the length of MN in mm, and the area of triangle MNR in mm squared.",
+          "steps": [
+            {
+              "line": "Triangle MNR has a right angle at R.",
+              "reason": "The height is drawn perpendicular to the base MS."
+            },
+            {
+              "line": "MN^2 = 9^2 + 12^2",
+              "reason": "MN is the hypotenuse of right-angled triangle MNR."
+            },
+            {
+              "line": "MN^2 = 81 + 144 = 225",
+              "reason": "Square each side and add."
+            },
+            {
+              "line": "MN = 15 mm",
+              "reason": "Take the square root of 225."
+            },
+            {
+              "line": "Area = 1/2 x 12 x 9 = 54 mm^2",
+              "reason": "The area of a right-angled triangle is half base times height."
+            }
+          ],
+          "answer": "MN = 15 mm and area = 54 mm^2",
+          "answerKind": "choice",
+          "speech": "M N S T is a parallelogram. N R is the height, drawn perpendicular to the base M S, with N R nine millimetres and M R twelve millimetres. Calculate the length of M N in millimetres and the area of triangle M N R in square millimetres. The height meets the base at ninety degrees, so triangle M N R is right-angled at R, and M N is the hypotenuse. So M N squared equals nine squared plus twelve squared, which is eighty one plus one hundred and forty four, two hundred and twenty five. The square root is fifteen, so M N is fifteen millimetres. The area of the triangle is half times twelve times nine, which is fifty four square millimetres.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "M",
+              "R",
+              "N"
+            ],
+            "sides": [
+              "12 mm",
+              "9 mm",
+              "15 mm"
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "In a parallelogram, a height of 5 cm is drawn to the base. The slant side is 13 cm. Calculate the length, in cm, of the piece of the base between the corner and the foot of the height.",
+            "render": "text",
+            "steps": [
+              "x^2 + 5^2 = 13^2",
+              "x^2 = 169 - 25 = 144",
+              "x = 12"
+            ],
+            "answer": "12",
+            "answerKind": "whole",
+            "diagram": {
+              "kind": "triangle",
+              "vertices": [
+                "M",
+                "R",
+                "N"
+              ],
+              "sides": [
+                "x",
+                "5 cm",
+                "13 cm"
+              ],
+              "rightAngleAt": 1
+            },
+            "difficulty": 2,
+            "why": "Subtracting the wrong way round, or forgetting that the slant side is the hypotenuse.",
+            "rightWay": "The slant side is the hypotenuse, so subtract five squared from thirteen squared, then take the square root."
+          },
+          "hint": "The slant side of 13 cm is the hypotenuse, so subtract 5 squared from 13 squared.",
+          "speech": "In a parallelogram, a height of five centimetres is drawn to the base. The slant side is thirteen centimetres. Calculate the length, in centimetres, of the piece of the base between the corner and the foot of the height. Hint: the slant side is the hypotenuse, so subtract five squared from thirteen squared."
+        },
+        {
+          "kind": "worked",
+          "problem": "A ladder of length 5 m reaches a height of 4,5 m up a wall. How far from the wall was the foot of the ladder placed, in m? Round off to two decimal places.",
+          "steps": [
+            {
+              "line": "Sketch: ladder = 5 m is the hypotenuse, height up the wall = 4,5 m.",
+              "reason": "This time the unknown is a shorter side, so we will subtract."
+            },
+            {
+              "line": "d^2 + 4,5^2 = 5^2",
+              "reason": "Hypotenuse squared equals the sum of the squares of the two shorter sides."
+            },
+            {
+              "line": "d^2 + 20,25 = 25",
+              "reason": "4,5 squared is 20,25 and 5 squared is 25."
+            },
+            {
+              "line": "d^2 = 25 - 20,25 = 4,75",
+              "reason": "Subtract 20,25 from both sides."
+            },
+            {
+              "line": "d = sqrt(4,75) = 2,18 m (two decimal places)",
+              "reason": "Take the square root and round off to two decimal places."
+            }
+          ],
+          "answer": "2,18",
+          "answerKind": "decimal",
+          "speech": "A ladder of length five metres reaches a height of four point five metres up a wall. How far from the wall was the foot of the ladder placed, in metres? Round off to two decimal places. Sketch first: the ladder, five metres, is the hypotenuse, and the height up the wall is four point five metres. So d squared plus four point five squared equals five squared. Four point five squared is twenty point two five, so d squared plus twenty point two five equals twenty five. Subtract: d squared equals four point seven five. The square root of four point seven five is about two point one seven nine. Rounded to two decimal places, the foot of the ladder is two point one eight metres from the wall.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "T",
+              "G",
+              "W"
+            ],
+            "sides": [
+              "5 m",
+              "d",
+              "4,5 m"
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "mistake",
+          "wrong": "d^2 = 4,75 so d = 4,75 m",
+          "right": "d^2 = 4,75 so d = sqrt(4,75) = 2,18 m",
+          "why": "The equation gives the square of the length. You must still take the square root to find the length itself.",
+          "speech": "Here is another common mistake. Someone found d squared equals four point seven five and then wrote that the distance is four point seven five metres. But the equation gives the square of the distance. You must still take the square root. The right answer is the square root of four point seven five, which is about two point one eight metres. Always check: is your last line a squared value, or the length itself?"
+        },
+        {
+          "kind": "explain",
+          "text": "Every problem in this lesson used the same moves: find the hidden right-angled triangle, sketch and label it, spot the hypotenuse, then add or subtract squares.\n\nIn a rectangle or a ladder problem the hypotenuse is usually given. In a parallelogram, drop a height first to create the right angle. Then Pythagoras does the rest.",
+          "speech": "Every problem in this lesson used the same moves. Find the hidden right-angled triangle. Sketch it and label it. Spot the hypotenuse, the side opposite the right angle. Then add or subtract squares. In a rectangle or a ladder problem the hypotenuse is usually given. In a parallelogram, drop a height first to create the right angle. Then Pythagoras' Theorem does the rest."
+        }
+      ],
+      "summary": [
+        "In word problems, first find the hidden right-angled triangle and sketch it with labels.",
+        "The ladder or the diagonal of a rectangle is the hypotenuse, opposite the right angle.",
+        "Hypotenuse squared = side squared + side squared. Subtract when the unknown is a shorter side.",
+        "In a parallelogram, drop a height at right angles to the base to form a right-angled triangle.",
+        "Finish with the unit, and take the square root before rounding off."
+      ],
+      "practice": [
+        {
+          "prompt": "A rectangle has sides of 6 cm and 8 cm. Calculate the length of its diagonal, in cm.",
+          "render": "text",
+          "steps": [
+            "d^2 = 6^2 + 8^2",
+            "d^2 = 36 + 64 = 100",
+            "d = 10"
+          ],
+          "answer": "10",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Forgetting to take the square root at the end.",
+          "rightWay": "Square the two sides, add, then take the square root."
+        },
+        {
+          "prompt": "A ladder of length 10 m stands with its foot 6 m from a wall. How far up the wall does it reach, in m?",
+          "render": "text",
+          "steps": [
+            "h^2 + 6^2 = 10^2",
+            "h^2 = 100 - 36 = 64",
+            "h = 8"
+          ],
+          "answer": "8",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Adding the squares instead of subtracting, because the ladder is the hypotenuse.",
+          "rightWay": "The ladder is the hypotenuse, so subtract 6 squared from 10 squared, then take the square root."
+        },
+        {
+          "prompt": "A rectangle has sides of 5 mm and 12 mm. Calculate the length of its diagonal, in mm.",
+          "render": "text",
+          "steps": [
+            "d^2 = 5^2 + 12^2",
+            "d^2 = 25 + 144 = 169",
+            "d = 13"
+          ],
+          "answer": "13",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Adding the side lengths instead of their squares.",
+          "rightWay": "The diagonal is the hypotenuse: square both sides, add the squares, then take the square root."
+        },
+        {
+          "prompt": "A ladder of length 5 m has its foot 2 m from a wall. How far up the wall does it reach, in m? Round off to two decimal places.",
+          "render": "text",
+          "steps": [
+            "h^2 + 2^2 = 5^2",
+            "h^2 = 25 - 4 = 21",
+            "h = sqrt(21) = 4,58"
+          ],
+          "answer": "4,58",
+          "answerKind": "decimal",
+          "difficulty": 2,
+          "why": "Using sqrt(25 + 4) instead of sqrt(25 - 4).",
+          "rightWay": "The ladder is the hypotenuse, so subtract 2 squared from 5 squared to get 21, then take the square root."
+        },
+        {
+          "prompt": "A ladder of length 5 m reaches 4 m up a wall. How far, in m, is the foot of the ladder from the wall?",
+          "render": "text",
+          "steps": [
+            "d^2 + 4^2 = 5^2",
+            "d^2 = 25 - 16 = 9",
+            "d = 3"
+          ],
+          "answer": "3",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Forgetting to subtract before taking the square root.",
+          "rightWay": "Subtract 4 squared from 5 squared to get 9, then take the square root."
+        },
+        {
+          "prompt": "In a parallelogram, a height of 8 cm is drawn to the base and the slant side is 10 cm. Calculate the length, in cm, of the piece of the base between the corner and the foot of the height.",
+          "render": "text",
+          "steps": [
+            "x^2 + 8^2 = 10^2",
+            "x^2 = 100 - 64 = 36",
+            "x = 6"
+          ],
+          "answer": "6",
+          "answerKind": "whole",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "M",
+              "R",
+              "N"
+            ],
+            "sides": [
+              "x",
+              "8 cm",
+              "10 cm"
+            ],
+            "rightAngleAt": 1
+          },
+          "difficulty": 2,
+          "why": "Treating the slant side as a shorter side instead of the hypotenuse.",
+          "rightWay": "The slant side is the hypotenuse, so subtract 8 squared from 10 squared, then take the square root."
+        },
+        {
+          "prompt": "A rectangle has sides of 7 cm and 24 cm. Calculate the length of its diagonal, in cm.",
+          "render": "text",
+          "steps": [
+            "d^2 = 7^2 + 24^2",
+            "d^2 = 49 + 576 = 625",
+            "d = 25"
+          ],
+          "answer": "25",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Mixing up which side is the hypotenuse in a long, thin rectangle.",
+          "rightWay": "The diagonal is always the hypotenuse: square both sides, add, then take the square root."
+        },
+        {
+          "prompt": "A rectangle has sides of 8 cm and 15 cm. Calculate the perimeter, in cm, of the triangle formed by the two sides and a diagonal.",
+          "render": "text",
+          "steps": [
+            "d^2 = 8^2 + 15^2 = 64 + 225 = 289",
+            "d = 17",
+            "Perimeter = 8 + 15 + 17 = 40"
+          ],
+          "answer": "40",
+          "answerKind": "whole",
+          "difficulty": 3,
+          "why": "Stopping after finding the diagonal and forgetting to add the three sides.",
+          "rightWay": "First find the diagonal with Pythagoras, then add the two sides and the diagonal to get the perimeter."
+        }
+      ]
+    }
+  ],
+  "status": [
+    {
+      "position": 1,
+      "status": "ready",
+      "problems": [],
+      "writer": "deepseek/deepseek-v4.1-flash-1017",
+      "reviewer": "z-ai/glm-5.3-flash"
+    },
+    {
+      "position": 2,
+      "status": "ready",
+      "problems": [],
+      "writer": "deepseek/deepseek-v4.1-flash-1017",
+      "reviewer": "z-ai/glm-5.3-flash"
+    },
+    {
+      "position": 3,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    },
+    {
+      "position": 4,
+      "status": "ready",
+      "problems": [],
+      "writer": "deepseek/deepseek-v4.1-flash-1017",
+      "reviewer": "z-ai/glm-5.3-flash"
+    },
+    {
+      "position": 5,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    }
+  ],
+  "generatedAt": "2026-11-16T20:04:22.302Z"
+}

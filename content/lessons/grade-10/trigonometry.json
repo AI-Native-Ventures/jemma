@@ -1,0 +1,3639 @@
+{
+  "grade": 10,
+  "baseName": "Trigonometry",
+  "family": "trigonometry",
+  "capsNames": [
+    "Trigonometry"
+  ],
+  "terms": [
+    1,
+    3
+  ],
+  "source": {
+    "kind": "siyavula",
+    "title": "Siyavula Everything Maths, Grade 10",
+    "address": "https://www.siyavula.com/read/za/mathematics/grade-10/trigonometry-part-1",
+    "licence": "All Siyavula textbook content made available on this site is released under the terms of a Creative Commons Attribution License",
+    "credit": "Based on Siyavula Everything Maths, Grade 10, Chapter 5: Trigonometry and Chapter 11: Trigonometry, CC BY 3.0"
+  },
+  "lessons": [
+    {
+      "position": 1,
+      "title": "Ratios in similar right triangles",
+      "minutes": 22,
+      "objectives": [
+        "You will be able to identify corresponding sides of similar right-angled triangles.",
+        "You will be able to calculate side ratios in similar triangles and see that they stay the same for the same angle.",
+        "You will be able to explain why trigonometric ratios depend on the angle, not on the size of the triangle."
+      ],
+      "keyWords": [
+        {
+          "word": "right-angled triangle",
+          "meaning": "A triangle with one angle equal to 90 degrees."
+        },
+        {
+          "word": "hypotenuse",
+          "meaning": "The side opposite the right angle; always the longest side."
+        },
+        {
+          "word": "similar triangles",
+          "meaning": "Triangles with the same angles; written ABC ||| DEF, with sides in the same ratio."
+        },
+        {
+          "word": "corresponding sides",
+          "meaning": "Sides that match up in the same position in two similar triangles."
+        },
+        {
+          "word": "ratio",
+          "meaning": "One length divided by another length, written as a fraction."
+        },
+        {
+          "word": "trigonometric ratio",
+          "meaning": "A fixed ratio of two sides of a right-angled triangle that depends only on the angle."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "Trigonometry studies how the angles and the sides of a triangle are connected. In this lesson we start with similar right-angled triangles and the ratios of their sides.\n\nHere is the big idea: if two right-angled triangles have the same angles, their sides grow by the same factor, so every ratio of two sides is the same in both triangles. This is what makes trigonometry work.",
+          "speech": "Trigonometry studies how the angles and sides of a triangle are connected. We start with similar right-angled triangles. If two right-angled triangles have the same angles, their sides grow by the same factor, so every ratio of two sides is the same in both triangles. That one idea is the foundation of all of trigonometry."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "angles": [
+              30,
+              90,
+              60
+            ],
+            "sides": [
+              "√3",
+              "1",
+              "2"
+            ],
+            "angleLabels": [
+              "30°",
+              "90°",
+              "60°"
+            ],
+            "rightAngleAt": 1
+          },
+          "caption": "A 30-60-90 triangle: the hypotenuse AC is 2, the side opposite 30° is 1.",
+          "speech": "The picture shows a right-angled triangle A B C. The right angle is at B. The angle at A is thirty degrees and the angle at C is sixty degrees. The side A C, opposite the right angle, is the hypotenuse and has length two. The side B C, opposite the thirty degree angle, has length one. The side A B has length root three."
+        },
+        {
+          "kind": "explain",
+          "text": "When triangle ABC ||| triangle DEF, the letters are written in matching order: A matches D, B matches E, C matches F. Then the angles match (A = D, B = E, C = F) and the ratios of corresponding sides are equal:\n\nAB/DE = BC/EF = AC/DF\n\nIt also means AB/BC = DE/EF, and so on. Getting the order of the letters right is the first skill of this topic.",
+          "speech": "When triangle A B C is similar to triangle D E F, the letters are written in matching order. A matches D, B matches E, and C matches F. The angles match, and the ratios of corresponding sides are equal. A B over D E equals B C over E F equals A C over D F. Getting the order of the letters right matters: triangle A B C similar to triangle D F E would be wrong."
+        },
+        {
+          "kind": "worked",
+          "problem": "Triangle ABC has angle A = 30°, right angle at B and angle C = 60°, with AB = √3, BC = 1 and AC = 2. Calculate BC/AC, AB/AC and BC/AB.",
+          "steps": [
+            {
+              "line": "Right angle at B, so AC is the hypotenuse",
+              "reason": "The hypotenuse is always the side opposite the right angle"
+            },
+            {
+              "line": "BC/AC = 1/2",
+              "reason": "BC is opposite the 30° angle, AC is the hypotenuse"
+            },
+            {
+              "line": "AB/AC = √3/2",
+              "reason": "AB is the third side, divided by the hypotenuse"
+            },
+            {
+              "line": "BC/AB = 1/√3",
+              "reason": "The side opposite 30° divided by the side next to it"
+            }
+          ],
+          "answer": "BC/AC = 1/2, AB/AC = √3/2, BC/AB = 1/√3",
+          "answerKind": "choice",
+          "speech": "The problem: in triangle A B C, the angle at A is thirty degrees, the right angle is at B, and the sides are root three, one and two. First, the right angle is at B, so A C is the hypotenuse. B C over A C is one over two. A B over A C is root three over two. And B C over A B is one over root three.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "angles": [
+              30,
+              90,
+              60
+            ],
+            "sides": [
+              "√3",
+              "1",
+              "2"
+            ],
+            "angleLabels": [
+              "30°",
+              "90°",
+              "60°"
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "Triangle DEF ||| triangle ABC has the same angles (30°, 90°, 60°) but DE = 5√3, EF = 5 and DF = 10. Calculate EF/DF, DE/DF and EF/DE.",
+          "steps": [
+            {
+              "line": "Right angle at E, so DF is the hypotenuse",
+              "reason": "Same shape as ABC, scaled up by a factor of 5"
+            },
+            {
+              "line": "EF/DF = 5/10 = 1/2",
+              "reason": "Corresponding to BC/AC in the small triangle"
+            },
+            {
+              "line": "DE/DF = 5√3/10 = √3/2",
+              "reason": "Corresponding to AB/AC in the small triangle"
+            },
+            {
+              "line": "EF/DE = 5/(5√3) = 1/√3",
+              "reason": "Corresponding to BC/AB; every ratio is unchanged"
+            }
+          ],
+          "answer": "EF/DF = 1/2, DE/DF = √3/2, EF/DE = 1/√3",
+          "answerKind": "choice",
+          "speech": "Now a bigger triangle, D E F, similar to A B C, with sides root three times five, five and ten. The right angle is at E, so D F is the hypotenuse. E F over D F is five over ten, which is one half. D E over D F is five root three over ten, which is root three over two. E F over D E is five over five root three, which is one over root three. Every ratio is exactly the same as in the small triangle.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "D",
+              "E",
+              "F"
+            ],
+            "angles": [
+              30,
+              90,
+              60
+            ],
+            "sides": [
+              "5√3",
+              "5",
+              "10"
+            ],
+            "angleLabels": [
+              "30°",
+              "90°",
+              "60°"
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "explain",
+          "text": "Look at what happened: the second triangle is 5 times bigger than the first, but the ratios BC/AC = 1/2 and 5/10 = 1/2 are identical.\n\nThis is the key fact of trigonometry: in a right-angled triangle, the ratio of any two sides depends only on the size of the angle, not on how big the triangle is. Any triangle with a 30° angle gives BC/AC = 1/2, always.",
+          "speech": "Notice what happened. The second triangle is five times bigger, yet the ratios are identical: one half in both. This is the key fact of trigonometry. In a right-angled triangle, the ratio of any two sides depends only on the size of the angle, not on how big the triangle is. Every right-angled triangle with a thirty degree angle gives that ratio of one half."
+        },
+        {
+          "kind": "worked",
+          "problem": "A 45-45-90 triangle PQR has PQ = 3, QR = 3 and PR = 3√2 (hypotenuse). A larger 45-45-90 triangle has legs 6 and 6, hypotenuse 6√2. Compare PQ/PR with the corresponding ratio in the large triangle.",
+          "steps": [
+            {
+              "line": "PQ/PR = 3/(3√2) = 1/√2",
+              "reason": "Leg opposite the 45° angle over the hypotenuse; the 3s cancel"
+            },
+            {
+              "line": "Large triangle: 6/(6√2) = 1/√2",
+              "reason": "Same ratio, legs over hypotenuse; the 6s cancel"
+            },
+            {
+              "line": "1/√2 = 1/√2",
+              "reason": "The ratio is the same for both sizes"
+            }
+          ],
+          "answer": "Both ratios equal 1/√2",
+          "answerKind": "choice",
+          "speech": "The problem: two 45, 45, 90 triangles, one with legs three and three, hypotenuse three root two, and one with legs six and six, hypotenuse six root two. In the small triangle, P Q over P R is three over three root two, which is one over root two. In the large one, six over six root two is also one over root two. Different sizes, same ratio, because the angles are the same."
+        },
+        {
+          "kind": "worked",
+          "problem": "A ramp makes a 30° angle with the ground. A surveyor draws a small right-angled triangle of this ramp with hypotenuse 4, and measures the vertical rise as 2. A builder uses a scale model with hypotenuse 400. Without measuring, what is the vertical rise in the model?",
+          "steps": [
+            {
+              "line": "Small triangle: rise/hypotenuse = 2/4 = 1/2",
+              "reason": "Compute the ratio in the small triangle"
+            },
+            {
+              "line": "Angle is the same (30°), so the ratio is the same",
+              "reason": "Similar right-angled triangles have equal side ratios"
+            },
+            {
+              "line": "rise/400 = 1/2",
+              "reason": "Set up the equal ratio for the model"
+            },
+            {
+              "line": "rise = 200",
+              "reason": "Multiply both sides by 400"
+            }
+          ],
+          "answer": "200",
+          "answerKind": "whole",
+          "speech": "The problem: a ramp makes a thirty degree angle. A small drawn triangle has hypotenuse four and vertical rise two. A scale model has hypotenuse four hundred. What is the rise in the model? In the small triangle, rise over hypotenuse is two over four, one half. The angle is the same, so the ratio is the same. So rise over four hundred is one half, which gives a rise of two hundred."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "A right-angled triangle XYZ has angle X = 45°, right angle at Y, XY = 4, YZ = 4 and XZ = 4√2. Calculate YZ/XZ (leave it in surd form).",
+            "render": "text",
+            "steps": [
+              "Right angle at Y, so XZ is the hypotenuse",
+              "YZ/XZ = 4/(4√2)",
+              "= 1/√2"
+            ],
+            "answer": "1/√2",
+            "answerKind": "number",
+            "difficulty": 2,
+            "why": "Learners often divide the hypotenuse by the leg, or forget that the 4s cancel.",
+            "rightWay": "XZ is opposite the right angle, so it is the hypotenuse. YZ/XZ = 4/(4√2) = 1/√2."
+          },
+          "hint": "First find the hypotenuse, then divide the side opposite 45° by it and cancel.",
+          "speech": "Your turn. Triangle X Y Z has a right angle at Y, angle X is forty five degrees, and the sides are four, four and four root two. Calculate Y Z over X Z in surd form. Hint: find the hypotenuse first, then divide and cancel."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "ABC ||| DFE, so AB/DF = BC/FE",
+          "right": "ABC ||| DEF, so AB/DE = BC/EF",
+          "why": "The order of the letters shows which vertex matches which. Writing DFE puts the angles in the wrong positions, so the corresponding sides are paired wrongly and every ratio is wrong.",
+          "speech": "A common mistake: writing triangle A B C similar to triangle D F E, so that A B over D F equals B C over F E. The right way is triangle A B C similar to triangle D E F, so A B over D E equals B C over E F. The order of the letters tells you which vertex matches which. Wrong order means the sides are paired wrongly and the ratios come out wrong."
+        },
+        {
+          "kind": "explain",
+          "text": "Tying it together: similar right-angled triangles have equal angles, and equal angles force equal side ratios. So for a given angle like 30°, the ratio opposite/hypotenuse is one fixed number, whatever the size of the triangle.\n\nA ratio of two sides that depends only on the angle is called a trigonometric ratio. In the next lesson we give these ratios their names: sine, cosine and tangent.",
+          "speech": "To tie it together: similar right-angled triangles have equal angles, and equal angles force equal side ratios. So for a given angle like thirty degrees, the ratio of opposite over hypotenuse is one fixed number, whatever the size of the triangle. A ratio of two sides that depends only on the angle is called a trigonometric ratio. In the next lesson we name these ratios sine, cosine and tangent."
+        }
+      ],
+      "summary": [
+        "Similar triangles ABC ||| DEF must be named in corresponding order: A matches D, B matches E, C matches F.",
+        "In similar triangles, ratios of corresponding sides are equal: AB/DE = BC/EF = AC/DF.",
+        "The hypotenuse is always opposite the right angle and never changes position.",
+        "For the same angle, every side ratio is the same no matter how big the triangle is.",
+        "This is why trigonometric ratios depend on the angle only, not on the size of the triangle."
+      ],
+      "practice": [
+        {
+          "prompt": "A right-angled triangle has a 30° angle, opposite side 3 and hypotenuse 6. Calculate opposite/hypotenuse.",
+          "render": "text",
+          "steps": [
+            "opposite/hypotenuse = 3/6",
+            "= 1/2"
+          ],
+          "answer": "1/2",
+          "answerKind": "fraction",
+          "difficulty": 1,
+          "why": "Learners sometimes write hypotenuse/opposite instead, giving 2.",
+          "rightWay": "Put the side opposite the angle on top and the hypotenuse underneath: 3/6 = 1/2."
+        },
+        {
+          "prompt": "Triangle ABC ||| triangle DEF and AB/BC = 2/3. What is DE/EF?",
+          "render": "text",
+          "steps": [
+            "Corresponding sides of similar triangles have equal ratios",
+            "DE/EF = AB/BC",
+            "= 2/3"
+          ],
+          "answer": "2/3",
+          "answerKind": "fraction",
+          "difficulty": 1,
+          "why": "Learners sometimes flip the ratio or use a different pair of sides.",
+          "rightWay": "Corresponding ratios in similar triangles are equal, so DE/EF = AB/BC = 2/3."
+        },
+        {
+          "prompt": "A 45-45-90 triangle has legs 5 and 5 and hypotenuse 5√2. Calculate leg/hypotenuse in surd form.",
+          "render": "text",
+          "steps": [
+            "leg/hypotenuse = 5/(5√2)",
+            "= 1/√2"
+          ],
+          "answer": "1/√2",
+          "answerKind": "number",
+          "difficulty": 1,
+          "why": "Learners forget the 5s cancel and try to work with 5√2 on the top.",
+          "rightWay": "5/(5√2) = 1/√2. The same ratio holds in every 45-45-90 triangle."
+        },
+        {
+          "prompt": "In triangle ABC ||| triangle DEF, AC/BC = 3/4. Which of these must also be true? A: DF/EF = 3/4, B: DF/EF = 4/3, C: AB/DE = 3/4",
+          "render": "text",
+          "steps": [
+            "A matches D, C matches F, so AC corresponds to DF and BC to EF",
+            "So DF/EF = AC/BC = 3/4"
+          ],
+          "answer": "A",
+          "answerKind": "choice",
+          "choices": [
+            "DF/EF = 3/4",
+            "DF/EF = 4/3",
+            "AB/DE = 3/4"
+          ],
+          "difficulty": 2,
+          "why": "Learners confuse which sides correspond, especially when the letters are in a different order.",
+          "rightWay": "Match the letters in order: A with D and C with F, so AC corresponds to DF and BC to EF, giving DF/EF = 3/4."
+        },
+        {
+          "prompt": "Why does the ratio opposite/hypotenuse stay the same when a right-angled triangle is enlarged? A: Because the sides all get bigger, B: Because the angles stay the same and all sides scale by the same factor, C: Because the hypotenuse never changes",
+          "render": "text",
+          "steps": [
+            "Similar triangles keep their angles",
+            "All sides are multiplied by the same scale factor",
+            "So every ratio of two sides is unchanged"
+          ],
+          "answer": "B",
+          "answerKind": "choice",
+          "choices": [
+            "Because the sides all get bigger",
+            "Because the angles stay the same and all sides scale by the same factor",
+            "Because the hypotenuse never changes"
+          ],
+          "difficulty": 2,
+          "why": "Learners often think bigger triangles change the ratios.",
+          "rightWay": "Enlarging multiplies every side by the same factor and keeps the angles, so all side ratios stay the same."
+        },
+        {
+          "prompt": "A 30-60-90 triangle has hypotenuse 8. What is the length of the side opposite the 30° angle? (Hint: the ratio opposite/hypotenuse is 1/2 for every 30° angle.)",
+          "render": "text",
+          "steps": [
+            "opposite/hypotenuse = 1/2",
+            "opposite/8 = 1/2",
+            "opposite = 4"
+          ],
+          "answer": "4",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Learners sometimes halve the wrong side or forget the ratio is fixed by the angle.",
+          "rightWay": "The ratio opposite/hypotenuse is 1/2 for any 30° angle, so the opposite side is 8 × 1/2 = 4."
+        },
+        {
+          "prompt": "A ladder leans against a wall at 60° to the ground. In a scale drawing the ladder (hypotenuse) is 10 cm and the wall side is 5√3 cm. A real ladder is 6 m long. Calculate the height the real ladder reaches up the wall, in metres.",
+          "render": "text",
+          "steps": [
+            "Drawing: wall/ladder = 5√3/10 = √3/2",
+            "Same angle (60°), so the ratio is the same: h/6 = √3/2",
+            "h = 6 × √3/2",
+            "h = 3√3"
+          ],
+          "answer": "3√3",
+          "answerKind": "number",
+          "difficulty": 3,
+          "why": "Learners mix up which side goes on top, or use the wrong scale factor instead of the ratio.",
+          "rightWay": "Use the ratio from the drawing: wall/ladder = √3/2. Because the angle is the same, h/6 = √3/2, so h = 3√3 m."
+        }
+      ]
+    },
+    {
+      "position": 2,
+      "title": "Naming sides and using sin, cos and tan",
+      "minutes": 20,
+      "objectives": [
+        "You will be able to label the hypotenuse, opposite and adjacent sides with respect to a chosen angle.",
+        "You will be able to write sin theta, cos theta and tan theta as ratios of two sides.",
+        "You will be able to use SOH CAH TOA to choose the correct ratio."
+      ],
+      "keyWords": [
+        {
+          "word": "hypotenuse",
+          "meaning": "The side of a right-angled triangle opposite the right angle, and the longest side."
+        },
+        {
+          "word": "opposite side",
+          "meaning": "The side of the triangle that is across from the angle you are working with and does not touch it."
+        },
+        {
+          "word": "adjacent side",
+          "meaning": "The side that touches the angle you are working with and is not the hypotenuse."
+        },
+        {
+          "word": "trigonometric ratio",
+          "meaning": "A fixed ratio of two sides of a right-angled triangle, fixed by the size of the angle."
+        },
+        {
+          "word": "sine",
+          "meaning": "Written sin, the ratio of the side opposite the angle to the hypotenuse."
+        },
+        {
+          "word": "cosine",
+          "meaning": "Written cos, the ratio of the side adjacent to the angle to the hypotenuse."
+        },
+        {
+          "word": "tangent",
+          "meaning": "Written tan, the ratio of the side opposite the angle to the side adjacent to the angle."
+        },
+        {
+          "word": "SOH CAH TOA",
+          "meaning": "A memory aid that pairs each ratio with the two sides it uses."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "Last lesson you saw that similar right-angled triangles keep the same ratio between two sides. That is the idea behind trigonometry: once the angles of a right-angled triangle are fixed, the ratio of any two of its sides is fixed as well.\n\nTrigonometry gives those fixed ratios names: sine, cosine and tangent. With a name you can write the ratio as a formula, and a formula lets you work out sides and angles you cannot measure directly.",
+          "speech": "Last lesson you saw that similar right angled triangles keep the same ratio between two sides. That is the idea behind trigonometry. Once the angles of a right angled triangle are fixed, the ratio of any two of its sides is fixed as well. Trigonometry gives those fixed ratios names. They are called sine, cosine and tangent. With a name you can write the ratio as a formula, and a formula lets you work out sides and angles you cannot measure directly."
+        },
+        {
+          "kind": "explain",
+          "text": "A right-angled triangle has three sides. The hypotenuse is the side opposite the right angle, and it is always the longest side. The other two sides are named according to the angle you are working with. The opposite side is the side across from that angle and it does not touch the angle. The adjacent side is the side that touches the angle but is not the hypotenuse.",
+          "speech": "A right angled triangle has three sides. The hypotenuse is the side opposite the right angle, and it is always the longest side. The other two sides are named according to the angle you are working with. The opposite side is the side across from that angle, and it does not touch the angle. The adjacent side is the side that touches the angle but is not the hypotenuse."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "opposite",
+              "adjacent",
+              "hypotenuse"
+            ],
+            "angleLabels": [
+              "θ",
+              "",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          },
+          "caption": "The right angle is at C. The angle θ is at A, so BC is the opposite side, AC is the adjacent side and AB is the hypotenuse.",
+          "speech": "A right angled triangle A B C with the right angle at C. The angle theta is marked at A. The side across from the right angle, A B, is labelled hypotenuse. The side across from theta, B C, is labelled opposite. The side that touches theta and is not the hypotenuse, A C, is labelled adjacent."
+        },
+        {
+          "kind": "explain",
+          "text": "The hypotenuse never changes, because the right angle never moves. But opposite and adjacent belong to the angle you choose. If you move to the other acute angle, the opposite and adjacent sides swap. The hypotenuse stays the same side: it is always the side opposite the right angle, and it is always the longest side.",
+          "speech": "The hypotenuse never changes, because the right angle never moves. But opposite and adjacent belong to the angle you choose. If you move to the other acute angle, the opposite and adjacent sides swap. The hypotenuse stays the same side. It is always the side opposite the right angle, and it is always the longest side."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "adjacent",
+              "opposite",
+              "hypotenuse"
+            ],
+            "angleLabels": [
+              "",
+              "α",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          },
+          "caption": "The same triangle, but now the angle is α at B. The labels opposite and adjacent have swapped; the hypotenuse is still AB.",
+          "speech": "The same triangle, but now the angle alpha is at B. The side across from alpha is A C, so A C is now the opposite side. The side that touches alpha and is not the hypotenuse is B C, so B C is now the adjacent side. The hypotenuse is still A B, the side opposite the right angle."
+        },
+        {
+          "kind": "explain",
+          "text": "For the angle θ:\n\nsin θ = opposite/hypotenuse\ncos θ = adjacent/hypotenuse\ntan θ = opposite/adjacent\n\nRemember SOH CAH TOA: S-O-H, sine is opposite over hypotenuse; C-A-H, cosine is adjacent over hypotenuse; T-O-A, tangent is opposite over adjacent. A ratio is a number, so it has no unit, and it does not change when the triangle is drawn bigger or smaller.",
+          "speech": "For the angle theta, sine theta is the opposite side over the hypotenuse. Cosine theta is the adjacent side over the hypotenuse. Tangent theta is the opposite side over the adjacent side. Remember SOH CAH TOA. S O H means sine is opposite over hypotenuse. C A H means cosine is adjacent over hypotenuse. T O A means tangent is opposite over adjacent. A ratio is a number, so it has no unit, and it does not change when the triangle is drawn bigger or smaller."
+        },
+        {
+          "kind": "worked",
+          "problem": "In triangle ABC, angle C = 90°, AB = 5, BC = 3 and AC = 4. Write down sin θ, where θ is the angle at A.",
+          "steps": [
+            {
+              "line": "Hypotenuse = AB = 5",
+              "reason": "The hypotenuse is the side opposite the right angle at C."
+            },
+            {
+              "line": "Opposite side to θ = BC = 3",
+              "reason": "θ is at A, and BC is the side across from A that does not touch it."
+            },
+            {
+              "line": "sin θ = opposite/hypotenuse",
+              "reason": "SOH tells us sine is opposite over hypotenuse."
+            },
+            {
+              "line": "sin θ = 3/5",
+              "reason": "Put the opposite side 3 over the hypotenuse 5."
+            }
+          ],
+          "answer": "3/5",
+          "answerKind": "fraction",
+          "speech": "In triangle A B C, angle C is ninety degrees, A B is five, B C is three and A C is four. Write down sine theta, where theta is the angle at A. First, the hypotenuse is A B, which is five, because it is opposite the right angle at C. Second, the side opposite theta is B C, which is three, because theta is at A and B C is the side across from A. Third, SOH tells us sine is opposite over hypotenuse. So sine theta is three over five.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "3",
+              "4",
+              "5"
+            ],
+            "angleLabels": [
+              "θ",
+              "",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "In the same triangle, the angle at B is called α. Write down tan α.",
+          "steps": [
+            {
+              "line": "Opposite side to α = AC = 4",
+              "reason": "α is at B, and AC is the side across from B that does not touch it."
+            },
+            {
+              "line": "Adjacent side to α = BC = 3",
+              "reason": "BC touches B and is not the hypotenuse."
+            },
+            {
+              "line": "tan α = opposite/adjacent",
+              "reason": "TOA tells us tangent is opposite over adjacent."
+            },
+            {
+              "line": "tan α = 4/3",
+              "reason": "Put the opposite side 4 over the adjacent side 3."
+            }
+          ],
+          "answer": "4/3",
+          "answerKind": "fraction",
+          "speech": "In the same triangle, the angle at B is called alpha. Write down tangent alpha. First, the side opposite alpha is A C, which is four, because alpha is at B and A C is across from B. Second, the side adjacent to alpha is B C, which is three, because it touches B and is not the hypotenuse. Third, TOA tells us tangent is opposite over adjacent. So tangent alpha is four over three.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "3",
+              "4",
+              "5"
+            ],
+            "angleLabels": [
+              "",
+              "α",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "In triangle ABC, angle C = 90°, AB = 13, BC = 5 and AC = 12. Write down cos A, where A is the angle at vertex A.",
+            "render": "text",
+            "steps": [
+              "Hypotenuse = AB = 13",
+              "Side adjacent to A = AC = 12",
+              "cos A = adjacent/hypotenuse",
+              "cos A = 12/13"
+            ],
+            "answer": "12/13",
+            "answerKind": "fraction",
+            "diagram": {
+              "kind": "triangle",
+              "vertices": [
+                "A",
+                "B",
+                "C"
+              ],
+              "sides": [
+                "5",
+                "12",
+                "13"
+              ],
+              "angleLabels": [
+                "",
+                "",
+                "90°"
+              ],
+              "rightAngleAt": 2
+            },
+            "difficulty": 2,
+            "why": "Learners often take the side opposite A, which is BC = 5, and write 5/13, which is sin A.",
+            "rightWay": "The angle is at A, so the adjacent side is AC = 12 and the hypotenuse is AB = 13, giving cos A = 12/13."
+          },
+          "hint": "Which side touches A and is not the hypotenuse?",
+          "speech": "In triangle A B C, angle C is ninety degrees, A B is thirteen, B C is five and A C is twelve. Write down cosine A, where A is the angle at vertex A. Pause here and try it yourself. The hypotenuse is A B, thirteen. The side adjacent to A is A C, twelve. So cosine A is twelve over thirteen."
+        },
+        {
+          "kind": "worked",
+          "problem": "In triangle PQR, angle Q = 90°, PR = 10, PQ = 6 and QR = 8. Write down tan θ in simplest form, where θ is the angle at P.",
+          "steps": [
+            {
+              "line": "Hypotenuse = PR = 10",
+              "reason": "The hypotenuse is the side opposite the right angle at Q."
+            },
+            {
+              "line": "Opposite side to θ = QR = 8",
+              "reason": "θ is at P, and QR is the side across from P."
+            },
+            {
+              "line": "Adjacent side to θ = PQ = 6",
+              "reason": "PQ touches P and is not the hypotenuse."
+            },
+            {
+              "line": "tan θ = 8/6",
+              "reason": "TOA: opposite over adjacent."
+            },
+            {
+              "line": "tan θ = 4/3",
+              "reason": "Divide the top and the bottom by 2 to simplify the fraction."
+            }
+          ],
+          "answer": "4/3",
+          "answerKind": "fraction",
+          "speech": "In triangle P Q R, angle Q is ninety degrees, P R is ten, P Q is six and Q R is eight. Write down tangent theta in simplest form, where theta is the angle at P. First, the hypotenuse is P R, ten, because it is opposite the right angle at Q. Second, the side opposite theta is Q R, eight. Third, the side adjacent to theta is P Q, six. Fourth, tangent is opposite over adjacent, so we get eight over six. Divide top and bottom by two, and tangent theta is four over three.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "P",
+              "Q",
+              "R"
+            ],
+            "sides": [
+              "8",
+              "10",
+              "6"
+            ],
+            "angleLabels": [
+              "θ",
+              "90°",
+              ""
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "In triangle KLM, angle M = 90°, KL = 17, LM = 8 and KM = 15. Write down tan K, where K is the angle at vertex K.",
+          "steps": [
+            {
+              "line": "Hypotenuse = KL = 17",
+              "reason": "The hypotenuse is the side opposite the right angle at M."
+            },
+            {
+              "line": "Opposite side to K = LM = 8",
+              "reason": "K is at vertex K, and LM is the side across from K."
+            },
+            {
+              "line": "Adjacent side to K = KM = 15",
+              "reason": "KM touches K and is not the hypotenuse."
+            },
+            {
+              "line": "tan K = 8/15",
+              "reason": "TOA: opposite over adjacent."
+            }
+          ],
+          "answer": "8/15",
+          "answerKind": "fraction",
+          "speech": "In triangle K L M, angle M is ninety degrees, K L is seventeen, L M is eight and K M is fifteen. Write down tangent K, where K is the angle at vertex K. The hypotenuse is K L, seventeen, opposite the right angle at M. The side opposite K is L M, eight. The side adjacent to K is K M, fifteen. Tangent is opposite over adjacent, so tangent K is eight over fifteen.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "K",
+              "L",
+              "M"
+            ],
+            "sides": [
+              "8",
+              "15",
+              "17"
+            ],
+            "angleLabels": [
+              "",
+              "",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          }
+        },
+        {
+          "kind": "mistake",
+          "wrong": "sin θ = 4/5",
+          "right": "sin θ = 3/5",
+          "why": "The side of length 4 touches the angle θ, so it is the adjacent side and belongs to cosine. The side of length 3 is across from θ, so it is the opposite side. Sine is opposite over hypotenuse, which gives 3/5.",
+          "speech": "Here is the usual mistake. In a triangle with theta at A, the side opposite theta is three, the side adjacent to theta is four and the hypotenuse is five. The wrong answer is sine theta equals four over five. The right answer is sine theta equals three over five. The side of length four touches the angle theta, so it is the adjacent side and belongs to cosine. The side of length three is across from theta, so it is the opposite side. Sine is opposite over hypotenuse, which gives three over five.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "3",
+              "4",
+              "5"
+            ],
+            "angleLabels": [
+              "θ",
+              "",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          }
+        },
+        {
+          "kind": "explain",
+          "text": "Before you write a ratio, do two things. First mark the angle you are working with. Then name the two sides the question talks about. The pair of names chooses the ratio. Opposite and hypotenuse: sine. Adjacent and hypotenuse: cosine. Opposite and adjacent: tangent. If the question links the side opposite the angle with the hypotenuse, you need sine.",
+          "speech": "Before you write a ratio, do two things. First mark the angle you are working with. Then name the two sides the question talks about. The pair of names chooses the ratio. Opposite and hypotenuse gives sine. Adjacent and hypotenuse gives cosine. Opposite and adjacent gives tangent. If the question links the side opposite the angle with the hypotenuse, you need sine."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "In triangle PQR, angle Q = 90°, PQ = 7, QR = 24 and PR = 25. Which statement is correct?",
+            "render": "text",
+            "steps": [
+              "Angle Q = 90°, so PR = 25 is the hypotenuse",
+              "For the angle at P the opposite side is QR = 24 and the adjacent side is PQ = 7",
+              "sin P = opposite/hypotenuse = 24/25",
+              "The correct statement is A"
+            ],
+            "answer": "A",
+            "answerKind": "choice",
+            "choices": [
+              "sin P = 24/25",
+              "cos P = 24/25",
+              "tan P = 7/25",
+              "sin P = 7/24"
+            ],
+            "diagram": {
+              "kind": "triangle",
+              "vertices": [
+                "P",
+                "Q",
+                "R"
+              ],
+              "sides": [
+                "24",
+                "25",
+                "7"
+              ],
+              "angleLabels": [
+                "",
+                "90°",
+                ""
+              ],
+              "rightAngleAt": 1
+            },
+            "difficulty": 2,
+            "why": "Learners who take PQ as the opposite side get sin P = 7/25, which is wrong.",
+            "rightWay": "The angle is at P, so the opposite side is QR = 24 and the hypotenuse is PR = 25, giving sin P = 24/25."
+          },
+          "hint": "Mark the angle at P first, then decide which side is across from it.",
+          "speech": "In triangle P Q R, angle Q is ninety degrees, P Q is seven, Q R is twenty four and P R is twenty five. Which statement is correct? The options are: A, sine P equals twenty four over twenty five. B, cosine P equals twenty four over twenty five. C, tangent P equals seven over twenty five. D, sine P equals seven over twenty four. Pause and try it. The right angle is at Q, so P R, twenty five, is the hypotenuse. For the angle at P the side across from it is Q R, twenty four, and the side touching it is P Q, seven. So sine P is twenty four over twenty five, which is option A."
+        },
+        {
+          "kind": "explain",
+          "text": "To tie it together: the three ratios are only allowed in a right-angled triangle, so check for the right angle first. Then find the hypotenuse, name the other two sides according to the angle in the question, and let SOH CAH TOA pick the ratio. The answer is always a number: the ratio of two sides, with no unit.",
+          "speech": "To tie it together. The three ratios are only allowed in a right angled triangle, so check for the right angle first. Then find the hypotenuse, name the other two sides according to the angle in the question, and let SOH CAH TOA pick the ratio. The answer is always a number. It is the ratio of two sides, and it has no unit."
+        }
+      ],
+      "summary": [
+        "The hypotenuse is the side opposite the right angle and it is always the longest side.",
+        "The opposite and adjacent sides are named for the angle you use, so they swap when the angle changes.",
+        "sin θ = opposite/hypotenuse, cos θ = adjacent/hypotenuse, tan θ = opposite/adjacent.",
+        "SOH CAH TOA pairs each ratio with the two sides it needs.",
+        "These ratios only work in a right-angled triangle."
+      ],
+      "practice": [
+        {
+          "prompt": "In a right-angled triangle the angle θ is marked. The side opposite θ is 3, the side adjacent to θ is 4 and the hypotenuse is 5. Write down sin θ.",
+          "render": "text",
+          "steps": [
+            "Hypotenuse = 5",
+            "Opposite side to θ = 3",
+            "sin θ = opposite/hypotenuse",
+            "sin θ = 3/5"
+          ],
+          "answer": "3/5",
+          "answerKind": "fraction",
+          "difficulty": 1,
+          "why": "Writing the adjacent side over the hypotenuse gives cos θ, not sin θ.",
+          "rightWay": "sin θ = opposite/hypotenuse = 3/5."
+        },
+        {
+          "prompt": "In triangle ABC, angle C = 90°, AB = 13, AC = 12 and BC = 5. Write down cos A.",
+          "render": "text",
+          "steps": [
+            "Hypotenuse = AB = 13",
+            "Side adjacent to A = AC = 12",
+            "cos A = adjacent/hypotenuse",
+            "cos A = 12/13"
+          ],
+          "answer": "12/13",
+          "answerKind": "fraction",
+          "difficulty": 1,
+          "why": "The side opposite A is BC = 5, so using 5 gives sin A instead of cos A.",
+          "rightWay": "cos A = adjacent/hypotenuse = AC/AB = 12/13."
+        },
+        {
+          "prompt": "In triangle DEF, angle F = 90°, DE = 26, EF = 10 and DF = 24. Write down tan D in simplest form.",
+          "render": "text",
+          "steps": [
+            "Opposite side to D = EF = 10",
+            "Adjacent side to D = DF = 24",
+            "tan D = 10/24",
+            "tan D = 5/12"
+          ],
+          "answer": "5/12",
+          "answerKind": "fraction",
+          "difficulty": 2,
+          "why": "Using DE, the hypotenuse, in place of the adjacent side gives sin D instead of tan D.",
+          "rightWay": "tan D = opposite/adjacent = EF/DF = 10/24 = 5/12."
+        },
+        {
+          "prompt": "In triangle XYZ, angle Z = 90°. Which statement is correct?",
+          "render": "text",
+          "steps": [
+            "Angle Z = 90°, so XY is the hypotenuse",
+            "For the angle at X the opposite side is YZ and the adjacent side is XZ",
+            "sin X = opposite/hypotenuse = YZ/XY",
+            "The correct statement is A"
+          ],
+          "answer": "A",
+          "answerKind": "choice",
+          "choices": [
+            "sin X = YZ/XY",
+            "cos X = XZ/YZ",
+            "tan X = XY/YZ",
+            "cos X = YZ/XZ"
+          ],
+          "difficulty": 2,
+          "why": "Cosine uses the hypotenuse, so cos X = XZ/XY, not XZ/YZ.",
+          "rightWay": "sin X = YZ/XY, cos X = XZ/XY and tan X = YZ/XZ, so only A is correct."
+        },
+        {
+          "prompt": "In a right-angled triangle the angle α is marked, the side opposite α is 15, the side adjacent to α is 20 and the hypotenuse is 25. Write down tan α in simplest form.",
+          "render": "text",
+          "steps": [
+            "tan α = opposite/adjacent",
+            "tan α = 15/20",
+            "tan α = 3/4"
+          ],
+          "answer": "3/4",
+          "answerKind": "fraction",
+          "difficulty": 2,
+          "why": "Dividing the opposite side by the hypotenuse gives sin α, which is 3/5, not tan α.",
+          "rightWay": "tan α = opposite/adjacent = 15/20 = 3/4."
+        },
+        {
+          "prompt": "Which statement is NOT correct?",
+          "render": "text",
+          "steps": [
+            "sin θ = opposite/hypotenuse",
+            "cos θ = adjacent/hypotenuse",
+            "tan θ = opposite/adjacent",
+            "The statement tan θ = adjacent/opposite is not correct, so the answer is C"
+          ],
+          "answer": "C",
+          "answerKind": "choice",
+          "choices": [
+            "sin θ = opposite/hypotenuse",
+            "cos θ = adjacent/hypotenuse",
+            "tan θ = adjacent/opposite",
+            "tan θ = opposite/adjacent"
+          ],
+          "difficulty": 2,
+          "why": "Writing the adjacent side over the opposite side turns the tangent upside down.",
+          "rightWay": "TOA gives tan θ = opposite/adjacent, so option C is the one that is not correct."
+        },
+        {
+          "prompt": "In triangle KLM, angle M = 90°, KL = 41, LM = 9 and KM = 40. Write down sin K + cos K.",
+          "render": "text",
+          "steps": [
+            "sin K = opposite/hypotenuse = LM/KL = 9/41",
+            "cos K = adjacent/hypotenuse = KM/KL = 40/41",
+            "sin K + cos K = 9/41 + 40/41",
+            "sin K + cos K = 49/41"
+          ],
+          "answer": "49/41",
+          "answerKind": "fraction",
+          "difficulty": 3,
+          "why": "The two ratios must be written with the same hypotenuse KL = 41 before they can be added.",
+          "rightWay": "sin K = 9/41 and cos K = 40/41, so the sum is 49/41."
+        },
+        {
+          "prompt": "In triangle PQR, angle Q = 90° and tan P = 5/12. The side opposite P is 10. Write down the length of the side adjacent to P.",
+          "render": "text",
+          "steps": [
+            "tan P = opposite/adjacent = 5/12",
+            "5/12 = 10/adjacent",
+            "5 x adjacent = 12 x 10 = 120",
+            "adjacent = 24"
+          ],
+          "answer": "24",
+          "answerKind": "whole",
+          "difficulty": 3,
+          "why": "Multiplying the opposite side by 12/5 instead of 12/5 of it in the wrong order gives the wrong side.",
+          "rightWay": "The opposite side is 2 times the 5 in the ratio, so the adjacent side is 2 times 12, which is 24."
+        }
+      ]
+    },
+    {
+      "position": 3,
+      "title": "Reciprocal ratios on the calculator",
+      "minutes": 20,
+      "objectives": [
+        "You will be able to write cosec, sec and cot as reciprocals of sin, cos and tan.",
+        "You will be able to find sin, cos and tan values on a calculator in degree mode.",
+        "You will be able to calculate reciprocal ratios by using 1 over sin, cos or tan."
+      ],
+      "keyWords": [
+        {
+          "word": "reciprocal",
+          "meaning": "The reciprocal of a number is 1 divided by that number, for example the reciprocal of 2 is 1/2."
+        },
+        {
+          "word": "cosec",
+          "meaning": "Cosecant, written cosec or csc, is the reciprocal of sin: cosec θ = 1/sin θ."
+        },
+        {
+          "word": "sec",
+          "meaning": "Secant, written sec, is the reciprocal of cos: sec θ = 1/cos θ."
+        },
+        {
+          "word": "cot",
+          "meaning": "Cotangent, written cot, is the reciprocal of tan: cot θ = 1/tan θ."
+        },
+        {
+          "word": "degrees mode",
+          "meaning": "The calculator setting where angles are measured in degrees, which you must check before any trigonometry."
+        },
+        {
+          "word": "hypotenuse",
+          "meaning": "The longest side of a right-angled triangle, always opposite the right angle."
+        },
+        {
+          "word": "opposite",
+          "meaning": "The side of a right-angled triangle that does not touch the angle you are working with."
+        },
+        {
+          "word": "adjacent",
+          "meaning": "The side of a right-angled triangle that touches the angle you are working with and is not the hypotenuse."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "In the last lesson you met the three main ratios: sin, cos and tan. Each of them has a partner called a reciprocal ratio. A reciprocal simply means 1 divided by the ratio.\n\nThe three reciprocal ratios are cosecant (cosec), secant (sec) and cotangent (cot):\n\ncosec θ = 1/sin θ\nsec θ = 1/cos θ\ncot θ = 1/tan θ\n\nWhy do we need them? Some exam questions and some real problems are easier to write using cosec, sec or cot, so you must be able to convert them back to sin, cos and tan to work with them.",
+          "speech": "In the last lesson you met sin, cos and tan. Each one has a partner called a reciprocal ratio. A reciprocal means one divided by the ratio. Cosec theta is one over sin theta. Sec theta is one over cos theta. Cot theta is one over tan theta. Why do we need them? Some exam questions use these names, so you must be able to turn them back into sin, cos and tan to work with them."
+        },
+        {
+          "kind": "explain",
+          "text": "There is no cosec, sec or cot button on your calculator. That is the whole point of this lesson: you convert the reciprocal ratio to sin, cos or tan first, then use 1 divided by that value.\n\nFor example, to find sec 34° you press 1 ÷ ( cos 34° ). The calculator gives 1,2062..., which is 1,21 correct to two decimal places.\n\nBefore you start any calculator work, check that your calculator is in degrees mode. A small D or Deg on the screen tells you it is set correctly.",
+          "speech": "There is no cosec, sec or cot button on your calculator. So you convert the reciprocal ratio to sin, cos or tan first, then use one divided by that value. For example, to find sec thirty four degrees, press one divided by cos thirty four degrees. The calculator gives about one point two one. Before you start, check that your calculator is in degrees mode."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "angles": [
+              90,
+              56.3,
+              33.7
+            ],
+            "sides": [
+              "hypotenuse",
+              "adjacent",
+              "opposite"
+            ],
+            "angleLabels": [
+              "90°",
+              "θ",
+              "33,7°"
+            ],
+            "rightAngleAt": 0
+          },
+          "caption": "A right-angled triangle showing the hypotenuse, the adjacent side and the opposite side for angle θ.",
+          "speech": "This picture shows a right-angled triangle. The angle theta is at one corner. The side opposite the right angle is the hypotenuse. The side next to theta is the adjacent side. The side across from theta is the opposite side. The reciprocal ratios use these same sides, just upside down: cosec theta is hypotenuse over opposite, sec theta is hypotenuse over adjacent, and cot theta is adjacent over opposite."
+        },
+        {
+          "kind": "explain",
+          "text": "In a right-angled triangle the reciprocal ratios have side meanings too, the flip of the main ratios:\n\ncosec θ = hypotenuse/opposite\nsec θ = hypotenuse/adjacent\ncot θ = adjacent/opposite\n\nNotice that sin θ × cosec θ = 1, cos θ × sec θ = 1 and tan θ × cot θ = 1. A ratio times its reciprocal always gives 1, just like 2 × 1/2 = 1.",
+          "speech": "In a right-angled triangle the reciprocal ratios use the sides flipped over. Cosec theta is hypotenuse over opposite. Sec theta is hypotenuse over adjacent. Cot theta is adjacent over opposite. Also notice that a ratio times its reciprocal always gives one, just like two times one half gives one."
+        },
+        {
+          "kind": "worked",
+          "problem": "Use your calculator to find sec 34°, correct to two decimal places.",
+          "steps": [
+            {
+              "line": "sec 34° = 1/cos 34°",
+              "reason": "There is no sec button, so write sec as 1 over cos."
+            },
+            {
+              "line": "1/cos 34° = 1/0,8290...",
+              "reason": "Press 1 ÷ ( cos 34° ) in degrees mode and find cos 34°."
+            },
+            {
+              "line": "= 1,2062...",
+              "reason": "Divide 1 by the cosine value."
+            },
+            {
+              "line": "sec 34° ≈ 1,21",
+              "reason": "Round to two decimal places."
+            }
+          ],
+          "answer": "1,21",
+          "answerKind": "decimal",
+          "speech": "Find sec thirty four degrees correct to two decimal places. There is no sec button, so write sec thirty four degrees as one over cos thirty four degrees. Press one divided by, open bracket, cos, thirty four, close bracket. The calculator gives one point two zero six two, which rounds to one point two one."
+        },
+        {
+          "kind": "worked",
+          "problem": "Use your calculator to find cot 49°, correct to two decimal places.",
+          "steps": [
+            {
+              "line": "cot 49° = 1/tan 49°",
+              "reason": "Write cot as 1 over tan, since there is no cot button."
+            },
+            {
+              "line": "1/tan 49° = 1/1,1504...",
+              "reason": "Press 1 ÷ ( tan 49° ) in degrees mode."
+            },
+            {
+              "line": "= 0,8693...",
+              "reason": "Divide 1 by the tangent value."
+            },
+            {
+              "line": "cot 49° ≈ 0,87",
+              "reason": "Round to two decimal places."
+            }
+          ],
+          "answer": "0,87",
+          "answerKind": "decimal",
+          "speech": "Find cot forty nine degrees correct to two decimal places. Write cot forty nine degrees as one over tan forty nine degrees. Press one divided by, open bracket, tan, forty nine, close bracket. The calculator gives zero point eight six nine three, which rounds to zero point eight seven."
+        },
+        {
+          "kind": "worked",
+          "problem": "A right-angled triangle has an angle θ. The side opposite θ is 3 and the hypotenuse is 5. Find cosec θ without a calculator, then check your answer with the calculator.",
+          "steps": [
+            {
+              "line": "cosec θ = hypotenuse/opposite",
+              "reason": "Cosec is the flip of sin, so it is hypotenuse over opposite."
+            },
+            {
+              "line": "cosec θ = 5/3",
+              "reason": "Substitute the hypotenuse 5 and the opposite side 3."
+            },
+            {
+              "line": "cosec θ = 1,6667... ≈ 1,67",
+              "reason": "Divide 5 by 3 to get the value as a decimal."
+            },
+            {
+              "line": "Check: sin θ = 3/5 = 0,6 and 1/0,6 = 1,67",
+              "reason": "Cosec is 1 over sin, so the two answers must match."
+            }
+          ],
+          "answer": "1,67",
+          "answerKind": "decimal",
+          "speech": "A right-angled triangle has an angle theta. The side opposite theta is three and the hypotenuse is five. Find cosec theta without a calculator, then check with the calculator. Cosec theta is hypotenuse over opposite, so five over three, which is about one point six seven. To check: sin theta is three over five, which is zero point six, and one over zero point six is also about one point six seven. The two answers match.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "angles": [
+              90,
+              36.9,
+              53.1
+            ],
+            "sides": [
+              "5",
+              "4",
+              "3"
+            ],
+            "angleLabels": [
+              "90°",
+              "θ",
+              "53,1°"
+            ],
+            "rightAngleAt": 0
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "Use your calculator to find cosec 25°, correct to two decimal places.",
+            "render": "text",
+            "steps": [
+              "cosec 25° = 1/sin 25°",
+              "= 1/0,4226...",
+              "= 2,3662...",
+              "cosec 25° ≈ 2,37"
+            ],
+            "answer": "2,37",
+            "answerKind": "decimal",
+            "difficulty": 2,
+            "why": "Learners often press sin 25° and give 0,42, forgetting to take the reciprocal 1 over the value.",
+            "rightWay": "Write cosec 25° as 1/sin 25° first, then divide 1 by sin 25° on the calculator in degrees mode. The answer is 2,37."
+          },
+          "hint": "Cosec is 1 over sin, so find sin 25° first and then divide 1 by it.",
+          "speech": "Your turn. Use your calculator to find cosec twenty five degrees, correct to two decimal places. Hint: cosec is one over sin, so find sin twenty five degrees first and then divide one by it."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "sec 34° = cos 34° = 0,83",
+          "right": "sec 34° = 1/cos 34° = 1,21",
+          "why": "Sec is not the same as cos. Sec is the reciprocal, 1 divided by cos. Leaving out the 1 over gives a completely different number.",
+          "speech": "A common mistake: writing sec thirty four degrees as just cos thirty four degrees, which gives zero point eight three. The right way is sec thirty four degrees equals one over cos thirty four degrees, which gives one point two one. The mistake happens because sec is the reciprocal of cos, so the one over part cannot be left out."
+        },
+        {
+          "kind": "explain",
+          "text": "Putting it together: every reciprocal ratio starts the same way. Replace the name with 1 over the main ratio, then use the calculator.\n\nsec θ = 1/cos θ, cosec θ = 1/sin θ, cot θ = 1/tan θ.\n\nIn a triangle the sides flip: cosec is hypotenuse/opposite, sec is hypotenuse/adjacent, cot is adjacent/opposite. Check your calculator is in degrees mode, round to two decimal places, and you are ready for exam questions like sec 34° or cot 49°.",
+          "speech": "To put it together: every reciprocal ratio starts the same way. Replace the name with one over the main ratio, then use the calculator. Sec theta is one over cos theta, cosec theta is one over sin theta, and cot theta is one over tan theta. In a triangle the sides flip over. Check your calculator is in degrees mode and round to two decimal places."
+        }
+      ],
+      "summary": [
+        "cosec θ = 1/sin θ, sec θ = 1/cos θ, cot θ = 1/tan θ.",
+        "In a triangle: cosec θ = hypotenuse/opposite, sec θ = hypotenuse/adjacent, cot θ = adjacent/opposite.",
+        "A ratio times its reciprocal gives 1: sin θ × cosec θ = 1, and so on.",
+        "There is no cosec, sec or cot button: convert to 1 over sin, cos or tan first.",
+        "Always check the calculator is in degrees mode and round to two decimal places."
+      ],
+      "practice": [
+        {
+          "prompt": "Use your calculator to find sec 10°, correct to two decimal places.",
+          "render": "text",
+          "steps": [
+            "sec 10° = 1/cos 10°",
+            "= 1/0,9848...",
+            "sec 10° ≈ 1,02"
+          ],
+          "answer": "1,02",
+          "answerKind": "decimal",
+          "difficulty": 1,
+          "why": "Learners forget the 1 over and just write cos 10° = 0,98.",
+          "rightWay": "Write sec 10° as 1/cos 10° and press 1 ÷ ( cos 10° ) in degrees mode. The answer is 1,02."
+        },
+        {
+          "prompt": "Use your calculator to find cot 32°, correct to two decimal places.",
+          "render": "text",
+          "steps": [
+            "cot 32° = 1/tan 32°",
+            "= 1/0,6249...",
+            "cot 32° ≈ 1,60"
+          ],
+          "answer": "1,60",
+          "answerKind": "decimal",
+          "difficulty": 1,
+          "why": "Learners sometimes use cos or sin instead of tan for cot.",
+          "rightWay": "Cot is 1/tan, so press 1 ÷ ( tan 32° ) in degrees mode. The answer is 1,60."
+        },
+        {
+          "prompt": "Use your calculator to find cosec 25°, correct to two decimal places.",
+          "render": "text",
+          "steps": [
+            "cosec 25° = 1/sin 25°",
+            "= 1/0,4226...",
+            "cosec 25° ≈ 2,37"
+          ],
+          "answer": "2,37",
+          "answerKind": "decimal",
+          "difficulty": 2,
+          "why": "Learners give sin 25° = 0,42 instead of taking the reciprocal.",
+          "rightWay": "Cosec is 1/sin, so press 1 ÷ ( sin 25° ) in degrees mode. The answer is 2,37."
+        },
+        {
+          "prompt": "Use your calculator to find sec 48°, correct to two decimal places.",
+          "render": "text",
+          "steps": [
+            "sec 48° = 1/cos 48°",
+            "= 1/0,6691...",
+            "sec 48° ≈ 1,49"
+          ],
+          "answer": "1,49",
+          "answerKind": "decimal",
+          "difficulty": 2,
+          "why": "Learners forget to divide 1 by the cosine value and give 0,67.",
+          "rightWay": "Sec is 1/cos, so press 1 ÷ ( cos 48° ) in degrees mode. The answer is 1,49."
+        },
+        {
+          "prompt": "Which statement is correct?",
+          "render": "text",
+          "steps": [
+            "sec θ is the reciprocal of cos θ",
+            "sec θ = 1/cos θ"
+          ],
+          "answer": "B",
+          "answerKind": "choice",
+          "choices": [
+            "sec θ = 1/sin θ",
+            "sec θ = 1/cos θ",
+            "sec θ = 1/tan θ",
+            "sec θ = cos θ"
+          ],
+          "difficulty": 2,
+          "why": "Learners mix up which reciprocal belongs to which ratio.",
+          "rightWay": "Sec is the reciprocal of cos, so sec θ = 1/cos θ. Cosec goes with sin and cot goes with tan."
+        },
+        {
+          "prompt": "Use your calculator to find 2 sec 25°, correct to two decimal places.",
+          "render": "text",
+          "steps": [
+            "sec 25° = 1/cos 25° = 1/0,9063... = 1,1034...",
+            "2 sec 25° = 2 × 1,1034...",
+            "2 sec 25° ≈ 2,21"
+          ],
+          "answer": "2,21",
+          "answerKind": "decimal",
+          "difficulty": 3,
+          "why": "Learners multiply 2 by cos 25° instead of 2 by the reciprocal of cos 25°.",
+          "rightWay": "First find sec 25° = 1/cos 25° = 1,1034..., then multiply by 2. The answer is 2,21."
+        },
+        {
+          "prompt": "Use your calculator to find cot 35° + cosec 40°, correct to two decimal places.",
+          "render": "text",
+          "steps": [
+            "cot 35° = 1/tan 35° = 1/0,7002... = 1,4281...",
+            "cosec 40° = 1/sin 40° = 1/0,6428... = 1,5557...",
+            "cot 35° + cosec 40° = 1,4281... + 1,5557...",
+            "≈ 2,98"
+          ],
+          "answer": "2,98",
+          "answerKind": "decimal",
+          "difficulty": 3,
+          "why": "Learners convert only one of the two reciprocal ratios and mix sin with tan.",
+          "rightWay": "Convert both ratios: cot 35° is 1/tan 35° and cosec 40° is 1/sin 40°. Add the two decimal values. The answer is about 2,98."
+        }
+      ]
+    },
+    {
+      "position": 4,
+      "title": "Special angles without a calculator",
+      "minutes": 22,
+      "objectives": [
+        "You will be able to build the 30-60-90 and 45-45-90 triangles from simple side lengths.",
+        "You will be able to state the exact values of sin, cos and tan for 30, 45 and 60 degrees.",
+        "You will be able to simplify expressions using these exact values."
+      ],
+      "keyWords": [
+        {
+          "word": "special angles",
+          "meaning": "The angles 30 degrees, 45 degrees and 60 degrees, whose sin, cos and tan values are exact simple numbers."
+        },
+        {
+          "word": "exact value",
+          "meaning": "A value written as a fraction or surd (like 1/2 or sqrt(3)), not a rounded decimal from a calculator."
+        },
+        {
+          "word": "surd",
+          "meaning": "A root like sqrt(2) or sqrt(3) left in root form instead of worked out as a decimal."
+        },
+        {
+          "word": "isosceles",
+          "meaning": "A triangle with two equal sides; the angles opposite the equal sides are also equal."
+        },
+        {
+          "word": "rationalise",
+          "meaning": "Rewrite a fraction so there is no root in the denominator, for example 1/sqrt(2) becomes sqrt(2)/2."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "In earlier lessons you found sin, cos and tan of angles using a calculator, which gives decimals like 0,7071. But some angles give beautifully simple exact answers, and a calculator is not needed at all.\n\nThese are the special angles: 30 degrees, 45 degrees and 60 degrees. Their values come from two simple triangles, and exam questions often ask you to work with the exact values rather than decimals.",
+          "speech": "In earlier lessons you used a calculator to find sin, cos and tan. But for three special angles, thirty degrees, forty-five degrees and sixty degrees, the values are exact simple numbers. In this lesson you will build the two triangles that give these values, and use them without a calculator."
+        },
+        {
+          "kind": "explain",
+          "text": "Start with a square of side 1 and cut it along a diagonal. You get two right-angled triangles with angles 45, 45 and 90 degrees, because the diagonal cuts each 90 degree corner in half.\n\nThe two legs are both 1. By Pythagoras the hypotenuse is sqrt(1^2 + 1^2) = sqrt(2). So the 45-45-90 triangle has sides 1, 1 and sqrt(2).",
+          "speech": "Take a square with sides of length one, and cut it along a diagonal. You get a right-angled triangle with angles forty-five, forty-five and ninety degrees. The two shorter sides are both one, and by the theorem of Pythagoras the hypotenuse is the square root of two."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "angles": [
+              45,
+              45,
+              90
+            ],
+            "sides": [
+              "1",
+              "1",
+              "sqrt(2)"
+            ],
+            "angleLabels": [
+              "45°",
+              "45°",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          },
+          "caption": "The 45-45-90 triangle: legs 1 and 1, hypotenuse sqrt(2)",
+          "speech": "The picture shows a right-angled triangle. The angle at A is forty-five degrees, the angle at B is forty-five degrees, and the right angle is at C. The two legs are each of length one, and the hypotenuse is the square root of two."
+        },
+        {
+          "kind": "worked",
+          "problem": "Use the 45-45-90 triangle to find the exact values of sin 45 degrees, cos 45 degrees and tan 45 degrees.",
+          "steps": [
+            {
+              "line": "From the angle 45 degrees: opposite = 1, adjacent = 1, hypotenuse = sqrt(2)",
+              "reason": "Label the sides with respect to either 45 degree angle; the triangle is isosceles so both legs are 1."
+            },
+            {
+              "line": "sin 45° = opposite/hypotenuse = 1/sqrt(2)",
+              "reason": "Sine is opposite over hypotenuse."
+            },
+            {
+              "line": "cos 45° = adjacent/hypotenuse = 1/sqrt(2)",
+              "reason": "Cosine is adjacent over hypotenuse; the sides are equal so the ratios match."
+            },
+            {
+              "line": "tan 45° = opposite/adjacent = 1/1 = 1",
+              "reason": "Tangent is opposite over adjacent, and one divided by one is one."
+            }
+          ],
+          "answer": "sin 45° = 1/sqrt(2), cos 45° = 1/sqrt(2), tan 45° = 1",
+          "answerKind": "choice",
+          "speech": "We use the forty-five forty-five ninety triangle. Relative to a forty-five degree angle, the opposite side is one, the adjacent side is one, and the hypotenuse is the square root of two. So sin forty-five degrees is one over root two, cos forty-five degrees is also one over root two, and tan forty-five degrees is one over one, which is one.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "angles": [
+              45,
+              45,
+              90
+            ],
+            "sides": [
+              "1",
+              "1",
+              "sqrt(2)"
+            ],
+            "angleLabels": [
+              "45°",
+              "45°",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          }
+        },
+        {
+          "kind": "explain",
+          "text": "Now build the 30-60-90 triangle. Take an equilateral triangle with all sides 2 and cut it down the middle. Each half is a right-angled triangle with angles 30, 60 and 90 degrees.\n\nThe base is split into two halves of 1, the vertical height is sqrt(2^2 - 1^2) = sqrt(3), and the hypotenuse stays 2. So the 30-60-90 triangle has sides 1, sqrt(3) and 2, with the side of length 1 opposite the 30 degree angle.",
+          "speech": "Now build the thirty sixty ninety triangle. Cut an equilateral triangle with sides two down the middle. Each half has a base of one, a height of root three by Pythagoras, and a hypotenuse of two. The side of length one is opposite the thirty degree angle."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "angles": [
+              30,
+              60,
+              90
+            ],
+            "sides": [
+              "1",
+              "sqrt(3)",
+              "2"
+            ],
+            "angleLabels": [
+              "30°",
+              "60°",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          },
+          "caption": "The 30-60-90 triangle: sides 1, sqrt(3) and 2",
+          "speech": "The picture shows a right-angled triangle with the angle at A equal to thirty degrees, the angle at B equal to sixty degrees, and the right angle at C. The short side opposite the thirty degree angle is one, the side opposite the sixty degree angle is root three, and the hypotenuse is two."
+        },
+        {
+          "kind": "worked",
+          "problem": "Use the 30-60-90 triangle to find the exact values of sin 30 degrees, cos 30 degrees and tan 30 degrees.",
+          "steps": [
+            {
+              "line": "From the 30 degree angle: opposite = 1, adjacent = sqrt(3), hypotenuse = 2",
+              "reason": "The side of length 1 is opposite the 30 degree angle; the other leg is next to the 30 degree angle."
+            },
+            {
+              "line": "sin 30° = 1/2",
+              "reason": "Sine is opposite over hypotenuse: 1 over 2."
+            },
+            {
+              "line": "cos 30° = sqrt(3)/2",
+              "reason": "Cosine is adjacent over hypotenuse: sqrt(3) over 2."
+            },
+            {
+              "line": "tan 30° = 1/sqrt(3)",
+              "reason": "Tangent is opposite over adjacent: 1 over sqrt(3)."
+            }
+          ],
+          "answer": "sin 30° = 1/2, cos 30° = sqrt(3)/2, tan 30° = 1/sqrt(3)",
+          "answerKind": "choice",
+          "speech": "Relative to the thirty degree angle, the opposite side is one, the adjacent side is root three, and the hypotenuse is two. So sin thirty degrees is one over two, cos thirty degrees is root three over two, and tan thirty degrees is one over root three.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "angles": [
+              30,
+              60,
+              90
+            ],
+            "sides": [
+              "1",
+              "sqrt(3)",
+              "2"
+            ],
+            "angleLabels": [
+              "30°",
+              "60°",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          }
+        },
+        {
+          "kind": "explain",
+          "text": "For the 60 degree angle in the same triangle the sides swap roles: the opposite side becomes sqrt(3) and the adjacent side becomes 1.\n\nsin 60° = sqrt(3)/2, cos 60° = 1/2, tan 60° = sqrt(3).\n\nHere is the full table to memorise. For 45 degrees: sin = 1/sqrt(2), cos = 1/sqrt(2), tan = 1. For 30 degrees: sin = 1/2, cos = sqrt(3)/2, tan = 1/sqrt(3). For 60 degrees: sin = sqrt(3)/2, cos = 1/2, tan = sqrt(3). Notice sin 30 = cos 60 and cos 30 = sin 60; the values swap.",
+          "speech": "For the sixty degree angle in the same triangle the opposite and adjacent sides swap. Sin sixty is root three over two, cos sixty is one over two, and tan sixty is root three. Memorise the table: sin thirty is a half, sin forty-five is one over root two, sin sixty is root three over two, and cos thirty is root three over two, cos forty-five is one over root two, cos sixty is a half. Tan thirty is one over root three, tan forty-five is one, tan sixty is root three."
+        },
+        {
+          "kind": "worked",
+          "problem": "Calculate sin 45 degrees times cos 45 degrees without a calculator.",
+          "steps": [
+            {
+              "line": "sin 45° × cos 45° = 1/sqrt(2) × 1/sqrt(2)",
+              "reason": "Replace each ratio with its exact special-angle value."
+            },
+            {
+              "line": "= 1/(sqrt(2) × sqrt(2))",
+              "reason": "Multiply the fractions: multiply numerators and denominators."
+            },
+            {
+              "line": "= 1/2",
+              "reason": "sqrt(2) times sqrt(2) is exactly 2."
+            }
+          ],
+          "answer": "1/2",
+          "answerKind": "fraction",
+          "speech": "Sin forty-five times cos forty-five. Replace each value: one over root two times one over root two. Multiply the fractions to get one over root two times root two, and root two times root two is two. So the answer is one half."
+        },
+        {
+          "kind": "worked",
+          "problem": "Calculate cos 60 degrees + tan 45 degrees without a calculator.",
+          "steps": [
+            {
+              "line": "cos 60° + tan 45° = 1/2 + 1",
+              "reason": "Use the exact values: cos 60 degrees is 1/2 and tan 45 degrees is 1."
+            },
+            {
+              "line": "= 1/2 + 2/2",
+              "reason": "Write 1 as 2/2 so the fractions have the same denominator."
+            },
+            {
+              "line": "= 3/2",
+              "reason": "Add the numerators over the common denominator 2."
+            }
+          ],
+          "answer": "3/2",
+          "answerKind": "fraction",
+          "speech": "Cos sixty plus tan forty-five. Cos sixty is a half and tan forty-five is one. Add: a half plus two halves is three halves."
+        },
+        {
+          "kind": "worked",
+          "problem": "Calculate tan 30 degrees minus sin 60 degrees without a calculator. Leave your answer in surd form.",
+          "steps": [
+            {
+              "line": "tan 30° - sin 60° = 1/sqrt(3) - sqrt(3)/2",
+              "reason": "Replace each ratio with its exact special-angle value."
+            },
+            {
+              "line": "= 2/(2sqrt(3)) - sqrt(3)·sqrt(3)/(2sqrt(3))",
+              "reason": "Write both fractions over the common denominator 2sqrt(3)."
+            },
+            {
+              "line": "= (2 - 3)/(2sqrt(3))",
+              "reason": "sqrt(3) times sqrt(3) is 3, so the second numerator is 3."
+            },
+            {
+              "line": "= -1/(2sqrt(3))",
+              "reason": "Two minus three is minus one."
+            }
+          ],
+          "answer": "-1/(2sqrt(3))",
+          "answerKind": "number",
+          "speech": "Tan thirty minus sin sixty. Replace: one over root three minus root three over two. Put both over the common denominator two root three. The first numerator is two, and root three times root three is three, so the second numerator is three. Two minus three is minus one, so the answer is minus one over two root three."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "Calculate tan 45 degrees ÷ sin 60 degrees without a calculator. Give the exact value.",
+            "render": "text",
+            "steps": [
+              "tan 45° ÷ sin 60° = 1 ÷ sqrt(3)/2",
+              "= 1 × 2/sqrt(3)",
+              "= 2/sqrt(3)"
+            ],
+            "answer": "2/sqrt(3)",
+            "answerKind": "number",
+            "difficulty": 2,
+            "why": "Learners often divide by the fraction incorrectly instead of multiplying by its reciprocal.",
+            "rightWay": "Write tan 45 degrees as 1, then dividing by sqrt(3)/2 means multiplying by 2/sqrt(3), which gives 2/sqrt(3)."
+          },
+          "hint": "Dividing by a fraction means multiplying by its reciprocal.",
+          "speech": "Try this: tan forty-five degrees divided by sin sixty degrees. Tan forty-five degrees is one, and sin sixty degrees is root three over two. Dividing by a fraction means multiplying by its upside-down fraction."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "sin 30° = sqrt(3)/2",
+          "right": "sin 30° = 1/2",
+          "why": "The side of length 1 is opposite the 30 degree angle, and sqrt(3) is adjacent to the 30 degree angle. The short side goes with the small angle, so sin 30 degrees is 1/2 and it is cos 30 degrees that equals sqrt(3)/2.",
+          "speech": "A common mistake is saying sin thirty degrees is root three over two. The short side of length one is opposite the thirty degree angle, so sin thirty degrees is one half. It is cos thirty degrees that equals root three over two. Remember: the smallest angle faces the shortest side.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "angles": [
+              30,
+              60,
+              90
+            ],
+            "sides": [
+              "1",
+              "sqrt(3)",
+              "2"
+            ],
+            "angleLabels": [
+              "30°",
+              "60°",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          }
+        },
+        {
+          "kind": "explain",
+          "text": "To simplify any expression with special angles, follow three steps. First, replace every ratio with its exact value from the table. Second, work out the arithmetic, writing fractions over a common denominator when needed. Third, leave roots like sqrt(3) in your answer; do not convert to decimals unless the question says so.\n\nWith practice you can also show that identities like sin^2 45 degrees + cos^2 45 degrees = 1 are true, by substituting the exact values on both sides.",
+          "speech": "To simplify any expression, replace each ratio with its exact value, work out the arithmetic with common denominators, and leave the roots in surd form. You can even prove identities this way, for example sin squared forty-five plus cos squared forty-five is one half plus one half, which is one."
+        }
+      ],
+      "summary": [
+        "sin 45° = cos 45° = 1/sqrt(2) and tan 45° = 1, from the isosceles triangle with sides 1, 1, sqrt(2).",
+        "sin 30° = cos 60° = 1/2, cos 30° = sin 60° = sqrt(3)/2, tan 30° = 1/sqrt(3), tan 60° = sqrt(3).",
+        "The values come from the 30-60-90 triangle with sides 1, sqrt(3) and 2.",
+        "To simplify an expression, replace each ratio by its exact value and simplify, keeping surds in the answer.",
+        "The small angle faces the short side: sin 30° = 1/2, not sqrt(3)/2."
+      ],
+      "practice": [
+        {
+          "prompt": "Write down the exact value of cos 60 degrees.",
+          "render": "text",
+          "steps": [
+            "From the 30-60-90 triangle: adjacent to 60 degrees is 1, hypotenuse is 2",
+            "cos 60° = 1/2"
+          ],
+          "answer": "1/2",
+          "answerKind": "fraction",
+          "difficulty": 1,
+          "why": "Learners mix up cos 60 degrees with cos 30 degrees.",
+          "rightWay": "In the 30-60-90 triangle the side next to the 60 degree angle is 1 and the hypotenuse is 2, so cos 60 degrees is 1/2."
+        },
+        {
+          "prompt": "Write down the exact value of tan 45 degrees.",
+          "render": "text",
+          "steps": [
+            "In the 45-45-90 triangle opposite = adjacent = 1",
+            "tan 45° = 1/1 = 1"
+          ],
+          "answer": "1",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Learners sometimes guess a surd instead of noticing the two legs are equal.",
+          "rightWay": "In the 45-45-90 triangle the opposite and adjacent sides are both 1, so tan 45 degrees is 1."
+        },
+        {
+          "prompt": "Write down the exact value of sin 60 degrees.",
+          "render": "text",
+          "steps": [
+            "In the 30-60-90 triangle: opposite the 60 degree angle is sqrt(3), hypotenuse is 2",
+            "sin 60° = sqrt(3)/2"
+          ],
+          "answer": "sqrt(3)/2",
+          "answerKind": "number",
+          "difficulty": 1,
+          "why": "Learners swap the values of sin 30 degrees and sin 60 degrees.",
+          "rightWay": "The side opposite the 60 degree angle is sqrt(3) and the hypotenuse is 2, so sin 60 degrees is sqrt(3)/2."
+        },
+        {
+          "prompt": "Calculate sin 45 degrees × cos 45 degrees without a calculator.",
+          "render": "text",
+          "steps": [
+            "sin 45° × cos 45° = 1/sqrt(2) × 1/sqrt(2)",
+            "= 1/(sqrt(2) × sqrt(2))",
+            "= 1/2"
+          ],
+          "answer": "1/2",
+          "answerKind": "fraction",
+          "difficulty": 2,
+          "why": "Learners multiply roots incorrectly and write sqrt(4) instead of realising sqrt(2) × sqrt(2) = 2.",
+          "rightWay": "Replace each ratio with 1/sqrt(2), multiply the fractions, and use sqrt(2) × sqrt(2) = 2 to get 1/2."
+        },
+        {
+          "prompt": "Calculate cos 60 degrees + tan 45 degrees without a calculator.",
+          "render": "text",
+          "steps": [
+            "cos 60° + tan 45° = 1/2 + 1",
+            "= 1/2 + 2/2",
+            "= 3/2"
+          ],
+          "answer": "3/2",
+          "answerKind": "fraction",
+          "difficulty": 2,
+          "why": "Learners forget that tan 45 degrees is 1 and add wrong values.",
+          "rightWay": "Cos 60 degrees is 1/2 and tan 45 degrees is 1; writing 1 as 2/2 gives the sum 3/2."
+        },
+        {
+          "prompt": "Calculate tan 30 degrees - sin 60 degrees without a calculator, in surd form.",
+          "render": "text",
+          "steps": [
+            "tan 30° - sin 60° = 1/sqrt(3) - sqrt(3)/2",
+            "= 2/(2sqrt(3)) - 3/(2sqrt(3))",
+            "= (2 - 3)/(2sqrt(3))",
+            "= -1/(2sqrt(3))"
+          ],
+          "answer": "-1/(2sqrt(3))",
+          "answerKind": "number",
+          "difficulty": 3,
+          "why": "Learners use a wrong common denominator or forget that sqrt(3) × sqrt(3) = 3.",
+          "rightWay": "Put both fractions over the common denominator 2sqrt(3); the numerators are 2 and 3, giving minus 1 over 2sqrt(3)."
+        },
+        {
+          "prompt": "Calculate sin 60 degrees - cos 60 degrees without a calculator, in surd form.",
+          "render": "text",
+          "steps": [
+            "sin 60° - cos 60° = sqrt(3)/2 - 1/2",
+            "= (sqrt(3) - 1)/2"
+          ],
+          "answer": "(sqrt(3) - 1)/2",
+          "answerKind": "number",
+          "difficulty": 3,
+          "why": "Learners try to subtract 1/2 from sqrt(3)/2 as if sqrt(3) were a number like 3.",
+          "rightWay": "Both fractions have denominator 2, so subtract the numerators: sqrt(3)/2 minus 1/2 is (sqrt(3) - 1)/2."
+        },
+        {
+          "prompt": "Which statement about tan x is true for angles between 0 and 90 degrees?",
+          "render": "text",
+          "steps": [
+            "tan x = opposite/adjacent",
+            "The opposite and adjacent sides can take any values, so the ratio is not limited by the hypotenuse",
+            "So tan x has no maximum value"
+          ],
+          "answer": "C",
+          "answerKind": "choice",
+          "choices": [
+            "tan x has a maximum value of 1",
+            "tan x has a maximum value of 2",
+            "tan x has no maximum value"
+          ],
+          "difficulty": 3,
+          "why": "Learners assume all trig ratios are at most 1, but tangent compares the two shorter sides, not a side with the hypotenuse.",
+          "rightWay": "Sine and cosine have one side over the hypotenuse, so they are at most 1. Tangent is opposite over adjacent, and those sides can grow, so tan has no maximum."
+        }
+      ]
+    },
+    {
+      "position": 5,
+      "title": "Finding a missing side",
+      "minutes": 22,
+      "objectives": [
+        "You will be able to choose sin, cos or tan from the angle and the two sides involved.",
+        "You will be able to set up an equation with the unknown side and solve it.",
+        "You will be able to round the answer sensibly and check that the side length is reasonable."
+      ],
+      "keyWords": [
+        {
+          "word": "hypotenuse",
+          "meaning": "The longest side of a right-angled triangle, always opposite the right angle."
+        },
+        {
+          "word": "opposite",
+          "meaning": "The side directly across from the angle you are working with."
+        },
+        {
+          "word": "adjacent",
+          "meaning": "The side next to the angle you are working with, that is not the hypotenuse."
+        },
+        {
+          "word": "ratio",
+          "meaning": "A comparison of two lengths by division, like opposite over hypotenuse."
+        },
+        {
+          "word": "equation",
+          "meaning": "A maths sentence with an equals sign that you can solve for an unknown."
+        },
+        {
+          "word": "round",
+          "meaning": "Writing a decimal answer to a given number of decimal places, like 76,60."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "So far you have named the sides of a right-angled triangle and used the ratios sin, cos and tan. Now we put that to work: if you know one angle and one side of a right-angled triangle, you can calculate any other side. This is the whole point of trigonometry for many exam questions.\n\nThe plan is always the same: label the sides, choose the ratio that uses the two sides you care about, write an equation, and solve it.",
+          "speech": "In this lesson we learn how to find a missing side of a right-angled triangle. If you know one angle and one side, trigonometry lets you work out the others. The plan is always the same: label the sides, choose the right ratio, write an equation, and solve it."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "x",
+              "",
+              "100"
+            ],
+            "angleLabels": [
+              "50°",
+              "",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          },
+          "caption": "Right-angled triangle ABC: the right angle is at C, the angle at A is 50°, the hypotenuse is 100 and the side opposite the 50° angle is marked x.",
+          "speech": "Look at the triangle. The right angle is at C. The angle at A is fifty degrees. The hypotenuse, opposite the right angle, is one hundred. The side opposite the fifty degree angle is x, and that is what we want to find."
+        },
+        {
+          "kind": "explain",
+          "text": "To choose the correct ratio, look at the angle given and ask: which two sides are involved? The side you know, and the side you want.\n\nIf they are opposite and hypotenuse, use sin. If they are adjacent and hypotenuse, use cos. If they are opposite and adjacent, use tan. The known side and the unknown side decide the ratio, never guess.\n\nSOH CAH TOA from the earlier lesson is your checklist: Sin = Opposite/Hypotenuse, Cos = Adjacent/Hypotenuse, Tan = Opposite/Adjacent.",
+          "speech": "To choose the ratio, look at the angle and ask which two sides are involved. Opposite and hypotenuse means use sine. Adjacent and hypotenuse means use cosine. Opposite and adjacent means use tangent. Soh cah toa is your checklist."
+        },
+        {
+          "kind": "worked",
+          "problem": "Find the length of x in the triangle with the right angle at C, the angle at A equal to 50°, the hypotenuse equal to 100 and x opposite the 50° angle. Round to 2 decimal places.",
+          "steps": [
+            {
+              "line": "sin 50° = x/100",
+              "reason": "x is opposite the angle and 100 is the hypotenuse, so use sin = opposite/hypotenuse"
+            },
+            {
+              "line": "sin 50° × 100 = x",
+              "reason": "multiply both sides by 100 to get x on its own"
+            },
+            {
+              "line": "x = 100 sin 50°",
+              "reason": "rewrite with x on the left, the way exam markers like it"
+            },
+            {
+              "line": "x = 100 × 0,76604...",
+              "reason": "use the calculator in degree mode to find sin 50°"
+            },
+            {
+              "line": "x = 76,60",
+              "reason": "round to two decimal places"
+            }
+          ],
+          "answer": "76,60",
+          "answerKind": "decimal",
+          "speech": "We want x, which is opposite the fifty degree angle, and the hypotenuse is one hundred. So we use sine. Sine fifty equals x over one hundred. Multiply both sides by one hundred, so x equals one hundred times sine fifty. The calculator gives zero point seven six six, times one hundred is seventy six point six zero. So x is about seventy six, six zero units.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "x",
+              "",
+              "100"
+            ],
+            "angleLabels": [
+              "50°",
+              "",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          }
+        },
+        {
+          "kind": "explain",
+          "text": "When the unknown side is in the denominator (the bottom of the fraction), you need an extra step: multiply both sides by the unknown first, then divide by the trig value.\n\nA quick rule that always works: get the unknown alone. If x is on top, multiply by the known side. If x is at the bottom, divide by the trig value at the end.\n\nAlso check your answer makes sense: the hypotenuse must be the longest side, so any side you find must be shorter than the hypotenuse.",
+          "speech": "When the unknown side is at the bottom of the fraction, multiply both sides by it first, then divide by the trig value at the end. Always check: the hypotenuse is the longest side, so your answer must be shorter than the hypotenuse."
+        },
+        {
+          "kind": "worked",
+          "problem": "Find the length of x in the right-angled triangle where the angle is 25°, the side adjacent to the angle is 7 and x is the hypotenuse. Round to 2 decimal places.",
+          "steps": [
+            {
+              "line": "cos 25° = 7/x",
+              "reason": "7 is adjacent to the angle and x is the hypotenuse, so use cos = adjacent/hypotenuse"
+            },
+            {
+              "line": "x cos 25° = 7",
+              "reason": "multiply both sides by x to move x out of the denominator"
+            },
+            {
+              "line": "x = 7/cos 25°",
+              "reason": "divide both sides by cos 25° to get x alone"
+            },
+            {
+              "line": "x = 7/0,90630...",
+              "reason": "use the calculator to find cos 25°"
+            },
+            {
+              "line": "x = 7,72",
+              "reason": "divide and round to two decimal places"
+            }
+          ],
+          "answer": "7,72",
+          "answerKind": "decimal",
+          "speech": "Here the adjacent side is seven and the hypotenuse is x, so we use cosine. Cosine twenty five equals seven over x. Multiply both sides by x: x cosine twenty five equals seven. Divide both sides by cosine twenty five: x equals seven over cosine twenty five. That is seven divided by zero point nine zero six, which is seven point seven two. The hypotenuse is the longest side and seven point seven two is longer than seven, so it checks out.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "",
+              "7",
+              "x"
+            ],
+            "angleLabels": [
+              "25°",
+              "",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "In a right-angled triangle the angle is 37°, the hypotenuse is 62 and a is the side opposite the 37° angle. Find a correct to 2 decimal places.",
+            "render": "text",
+            "steps": [
+              "sin 37° = a/62",
+              "a = 62 sin 37°",
+              "a = 62 × 0,60181...",
+              "a = 37,31"
+            ],
+            "answer": "37,31",
+            "answerKind": "decimal",
+            "difficulty": 2,
+            "why": "Learners often use cos instead of sin, or forget that a is on top so they must multiply by 62.",
+            "rightWay": "a is opposite and 62 is the hypotenuse, so sin 37° = a/62, so a = 62 sin 37° = 37,31."
+          },
+          "hint": "The side a is opposite the angle and 62 is the hypotenuse. Which ratio uses those two sides?",
+          "speech": "Try this one. The angle is thirty seven degrees, the hypotenuse is sixty two, and a is the opposite side. Write the sine ratio, solve for a by multiplying by sixty two, and round to two decimal places."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "x = 7 × cos 25° = 6,34",
+          "right": "x = 7/cos 25° = 7,72",
+          "why": "When the unknown is in the denominator, multiplying by the trig value makes it smaller instead of solving for x. You must divide by cos 25° to free the x.",
+          "speech": "Here is a common mistake. For cos twenty five equals seven over x, some learners write x equals seven times cosine twenty five, giving six point three four. That is wrong. The right way is x equals seven divided by cosine twenty five, which is seven point seven two. Multiplying makes the number smaller, but the hypotenuse must be longer than the adjacent side, so dividing is the only sensible answer."
+        },
+        {
+          "kind": "explain",
+          "text": "The tangent ratio handles the case where the two sides involved are the opposite and the adjacent, with no hypotenuse at all.\n\nIf you know the adjacent side and want the opposite side, x is on top: tan θ = x/(known side), so x = known side × tan θ.\n\nIf you know the opposite side and want the adjacent side, x is at the bottom: tan θ = known side/x, so x = known side ÷ tan θ.",
+          "speech": "Tangent handles the case with opposite and adjacent sides. If the unknown is on top, multiply by the known side times tan of the angle. If the unknown is at the bottom, divide the known side by tan of the angle."
+        },
+        {
+          "kind": "worked",
+          "problem": "In a right-angled triangle the angle is 55°, the side opposite the angle is 4,1 and x is the adjacent side. Find x correct to 2 decimal places.",
+          "steps": [
+            {
+              "line": "tan 55° = 4,1/x",
+              "reason": "4,1 is opposite the angle and x is adjacent, so use tan = opposite/adjacent"
+            },
+            {
+              "line": "x tan 55° = 4,1",
+              "reason": "multiply both sides by x to move x out of the denominator"
+            },
+            {
+              "line": "x = 4,1/tan 55°",
+              "reason": "divide both sides by tan 55°"
+            },
+            {
+              "line": "x = 4,1/1,42814...",
+              "reason": "use the calculator to find tan 55°"
+            },
+            {
+              "line": "x = 2,87",
+              "reason": "divide and round to two decimal places"
+            }
+          ],
+          "answer": "2,87",
+          "answerKind": "decimal",
+          "speech": "The opposite side is four point one and the adjacent side is x, so we use tangent. Tan fifty five equals four point one over x. Multiply both sides by x, then divide both sides by tan fifty five. x equals four point one divided by one point four two eight, which is two point eight seven."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "In a right-angled triangle the angle is 49°, the hypotenuse is 33 and d is the side adjacent to the 49° angle. Find d correct to 2 decimal places.",
+            "render": "text",
+            "steps": [
+              "cos 49° = d/33",
+              "d = 33 cos 49°",
+              "d = 33 × 0,65605...",
+              "d = 21,65"
+            ],
+            "answer": "21,65",
+            "answerKind": "decimal",
+            "difficulty": 2,
+            "why": "Using sin instead of cos, or writing cos 49° = 33/d instead of d/33, are the usual errors here.",
+            "rightWay": "d is adjacent and 33 is the hypotenuse, so cos 49° = d/33, so d = 33 cos 49° = 21,65."
+          },
+          "hint": "d is adjacent to the angle and 33 is the hypotenuse, so the cosine ratio applies, and d is on top of the fraction.",
+          "speech": "Try this. The angle is forty nine degrees, the hypotenuse is thirty three, and d is the adjacent side. Cosine forty nine equals d over thirty three. Multiply by thirty three to find d, and round to two decimal places."
+        },
+        {
+          "kind": "explain",
+          "text": "Exam questions often hide the triangle inside a story: a ladder against a wall, a kite on a string, a ramp. First draw the right-angled triangle yourself and mark the angle and the two sides. Then use exactly the same steps.\n\nBefore you write your final answer, ask: is this length sensible? The hypotenuse must be the longest side. An opposite side is longer than the adjacent side only when the angle is bigger than 45°. A quick sketch check catches most slips.",
+          "speech": "Exam questions often hide the triangle in a story about a ladder or a kite. Draw the right-angled triangle first, mark the angle and sides, then use the same steps. Always check the answer is sensible: the hypotenuse is the longest side."
+        },
+        {
+          "kind": "worked",
+          "problem": "A kite string is 50 m long and makes an angle of 40° with the ground. How high is the kite above the ground? Round to 2 decimal places.",
+          "steps": [
+            {
+              "line": "Draw the triangle: the string is the hypotenuse, the height h is opposite the 40° angle",
+              "reason": "the height rises straight up from the ground, so the triangle is right-angled"
+            },
+            {
+              "line": "sin 40° = h/50",
+              "reason": "h is opposite and 50 is the hypotenuse, so use sin = opposite/hypotenuse"
+            },
+            {
+              "line": "h = 50 sin 40°",
+              "reason": "multiply both sides by 50"
+            },
+            {
+              "line": "h = 50 × 0,64278...",
+              "reason": "use the calculator to find sin 40°"
+            },
+            {
+              "line": "h = 32,14",
+              "reason": "round to two decimal places"
+            }
+          ],
+          "answer": "32,14",
+          "answerKind": "decimal",
+          "speech": "A kite string is fifty metres long at forty degrees to the ground. Draw the triangle: the string is the hypotenuse and the height h is opposite the angle. So sine forty equals h over fifty. Multiply by fifty: h equals fifty times sine forty, which is fifty times zero point six four three, about thirty two point one four metres. That is less than the string length, so it is sensible.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "G",
+              "K",
+              "B"
+            ],
+            "sides": [
+              "h",
+              "",
+              "50 m"
+            ],
+            "angleLabels": [
+              "40°",
+              "",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "In a right-angled triangle the angle is 30°, the hypotenuse is 20 and h is the side opposite the 30° angle. Find h.",
+            "render": "text",
+            "steps": [
+              "sin 30° = h/20",
+              "h = 20 sin 30°",
+              "h = 20 × 0,5",
+              "h = 10"
+            ],
+            "answer": "10",
+            "answerKind": "whole",
+            "difficulty": 1,
+            "why": "Learners sometimes forget that sin 30° is exactly one half and reach for the calculator unnecessarily, or round 10 to 10,00 and type it wrongly.",
+            "rightWay": "h is opposite and 20 is the hypotenuse, so sin 30° = h/20, so h = 20 × 0,5 = 10."
+          },
+          "hint": "sin 30° is one of the special angles from the earlier lesson: it equals exactly 1/2.",
+          "speech": "Last try. The angle is thirty degrees, the hypotenuse is twenty, and h is opposite. Sine thirty is one half, so h equals twenty times one half. What is h?"
+        },
+        {
+          "kind": "explain",
+          "text": "Every missing-side question follows the same four steps. One: mark the given angle and label opposite, adjacent and hypotenuse. Two: choose the ratio from the two sides involved. Three: write the equation and solve, multiplying by the known side if the unknown is on top, dividing by the trig value if it is at the bottom. Four: round to 2 decimal places and check the side is sensible. Practise until this is automatic, because the next lesson uses the same steps to find a missing angle.",
+          "speech": "To sum up the method. One: label the sides. Two: choose sine, cosine or tangent from the two sides involved. Three: write the equation and solve for the unknown. Four: round to two decimal places and check the answer is sensible. Next lesson we use the same ideas to find a missing angle."
+        }
+      ],
+      "summary": [
+        "Label opposite, adjacent and hypotenuse with respect to the given angle.",
+        "Opposite and hypotenuse: use sin. Adjacent and hypotenuse: use cos. Opposite and adjacent: use tan.",
+        "If the unknown is on top: x = known side × trig value. If it is at the bottom: x = known side ÷ trig value.",
+        "Round to 2 decimal places and check: the hypotenuse must be the longest side."
+      ],
+      "practice": [
+        {
+          "prompt": "In a right-angled triangle the angle is 30°, the hypotenuse is 20 and h is the side opposite the 30° angle. Find h.",
+          "render": "text",
+          "steps": [
+            "sin 30° = h/20",
+            "h = 20 sin 30°",
+            "h = 20 × 0,5",
+            "h = 10"
+          ],
+          "answer": "10",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Forgetting that sin 30° is exactly 1/2 leads to unnecessary calculator work and rounding slips.",
+          "rightWay": "h is opposite and 20 is the hypotenuse, so h = 20 sin 30° = 10."
+        },
+        {
+          "prompt": "In a right-angled triangle the angle is 55°, the hypotenuse is 19 and c is the side adjacent to the 55° angle. Find c correct to 2 decimal places.",
+          "render": "text",
+          "steps": [
+            "cos 55° = c/19",
+            "c = 19 cos 55°",
+            "c = 19 × 0,57357...",
+            "c = 10,90"
+          ],
+          "answer": "10,90",
+          "answerKind": "decimal",
+          "difficulty": 1,
+          "why": "Using sin instead of cos swaps the opposite and adjacent sides and gives the wrong answer.",
+          "rightWay": "c is adjacent and 19 is the hypotenuse, so c = 19 cos 55° = 10,90."
+        },
+        {
+          "prompt": "In a right-angled triangle the angle is 23°, the adjacent side is 21 and b is the side opposite the 23° angle. Find b correct to 2 decimal places.",
+          "render": "text",
+          "steps": [
+            "tan 23° = b/21",
+            "b = 21 tan 23°",
+            "b = 21 × 0,42447...",
+            "b = 8,91"
+          ],
+          "answer": "8,91",
+          "answerKind": "decimal",
+          "difficulty": 2,
+          "why": "Learners often use sin or cos here, but neither hypotenuse is involved, so tan is the only correct ratio.",
+          "rightWay": "b is opposite and 21 is adjacent, so b = 21 tan 23° = 8,91."
+        },
+        {
+          "prompt": "In a right-angled triangle the angle is 17°, the side opposite is 12 and e is the hypotenuse. Find e correct to 2 decimal places.",
+          "render": "text",
+          "steps": [
+            "sin 17° = 12/e",
+            "e sin 17° = 12",
+            "e = 12/sin 17°",
+            "e = 12/0,29237... = 41,04"
+          ],
+          "answer": "41,04",
+          "answerKind": "decimal",
+          "difficulty": 2,
+          "why": "When the unknown hypotenuse is at the bottom, learners multiply instead of divide and get a value smaller than 12.",
+          "rightWay": "12 is opposite and e is the hypotenuse, so e = 12/sin 17° = 41,04."
+        },
+        {
+          "prompt": "In a right-angled triangle the angle is 22°, the side adjacent is 31 and f is the hypotenuse. Find f correct to 2 decimal places.",
+          "render": "text",
+          "steps": [
+            "cos 22° = 31/f",
+            "f cos 22° = 31",
+            "f = 31/cos 22°",
+            "f = 31/0,92718... = 33,43"
+          ],
+          "answer": "33,43",
+          "answerKind": "decimal",
+          "difficulty": 2,
+          "why": "Writing cos 22° = f/31 puts the known and unknown sides in the wrong places in the fraction.",
+          "rightWay": "31 is adjacent and f is the hypotenuse, so f = 31/cos 22° = 33,43."
+        },
+        {
+          "prompt": "A ladder leans against a wall at 65° to the flat ground. The foot of the ladder is 4,23 m from the wall. How high up the wall does the ladder reach? Round to 2 decimal places.",
+          "render": "text",
+          "steps": [
+            "tan 65° = h/4,23",
+            "h = 4,23 tan 65°",
+            "h = 4,23 × 2,14451...",
+            "h = 9,07"
+          ],
+          "answer": "9,07",
+          "answerKind": "decimal",
+          "difficulty": 3,
+          "why": "Drawing the angle at the wrong place in the sketch mixes up opposite and adjacent, so the wrong ratio gets used.",
+          "rightWay": "The height is opposite the 65° angle and 4,23 is adjacent, so h = 4,23 tan 65° = 9,07 m."
+        },
+        {
+          "prompt": "In triangle MNP, angle N is 90°, MP = 20 and angle P is 40°. Calculate MN, the side opposite angle P, correct to 2 decimal places.",
+          "render": "text",
+          "steps": [
+            "sin P = MN/MP",
+            "sin 40° = MN/20",
+            "MN = 20 sin 40°",
+            "MN = 20 × 0,64278... = 12,86"
+          ],
+          "answer": "12,86",
+          "answerKind": "decimal",
+          "difficulty": 3,
+          "why": "MP is the hypotenuse because it is opposite the right angle at N; treating it as an adjacent side gives the wrong ratio.",
+          "rightWay": "Angle N is 90°, so MP is the hypotenuse and MN is opposite angle P: MN = 20 sin 40° = 12,86."
+        }
+      ]
+    },
+    {
+      "position": 6,
+      "title": "Finding a missing angle and simple equations",
+      "minutes": 20,
+      "objectives": [
+        "You will be able to use inverse sin, cos and tan to find an unknown angle in a right-angled triangle.",
+        "You will be able to solve simple equations such as 2 sin theta = 1 or tan theta = 0.5.",
+        "You will be able to decide whether an answer should be an exact special angle or a calculator angle."
+      ],
+      "keyWords": [
+        {
+          "word": "opposite",
+          "meaning": "The side across from the angle you are working with in a right-angled triangle."
+        },
+        {
+          "word": "adjacent",
+          "meaning": "The side next to the angle you are working with, which is not the hypotenuse."
+        },
+        {
+          "word": "hypotenuse",
+          "meaning": "The longest side of a right-angled triangle, always across from the right angle."
+        },
+        {
+          "word": "inverse trig function",
+          "meaning": "sin⁻¹, cos⁻¹ or tan⁻¹: it works backwards from a ratio to give the angle."
+        },
+        {
+          "word": "special angle",
+          "meaning": "One of the angles 0°, 30°, 45°, 60° and 90° whose ratios are known without a calculator."
+        },
+        {
+          "word": "exact value",
+          "meaning": "An answer like 30° that comes from a special angle and needs no rounding."
+        },
+        {
+          "word": "no solution",
+          "meaning": "What you write when sin or cos of an angle would have to be more than 1."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "Last lesson you were given an angle and used a trig ratio to find a missing side. Today the problem is turned around: two sides of a right-angled triangle are known, and the angle is unknown.\n\nBecause the ratio of two sides fixes the angle completely, trigonometry can find it. This is how engineers set the slope of a ramp, how surveyors measure angles they cannot walk to, and how GPS pinpoints your position.",
+          "speech": "In the last lesson you knew an angle and used a trig ratio to find a missing side. Today we turn the problem around. Now two sides of a right-angled triangle are known, and the angle is the unknown. Because the ratio of two sides fixes the angle completely, trigonometry can find it. Engineers use this to set the slope of a ramp, surveyors use it to measure angles they cannot walk to, and the GPS in a phone uses it to work out your position."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "hypotenuse",
+              "opposite",
+              "adjacent"
+            ],
+            "angleLabels": [
+              "θ",
+              "90°",
+              "α"
+            ],
+            "rightAngleAt": 1
+          },
+          "caption": "Name the sides from the angle θ: opposite is across from θ, adjacent is next to θ, hypotenuse is across from the right angle.",
+          "speech": "The picture shows a right-angled triangle with the right angle at B. The side across from the angle theta is called the opposite side. The side next to theta, the one that is not the hypotenuse, is called the adjacent side. The longest side, across from the right angle, is always the hypotenuse. Which two sides you know decides whether you use sine, cosine or tangent."
+        },
+        {
+          "kind": "explain",
+          "text": "If sin 30° = 0,5, then 30° is the angle whose sine is 0,5. The inverse function asks the question backwards: sin⁻¹(0,5) = 30°. Read sin⁻¹ as 'the angle whose sine is'.\n\nOn most calculators the inverse functions sit above sin, cos and tan, behind the SHIFT or 2nd F key. Careful: sin⁻¹ does not mean 1 divided by sin.",
+          "speech": "If sine of thirty degrees equals zero point five, then thirty degrees is the angle whose sine is zero point five. The inverse function asks the question backwards: inverse sine of zero point five gives thirty degrees. Say it as the angle whose sine is. On most calculators the inverse functions are above the sine, cosine and tangent keys, behind the shift or second function key. And a warning: inverse sine does not mean one divided by sine; it means go back from the ratio to the angle."
+        },
+        {
+          "kind": "worked",
+          "problem": "In a right-angled triangle, the side opposite θ is 1 and the hypotenuse is 2. Find θ.",
+          "steps": [
+            {
+              "line": "sin θ = opposite/hypotenuse = 1/2",
+              "reason": "The opposite side and hypotenuse are known, so use the sine ratio."
+            },
+            {
+              "line": "sin θ = 0,5",
+              "reason": "Simplify the fraction to a decimal."
+            },
+            {
+              "line": "θ = sin⁻¹(0,5)",
+              "reason": "Apply the inverse sine to go back from the ratio to the angle."
+            },
+            {
+              "line": "θ = 30°",
+              "reason": "0,5 is the exact sine of the special angle 30°, so the answer is exact."
+            }
+          ],
+          "answer": "30°",
+          "answerKind": "number",
+          "speech": "Worked example one. In a right-angled triangle, the side opposite theta is one and the hypotenuse is two. Find theta. The opposite and hypotenuse are known, so use the sine ratio. Sine theta equals one over two, which is zero point five. Apply inverse sine to both sides: theta equals inverse sine of zero point five. That is the special angle thirty degrees, an exact answer. The diagram shows the triangle with the right angle at B, the side of one opposite theta, and the hypotenuse of two.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "1",
+              "√3",
+              "2"
+            ],
+            "angleLabels": [
+              "θ",
+              "90°",
+              "60°"
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "P",
+              "Q",
+              "R"
+            ],
+            "angles": [
+              30,
+              60,
+              90
+            ],
+            "sides": [
+              "1",
+              "√3",
+              "2"
+            ],
+            "angleLabels": [
+              "30°",
+              "60°",
+              "90°"
+            ],
+            "rightAngleAt": 2
+          },
+          "caption": "The 30°-60°-90° triangle. If your ratio matches one of these values, the angle is exact.",
+          "speech": "This is the thirty, sixty, ninety triangle from Lesson four. The side opposite thirty degrees is one, the side opposite sixty degrees is the square root of three, and the hypotenuse is two. So sine of thirty degrees is one half, cosine of sixty degrees is one half, tangent of sixty degrees is the square root of three, and tangent of thirty degrees is one over the square root of three. When the ratio in your equation matches one of these values, you can write the angle exactly, with no calculator and no rounding."
+        },
+        {
+          "kind": "worked",
+          "problem": "In a right-angled triangle, the side opposite θ is 4 and the side adjacent to θ is 9. Find θ, correct to 2 decimal places.",
+          "steps": [
+            {
+              "line": "tan θ = opposite/adjacent = 4/9",
+              "reason": "The opposite and adjacent sides are known, so use the tangent ratio."
+            },
+            {
+              "line": "tan θ = 0,4444...",
+              "reason": "Work out the ratio as a decimal."
+            },
+            {
+              "line": "θ = tan⁻¹(4/9)",
+              "reason": "Apply the inverse tangent to go back from the ratio to the angle."
+            },
+            {
+              "line": "θ = 23,9624...°",
+              "reason": "The calculator works out the inverse tangent."
+            },
+            {
+              "line": "θ ≈ 23,96°",
+              "reason": "Round to 2 decimal places as the question asks."
+            }
+          ],
+          "answer": "23,96°",
+          "answerKind": "number",
+          "speech": "Worked example two. In a right-angled triangle the side opposite theta is four and the side adjacent to theta is nine. Find theta, correct to two decimal places. The opposite and adjacent sides are known, so use tangent. Tan theta equals four ninths, which is zero point four four four and so on. Apply inverse tangent: theta equals inverse tan of four ninths. The calculator gives twenty-three point nine six two four degrees, which rounds to twenty-three point nine six degrees. This time the answer is not exact, so we round as the question asks.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "P",
+              "Q",
+              "R"
+            ],
+            "sides": [
+              "4",
+              "√97",
+              "9"
+            ],
+            "angleLabels": [
+              "θ",
+              "90°",
+              "66,04°"
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "explain",
+          "text": "An equation like 2 sin θ = 1 or tan θ = 0,5 is solved the same way. First use ordinary algebra to get the sin, cos or tan completely alone: divide both sides, add or subtract as needed. Only then apply the inverse function.\n\nIf the ratio is a clean special value like 0,5 or 1, the answer is exact. Otherwise give the calculator angle, rounded as the question asks.",
+          "speech": "An equation like two sin theta equals one, or tan theta equals zero point five, is solved the same way. First use ordinary algebra to get the sine, cosine or tangent completely alone. Divide both sides by two, or add or subtract as needed. Only then apply the inverse function. If the ratio is a clean special value like zero point five or one, the answer is an exact angle. Otherwise give the calculator angle, rounded the way the question asks."
+        },
+        {
+          "kind": "worked",
+          "problem": "Solve for θ: 4 cos θ = 2.",
+          "steps": [
+            {
+              "line": "4 cos θ = 2",
+              "reason": "The given equation."
+            },
+            {
+              "line": "cos θ = 2/4 = 0,5",
+              "reason": "Divide both sides by 4 to get cos θ alone."
+            },
+            {
+              "line": "θ = cos⁻¹(0,5)",
+              "reason": "Apply the inverse cosine to go back from the ratio to the angle."
+            },
+            {
+              "line": "θ = 60°",
+              "reason": "0,5 is the exact cosine of the special angle 60°, so the answer is exact."
+            }
+          ],
+          "answer": "60°",
+          "answerKind": "number",
+          "speech": "Worked example three. Solve for theta: four cos theta equals two. Divide both sides by four to get cos theta alone: cos theta equals two over four, which is zero point five. Apply inverse cosine: theta equals inverse cos of zero point five. Zero point five is the cosine of sixty degrees, so theta equals sixty degrees, an exact answer. No rounding needed."
+        },
+        {
+          "kind": "worked",
+          "problem": "A 5 m ladder leans against a wall. Its foot is 3 m from the wall. Find the angle the ladder makes with the ground, correct to 2 decimal places.",
+          "steps": [
+            {
+              "line": "Hypotenuse = 5 m (the ladder), adjacent = 3 m (the ground)",
+              "reason": "Identify the sides: the ladder is across from the right angle, so it is the hypotenuse."
+            },
+            {
+              "line": "cos θ = adjacent/hypotenuse = 3/5",
+              "reason": "Adjacent and hypotenuse are known, so use the cosine ratio."
+            },
+            {
+              "line": "cos θ = 0,6",
+              "reason": "Simplify the fraction."
+            },
+            {
+              "line": "θ = cos⁻¹(0,6)",
+              "reason": "Apply the inverse cosine."
+            },
+            {
+              "line": "θ = 53,1301...°",
+              "reason": "The calculator works out the angle."
+            },
+            {
+              "line": "θ ≈ 53,13°",
+              "reason": "Round to 2 decimal places."
+            }
+          ],
+          "answer": "53,13°",
+          "answerKind": "number",
+          "speech": "Worked example four. A five metre ladder leans against a wall, and its foot is three metres from the wall. Find the angle the ladder makes with the ground, correct to two decimal places. The ladder is the hypotenuse, five metres. The ground side next to the angle is the adjacent side, three metres. Adjacent over hypotenuse is the cosine ratio. Cos theta equals three over five, which is zero point six. Theta equals inverse cos of zero point six. The calculator gives fifty-three point one three zero one degrees, so theta is about fifty-three point one three degrees.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "3",
+              "4",
+              "5"
+            ],
+            "angleLabels": [
+              "θ",
+              "90°",
+              "36,87°"
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "Solve for α: 3 sec α = 1,4.",
+          "steps": [
+            {
+              "line": "3 sec α = 1,4",
+              "reason": "The given equation."
+            },
+            {
+              "line": "3/cos α = 1,4",
+              "reason": "There is no sec button on the calculator, so write sec α = 1/cos α."
+            },
+            {
+              "line": "3 = 1,4 cos α",
+              "reason": "Multiply both sides by cos α."
+            },
+            {
+              "line": "cos α = 3/1,4 ≈ 2,14",
+              "reason": "Divide both sides by 1,4 to get cos α alone."
+            },
+            {
+              "line": "2,14 > 1",
+              "reason": "Cosine of any angle is at most 1, so this is impossible."
+            },
+            {
+              "line": "There is no solution.",
+              "reason": "Write 'no solution', not 'math error'."
+            }
+          ],
+          "answer": "No solution",
+          "answerKind": "choice",
+          "speech": "Worked example five. Solve for alpha: three sec alpha equals one point four. There is no sec button on the calculator, so write sec alpha as one over cos alpha. The equation becomes three over cos alpha equals one point four. Multiply both sides by cos alpha: three equals one point four cos alpha. Divide both sides by one point four: cos alpha equals three over one point four, about two point one four. But cosine of an angle can never be more than one. So there is no solution. Write no solution, not error."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "Solve for θ: tan θ = 0,5. Give your answer correct to 2 decimal places.",
+            "render": "text",
+            "steps": [
+              "tan θ = 0,5",
+              "θ = tan⁻¹(0,5)",
+              "θ = 26,5651...°",
+              "θ ≈ 26,57°"
+            ],
+            "answer": "26,57",
+            "answerKind": "decimal",
+            "difficulty": 2,
+            "why": "Learners press tan instead of inverse tan and get a tiny ratio instead of an angle.",
+            "rightWay": "tan θ is already alone, so apply the inverse tangent (SHIFT tan) to 0,5 and round the calculator angle to 2 decimal places."
+          },
+          "hint": "Use the inverse tangent: SHIFT tan on most calculators.",
+          "speech": "Your turn. Solve for theta: tan theta equals zero point five. Give your answer correct to two decimal places. Hint: use the inverse tangent, shift tan on most calculators."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "Solve for θ: sin θ = 1/√2. Give the exact answer.",
+            "render": "text",
+            "steps": [
+              "sin θ = 1/√2 = 0,7071...",
+              "θ = sin⁻¹(1/√2)",
+              "θ = 45°"
+            ],
+            "answer": "45°",
+            "answerKind": "number",
+            "difficulty": 2,
+            "why": "Learners round 0,7071 early and miss that this is the exact special ratio for 45°.",
+            "rightWay": "1/√2 is the exact sine of 45° from the special angles of Lesson 4, so the answer is exactly 45°."
+          },
+          "hint": "This ratio is one of the special angle values from Lesson 4.",
+          "speech": "Your turn. Solve for theta: sin theta equals one over the square root of two. Give the exact answer. Hint: this ratio is one of the special angle values from Lesson four."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "sin θ = 0,5, so θ = sin 0,5 = 0,0087...",
+          "right": "sin θ = 0,5, so θ = sin⁻¹(0,5) = 30°",
+          "why": "sin changes an angle into a ratio; to go back from the ratio to the angle you must use the inverse function sin⁻¹, not sin a second time.",
+          "speech": "Here is a common mistake. Sin theta equals zero point five, and the learner writes theta equals sin of zero point five, which gives a tiny number near zero point zero zero nine. The right way is theta equals inverse sin of zero point five, which is thirty degrees. Why the wrong way fails: sine turns an angle into a ratio. To go from the ratio back to the angle, you need the inverse function, not sine again."
+        },
+        {
+          "kind": "explain",
+          "text": "Three questions decide your method. Is the angle hiding in a triangle with two known sides? Write the ratio, then apply the inverse.\n\nIs it an equation? Isolate the ratio first, then invert. Is the ratio a special value such as 0,5, 1 or 1/√2? Then the answer is exact: 30°, 45° or 60°.\n\nIf sin or cos would need to be more than 1, write 'no solution'.",
+          "speech": "Let us tie it together. Three questions decide your method. Is the angle hiding in a triangle where two sides are known? Write the ratio, then apply the inverse. Is it an equation? Isolate the ratio with algebra first, then invert. Is the ratio a special value like zero point five, one, or one over the square root of two? Then the answer is exact: thirty, forty-five or sixty degrees. And if sine or cosine would need to be more than one, there is no solution."
+        }
+      ],
+      "summary": [
+        "To find an unknown angle from two sides: write sin, cos or tan θ = the ratio of the two sides, then apply sin⁻¹, cos⁻¹ or tan⁻¹.",
+        "In an equation, isolate the trig ratio first (divide both sides), then apply the inverse function.",
+        "sin⁻¹ 0,5 means the angle whose sine is 0,5; it does not mean 1 divided by sin.",
+        "Exact special answers: sin θ = 1/2 gives 30°, cos θ = 1/2 gives 60°, sin θ = cos θ = 1/√2 gives 45°, tan θ = 1 gives 45°, tan θ = √3 gives 60°, tan θ = 1/√3 gives 30°.",
+        "If sin θ or cos θ would have to be more than 1, write 'no solution', not 'error'."
+      ],
+      "practice": [
+        {
+          "prompt": "Solve for θ: sin θ = 0,5. Give the exact answer.",
+          "render": "text",
+          "steps": [
+            "sin θ = 0,5",
+            "θ = sin⁻¹(0,5)",
+            "θ = 30°"
+          ],
+          "answer": "30°",
+          "answerKind": "number",
+          "difficulty": 1,
+          "why": "Learners sometimes press sin instead of inverse sin and get a tiny number instead of an angle.",
+          "rightWay": "0,5 is the exact sine of the special angle 30°, so θ = sin⁻¹(0,5) = 30°."
+        },
+        {
+          "prompt": "Solve for θ: tan θ = 1. Give the exact answer.",
+          "render": "text",
+          "steps": [
+            "tan θ = 1",
+            "θ = tan⁻¹(1)",
+            "θ = 45°"
+          ],
+          "answer": "45°",
+          "answerKind": "number",
+          "difficulty": 1,
+          "why": "Learners forget that tan 45° = 1 and reach for the calculator when the answer is exact.",
+          "rightWay": "1 is the exact tangent of the special angle 45°, so θ = tan⁻¹(1) = 45°."
+        },
+        {
+          "prompt": "Solve for θ: cos θ = 0,75. Give your answer correct to 2 decimal places.",
+          "render": "text",
+          "steps": [
+            "cos θ = 0,75",
+            "θ = cos⁻¹(0,75)",
+            "θ = 41,4096...°",
+            "θ ≈ 41,41°"
+          ],
+          "answer": "41,41",
+          "answerKind": "decimal",
+          "difficulty": 2,
+          "why": "Learners press cos instead of inverse cos, or round too early in the working.",
+          "rightWay": "cos θ is already alone, so apply the inverse cosine (SHIFT cos) to 0,75 and round the calculator angle to 2 decimal places."
+        },
+        {
+          "prompt": "Solve for x: 3 sin x = 1,5. Give the exact answer.",
+          "render": "text",
+          "steps": [
+            "3 sin x = 1,5",
+            "sin x = 1,5 ÷ 3 = 0,5",
+            "x = sin⁻¹(0,5)",
+            "x = 30°"
+          ],
+          "answer": "30°",
+          "answerKind": "number",
+          "difficulty": 2,
+          "why": "Learners apply the inverse sine before dividing by 3.",
+          "rightWay": "First divide both sides by 3 to get sin x = 0,5, then apply the inverse sine to get x = 30°."
+        },
+        {
+          "prompt": "In a right-angled triangle, the side opposite θ is 4 and the side adjacent to θ is 7. Find θ, correct to 2 decimal places.",
+          "render": "text",
+          "steps": [
+            "tan θ = 4/7",
+            "tan θ = 0,5714...",
+            "θ = tan⁻¹(4/7)",
+            "θ = 29,7447...°",
+            "θ ≈ 29,74°"
+          ],
+          "answer": "29,74",
+          "answerKind": "decimal",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "4",
+              "√65",
+              "7"
+            ],
+            "angleLabels": [
+              "θ",
+              "90°",
+              "60,26°"
+            ],
+            "rightAngleAt": 1
+          },
+          "difficulty": 2,
+          "why": "Learners use sine or cosine instead of tangent when the opposite and adjacent sides are known.",
+          "rightWay": "Opposite and adjacent are known, so tan θ = 4/7; apply the inverse tangent and round to 29,74°."
+        },
+        {
+          "prompt": "Solve for θ: tan θ = 1/√3. Give the exact answer.",
+          "render": "text",
+          "steps": [
+            "tan θ = 1/√3 = 0,5774...",
+            "θ = tan⁻¹(1/√3)",
+            "θ = 30°"
+          ],
+          "answer": "30°",
+          "answerKind": "number",
+          "difficulty": 3,
+          "why": "Learners round 1/√3 too early and miss the exact special angle 30°.",
+          "rightWay": "1/√3 is the exact tangent of 30° from the special angles, so θ = 30° exactly."
+        },
+        {
+          "prompt": "Solve for β: cos β = 1,2. Choose the correct statement.",
+          "render": "text",
+          "steps": [
+            "cos β = 1,2",
+            "cos of an angle can never be more than 1",
+            "1,2 > 1, so the equation is impossible"
+          ],
+          "answer": "B",
+          "answerKind": "choice",
+          "choices": [
+            "β = 36,87°",
+            "no solution",
+            "β = 90°",
+            "β = 53,13°"
+          ],
+          "difficulty": 3,
+          "why": "Learners trust the calculator error message instead of checking that cosine cannot exceed 1.",
+          "rightWay": "Cosine of an angle is never more than 1, so 1,2 is impossible; the correct statement is 'no solution'."
+        },
+        {
+          "prompt": "A ladder 6 m long leans against a wall. Its foot is 2,5 m from the wall. Find the angle the ladder makes with the ground, correct to 2 decimal places.",
+          "render": "text",
+          "steps": [
+            "Hypotenuse = 6 m (the ladder), adjacent = 2,5 m (the ground)",
+            "cos θ = 2,5/6",
+            "cos θ = 0,4167",
+            "θ = cos⁻¹(0,4167)",
+            "θ = 65,3757...°",
+            "θ ≈ 65,38°"
+          ],
+          "answer": "65,38",
+          "answerKind": "decimal",
+          "difficulty": 3,
+          "why": "Learners divide the wrong way and use 6/2,5 as the cosine ratio.",
+          "rightWay": "The ladder is the hypotenuse and the ground side is adjacent to the angle, so cos θ = 2,5/6; apply the inverse cosine to get θ ≈ 65,38°."
+        }
+      ]
+    },
+    {
+      "position": 7,
+      "title": "Angles in the Cartesian plane",
+      "minutes": 20,
+      "objectives": [
+        "You will be able to find r from a point (x;y) using r squared = x squared + y squared.",
+        "You will be able to write sin, cos and tan for an angle in standard position as y over r, x over r and y over x.",
+        "You will be able to use the signs of x and y to place an angle in the correct quadrant."
+      ],
+      "keyWords": [
+        {
+          "word": "origin",
+          "meaning": "The point O(0; 0) where the x-axis and y-axis cross."
+        },
+        {
+          "word": "standard position",
+          "meaning": "An angle measured from the positive x-axis in an anti-clockwise direction to a line from the origin."
+        },
+        {
+          "word": "quadrant",
+          "meaning": "One of the four regions of the Cartesian plane, numbered 1 to 4 anti-clockwise starting at the top right."
+        },
+        {
+          "word": "r",
+          "meaning": "The distance from the origin to a point; it is a length, so r is always positive."
+        },
+        {
+          "word": "CAST diagram",
+          "meaning": "A picture of the four quadrants showing which ratios are positive in each one."
+        },
+        {
+          "word": "obtuse angle",
+          "meaning": "An angle greater than 90 degrees but less than 180 degrees, so it lies in the second quadrant."
+        },
+        {
+          "word": "undefined",
+          "meaning": "What tan 90 degrees is, because you cannot divide by zero."
+        },
+        {
+          "word": "surd",
+          "meaning": "A root like sqrt(21) that is left in exact form instead of rounded."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "In earlier lessons you used sin, cos and tan inside right-angled triangles. Now we take those ideas onto the Cartesian plane.\n\nPlot any point P(x; y). Draw a line from the origin O to P, and drop a dotted line straight down to the x-axis. You have made a right-angled triangle: the horizontal leg is x, the vertical leg is y, and the line OP is the hypotenuse. We call this distance r.\n\nThe angle the line OP makes with the positive x-axis, measured anti-clockwise, is called the angle in standard position. Because the triangle only depends on the angle, the ratios work for any angle, not just angles inside a drawn triangle.",
+          "speech": "So far we have used sin, cos and tan inside right-angled triangles. Now we move those ideas onto the Cartesian plane. Plot any point P with coordinates x and y. Draw a line from the origin O to P, and drop a dotted line straight down to the x-axis. That makes a right-angled triangle. The horizontal leg has length x, the vertical leg has length y, and the line from O to P is the hypotenuse, which we call r. The angle between the line OP and the positive x-axis, measured anti-clockwise, is called the angle in standard position. Because the triangle only depends on the size of the angle, these ratios work for any angle at all."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "coordinate_plane",
+            "xMin": -1,
+            "xMax": 6,
+            "yMin": -1,
+            "yMax": 6,
+            "step": 1,
+            "points": [
+              {
+                "x": 2,
+                "y": 0,
+                "label": "x"
+              },
+              {
+                "x": 2,
+                "y": 3,
+                "label": "P(2; 3)"
+              }
+            ],
+            "graphs": [
+              {
+                "type": "line",
+                "m": 1.5,
+                "c": 0,
+                "label": "OP, length r"
+              }
+            ]
+          },
+          "caption": "The point P(2; 3) makes a right-angled triangle with the x-axis: horizontal leg 2, vertical leg 3, hypotenuse r.",
+          "speech": "The picture shows the point P with coordinates two and three. A line runs from the origin to P and its length is r. A dotted line drops from P straight down to the x-axis, cutting off a horizontal leg of length two and a vertical leg of length three. The angle theta is measured from the positive x-axis anti-clockwise up to the line OP. This is the angle in standard position."
+        },
+        {
+          "kind": "explain",
+          "text": "With the angle marked theta, the vertical leg y is opposite theta and the horizontal leg x is next to theta, so the old definitions become:\n\nsin theta = y/r, cos theta = x/r, tan theta = y/x.\n\nYou find r with the theorem of Pythagoras: r squared = x squared + y squared. Remember r is a length, so r is always positive, even when x or y is negative. The reciprocals work the same way: cosec theta = r/y, sec theta = r/x, cot theta = x/y.",
+          "speech": "Mark the angle theta. The vertical leg y is opposite theta and the horizontal leg x is next to theta, so the definitions become: sin theta equals y over r, cos theta equals x over r, and tan theta equals y over x. You find r using the theorem of Pythagoras: r squared equals x squared plus y squared. Remember that r is a length, so r is always positive, even when x or y is negative. The reciprocals also work this way: cosec theta is r over y, sec theta is r over x, and cot theta is x over y."
+        },
+        {
+          "kind": "worked",
+          "problem": "P is the point (3; 4) and theta is the angle between OP and the positive x-axis. Find sin theta without a calculator.",
+          "steps": [
+            {
+              "line": "x = 3, y = 4",
+              "reason": "Read the coordinates of P; x is the horizontal leg and y is the vertical leg."
+            },
+            {
+              "line": "r^2 = x^2 + y^2 = 3^2 + 4^2 = 9 + 16 = 25",
+              "reason": "Use the theorem of Pythagoras to find r squared."
+            },
+            {
+              "line": "r = 5",
+              "reason": "Take the positive square root, because r is a length and lengths are positive."
+            },
+            {
+              "line": "sin theta = y/r = 4/5",
+              "reason": "Substitute y and r into the definition sin theta = y over r."
+            }
+          ],
+          "answer": "4/5",
+          "answerKind": "fraction",
+          "speech": "The problem: P is the point three; four, and theta is the angle between O P and the positive x-axis. Find sin theta without a calculator. Step one: read the coordinates, so x is three and y is four. Step two: use Pythagoras, r squared equals three squared plus four squared, which is nine plus sixteen, so r squared is twenty five. Step three: r equals five, taking the positive root because r is a length. Step four: sin theta equals y over r, which is four fifths. The answer is four fifths.",
+          "diagram": {
+            "kind": "coordinate_plane",
+            "xMin": -1,
+            "xMax": 6,
+            "yMin": -1,
+            "yMax": 6,
+            "step": 1,
+            "points": [
+              {
+                "x": 3,
+                "y": 0,
+                "label": "x = 3"
+              },
+              {
+                "x": 3,
+                "y": 4,
+                "label": "P(3; 4)"
+              }
+            ],
+            "graphs": [
+              {
+                "type": "line",
+                "m": 1.333,
+                "c": 0,
+                "label": "OP"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "explain",
+          "text": "The plane is divided into four quadrants, numbered anti-clockwise from the top right. In every quadrant r is positive, but the signs of x and y change, so the ratios can be positive or negative.\n\nQuadrant 1: x and y both positive, so all ratios are positive. Quadrant 2: x negative, y positive, so only sin (and cosec) are positive. Quadrant 3: x and y both negative, so tan (and cot) are positive, because a negative over a negative is positive. Quadrant 4: x positive, y negative, so only cos (and sec) are positive.\n\nThe CAST diagram shows this: going anti-clockwise from quadrant 4, the letters C, A, S, T tell you which ratio is positive in each quadrant.",
+          "speech": "The plane is divided into four quadrants, numbered anti-clockwise from the top right. In every quadrant r is positive, but the signs of x and y change, so the ratios can be positive or negative. In quadrant one, both x and y are positive, so all ratios are positive. In quadrant two, x is negative and y is positive, so only sin and cosec are positive. In quadrant three, both x and y are negative, so tan and cot are positive, because a negative divided by a negative is positive. In quadrant four, x is positive and y is negative, so only cos and sec are positive. The CAST diagram shows this: reading anti-clockwise from quadrant four, the letters C, A, S, T tell you which ratio is positive in each quadrant."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "coordinate_plane",
+            "xMin": -5,
+            "xMax": 5,
+            "yMin": -5,
+            "yMax": 5,
+            "step": 1,
+            "points": [
+              {
+                "x": 3,
+                "y": 3,
+                "label": "A: all positive"
+              },
+              {
+                "x": -3,
+                "y": 3,
+                "label": "S: sin positive"
+              },
+              {
+                "x": -3,
+                "y": -3,
+                "label": "T: tan positive"
+              },
+              {
+                "x": 3,
+                "y": -3,
+                "label": "C: cos positive"
+              }
+            ]
+          },
+          "caption": "The CAST diagram: the letter in each quadrant shows which ratio is positive there.",
+          "speech": "This is the CAST diagram. The plane is divided into four quadrants. In the top right, quadrant one, the letter A means all ratios are positive. In the top left, quadrant two, the letter S means sin is positive there. In the bottom left, quadrant three, the letter T means tan is positive there. In the bottom right, quadrant four, the letter C means cos is positive there. Remember r is always positive; only the signs of x and y change."
+        },
+        {
+          "kind": "worked",
+          "problem": "P(-3; 4) is a point with origin O. Theta is the angle between OP and the positive x-axis. Without a calculator, determine cos theta, 3 tan theta and (1/2) cosec theta.",
+          "steps": [
+            {
+              "line": "x = -3, y = 4",
+              "reason": "Read the coordinates; the point is in the second quadrant, so x is negative and y is positive."
+            },
+            {
+              "line": "r^2 = (-3)^2 + 4^2 = 9 + 16 = 25, so r = 5",
+              "reason": "Pythagoras; squaring a negative gives a positive, and r is positive."
+            },
+            {
+              "line": "cos theta = x/r = -3/5",
+              "reason": "Substitute x and r into cos theta = x over r."
+            },
+            {
+              "line": "3 tan theta = 3 x (y/x) = 3 x (4/-3) = -4",
+              "reason": "Substitute y and x into tan theta = y over x, then multiply by 3."
+            },
+            {
+              "line": "(1/2) cosec theta = (1/2) x (r/y) = (1/2) x (5/4) = 5/8",
+              "reason": "Cosec theta is r over y; substitute r = 5 and y = 4, then multiply by one half."
+            }
+          ],
+          "answer": "cos theta = -3/5; 3 tan theta = -4; (1/2) cosec theta = 5/8",
+          "answerKind": "choice",
+          "speech": "The problem: P is the point minus three; four, and theta is the angle between O P and the positive x-axis. Find cos theta, three tan theta, and one half times cosec theta, without a calculator. Step one: x is minus three and y is four, so P is in the second quadrant. Step two: by Pythagoras, r squared equals nine plus sixteen, which is twenty five, so r is five. Step three: cos theta equals x over r, which is minus three fifths. Step four: tan theta is y over x, four over minus three, and three times that is minus four. Step five: cosec theta is r over y, five quarters, and half of that is five eighths. The answers are cos theta equals minus three fifths, three tan theta equals minus four, and one half cosec theta equals five eighths.",
+          "diagram": {
+            "kind": "coordinate_plane",
+            "xMin": -6,
+            "xMax": 2,
+            "yMin": -1,
+            "yMax": 6,
+            "step": 1,
+            "points": [
+              {
+                "x": -3,
+                "y": 0,
+                "label": "x = -3"
+              },
+              {
+                "x": -3,
+                "y": 4,
+                "label": "P(-3; 4)"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "B is the point (1; -3) on the Cartesian plane with origin O. Beta is the angle between OB and the positive x-axis. Without a calculator, find tan beta.",
+            "render": "text",
+            "steps": [
+              "x = 1, y = -3",
+              "tan beta = y/x = (-3)/1",
+              "tan beta = -3"
+            ],
+            "answer": "-3",
+            "answerKind": "number",
+            "difficulty": 2,
+            "why": "Learners often forget the sign of y and write tan beta = 3 instead of -3.",
+            "rightWay": "The point (1; -3) is in the fourth quadrant, so y is negative. tan beta = y over x = minus three over one = -3."
+          },
+          "hint": "tan beta is y over x; use the signs of the coordinates exactly as they are.",
+          "speech": "Your turn. B is the point one; minus three, and beta is the angle between O B and the positive x-axis. Find tan beta without a calculator. Hint: tan beta is y over x, and you must keep the signs of the coordinates."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "For P(-3; 4): cos theta = 3/5",
+          "right": "For P(-3; 4): cos theta = -3/5",
+          "why": "Dropping the minus sign loses the information that the point is left of the y-axis. The x-coordinate is -3, and cos theta = x/r, so the answer must be negative. Also, never make r negative to fix signs: r is a length and is always positive.",
+          "speech": "A common mistake: for the point minus three; four, writing cos theta as three fifths. The right way is cos theta equals minus three fifths. Why? The x-coordinate is minus three, and cos theta is x over r, so the negative sign must be kept. Do not try to fix the sign by making r negative; r is a length and is always positive."
+        },
+        {
+          "kind": "worked",
+          "problem": "K is the point (-5; y) in the third quadrant. OK is 13 units and theta is the angle that OK makes with the positive x-axis. Determine the value of y.",
+          "steps": [
+            {
+              "line": "x = -5, r = OK = 13",
+              "reason": "Read the x-coordinate and the distance from the origin."
+            },
+            {
+              "line": "r^2 = x^2 + y^2, so y^2 = r^2 - x^2",
+              "reason": "Rearrange Pythagoras to make y squared the subject."
+            },
+            {
+              "line": "y^2 = 13^2 - (-5)^2 = 169 - 25 = 144",
+              "reason": "Substitute the known values; squaring -5 gives 25."
+            },
+            {
+              "line": "y = 12 or y = -12",
+              "reason": "Take the square root; both signs are possible at this stage."
+            },
+            {
+              "line": "y = -12",
+              "reason": "K is in the third quadrant, where y is negative, so y must be -12."
+            }
+          ],
+          "answer": "-12",
+          "answerKind": "number",
+          "speech": "The problem: K is the point minus five; y in the third quadrant, O K is thirteen units, and theta is the angle that O K makes with the positive x-axis. Find y. Step one: x is minus five and r is thirteen. Step two: rearrange Pythagoras so y squared equals r squared minus x squared. Step three: y squared equals one hundred and sixty nine minus twenty five, which is one hundred and forty four. Step four: y could be twelve or minus twelve. Step five: K is in the third quadrant, where y is negative, so y equals minus twelve. The answer is y equals minus twelve.",
+          "diagram": {
+            "kind": "coordinate_plane",
+            "xMin": -8,
+            "xMax": 2,
+            "yMin": -15,
+            "yMax": 2,
+            "step": 1,
+            "points": [
+              {
+                "x": -5,
+                "y": 0,
+                "label": "x = -5"
+              },
+              {
+                "x": -5,
+                "y": -12,
+                "label": "K(-5; -12)"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "If sin theta = 0,4 and theta is an obtuse angle, determine cos theta without a calculator. Leave your answer in surd form.",
+            "render": "text",
+            "steps": [
+              "sin theta = 0,4 = 2/5 = y/r, so y = 2 and r = 5",
+              "x^2 = r^2 - y^2 = 25 - 4 = 21",
+              "x = -sqrt(21) (obtuse angle, so second quadrant, x negative)",
+              "cos theta = x/r = -sqrt(21)/5"
+            ],
+            "answer": "-sqrt(21)/5",
+            "answerKind": "number",
+            "difficulty": 3,
+            "why": "Learners forget that an obtuse angle is in the second quadrant and give the positive root for x.",
+            "rightWay": "An obtuse angle lies between 90 degrees and 180 degrees, in the second quadrant. There x is negative, so cos theta = minus the square root of twenty one over five."
+          },
+          "hint": "Write 0,4 as a fraction to get y and r, then use Pythagoras; remember an obtuse angle is in the second quadrant.",
+          "speech": "Your turn. If sin theta equals nought comma four, and theta is an obtuse angle, find cos theta without a calculator, in surd form. Hint: write nought comma four as two fifths to get y and r, then use Pythagoras, and remember an obtuse angle lies in the second quadrant."
+        },
+        {
+          "kind": "worked",
+          "problem": "In a diagram, cos theta = -24/25, with A(a; b) a point on the terminal line and b negative. If OA = 100, find the values of a and b.",
+          "steps": [
+            {
+              "line": "cos theta = x/r = -24/25, so x = -24 and r = 25",
+              "reason": "Read off x and r from the ratio; r must be positive."
+            },
+            {
+              "line": "b^2 = 25^2 - 24^2 = 625 - 576 = 49, so b = -7",
+              "reason": "Pythagoras gives y = 7 or -7; b is negative, so b = -7."
+            },
+            {
+              "line": "The ratios depend only on the angle, so scaling the point by 4 keeps them the same.",
+              "reason": "A similar triangle with all sides multiplied by 4 has the same angles, so the ratios are unchanged."
+            },
+            {
+              "line": "a = 4 x (-24) = -96 and b = 4 x (-7) = -28",
+              "reason": "Multiply both coordinates by 4 so that the new radius is 4 x 25 = 100."
+            }
+          ],
+          "answer": "a = -96 and b = -28",
+          "answerKind": "choice",
+          "speech": "The problem: cos theta equals minus twenty four twenty fifths, and A with coordinates a and b lies on the terminal line with b negative. If O A is one hundred units, find a and b. Step one: cos theta is x over r, so x is minus twenty four and r is twenty five. Step two: by Pythagoras, y squared equals six hundred and twenty five minus five hundred and seventy six, which is forty nine, so y is seven or minus seven; b is negative, so b is minus seven. Step three: the ratios depend only on the angle, so scaling the whole triangle by four keeps the ratios the same. Step four: a is four times minus twenty four, which is minus ninety six, and b is four times minus seven, which is minus twenty eight. The answers are a equals minus ninety six and b equals minus twenty eight."
+        },
+        {
+          "kind": "explain",
+          "text": "The special angles now include 0 degrees and 90 degrees.\n\nWhen theta = 0 degrees the opposite side y is 0, so sin 0 degrees = 0, cos 0 degrees = x/r = 1 and tan 0 degrees = 0.\n\nWhen theta = 90 degrees the adjacent side x is 0, so sin 90 degrees = 1, cos 90 degrees = 0, but tan 90 degrees = y/0, which is undefined. You cannot divide by zero, so tan 90 degrees has no value. This is why the CAST diagram matters: the sign of a ratio follows from the signs of x and y in that quadrant.",
+          "speech": "The special angles now include nought degrees and ninety degrees. At nought degrees, the opposite side y is zero, so sin nought degrees is zero, cos nought degrees is one, and tan nought degrees is zero. At ninety degrees, the adjacent side x is zero, so sin ninety degrees is one and cos ninety degrees is zero. But tan ninety degrees is y over zero, which is undefined; you cannot divide by zero. This is why the CAST diagram matters: the sign of each ratio follows from the signs of x and y in that quadrant."
+        },
+        {
+          "kind": "explain",
+          "text": "The whole method in three moves: sketch the point, find r, substitute.\n\nSketch the point on the Cartesian plane and mark the angle from the positive x-axis. Use r squared = x squared + y squared to find r, always positive. Then read off the signs of x and y from the quadrant and substitute into sin theta = y/r, cos theta = x/r or tan theta = y/x. When a question gives you one ratio instead of coordinates, write it as y over r, x over r or y over x to read off x, y and r, then use the quadrant to choose the correct signs.",
+          "speech": "The whole method in three moves: sketch the point, find r, substitute. Sketch the point on the Cartesian plane and mark the angle from the positive x-axis. Use r squared equals x squared plus y squared to find r, which is always positive. Then read off the signs of x and y from the quadrant and substitute into sin theta equals y over r, cos theta equals x over r, or tan theta equals y over x. If a question gives you one ratio instead of coordinates, write it as y over r, x over r, or y over x to read off x, y and r, and use the quadrant to choose the correct signs."
+        }
+      ],
+      "summary": [
+        "Plot the point, drop a dotted line to the x-axis, and you get a right-angled triangle with legs x and y and hypotenuse r.",
+        "r squared = x squared + y squared, and r is always positive.",
+        "sin theta = y/r, cos theta = x/r, tan theta = y/x; cosec theta = r/y, sec theta = r/x, cot theta = x/y.",
+        "CAST: quadrant 1 all positive, quadrant 2 sin positive, quadrant 3 tan positive, quadrant 4 cos positive.",
+        "sin 0 degrees = 0, cos 0 degrees = 1, tan 0 degrees = 0; sin 90 degrees = 1, cos 90 degrees = 0, tan 90 degrees is undefined.",
+        "Always sketch and use the quadrant to choose the correct signs of x and y."
+      ],
+      "practice": [
+        {
+          "prompt": "P is the point (4; 3) and theta is the angle between OP and the positive x-axis. Without a calculator, find sin theta.",
+          "render": "text",
+          "steps": [
+            "r^2 = 4^2 + 3^2 = 16 + 9 = 25",
+            "r = 5",
+            "sin theta = y/r = 3/5"
+          ],
+          "answer": "3/5",
+          "answerKind": "fraction",
+          "difficulty": 1,
+          "why": "Learners sometimes swap x and y and write sin theta = 4/5.",
+          "rightWay": "sin theta is y over r. Here y = 3 and r = 5, so sin theta = 3/5."
+        },
+        {
+          "prompt": "Write down the value of tan 0 degrees.",
+          "render": "text",
+          "steps": [
+            "At 0 degrees the opposite side y = 0",
+            "tan 0 degrees = y/x = 0/1 = 0"
+          ],
+          "answer": "0",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Learners mix up the 0 degrees and 90 degrees rows of the table.",
+          "rightWay": "At 0 degrees the opposite side is 0, so tan 0 degrees = 0 over 1 = 0."
+        },
+        {
+          "prompt": "K is the point (-2; -2) and theta is the angle between OK and the positive x-axis. Without a calculator, find tan theta.",
+          "render": "text",
+          "steps": [
+            "x = -2, y = -2 (third quadrant)",
+            "tan theta = y/x = (-2)/(-2)",
+            "tan theta = 1"
+          ],
+          "answer": "1",
+          "answerKind": "number",
+          "difficulty": 2,
+          "why": "Learners forget that a negative divided by a negative is positive and answer -1.",
+          "rightWay": "tan theta = y over x = minus two over minus two = 1, which fits the CAST diagram because tan is positive in the third quadrant."
+        },
+        {
+          "prompt": "If sin theta = 3/5 and 90 degrees < theta < 180 degrees, determine cos theta without a calculator.",
+          "render": "text",
+          "steps": [
+            "sin theta = y/r = 3/5, so y = 3 and r = 5",
+            "x^2 = 5^2 - 3^2 = 25 - 9 = 16",
+            "x = -4 (second quadrant, x negative)",
+            "cos theta = x/r = -4/5"
+          ],
+          "answer": "-4/5",
+          "answerKind": "number",
+          "difficulty": 2,
+          "why": "Learners take the positive root for x and forget that cos is negative in the second quadrant.",
+          "rightWay": "The angle is in the second quadrant, so x is negative. cos theta = minus four fifths."
+        },
+        {
+          "prompt": "If sin theta = -15/17 and cos theta < 0, determine tan theta without a calculator.",
+          "render": "text",
+          "steps": [
+            "sin theta = y/r = -15/17, so y = -15 and r = 17",
+            "x^2 = 17^2 - 15^2 = 289 - 225 = 64",
+            "x = -8 (y negative and cos theta < 0 means third quadrant)",
+            "tan theta = y/x = (-15)/(-8) = 15/8"
+          ],
+          "answer": "15/8",
+          "answerKind": "fraction",
+          "difficulty": 3,
+          "why": "Learners forget that r is never negative, or choose the wrong quadrant and get the sign of x wrong.",
+          "rightWay": "y is negative and cos theta is negative, so the angle is in the third quadrant where x = -8. tan theta = minus fifteen over minus eight = 15/8."
+        },
+        {
+          "prompt": "If tan theta = t/2, where 0 degrees <= theta <= 90 degrees, determine sec theta in terms of t, without a calculator.",
+          "render": "text",
+          "steps": [
+            "tan theta = y/x = t/2, so y = t and x = 2",
+            "r^2 = x^2 + y^2 = 4 + t^2",
+            "r = sqrt(t^2 + 4)",
+            "sec theta = r/x = sqrt(t^2 + 4)/2"
+          ],
+          "answer": "sqrt(t^2 + 4)/2",
+          "answerKind": "expression",
+          "difficulty": 3,
+          "why": "Learners forget that the first quadrant means all values are positive, or forget to find r before writing sec theta.",
+          "rightWay": "In the first quadrant all values are positive. Pythagoras gives r = sqrt(t squared plus four), and sec theta = r over x = sqrt(t squared plus four) over two."
+        }
+      ]
+    },
+    {
+      "position": 8,
+      "title": "Angles of elevation and depression",
+      "minutes": 20,
+      "objectives": [
+        "You will be able to identify the angle of elevation and the angle of depression in a diagram.",
+        "You will be able to draw a right-angled triangle from a word problem.",
+        "You will be able to use trigonometric ratios to find a missing length or angle in a two-dimensional problem."
+      ],
+      "keyWords": [
+        {
+          "word": "angle of elevation",
+          "meaning": "The angle measured upwards from the horizontal to the line of sight."
+        },
+        {
+          "word": "angle of depression",
+          "meaning": "The angle measured downwards from the horizontal to the line of sight."
+        },
+        {
+          "word": "horizontal plane",
+          "meaning": "A flat level line or surface from which angles are measured."
+        },
+        {
+          "word": "line of sight",
+          "meaning": "The straight line from an observer's eye to the object being looked at."
+        },
+        {
+          "word": "angle of inclination",
+          "meaning": "Another name for the angle of elevation, measured from the horizontal."
+        },
+        {
+          "word": "hypotenuse",
+          "meaning": "The longest side of a right-angled triangle, opposite the right angle."
+        },
+        {
+          "word": "opposite side",
+          "meaning": "The side of a right-angled triangle that is opposite the marked angle."
+        },
+        {
+          "word": "adjacent side",
+          "meaning": "The side of a right-angled triangle next to the marked angle that is not the hypotenuse."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "Trigonometry is used when we know an angle and one side of a right-angled triangle, or when we must find an angle from two sides. In real problems the triangle is often hidden in a description: a building, a kite string, a ladder or a cliff.\n\nTwo special angles describe a line of sight. The angle of elevation is measured upwards from the horizontal. The angle of depression is measured downwards from the horizontal.",
+          "speech": "Trigonometry is used when we know an angle and one side of a right angled triangle, or when we must find an angle from two sides. In real problems the triangle is often hidden in a description: a building, a kite string, a ladder or a cliff. Two special angles describe a line of sight. The angle of elevation is measured upwards from the horizontal. The angle of depression is measured downwards from the horizontal."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "distance",
+              "height",
+              "line of sight"
+            ],
+            "angleLabels": [
+              "θ",
+              "90°",
+              ""
+            ],
+            "rightAngleAt": 1
+          },
+          "caption": "The observer at A looks up to C. The angle between the horizontal AB and the line of sight AC is the angle of elevation θ.",
+          "speech": "The picture shows a right angled triangle. A is the observer on level ground. B is the foot of the building. C is the top. The side A B is horizontal and the side B C is vertical, so the angle at B is ninety degrees. The angle at A, between the horizontal A B and the line of sight A C, is the angle of elevation, called theta."
+        },
+        {
+          "kind": "explain",
+          "text": "For an object below the observer, draw a horizontal line from the observer. The angle between this horizontal line and the line of sight downwards is the angle of depression.\n\nThe horizontal line at the top is parallel to the ground. By alternate angles, the angle of depression from the top equals the angle of elevation from the object below.",
+          "speech": "For an object below the observer, draw a horizontal line from the observer. The angle between this horizontal line and the line of sight downwards is the angle of depression. The horizontal line at the top is parallel to the ground. By alternate angles, the angle of depression from the top equals the angle of elevation from the object below."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "triangle",
+            "vertices": [
+              "P",
+              "Q",
+              "R"
+            ],
+            "sides": [
+              "horizontal",
+              "drop",
+              "line of sight"
+            ],
+            "angleLabels": [
+              "α",
+              "90°",
+              "β"
+            ],
+            "rightAngleAt": 1
+          },
+          "caption": "The observer at P looks down to R. The angle between the horizontal PQ and the line of sight PR is the angle of depression α.",
+          "speech": "The picture shows a right angled triangle. P is the observer at the top. Q is a point on the horizontal line through P. R is the object below. The side P Q is horizontal and Q R is vertical, so the angle at Q is ninety degrees. The angle at P, between the horizontal P Q and the line of sight P R, is the angle of depression, called alpha."
+        },
+        {
+          "kind": "explain",
+          "text": "The angle of inclination is another name for the angle of elevation. It is measured from the horizontal.\n\nIn a diagram with a top and a bottom, the depression angle from the top to the bottom and the elevation angle from the bottom to the top are equal. They are alternate angles between two parallel horizontal lines.",
+          "speech": "The angle of inclination is another name for the angle of elevation. It is measured from the horizontal. In a diagram with a top and a bottom, the depression angle from the top to the bottom and the elevation angle from the bottom to the top are equal. They are alternate angles between two parallel horizontal lines."
+        },
+        {
+          "kind": "explain",
+          "text": "To solve a word problem: draw a sketch, mark the right angle, and draw the horizontal and vertical sides. Label the known angle, the known side and the unknown side.\n\nThe side opposite the angle is the opposite side. The side next to the angle that is not the hypotenuse is the adjacent side. The longest side, opposite the right angle, is the hypotenuse. Use sin θ = opposite/hypotenuse, cos θ = adjacent/hypotenuse, tan θ = opposite/adjacent.",
+          "speech": "To solve a word problem: draw a sketch, mark the right angle, and draw the horizontal and vertical sides. Label the known angle, the known side and the unknown side. The side opposite the angle is the opposite side. The side next to the angle that is not the hypotenuse is the adjacent side. The longest side, opposite the right angle, is the hypotenuse. Use sine theta equals opposite over hypotenuse, cosine theta equals adjacent over hypotenuse, and tangent theta equals opposite over adjacent."
+        },
+        {
+          "kind": "worked",
+          "problem": "A building is 50 m from point P on level ground. The angle of elevation from P to the top of the building is 32°. Find the height h of the building, correct to two decimal places.",
+          "steps": [
+            {
+              "line": "tan 32° = h/50",
+              "reason": "The height h is opposite the 32° angle and 50 m is adjacent, so use tan."
+            },
+            {
+              "line": "h = 50 × tan 32°",
+              "reason": "Multiply both sides by 50."
+            },
+            {
+              "line": "h = 31,243...",
+              "reason": "Use a calculator in degree mode."
+            },
+            {
+              "line": "h ≈ 31,24 m",
+              "reason": "Round to two decimal places."
+            }
+          ],
+          "answer": "31,24",
+          "answerKind": "decimal",
+          "speech": "A building is fifty metres from point P on level ground. The angle of elevation from P to the top of the building is thirty two degrees. Find the height h of the building, correct to two decimal places. The height h is opposite the thirty two degree angle and fifty metres is adjacent, so use tangent. Tangent of thirty two degrees equals h over fifty. Multiply both sides by fifty. h equals fifty times tangent of thirty two degrees. Use a calculator in degree mode. h equals thirty one comma two four three and more. Rounded to two decimal places, h is thirty one comma two four metres.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "P",
+              "F",
+              "T"
+            ],
+            "sides": [
+              "50 m",
+              "h",
+              "line of sight"
+            ],
+            "angleLabels": [
+              "32°",
+              "90°",
+              ""
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "Mandla flies a kite on a 17 m string. The string makes an angle of 63° with the horizontal. Find the height h of the kite and the horizontal distance d, correct to two decimal places.",
+          "steps": [
+            {
+              "line": "sin 63° = h/17",
+              "reason": "The height h is opposite the 63° angle and the string is the hypotenuse, so use sin."
+            },
+            {
+              "line": "h = 17 sin 63°",
+              "reason": "Multiply both sides by 17."
+            },
+            {
+              "line": "h = 15,147... ≈ 15,15 m",
+              "reason": "Use a calculator in degree mode and round to two decimal places."
+            },
+            {
+              "line": "cos 63° = d/17",
+              "reason": "The horizontal distance d is adjacent to the 63° angle and the string is the hypotenuse, so use cos."
+            },
+            {
+              "line": "d = 17 cos 63° = 7,717... ≈ 7,72 m",
+              "reason": "Multiply by 17, use the calculator and round to two decimal places."
+            },
+            {
+              "line": "h = 15,15 m and d = 7,72 m",
+              "reason": "State both answers with units."
+            }
+          ],
+          "answer": "h = 15,15 m and d = 7,72 m",
+          "answerKind": "choice",
+          "speech": "Mandla flies a kite on a seventeen metre string. The string makes an angle of sixty three degrees with the horizontal. Find the height h of the kite and the horizontal distance d, correct to two decimal places. The height h is opposite the sixty three degree angle and the string is the hypotenuse, so use sine. Sine of sixty three degrees equals h over seventeen. Multiply both sides by seventeen. h equals seventeen times sine of sixty three degrees. Use a calculator in degree mode. h equals fifteen comma one four seven and more, which is fifteen comma one five metres. The horizontal distance d is adjacent to the angle and the string is the hypotenuse, so use cosine. Cosine of sixty three degrees equals d over seventeen. d equals seventeen times cosine of sixty three degrees, which is seven comma seven one seven and more, so seven comma seven two metres. The height is fifteen comma one five metres and the horizontal distance is seven comma seven two metres.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "M",
+              "G",
+              "K"
+            ],
+            "sides": [
+              "d",
+              "h",
+              "17 m"
+            ],
+            "angleLabels": [
+              "63°",
+              "90°",
+              ""
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "An observer at B is 200 m horizontally from a cellphone tower. The angle of elevation to the top of the tower is 34° and the angle of depression to the bottom of the tower is 62°. Find the total height of the tower, correct to the nearest metre.",
+          "steps": [
+            {
+              "line": "BD = 200 m",
+              "reason": "The horizontal distance from B to the tower is 200 m."
+            },
+            {
+              "line": "CD = 200 × tan 62°",
+              "reason": "In the lower right triangle, CD is opposite the 62° angle and BD is adjacent."
+            },
+            {
+              "line": "CD = 376,145... m",
+              "reason": "Use a calculator in degree mode."
+            },
+            {
+              "line": "DE = 200 × tan 34°",
+              "reason": "In the upper right triangle, DE is opposite the 34° angle and BD is adjacent."
+            },
+            {
+              "line": "DE = 134,902... m",
+              "reason": "Use a calculator in degree mode."
+            },
+            {
+              "line": "CE = CD + DE = 376,145... + 134,902... = 511,047... m ≈ 511 m",
+              "reason": "Add the two vertical parts and round to the nearest metre."
+            }
+          ],
+          "answer": "511",
+          "answerKind": "whole",
+          "speech": "An observer at B is two hundred metres horizontally from a cellphone tower. The angle of elevation to the top of the tower is thirty four degrees and the angle of depression to the bottom of the tower is sixty two degrees. Find the total height of the tower, correct to the nearest metre. The horizontal distance from B to the tower is two hundred metres. In the lower right triangle, CD is opposite the sixty two degree angle and BD is adjacent. CD equals two hundred times tangent of sixty two degrees, which is three hundred and seventy six comma one four five metres. In the upper right triangle, DE is opposite the thirty four degree angle and BD is adjacent. DE equals two hundred times tangent of thirty four degrees, which is one hundred and thirty four comma nine zero two metres. Add the two vertical parts. CE equals three hundred and seventy six comma one four five plus one hundred and thirty four comma nine zero two, which is five hundred and eleven comma zero four seven metres. Rounded to the nearest metre, the tower is five hundred and eleven metres high."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "From a point 80 m from the foot of a tower on level ground, the angle of elevation to the top of the tower is 28°. Find the height of the tower, correct to the nearest metre.",
+            "render": "text",
+            "steps": [
+              "tan 28° = h/80",
+              "h = 80 tan 28°",
+              "h = 42,54...",
+              "h ≈ 43 m"
+            ],
+            "answer": "43",
+            "answerKind": "whole",
+            "difficulty": 2,
+            "why": "The 80 m is adjacent to the angle, not the hypotenuse.",
+            "rightWay": "Use tan 28° = h/80 and multiply by 80."
+          },
+          "hint": "The horizontal distance is next to the angle, so tan is the ratio that uses opposite and adjacent.",
+          "speech": "From a point eighty metres from the foot of a tower on level ground, the angle of elevation to the top of the tower is twenty eight degrees. Find the height of the tower, correct to the nearest metre."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "sin 40° = h/12, so h = 12 sin 40° ≈ 7,71 m",
+          "right": "tan 40° = h/12, so h = 12 tan 40° ≈ 10,07 m",
+          "why": "The 12 m shadow is the side adjacent to the angle. The height is opposite. Sin uses the hypotenuse, which is not 12 m.",
+          "speech": "A common mistake is to use sine when finding a height from a shadow. The wrong way is sine of forty degrees equals h over twelve, so h equals twelve times sine of forty degrees, which is about seven comma seven one metres. The right way is tangent of forty degrees equals h over twelve, so h equals twelve times tangent of forty degrees, which is about ten comma zero seven metres. The twelve metre shadow is adjacent to the angle and the height is opposite. Sine uses the hypotenuse, which is not twelve metres.",
+          "diagram": {
+            "kind": "triangle",
+            "vertices": [
+              "A",
+              "B",
+              "C"
+            ],
+            "sides": [
+              "12 m",
+              "h",
+              "line of sight"
+            ],
+            "angleLabels": [
+              "40°",
+              "90°",
+              ""
+            ],
+            "rightAngleAt": 1
+          }
+        },
+        {
+          "kind": "explain",
+          "text": "For every problem: 1 draw a clear sketch; 2 mark the right angle; 3 mark the angle of elevation or depression from the horizontal; 4 label known and unknown sides; 5 choose sin, cos or tan from the sides you have; 6 solve and give units.\n\nAlways check that your calculator is in degree mode. Round only at the final step unless the question says otherwise.",
+          "speech": "For every problem: first draw a clear sketch. Second, mark the right angle. Third, mark the angle of elevation or depression from the horizontal. Fourth, label known and unknown sides. Fifth, choose sine, cosine or tangent from the sides you have. Sixth, solve and give units. Always check that your calculator is in degree mode. Round only at the final step unless the question says otherwise."
+        },
+        {
+          "kind": "explain",
+          "text": "A final answer to a length needs a unit, such as metres. An angle needs the degree sign. If the question asks for the nearest metre, round after all calculations.\n\nWrite a short sentence for the answer when the problem is a word problem, for example: The height of the tower is 43 m.",
+          "speech": "A final answer to a length needs a unit, such as metres. An angle needs the degree sign. If the question asks for the nearest metre, round after all calculations. Write a short sentence for the answer when the problem is a word problem, for example: the height of the tower is forty three metres."
+        },
+        {
+          "kind": "explain",
+          "text": "Elevation and depression are not new ratios. They only tell you where to put the angle: above or below the horizontal. Once the right-angled triangle is drawn, the problem is the same as finding a side or an angle with sin, cos or tan.\n\nRemember that the angle of elevation from below equals the angle of depression from above.",
+          "speech": "Elevation and depression are not new ratios. They only tell you where to put the angle: above or below the horizontal. Once the right angled triangle is drawn, the problem is the same as finding a side or an angle with sine, cosine or tangent. Remember that the angle of elevation from below equals the angle of depression from above."
+        }
+      ],
+      "summary": [
+        "The angle of elevation is measured upward from the horizontal; the angle of depression is measured downward from the horizontal.",
+        "Draw the horizontal line first, then the line of sight, then the vertical side to make a right-angled triangle.",
+        "Use tan for opposite and adjacent, sin for opposite and hypotenuse, cos for adjacent and hypotenuse.",
+        "The angle of elevation from below equals the angle of depression from above.",
+        "Give lengths with units and round only at the end."
+      ],
+      "practice": [
+        {
+          "prompt": "An observer on level ground looks up at a bird. The angle between the horizontal ground and the line of sight is 35°. What is this angle called?",
+          "render": "text",
+          "steps": [
+            "The line of sight is above the horizontal.",
+            "An angle measured upwards from the horizontal is the angle of elevation.",
+            "Answer: B"
+          ],
+          "answer": "B",
+          "answerKind": "choice",
+          "choices": [
+            "angle of depression",
+            "angle of elevation",
+            "angle of inclination below the horizontal",
+            "right angle"
+          ],
+          "difficulty": 1,
+          "why": "Some learners confuse elevation with depression; elevation is upward.",
+          "rightWay": "Elevation is measured upward from the horizontal."
+        },
+        {
+          "prompt": "A vertical pole is 15 m from point A on level ground. The angle of elevation from A to the top of the pole is 40°. Find the height h of the pole, correct to two decimal places.",
+          "render": "text",
+          "steps": [
+            "tan 40° = h/15",
+            "h = 15 tan 40°",
+            "h = 12,586...",
+            "h ≈ 12,59 m"
+          ],
+          "answer": "12,59",
+          "answerKind": "decimal",
+          "difficulty": 2,
+          "why": "Using sin instead of tan would use the wrong side as the hypotenuse.",
+          "rightWay": "tan 40° = h/15, so h = 15 tan 40° ≈ 12,59 m."
+        },
+        {
+          "prompt": "A ladder 6 m long rests against a vertical wall. The ladder makes an angle of 65° with the horizontal ground. How high up the wall does the ladder reach, correct to two decimal places?",
+          "render": "text",
+          "steps": [
+            "sin 65° = h/6",
+            "h = 6 sin 65°",
+            "h = 5,437...",
+            "h ≈ 5,44 m"
+          ],
+          "answer": "5,44",
+          "answerKind": "decimal",
+          "difficulty": 2,
+          "why": "The ladder is the hypotenuse; the height is opposite the 65° angle.",
+          "rightWay": "sin 65° = h/6, so h = 6 sin 65° ≈ 5,44 m."
+        },
+        {
+          "prompt": "From the top of a cliff 120 m high, the angle of depression to a boat is 25°. How far is the boat horizontally from the base of the cliff, correct to the nearest metre?",
+          "render": "text",
+          "steps": [
+            "The angle of elevation from the boat is also 25°.",
+            "tan 25° = 120/d",
+            "d = 120 / tan 25°",
+            "d = 257,34...",
+            "d ≈ 257 m"
+          ],
+          "answer": "257",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "The 120 m height is opposite the angle, so tan = opposite/adjacent, not adjacent/opposite.",
+          "rightWay": "tan 25° = 120/d, so d = 120/tan 25° ≈ 257 m."
+        },
+        {
+          "prompt": "A tree casts a shadow 18 m long on level ground. The angle of elevation of the sun is 52°. Find the height of the tree, correct to the nearest metre.",
+          "render": "text",
+          "steps": [
+            "tan 52° = h/18",
+            "h = 18 tan 52°",
+            "h = 23,04...",
+            "h ≈ 23 m"
+          ],
+          "answer": "23",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "The shadow is adjacent; using sin would treat the shadow as the hypotenuse.",
+          "rightWay": "tan 52° = h/18, so h = 18 tan 52° ≈ 23 m."
+        },
+        {
+          "prompt": "From point P on level ground, the angle of elevation to the top of a tower is 30°. After walking 40 m straight towards the tower to point Q, the angle of elevation is 45°. Find the height of the tower, correct to the nearest metre.",
+          "render": "text",
+          "steps": [
+            "Let the distance from Q to the foot of the tower be x.",
+            "h = x tan 45° = x",
+            "h = (x + 40) tan 30°",
+            "x = (x + 40)/sqrt(3)",
+            "x(sqrt(3) - 1) = 40, so x = 40/(sqrt(3) - 1) = 54,64...",
+            "h = x ≈ 55 m"
+          ],
+          "answer": "55",
+          "answerKind": "whole",
+          "difficulty": 3,
+          "why": "Many learners forget to add the 40 m to the first distance; both triangles must use the correct horizontal distance.",
+          "rightWay": "Use h = x tan 45° and h = (x + 40) tan 30°, then solve for x and h."
+        },
+        {
+          "prompt": "An observer at B is 150 m horizontally from a cellphone tower. The angle of elevation to the top of the tower is 28° and the angle of depression to the bottom of the tower is 40°. Find the total height of the tower, correct to the nearest metre.",
+          "render": "text",
+          "steps": [
+            "Above B: height = 150 tan 28° = 79,75... m",
+            "Below B: depth = 150 tan 40° = 125,86... m",
+            "Total height = 79,75... + 125,86... = 205,61... m",
+            "Total height ≈ 206 m"
+          ],
+          "answer": "206",
+          "answerKind": "whole",
+          "difficulty": 3,
+          "why": "Some learners subtract the two parts; the tower extends above and below the horizontal line through B, so add them.",
+          "rightWay": "Total height = 150 tan 28° + 150 tan 40° ≈ 206 m."
+        }
+      ]
+    }
+  ],
+  "status": [
+    {
+      "position": 1,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    },
+    {
+      "position": 2,
+      "status": "ready",
+      "problems": [],
+      "writer": "deepseek/deepseek-v4.1-flash-1017",
+      "reviewer": "z-ai/glm-5.3-flash"
+    },
+    {
+      "position": 3,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    },
+    {
+      "position": 4,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    },
+    {
+      "position": 5,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    },
+    {
+      "position": 6,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    },
+    {
+      "position": 7,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    },
+    {
+      "position": 8,
+      "status": "ready",
+      "problems": [],
+      "writer": "deepseek/deepseek-v4.1-flash-1017",
+      "reviewer": "z-ai/glm-5.3-flash"
+    }
+  ],
+  "generatedAt": "2026-11-16T20:04:39.025Z"
+}

@@ -1,0 +1,1167 @@
+{
+  "grade": 1,
+  "baseName": "Addition and subtraction",
+  "family": "whole_numbers",
+  "capsNames": [
+    "Addition and subtraction"
+  ],
+  "terms": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "source": {
+    "kind": "caps",
+    "title": "Curriculum and Assessment Policy Statement (CAPS), Foundation Phase, Grades 1-3, Mathematics (English)",
+    "address": "https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20MATHS%20%20ENGLISH%20GR%201-3%20FS.pdf",
+    "credit": "Follows the CAPS Mathematics curriculum, Department of Basic Education"
+  },
+  "lessons": [
+    {
+      "position": 1,
+      "title": "Adding by putting together",
+      "minutes": 15,
+      "objectives": [
+        "You will be able to add two small groups of objects by putting them together and counting all.",
+        "You will be able to write an addition number sentence like 3 + 2 = 5.",
+        "You will be able to find the answer to adding sums up to 10 using your fingers or drawings."
+      ],
+      "keyWords": [
+        {
+          "word": "add",
+          "meaning": "To put groups together and count them all."
+        },
+        {
+          "word": "plus",
+          "meaning": "The sign + that means add."
+        },
+        {
+          "word": "altogether",
+          "meaning": "Everything counted in one big group."
+        },
+        {
+          "word": "number sentence",
+          "meaning": "A maths sentence with numbers and signs, like 3 + 2 = 5."
+        },
+        {
+          "word": "equals",
+          "meaning": "The sign = that means the same as."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "You can count one group. Now put two groups together. Count them all.",
+          "speech": "You can count one group. Now we put two groups together. Then we count them all as one big group."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "number_line",
+            "min": 0,
+            "max": 5,
+            "step": 1,
+            "marks": [
+              {
+                "value": 2,
+                "label": "start at 2"
+              },
+              {
+                "value": 5,
+                "label": "5"
+              }
+            ]
+          },
+          "caption": "Start at 2. Count on 3: 3, 4, 5. You land on 5.",
+          "speech": "This number line starts at zero and goes to five. We start at two. Then we count on three more: three, four, five. We land on five. So two and three together make five."
+        },
+        {
+          "kind": "explain",
+          "text": "The plus sign + means put together. 2 + 3 = 5 says 2 and 3 make 5.",
+          "speech": "The plus sign means put together. Two plus three equals five. That means two and three together make five."
+        },
+        {
+          "kind": "worked",
+          "problem": "Thabo has 3 marbles. Naledi has 2 marbles. How many marbles altogether?",
+          "steps": [
+            {
+              "line": "Group 1: 3 marbles",
+              "reason": "Count Thabo's marbles first."
+            },
+            {
+              "line": "Group 2: 2 marbles",
+              "reason": "Count Naledi's marbles."
+            },
+            {
+              "line": "3 + 2 = ?",
+              "reason": "Write the number sentence with the plus sign."
+            },
+            {
+              "line": "4, 5",
+              "reason": "Put the groups together and count on from 3."
+            },
+            {
+              "line": "5",
+              "reason": "3 + 2 = 5, so there are 5 marbles altogether."
+            }
+          ],
+          "answer": "5",
+          "answerKind": "whole",
+          "speech": "Thabo has three marbles. Naledi has two marbles. How many marbles altogether? First we count Thabo's three marbles. Then we count Naledi's two marbles. We write three plus two. We put the groups together and count on from three: four, five. The answer is five. There are five marbles altogether.",
+          "diagram": {
+            "kind": "number_line",
+            "min": 0,
+            "max": 5,
+            "step": 1,
+            "marks": [
+              {
+                "value": 3,
+                "label": "start at 3"
+              },
+              {
+                "value": 5,
+                "label": "5"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "number_line",
+            "min": 0,
+            "max": 6,
+            "step": 1,
+            "marks": [
+              {
+                "value": 3,
+                "label": "start"
+              },
+              {
+                "value": 5,
+                "label": "5"
+              }
+            ]
+          },
+          "caption": "Start at 3. Count on 2 jumps: land on 5.",
+          "speech": "This number line starts at zero and goes to six. We start at three and make two jumps forward. We land on five. So three plus two equals five."
+        },
+        {
+          "kind": "worked",
+          "problem": "What is 4 + 3?",
+          "steps": [
+            {
+              "line": "4 + 3 = ?",
+              "reason": "Write the number sentence."
+            },
+            {
+              "line": "5, 6, 7",
+              "reason": "Count on 3 from 4."
+            },
+            {
+              "line": "7",
+              "reason": "4 + 3 = 7, so the answer is 7."
+            }
+          ],
+          "answer": "7",
+          "answerKind": "whole",
+          "speech": "What is four plus three? Write four plus three. Now count on three from four: five, six, seven. The answer is seven. Four plus three equals seven.",
+          "diagram": {
+            "kind": "number_line",
+            "min": 0,
+            "max": 8,
+            "step": 1,
+            "marks": [
+              {
+                "value": 4,
+                "label": "start at 4"
+              },
+              {
+                "value": 7,
+                "label": "7"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "Zanele has 5 sweets. Her friend gives her 4 more. How many sweets does Zanele have now?",
+          "steps": [
+            {
+              "line": "5 + 4 = ?",
+              "reason": "It is an adding story, so we add."
+            },
+            {
+              "line": "6, 7, 8, 9",
+              "reason": "Count on 4 from 5."
+            },
+            {
+              "line": "9",
+              "reason": "5 + 4 = 9, so Zanele has 9 sweets."
+            }
+          ],
+          "answer": "9",
+          "answerKind": "whole",
+          "speech": "Zanele has five sweets. Her friend gives her four more. How many sweets does she have now? When we get more, we add. We write five plus four. Count on four from five: six, seven, eight, nine. The answer is nine. Zanele has nine sweets.",
+          "diagram": {
+            "kind": "number_line",
+            "min": 0,
+            "max": 10,
+            "step": 1,
+            "marks": [
+              {
+                "value": 5,
+                "label": "start at 5"
+              },
+              {
+                "value": 9,
+                "label": "9"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mistake",
+          "wrong": "3 + 2 = 3",
+          "right": "3 + 2 = 5",
+          "why": "When you add, you must count BOTH groups. Only counting one group leaves out the other group.",
+          "speech": "Here is a common mistake. Someone writes three plus two equals three. They only counted one group. The right way is to put both groups together and count all: three plus two equals five. Always count both groups when you add.",
+          "diagram": {
+            "kind": "number_line",
+            "min": 0,
+            "max": 5,
+            "step": 1,
+            "marks": [
+              {
+                "value": 3,
+                "label": "start at 3"
+              },
+              {
+                "value": 5,
+                "label": "5"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "Sipho has 2 apples. He gets 3 more. How many apples altogether? Write the number sentence and the answer.",
+            "render": "text",
+            "steps": [
+              "2 + 3 = ?",
+              "Count on 3 from 2: 3, 4, 5",
+              "5"
+            ],
+            "answer": "5",
+            "answerKind": "whole",
+            "difficulty": 1,
+            "why": "A common slip is counting only one group instead of counting both groups together.",
+            "rightWay": "Put the two groups together. Count on 3 from 2: 3, 4, 5."
+          },
+          "hint": "Put the 2 apples and the 3 apples together. Count them all.",
+          "speech": "Try this one. Sipho has two apples. He gets three more. How many apples altogether? Hint: put the two apples and the three apples together, and count them all."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "What is 6 + 3? Use your fingers or count on.",
+            "render": "text",
+            "steps": [
+              "6 + 3 = ?",
+              "Count on 3 from 6: 7, 8, 9",
+              "9"
+            ],
+            "answer": "9",
+            "answerKind": "whole",
+            "difficulty": 2,
+            "why": "A common slip is counting the start number again and landing one short.",
+            "rightWay": "Start at 6. Count on 3: 7, 8, 9."
+          },
+          "hint": "Start at 6 and count on 3 more.",
+          "speech": "Now try this. What is six plus three? Use your fingers or count on. Hint: start at six and count on three more."
+        },
+        {
+          "kind": "explain",
+          "text": "Adding means putting groups together and counting all. The + sign means add. The = sign means equals. Count on or use fingers.",
+          "speech": "Let us put it all together. Adding means putting groups together and counting all. The plus sign means add. The equals sign means the same as. You can count on or use your fingers."
+        }
+      ],
+      "summary": [
+        "Adding means putting groups together and counting all.",
+        "Write adding with + and equals with =.",
+        "3 + 2 = 5 is a number sentence.",
+        "Count on, use fingers, or draw to add."
+      ],
+      "practice": [
+        {
+          "prompt": "2 + 1 = ?",
+          "render": "text",
+          "steps": [
+            "2 + 1 = ?",
+            "Count on 1 from 2: 3",
+            "3"
+          ],
+          "answer": "3",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "A common slip is forgetting to count the extra one.",
+          "rightWay": "Start at 2 and count on 1 more: 3."
+        },
+        {
+          "prompt": "3 + 3 = ?",
+          "render": "text",
+          "steps": [
+            "3 + 3 = ?",
+            "Count on 3 from 3: 4, 5, 6",
+            "6"
+          ],
+          "answer": "6",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "A common slip is counting only one group of 3.",
+          "rightWay": "Put both groups of 3 together and count all: 6."
+        },
+        {
+          "prompt": "4 + 2 = ?",
+          "render": "text",
+          "steps": [
+            "4 + 2 = ?",
+            "Count on 2 from 4: 5, 6",
+            "6"
+          ],
+          "answer": "6",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "A common slip is starting counting from 0 instead of counting on from the first number.",
+          "rightWay": "Start at 4 and count on 2: 5, 6."
+        },
+        {
+          "prompt": "What is 5 + 4?",
+          "render": "text",
+          "steps": [
+            "5 + 4 = ?",
+            "Count on 4 from 5: 6, 7, 8, 9",
+            "9"
+          ],
+          "answer": "9",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "A common slip is counting on only 3 instead of 4.",
+          "rightWay": "Start at 5 and count on 4: 6, 7, 8, 9."
+        },
+        {
+          "prompt": "Thandi has 4 sweets. Mpho gives her 3 more. How many sweets does Thandi have now?",
+          "render": "text",
+          "steps": [
+            "4 + 3 = ?",
+            "Count on 3 from 4: 5, 6, 7",
+            "7"
+          ],
+          "answer": "7",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "A common slip is thinking 'gives' means take away instead of add.",
+          "rightWay": "Getting more sweets means add: 4 + 3 = 7."
+        },
+        {
+          "prompt": "Which number sentence matches: 6 apples and 2 apples put together?",
+          "render": "text",
+          "steps": [
+            "6 apples and 2 apples put together",
+            "6 + 2 = 8",
+            "C"
+          ],
+          "answer": "C",
+          "answerKind": "choice",
+          "choices": [
+            "6 + 6 = 12",
+            "6 - 2 = 4",
+            "6 + 2 = 8",
+            "2 + 2 = 4"
+          ],
+          "difficulty": 2,
+          "why": "A common slip is picking a takeaway sentence instead of an adding sentence.",
+          "rightWay": "Putting together means plus. So the sentence is 6 + 2 = 8."
+        },
+        {
+          "prompt": "A farmer has 5 hens. He buys 5 more hens. How many hens does he have now?",
+          "render": "text",
+          "steps": [
+            "5 + 5 = ?",
+            "Count on 5 from 5: 6, 7, 8, 9, 10",
+            "10"
+          ],
+          "answer": "10",
+          "answerKind": "whole",
+          "difficulty": 3,
+          "why": "A common slip is stopping before the last count.",
+          "rightWay": "Add 5 and 5. Count on 5 from 5: 6, 7, 8, 9, 10."
+        }
+      ]
+    },
+    {
+      "position": 2,
+      "title": "Taking away",
+      "minutes": 20,
+      "objectives": [
+        "You will be able to subtract by taking away objects from a group and counting what is left.",
+        "You will be able to write a subtraction number sentence like 5 - 2 = 3.",
+        "You will be able to solve taking-away sums up to 10."
+      ],
+      "keyWords": [
+        {
+          "word": "take away",
+          "meaning": "To remove some things from a group."
+        },
+        {
+          "word": "subtract",
+          "meaning": "Another word for take away."
+        },
+        {
+          "word": "minus",
+          "meaning": "The sign - which means take away."
+        },
+        {
+          "word": "left",
+          "meaning": "The things that stay after you take some away."
+        },
+        {
+          "word": "equals",
+          "meaning": "The sign = which means is the same as."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "Last time you put groups together. That was adding. Today we do the opposite.\n\nWe start with a group. We take some away. Then we count what is left. This is called taking away, or subtraction.",
+          "speech": "Last lesson you put groups together. That was adding. Today we do the opposite. We start with a group of things. We take some away. Then we count what is left. This is called taking away, or subtracting."
+        },
+        {
+          "kind": "explain",
+          "text": "Taking away is useful every day. If you have 6 sweets and eat 2, how many sweets do you still have?\n\nTaking away tells you how many are left.",
+          "speech": "Taking away is useful every day. Imagine you have six sweets and you eat two. How many sweets do you still have? Taking away tells you how many are left."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "number_line",
+            "min": 0,
+            "max": 8,
+            "step": 1,
+            "marks": [
+              {
+                "value": 8,
+                "label": "start 8"
+              },
+              {
+                "value": 5,
+                "label": "end 5"
+              }
+            ]
+          },
+          "caption": "Start at 8. Hop back 3 steps. You land on 5.",
+          "speech": "Look at the number line. It goes from zero to eight. Start at eight. Hop back three steps: seven, six, five. You land on five. So eight take away three is five."
+        },
+        {
+          "kind": "explain",
+          "text": "We write taking away with the minus sign -.\n\n8 - 3 = 5\n\nWe say: eight minus three equals five.",
+          "speech": "We write taking away with the minus sign. Eight minus three equals five. The minus sign means take away. The equals sign means the answer is the same as."
+        },
+        {
+          "kind": "worked",
+          "problem": "You have 7 apples. You give 2 away. How many apples are left?",
+          "steps": [
+            {
+              "line": "7 - 2",
+              "reason": "Start with 7 and take away 2."
+            },
+            {
+              "line": "7 - 2 = 5",
+              "reason": "Count back 2 from 7: 6, then 5."
+            }
+          ],
+          "answer": "5",
+          "answerKind": "whole",
+          "speech": "You have seven apples and you give two away. How many are left? Write seven minus two. Count back two from seven: six, then five. So five apples are left.",
+          "diagram": {
+            "kind": "number_line",
+            "min": 0,
+            "max": 8,
+            "step": 1,
+            "marks": [
+              {
+                "value": 7,
+                "label": "7"
+              },
+              {
+                "value": 5,
+                "label": "left 5"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "There are 9 birds on a fence. 4 fly away. How many birds are left?",
+          "steps": [
+            {
+              "line": "9 - 4",
+              "reason": "Start with 9 birds and 4 fly away."
+            },
+            {
+              "line": "9 - 4 = 5",
+              "reason": "Count back 4 from 9: 8, 7, 6, 5."
+            }
+          ],
+          "answer": "5",
+          "answerKind": "whole",
+          "speech": "There are nine birds on a fence. Four fly away. How many are left? Write nine minus four. Count back four from nine: eight, seven, six, five. Five birds are left."
+        },
+        {
+          "kind": "worked",
+          "problem": "Sipho has 8 coins. He spends R3 on a sweet. How many coins are left?",
+          "steps": [
+            {
+              "line": "8 - 3",
+              "reason": "Start with 8 coins and take away 3 coins."
+            },
+            {
+              "line": "8 - 3 = 5",
+              "reason": "Count back 3 from 8: 7, 6, 5."
+            },
+            {
+              "line": "Sipho has 5 coins left.",
+              "reason": "The answer tells how many coins are left."
+            }
+          ],
+          "answer": "5",
+          "answerKind": "whole",
+          "speech": "Sipho has eight coins. He spends three rand on a sweet. How many coins are left? Write eight minus three. Count back three: seven, six, five. Sipho has five coins left."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "You have 6 marbles. You lose 3. How many marbles are left? Write the sum and the answer.",
+            "render": "text",
+            "steps": [
+              "6 - 3",
+              "6 - 3 = 3"
+            ],
+            "answer": "3",
+            "answerKind": "whole",
+            "difficulty": 1,
+            "why": "Some children count the 6 again instead of counting back from 6.",
+            "rightWay": "Start at 6 and count back 3: 5, 4, 3. So 3 marbles are left."
+          },
+          "hint": "Start at 6 on the number line. Hop back 3 steps.",
+          "speech": "Now you try. You have six marbles. You lose three. How many marbles are left? Write the sum and the answer. Start at six and hop back three steps."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "5 - 2 = 7",
+          "right": "5 - 2 = 3",
+          "why": "Adding 5 and 2 puts the groups together. Taking away means the group gets smaller, so count back from 5, not forwards.",
+          "speech": "Here is a common mistake. Five minus two equals seven. That is wrong. Seven is five plus two, that is adding. Taking away means the group gets smaller. Start at five and count back two: four, three. Five minus two equals three."
+        },
+        {
+          "kind": "worked",
+          "problem": "10 - 5 = ?",
+          "steps": [
+            {
+              "line": "10 - 5",
+              "reason": "Start with 10 and take away 5."
+            },
+            {
+              "line": "10 - 5 = 5",
+              "reason": "Count back 5 from 10: 9, 8, 7, 6, 5. Or think: 5 and 5 make 10."
+            }
+          ],
+          "answer": "5",
+          "answerKind": "whole",
+          "speech": "Ten minus five. Count back five from ten: nine, eight, seven, six, five. Or think: five and five make ten, so the answer is five. Ten minus five equals five.",
+          "diagram": {
+            "kind": "number_line",
+            "min": 0,
+            "max": 10,
+            "step": 1,
+            "marks": [
+              {
+                "value": 10,
+                "label": "10"
+              },
+              {
+                "value": 5,
+                "label": "end 5"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "Thabo has 10 sweets. He eats 4. How many sweets are left?",
+            "render": "text",
+            "steps": [
+              "10 - 4",
+              "10 - 4 = 6"
+            ],
+            "answer": "6",
+            "answerKind": "whole",
+            "difficulty": 2,
+            "why": "Some children take 4 from the wrong number or count only 3 steps back.",
+            "rightWay": "Write 10 - 4. Count back 4 from 10: 9, 8, 7, 6. So 6 sweets are left."
+          },
+          "hint": "Write the sum first: 10 - 4. Then count back 4.",
+          "speech": "Now you try. Thabo has ten sweets. He eats four. How many sweets are left? Write ten minus four, then count back four steps."
+        },
+        {
+          "kind": "worked",
+          "problem": "Naledi had 9 stickers. She gave some to her friend. Now she has 6 stickers. How many did she give away?",
+          "steps": [
+            {
+              "line": "9 - ? = 6",
+              "reason": "She started with 9 and now has 6. The missing number is what she gave away."
+            },
+            {
+              "line": "Count on from 6 to 9: 7, 8, 9. That is 3 steps.",
+              "reason": "Count how many steps from 6 up to 9."
+            },
+            {
+              "line": "9 - 3 = 6",
+              "reason": "Check: 9 take away 3 gives 6. It works!"
+            },
+            {
+              "line": "She gave away 3 stickers.",
+              "reason": "The number of steps is the number she gave away."
+            }
+          ],
+          "answer": "3",
+          "answerKind": "whole",
+          "speech": "Naledi had nine stickers. She gave some away. Now she has six. How many did she give away? Count on from six up to nine: seven, eight, nine. That is three steps. Check it: nine minus three equals six. It works. She gave away three stickers."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "There are 8 cows in a field. Some walk away. Now there are 5 cows. How many cows walked away?",
+            "render": "text",
+            "steps": [
+              "8 - ? = 5",
+              "Count on from 5 to 8: 6, 7, 8. That is 3 steps.",
+              "8 - 3 = 5",
+              "3 cows walked away."
+            ],
+            "answer": "3",
+            "answerKind": "whole",
+            "difficulty": 3,
+            "why": "Some children give the number left, 5, instead of the number that walked away.",
+            "rightWay": "Count on from 5 up to 8. That is 3 steps. Check: 8 - 3 = 5. So 3 cows walked away."
+          },
+          "hint": "Count on from 5 up to 8. How many steps?",
+          "speech": "Last try. There are eight cows in a field. Some walk away. Now there are five. How many walked away? Count on from five up to eight, then check your answer with eight minus the answer."
+        },
+        {
+          "kind": "explain",
+          "text": "Taking away is the opposite of putting together.\n\n3 + 2 = 5 and 5 - 2 = 3.\n\nIf you know one, you can find the other. Count back to subtract.",
+          "speech": "Taking away is the opposite of putting together. Three plus two equals five. And five minus two equals three. If you know one, you can find the other. To subtract, start with the first number and count back."
+        }
+      ],
+      "summary": [
+        "Subtraction means taking away. The sign is -.",
+        "Start with the first number. Count back the second number.",
+        "8 - 3 = 5 means 8 take away 3 is 5.",
+        "Taking away is the opposite of adding: 5 - 2 = 3 and 3 + 2 = 5."
+      ],
+      "practice": [
+        {
+          "prompt": "7 - 2 = ?",
+          "render": "text",
+          "steps": [
+            "7 - 2",
+            "Count back 2 from 7: 6, 5.",
+            "7 - 2 = 5"
+          ],
+          "answer": "5",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Counting forward gives 9, which is adding, not taking away.",
+          "rightWay": "Start at 7 and count back 2: 6, 5. The answer is 5."
+        },
+        {
+          "prompt": "6 - 4 = ?",
+          "render": "text",
+          "steps": [
+            "6 - 4",
+            "Count back 4 from 6: 5, 4, 3, 2.",
+            "6 - 4 = 2"
+          ],
+          "answer": "2",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Counting only 3 steps back gives 3, which is wrong.",
+          "rightWay": "Count back 4 steps from 6: 5, 4, 3, 2. The answer is 2."
+        },
+        {
+          "prompt": "9 - 3 = ?",
+          "render": "text",
+          "steps": [
+            "9 - 3",
+            "Count back 3 from 9: 8, 7, 6.",
+            "9 - 3 = 6"
+          ],
+          "answer": "6",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Taking the second number from the first the wrong way round gives the wrong answer.",
+          "rightWay": "Start at 9 and count back 3: 8, 7, 6. The answer is 6."
+        },
+        {
+          "prompt": "10 - 6 = ?",
+          "render": "text",
+          "steps": [
+            "10 - 6",
+            "Count back 6 from 10: 9, 8, 7, 6, 5, 4.",
+            "10 - 6 = 4"
+          ],
+          "answer": "4",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Missing a step when counting back 6 gives a wrong answer.",
+          "rightWay": "Count back 6 from 10: 9, 8, 7, 6, 5, 4. The answer is 4."
+        },
+        {
+          "prompt": "There are 8 oranges in a bowl. Zanele takes 5. How many oranges are left in the bowl?",
+          "render": "text",
+          "steps": [
+            "8 - 5",
+            "Count back 5 from 8: 7, 6, 5, 4, 3.",
+            "8 - 5 = 3"
+          ],
+          "answer": "3",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Some children give the number taken, 5, instead of the number left.",
+          "rightWay": "Write 8 - 5. Count back 5 from 8. The answer is 3 oranges left."
+        },
+        {
+          "prompt": "Which sum matches the story: You have 10 stones. You throw 4 into the water. How many are in your hand?",
+          "render": "text",
+          "steps": [
+            "Start with 10 stones, 4 are gone.",
+            "10 - 4"
+          ],
+          "answer": "C",
+          "answerKind": "choice",
+          "choices": [
+            "10 + 4 = 14",
+            "4 - 10",
+            "10 - 4 = 6"
+          ],
+          "difficulty": 2,
+          "why": "Adding makes the group bigger, but the stones get fewer when thrown away.",
+          "rightWay": "The group gets smaller, so use take away: 10 - 4 = 6."
+        },
+        {
+          "prompt": "Sibusiso had 10 cents. He spent some. Now he has 7 cents. How many cents did he spend?",
+          "render": "text",
+          "steps": [
+            "10 - ? = 7",
+            "Count on from 7 to 10: 8, 9, 10. That is 3 steps.",
+            "10 - 3 = 7",
+            "He spent 3 cents."
+          ],
+          "answer": "3",
+          "answerKind": "whole",
+          "difficulty": 3,
+          "why": "The answer is the number spent, not the number left, 7.",
+          "rightWay": "Count on from 7 up to 10. That is 3. Check: 10 - 3 = 7. He spent 3 cents."
+        },
+        {
+          "prompt": "What is the opposite sum for 6 - 2 = 4?",
+          "render": "text",
+          "steps": [
+            "6 - 2 = 4",
+            "Put back what was taken away: 4 + 2",
+            "4 + 2 = 6"
+          ],
+          "answer": "B",
+          "answerKind": "choice",
+          "choices": [
+            "6 + 2 = 8",
+            "4 + 2 = 6",
+            "4 - 2 = 2"
+          ],
+          "difficulty": 3,
+          "why": "Adding to 6 goes the wrong way; put the 2 back onto what is left, the 4.",
+          "rightWay": "Taking away is undone by adding back: 4 + 2 = 6."
+        }
+      ]
+    },
+    {
+      "position": 3,
+      "title": "Adding and taking away stories",
+      "minutes": 20,
+      "objectives": [
+        "You will be able to solve word problems about adding and taking away up to 10.",
+        "You will be able to choose whether to add or take away to answer a story problem.",
+        "You will be able to show your answer with drawings and a number sentence."
+      ],
+      "keyWords": [
+        {
+          "word": "altogether",
+          "meaning": "All the things put together in one group."
+        },
+        {
+          "word": "left",
+          "meaning": "What is still there after some are taken away."
+        },
+        {
+          "word": "number sentence",
+          "meaning": "A short maths story with numbers and +, - or = signs, like 3 + 2 = 5."
+        }
+      ],
+      "blocks": [
+        {
+          "kind": "explain",
+          "text": "A story problem tells a story with numbers. You read it, then you do the maths.\n\nAsk: are things being put together, or taken away?",
+          "speech": "A story problem tells a little story with numbers in it. Your job is to read the story and ask one big question. Are things being put together? Then we add. Are things being taken away? Then we take away."
+        },
+        {
+          "kind": "diagram",
+          "spec": {
+            "kind": "number_line",
+            "min": 0,
+            "max": 10,
+            "step": 1,
+            "marks": [
+              {
+                "value": 3,
+                "label": "3"
+              },
+              {
+                "value": 7,
+                "label": "7"
+              },
+              {
+                "value": 5,
+                "label": "5"
+              },
+              {
+                "value": 2,
+                "label": "2"
+              }
+            ]
+          },
+          "caption": "Adding hops right. Taking away hops left.",
+          "speech": "Look at the number line from zero to ten. When we add, we hop to the right, from three to seven. When we take away, we hop to the left, from five to two. The story tells us which way to hop."
+        },
+        {
+          "kind": "worked",
+          "problem": "Sipho has 4 sweets. His friend gives him 3 more. How many sweets does Sipho have altogether?",
+          "steps": [
+            {
+              "line": "Are we putting together or taking away?",
+              "reason": "Read the story first to choose the action."
+            },
+            {
+              "line": "His friend gives more, so we add.",
+              "reason": "Giving more means the group grows."
+            },
+            {
+              "line": "4 + 3 = 7",
+              "reason": "Put the two groups together."
+            }
+          ],
+          "answer": "7",
+          "answerKind": "whole",
+          "speech": "Sipho has four sweets. His friend gives him three more. How many sweets altogether? Read the story. His friend gives more sweets, so the group grows. We add. Four plus three equals seven. Sipho has seven sweets altogether.",
+          "diagram": {
+            "kind": "number_line",
+            "min": 0,
+            "max": 10,
+            "step": 1,
+            "marks": [
+              {
+                "value": 4,
+                "label": "4"
+              },
+              {
+                "value": 7,
+                "label": "7"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "Zanele has 8 beads. She gives 5 beads away. How many beads does she have left?",
+          "steps": [
+            {
+              "line": "Are we putting together or taking away?",
+              "reason": "Read the story first to choose the action."
+            },
+            {
+              "line": "She gives beads away, so we take away.",
+              "reason": "Giving away means the group gets smaller."
+            },
+            {
+              "line": "8 - 5 = 3",
+              "reason": "Count back 5 from 8 on the number line."
+            }
+          ],
+          "answer": "3",
+          "answerKind": "whole",
+          "speech": "Zanele has eight beads. She gives five beads away. How many beads are left? Read the story. She gives beads away, so the group gets smaller. We take away. Eight minus five equals three. Zanele has three beads left.",
+          "diagram": {
+            "kind": "number_line",
+            "min": 0,
+            "max": 10,
+            "step": 1,
+            "marks": [
+              {
+                "value": 8,
+                "label": "8"
+              },
+              {
+                "value": 3,
+                "label": "3"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "worked",
+          "problem": "There are 6 apples in a bowl. Mom puts in 2 more. Then Thabo eats 3. How many apples are in the bowl now?",
+          "steps": [
+            {
+              "line": "First: Mom adds 2 apples.",
+              "reason": "Putting in more means we add."
+            },
+            {
+              "line": "6 + 2 = 8",
+              "reason": "Add the 2 new apples to the 6."
+            },
+            {
+              "line": "Then: Thabo eats 3 apples.",
+              "reason": "Eating takes apples away, so we subtract."
+            },
+            {
+              "line": "8 - 3 = 5",
+              "reason": "Take the 3 eaten apples away from the 8."
+            }
+          ],
+          "answer": "5",
+          "answerKind": "whole",
+          "speech": "There are six apples in a bowl. Mom puts in two more. Then Thabo eats three. How many apples now? This story has two steps. First Mom adds two. Six plus two equals eight. Then Thabo eats three. Eight minus three equals five. There are five apples in the bowl now."
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "There are 5 birds on a fence. 4 more birds come. How many birds are on the fence altogether?",
+            "render": "text",
+            "steps": [
+              "Birds come, so we add.",
+              "5 + 4 = 9"
+            ],
+            "answer": "9",
+            "answerKind": "whole",
+            "difficulty": 1,
+            "why": "Some learners take away when the story says more come. More things means add.",
+            "rightWay": "More birds come to the fence, so add: 5 + 4 = 9."
+          },
+          "hint": "Do the birds come or go? Coming means you add.",
+          "speech": "Your turn. There are five birds on a fence. Four more birds come. How many birds altogether? Think: do the birds come or go? If they come, we add."
+        },
+        {
+          "kind": "mistake",
+          "wrong": "Story: 7 sweets, 2 eaten. Answer: 7 + 2 = 9",
+          "right": "Story: 7 sweets, 2 eaten. Answer: 7 - 2 = 5",
+          "why": "Eating sweets means they go away. When things go away, we take away, not add.",
+          "speech": "Watch out for this usual mistake. Seven sweets, and two are eaten. The wrong way says seven plus two equals nine. But eating makes the sweets fewer, not more. The right way is seven minus two equals five sweets left. Always ask: are the things growing or getting fewer?"
+        },
+        {
+          "kind": "worked",
+          "problem": "Lerato has some marbles. She has 3 red marbles and 4 blue marbles. How many marbles does she have altogether?",
+          "steps": [
+            {
+              "line": "Two groups: 3 red and 4 blue.",
+              "reason": "The story gives two groups to join."
+            },
+            {
+              "line": "3 + 4 = 7",
+              "reason": "Put the two groups together."
+            }
+          ],
+          "answer": "7",
+          "answerKind": "whole",
+          "speech": "Lerato has three red marbles and four blue marbles. How many marbles altogether? Here the two groups are given in one story. We join them. Three plus four equals seven. Lerato has seven marbles altogether.",
+          "diagram": {
+            "kind": "area_model",
+            "rows": 1,
+            "cols": 7,
+            "shaded": 3
+          }
+        },
+        {
+          "kind": "try",
+          "question": {
+            "prompt": "A bowl has 9 oranges. The family eats 6 oranges. How many oranges are left in the bowl?",
+            "render": "text",
+            "steps": [
+              "Oranges are eaten, so we take away.",
+              "9 - 6 = 3"
+            ],
+            "answer": "3",
+            "answerKind": "whole",
+            "difficulty": 2,
+            "why": "Eaten oranges are gone, so the number must get smaller.",
+            "rightWay": "Eating takes oranges away, so subtract: 9 - 6 = 3 oranges left."
+          },
+          "hint": "Eating makes the oranges fewer. Which sign makes numbers smaller?",
+          "speech": "Your turn. A bowl has nine oranges. The family eats six. How many oranges are left? Hint: eating makes the oranges fewer. Which sign makes numbers smaller?"
+        },
+        {
+          "kind": "explain",
+          "text": "Stories hide the maths in words.\n\nWords like more and altogether mean add.\n\nWords like away, eats and left mean take away.",
+          "speech": "Here is the secret of story problems. The words tell you what to do. Words like more, comes and altogether mean add. Words like away, eats, lost and left mean take away. Find the word, choose the sign, then write your number sentence."
+        }
+      ],
+      "summary": [
+        "Read the story first. Find what happens.",
+        "Things put together or more coming means add (+).",
+        "Things going away, eaten or lost means take away (-).",
+        "Write a number sentence like 4 + 3 = 7.",
+        "Some stories have two steps. Do one step at a time."
+      ],
+      "practice": [
+        {
+          "prompt": "Thabo has 2 coins. He finds 3 more coins. How many coins does he have altogether?",
+          "render": "text",
+          "steps": [
+            "He finds more, so we add.",
+            "2 + 3 = 5"
+          ],
+          "answer": "5",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Finding more coins means adding, not taking away.",
+          "rightWay": "He finds more, so add: 2 + 3 = 5 coins."
+        },
+        {
+          "prompt": "There are 6 shoes at the door. 2 shoes are taken away. How many shoes are left?",
+          "render": "text",
+          "steps": [
+            "Shoes are taken away, so we subtract.",
+            "6 - 2 = 4"
+          ],
+          "answer": "4",
+          "answerKind": "whole",
+          "difficulty": 1,
+          "why": "Taken away shoes are gone, so the number gets smaller.",
+          "rightWay": "Shoes go away, so subtract: 6 - 2 = 4 shoes left."
+        },
+        {
+          "prompt": "Naledi sees 4 cows and 5 goats in a field. How many animals does she see altogether?",
+          "render": "text",
+          "steps": [
+            "Two groups: 4 cows and 5 goats.",
+            "4 + 5 = 9"
+          ],
+          "answer": "9",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Two groups joined together means add.",
+          "rightWay": "Join the two groups: 4 + 5 = 9 animals."
+        },
+        {
+          "prompt": "A shop has 10 loaves of bread. 4 loaves are sold. How many loaves are left?",
+          "render": "text",
+          "steps": [
+            "Loaves are sold, so they go away.",
+            "10 - 4 = 6"
+          ],
+          "answer": "6",
+          "answerKind": "whole",
+          "difficulty": 2,
+          "why": "Sold loaves leave the shop, so we take away.",
+          "rightWay": "Sold loaves go away, so subtract: 10 - 4 = 6 loaves."
+        },
+        {
+          "prompt": "Which sign finishes this story? There are 7 birds. 3 birds fly away. How many are left? 7 ? 3 = 4",
+          "render": "text",
+          "steps": [
+            "Birds fly away, so the group gets smaller.",
+            "The sign is the minus sign.",
+            "7 - 3 = 4"
+          ],
+          "answer": "B",
+          "answerKind": "choice",
+          "choices": [
+            "+",
+            "-",
+            "="
+          ],
+          "difficulty": 2,
+          "why": "Flying away means taking away, so the minus sign is needed.",
+          "rightWay": "Birds fly away, so the story needs the minus sign: 7 - 3 = 4."
+        },
+        {
+          "prompt": "There are 5 children on the mat. 2 more children come. Then 1 child goes home. How many children are on the mat now?",
+          "render": "text",
+          "steps": [
+            "First the children come: 5 + 2 = 7",
+            "Then one goes home: 7 - 1 = 6"
+          ],
+          "answer": "6",
+          "answerKind": "whole",
+          "difficulty": 3,
+          "why": "Two-step stories must be done one step at a time, in order.",
+          "rightWay": "Do the two steps in order. Add the 2 children first, then take away the 1 who goes home: 5 + 2 - 1 = 6."
+        },
+        {
+          "prompt": "Sara has 8 stickers. Which story matches 8 - 5 = 3?",
+          "render": "text",
+          "steps": [
+            "8 - 5 = 3 starts with 8 and takes away 5.",
+            "The story must have 8 stickers and 5 going away."
+          ],
+          "answer": "C",
+          "answerKind": "choice",
+          "choices": [
+            "Sara gets 5 more stickers.",
+            "Sara has 5 stickers and gets 8 more.",
+            "Sara has 8 stickers and gives 5 away."
+          ],
+          "difficulty": 3,
+          "why": "A minus sign means things go away in the story, not that more come.",
+          "rightWay": "The minus sign means 5 stickers are given away, so the story is: 8 stickers, 5 given away, 3 left."
+        }
+      ]
+    }
+  ],
+  "status": [
+    {
+      "position": 1,
+      "status": "ready",
+      "problems": [],
+      "writer": "deepseek/deepseek-v4.1-flash-1017",
+      "reviewer": "z-ai/glm-5.3-flash"
+    },
+    {
+      "position": 2,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    },
+    {
+      "position": 3,
+      "status": "ready",
+      "problems": [],
+      "writer": "z-ai/glm-5.3-flash",
+      "reviewer": "deepseek/deepseek-v4.1-flash-1017"
+    }
+  ],
+  "generatedAt": "2026-11-16T19:56:34.899Z"
+}
