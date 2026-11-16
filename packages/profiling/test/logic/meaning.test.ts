@@ -380,6 +380,7 @@ describe('the save gate: a key must be readable by its kind', () => {
     ['number', '-3'], ['number', '15%'], ['number', '30°'], ['number', '2√2'], ['number', '0,5'],
     ['expression', '2x + 3'], ['expression', 'x^2 - 4'], ['expression', '(x+2)(x-2)'], ['expression', '2xy'], ['expression', '√x'],
     ['equation', 'x = 3'], ['equation', 'x = 3 or x = -1'], ['equation', '3 or -1'], ['equation', 'x = 1 + √2'],
+    ['equation', 'x = y'], // P147: an equation of two letters is a line (it was refused before the relation reader)
     ['point', '(2; -3)'], ['point', '(2, -3)'], ['point', '(0,5; 1/2)'],
   ]
   test.each(fine)('%s key %j is fine', (kind, key) => expect(meaningKeyProblem(kind, key)).toBeNull())
@@ -387,7 +388,7 @@ describe('the save gate: a key must be readable by its kind', () => {
   const bad: [MeaningKind, string][] = [
     ['number', 'x'], ['number', '2x + 3'], ['number', ''], ['number', 'three'], ['number', '1/0'],
     ['expression', '5'], ['expression', '3 + 4'], ['expression', '2 +'], ['expression', ''],
-    ['equation', 'x'], ['equation', '2x + 3'], ['equation', 'x = y'], ['equation', 'x = 3 or y = 4'], ['equation', ''], ['equation', 'x ='],
+    ['equation', 'x'], ['equation', '2x + 3'], ['equation', 'x = 2x'], ['equation', 'x = 3 or y = 4'], ['equation', ''], ['equation', 'x ='],
     ['point', '(2)'], ['point', '(2; x)'], ['point', '(2; 3; 4)'], ['point', '(2,5, 3)'], ['point', ''],
   ]
   test.each(bad)('%s key %j is a bad answer', (kind, key) => expect(typeof meaningKeyProblem(kind, key)).toBe('string'))

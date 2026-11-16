@@ -12,7 +12,7 @@ import { strandOf, type Strand, type TypedKind } from './maths-keys'
 // Rows 4 and 5 depend on the tab (blank keys fill a row, so every tab is as tall as the others):
 //   Letters   x y z a b c k m n p / d f g h q r s t u v
 //   Trig      sin cos tan and their inverses, the degree sign, theta, alpha, beta / pi, gamma, delta, phi
-//   Compare   < > <= >= != plus-or-minus |x| % R
+//   Compare   < > <= >= != plus-or-minus |x| % R / [ ] ; infinity union element-of the-real-numbers (P147: intervals and sets)
 //   Shapes    angle, triangle, perpendicular, parallel, congruent, similar, the degree sign, theta, pi
 //   Calculus  d/dx, f'(x), the integral, lim, the sum, infinity, to, e / ln, log, f(x), x, y
 // Row 6 is the tabs, one key for each tab of this kind of answer (the one you are on is dark). A number has no letters and no calculus, so it has Trig, Compare
@@ -80,6 +80,13 @@ export const CAPS = {
   greaterEqual: cap('greater than or equal to', { latex: '\\ge' }),
   notEqual: cap('not equal to', { latex: '\\ne' }),
   plusMinus: cap('plus or minus', { latex: '\\pm' }),
+  // intervals, sets of numbers and domains (P147): the square brackets, the semicolon between the two ends, union, element of and the real numbers (infinity is in the calculus group below)
+  openSquare: cap('open square bracket', { latex: '[', class: 'big-op' }),
+  closeSquare: cap('close square bracket', { latex: ']', class: 'big-op' }),
+  semicolon: cap('semicolon', { latex: ';', class: 'big-op' }),
+  union: cap('union', { latex: '\\cup' }),
+  element: cap('element of', { latex: '\\in' }),
+  reals: cap('the real numbers', { latex: '\\mathbb{R}' }),
   or: cap('or', { label: 'or', insert: '\\text{ or }', class: 'small' }),
   // geometry and Greek letters
   degree: cap('degrees', { latex: '{}^{\\circ}', insert: '^{\\circ}' }),
@@ -184,7 +191,10 @@ function tabRows(tab: TabId): [(string | Keycap)[], (string | Keycap)[]] {
         filled([CAPS.pi, CAPS.gamma, CAPS.delta, CAPS.phi]),
       ]
     case 'compare':
-      return [filled([CAPS.less, CAPS.greater, CAPS.lessEqual, CAPS.greaterEqual, CAPS.notEqual, CAPS.plusMinus, CAPS.abs, CAPS.percent, CAPS.rand]), filled([])]
+      return [
+        filled([CAPS.less, CAPS.greater, CAPS.lessEqual, CAPS.greaterEqual, CAPS.notEqual, CAPS.plusMinus, CAPS.abs, CAPS.percent, CAPS.rand]),
+        filled([CAPS.openSquare, CAPS.closeSquare, CAPS.semicolon, CAPS.infinity, CAPS.union, CAPS.element, CAPS.reals]),
+      ]
     case 'shapes':
       return [filled([CAPS.angle, CAPS.triangle, CAPS.perpendicular, CAPS.parallel, CAPS.congruent, CAPS.similar, CAPS.degree, CAPS.theta, CAPS.pi]), filled([])]
     case 'calculus':
