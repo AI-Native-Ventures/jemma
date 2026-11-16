@@ -12,6 +12,7 @@ import { completeAnswer } from './complete-answer'
  *
  *   number      -3, 15%, 30°, √8, 0,5, 1/2           the value; a % or a ° at the end is dropped from both
  *   expression  2x + 3, x², (x+2)(x-2)               the same value at the same points, and the form when the question asks for one
+ *               5√2, √5 + 1, 5 + 2√6                 a surd with no letter (P133): the same value (a root with no letter is the one letterless expression)
  *   equation    x = 3 or x = -1                      the same set of values for the letter, in any order
  *   point       (2; -3)                              both coordinates
  *
@@ -410,6 +411,27 @@ export const lettersOf = (n: MathNode, into = new Set<string>()): Set<string> =>
 /** Two values are the same when they differ by less than a billionth of their size (and of 1). */
 const close = (a: number, b: number) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b))
 
+// ---- A root (P133) -----------------------------------------------------------------------------------------------------------
+
+/** True when a tree holds a root (a surd such as 5√2, or √5 + 1). A letter or a number next to a root is already a product: the reader needed no change for it. */
+const hasRoot = (n: MathNode): boolean => /^(sqrt|cbrt)$/.test(n.t) || ('a' in n && hasRoot(n.a)) || ('b' in n && hasRoot(n.b))
+
+/** A decimal of three places or more: 7.071, 7,0711. Two places or fewer is not enough to say which surd it is a rounding of. */
+const ROUNDED_DECIMAL = /^-?\d*[.,](\d{3,})$/
+
+/**
+ * True when `answer` is a decimal of at least three places that is `value` rounded to that many places, and `key` holds a root: 7.071 for 5√2
+ * (7.0710678), 3.464 for 2√3. A key with no root is compared exactly, as it always was, and a decimal that is rounded the wrong way stays wrong.
+ */
+const roundedSurd = (key: string, answer: string, value: number): boolean => {
+  const tree = readMath(key)
+  if (!tree || !hasRoot(tree)) return false
+  const typed = ROUNDED_DECIMAL.exec(answer.replace(MINUS_SIGNS, '-').trim())
+  if (!typed) return false
+  const places = typed[1]!.length
+  return close(Number(answer.replace(MINUS_SIGNS, '-').trim().replace(',', '.')), Number(value.toFixed(places)))
+}
+
 // ---- A number ----------------------------------------------------------------------------------------------------------------
 
 /** The value of a text made of numbers only (no letter), or null. `suffix` drops a % or a ° at the end. A mixed number "1 1/2" is one and a half. */
@@ -705,7 +727,7 @@ export function markByMeaning(kind: MeaningKind, key: string, answer: string, fo
     case 'number': {
       const k = numeric(key, true)
       const a = numeric(answer, true)
-      return k === null || a === null ? UNREAD : { correct: close(k, a), comparable: true }
+      return k === null || a === null ? UNREAD : { correct: close(k, a) || roundedSurd(key, answer, k), comparable: true }
     }
     case 'expression': {
       const k = readExpression(key)
@@ -760,7 +782,10 @@ export function meaningKeyProblem(kind: MeaningKind, key: string): string | null
     kind === 'number' ? numeric(key, true) !== null
     : kind === 'expression' ? (() => {
         const tree = readExpression(key)
-        return !!tree && lettersOf(tree).size > 0
+        if (!tree) return false
+        // A letter makes it an expression. So does a root with no letter (a surd: 5√2, √5 + 1, 5 + 2√6) when it has a value: it is marked by that value.
+        // A plain number, or pi alone, is the number kind's.
+        return lettersOf(tree).size > 0 || (hasRoot(tree) && !Number.isNaN(valueOf(tree, {})))
       })()
     : kind === 'equation' ? readEquation(key) !== null
     : readPoint(key) !== null
