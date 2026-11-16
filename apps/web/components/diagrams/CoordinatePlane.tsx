@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import type { CoordinatePlaneSpec } from '@jemma/profiling/schemas'
+import { Rich, raisedLabel } from './math-label'
 import { BODY, CORAL, CORAL_TEXT, INK, Line, Svg, WHITE, fmt, type Variant } from './shared'
 import { defaultStep, graphEquation, sampleGraph, ticksOf, type Pt } from './plane-math'
 
@@ -57,7 +58,7 @@ export function describeCoordinatePlane(spec: CoordinatePlaneSpec, variant: Vari
 }
 
 /** A number on an axis: dark, with a white halo so that it can be read over a line of the grid. */
-function Num(p: { x: number; y: number; anchor: 'start' | 'middle' | 'end'; size?: number; weight?: number; fill?: string; extra?: Record<string, string>; children: string }) {
+function Num(p: { x: number; y: number; anchor: 'start' | 'middle' | 'end'; size?: number; weight?: number; fill?: string; extra?: Record<string, string>; rich?: boolean; children: string }) {
   return (
     <text
       x={r1(p.x)}
@@ -72,7 +73,7 @@ function Num(p: { x: number; y: number; anchor: 'start' | 'middle' | 'end'; size
       paintOrder="stroke"
       {...p.extra}
     >
-      {p.children}
+      {p.rich ? <Rich text={p.children} size={p.size ?? 12} /> : p.children}
     </text>
   )
 }
@@ -89,7 +90,9 @@ function graphLabelAt(end: { x: number; y: number }, text: string) {
   const width = text.length * LABEL_LETTER + LABEL_HALO
   const flip = end.x > LEFT + PLOT_W * 0.7 || end.x + 6 + width > right
   const x = flip ? Math.min(right, Math.max(left + width, end.x - 6)) : Math.max(left, end.x + 6)
-  const y = Math.min(TOP + PLOT_H - 4, Math.max(TOP + 12, end.y + (end.y < TOP + 20 ? 14 : -8)))
+  // A label with a raised part (x squared) keeps more room above it: the 2 stands higher than the line.
+  const room = raisedLabel(text) ? 18 : 12
+  const y = Math.min(TOP + PLOT_H - 4, Math.max(TOP + room, end.y + (end.y < TOP + 20 ? 14 : -8)))
   return { x, y, anchor: flip ? ('end' as const) : ('start' as const) }
 }
 
@@ -184,7 +187,7 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
         if (!g.label || !end) return null
         const at = graphLabelAt({ x: px(end.x), y: py(end.y) }, g.label)
         return (
-          <Num key={`gl${i}`} x={at.x} y={at.y} anchor={at.anchor} size={14} weight={700} fill={colour.text} extra={{ 'data-graph-label': String(i) }}>
+          <Num key={`gl${i}`} x={at.x} y={at.y} anchor={at.anchor} size={14} weight={700} fill={colour.text} rich extra={{ 'data-graph-label': String(i) }}>
             {g.label}
           </Num>
         )
@@ -193,7 +196,7 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
         if (!p.label) return null
         const near = px(p.x) > LEFT + PLOT_W - 44
         return (
-          <Num key={`pl${i}`} x={px(p.x) + (near ? -8 : 8)} y={py(p.y) - 8} anchor={near ? 'end' : 'start'} size={14} weight={700} fill={INK} extra={{ 'data-point-label': String(i) }}>
+          <Num key={`pl${i}`} x={px(p.x) + (near ? -8 : 8)} y={py(p.y) - 8} anchor={near ? 'end' : 'start'} size={14} weight={700} fill={INK} rich extra={{ 'data-point-label': String(i) }}>
             {p.label}
           </Num>
         )

@@ -109,7 +109,9 @@ export function LearnDiagram({ lesson, onReady }: LearnDiagramProps) {
           ) : (
             <DiagramView spec={d.contrast.diagram} variant="learn" />
           )}
-          <span className="text-[15px] leading-[1.45]">{d.contrast.caption}</span>
+          <span className="text-[15px] leading-[1.45]">
+            <FractionText text={d.contrast.caption} size={20} rule={2} gap={3} side={3} />
+          </span>
         </aside>
       ) : null}
       <div className="flex-1" />

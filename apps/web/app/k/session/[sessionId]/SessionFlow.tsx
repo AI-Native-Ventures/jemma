@@ -7,6 +7,7 @@ import { shrinkPhoto } from '@/lib/shrink-photo'
 import { startAskPoll } from '@/lib/poll-scheduler'
 import { postFiles } from '@/lib/upload-client'
 import { AppHeader } from '../_parts/AppHeader'
+import { FractionText } from '../_parts/Frac'
 import { LearnAudio } from '../_parts/LearnAudio'
 import { LearnCards } from '../_parts/LearnCards'
 import { LearnDiagram } from '../_parts/LearnDiagram'
@@ -220,7 +221,9 @@ export function SessionFlow({ sessionId, firstName, warmup, tryCount, topic }: S
           />
         ) : (
           <div className="flex flex-1 flex-col gap-4 p-5">
-            <h1 className="m-0 text-[28px] font-bold">{lesson.title}</h1>
+            <h1 className="m-0 text-[28px] font-bold">
+              <FractionText text={lesson.title} size={34} rule={3} gap={4} side={4} />
+            </h1>
             <button type="button" onClick={startTry} className="min-h-[60px] rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white">I&apos;m ready</button>
           </div>
         )

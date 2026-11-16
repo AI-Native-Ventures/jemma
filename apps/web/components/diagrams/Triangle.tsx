@@ -1,4 +1,5 @@
 import type { TriangleSpec } from '@jemma/profiling/schemas'
+import { Rich } from './math-label'
 import { CORAL_TEXT, INK, SOFT, Svg } from './shared'
 import { layoutTriangle, rightCorner, triangleAngles } from './triangle-math'
 
@@ -52,12 +53,12 @@ export function Triangle(props: TriangleProps) {
             </text>
             {text(props.sides, i) && (
               <text data-side={i} x={r1(l.sides[i]!.at.x)} y={r1(l.sides[i]!.at.y + 4)} fontSize={13} fontWeight={600} fill={INK} textAnchor={l.sides[i]!.anchor}>
-                {text(props.sides, i)}
+                <Rich text={text(props.sides, i)} size={13} />
               </text>
             )}
             {text(props.angleLabels, i) && (
               <text data-angle={i} x={r1(l.angles[i]!.at.x)} y={r1(l.angles[i]!.at.y + 4)} fontSize={13} fontWeight={700} fill={CORAL_TEXT} textAnchor="middle">
-                {text(props.angleLabels, i)}
+                <Rich text={text(props.angleLabels, i)} size={13} />
               </text>
             )}
           </g>
