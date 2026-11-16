@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Rich } from './math-label'
+import { Rich, fracLabel } from './math-label'
 
 export const INK = '#1F1D36'
 export const CORAL = '#FF6A4D'
@@ -50,6 +50,9 @@ type TextProps = {
 }
 
 export function T({ x, y, size, weight = 400, fill = INK, anchor = 'middle', children }: TextProps) {
+  // A label with a fraction in it (a letter over a number) is a box of its own; every other label is a text.
+  const stacked = typeof children === 'string' ? fracLabel({ text: children, x, y, size, weight, fill, anchor }) : null
+  if (stacked) return stacked
   return (
     <text x={x} y={y} fontSize={size} textAnchor={anchor} fill={fill} fontWeight={weight}>
       {typeof children === 'string' ? <Rich text={children} size={size} /> : children}

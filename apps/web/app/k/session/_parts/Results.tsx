@@ -2,6 +2,7 @@
 
 import { Fragment } from 'react'
 import { Frac, FractionText, hasMath, isFraction, MathText, withFractions } from './Frac'
+import { hasTypeset } from './typeset'
 import { Bar, type Fill } from './Bars'
 import { Gem } from './Gems'
 import { besideNumber } from './prompt-layout'
@@ -51,6 +52,9 @@ export function termUnits(value: string): string[] | null {
   return units
 }
 
+/** A star, a root, a hyphen in front of a number or between two, in a written answer: only a senior class writes them. */
+const SENIOR_SIGN = /[*^\u221a]|sqrt|(^|\s)[-\u2212]\s?\d|\d\s[-\u2212]\s\d/
+
 /** An answer needs the whole width of its box when it is more than a short number: more than 6 characters. */
 const isLong = (value: string) => value.trim().length > 6
 
@@ -62,20 +66,22 @@ function Stacked({ value, size, rule, gap, side }: { value: string; size: number
   }
   // A line of terms ("3x + 12 + 0", "x² + 4x + 4", "x = 3 or x = -1") keeps each term in one piece: it wraps only at a space between terms.
   const units = termUnits(value)
-  if (units && (hasMath(value) || withFractions(value, () => null).every((p) => typeof p === 'string'))) {
+  // P129: an answer with a letter, a star, a root or a minus in it (a senior class) is drawn as a textbook draws it; every other answer is drawn as it always was.
+  const textbook = hasMath(value) || hasTypeset(value, 'algebra') || SENIOR_SIGN.test(value)
+  if (units && (textbook || withFractions(value, () => null).every((p) => typeof p === 'string'))) {
     return (
       <span data-terms="true" style={{ fontSize: size }} className="min-w-0 text-right font-bold">
         {units.map((unit, i) => (
           <span key={i}>
             {i > 0 ? ' ' : null}
-            <span className="whitespace-nowrap">{hasMath(unit) ? <MathText text={unit} size={size} rule={rule} gap={gap} side={side} className="" /> : unit}</span>
+            <span className="whitespace-nowrap">{textbook ? <MathText text={unit} size={size} rule={rule} gap={gap} side={side} className="" /> : unit}</span>
           </span>
         ))}
       </span>
     )
   }
   // An answer with a power or a root (a senior class) is drawn with them; every other answer is drawn as it always was.
-  if (hasMath(value)) {
+  if (textbook) {
     return (
       <span style={{ fontSize: size }} className="font-bold">
         <MathText text={value} size={size} rule={rule} gap={gap} side={side} className="" />

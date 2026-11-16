@@ -59,6 +59,23 @@ function sideLatex(side: string): string | null {
  * the line into sides, each read on its own; a line may start or end with a relation, so "= 10" and "x +" (one piece of a line that was cut) are fine.
  */
 export function toLatexRun(run: string): string | null {
+  // P129: a letter with a digit after it (x1, y2, a1) is a letter with a small number below it, as a textbook writes it. The marking reads the letter alone, so each is
+  // swapped for a letter that is not in the line while it is read (the reader does not tell capitals from small letters), and given back as x_{1} in the LaTeX.
+  const subs: string[] = []
+  const pool = [...'qwzjkhvu'].filter((c) => !run.toLowerCase().includes(c))
+  const swapped = run.replace(SUBSCRIPT, (m, letter: string, digit: string) => {
+    const key = pool[subs.length]
+    if (!key) return m
+    subs.push(`${letter}_{${digit}}`)
+    return key
+  })
+  const latex = latexOfRun(swapped)
+  return latex === null ? null : subs.reduce((t, sub, i) => t.replace(new RegExp(`(?<![A-Za-z\\\\])${pool[i]!}(?![A-Za-z])`, 'g'), sub), latex)
+}
+
+const SUBSCRIPT = /(?<![A-Za-z0-9])([a-z])([0-9])(?![A-Za-z0-9])/g
+
+function latexOfRun(run: string): string | null {
   const parts = run.split(RELATION)
   let out = ''
   for (let i = 0; i < parts.length; i++) {
@@ -123,8 +140,20 @@ function tokens(text: string): Tok[] {
     const core = word.replace(/[:;,?!.]+$/, '')
     out.push({ start: m.index!, end: m.index! + core.length, core, trail: word.slice(core.length), kind: classify(core) })
   }
+  // P129: an x between two numbers is a times sign ("3 x 4"), drawn as one. A letter next to a letter or a sign is still a letter.
+  out.forEach((t, i) => {
+    const before = out[i - 1]
+    const after = out[i + 1]
+    if (t.kind === 'letter' && /^[xX]$/.test(t.core) && before && after && before.kind === 'math' && !before.trail && /[0-9)]$/.test(before.core) && after.kind === 'math' && /^[0-9(]/.test(after.core)) {
+      t.core = '\u00d7'
+      t.kind = 'op'
+    }
+  })
   return out
 }
+
+/** A star standing alone between words of a line that has maths in it is a times sign (a leftover piece: "* 4" after the sum of numbers before it). */
+const starsToTimes = (text: string) => text.replace(/(^|\s)\*(?=\s|$)/g, '$1\u00d7')
 
 /** The text cut into the words and the maths in it, in order. Words are kept exactly as they were, spaces too. A text with no maths is one text segment. */
 export function segments(text: string, mode: TypesetMode): Segment[] {
@@ -159,11 +188,11 @@ export function segments(text: string, mode: TypesetMode): Segment[] {
     if (latex === null) continue
     const start = group[0]!.start
     const end = group[group.length - 1]!.end
-    if (start > at) out.push({ kind: 'text', text: text.slice(at, start) })
+    if (start > at) out.push({ kind: 'text', text: starsToTimes(text.slice(at, start)) })
     out.push({ kind: 'math', latex, plain: text.slice(start, end) })
     at = end
   }
-  if (at < text.length) out.push({ kind: 'text', text: text.slice(at) })
+  if (at < text.length) out.push({ kind: 'text', text: out.length > 0 ? starsToTimes(text.slice(at)) : text.slice(at) })
   return out.length > 0 ? out : [{ kind: 'text', text }]
 }
 

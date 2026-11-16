@@ -29,7 +29,12 @@ const nextClass =
 
 /** One short line under the boxes that says what goes in them. It never says whether an answer was right. */
 function Hint({ children }: { children: string }) {
-  return <p className="m-0 text-center text-[16px] leading-[1.4] text-body">{children}</p>
+  // P129: the example in a hint is maths ("like (x + 2)(x - 2)"), drawn as it is in a textbook. A hint of words, or of a plain number, is the same text as before.
+  return (
+    <p className="m-0 text-center text-[16px] leading-[1.4] text-body">
+      <FractionText text={children} size={18} rule={2} gap={3} side={3} typeset="all" />
+    </p>
+  )
 }
 
 /** What may be typed: digits, and for a number with a comma, the comma or a point too. */
@@ -119,9 +124,24 @@ export const keyGrid = (count: number): string => `${keyColumns(count)}${count >
 function MathKeyButton({ k, onPress }: { k: MathKey; onPress: (k: MathKey) => void }) {
   return (
     <button type="button" aria-label={k.label} onMouseDown={(e) => e.preventDefault()} onClick={() => onPress(k)} className={`${keyClass} ${faceClass(k.text)}`}>
-      {k.text}
+      <KeyFace text={k.text} />
     </button>
   )
+}
+
+/** The face of a key as a textbook writes it: a fraction stacked (a over b, d over dx) and a power raised (x with a small n). Every other key shows its sign. */
+function KeyFace({ text }: { text: string }) {
+  if (text === 'a/b' || text === 'd/dx') {
+    const [top, bottom] = text === 'a/b' ? ['a', 'b'] : ['d', 'dx']
+    return <Frac top={top} bottom={bottom} size={17} rule={2} gap={1} side={2} color="currentColor" />
+  }
+  if (text === '^')
+    return (
+      <span>
+        x<sup style={{ fontSize: '0.62em', lineHeight: 0, position: 'relative', top: '-0.55em', verticalAlign: 'baseline' }}>n</sup>
+      </span>
+    )
+  return <>{text}</>
 }
 
 /** It reads: the line under the keys is drawn only for a number that is more than digits (a plain number is its own picture). */

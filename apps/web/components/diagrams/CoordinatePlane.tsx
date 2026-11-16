@@ -1,6 +1,6 @@
 import { useId } from 'react'
 import type { CoordinatePlaneSpec } from '@jemma/profiling/schemas'
-import { Rich, raisedLabel } from './math-label'
+import { Rich, fracLabel, raisedLabel } from './math-label'
 import { BODY, CORAL, CORAL_TEXT, INK, Line, Svg, WHITE, fmt, type Variant } from './shared'
 import { defaultStep, graphEquation, sampleGraph, ticksOf, type Pt } from './plane-math'
 
@@ -59,6 +59,9 @@ export function describeCoordinatePlane(spec: CoordinatePlaneSpec, variant: Vari
 
 /** A number on an axis: dark, with a white halo so that it can be read over a line of the grid. */
 function Num(p: { x: number; y: number; anchor: 'start' | 'middle' | 'end'; size?: number; weight?: number; fill?: string; extra?: Record<string, string>; rich?: boolean; children: string }) {
+  // A label with a fraction in it is a box of its own, with the same white halo.
+  const stacked = p.rich ? fracLabel({ text: p.children, x: r1(p.x), y: r1(p.y), size: p.size ?? 12, weight: p.weight ?? 500, fill: p.fill ?? BODY, anchor: p.anchor, halo: true, attrs: p.extra }) : null
+  if (stacked) return stacked
   return (
     <text
       x={r1(p.x)}
