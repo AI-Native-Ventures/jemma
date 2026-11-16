@@ -13,7 +13,9 @@ export interface Env {
   TTS_PROVIDER?: string
   TTS_MODEL?: string
   AI_MODE?: 'live' | 'record' | 'replay' | 'cache'
-  /** Cloudflare account id and an API token (a secret) with Workers AI access: used when LLM_PROVIDER or VISION_PROVIDER is `workers-ai`. */
+  /** The worker's own Workers AI binding (wrangler.jsonc `ai`). With LLM_PROVIDER or VISION_PROVIDER `workers-ai` the models run through it: no API token and no account id are needed. */
+  AI?: { run(model: string, input: Record<string, unknown>): Promise<unknown> }
+  /** Cloudflare account id and an API token (a secret): only for the REST way to call Workers AI (outside a Worker). With a token set the binding is not used. */
   CF_ACCOUNT_ID?: string
   CF_AI_TOKEN?: string
   /** Comma list of ids that recorded answers were saved under and that are only looked up in `cache` and `replay`, never called. */

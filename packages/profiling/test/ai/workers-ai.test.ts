@@ -9,6 +9,7 @@ import {
   PAID_MODEL_CALL_TIMEOUT_MS,
   ReplayMissError,
   WORKERS_AI_MODEL_CALL_TIMEOUT_MS,
+  bindingFetch,
   getModel,
   modelCallTimeoutMs,
   recordedIdList,
@@ -132,7 +133,7 @@ describe('the workers-ai provider', () => {
     network()
     expect(() => getModel('text', env({ CF_ACCOUNT_ID: undefined }))).toThrow('CF_ACCOUNT_ID')
     expect(() => getModel('text', env({ CF_AI_TOKEN: undefined }))).toThrow('CF_AI_TOKEN')
-    expect(() => getModel('text', env({ CF_ACCOUNT_ID: '', CF_AI_TOKEN: '' }))).toThrow('CF_ACCOUNT_ID')
+    expect(() => getModel('text', env({ CF_ACCOUNT_ID: '', CF_AI_TOKEN: '' }))).toThrow('CF_AI_TOKEN')
     expect(() => getModel('vision', env({ CF_AI_TOKEN: undefined }))).toThrow('CF_AI_TOKEN')
     try {
       getModel('text', env({ CF_ACCOUNT_ID: undefined }))
@@ -353,5 +354,342 @@ describe('the demo path still replays with Workers AI first (the committed fixtu
     const model = getModel('text', env({ AI_MODE: 'replay' }, store))
     const l = lessons[0]!
     await expect(generateText({ model, system: l.system, prompt: l.prompt, maxRetries: 0 })).rejects.toBeDefined()
+  })
+})
+
+// P121e: no API token. The agent's own Workers AI binding (env.AI) takes the same OpenAI chat body and returns the same completion object, so the
+// OpenAI provider runs through a `fetch` that is backed by the binding.
+const openaiOutput = (model: string, text: string) => ({
+  id: 'chatcmpl-1',
+  object: 'chat.completion',
+  created: 1,
+  model,
+  choices: [{ index: 0, message: { role: 'assistant', content: text }, finish_reason: 'stop' }],
+  usage: { prompt_tokens: 3, completion_tokens: 4, total_tokens: 7 },
+})
+
+type Run = { model: string; input: Record<string, unknown>; options: unknown[] }
+/** A fake Workers AI binding: records each `run` and answers through `handler`. Nothing leaves the machine. */
+function fakeBinding(handler: (model: string, input: Record<string, unknown>) => unknown = (m) => openaiOutput(m, `from ${m}`)) {
+  const runs: Run[] = []
+  const binding = {
+    run: vi.fn(async (model: string, input: Record<string, unknown>, ...options: unknown[]) => {
+      runs.push({ model, input, options })
+      return handler(model, input)
+    }),
+  }
+  return { binding, runs, asked: () => runs.map((r) => r.model) }
+}
+
+const BINDING_URL = 'https://workers-ai.binding/v1/chat/completions'
+const post = (body: unknown) => ({ method: 'POST', headers: { 'content-type': 'application/json' }, body: typeof body === 'string' ? body : JSON.stringify(body) })
+/** The binding env: no token, no account id, only the binding. */
+const bindingEnv = (binding: unknown, over: Partial<AiEnv> = {}, store = new MemoryStore()) =>
+  env({ CF_ACCOUNT_ID: undefined, CF_AI_TOKEN: undefined, AI_BINDING: binding as never, ...over }, store)
+
+/** Runs a call that waits in fake time (the retry waits and the time limit) until it has settled. */
+async function settle<T>(call: Promise<T>): Promise<T | unknown> {
+  let done = false
+  const out = call.then((v) => v, (e: unknown) => e).finally(() => { done = true })
+  for (let i = 0; i < 400 && !done; i++) {
+    await vi.advanceTimersByTimeAsync(3_000)
+    await new Promise<void>((r) => realSetTimeout(r, 1))
+  }
+  expect(done).toBe(true)
+  return out
+}
+
+describe('bindingFetch', () => {
+  const body = {
+    model: DEEPSEEK,
+    messages: [
+      { role: 'system', content: 'You write practice sessions.' },
+      { role: 'user', content: [{ type: 'text', text: 'Read the answers' }, { type: 'image_url', image_url: { url: 'data:image/png;base64,AQID' } }] },
+    ],
+    max_tokens: 4096,
+    temperature: 0.2,
+    response_format: { type: 'json_object' },
+  }
+
+  test('the model is taken out of the body and the rest reaches run unchanged, image part included', async () => {
+    const { binding, runs } = fakeBinding()
+    const res = await bindingFetch(binding)(BINDING_URL, post(body))
+    expect(runs).toHaveLength(1)
+    expect(runs[0]!.model).toBe(DEEPSEEK)
+    const { model: _model, ...rest } = body
+    expect(runs[0]!.input).toEqual(rest)
+    expect(runs[0]!.input).not.toHaveProperty('model')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toBe('application/json')
+    expect(await res.json()).toEqual(openaiOutput(DEEPSEEK, `from ${DEEPSEEK}`))
+  })
+
+  test('a Request object works as well as a URL and an init', async () => {
+    const { binding, runs } = fakeBinding()
+    const res = await bindingFetch(binding)(new Request(BINDING_URL, post(body)))
+    expect(res.status).toBe(200)
+    expect(runs[0]!.model).toBe(DEEPSEEK)
+  })
+
+  test.each([
+    ['Capacity temporarily exceeded', 429],
+    ['Rate limit exceeded', 429],
+    ['Too many requests', 429],
+    ['3040: CAPACITY EXCEEDED', 429],
+    ['please slow down: you hit the RATE', 429],
+    ['Internal server error', 500],
+    ['AiError: something broke', 500],
+    ['', 500],
+  ])('a binding error "%s" becomes status %s with the message in the OpenAI error body', async (message, status) => {
+    const { binding } = fakeBinding(() => {
+      throw new Error(message)
+    })
+    const res = await bindingFetch(binding)(BINDING_URL, post(body))
+    expect(res.status).toBe(status)
+    expect(res.headers.get('content-type')).toBe('application/json')
+    const json = (await res.json()) as { error: { message: string } }
+    expect(typeof json.error.message).toBe('string')
+    if (message) expect(json.error.message).toBe(message)
+  })
+
+  test('a binding that throws something that is not an Error, or rejects, is a 500 with the text', async () => {
+    const thrown = fakeBinding(() => {
+      throw 'plain text failure'
+    })
+    const a = await bindingFetch(thrown.binding)(BINDING_URL, post(body))
+    expect(a.status).toBe(500)
+    expect(((await a.json()) as { error: { message: string } }).error.message).toBe('plain text failure')
+    const rejected = { run: vi.fn(() => Promise.reject(new Error('Capacity exceeded'))) }
+    expect((await bindingFetch(rejected)(BINDING_URL, post(body))).status).toBe(429)
+    const syncThrow = { run: vi.fn(() => { throw new Error('boom') }) }
+    expect((await bindingFetch(syncThrow as never)(BINDING_URL, post(body))).status).toBe(500)
+  })
+
+  test.each([[{}], [{ response: 'text only' }], [null], ['a string'], [[]], [{ choices: 'no' }], [{ result: { choices: [] } }]])('an output without choices (%j) is a 502 that names the model', async (output) => {
+    const { binding } = fakeBinding(() => output)
+    const res = await bindingFetch(binding)(BINDING_URL, post(body))
+    expect(res.status).toBe(502)
+    expect(((await res.json()) as { error: { message: string } }).error.message).toContain(DEEPSEEK)
+  })
+
+  test('streaming is refused with 400 and the binding is not called', async () => {
+    const { binding, runs } = fakeBinding()
+    const res = await bindingFetch(binding)(BINDING_URL, post({ ...body, stream: true }))
+    expect(res.status).toBe(400)
+    expect(runs).toHaveLength(0)
+    // stream: false is fine and goes through with the rest.
+    expect((await bindingFetch(binding)(BINDING_URL, post({ ...body, stream: false }))).status).toBe(200)
+    expect(runs[0]!.input.stream).toBe(false)
+  })
+
+  test('a body that is not a JSON object, or has no model, is a 400 and the binding is not called', async () => {
+    const { binding, runs } = fakeBinding()
+    for (const bad of ['not json', '[]', 'null', '{}', JSON.stringify({ model: 5, messages: [] }), '']) {
+      expect((await bindingFetch(binding)(BINDING_URL, post(bad))).status, bad).toBe(400)
+    }
+    expect(runs).toHaveLength(0)
+  })
+
+  test('a call that is already cancelled never reaches the binding, and a cancel while it waits ends the fetch', async () => {
+    const { binding, runs } = fakeBinding()
+    const done = new AbortController()
+    done.abort(new Error('cancelled by the caller'))
+    await expect(bindingFetch(binding)(BINDING_URL, { ...post(body), signal: done.signal })).rejects.toThrow('cancelled by the caller')
+    expect(runs).toHaveLength(0)
+
+    const stuck = { run: vi.fn(() => new Promise<unknown>(() => {})) }
+    const later = new AbortController()
+    const pending = bindingFetch(stuck)(BINDING_URL, { ...post(body), signal: later.signal })
+    later.abort(new Error('the time limit passed'))
+    await expect(pending).rejects.toThrow('the time limit passed')
+    expect(stuck.run).toHaveBeenCalledTimes(1)
+  })
+
+  test('a binding that fails after the call was cancelled leaves no unhandled rejection', async () => {
+    const unhandled = vi.fn()
+    process.on('unhandledRejection', unhandled)
+    let fail: (e: Error) => void = () => {}
+    const slow = { run: vi.fn(() => new Promise<unknown>((_, reject) => { fail = reject })) }
+    const controller = new AbortController()
+    const pending = bindingFetch(slow)(BINDING_URL, { ...post(body), signal: controller.signal })
+    controller.abort(new Error('cancelled'))
+    await expect(pending).rejects.toThrow('cancelled')
+    fail(new Error('too late'))
+    await new Promise<void>((r) => realSetTimeout(r, 20))
+    process.off('unhandledRejection', unhandled)
+    expect(unhandled).not.toHaveBeenCalled()
+  })
+})
+
+describe('the workers-ai provider through the binding (no token)', () => {
+  test('getModel with the binding and no token: the text comes back through the provider, and no network is used', async () => {
+    const { fetchMock } = network()
+    const { binding, runs } = fakeBinding()
+    const model = getModel('text', bindingEnv(binding))
+    expect(model.modelId).toBe(DEEPSEEK)
+    expect(model.provider).toContain('workers-ai')
+    expect(textOf(await model.doGenerate(params))).toBe(`from ${DEEPSEEK}`)
+    expect(runs).toHaveLength(1)
+    expect(runs[0]!.model).toBe(DEEPSEEK)
+    expect(runs[0]!.input).not.toHaveProperty('model')
+    expect((runs[0]!.input.messages as Array<{ role: string }>)[0]!.role).toBe('user')
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  test('generateText works: the answer text, and the token counts of the binding output', async () => {
+    network()
+    const { binding } = fakeBinding()
+    const out = await generateText({ model: getModel('text', bindingEnv(binding)), system: 'You write practices.', prompt: 'Write a practice' })
+    expect(out.text).toBe(`from ${DEEPSEEK}`)
+    expect(out.usage.inputTokens).toBe(3)
+    expect(out.usage.outputTokens).toBe(4)
+  })
+
+  test('a photo reaches the binding as an image_url part of the message', async () => {
+    network()
+    const { binding, runs } = fakeBinding()
+    const model = getModel('vision', bindingEnv(binding))
+    const out = await generateText({ model, messages: [{ role: 'user', content: [{ type: 'text', text: 'Read the answers' }, { type: 'file', data: new Uint8Array([1, 2, 3]), mediaType: 'image/png' }] }] })
+    expect(out.text).toBe(`from ${DEEPSEEK}`)
+    const parts = runs[0]!.input.messages as Array<{ content: Array<{ type: string; image_url?: { url: string } }> }>
+    expect(parts[0]!.content.map((p) => p.type)).toEqual(['text', 'image_url'])
+    expect(parts[0]!.content[1]!.image_url?.url).toMatch(/^data:image\/png;base64,/)
+  })
+
+  test('JSON asked for in the prompt (generateJson) works through the binding', async () => {
+    network()
+    const { binding } = fakeBinding((m) => openaiOutput(m, '{"questions":[1,2,3]}'))
+    const out = await generateText({ model: getModel('text', bindingEnv(binding)), prompt: 'Return JSON' })
+    expect(JSON.parse(out.text)).toEqual({ questions: [1, 2, 3] })
+  })
+
+  test('a capacity error moves the chain on to GLM, after the usual retries, and its answer is returned', async () => {
+    network()
+    const { binding, runs } = fakeBinding((m) => {
+      if (m === DEEPSEEK) throw new Error('Capacity temporarily exceeded')
+      return openaiOutput(m, `from ${m}`)
+    })
+    fakeClock()
+    const call = Promise.resolve(getModel('text', bindingEnv(binding)).doGenerate(params))
+    const out = (await settle(call)) as { content: unknown }
+    expect(textOf(out)).toBe(`from ${GLM}`)
+    // One try and the four retries of the first model (2, 5, 10 and 20 s apart), then the backup.
+    expect(runs.map((r) => r.model)).toEqual([DEEPSEEK, DEEPSEEK, DEEPSEEK, DEEPSEEK, DEEPSEEK, GLM])
+  })
+
+  test('an output without choices moves on to GLM too', async () => {
+    network()
+    const { binding, runs } = fakeBinding((m) => (m === DEEPSEEK ? { response: 'old shape' } : openaiOutput(m, `from ${m}`)))
+    fakeClock()
+    const out = (await settle(Promise.resolve(getModel('text', bindingEnv(binding)).doGenerate(params)))) as { content: unknown }
+    expect(textOf(out)).toBe(`from ${GLM}`)
+    expect(runs[0]!.model).toBe(DEEPSEEK)
+    expect(runs.at(-1)!.model).toBe(GLM)
+  })
+
+  test('both models failing sends the first error up (a 429 with the message), and nothing else is asked', async () => {
+    network()
+    const { binding, runs } = fakeBinding((m) => {
+      throw new Error(m === DEEPSEEK ? 'Capacity temporarily exceeded' : 'Internal server error')
+    })
+    fakeClock()
+    const err = (await settle(Promise.resolve(getModel('text', bindingEnv(binding)).doGenerate(params)))) as { statusCode?: number; message?: string }
+    expect(err.statusCode).toBe(429)
+    expect(err.message).toContain('Capacity temporarily exceeded')
+    expect(new Set(runs.map((r) => r.model))).toEqual(new Set([DEEPSEEK, GLM]))
+  })
+
+  test('a binding that never answers: 150 s for the first model, then the backup is asked', async () => {
+    network()
+    const { binding, asked } = fakeBinding(() => new Promise(() => {}))
+    fakeClock()
+    const call = Promise.resolve(getModel('text', bindingEnv(binding)).doGenerate(params)).catch((e: unknown) => e)
+    await until(() => asked().length === 1)
+    await vi.advanceTimersByTimeAsync(149_999)
+    expect(asked()).toEqual([DEEPSEEK])
+    await vi.advanceTimersByTimeAsync(1)
+    await until(() => asked().length === 2)
+    expect(asked()).toEqual([DEEPSEEK, GLM])
+    await vi.advanceTimersByTimeAsync(150_000)
+    const err = await call
+    expect(err).toBeInstanceOf(ModelTimeoutError)
+    expect((err as Error).message).toContain('after 150 seconds')
+  })
+
+  test('with a token present REST is used and the binding is never called', async () => {
+    const { calls } = network()
+    const { binding, runs } = fakeBinding()
+    expect(textOf(await getModel('text', env({ AI_BINDING: binding as never })).doGenerate(params))).toBe(`from ${DEEPSEEK}`)
+    expect(calls).toHaveLength(1)
+    expect(calls[0]!.url).toBe(CF_URL)
+    expect(calls[0]!.headers.authorization).toBe(`Bearer ${TOKEN}`)
+    expect(runs).toHaveLength(0)
+  })
+
+  test('with a token but no account id REST still names CF_ACCOUNT_ID', () => {
+    const { binding } = fakeBinding()
+    expect(() => getModel('text', env({ CF_ACCOUNT_ID: undefined, AI_BINDING: binding as never }))).toThrow('CF_ACCOUNT_ID')
+  })
+
+  test('with neither a token nor the binding the plain error names both, and never a secret', () => {
+    network()
+    for (const over of [{ CF_ACCOUNT_ID: undefined, CF_AI_TOKEN: undefined }, { CF_AI_TOKEN: undefined }, { CF_AI_TOKEN: '   ', CF_ACCOUNT_ID: ACCOUNT }]) {
+      expect(() => getModel('text', env(over)), JSON.stringify(over)).toThrow(/CF_AI_TOKEN or the AI binding/)
+      expect(() => getModel('vision', env(over))).toThrow(/AI binding/)
+    }
+  })
+
+  test('the binding needs no account id and no token: the account id is only for REST', async () => {
+    network()
+    const { binding } = fakeBinding()
+    expect(() => getModel('text', bindingEnv(binding, { CF_ACCOUNT_ID: undefined }))).not.toThrow()
+    expect(textOf(await getModel('text', bindingEnv(binding, { CF_ACCOUNT_ID: '' })).doGenerate(params))).toBe(`from ${DEEPSEEK}`)
+  })
+
+  test('the binding is not asked for in replay, and cache hits and misses behave as with REST', async () => {
+    network()
+    const { binding, runs } = fakeBinding()
+    // cache miss: the binding is called once, the answer is saved under the new id, the next call comes from storage, the old ids are never called.
+    const store = new MemoryStore()
+    const model = getModel('text', bindingEnv(binding, { AI_MODE: 'cache', AI_RECORDED_IDS: OLD_IDS }, store))
+    expect(textOf(await model.doGenerate(params))).toBe(`from ${DEEPSEEK}`)
+    expect(runs.map((r) => r.model)).toEqual([DEEPSEEK])
+    expect(await store.get(await replayKey(DEEPSEEK, params))).not.toBeNull()
+    expect(textOf(await model.doGenerate(params))).toBe(`from ${DEEPSEEK}`)
+    expect(runs).toHaveLength(1)
+    // a recorded answer under an old id is found with no binding call
+    const recorded = new MemoryStore()
+    await recorded.put(await replayKey(NEMOTRON, params), NEMOTRON, answer('recorded under the old id'))
+    expect(textOf(await getModel('text', bindingEnv(binding, { AI_MODE: 'cache', AI_RECORDED_IDS: OLD_IDS }, recorded)).doGenerate(params))).toBe('recorded under the old id')
+    expect(textOf(await getModel('text', bindingEnv(binding, { AI_MODE: 'replay', AI_RECORDED_IDS: OLD_IDS }, recorded)).doGenerate(params))).toBe('recorded under the old id')
+    expect(runs).toHaveLength(1)
+  })
+
+  test('the committed fixture still resolves in cache and replay with the binding and no token', async () => {
+    const { fetchMock } = network()
+    const { binding, runs } = fakeBinding()
+    const store = new MemoryStore()
+    const rows = parseReplays(readFileSync(REPLAYS_FIXTURE))
+    for (const r of rows) await store.put(r.key, r.model, r.response)
+    type Part = { type?: string; text?: string }
+    type Message = { role: string; content: string | Part[] }
+    const textOfContent = (content: string | Part[]) => (typeof content === 'string' ? content : content.map((p) => p.text ?? '').join(''))
+    const lessons = rows.flatMap((row) => {
+      const messages = (row.response as { request?: { body?: { messages?: Message[] } } }).request?.body?.messages ?? []
+      const system = messages.find((m) => m.role === 'system')
+      const user = messages.find((m) => m.role === 'user')
+      if (!system || !user || (typeof user.content !== 'string' && user.content.some((p) => p.type !== 'text'))) return []
+      return /# Job: write_lesson/.test(textOfContent(system.content)) ? [{ row, system: textOfContent(system.content), prompt: textOfContent(user.content) }] : []
+    })
+    expect(lessons.length).toBeGreaterThanOrEqual(30)
+    for (const mode of ['cache', 'replay'] as const) {
+      const model = getModel('text', bindingEnv(binding, { AI_MODE: mode, AI_RECORDED_IDS: OLD_IDS }, store))
+      for (const l of lessons) {
+        const saved = ((l.row.response as { content?: Part[] }).content ?? []).filter((p) => p.type === 'text').map((p) => p.text ?? '').join('')
+        expect((await generateText({ model, system: l.system, prompt: l.prompt })).text, l.row.key).toBe(saved)
+      }
+    }
+    expect(runs).toHaveLength(0)
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

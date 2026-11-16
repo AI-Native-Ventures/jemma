@@ -188,6 +188,60 @@ export function withModelRetry(
 
 export type ModelKind = 'text' | 'vision'
 
+/** The Workers AI binding of a Worker (`env.AI`). */
+export type AiBinding = { run(model: string, input: Record<string, unknown>): Promise<unknown> }
+
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
+
+const jsonResponse = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
+const errorResponse = (status: number, message: string) => jsonResponse(status, { error: { message } })
+
+/** A promise that gives up when the signal aborts. The call it wraps is left to finish or fail on its own, and its failure is not an unhandled one. */
+function untilAborted<T>(call: Promise<T>, signal: AbortSignal | undefined): Promise<T> {
+  call.catch(() => {})
+  if (!signal) return call
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(signal.reason ?? new DOMException('This operation was aborted', 'AbortError'))
+    signal.addEventListener('abort', onAbort, { once: true })
+    call.then(resolve, reject).finally(() => signal.removeEventListener('abort', onAbort))
+  })
+}
+
+/**
+ * A `fetch` backed by the Workers AI binding, for the OpenAI provider. For DeepSeek V4.1 Flash and GLM 5.3 Flash the binding takes the OpenAI
+ * chat-completions body (without `model`, which is the first argument of `run`) and returns the OpenAI chat-completion object, so nothing is
+ * translated: the body goes in, the object comes out, with no API token. Errors become the status the retry layer knows: a thrown error that
+ * says capacity, rate or too many is a 429, any other is a 500, both with an OpenAI-shaped error body that holds the message; an output with no
+ * `choices` is a 502 that names the model; a streaming request is a 400 (nothing in Jemma streams). A cancelled call ends the fetch at once.
+ */
+export function bindingFetch(binding: AiBinding): (input: string | URL | Request, init?: RequestInit) => Promise<Response> {
+  return async (input, init) => {
+    const signal = init?.signal ?? (input instanceof Request ? input.signal : undefined) ?? undefined
+    if (signal?.aborted) throw signal.reason ?? new DOMException('This operation was aborted', 'AbortError')
+    const raw = typeof init?.body === 'string' ? init.body : input instanceof Request ? await input.clone().text() : ''
+    let body: unknown
+    try {
+      body = JSON.parse(raw)
+    } catch {
+      body = null
+    }
+    if (!isObject(body)) return errorResponse(400, 'The request body is not a JSON object')
+    const { model, ...rest } = body
+    if (typeof model !== 'string' || model === '') return errorResponse(400, 'The request names no model')
+    if (rest.stream === true) return errorResponse(400, `Streaming is not supported through the Workers AI binding (${model})`)
+    let output: unknown
+    try {
+      output = await untilAborted(binding.run(model, rest), signal)
+    } catch (err) {
+      if (signal?.aborted) throw err
+      const message = err instanceof Error && err.message ? err.message : String(err)
+      return errorResponse(/capacity|rate|too many/i.test(message) ? 429 : 500, message)
+    }
+    if (!isObject(output) || !Array.isArray(output.choices)) return errorResponse(502, `Workers AI returned no choices for ${model}`)
+    return jsonResponse(200, output)
+  }
+}
+
 export type AiEnv = {
   LLM_PROVIDER?: string
   LLM_MODEL?: string
@@ -199,7 +253,12 @@ export type AiEnv = {
   TTS_PROVIDER?: string
   TTS_MODEL?: string
   AI_MODE?: AiMode
-  /** Cloudflare account id and an API token (a secret) with Workers AI access: used by the `workers-ai` provider. */
+  /**
+   * The Workers AI binding of the Worker (`env.AI`). The `workers-ai` provider runs through it when there is no `CF_AI_TOKEN`: no API token and no
+   * account id are needed inside a Worker.
+   */
+  AI_BINDING?: AiBinding
+  /** Cloudflare account id and an API token (a secret) with Workers AI access: the REST way to use the `workers-ai` provider, outside a Worker. */
   CF_ACCOUNT_ID?: string
   CF_AI_TOKEN?: string
   /**
@@ -235,18 +294,23 @@ function rawModel(label: string, provider: string, modelId: string, env: AiEnv) 
       return createGoogleGenerativeAI({ apiKey: env.GOOGLE_GENERATIVE_AI_API_KEY })(modelId)
     case 'openai':
       return createOpenAI({ apiKey: env.OPENAI_API_KEY })(modelId)
-    case 'workers-ai':
-      // Cloudflare Workers AI through its OpenAI-compatible endpoint (DeepSeek V4.1 Flash, GLM 5.3 Flash: `@cf/...` ids). `replay` never calls a
-      // model, so it needs no token; every other mode names the variable that is missing.
+    case 'workers-ai': {
+      // Cloudflare Workers AI (DeepSeek V4.1 Flash, GLM 5.3 Flash: `@cf/...` ids). Inside a Worker the binding is used and no token is needed. A
+      // `CF_AI_TOKEN` means the REST endpoint instead (for a run outside a Worker). `replay` never calls a model, so it needs neither.
+      const token = (env.CF_AI_TOKEN ?? '').trim()
+      if (env.AI_BINDING && !token) {
+        return createOpenAI({ name: 'workers-ai', baseURL: 'https://workers-ai.binding/v1', apiKey: 'binding', fetch: bindingFetch(env.AI_BINDING) as typeof fetch }).chat(modelId)
+      }
       if (env.AI_MODE !== 'replay') {
-        if (!env.CF_ACCOUNT_ID?.trim()) throw new Error('CF_ACCOUNT_ID is not set (the workers-ai provider needs it)')
-        if (!env.CF_AI_TOKEN?.trim()) throw new Error('CF_AI_TOKEN is not set (the workers-ai provider needs it)')
+        if (!token) throw new Error('CF_AI_TOKEN or the AI binding is not set (the workers-ai provider needs one of them)')
+        if (!env.CF_ACCOUNT_ID?.trim()) throw new Error('CF_ACCOUNT_ID is not set (the workers-ai provider needs it with CF_AI_TOKEN)')
       }
       return createOpenAI({
         name: 'workers-ai',
         baseURL: `https://api.cloudflare.com/client/v4/accounts/${(env.CF_ACCOUNT_ID ?? '').trim()}/ai/v1`,
-        apiKey: (env.CF_AI_TOKEN ?? '').trim(),
+        apiKey: token,
       }).chat(modelId)
+    }
     case 'opencode':
       return createOpenAI({
         name: 'opencode',
