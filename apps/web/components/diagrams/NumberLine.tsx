@@ -1,11 +1,23 @@
 import type { DiagramSpec } from '@jemma/profiling/schemas'
-import { CORAL, CORAL_TEXT, INK, Line, Svg, T, fmt } from './shared'
+import { BODY, CORAL, CORAL_TEXT, INK, Line, Svg, T, fmt } from './shared'
+import { boxOf, hitsAny, type Box } from './label-clear'
+import { labelWidth, raisedLabel } from './math-label'
 
 export type NumberLineProps = Extract<DiagramSpec, { kind: 'number_line' }>
 
 const X0 = 30
 const X1 = 255
 const Y = 112
+const VIEW_W = 285
+/** The row of the numbers under the line, and the size of every label on the line. */
+const TICK_Y = 138
+const SIZE = 13
+/** A label that does not fit in the row of the numbers goes above the line: the first row of words over the line (clear of the hops), and the room between two rows. */
+const ABOVE_PLAIN = Y - 18
+const ABOVE_HOPS = 74
+const ROW = 17
+const ROWS = 4
+const EDGE = 4
 const r1 = (n: number) => Math.round(n * 10) / 10
 
 export function describeNumberLine({ min, max, step, marks }: NumberLineProps) {
@@ -36,8 +48,35 @@ export function NumberLine(props: NumberLineProps) {
   if (count >= 1 && count <= 12 && Math.abs(min + count * step - target) < 1e-9) {
     for (let i = 0; i < count; i += 1) hops.push([min + i * step, min + (i + 1) * step])
   }
+  // P134: a label of a point sits in the row of the numbers only where it fits in the place of its own number (a "7", a "3/4"). A longer one ("2x + 3")
+  // would cover the numbers beside it, so it goes above the line and its number stays in the row. A label that meets another label moves up a row.
+  const inRow = new Map<number, string>(all.map((v) => [v, marked.get(v) ?? tickLabel(v)]))
+  const rowBox = (v: number): Box => boxOf(px(v), TICK_Y, 'middle', labelWidth(inRow.get(v)!, SIZE) + 2, 10, 3)
+  const moved = new Set<number>()
+  for (const v of marked.keys()) {
+    const own = labelWidth(tickLabel(v), SIZE) + 2
+    const width = labelWidth(marked.get(v)!, SIZE) + 2
+    if (width <= own + 0.5) continue
+    if (!hitsAny(rowBox(v), all.filter((u) => u !== v).map(rowBox))) continue
+    moved.add(v)
+  }
+  const above = new Map<number, { x: number; y: number; w: number; leader: boolean }>()
+  const taken: Box[][] = Array.from({ length: ROWS }, () => [])
+  for (const v of [...moved].sort((a, b) => a - b)) {
+    const text = marked.get(v)!
+    const w = labelWidth(text, SIZE) + 2
+    // Inside the drawing: the middle of the label is the point, moved in just as far as it takes to keep all of the words in the box.
+    const x = Math.min(Math.max(px(v), EDGE + w / 2), VIEW_W - EDGE - w / 2)
+    const up = raisedLabel(text) ? 17 : 11
+    let row = 0
+    while (row < ROWS - 1 && hitsAny(boxOf(x, (hops.length ? ABOVE_HOPS : ABOVE_PLAIN) - row * ROW, 'middle', w + 4, up, 4), taken[row]!)) row += 1
+    const y = (hops.length ? ABOVE_HOPS : ABOVE_PLAIN) - row * ROW
+    taken[row]!.push(boxOf(x, y, 'middle', w + 4, up, 4))
+    // Over the hops the label is far from its point: a thin dotted line brings the eye down to the end of the last hop.
+    above.set(v, { x, y, w, leader: hops.length > 0 && row === 0 && Math.abs(v - target) < 1e-6 })
+  }
   return (
-    <Svg width={285} height={190} label={describeNumberLine(props)}>
+    <Svg width={VIEW_W} height={190} label={describeNumberLine(props)}>
       <Line x1={X0} y1={Y} x2={X1} y2={Y} w={2} cap="round" />
       {hops.map(([a, b], i) => {
         const xa = px(a)
@@ -56,14 +95,28 @@ export function NumberLine(props: NumberLineProps) {
         return (
           <g key={v}>
             <Line x1={x} y1={Y - 8} x2={x} y2={Y + 8} w={2} cap="round" />
-            <T x={x} y={138} size={13} weight={m ? 600 : 400} fill={m ? CORAL_TEXT : INK}>
-              {marked.get(v) ?? tickLabel(v)}
-            </T>
+            {moved.has(v) ? (
+              <T x={x} y={TICK_Y} size={SIZE} weight={400} fill={INK}>
+                {tickLabel(v)}
+              </T>
+            ) : (
+              <T x={x} y={TICK_Y} size={SIZE} weight={m ? 600 : 400} fill={m ? CORAL_TEXT : INK}>
+                {marked.get(v) ?? tickLabel(v)}
+              </T>
+            )}
           </g>
         )
       })}
       {[...marked.keys()].map((v) => (
         <circle key={v} cx={Math.round(px(v) * 10) / 10} cy={Y} r={7} fill={CORAL} stroke={INK} strokeWidth={1.5} />
+      ))}
+      {[...above].map(([v, at]) => (
+        <g key={`above${v}`}>
+          {at.leader && <line x1={r1(px(v))} y1={at.y + 7} x2={r1(px(v))} y2={Y - 9} stroke={BODY} strokeWidth={1.2} strokeDasharray="2 3" strokeLinecap="round" />}
+          <T x={r1(at.x)} y={at.y} size={SIZE} weight={600} fill={CORAL_TEXT} attrs={{ 'data-mark-label': 'above' }}>
+            {marked.get(v)!}
+          </T>
+        </g>
       ))}
     </Svg>
   )

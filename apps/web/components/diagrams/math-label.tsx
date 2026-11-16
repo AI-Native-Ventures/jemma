@@ -409,6 +409,9 @@ function widthOf(runs: Run[], size: number): number {
   return runs.reduce((w, r) => w + (r.frac ? Math.max(widthOf(r.frac.num, size), widthOf(r.frac.den, size)) + size * 0.5 : [...r.text].length * size * 0.62), 0)
 }
 
+/** A rough width of a label in px at `size` (the same estimate that gives a fraction its box): for keeping labels clear of the numbers and of each other, not a measurement. */
+export const labelWidth = (text: string, size: number): number => widthOf(labelRuns(text) ?? [{ text }], size)
+
 type FracLabelProps = {
   text: string
   x: number
