@@ -21,7 +21,7 @@ export const LIST_MAX_VALUES = 10
 export const ORDER_MAX_ITEMS = 8
 export const TABLE_MAX_COLUMNS = 4
 export const TABLE_MAX_ROWS = 6
-/** The longest label over a box, and the most places a question may ask a rounding to. */
+/** The longest label over a box, and the most places a question may ask a rounding to (the same 6 as P148). */
 export const LABEL_MAX_LENGTH = 24
 export const ROUND_MAX = 6
 
@@ -63,6 +63,19 @@ export function roundTo(v: number, places: number): number {
 /** Two values are the same when they differ by less than a billionth of their size (and of 1), as in `meaning.ts`. */
 const close = (a: number, b: number) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b))
 
+/** `v` rounded half away from zero at `places` places, as a whole number of the last place (3,145 at 2 places is 315). A hair is added against 3,135 being held as 3,13499999. */
+const scaled = (v: number, places: number): number => {
+  const whole = Math.floor(Math.abs(v) * 10 ** places + 0.5 + 1e-9)
+  return v < 0 ? -whole : whole
+}
+
+/**
+ * The rule of `round` (the same as P148's `quantity.ts`): a typed value is right when it is the key's value, or rounds to the key's value at that many places
+ * ("correct to 1 decimal place": 3,14 and 3,1 are right for 3,14159, 3,2 is not).
+ */
+const sameValue = (typed: number, key: number, round: number | undefined): boolean =>
+  close(typed, key) || (round !== undefined && scaled(typed, round) === scaled(key, round))
+
 /** `cells[i]` is whether value i is right: its place for a fixed order, its turn for any order. Right as a whole when every cell is and the count is the key's. */
 export type ValuesMark = { correct: boolean; comparable: boolean; cells: boolean[] }
 const UNREAD: ValuesMark = { correct: false, comparable: false, cells: [] }
@@ -82,30 +95,30 @@ function keyValues(key: string, read: Reader): number[] | null {
 export function markValues(key: string, answer: string, options: ListOptions, read: Reader): ValuesMark {
   const keyed = keyValues(key, read)
   if (!keyed) return UNREAD
-  const want = options.round === undefined ? keyed : keyed.map((v) => roundTo(v, options.round!))
+  const same = (typed: number, key: number) => sameValue(typed, key, options.round)
   const typed = splitValues(answer).map((t) => {
     const v = read(t)
     return v !== null && Number.isFinite(v) ? v : null
   })
   if (typed.length === 0 || typed.some((v) => v === null)) {
     // An answer that does not read: right nowhere. The cells still say which values were fine, for the results.
-    return { correct: false, comparable: false, cells: placeCells(want, typed, options.ordered === true) }
+    return { correct: false, comparable: false, cells: placeCells(keyed, typed, options.ordered === true, same) }
   }
-  const cells = placeCells(want, typed, options.ordered === true)
-  return { correct: typed.length === want.length && cells.every(Boolean), comparable: true, cells }
+  const cells = placeCells(keyed, typed, options.ordered === true, same)
+  return { correct: typed.length === keyed.length && cells.every(Boolean), comparable: true, cells }
 }
 
-function placeCells(want: number[], typed: (number | null)[], ordered: boolean): boolean[] {
+function placeCells(want: number[], typed: (number | null)[], ordered: boolean, same: (typed: number, key: number) => boolean): boolean[] {
   if (ordered) {
     return Array.from({ length: Math.max(want.length, typed.length) }, (_, i) => {
       const v = typed[i]
-      return v !== null && v !== undefined && i < want.length && close(v, want[i]!)
+      return v !== null && v !== undefined && i < want.length && same(v, want[i]!)
     })
   }
   const unused = [...want]
   const cells = typed.map((v) => {
     if (v === null) return false
-    const at = unused.findIndex((w) => close(v, w))
+    const at = unused.findIndex((w) => same(v, w))
     if (at < 0) return false
     unused.splice(at, 1)
     return true
@@ -144,6 +157,7 @@ const tableProblem = (t: Table | undefined, count: number): string | null => {
 
 /** Why the key of a list, an order or a table cannot be marked, or null when it can (the save gate asks this of every key of these kinds). */
 export function listKeyProblem(q: ListQuestion, read: Reader): string | null {
+  if (q.round !== undefined && !(Number.isInteger(q.round) && q.round >= 0 && q.round <= ROUND_MAX)) return `round must be a whole number from 0 to ${ROUND_MAX}`
   if (q.answer.length > LIST_MAX_LENGTH) return `answer is longer than ${LIST_MAX_LENGTH} characters`
   const texts = splitValues(q.answer)
   for (const t of texts) {

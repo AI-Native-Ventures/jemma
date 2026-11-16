@@ -148,11 +148,22 @@ describe('rounding', () => {
     expect(roundTo(2.5, 0)).toBe(3)
     expect(roundTo(7.25, 1)).toBe(7.3)
   })
-  test('a list accepts the key rounded as the question says, and not another rounding', () => {
+  test('a list accepts a value that rounds to the key as the question says (the rule of P148), and not another rounding', () => {
     const q = list('3,14159; 2,71828', { ordered: true, round: 2 })
     expect(right(q, '3,14; 2,72')).toBe(true)
+    // More places than asked still rounds to the key: right, as for a number with `round`.
+    expect(right(q, '3,142; 2,718')).toBe(true)
+    expect(right(q, '3,14159; 2,71828')).toBe(true)
     expect(right(q, '3,1; 2,7')).toBe(false)
-    expect(right(q, '3,142; 2,718')).toBe(false)
+    expect(right(q, '3,15; 2,72')).toBe(false)
+  })
+  test('rounding half away from zero, and negatives', () => {
+    const q = list('-2,345; 7,125', { ordered: true, round: 2 })
+    expect(right(q, '-2,35; 7,13')).toBe(true)
+    expect(right(q, '-2,34; 7,12')).toBe(false)
+  })
+  test('in any order, each value rounds to a key value', () => {
+    expect(right(list('3,14159; 2,71828', { ordered: false, round: 1 }), '2,7; 3,1')).toBe(true)
   })
   test('without the field the key is compared as it is', () => {
     expect(right(list('3,14; 2,72', { ordered: true }), '3,1; 2,7')).toBe(false)
@@ -170,7 +181,7 @@ describe('rounding', () => {
   test('a table rounds too', () => {
     const q = table('2,333; 4,667', [[null, 'a'], [null, 'b']], { round: 1 })
     expect(right(q, '2,3; 4,7')).toBe(true)
-    expect(right(q, '2,33; 4,67')).toBe(false)
+    expect(right(q, '2,4; 4,7')).toBe(false)
   })
 })
 
@@ -196,6 +207,12 @@ describe('the save gate: a key must be markable', () => {
     expect(problem(list('3; 5; 7', { labels: ['a', 'b', 'c'] }))).toBeNull()
     expect(problem(list('3; 5; 7', { labels: ['a', 'b'] }))).toMatch(/labels/)
     expect(problem(list('3; 5; 7', { labels: ['a', '', 'c'] }))).toMatch(/labels/)
+  })
+  test('round is a whole number of places from 0 to 6', () => {
+    expect(problem(list('3,14159; 2,71828', { round: 2 }))).toBeNull()
+    expect(problem(list('3; 5', { round: 7 }))).toMatch(/round/)
+    expect(problem(list('3; 5', { round: -1 }))).toMatch(/round/)
+    expect(problem(list('3; 5', { round: 1.5 }))).toMatch(/round/)
   })
   test('an order has 2 to 8 items', () => {
     expect(problem(order('1/2; 3/4'))).toBeNull()
@@ -256,9 +273,9 @@ describe('the schema', () => {
     expect(SeniorQuestionSchema.parse(table('3', [['1', null]])).table).toEqual({ columns: ['x', 'y'], rows: [['1', null]] })
     expect(SeniorQuestionSchema.safeParse({ ...base, answer: '3', answerKind: 'number' }).success).toBe(true)
   })
-  test('round is a whole number of places', () => {
+  test('round is a whole number (the save gate holds it to 0 to 6, as P148 does)', () => {
     expect(SeniorQuestionSchema.safeParse(list('3; 5', { round: 1.5 })).success).toBe(false)
-    expect(SeniorQuestionSchema.safeParse(list('3; 5', { round: -1 })).success).toBe(false)
+    expect(SeniorQuestionSchema.safeParse(list('3; 5', { round: 2 })).success).toBe(true)
   })
 })
 
