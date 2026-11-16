@@ -6,6 +6,8 @@ import { PendingButton } from '@/components/ui/Button'
 import { Frac, FractionText, withFractions } from './Frac'
 import { keySet, numberChars, pressKey, toggleSign, type KeySet, type MathKey } from './maths-keys'
 import { MathPreview } from './MathPreview'
+import { promptLayout } from './prompt-layout'
+import { QuestionContext, QuestionHeading } from './QuestionPrompt'
 import { QuestionPicture } from './QuestionPicture'
 
 const CHOICE_LETTERS = ['A', 'B', 'C', 'D']
@@ -362,7 +364,9 @@ function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b: Boxes;
 /** The question with its missing number as a box inside the fraction, big enough to tap, and the line under it. */
 function MissingQuestion({ q, shape, value, onChange }: { q: QuestionForChild; shape: Extract<AnswerShape, { kind: 'missing' }>; value: string; onChange: (v: string) => void }) {
   const { unknown } = shape.part
-  const words: ReactNode[] = withFractions(q.prompt, (n, d, k) => {
+  // A long prompt (P130): the sentences before the line that holds the fraction (and any after it) are normal text, and only that line is drawn big.
+  const layout = promptLayout(q.prompt, 'algebra')
+  const words: ReactNode[] = withFractions(layout.split ? layout.line : q.prompt, (n, d, k) => {
     const isMissing = n === null || d === null
     const slot = (
       <Box
@@ -390,9 +394,11 @@ function MissingQuestion({ q, shape, value, onChange }: { q: QuestionForChild; s
     <div className="flex flex-col items-center gap-3.5">
       {/* The words for a screen reader and for the page's own checks; the drawing is the row below. */}
       <h1 data-prompt={q.prompt} className="sr-only">{q.prompt}</h1>
+      {layout.before ? <div className="w-full"><QuestionContext text={layout.before} typeset="algebra" /></div> : null}
       <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2.5 text-[30px] leading-[1.2] font-bold">
         {words.map((part, i) => (typeof part === 'string' ? (part.trim() ? <span key={`t${i}`} aria-hidden="true">{part.trim()}</span> : null) : part))}
       </div>
+      {layout.after ? <div className="w-full"><QuestionContext text={layout.after} typeset="algebra" /></div> : null}
       <Hint>Type the missing number.</Hint>
     </div>
   )
@@ -471,9 +477,7 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
           </>
         ) : (
           <>
-            <h1 data-prompt={q.prompt} className="m-0 text-[28px] leading-[1.2] font-semibold">
-              <FractionText text={q.prompt} size={34} rule={3} gap={4} side={5} className="mx-1.5 align-middle" typeset={typeset} />
-            </h1>
+            <QuestionHeading prompt={q.prompt} typeset={typeset} tone="warm" />
             <QuestionPicture spec={q.diagram} />
             {shape.kind === 'choice' ? <Choices q={q} picked={picked} onPick={setPicked} warm /> : <AnswerArea shape={shape} b={boxes} prompt={q.prompt} topic={topic} />}
           </>
@@ -524,9 +528,7 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
                 <span className="sr-only">{q.prompt} equals what?</span>
               </h1>
             ) : (
-              <h1 data-prompt={q.prompt} className="m-0 text-center text-[30px] leading-[1.2] font-bold">
-                <FractionText text={q.prompt} size={34} rule={3} gap={4} side={5} typeset={typeset} />
-              </h1>
+              <QuestionHeading prompt={q.prompt} typeset={typeset} tone="try" />
             )}
             <QuestionPicture spec={q.diagram} />
             {shape.kind === 'choice' ? <Choices q={q} picked={picked} onPick={setPicked} warm={false} /> : <AnswerArea shape={shape} b={boxes} prompt={q.prompt} topic={topic} />}
