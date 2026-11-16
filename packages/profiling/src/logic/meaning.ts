@@ -148,7 +148,8 @@ const tokenize = (text: string): Tok[] => {
       out.push({ k: 'op', c: '*', explicit: true })
       i++
     } else if (c === '/' || c === '\u00f7' || c === '\u2044') {
-      out.push({ k: 'op', c: '/' })
+      // A division sign is remembered, so the line that shows an answer back can draw it as a sign and not as a fraction.
+      out.push(c === '\u00f7' ? { k: 'op', c: '/', explicit: true } : { k: 'op', c: '/' })
       i++
     } else if (c === '(' || c === '[') {
       out.push({ k: 'lp' })
@@ -196,7 +197,7 @@ const parseTokens = (toks: Tok[]): MathNode => {
         left =
           (t as { c: string }).c === '*'
             ? { t: 'mul', a: left, b: unary(), ...((t as { explicit?: boolean }).explicit ? { explicit: true } : {}) }
-            : { t: 'div', a: left, b: unary() }
+            : { t: 'div', a: left, b: unary(), ...((t as { explicit?: boolean }).explicit ? { explicit: true } : {}) }
       } else if (t && (t.k === 'var' || t.k === 'lp' || t.k === 'sqrt' || t.k === 'pi' || t.k === 'fn')) {
         left = { t: 'mul', a: left, b: power() }
       } else {

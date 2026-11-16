@@ -281,9 +281,10 @@ describe('results: worked steps, "How to get there", on every card that has them
   it('the lines go through the shared maths text: a power is raised, a fraction is stacked, the plain words stay for a screen reader', () => {
     const card = page([right(1, { steps: ['x^2 + 4x + 4', '1/2 = 3/6'] })]).querySelector('[data-steps]')!
     const [power, fraction] = [...card.querySelectorAll('li')]
-    expect(power!.querySelector('sup')?.textContent).toBe('2')
+    // Typeset by KaTeX since P125b: the power is raised, each fraction is stacked.
+    expect(power!.querySelector('.msupsub')?.textContent).toBe('2')
     expect(power!.querySelector('.sr-only')?.textContent).toContain('x^2')
-    expect(fraction!.querySelectorAll('span.inline-flex.flex-col').length).toBe(2)
+    expect(fraction!.querySelectorAll('.mfrac').length).toBe(2)
   })
 
   it('a long line of terms is never cut between a sign and its number', () => {

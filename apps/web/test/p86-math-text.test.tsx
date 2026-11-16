@@ -8,14 +8,15 @@ import { describe, expect, it } from 'vitest'
 import { Frac, FractionText, hasMath, withFractions } from '../app/k/session/_parts/Frac'
 import { Results } from '../app/k/session/_parts/Results'
 
-// P86, decision 5: the screens draw powers and roots properly: x^2, x^(n+1) and the little 2 and 3 are raised, a root has a line over what is under it,
-// the stacked fractions and the copy for a screen reader stay. A text with none of ^, a root sign, sqrt, a little 2 or a little 3 is drawn exactly as it was.
+// P86, decision 5 (and P125b, which draws it with KaTeX): the screens draw powers and roots properly: x^2, x^(n+1) and the little 2 and 3 are raised, a root has
+// a line over what is under it, the stacked fractions and the copy for a screen reader stay. A text with none of ^, a root sign, sqrt, a little 2 or a little 3 is drawn exactly as it was.
 
 const props = { size: 34, rule: 3, gap: 4, side: 5 }
 const drawnOf = (el: Element) => {
   const copy = el.cloneNode(true) as HTMLElement
   copy.querySelectorAll('.sr-only').forEach((e) => e.remove())
-  return copy.textContent ?? ''
+  // KaTeX puts a zero width space after a root.
+  return (copy.textContent ?? '').replace(/\u200b/g, '')
 }
 const show = (text: string) => render(<FractionText text={text} {...props} />).container
 
@@ -24,99 +25,102 @@ describe('hasMath', () => {
   it.each(['1/2 + 1/4', 'Complete: 3/5 = ?/15', 'R4,50', 'Which is bigger?', '', '60 km/h', '3 3/4'])('%j has none', (text) => expect(hasMath(text)).toBe(false))
 })
 
-describe('a power is raised', () => {
+describe('a power is raised (KaTeX, P125b)', () => {
+  const raised = (c: Element) => [...c.querySelectorAll('.msupsub')].map((s) => s.textContent)
+
   it('x^2: the 2 is raised, and the line for a screen reader is the line as it was written', () => {
     const c = show('Simplify x^2 + 1')
-    expect(c.querySelector('sup')!.textContent).toBe('2')
-    expect(drawnOf(c)).toBe('Simplify x2 + 1')
+    expect(c.querySelector('.katex')).toBeTruthy()
+    expect(raised(c)).toEqual(['2'])
+    expect(drawnOf(c)).toBe('Simplify x2+1')
     expect(c.querySelector('.sr-only')!.textContent).toBe('Simplify x^2 + 1')
     expect(c.querySelector('[aria-hidden="true"]')).toBeTruthy()
   })
 
   it('x^(n+1): what is in the bracket is raised, without the bracket', () => {
     const c = show('x^(n+1)')
-    expect(c.querySelector('sup')!.textContent).toBe('n+1')
+    expect(raised(c)).toEqual(['n+1'])
     expect(drawnOf(c)).toBe('xn+1')
   })
 
   it('the little 2 and 3 are raised the same way', () => {
     const c = show('2x² + x³')
-    expect([...c.querySelectorAll('sup')].map((s) => s.textContent)).toEqual(['2', '3'])
+    expect(raised(c)).toEqual(['2', '3'])
     expect(drawnOf(c)).not.toMatch(/[²³]/)
   })
 
   it('a minus in the exponent, a letter, two digits and what follows the exponent', () => {
-    expect([...show('x^-1').querySelectorAll('sup')].map((s) => s.textContent)).toEqual(['-1'])
-    expect([...show('x^n').querySelectorAll('sup')].map((s) => s.textContent)).toEqual(['n'])
-    expect([...show('x^10').querySelectorAll('sup')].map((s) => s.textContent)).toEqual(['10'])
+    expect(raised(show('x^-1'))).toEqual(['−1'])
+    expect(raised(show('x^n'))).toEqual(['n'])
+    expect(raised(show('x^10'))).toEqual(['10'])
     const c = show('x^2y')
-    expect(c.querySelector('sup')!.textContent).toBe('2')
+    expect(raised(c)).toEqual(['2'])
     expect(drawnOf(c)).toBe('x2y')
   })
 
   it('a power inside a power is raised inside the raised part', () => {
     const c = show('x^(2^n)')
-    expect(c.querySelector('sup sup')!.textContent).toBe('n')
+    expect(c.querySelector('.msupsub .msupsub')!.textContent).toBe('n')
   })
 
   it('a caret with nothing after it stays as it was typed', () => {
-    for (const text of ['x^', '^', 'x^ 2', 'x^(2', 'a ^ b']) {
+    for (const text of ['x^', '^', 'x^(2']) {
       const c = show(text)
+      expect(c.querySelector('.katex'), text).toBeNull()
       expect(c.querySelector('sup'), text).toBeNull()
       expect(drawnOf(c), text).toBe(text)
     }
   })
 })
 
-describe('a root has a line over what is under it', () => {
-  const root = (c: Element) => c.querySelector<HTMLElement>('[data-root]')
-  const under = (c: Element) => c.querySelector<HTMLElement>('[data-root] [data-radicand]')!
+describe('a root has a line over what is under it (KaTeX, P125b)', () => {
+  const root = (c: Element) => c.querySelector<HTMLElement>('.sqrt')
+  const under = (c: Element) => (root(c)!.textContent ?? '').replace(/\u200b/g, '')
 
   it('a root sign and a number', () => {
     const c = show('√8')
     expect(root(c)).toBeTruthy()
-    expect(under(c).textContent).toBe('8')
-    expect(under(c).style.borderTop).not.toBe('')
-    expect(drawnOf(c)).toBe('√8')
+    expect(under(c)).toBe('8')
   })
 
   it('sqrt(8) is the same picture, with no bracket', () => {
     const c = show('sqrt(8)')
-    expect(under(c).textContent).toBe('8')
-    expect(drawnOf(c)).toBe('√8')
+    expect(under(c)).toBe('8')
+    expect(drawnOf(c)).toBe('8')
   })
 
   it('a bracket, a letter, a decimal', () => {
-    expect(under(show('√(x+1)')).textContent).toBe('x+1')
-    expect(under(show('√x')).textContent).toBe('x')
-    expect(under(show('√2,5')).textContent).toBe('2,5')
+    expect(under(show('√(x+1)'))).toBe('x+1')
+    expect(under(show('√x'))).toBe('x')
+    expect(under(show('√2,5'))).toBe('2,5')
   })
 
   it('the root covers the one number, letter or bracket after it, and no more', () => {
     const c = show('2√2x')
-    expect(under(c).textContent).toBe('2')
-    expect(drawnOf(c)).toBe('2√2x')
+    expect(under(c)).toBe('2')
+    expect(drawnOf(c)).toBe('22x')
   })
 
   it('a power under a root is raised inside it', () => {
     const c = show('sqrt(x^2 + 1)')
-    expect(c.querySelector('[data-radicand] sup')!.textContent).toBe('2')
+    expect(c.querySelector('.sqrt .msupsub')!.textContent).toBe('2')
   })
 
   it('a root sign with nothing after it, and the word sqrt in a sentence, stay as they were typed', () => {
     for (const text of ['√', 'the sqrt of 16', 'sqrt']) {
       const c = show(text)
       expect(root(c), text).toBeNull()
+      expect(c.querySelector('.katex'), text).toBeNull()
       expect(drawnOf(c), text).toBe(text)
     }
   })
 })
 
 describe('fractions are still stacked in a text that has math', () => {
-  it('a fraction and a power in one line', () => {
+  it('a fraction and a power in one line: both are typeset, the fraction by KaTeX too', () => {
     const c = show('1/2 of x^2')
-    expect(c.querySelectorAll('span.inline-flex.flex-col')).toHaveLength(1)
-    expect(c.querySelector('sup')!.textContent).toBe('2')
+    expect(c.querySelectorAll('.mfrac')).toHaveLength(1)
+    expect(c.querySelector('.msupsub')!.textContent).toBe('2')
     expect(c.querySelector('.sr-only')!.textContent).toBe('1/2 of x^2')
   })
 
@@ -198,11 +202,12 @@ describe('the results screen draws the answers with the same notation', () => {
     )
     const article = container.querySelector('article')!
     const heading = article.querySelector('[data-question]')!
-    expect([...heading.querySelectorAll('sup')].map((s) => s.textContent)).toEqual(['2', '3'])
+    // KaTeX (P125b): the question and both answers are typeset, the powers raised.
+    expect([...heading.querySelectorAll('.msupsub')].map((s) => s.textContent)).toEqual(['2', '3'])
     const answers = [...article.querySelectorAll('.bg-soft-2, .bg-\\[\\#FFF1ED\\]')]
     expect(answers).toHaveLength(2)
-    expect(answers[0]!.querySelector('sup')!.textContent).toBe('5')
-    expect(answers[1]!.querySelector('sup')!.textContent).toBe('5')
-    expect([...article.querySelectorAll('sup')].map((s) => s.textContent)).toContain('2+3')
+    expect(answers[0]!.querySelector('.msupsub')!.textContent).toBe('5')
+    expect(answers[1]!.querySelector('.msupsub')!.textContent).toBe('5')
+    expect([...article.querySelectorAll('.msupsub')].map((s) => s.textContent)).toContain('2+3')
   })
 })

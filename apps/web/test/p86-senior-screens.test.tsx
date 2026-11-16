@@ -140,7 +140,7 @@ describe('an expression', () => {
     type('Your answer', '2x^2 + 7x')
     const line = reads()!
     expect(line.textContent).toContain('It reads:')
-    expect(line.querySelector('sup')!.textContent).toBe('2')
+    expect(line.querySelector('.msupsub')!.textContent).toBe('2')
   })
 
   it('a key puts its sign in the box where the cursor is, and the cursor stays after it', () => {
@@ -311,14 +311,14 @@ describe('the question itself is drawn with the notation', () => {
     const { container } = show(ask({ prompt: 'Simplify x^2 * x^3', answerKind: 'expression' }))
     const h1 = container.querySelector('h1[data-prompt]')!
     expect(h1.getAttribute('data-prompt')).toBe('Simplify x^2 * x^3')
-    expect([...h1.querySelectorAll('sup')].map((s) => s.textContent)).toEqual(['2', '3'])
+    expect([...h1.querySelectorAll('.msupsub')].map((s) => s.textContent)).toEqual(['2', '3'])
     expect(container.querySelectorAll('h1[data-prompt]')).toHaveLength(1)
   })
 
   it('a warm-up of a senior class is a choice, as always', () => {
     const { container } = show(ask({ phase: 'warmup', of: 2, prompt: 'What is x^2 when x = 3?', answerKind: 'choice', choices: ['6', '9', '8', '5'] }))
     expect(container.querySelectorAll('button[aria-pressed]')).toHaveLength(4)
-    expect(container.querySelector('h1 sup')!.textContent).toBe('2')
+    expect(container.querySelector('h1 .msupsub')!.textContent).toBe('2')
   })
 })
 

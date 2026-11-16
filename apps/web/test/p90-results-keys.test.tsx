@@ -61,7 +61,7 @@ describe('results: an algebra answer keeps its terms whole', () => {
   it('a power keeps its raised number inside its term', () => {
     const { wrote } = boxes(page({ wrote: 'x^2 + 4x + 4', right: 'x² + 4x + 4' }))
     expect(pieces(wrote)).toHaveLength(3)
-    expect(wrote.querySelectorAll('.whitespace-nowrap')[0]!.querySelector('sup')!.textContent).toBe('2')
+    expect(wrote.querySelectorAll('.whitespace-nowrap')[0]!.querySelector('.msupsub')!.textContent).toBe('2')
     expect(pieces(boxes(page({ wrote: 'x^2 + 4x + 4' })).right)).toHaveLength(2)
   })
 
