@@ -35,6 +35,7 @@ export default async function FixMarkPage({
       total={view.results.reduce((s, r) => s + r.mark, 0)}
       results={view.results.map((r) => ({ id: r.id, n: r.n, prompt: r.prompt, answer: r.answer, correct: r.correct, keyAnswer: r.keyAnswer, confidence: r.confidence }))}
       openN={sheetFor ?? null}
+      grade={cls?.grade ?? null}
     />
   )
 }

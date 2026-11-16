@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Maths } from '@/components/Maths'
 import { IconLabel } from '@/components/ui/IconLabel'
 import { notFound } from 'next/navigation'
 import { getChildProfileView, dayLabel } from '@/lib/data/p19'
@@ -124,7 +125,7 @@ export default async function ChildProfilePage({ params }: { params: Promise<{ c
             <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
               {v.noticed.map((n, i) => (
                 <li key={i} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '14px 0', ...(i > 0 ? { borderTop: '1px solid #EFEEF4' } : {}) }}>
-                  <span style={{ fontSize: 16, lineHeight: 1.45, fontWeight: 500 }}>{n.text}</span>
+                  <span style={{ fontSize: 16, lineHeight: 1.45, fontWeight: 500 }}><Maths text={n.text} size={17} /></span>
                   <span style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {n.chips.map((c) => (
                       <Link key={c} href={v.testId ? `${base}/tests/${v.testId}` : `${base}/tests`} style={chip}>{docIcon}{c}</Link>
@@ -184,7 +185,7 @@ export default async function ChildProfilePage({ params }: { params: Promise<{ c
           {v.latestNote ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: '#5D5A73' }}>{v.latestNote.label}</span>
-              <span style={{ fontSize: 15, lineHeight: 1.45 }}>{v.latestNote.text}</span>
+              <span style={{ fontSize: 15, lineHeight: 1.45 }}><Maths text={v.latestNote.text} size={16} /></span>
             </div>
           ) : null}
           <Link href={`${base}/learners/${v.id}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 46, padding: '10px 20px', borderRadius: 12, border: '1.5px solid #1F1D36', color: '#1F1D36', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>

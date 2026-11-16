@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { TabBar } from '@/components/blocks'
+import { Maths } from '@/components/Maths'
 import { GemIcon } from '@/components/ui/icons'
+import { getChildGrade } from '@/lib/data/maths-grade'
 import { dayLabel, FORMAT_LABEL, loadSessionResult, mmss, sessionStamp, type SessionItemView } from '@/lib/data/p25'
 import { Overlay } from '../../learn/_overlay'
 
@@ -28,7 +30,7 @@ function Mark({ correct }: { correct: boolean }) {
   )
 }
 
-function ItemRow({ item }: { item: SessionItemView }) {
+function ItemRow({ item, grade }: { item: SessionItemView; grade: number | null }) {
   const note =
     item.adapted === 'easier'
       ? 'Made easier after the miss'
@@ -39,10 +41,15 @@ function ItemRow({ item }: { item: SessionItemView }) {
     <li className={`flex items-center gap-2.5 border-t border-soft ${note ? 'min-h-16' : 'min-h-14'}`}>
       <span className="w-[26px] flex-none text-[13px] font-semibold text-body">{item.position}</span>
       <span className="flex flex-1 flex-col leading-[1.3]">
-        <span className="text-[15px] font-medium">{item.prompt}</span>
+        <span className="text-[15px] font-medium"><Maths text={item.prompt} grade={grade} size={16} /></span>
         <span className="text-[13px] text-body">
-          Wrote {item.wrote}
-          {item.correct ? '' : `, right is ${item.right}`} · {mmss(item.seconds)}
+          Wrote <Maths text={item.wrote} grade={grade} size={15} />
+          {item.correct ? null : (
+            <>
+              , right is <Maths text={item.right} grade={grade} size={15} />
+            </>
+          )}{' '}
+          · {mmss(item.seconds)}
         </span>
         {note ? <span className="text-[12px] font-semibold text-ink">{note}</span> : null}
       </span>
@@ -73,7 +80,7 @@ const DashedArrow = () => (
 
 export default async function ParentSessionPage({ params }: { params: Promise<{ childId: string; sessionId: string }> }) {
   const { childId, sessionId } = await params
-  const r = await loadSessionResult(childId, sessionId)
+  const [r, grade] = await Promise.all([loadSessionResult(childId, sessionId), getChildGrade(childId)])
   if (!r) notFound()
   const name = r.childFirstName
   const at = r.stage === 'new' ? 0 : r.stage === 'practising' ? 1 : 2
@@ -134,7 +141,7 @@ export default async function ParentSessionPage({ params }: { params: Promise<{ 
           </div>
           <ol className="m-0 flex list-none flex-col p-0">
             {r.items.map((item) => (
-              <ItemRow key={item.position} item={item} />
+              <ItemRow key={item.position} item={item} grade={grade} />
             ))}
           </ol>
         </section>

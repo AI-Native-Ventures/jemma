@@ -1,5 +1,7 @@
 import Link from 'next/link'
+import { Maths } from '@/components/Maths'
 import { CameraIcon, ChevronRightIcon } from '@/components/ui/icons'
+import { getClassGrade } from '@/lib/data/maths-grade'
 import { getQuestionDetail, type Learner, type TestSummary } from '@/lib/data/p20'
 import { getReteachCard, getSlips, laptopSummary } from '@/lib/data/p34'
 import { Diamond } from '../snap/_parts'
@@ -10,12 +12,12 @@ const avatar = (name: string, coral: boolean, size: number) => (
   </span>
 )
 
-function LearnerLink({ href, learner, coral }: { href: string; learner: Learner; coral: boolean }) {
+function LearnerLink({ href, learner, coral, grade }: { href: string; learner: Learner; coral: boolean; grade: number | null }) {
   return (
     <Link href={href} className="flex min-h-[52px] items-center gap-2.5 rounded-14 bg-ground px-2.5 py-1.5 text-ink no-underline">
       {avatar(learner.name, coral, 32)}
       <span className="flex-1 text-[15px] font-semibold">{learner.name}</span>
-      <span className="font-hand text-[20px] leading-none text-navy">{learner.answer}</span>
+      <span className="max-w-[55%] font-hand text-[20px] leading-none text-navy"><Maths text={learner.answer} grade={grade} size={18} /></span>
       <ChevronRightIcon size={18} className="flex-none" />
     </Link>
   )
@@ -38,9 +40,10 @@ export async function LaptopTests({
   const base = `/t/${classId}`
   const hardest = test?.questions.length ? test.questions.reduce((a, b) => (b.right < a.right ? b : a)) : null
   const focus = test?.questions.find((q) => q.n === n)?.n ?? hardest?.n ?? null
-  const [slips, detail] = await Promise.all([
+  const [slips, detail, grade] = await Promise.all([
     test ? getSlips(test.id) : Promise.resolve(new Map<number, string>()),
     test && focus ? getQuestionDetail(classId, test.id, focus) : Promise.resolve(null),
+    getClassGrade(classId),
   ])
   const reteach = detail?.gap ? await getReteachCard(classId, detail.gap.topicId) : null
   const summary = detail ? laptopSummary(detail) : null
@@ -122,7 +125,7 @@ export async function LaptopTests({
                     <th scope="row" className="py-0 pr-2 pl-2.5 text-left font-semibold">
                       <Link href={href(test!.id, q.n)} scroll={false} aria-current={on ? 'true' : undefined} className="flex min-h-12 items-center text-ink no-underline">Q{q.n}</Link>
                     </th>
-                    <td className="px-2 text-[14px]">{q.prompt}</td>
+                    <td className="px-2 text-[14px]"><Maths text={q.prompt} grade={grade} size={16} /></td>
                     <td className="px-2 text-[13px] text-body">{q.topic}</td>
                     <td className="px-2">
                       <span className="flex items-center gap-2">
@@ -144,13 +147,13 @@ export async function LaptopTests({
           <section aria-labelledby="q1" className="flex min-w-0 flex-[1_1_300px] flex-col gap-3.5 rounded-20 border border-line bg-card p-5">
             <div className="flex flex-col gap-1">
               <span className="text-[13px] font-semibold text-body">Question {detail.n} · {detail.topic}</span>
-              <h2 id="q1" className="m-0 text-[24px] font-bold">{detail.prompt}</h2>
-              <span className="text-[14px] text-body">Right answer {detail.rightAnswer} · {detail.marks} mark{detail.marks === 1 ? '' : 's'}</span>
+              <h2 id="q1" className="m-0 text-[24px] font-bold"><Maths text={detail.prompt} grade={grade} size={24} className="mx-0.5 align-middle" /></h2>
+              <span className="text-[14px] text-body">Right answer <Maths text={detail.rightAnswer} grade={grade} size={16} /> · {detail.marks} mark{detail.marks === 1 ? '' : 's'}</span>
             </div>
             {summary ? (
               <p className="m-0 flex gap-2.5 text-[16px] leading-[1.45] font-medium">
                 <Diamond size={12} className="mt-1.5" />
-                <span>{summary}</span>
+                <span><Maths text={summary} size={17} /></span>
               </p>
             ) : null}
             {detail.missed.length > 0 ? (
@@ -158,7 +161,7 @@ export async function LaptopTests({
                 <h3 className="m-0 text-[15px] font-semibold">Missed it</h3>
                 <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
                   {detail.missed.map((l, i) => (
-                    <li key={l.childId}><LearnerLink href={`${base}/learners/${l.childId}/profile`} learner={l} coral={i === 0} /></li>
+                    <li key={l.childId}><LearnerLink href={`${base}/learners/${l.childId}/profile`} learner={l} coral={i === 0} grade={grade} /></li>
                   ))}
                 </ul>
               </>
@@ -168,7 +171,7 @@ export async function LaptopTests({
                 <h3 className="m-0 text-[15px] font-semibold">Got it right</h3>
                 <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
                   {detail.right.map((l) => (
-                    <li key={l.childId}><LearnerLink href={`${base}/learners/${l.childId}/profile`} learner={l} coral={false} /></li>
+                    <li key={l.childId}><LearnerLink href={`${base}/learners/${l.childId}/profile`} learner={l} coral={false} grade={grade} /></li>
                   ))}
                 </ul>
               </>

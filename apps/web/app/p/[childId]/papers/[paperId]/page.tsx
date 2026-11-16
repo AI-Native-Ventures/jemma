@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { TabBar } from '@/components/blocks'
+import { Maths } from '@/components/Maths'
 import { requireRole } from '@/lib/auth'
 import { getPaperDetail, sharedTopicWord } from '@/lib/data/p24'
 import { getTestsLaptop } from '@/lib/data/p36'
@@ -71,8 +72,17 @@ export default async function ParentPaperPage({
                     <Link href={flagHref(r.id)} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 0', color: 'inherit', textDecoration: 'none' }}>
                       <span style={{ width: 34, height: 34, flex: 'none', borderRadius: 10, background: '#FFE3DA', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{`Q${r.n}`}</span>
                       <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2, lineHeight: 1.35 }}>
-                        <span style={{ fontSize: 16, fontWeight: 600 }}>{r.prompt}</span>
-                        <span style={{ fontSize: 14, color: '#5D5A73' }}>{`Wrote ${r.answer}${r.rightAnswer ? `, right is ${r.rightAnswer}` : ''}`}</span>
+                        <span style={{ fontSize: 16, fontWeight: 600 }}><Maths text={r.prompt} grade={paper.child.grade} size={17} /></span>
+                        <span style={{ fontSize: 14, color: '#5D5A73' }}>
+                          {'Wrote '}
+                          <Maths text={r.answer} grade={paper.child.grade} size={15} />
+                          {r.rightAnswer ? (
+                            <>
+                              {', right is '}
+                              <Maths text={r.rightAnswer} grade={paper.child.grade} size={15} />
+                            </>
+                          ) : null}
+                        </span>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#5D5A73' }}>{r.topicName}</span>
                       </span>
                     </Link>

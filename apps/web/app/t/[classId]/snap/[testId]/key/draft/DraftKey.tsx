@@ -1,5 +1,6 @@
 'use client'
 
+import { Maths } from '@/components/Maths'
 import { PendingButton } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
@@ -10,7 +11,7 @@ import { shrinkPhoto } from '@/lib/shrink-photo'
 import { postFiles } from '@/lib/upload-client'
 import { approveKey, confirmKeyItem, type ActionResult } from '../../../actions'
 
-export function DraftKey({ classId, testId, items, unsure, approved, children }: { classId: string; testId: string; items: AnswerKeyItem[]; unsure: number[]; approved: boolean; children: ReactNode }) {
+export function DraftKey({ classId, testId, items, unsure, approved, grade = null, children }: { classId: string; testId: string; items: AnswerKeyItem[]; unsure: number[]; approved: boolean; grade?: number | null; children: ReactNode }) {
   const router = useRouter()
   const [editing, setEditing] = useState<number | null>(null)
   const [draft, setDraft] = useState('')
@@ -66,10 +67,10 @@ export function DraftKey({ classId, testId, items, unsure, approved, children }:
                 <li key={item.n} className="mx-[-6px] mt-1.5 mb-2 flex flex-col gap-2.5 rounded-16 border border-[#FFC9BB] bg-coral-wash p-3.5">
                   <span className="flex items-center gap-3">
                     <span className="w-[34px] flex-none text-[14px] font-bold text-coral-text">Q{item.n}</span>
-                    <span className="min-w-0 flex-1 text-[15px]">{item.prompt}</span>
-                    <span className="text-[16px] font-bold">{item.answer}</span>
+                    <span className="min-w-0 flex-1 text-[15px]"><Maths text={item.prompt} grade={grade} size={16} /></span>
+                    <span className="text-[16px] font-bold"><Maths text={item.answer} grade={grade} size={17} /></span>
                   </span>
-                  <span className="text-[15px] leading-[1.45]">{item.note ?? 'I am not sure about this one.'}</span>
+                  <span className="text-[15px] leading-[1.45]">{item.note ? <Maths text={item.note} grade={grade} size={16} /> : 'I am not sure about this one.'}</span>
                   {editing === item.n ? (
                     <span className="flex gap-2">
                       <input aria-label={`Answer to question ${item.n}`} value={draft} onChange={(e) => setDraft(e.target.value)} className="h-[46px] min-w-0 flex-1 rounded-12 border border-muted-2 bg-card px-3 text-[16px] outline-none" />
@@ -77,7 +78,7 @@ export function DraftKey({ classId, testId, items, unsure, approved, children }:
                     </span>
                   ) : (
                     <span className="grid grid-cols-2 gap-2">
-                      <button type="button" aria-pressed="false" disabled={pending} onClick={() => save(item.n, item.answer)} className="min-h-[46px] cursor-pointer rounded-12 border border-edge bg-card px-3 py-2 text-center text-[15px] font-medium text-balance text-ink">{item.answer} is right</button>
+                      <button type="button" aria-pressed="false" disabled={pending} onClick={() => save(item.n, item.answer)} className="min-h-[46px] cursor-pointer rounded-12 border border-edge bg-card px-3 py-2 text-center text-[15px] font-medium text-balance text-ink"><Maths text={item.answer} grade={grade} size={16} /> is right</button>
                       <button type="button" aria-pressed="false" onClick={() => { setEditing(item.n); setDraft(item.answer) }} className="min-h-[46px] cursor-pointer rounded-12 border border-edge bg-card px-3 py-2 text-center text-[15px] font-medium text-balance text-ink">Change it</button>
                     </span>
                   )}
@@ -87,8 +88,8 @@ export function DraftKey({ classId, testId, items, unsure, approved, children }:
             return (
               <li key={item.n} className={`flex min-h-12 items-center gap-3 ${idx > 0 ? 'border-t border-soft' : ''}`}>
                 <span className="w-[34px] flex-none text-[14px] font-bold text-body">Q{item.n}</span>
-                <span className="min-w-0 flex-1 text-[15px]">{item.prompt}</span>
-                <span className="text-[16px] font-bold tabular-nums">{item.answer}</span>
+                <span className="min-w-0 flex-1 text-[15px]"><Maths text={item.prompt} grade={grade} size={16} /></span>
+                <span className="text-[16px] font-bold tabular-nums"><Maths text={item.answer} grade={grade} size={17} /></span>
               </li>
             )
           })}

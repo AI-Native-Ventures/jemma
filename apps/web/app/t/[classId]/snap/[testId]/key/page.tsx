@@ -1,4 +1,5 @@
 import { READ_MIN, getKeyView, hhmm } from '@/lib/data/p31'
+import { getClassGrade } from '@/lib/data/maths-grade'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import { Poller } from '../../Poller'
 import { Diamond, Flow } from '../../_parts'
@@ -18,7 +19,7 @@ async function memoReadFailed(testId: string): Promise<boolean> {
 /** Board `teacher-snap-key`: check the answers Jemma read from the memo, then approve. */
 export default async function SnapKeyPage({ params }: { params: Promise<{ classId: string; testId: string }> }) {
   const { classId, testId } = await params
-  const key = await getKeyView(classId, testId)
+  const [key, grade] = await Promise.all([getKeyView(classId, testId), getClassGrade(classId)])
   const unsure = key.items.filter((i) => i.confidence < READ_MIN || i.note).length
   const failed = key.items.length === 0 && (await memoReadFailed(testId))
 
@@ -46,6 +47,7 @@ export default async function SnapKeyPage({ params }: { params: Promise<{ classI
             items={key.items}
             approved={key.status === 'approved'}
             unsure={unsure}
+            grade={grade}
             memo={{
               url: key.memoUrl,
               at: key.memoAt ? hhmm(key.memoAt) : null,

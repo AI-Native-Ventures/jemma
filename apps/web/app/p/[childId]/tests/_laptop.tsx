@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
+import { Maths } from '@/components/Maths'
 import type { PaperDetail, ResultRow } from '@/lib/data/p24'
 import type { TestsLaptop as TestsLaptopData } from '@/lib/data/p36'
 import { CAMERA_ICON, ChevronSvg, LaptopShell } from '../_laptop'
@@ -15,22 +16,22 @@ const displayPrompt = (p: string) => {
 }
 const circled = (r: ResultRow) => /^[A-D]$/.test(r.answer) || / or /.test(r.prompt)
 
-function SheetRow({ row, highlight }: { row: ResultRow; highlight: boolean }) {
+function SheetRow({ row, highlight, grade }: { row: ResultRow; highlight: boolean; grade: number | null }) {
   const miss = !row.correct
-  const box = `width:66px;height:36px;flex:none;border:${miss ? '2px solid #FF6A4D' : '1px solid #8F8F8F'};border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:${HAND};color:#2F3A56;font-size:20px;line-height:1`
+  const box = `min-width:66px;max-width:40%;padding:0 4px;height:36px;flex:none;border:${miss ? '2px solid #FF6A4D' : '1px solid #8F8F8F'};border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:${HAND};color:#2F3A56;font-size:20px;line-height:1`
   const rowStyle: CSSProperties = {
     ...css('display:flex;align-items:center;gap:10px;min-height:46px;border-top:1px solid #ECEAE2'),
     ...(highlight ? { background: '#FFF4F1', outline: '2px solid #FF6A4D', outlineOffset: -2 } : null),
   }
   return (
     <li data-q={row.n} data-highlight={highlight ? 'true' : undefined} style={rowStyle}>
-      <span style={css('flex:1;min-width:0;font-size:14px;line-height:1.3')}>{`${row.n}.  ${displayPrompt(row.prompt)}`}</span>
+      <span style={css('flex:1;min-width:0;font-size:14px;line-height:1.3')}>{`${row.n}.  `}<Maths text={displayPrompt(row.prompt)} grade={grade} size={16} /></span>
       {circled(row) ? (
-        <span style={css('width:66px;height:36px;flex:none;display:flex;align-items:center;justify-content:center')}>
-          <span style={css(`font-family:${HAND};color:#2F3A56;font-size:19px;line-height:1;border:1.5px solid #2F3A56;border-radius:50%;padding:3px 8px`)}>{row.answer}</span>
+        <span style={css('min-width:66px;max-width:40%;height:36px;flex:none;display:flex;align-items:center;justify-content:center')}>
+          <span style={css(`font-family:${HAND};color:#2F3A56;font-size:19px;line-height:1;border:1.5px solid #2F3A56;border-radius:50%;padding:3px 8px`)}><Maths text={row.answer} grade={grade} size={17} /></span>
         </span>
       ) : (
-        <span style={css(box)}>{row.answer}</span>
+        <span style={css(box)}><Maths text={row.answer} grade={grade} size={17} /></span>
       )}
       {miss ? (
         <span style={css('width:76px;flex:none;display:flex')}>
@@ -39,7 +40,7 @@ function SheetRow({ row, highlight }: { row: ResultRow; highlight: boolean }) {
               <path d="M6 6l12 12M18 6 6 18" />
             </svg>
             <span style={css(SR)}>Missed. Right answer </span>
-            {row.rightAnswer}
+            {row.rightAnswer ? <Maths text={row.rightAnswer} grade={grade} size={14} /> : null}
           </span>
         </span>
       ) : (
@@ -81,7 +82,7 @@ function PaperFigure({ paper, highlightN }: { paper: PaperDetail; highlightN?: n
             </span>
             <ol style={css('list-style:none;margin:0;padding:0')}>
               {paper.sections.map((section, i) => (
-                <SectionRows key={section.heading || i} heading={section.heading} first={i === 0} rows={section.rows} highlightN={highlightN} />
+                <SectionRows key={section.heading || i} heading={section.heading} first={i === 0} rows={section.rows} highlightN={highlightN} grade={paper.child.grade ?? null} />
               ))}
             </ol>
           </div>
@@ -94,14 +95,14 @@ function PaperFigure({ paper, highlightN }: { paper: PaperDetail; highlightN?: n
   )
 }
 
-function SectionRows({ heading, first, rows, highlightN }: { heading: string; first: boolean; rows: ResultRow[]; highlightN?: number }) {
+function SectionRows({ heading, first, rows, highlightN, grade }: { heading: string; first: boolean; rows: ResultRow[]; highlightN?: number; grade: number | null }) {
   return (
     <>
       {heading ? (
         <li style={css(first ? 'font-size:12px;font-weight:700;padding:6px 0 4px' : 'font-size:12px;font-weight:700;padding:10px 0 4px;border-top:1px solid #ECEAE2')}>{heading}</li>
       ) : null}
       {rows.map((row) => (
-        <SheetRow key={row.id} row={row} highlight={row.n === highlightN} />
+        <SheetRow key={row.id} row={row} highlight={row.n === highlightN} grade={grade} />
       ))}
     </>
   )
@@ -118,8 +119,17 @@ function Missed({ childId, paper, highlightN }: { childId: string; paper: PaperD
             <Link href={flag(r.id)} style={css('display:flex;align-items:flex-start;gap:12px;padding:12px 0;color:inherit;text-decoration:none')}>
               <span style={css('width:36px;height:36px;flex:none;border-radius:10px;background:#FFE3DA;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center')}>{`Q${r.n}`}</span>
               <span style={css('flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;line-height:1.35')}>
-                <span style={css('font-size:16px;font-weight:600')}>{r.prompt}</span>
-                <span style={css('font-size:14px;color:#5D5A73')}>{`Wrote ${r.answer}${r.rightAnswer ? `, right is ${r.rightAnswer}` : ''}`}</span>
+                <span style={css('font-size:16px;font-weight:600')}><Maths text={r.prompt} grade={paper.child.grade} size={17} /></span>
+                <span style={css('font-size:14px;color:#5D5A73')}>
+                  {'Wrote '}
+                  <Maths text={r.answer} grade={paper.child.grade} size={15} />
+                  {r.rightAnswer ? (
+                    <>
+                      {', right is '}
+                      <Maths text={r.rightAnswer} grade={paper.child.grade} size={15} />
+                    </>
+                  ) : null}
+                </span>
                 <span style={css('font-size:13px;font-weight:600;color:#5D5A73')}>{r.topicName}</span>
               </span>
             </Link>
@@ -131,7 +141,7 @@ function Missed({ childId, paper, highlightN }: { childId: string; paper: PaperD
           <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style={css('flex:none;margin-top:5px')}>
             <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
           </svg>
-          <span>{paper.slipLine}</span>
+          <span><Maths text={paper.slipLine} size={16} /></span>
         </p>
       ) : null}
       {paper.topGap ? (

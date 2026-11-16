@@ -1,5 +1,6 @@
 'use client'
 
+import { Maths } from '@/components/Maths'
 import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -13,10 +14,10 @@ const sr = 'absolute h-px w-px overflow-hidden whitespace-nowrap [clip:rect(0_0_
 const circled = (r: Row) => /^(bigger|which)/i.test(r.prompt) || /^[A-D]$/.test(r.answer)
 
 export function FixMark({
-  classId, paperId, childId, name, parent, school, subject, test, outOf, total, results, openN,
+  classId, paperId, childId, name, parent, school, subject, test, outOf, total, results, openN, grade = null,
 }: {
   classId: string; paperId: string; childId: string | null; name: string; parent: string | null; school: string
-  subject: string; test: string; outOf: number; total: number; results: Row[]; openN: number | null
+  subject: string; test: string; outOf: number; total: number; results: Row[]; openN: number | null; grade?: number | null
 }) {
   const router = useRouter()
   const row = results.find((r) => r.n === openN) ?? null
@@ -73,11 +74,11 @@ export function FixMark({
               {results.map((r) => (
                 <li key={r.n} className="border-t border-[#ECEAE2]">
                   <Link href={`?q=${r.n}`} replace scroll={false} className="flex min-h-10 items-center gap-2 text-inherit no-underline">
-                    <span className="min-w-0 flex-1 text-[13px] leading-[1.3]">{r.n}. &nbsp;{r.prompt}</span>
+                    <span className="min-w-0 flex-1 text-[13px] leading-[1.3]">{r.n}. &nbsp;<Maths text={r.prompt} grade={grade} size={15} /></span>
                     {circled(r) ? (
-                      <span className="flex h-8 w-[58px] flex-none items-center justify-center"><span className={`${hand} rounded-full border-[1.5px] border-navy px-[7px] py-[3px] text-[17px]`}>{r.answer}</span></span>
+                      <span className="flex h-8 min-w-[58px] max-w-[40%] flex-none items-center justify-center"><span className={`${hand} rounded-full border-[1.5px] border-navy px-[7px] py-[3px] text-[17px]`}><Maths text={r.answer} grade={grade} size={17} /></span></span>
                     ) : (
-                      <span className={`${hand} flex h-8 w-[58px] flex-none items-center justify-center rounded-[3px] text-[18px] ${r.correct ? 'border border-[#8F8F8F]' : 'border-2 border-coral'}`}>{r.answer}</span>
+                      <span className={`${hand} flex h-8 min-w-[58px] max-w-[40%] flex-none items-center justify-center rounded-[3px] px-1 text-[18px] ${r.correct ? 'border border-[#8F8F8F]' : 'border-2 border-coral'}`}><Maths text={r.answer} grade={grade} size={17} /></span>
                     )}
                     <span className="flex w-[68px] flex-none items-center">
                       {r.correct ? (
@@ -85,7 +86,7 @@ export function FixMark({
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded-pill bg-coral-tint py-[3px] pr-2 pl-1.5 font-sans text-[13px] font-bold whitespace-nowrap">
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="3.2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
-                          <span className={sr}>Missed. Right answer </span>{r.keyAnswer}
+                          <span className={sr}>Missed. Right answer </span>{r.keyAnswer ? <Maths text={r.keyAnswer} grade={grade} size={14} /> : null}
                         </span>
                       )}
                     </span>
@@ -102,20 +103,20 @@ export function FixMark({
           <section role="dialog" aria-modal="true" aria-labelledby="fixq" className="absolute right-0 bottom-0 left-0 flex max-h-[90%] flex-col gap-3.5 overflow-auto rounded-t-[28px] bg-card px-5 pt-2.5 pb-7 shadow-[0_-10px_30px_rgba(31,29,54,0.18)]">
             <span aria-hidden="true" className="h-[5px] w-11 self-center rounded-pill bg-edge" />
             <div className="flex items-center justify-between gap-2">
-              <h2 id="fixq" className="m-0 text-[21px] font-semibold">Question {row.n} · {row.prompt}</h2>
+              <h2 id="fixq" className="m-0 text-[21px] font-semibold">Question {row.n} · <Maths text={row.prompt} grade={grade} size={21} /></h2>
               <Link href="?q=0" replace aria-label="Close" className="flex size-11 flex-none items-center justify-center rounded-12 text-ink">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
               </Link>
             </div>
             <div aria-hidden="true" className="flex items-center gap-3 rounded-14 border border-[#E3E1D8] bg-[#FBFAF5] px-4 py-3.5 font-[Arial,Helvetica,sans-serif] text-[#2A2A2A]">
-              <span className="text-[15px]">{row.n}. &nbsp;{row.prompt}</span>
-              <span className={`${hand} flex h-11 w-[84px] items-center justify-center rounded-[4px] border-2 border-coral text-[26px]`}>{row.answer}</span>
+              <span className="min-w-0 text-[15px]">{row.n}. &nbsp;<Maths text={row.prompt} grade={grade} size={17} /></span>
+              <span className={`${hand} flex h-11 min-w-[84px] max-w-[50%] items-center justify-center rounded-[4px] border-2 border-coral px-1 text-[26px]`}><Maths text={row.answer} grade={grade} size={24} /></span>
             </div>
-            <p className="m-0 text-[15px] leading-[1.45] text-body">Jemma read <strong className="font-semibold text-ink">{row.answer}</strong> · marked {word} · {Math.round(row.confidence * 100)}% sure</p>
+            <p className="m-0 text-[15px] leading-[1.45] text-body">Jemma read <strong className="font-semibold text-ink"><Maths text={row.answer} grade={grade} size={16} /></strong> · marked {word} · {Math.round(row.confidence * 100)}% sure</p>
             <fieldset className="m-0 flex flex-col gap-2 border-none p-0">
               <legend className="mb-2 p-0 text-[15px] font-semibold">What does it say?</legend>
               <span className="grid grid-cols-2 gap-2">
-                <button type="button" aria-pressed={pick === 'read'} onClick={() => setPick('read')} className={toggle(pick === 'read')}>{row.answer}</button>
+                <button type="button" aria-pressed={pick === 'read'} onClick={() => setPick('read')} className={toggle(pick === 'read')}><Maths text={row.answer} grade={grade} size={16} /></button>
                 <button type="button" aria-pressed={pick === 'type'} onClick={() => setPick('type')} className={toggle(pick === 'type')}>Type it</button>
               </span>
               {pick === 'type' ? <input aria-label="What it says" value={text} onChange={(e) => setText(e.target.value)} className="h-12 rounded-12 border border-muted-2 px-3 text-[16px] outline-none focus-visible:border-2 focus-visible:border-ink" /> : null}

@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronRightIcon } from '@/components/ui/icons'
+import { Maths, isMaths } from '@/components/Maths'
 import { getQuestionDetail, type Learner } from '@/lib/data/p20'
+import { getClassGrade } from '@/lib/data/maths-grade'
 import { BackHeader, Lead } from '../../../back-header'
 
 const NUMBER = /\d+\s+\d+\/\d+(?=$|[\s.,?!])|\d+\/\d+(?=$|[\s.,?!])|\S+/g
@@ -33,23 +35,23 @@ const HAND = [
   { rotate: -5, color: '#3B3B3B', size: 22, bold: true },
 ]
 
-function AnswerChip({ answer, i, tilt }: { answer: string; i: number; tilt: boolean }) {
+function AnswerChip({ answer, i, tilt, grade }: { answer: string; i: number; tilt: boolean; grade: number | null }) {
   const h = tilt ? HAND[i % HAND.length]! : { rotate: 0, color: '#2F3A56', size: 21, bold: false }
   return (
-    <span className="flex h-12 w-[92px] items-center justify-center gap-[5px] rounded-lg border border-[#D9D5CC] bg-[#FBFAF5] font-[Arial,Helvetica,sans-serif] text-[11px] text-[#555555]">
+    <span className="flex h-12 min-w-[92px] max-w-[58%] items-center justify-center gap-[5px] rounded-lg border border-[#D9D5CC] bg-[#FBFAF5] font-[Arial,Helvetica,sans-serif] text-[11px] text-[#555555]">
       <span>=</span>
       <span
         className="inline-block font-hand"
         style={{ fontSize: h.size, color: h.color, transform: h.rotate ? `rotate(${h.rotate}deg)` : undefined, fontWeight: h.bold ? 700 : undefined }}
       >
-        {answer}
+        <Maths text={answer} grade={grade} size={17} />
       </span>
       <span className="sr-only">Photo of the answer</span>
     </span>
   )
 }
 
-function LearnerRow({ href, learner, i, coral, tilt }: { href: string; learner: Learner; i: number; coral: boolean; tilt: boolean }) {
+function LearnerRow({ href, learner, i, coral, tilt, grade }: { href: string; learner: Learner; i: number; coral: boolean; tilt: boolean; grade: number | null }) {
   return (
     <Link href={href} className="flex min-h-[68px] items-center gap-3 border-t border-soft text-ink no-underline">
       <span
@@ -59,7 +61,7 @@ function LearnerRow({ href, learner, i, coral, tilt }: { href: string; learner: 
         {learner.name.slice(0, 1)}
       </span>
       <span className="flex-1 text-[16px] font-semibold">{learner.name}</span>
-      <AnswerChip answer={learner.answer} i={i} tilt={tilt} />
+      <AnswerChip answer={learner.answer} i={i} tilt={tilt} grade={grade} />
       <ChevronRightIcon size={18} className="mr-1.5 flex-none" />
     </Link>
   )
@@ -73,10 +75,13 @@ export default async function TeacherQuestionPage({
   const { classId, testId, n } = await params
   const num = Number(n)
   if (!Number.isInteger(num) || num < 1) notFound()
-  const q = await getQuestionDetail(classId, testId, num)
+  const [q, grade] = await Promise.all([getQuestionDetail(classId, testId, num), getClassGrade(classId)])
   const base = `/t/${classId}`
   const profile = (id: string) => `${base}/learners/${id}/profile`
   const terms = q.prompt.match(NUMBER) ?? [q.prompt]
+  // Algebra, a power or a root is drawn as maths; a sum of numbers keeps the board's own stacked fractions.
+  const maths = isMaths(q.prompt, grade) || isMaths(q.rightAnswer, grade)
+  const joined = !/[=?]/.test(q.prompt)
 
   return (
     <div className="leading-[normal] lg:max-w-[720px]">
@@ -90,20 +95,30 @@ export default async function TeacherQuestionPage({
             <span className="rounded-pill bg-soft-4 px-2.5 py-1 text-[12px] font-semibold">{q.topic}</span>
           </div>
           <div className="flex flex-wrap items-center gap-3.5 text-[30px] font-semibold">
-            {terms.map((t, i) => (
-              <Term key={i} text={t} />
-            ))}
-            <span>=</span>
-            <span className="inline-flex items-center gap-2.5 rounded-14 bg-soft-2 px-3.5 py-2">
-              <Term text={q.rightAnswer} />
+            {maths ? (
+              <span className="min-w-0 max-w-full break-words text-[26px]">
+                <Maths text={q.prompt} grade={grade} size={26} />
+              </span>
+            ) : (
+              terms.map((t, i) => <Term key={i} text={t} />)
+            )}
+            {!maths || joined ? <span>=</span> : null}
+            <span className="inline-flex max-w-full items-center gap-2.5 rounded-14 bg-soft-2 px-3.5 py-2">
+              {maths ? (
+                <span className="min-w-0 break-words text-[26px]">
+                  <Maths text={q.rightAnswer} grade={grade} size={26} />
+                </span>
+              ) : (
+                <Term text={q.rightAnswer} />
+              )}
             </span>
           </div>
           <p className="m-0 text-[14px] text-body">
-            Right answer {q.rightAnswer} · {q.marks} mark{q.marks === 1 ? '' : 's'}
+            Right answer <Maths text={q.rightAnswer} grade={grade} size={16} /> · {q.marks} mark{q.marks === 1 ? '' : 's'}
           </p>
         </section>
 
-        {q.summary ? <Lead>{q.summary}</Lead> : null}
+        {q.summary ? <Lead><Maths text={q.summary} size={17} /></Lead> : null}
 
         {q.missed.length > 0 ? (
           <section aria-labelledby="missed" className="flex flex-col rounded-20 border border-line bg-card pt-3 pr-2 pb-1.5 pl-4">
@@ -113,7 +128,7 @@ export default async function TeacherQuestionPage({
             <ul className="m-0 flex list-none flex-col p-0">
               {q.missed.map((l, i) => (
                 <li key={l.childId}>
-                  <LearnerRow href={profile(l.childId)} learner={l} i={i} coral={i === 0} tilt />
+                  <LearnerRow href={profile(l.childId)} learner={l} i={i} coral={i === 0} tilt grade={grade} />
                 </li>
               ))}
             </ul>
@@ -126,7 +141,7 @@ export default async function TeacherQuestionPage({
               Got it right
             </h2>
             {q.right.map((l, i) => (
-              <LearnerRow key={l.childId} href={profile(l.childId)} learner={l} i={i} coral={false} tilt={false} />
+              <LearnerRow key={l.childId} href={profile(l.childId)} learner={l} i={i} coral={false} tilt={false} grade={grade} />
             ))}
           </section>
         ) : null}

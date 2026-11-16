@@ -1,5 +1,6 @@
 'use client'
 
+import { Maths } from '@/components/Maths'
 import { PendingButton } from '@/components/ui/Button'
 import { IconLabel } from '@/components/ui/IconLabel'
 import { useRouter } from 'next/navigation'
@@ -12,8 +13,8 @@ import { sendMemoPhoto } from './memo-photo'
 const PENCIL = 'M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z'
 const answerCls = 'text-[18px] font-bold'
 
-function Answer({ value }: { value: string }) {
-  return /^\s*(\d+\s+)?\d+\/\d+\s*$/.test(value) ? <KeyFraction value={value} /> : <span className={answerCls}>{value}</span>
+function Answer({ value, grade }: { value: string; grade: number | null }) {
+  return /^\s*(\d+\s+)?\d+\/\d+\s*$/.test(value) ? <KeyFraction value={value} /> : <span className={answerCls}><Maths text={value} grade={grade} size={18} /></span>
 }
 
 export function KeyList({
@@ -23,6 +24,7 @@ export function KeyList({
   approved,
   unsure,
   memo,
+  grade = null,
 }: {
   classId: string
   testId: string
@@ -30,6 +32,8 @@ export function KeyList({
   approved: boolean
   unsure: number
   memo: { url: string | null; at: string | null; marks: number }
+  /** The grade of the class (P136), for how much of a question and an answer is typeset as maths. */
+  grade?: number | null
 }) {
   const router = useRouter()
   const [editing, setEditing] = useState<number | null>(null)
@@ -123,21 +127,21 @@ export function KeyList({
                   <span className="flex items-center gap-2.5">
                     <span className="w-[30px] flex-none text-[14px] font-semibold text-coral-text">Q{item.n}</span>
                     <span className="flex min-w-0 flex-1 flex-col gap-px">
-                      <span className="text-[15px]">{item.prompt}</span>
+                      <span className="text-[15px]"><Maths text={item.prompt} grade={grade} size={16} /></span>
                       <span className="text-[12px] text-body">{item.topicName}</span>
                     </span>
-                    <Answer value={item.answer} />
+                    <Answer value={item.answer} grade={grade} />
                     <span className="w-11 flex-none" />
                   </span>
                   <span className="flex gap-2 text-[14px] leading-[1.45]">
                     <Diamond size={12} className="mt-1" />
-                    <span>{item.note ?? 'I am not sure I read this one right.'}</span>
+                    <span>{item.note ? <Maths text={item.note} grade={grade} size={16} /> : 'I am not sure I read this one right.'}</span>
                   </span>
                   {editing === item.n ? (
                     editor(item.n)
                   ) : (
                     <span className="grid grid-cols-2 gap-2">
-                      <button type="button" disabled={pending} onClick={() => save(item.n, item.answer)} className="min-h-11 cursor-pointer rounded-12 border-none bg-ink px-4 py-2 text-center text-[15px] font-semibold text-balance text-white">Yes, {item.answer}</button>
+                      <button type="button" disabled={pending} onClick={() => save(item.n, item.answer)} className="min-h-11 cursor-pointer rounded-12 border-none bg-ink px-4 py-2 text-center text-[15px] font-semibold text-balance text-white">Yes, <Maths text={item.answer} grade={grade} size={16} /></button>
                       <button type="button" onClick={() => edit(item.n, item.answer)} className="min-h-11 cursor-pointer rounded-12 border-[1.5px] border-ink bg-card px-4 py-2 text-center text-[15px] font-semibold text-balance text-ink">Change it</button>
                     </span>
                   )}
@@ -148,10 +152,10 @@ export function KeyList({
               <li key={item.n} className={`flex flex-wrap items-center gap-x-2.5 py-[9px] ${idx > 0 ? 'border-t border-soft' : ''}`}>
                 <span className="w-[30px] flex-none text-[14px] font-semibold text-body">Q{item.n}</span>
                 <span className="flex min-w-0 flex-1 flex-col gap-px">
-                  <span className="text-[15px]">{item.prompt}</span>
+                  <span className="text-[15px]"><Maths text={item.prompt} grade={grade} size={16} /></span>
                   <span className="text-[12px] text-body">{item.topicName}</span>
                 </span>
-                <Answer value={item.answer} />
+                <Answer value={item.answer} grade={grade} />
                 <button type="button" aria-label={`Fix the answer to question ${item.n}`} onClick={() => edit(item.n, item.answer)} className="flex size-11 flex-none cursor-pointer items-center justify-center rounded-12 border-none bg-transparent p-0 text-ink">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={PENCIL} /></svg>
                 </button>

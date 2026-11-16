@@ -1,5 +1,7 @@
 import Link from 'next/link'
+import { Maths } from '@/components/Maths'
 import { ChevronRightIcon } from '@/components/ui/icons'
+import { getClassGrade } from '@/lib/data/maths-grade'
 import { getTestDetail } from '@/lib/data/p20'
 import { getShareState } from '@/lib/data/p50b'
 import { ShareCard } from '../../ShareCard'
@@ -25,7 +27,7 @@ const Squares = ({ dots }: { dots: boolean[] }) => (
 
 export default async function TeacherTestPage({ params }: { params: Promise<{ classId: string; testId: string }> }) {
   const { classId, testId } = await params
-  const [{ cls, test, hardestLine }, share] = await Promise.all([getTestDetail(classId, testId), getShareState(classId, testId)])
+  const [{ cls, test, hardestLine }, share, grade] = await Promise.all([getTestDetail(classId, testId), getShareState(classId, testId), getClassGrade(classId)])
   const base = `/t/${classId}`
 
   return (
@@ -73,7 +75,7 @@ export default async function TeacherTestPage({ params }: { params: Promise<{ cl
                 >
                   <span className="w-[30px] flex-none text-[13px] font-semibold text-body">Q{q.n}</span>
                   <span className="flex min-w-0 flex-1 flex-col leading-[1.3]">
-                    <span className="text-[15px] font-medium">{q.prompt}</span>
+                    <span className="text-[15px] font-medium"><Maths text={q.prompt} grade={grade} size={16} /></span>
                     <span className="text-[12px] text-body">{q.topic}</span>
                   </span>
                   <span className="flex flex-col items-end gap-1">

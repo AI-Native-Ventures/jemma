@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { EmptyLine, EmptyState, Headline, NeedsYouList, WhatJemmaDid } from '@/components/blocks'
+import { MathsOnly } from '@/components/Maths'
 import { ChevronRightIcon } from '@/components/ui/icons'
 import { getClassHome, getGapDetail, type ClassGapView, type ClassHome, type GapStage } from '@/lib/data/p18'
 import { emptyGapsLine, emptyLogLine } from '@/lib/empty-boxes'
@@ -69,7 +70,7 @@ function HomeGap({ gap, index, base, hideDots }: { gap: ClassGapView; index: num
       {gap.mistake ? (
         <span className="ml-10 rounded-12 bg-soft-2 px-3 py-2.5 text-[14px] leading-[1.45] [overflow-wrap:anywhere]">
           {mistakeTitle(gap.mistake.label)}: {gap.mistake.example.pre}
-          <strong className="font-bold">{gap.mistake.example.strong}</strong>
+          <strong className="font-bold"><MathsOnly text={gap.mistake.example.strong} size={16} /></strong>
         </span>
       ) : null}
     </Link>

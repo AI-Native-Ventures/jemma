@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { Maths } from '@/components/Maths'
 import type { MarkRow, ProfileData } from '@/lib/data/p23'
 import type { ProfileExtras } from '@/lib/data/p36'
 import { ChevronSvg, LaptopShell, PAPER_ICON } from './_laptop'
@@ -174,7 +175,7 @@ export function ProfileLaptop({ data, extras, base, longView = null }: { data: P
               <h2 style={css('margin:0;font-size:18px;font-weight:600')}>What Jemma has noticed</h2>
               {data.notices.map((n, i) => (
                 <div key={`${i}-${n.text}`} style={css('display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;padding:16px 18px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:18px')}>
-                  <span style={css('flex:1 1 300px;font-size:16px;line-height:1.45;font-weight:500')}>{n.text}</span>
+                  <span style={css('flex:1 1 300px;font-size:16px;line-height:1.45;font-weight:500')}><Maths text={n.text} size={17} /></span>
                   <Chips chips={n.chips} />
                 </div>
               ))}
@@ -214,7 +215,7 @@ export function ProfileLaptop({ data, extras, base, longView = null }: { data: P
                     <span style={css(`width:26px;height:26px;flex:none;border-radius:999px;background:${i === 0 ? '#FF6A4D' : '#FFFFFF'};color:#1F1D36;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center`)}>{i + 1}</span>
                     <span style={css('display:flex;flex-direction:column;gap:4px')}>
                       <span style={css('font-size:16px;font-weight:600')}>{f.title}</span>
-                      <span style={css('font-size:15px;line-height:1.5;color:#DCDAE8')}>{f.why}</span>
+                      <span style={css('font-size:15px;line-height:1.5;color:#DCDAE8')}><Maths text={f.why} size={16} /></span>
                       <Chips chips={f.chips} dark />
                     </span>
                   </li>
@@ -237,7 +238,7 @@ export function ProfileLaptop({ data, extras, base, longView = null }: { data: P
               {extras.notes.map((n, i) => (
                 <div key={n.id} style={css(`display:flex;flex-direction:column;gap:3px;${i ? 'padding-top:12px;border-top:1px solid #EFEEF4' : ''}`)}>
                   <span style={css('font-size:13px;color:#5D5A73')}>{n.label}</span>
-                  <span style={css('font-size:15px;line-height:1.45')}>{n.text}</span>
+                  <span style={css('font-size:15px;line-height:1.45')}><Maths text={n.text} size={16} /></span>
                 </div>
               ))}
             </section>

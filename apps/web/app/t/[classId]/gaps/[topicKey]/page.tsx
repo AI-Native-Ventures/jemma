@@ -2,6 +2,7 @@ import { PendingButton } from '@/components/ui/Button'
 import { IconLabel } from '@/components/ui/IconLabel'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Maths, MathsOnly } from '@/components/Maths'
 import { ChevronRightIcon, ClockIcon, GemIcon } from '@/components/ui/icons'
 import { getGapDetail, joinNames, numberWord, type GapLearner } from '@/lib/data/p18'
 import { getClassInfo } from '@/lib/data/p21'
@@ -49,7 +50,7 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
           <h1 className="m-0 text-[26px] leading-[1.18] font-bold tracking-[-0.015em]">{gap.topicName}</h1>
           <p className="m-0 flex gap-2.5 text-[17px] leading-[1.45]">
             <GemIcon size={12} className="mt-[7px] flex-none" />
-            <span>{detail.why}</span>
+            <span><Maths text={detail.why} size={18} /></span>
           </p>
         </div>
 
@@ -69,7 +70,7 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
                   </span>
                   <span className="flex min-w-0 flex-1 flex-col leading-[1.3]">
                     <span className="text-[16px] font-semibold">{l.name}</span>
-                    <span className="text-[13px] text-body">{wroteLine(l)}</span>
+                    <span className="text-[13px] text-body"><Maths text={wroteLine(l)} size={15} /></span>
                   </span>
                   <ChevronRightIcon className="mr-1.5 flex-none" />
                 </Link>
@@ -102,12 +103,12 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
               {gap.mistake.rows.map((r) => (
                 <li key={r.n} className="flex items-center justify-between gap-2.5 rounded-12 bg-soft-2 px-3 py-2.5">
                   <span className="w-7 text-[13px] font-semibold text-body">Q{r.n}</span>
-                  <span className="min-w-0 flex-1 text-[16px] font-semibold [overflow-wrap:anywhere]">{r.text}</span>
+                  <span className="min-w-0 flex-1 text-[16px] font-semibold [overflow-wrap:anywhere]"><MathsOnly text={r.text} size={18} /></span>
                   <span className="text-[13px] text-body">{r.learners} learners</span>
                 </li>
               ))}
             </ul>
-            {reteach?.explanation ? <p className="m-0 text-[15px] leading-normal text-pretty">{reteach.explanation}</p> : null}
+            {reteach?.explanation ? <p className="m-0 text-[15px] leading-normal text-pretty"><Maths text={reteach.explanation} size={16} /></p> : null}
             {reteach?.missingBasic ? (
               <span className="flex items-center gap-2 text-[14px]">
                 <span className="text-body">Missing basic</span>
@@ -134,13 +135,13 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
               </span>
             </div>
             <p className="m-0 text-[14px] leading-[1.4]">
-              <strong className="font-semibold">You need:</strong> {reteach.content.youNeed}
+              <strong className="font-semibold">You need:</strong> <Maths text={reteach.content.youNeed} size={16} />
             </p>
             <ol className="m-0 flex list-none flex-col gap-2.5 p-0">
               {reteach.content.steps.map((s, i) => (
                 <li key={i} className="flex gap-3 text-[15px] leading-[1.45]">
                   <span className="w-11 flex-none pt-0.5 text-[13px] font-semibold text-body">{s.minutes} min</span>
-                  <span>{s.text}</span>
+                  <span><Maths text={s.text} size={17} /></span>
                 </li>
               ))}
             </ol>

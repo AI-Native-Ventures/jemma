@@ -1,5 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { earlierSameSlip, getReadAnswers, getSnapPaper, getUpcomingLessons, shortDate, shortPlanned } from '@/lib/data/p32'
+import { Maths } from '@/components/Maths'
+import { getChildGrade } from '@/lib/data/maths-grade'
 import { FlowShell, GemLine, joinNumbers, lower } from '../../_parts'
 import { KIND_LABEL } from '@/lib/data/p32'
 
@@ -10,7 +12,7 @@ export default async function SnapSavedPage({ params }: { params: Promise<{ chil
   if (!paper) notFound()
   if (paper.status !== 'marked') redirect(`/p/${childId}/snap/${paperId}`)
 
-  const answers = await getReadAnswers(paperId)
+  const [answers, grade] = await Promise.all([getReadAnswers(paperId), getChildGrade(childId)])
   const topic = answers[0]?.topic_name ?? 'Homework'
   const wrong = answers.filter((a) => !a.correct)
   const slip = wrong.find((a) => a.misconception)
@@ -43,14 +45,14 @@ export default async function SnapSavedPage({ params }: { params: Promise<{ chil
         <ul className="m-0 flex list-none flex-col gap-[9px] p-0">
           {slip?.misconception ? (
             <GemLine>
-              Question{nums.length === 1 ? '' : 's'} {joinNumbers(nums)}: {paper.childFirstName} {lower(slip.misconception)}, like {slip.prompt} = {slip.answer_read}.
+              Question{nums.length === 1 ? '' : 's'} {joinNumbers(nums)}: {paper.childFirstName} {lower(slip.misconception)}, like <Maths text={`${slip.prompt} = ${slip.answer_read}`} grade={grade} size={16} />.
             </GemLine>
           ) : null}
           {earlier ? (
             <GemLine>Same slip as {earlier.title}, question {earlier.n}. Now seen twice, so it&apos;s a real gap.</GemLine>
           ) : null}
           {confirmed.map((a) => (
-            <GemLine key={a.n}>You confirmed question {a.n} says {a.answer_read}. Thank you.</GemLine>
+            <GemLine key={a.n}>You confirmed question {a.n} says <Maths text={a.answer_read} grade={grade} size={16} />. Thank you.</GemLine>
           ))}
         </ul>
       </section>
