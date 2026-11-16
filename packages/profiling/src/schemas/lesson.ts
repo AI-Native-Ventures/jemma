@@ -15,8 +15,10 @@ const Difficulty = z.union([z.literal(1), z.literal(2), z.literal(3)])
  * (a test pins its sha256). `SeniorLessonSchema` is the same lesson with four more answer kinds (`number`, `expression`, `equation`, `point`)
  * that code marks by meaning, and one optional question field, `form`. It is handed to the model for a senior class only (Mathematics, Grades 7 to 12).
  *
- * Everything that READS a lesson (the learner's screens, `save_lesson`, the stored sessions, the seed) uses the wide one, `LessonSchema`, which is the
+ * Everything that WRITES a lesson (the model's output, the `save_lesson` input, the seed) uses the wide one, `LessonSchema`, which is the
  * senior shape: a lesson written under the primary shape is a lesson of the senior shape too, so no stored or recorded lesson stops parsing.
+ * Everything that READS a saved lesson (the learner's screens, the home, the parent's page) uses `StoredLessonSchema`, the same shape with the
+ * counts a save can leave (see below).
  */
 
 export const PRIMARY_ANSWER_KINDS = ['fraction', 'mixed', 'decimal', 'whole', 'money', 'choice'] as const
@@ -101,6 +103,30 @@ export type PrimaryLesson = z.infer<typeof PrimaryLessonSchema>
 
 export const SeniorLessonSchema = lessonAround(SeniorQuestionSchema, SeniorDiagramSpecSchema)
 
-/** The lesson as every reader sees it: the wide, senior shape. */
+/** The lesson as every writer is held to (the model's output, the `save_lesson` input): the wide, senior shape, exactly 15 questions. */
 export const LessonSchema = SeniorLessonSchema
 export type Lesson = z.infer<typeof LessonSchema>
+
+/** The fewest questions a saved lesson keeps at each level. `save_lesson` with `dropInvalid` never drops below it, and `StoredLessonSchema` never wants less. */
+export const MIN_QUESTIONS_PER_LEVEL = 4
+
+/**
+ * A lesson as it is READ once it is saved (the learner's screens, the home, the parent's page): the same shape as `LessonSchema`, with the counts a
+ * save can really leave. `save_lesson` with `dropInvalid` drops a question whose answer cannot be marked, and keeps each level at
+ * `MIN_QUESTIONS_PER_LEVEL` or more, so a saved lesson has 12 to 15 questions and a warm-up of 0, 1 or 2. `LessonSchema` wants exactly 15 (5 per level)
+ * and refused those, so the learner saw "The lesson could not be loaded" for a lesson that was saved on purpose.
+ *
+ * It is built from the shape of `LessonSchema` and never goes to a model: the JSON text the model is handed (and the hash that finds a recorded
+ * answer) belongs to `PrimaryLessonSchema` and `SeniorLessonSchema`, which do not change. It reads a lesson of the primary shape too (a subset).
+ */
+export const StoredLessonSchema = z.object(SeniorLessonSchema.shape).superRefine((lesson, ctx) => {
+  if (lesson.warmup.length > 2) {
+    ctx.addIssue({ code: 'custom', path: ['warmup'], message: 'warmup has at most 2 questions' })
+  }
+  for (const level of [1, 2, 3] as const) {
+    if (lesson.questions.filter((q) => q.difficulty === level).length < MIN_QUESTIONS_PER_LEVEL) {
+      ctx.addIssue({ code: 'custom', path: ['questions'], message: `questions must have at least ${MIN_QUESTIONS_PER_LEVEL} at difficulty ${level}` })
+    }
+  }
+})
+export type StoredLesson = z.infer<typeof StoredLessonSchema>

@@ -1,4 +1,4 @@
-import { LessonSchema } from '@jemma/profiling/schemas'
+import { StoredLessonSchema } from '@jemma/profiling/schemas'
 import { createSupabaseServer } from '../supabase/server'
 import { dayLabel, getLearnersView, termOf, type AttStatus } from './p19'
 
@@ -57,7 +57,7 @@ export async function getLearnerDetailExtras(childId: string): Promise<LearnerDe
   const s = sessionRes.data?.[0]
   let tonight: LearnerDetailExtras['tonight'] = null
   if (s?.topic_name && s.format && s.planned_minutes) {
-    const lesson = LessonSchema.safeParse(s.lessons?.content)
+    const lesson = StoredLessonSchema.safeParse(s.lessons?.content)
     const gap = (gapRes.data ?? []).find((g) => g.topic_name === s.topic_name)
     tonight = {
       title: lesson.success ? lesson.data.title : s.topic_name,

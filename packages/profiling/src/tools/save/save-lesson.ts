@@ -3,13 +3,13 @@ import { parseAnswer } from '../../logic/answers'
 import { isMeaningKind, meaningKeyProblem } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { pictureProblem } from '../../logic/picture'
-import { FormatSchema, LessonSchema, type Format, type Lesson, type Question } from '../../schemas/lesson'
+import { FormatSchema, LessonSchema, MIN_QUESTIONS_PER_LEVEL, type Format, type Lesson, type Question } from '../../schemas/lesson'
 import { LabelDropSchema, type LabelDrop } from '../../schemas/no-labels'
 import { resolveSpeech } from '../../speech'
 import { assertInSchool, contextFor, defineTool, logActivity, ok, type ToolContext } from '../context'
 import type { Json } from '../../db'
 
-const MIN_PER_LEVEL = 4
+const MIN_PER_LEVEL = MIN_QUESTIONS_PER_LEVEL
 
 /**
  * Why a question cannot be used, or null when it can: its answer does not fit its `answerKind`, or its picture makes no sense. A key of the four senior
