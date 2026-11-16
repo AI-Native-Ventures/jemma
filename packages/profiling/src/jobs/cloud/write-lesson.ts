@@ -4,7 +4,7 @@ import { renderPrompt } from '../../ai/prompt-variants'
 import { classContext, isSeniorMaths } from '../../ai/subject-profile'
 import type { JemmaDb } from '../../db'
 import { pictureProblem } from '../../logic/picture'
-import { PrimaryLessonSchema, SeniorLessonSchema, type Lesson, type Question } from '../../schemas/lesson'
+import { LessonSchema, PrimaryLessonSchema, SeniorLessonSchema, type Lesson, type Question } from '../../schemas/lesson'
 import { contextFor, maybe, ok, type ToolContext } from '../../tools/context'
 import { getChildContext } from '../../tools/read/get-child-context'
 import { badQuestions, saveLesson } from '../../tools/save/save-lesson'
@@ -82,7 +82,15 @@ export async function runJobWriteLesson(
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
     try {
       // Prompt-side JSON: free models fail provider-side structured output on a schema this big.
-      const output = await generateJson({ model, schema: senior ? SeniorLessonSchema : PrimaryLessonSchema, system, prompt: base_prompt + feedback })
+      // A senior class is asked for `steps` on every question (`SeniorLessonSchema`) but its reply is read with the wide `LessonSchema`, so a question
+      // without steps is saved without them and never refuses the lesson (P127). Any other class is asked and read as before.
+      const output = await generateJson({
+        model,
+        schema: senior ? SeniorLessonSchema : PrimaryLessonSchema,
+        parse: senior ? LessonSchema : PrimaryLessonSchema,
+        system,
+        prompt: base_prompt + feedback,
+      })
       best = output
       const bad = badQuestions(output)
       if (!bad.warmup.length && !bad.questions.length) break

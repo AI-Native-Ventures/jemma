@@ -23,12 +23,21 @@ export function extractJson(text: string): unknown {
 /**
  * Structured output through the prompt: the schema goes in the system text and the reply is parsed and checked with zod.
  * Free models often fail provider-side structured output on big schemas (a whole lesson) but follow this fine.
+ *
+ * The reply is checked with `schema` unless `parse` is given: then `parse` is the check (a looser or wider schema than the one the model is shown), and
+ * the result has its type. P127 uses it so that a senior lesson is asked to have `steps` on every question, and is still read when one is missing.
  */
-export async function generateJson<S extends z.ZodType>(opts: { model: LanguageModel; schema: S; system: string; prompt: string }): Promise<z.infer<S>> {
+export async function generateJson<S extends z.ZodType, P extends z.ZodType = S>(opts: {
+  model: LanguageModel
+  schema: S
+  parse?: P
+  system: string
+  prompt: string
+}): Promise<z.infer<P>> {
   const { text } = await generateText({
     model: opts.model,
     system: `${opts.system}\n\nReply with one JSON object only, no markdown fences and no other text. It must match this JSON schema:\n${JSON.stringify(z.toJSONSchema(opts.schema))}`,
     prompt: opts.prompt,
   })
-  return opts.schema.parse(extractJson(text))
+  return (opts.parse ?? opts.schema).parse(extractJson(text)) as z.infer<P>
 }

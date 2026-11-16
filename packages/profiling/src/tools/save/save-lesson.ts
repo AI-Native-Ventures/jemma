@@ -3,6 +3,7 @@ import { parseAnswer } from '../../logic/answers'
 import { isMeaningKind, meaningKeyProblem } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { pictureProblem } from '../../logic/picture'
+import { cleanSteps } from '../../logic/steps'
 import { FormatSchema, LessonSchema, MIN_QUESTIONS_PER_LEVEL, type Format, type Lesson, type Question } from '../../schemas/lesson'
 import { LabelDropSchema, type LabelDrop } from '../../schemas/no-labels'
 import { resolveSpeech } from '../../speech'
@@ -68,6 +69,15 @@ export const RIGHT_WAY_AFTER_LABELS = 'Work it out again one step at a time, the
 
 /** The reason of the `LabelDrop` that records a plain line put in place of a "why" or a "right way". */
 const REPLACED_WITH_PLAIN_LINE = 'replaced with a plain line: nothing was left after leaving out a label'
+/** The reason of the `LabelDrop` that records worked steps (P127) left out whole because a line of them held a label. */
+const STEPS_LEFT_OUT = 'left out whole: a line of them held a label'
+
+/** The worked steps of each question as they are saved (`cleanSteps`): trimmed, and left off a question whose steps cannot be used. The question stays. */
+const tidySteps = (questions: Question[]): Question[] =>
+  questions.map(({ steps, ...rest }) => {
+    const clean = cleanSteps(steps)
+    return clean ? { ...rest, steps: clean } : rest
+  })
 
 /**
  * "A profile, never a label": the lines of a lesson that speak to or about the learner pass the word check before the lesson is saved. No database.
@@ -79,6 +89,7 @@ const REPLACED_WITH_PLAIN_LINE = 'replaced with a plain line: nothing was left a
  * (in the warm-up or in the questions) with nothing left is replaced by a plain line (`WHY_AFTER_LABELS`, `RIGHT_WAY_AFTER_LABELS`) and the
  * replacement is recorded in `dropped` (field `question 3 why`), so one hint never throws away a lesson. Every question stays, so the lesson keeps
  * its 15 questions and its warm-up and still parses as a `Lesson` for the learner. A script with nothing left still refuses the lesson.
+ * The worked `steps` of a question (P127) are read the same way: a step with a label leaves that question's steps out whole (recorded as `question 3 steps`), and the question stays.
  * `check.people` is the learner's first name (Clever, Bright and Smart are first names).
  */
 export function screenLesson(lesson: Lesson, check: Pick<LabelCheck, 'people'> = {}): { lesson: Lesson; dropped: LabelDrop[] } {
@@ -101,11 +112,20 @@ export function screenLesson(lesson: Lesson, check: Pick<LabelCheck, 'people'> =
     return plain
   }
   const feedback = (questions: Question[], group: 'warm-up' | 'question'): Question[] =>
-    questions.map((q, i) => ({
-      ...q,
-      why: hint(q.why, `${group} ${i + 1} why`, WHY_AFTER_LABELS),
-      rightWay: hint(q.rightWay, `${group} ${i + 1} right way`, RIGHT_WAY_AFTER_LABELS),
-    }))
+    questions.map(({ steps, ...q }, i) => {
+      const screened: Question = {
+        ...q,
+        why: hint(q.why, `${group} ${i + 1} why`, WHY_AFTER_LABELS),
+        rightWay: hint(q.rightWay, `${group} ${i + 1} right way`, RIGHT_WAY_AFTER_LABELS),
+      }
+      if (!steps) return screened
+      // Worked steps (P127) are lines of maths. If a line holds a label the steps are left out whole (a gap in a working is worse than none); the question stays.
+      const field = `${group} ${i + 1} steps`
+      const labels = steps.flatMap((line) => leaveOutLabels(line, field, { ...check, aboutLearnerOnly: true }).dropped)
+      if (!labels.length) return { ...screened, steps }
+      dropped.push({ field, text: labels.map((d) => d.text).join(' '), reason: STEPS_LEFT_OUT })
+      return screened
+    })
 
   const audio = lesson.audio ? { ...lesson.audio, script: required(lesson.audio.script, 'spoken script', 'the spoken script') } : undefined
   const cards = lesson.cards?.flatMap((card, i) => {
@@ -166,7 +186,7 @@ export const saveLesson = defineTool({
     if (written.format !== row.format) throw new Error(`this session is planned as ${row.format}, not ${written.format}`)
     // The lines that speak to or about the learner pass the word check first. The learner's name is not a label, whatever it is.
     const learner = await ok(db.from('children').select('first_name').eq('id', session.child_id).single())
-    const { lesson, dropped } = screenLesson(written, { people: [learner.first_name] })
+    const { lesson, dropped } = screenLesson({ ...written, warmup: tidySteps(written.warmup), questions: tidySteps(written.questions) }, { people: [learner.first_name] })
     if (lesson.format === 'diagram' && !lesson.diagram) throw new Error('a diagram lesson needs a diagram')
     if (lesson.format === 'reading' && !lesson.cards?.length) throw new Error('a reading lesson needs cards')
     if (lesson.format === 'audio' && !lesson.audio?.script) throw new Error('an audio lesson needs an audio script')

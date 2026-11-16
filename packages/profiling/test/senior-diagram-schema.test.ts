@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { describe, expect, test } from 'vitest'
 import { z } from 'zod'
 import { DiagramSpecSchema, SeniorDiagramSpecSchema } from '../src/schemas/diagram'
-import { LessonSchema, PrimaryLessonSchema, SeniorLessonSchema, SeniorQuestionSchema, type Lesson, type Question } from '../src/schemas/lesson'
+import { LessonSchema, PrimaryLessonSchema, QuestionSchema, SeniorLessonSchema, type Lesson, type Question } from '../src/schemas/lesson'
 
 // P87, decisions 1 and 2: two new picture kinds for a senior class (a coordinate plane and a triangle), and an optional picture inside a question.
 // The primary schema (the one the demo class was recorded with) does not change by one character.
@@ -109,18 +109,19 @@ const lesson = (over: Partial<Question> = {}, extra: Partial<Lesson> = {}): Less
 
 describe('a picture inside a question (senior only)', () => {
   test('the senior question takes an optional picture of either new kind, or none', () => {
-    expect(SeniorQuestionSchema.safeParse(q(1, 1)).success).toBe(true)
-    expect(SeniorQuestionSchema.safeParse(q(1, 1, { diagram: { ...plane, graphs: [{ type: 'line', m: 2, c: 1 }] } })).success).toBe(true)
-    expect(SeniorQuestionSchema.safeParse(q(1, 1, { diagram: { kind: 'triangle', vertices: ['A', 'B', 'C'], angles: [90, 60, 30] } })).success).toBe(true)
-    expect(SeniorQuestionSchema.safeParse({ ...q(1, 1), diagram: { kind: 'hologram' } }).success).toBe(false)
+    expect(QuestionSchema.safeParse(q(1, 1)).success).toBe(true)
+    expect(QuestionSchema.safeParse(q(1, 1, { diagram: { ...plane, graphs: [{ type: 'line', m: 2, c: 1 }] } })).success).toBe(true)
+    expect(QuestionSchema.safeParse(q(1, 1, { diagram: { kind: 'triangle', vertices: ['A', 'B', 'C'], angles: [90, 60, 30] } })).success).toBe(true)
+    expect(QuestionSchema.safeParse({ ...q(1, 1), diagram: { kind: 'hologram' } }).success).toBe(false)
   })
 
   test('a lesson of the senior shape reads a picture in a question, a card and a diagram step', () => {
     const withPicture = lesson({ diagram: plane }, { cards: [{ heading: 'h', body: 'b', diagram: { kind: 'triangle', vertices: ['A', 'B', 'C'] } }] })
-    expect(SeniorLessonSchema.safeParse(withPicture).success).toBe(true)
+    // P127: the senior model is asked for `steps` on every question, so its schema reads this lesson only with them; the wide schema reads it as it is.
+    expect(SeniorLessonSchema.safeParse(withPicture).success).toBe(false)
     expect(LessonSchema.safeParse(withPicture).success).toBe(true)
     const steps = lesson({}, { format: 'diagram', diagram: { title: 't', caption: 'c', steps: [{ caption: 's', diagram: plane }] } })
-    expect(SeniorLessonSchema.safeParse(steps).success).toBe(true)
+    expect(LessonSchema.safeParse(steps).success).toBe(true)
   })
 
   test('the primary shape has no picture in a question and no new kind on a card: its model would be refused', () => {

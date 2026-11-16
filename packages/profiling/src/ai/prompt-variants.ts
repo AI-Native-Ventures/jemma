@@ -12,7 +12,7 @@ import { isBaselineClass, isSeniorMaths, subjectProfile, type ClassContext } fro
  *
  * A senior class (Mathematics, Grades 7 to 12: `isSeniorMaths`) also gets the rules of its own: the lesson writer is told the four answer kinds that code marks
  * by meaning (number, expression, equation, point) and the form of an expression, when a question carries a picture (a graph on a grid, a triangle) and how
- * to give one, the child is a "learner", every question states its maths as an expression or an equation and not in words, and the reader of a practice answered on paper is told to keep algebra as written. Such a rule is placed before the other rules on the same phrase, so that it wins. The baseline class never meets one (it is Grade 6).
+ * to give one, the child is a "learner", every question states its maths as an expression or an equation and not in words and has worked steps, and the reader of a practice answered on paper is told to keep algebra as written. Such a rule is placed before the other rules on the same phrase, so that it wins. The baseline class never meets one (it is Grade 6).
  *
  * The long view is not here: its prompt belongs to another packet. A rule never reads a file at run time; the tests check that
  * every `find` still occurs in its file, and the sha256 of each file, so an edit of a file cannot go unnoticed.
@@ -94,6 +94,16 @@ const SENIOR_NOTATION =
   'A word problem (money, data, a real situation) may keep one sentence of context, then the maths on its own line. ' +
   'The same holds for the warm-up questions and their `choices` (an expression or a number, not a sentence), for `why` and `rightWay` (show each step as maths, such as `x/2 = 4` and then `x = 8`), and for a card or a diagram step. ' +
   'The `answer` itself stays as the answer kinds say. Only the `audio` script is spoken, so there the maths is said in words.'
+
+/**
+ * The second bullet a senior class's lesson writer gets after the questions bullet (P127): `steps`, the worked calculation of every question, shown to the
+ * learner under "How to get there". The schema makes them required; this says what a good one is.
+ */
+const SENIOR_STEPS =
+  'Every question, and every warm-up question, also has `steps`: 2 to 6 short lines, each one line of maths, that take the learner from the question to the answer, ' +
+  'for example `["x/2 + 6 = 10", "x/2 = 4", "x = 8"]` for `Solve: x/2 + 6 = 10`. ' +
+  'Write them in the same notation, one move on each line, with no sentences and no names, so that the learner can follow the working on paper. ' +
+  'The last line is the result that the `answer` comes from. Work the steps out before you write the `answer`, and check that they agree.'
 
 export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
   draft_map: [
@@ -179,8 +189,8 @@ export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
     { find: 'for a Grade 6 child', when: (c) => c.grade !== 6, replace: (c) => `for a Grade ${c.grade} child` },
     { find: 'other than the maths.', when: notMaths, replace: () => 'other than the lesson.' },
     { find: 'with the working said out loud', when: notMaths, replace: () => 'with the ideas said out loud' },
-    // A senior class: the maths of a question is written as an expression or an equation, in a bullet after the questions bullet of the file (P127).
-    { find: SENIOR_QUESTIONS_BULLET, when: isSeniorMaths, replace: () => `${SENIOR_QUESTIONS_BULLET}\n- ${SENIOR_NOTATION}` },
+    // A senior class: the maths of a question is written as an expression or an equation, and every question has worked steps: two bullets after the questions bullet of the file (P127).
+    { find: SENIOR_QUESTIONS_BULLET, when: isSeniorMaths, replace: () => `${SENIOR_QUESTIONS_BULLET}\n- ${SENIOR_NOTATION}\n- ${SENIOR_STEPS}` },
     // A senior class: graphs on a grid and triangles, in a card, a step or a question.
     { find: 'Use only the diagram kinds in the schema.', when: isSeniorMaths, replace: () => SENIOR_PICTURES },
   ],
