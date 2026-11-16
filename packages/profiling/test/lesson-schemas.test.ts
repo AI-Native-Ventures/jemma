@@ -20,6 +20,8 @@ const q = (difficulty: 1 | 2 | 3, i: number, over: Partial<Question> = {}): Ques
   rightWay: 'right way',
   ...over,
 })
+/** P127: the senior model is asked for these on every question. */
+const STEPS = ['2x + 3 = 7', '2x = 4', 'x = 2']
 const lesson = (over: Partial<Question> = {}): Lesson => ({
   format: 'reading',
   title: 'T',
@@ -46,7 +48,7 @@ describe('the primary schema is the lesson as it was', () => {
   })
 })
 
-describe('the senior schema adds four answer kinds and one optional field', () => {
+describe('the senior schema adds four answer kinds, one optional field and (P127) a required steps', () => {
   test('its JSON schema is not the primary one, and it names the four kinds and the three forms', () => {
     expect(sha(SeniorLessonSchema)).not.toBe(PRIMARY_SHA)
     const json = JSON.stringify(z.toJSONSchema(SeniorLessonSchema))
@@ -54,23 +56,26 @@ describe('the senior schema adds four answer kinds and one optional field', () =
   })
 
   test('form is optional, and the question of a senior lesson parses with or without it', () => {
-    expect(SeniorLessonSchema.safeParse(lesson({ answer: '2x + 3', answerKind: 'expression' })).success).toBe(true)
-    expect(SeniorLessonSchema.safeParse(lesson({ answer: '(x+2)(x-2)', answerKind: 'expression', form: 'factorised' })).success).toBe(true)
-    expect(SeniorLessonSchema.safeParse(lesson({ answer: 'x', answerKind: 'expression', form: 'sideways' as never })).success).toBe(false)
+    expect(SeniorLessonSchema.safeParse(lesson({ answer: '2x + 3', answerKind: 'expression', steps: STEPS })).success).toBe(true)
+    expect(SeniorLessonSchema.safeParse(lesson({ answer: '(x+2)(x-2)', answerKind: 'expression', form: 'factorised', steps: STEPS })).success).toBe(true)
+    expect(SeniorLessonSchema.safeParse(lesson({ answer: 'x', answerKind: 'expression', form: 'sideways' as never, steps: STEPS })).success).toBe(false)
   })
 
   test('the two lesson rules are the same: 15 questions, 5 per level; a warm-up of 0 or 2', () => {
-    const l = lesson()
+    const l = lesson({ steps: STEPS })
+    expect(SeniorLessonSchema.safeParse(l).success).toBe(true)
     expect(SeniorLessonSchema.safeParse({ ...l, questions: l.questions.slice(1) }).success).toBe(false)
-    expect(SeniorLessonSchema.safeParse({ ...l, warmup: [q(1, 90)] }).success).toBe(false)
-    expect(SeniorLessonSchema.safeParse({ ...l, warmup: [q(1, 90), q(1, 91)] }).success).toBe(true)
+    expect(SeniorLessonSchema.safeParse({ ...l, warmup: [q(1, 90, { steps: STEPS })] }).success).toBe(false)
+    expect(SeniorLessonSchema.safeParse({ ...l, warmup: [q(1, 90, { steps: STEPS }), q(1, 91, { steps: STEPS })] }).success).toBe(true)
     expect(PrimaryLessonSchema.safeParse({ ...l, questions: l.questions.slice(1) }).success).toBe(false)
   })
 })
 
 describe('every reader uses the wide shape', () => {
-  test('LessonSchema is the senior shape, and a lesson of the primary shape parses with it, unchanged', () => {
-    expect(sha(LessonSchema)).toBe(sha(SeniorLessonSchema))
+  test('LessonSchema is the senior shape with steps optional, and a lesson of the primary shape parses with it, unchanged', () => {
+    // P127: the model is handed `SeniorLessonSchema` (steps required); every reader and writer uses `LessonSchema` (steps optional), so the two texts differ.
+    expect(sha(LessonSchema)).not.toBe(sha(SeniorLessonSchema))
+    expect(LessonSchema.safeParse(lesson({ steps: STEPS })).success).toBe(true)
     const old = PrimaryLessonSchema.parse(lesson())
     expect(LessonSchema.parse(old)).toEqual(old)
   })

@@ -12,9 +12,15 @@ import { memoryDb, type MemoryDb } from './helpers/memory-db'
 // No database, no network, no model.
 
 const sha = (value: unknown) => createHash('sha256').update(JSON.stringify(z.toJSONSchema(value as z.ZodType))).digest('hex')
-/** The model-facing JSON schemas, as they were before P117. Recorded answers are found by a hash of this text. */
+/** The model-facing JSON schemas. Recorded answers are found by a hash of this text. The primary one is as it was before P117 and must not move. */
 const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8dc71c'
-const SENIOR_SHA = '8eb4995287795a596752a2f0406b694d57089b524c10e294d9b99ede40df6aa6'
+/**
+ * The senior one and the wide one changed on purpose in P127 (16 Nov 2026): the senior question has a required `steps` (2 to 6 lines of maths), and the
+ * wide `LessonSchema` that every reader and writer uses has it optional. Senior lessons have no recorded answer, so no recording depends on them.
+ * Before P127 both were 8eb4995287795a596752a2f0406b694d57089b524c10e294d9b99ede40df6aa6.
+ */
+const SENIOR_SHA = '95bd01bd191e25f2ee7e8325989c3fde9ccb47893163cffb8a2a4172fc94d41a'
+const WIDE_SHA = 'a84500e7bc9893b2cf070f2019ea2e17cb739091f9eb50859981fd8804ae2a3c'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({
@@ -39,10 +45,10 @@ const lessonOf = (perLevel: [number, number, number], warmup = 2, over: Partial<
 })
 
 describe('the write side does not change', () => {
-  test('the JSON schema text the model is handed has the same sha256 as before (primary and senior)', () => {
+  test('the JSON schema text the model is handed: the primary one has the same sha256 as before, the senior and the wide one are pinned anew (P127)', () => {
     expect(sha(PrimaryLessonSchema)).toBe(PRIMARY_SHA)
     expect(sha(SeniorLessonSchema)).toBe(SENIOR_SHA)
-    expect(sha(LessonSchema)).toBe(SENIOR_SHA)
+    expect(sha(LessonSchema)).toBe(WIDE_SHA)
   })
 
   test('LessonSchema still wants exactly 15 questions, 5 per level, and a warm-up of 0 or 2', () => {

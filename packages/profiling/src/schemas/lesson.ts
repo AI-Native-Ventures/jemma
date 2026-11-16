@@ -13,10 +13,12 @@ const Difficulty = z.union([z.literal(1), z.literal(2), z.literal(3)])
  * `PrimaryLessonSchema` is the lesson exactly as it was (six answer kinds). It is the schema the lesson writer hands to the model for every
  * class that is not a senior one, and the JSON text of it is part of the hash that finds a recorded answer: not one character of it may change
  * (a test pins its sha256). `SeniorLessonSchema` is the same lesson with four more answer kinds (`number`, `expression`, `equation`, `point`)
- * that code marks by meaning, and one optional question field, `form`. It is handed to the model for a senior class only (Mathematics, Grades 7 to 12).
+ * that code marks by meaning, one optional question field, `form`, and (P127) a required `steps` on every question: 2 to 6 short lines of maths from
+ * the question to the answer. It is handed to the model for a senior class only (Mathematics, Grades 7 to 12).
  *
- * Everything that WRITES a lesson (the model's output, the `save_lesson` input, the seed) uses the wide one, `LessonSchema`, which is the
- * senior shape: a lesson written under the primary shape is a lesson of the senior shape too, so no stored or recorded lesson stops parsing.
+ * Everything that WRITES a lesson (the model's output once it is read, the `save_lesson` input, the seed) uses the wide one, `LessonSchema`, which is the
+ * senior shape with `steps` optional: a lesson written under the primary shape is a lesson of the wide shape too, so no stored or recorded lesson stops
+ * parsing, and a model that leaves `steps` out of one question never refuses a lesson (the question is saved without them).
  * Everything that READS a saved lesson (the learner's screens, the home, the parent's page) uses `StoredLessonSchema`, the same shape with the
  * counts a save can leave (see below).
  */
@@ -45,23 +47,37 @@ export const PrimaryQuestionSchema = z.object({
   rightWay: z.string(),
 })
 
-export const SeniorQuestionSchema = z.object({
-  prompt: z.string(),
-  render: z.enum(['text', 'fraction_sum']),
-  terms: z.array(z.string()).optional(),
-  answer: z.string(),
-  answerKind: z.enum(ANSWER_KINDS),
-  choices: z.array(z.string()).optional(),
-  form: FormSchema.optional(),
-  /** A picture the question needs (a graph to read, a triangle with an angle to find). It never holds the answer. Senior classes only. */
-  diagram: SeniorDiagramSpecSchema.optional(),
-  difficulty: Difficulty,
-  why: z.string(),
-  rightWay: z.string(),
-})
+/** The most and the fewest lines of the worked steps of a question (P127). */
+export const MIN_STEPS = 2
+export const MAX_STEPS = 6
 
-/** The question as every reader sees it: the wide, senior shape. */
-export const QuestionSchema = SeniorQuestionSchema
+/**
+ * A senior question. `steps` is a line of maths for each move from the question to the answer (`["x/2 + 6 = 10", "x/2 = 4", "x = 8"]`), written before the
+ * answer so the model works the maths first. Two questions only differ in `steps`: the one the senior model is handed has it required (2 to 6 lines), the
+ * wide one every reader and writer uses has it optional (see `cleanSteps` for what is kept when a lesson is saved).
+ */
+const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
+  z.object({
+    prompt: z.string(),
+    render: z.enum(['text', 'fraction_sum']),
+    terms: z.array(z.string()).optional(),
+    steps,
+    answer: z.string(),
+    answerKind: z.enum(ANSWER_KINDS),
+    choices: z.array(z.string()).optional(),
+    form: FormSchema.optional(),
+    /** A picture the question needs (a graph to read, a triangle with an angle to find). It never holds the answer. Senior classes only. */
+    diagram: SeniorDiagramSpecSchema.optional(),
+    difficulty: Difficulty,
+    why: z.string(),
+    rightWay: z.string(),
+  })
+
+/** The question the senior model is handed: `steps` required, 2 to 6 lines. */
+export const SeniorQuestionSchema = seniorQuestion(z.array(z.string()).min(MIN_STEPS).max(MAX_STEPS))
+
+/** The question as every reader sees it: the wide, senior shape, with `steps` optional (an old lesson has none, and a save may leave them out). */
+export const QuestionSchema = seniorQuestion(z.array(z.string()).optional())
 export type Question = z.infer<typeof QuestionSchema>
 export type PrimaryQuestion = z.infer<typeof PrimaryQuestionSchema>
 
@@ -101,10 +117,14 @@ const lessonAround = <Q extends z.ZodType<{ difficulty: 1 | 2 | 3 }>, D extends 
 export const PrimaryLessonSchema = lessonAround(PrimaryQuestionSchema, DiagramSpecSchema)
 export type PrimaryLesson = z.infer<typeof PrimaryLessonSchema>
 
+/** The lesson the senior model is handed (P127: `steps` required on every question, the warm-up too). It is not what a reply is read with: see `LessonSchema`. */
 export const SeniorLessonSchema = lessonAround(SeniorQuestionSchema, SeniorDiagramSpecSchema)
 
-/** The lesson as every writer is held to (the model's output, the `save_lesson` input): the wide, senior shape, exactly 15 questions. */
-export const LessonSchema = SeniorLessonSchema
+/**
+ * The lesson as every writer is held to (a senior model's reply once it is read, the `save_lesson` input): the wide, senior shape, exactly 15 questions,
+ * `steps` optional. Its JSON text is not the one the model is handed (`SeniorLessonSchema` is).
+ */
+export const LessonSchema = lessonAround(QuestionSchema, SeniorDiagramSpecSchema)
 export type Lesson = z.infer<typeof LessonSchema>
 
 /** The fewest questions a saved lesson keeps at each level. `save_lesson` with `dropInvalid` never drops below it, and `StoredLessonSchema` never wants less. */
@@ -117,9 +137,9 @@ export const MIN_QUESTIONS_PER_LEVEL = 4
  * and refused those, so the learner saw "The lesson could not be loaded" for a lesson that was saved on purpose.
  *
  * It is built from the shape of `LessonSchema` and never goes to a model: the JSON text the model is handed (and the hash that finds a recorded
- * answer) belongs to `PrimaryLessonSchema` and `SeniorLessonSchema`, which do not change. It reads a lesson of the primary shape too (a subset).
+ * answer) belongs to `PrimaryLessonSchema` and `SeniorLessonSchema`. A lesson saved before P127 has no `steps`, and this still opens it. It reads a lesson of the primary shape too (a subset).
  */
-export const StoredLessonSchema = z.object(SeniorLessonSchema.shape).superRefine((lesson, ctx) => {
+export const StoredLessonSchema = z.object(LessonSchema.shape).superRefine((lesson, ctx) => {
   if (lesson.warmup.length > 2) {
     ctx.addIssue({ code: 'custom', path: ['warmup'], message: 'warmup has at most 2 questions' })
   }
