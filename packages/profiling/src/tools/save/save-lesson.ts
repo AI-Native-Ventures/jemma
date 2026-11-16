@@ -34,6 +34,7 @@ function answerKeyProblem(q: Question): string | null {
   if (isListKind(q.answerKind)) return listKeyProblem(q, readNumber)
   const key = stripUnit(q.answer, q.unit)
   if (isMeaningKind(q.answerKind)) return meaningKeyProblem(q.answerKind, key)
+  if (isListKind(q.answerKind)) return listKeyProblem(q, readNumber)
   const parsed = parseAnswer(key)
   // A negative whole or decimal key is for a senior class (its box has a minus key); a primary question keeps the rule it always had: the number kind is for it.
   const negative = parsed.kind === 'number' && parsed.value.n < 0n && !isSeniorQuestion(q)

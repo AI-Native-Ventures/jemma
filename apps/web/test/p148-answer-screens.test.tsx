@@ -79,12 +79,14 @@ describe('what the browser is given: shapes and the unit, never the key', () => 
     expect(stripQuestion(question({ unit: '  ' }), at)).not.toHaveProperty('unit')
   })
 
-  it('a minus key is for a whole or a decimal question of a senior class only: worked steps, a picture, a form, a unit or a round tell them apart', () => {
+  it('a minus key is for a whole or a decimal question of a senior class only: worked steps, a picture or a form tell them apart (a unit or a round does not)', () => {
     const primary = stripQuestion(question({ answerKind: 'whole', answer: '12' }), at)
     expect(primary).not.toHaveProperty('signed')
     expect(stripQuestion(question({ answerKind: 'whole', answer: '12', steps: ['5 + 7', '12'] }), at).signed).toBe(true)
     expect(stripQuestion(question({ answerKind: 'decimal', answer: '0,5', steps: ['1/2', '0,5'] }), at).signed).toBe(true)
-    expect(stripQuestion(question({ answerKind: 'whole', answer: '12', unit: 'kg' }), at).signed).toBe(true)
+    expect(stripQuestion(question({ answerKind: 'whole', answer: '12', unit: 'kg' }), at)).not.toHaveProperty('signed')
+    expect(stripQuestion(question({ answerKind: 'decimal', answer: '1,5', round: 1 }), at)).not.toHaveProperty('signed')
+    expect(stripQuestion(question({ answerKind: 'whole', answer: '12', unit: 'kg', steps: ['5 + 7', '12'] }), at).signed).toBe(true)
     expect(stripQuestion(question({ answerKind: 'whole', answer: '12', steps: ['', '  '] }), at)).not.toHaveProperty('signed')
     expect(stripQuestion(question({ answerKind: 'fraction', answer: '3/4', steps: ['a', 'b'] }), at)).not.toHaveProperty('signed')
     expect(stripQuestion(question({ answerKind: 'money', answer: 'R5', steps: ['a', 'b'] }), at)).not.toHaveProperty('signed')
@@ -365,6 +367,13 @@ describe('the results show the unit', () => {
       ['16%', '15%'],
       ['25', '24'],
     ])
+  })
+
+  it('a key with more places than the question asks for is shown rounded as asked, with its unit', () => {
+    expect(reviewOf([item(question({ answer: '3.14159', round: 2, unit: 'cm' }), '3.1')])[0]).toMatchObject({ wrote: '3.1 cm', right: '3.14 cm' })
+    expect(reviewOf([item(question({ answer: '3,14159', round: 2 }), '3,1')])[0]).toMatchObject({ right: '3,14' })
+    expect(reviewOf([item(question({ answer: '15%', round: 2 }), '16%')])[0]).toMatchObject({ right: '15%' })
+    expect(reviewOf([item(question({ answer: '3.14159' }), '3,1')])[0]).toMatchObject({ right: '3.14159' })
   })
 
   it('an answer written with its own unit on paper is shown once', () => {

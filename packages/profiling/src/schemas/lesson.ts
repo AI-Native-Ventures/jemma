@@ -73,13 +73,13 @@ const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
     answerKind: z.enum(ANSWER_KINDS),
     choices: z.array(z.string()).optional(),
     form: FormSchema.optional(),
+    /** The unit of the answer ("cm²", "ml", "km/h", "°C", "kg"), shown after the box. The `answer` is the number alone. Senior classes only (P148). */
+    unit: z.string().optional(),
     /** A `list` question: true when the order of the values matters (the next three terms), false or left out when it does not (all the factors of 24). Labels make it true. */
     ordered: z.boolean().optional(),
     /** A `list` question: a short label over each box (`["min", "Q1", "median", "Q3", "max"]`), one for each value of the answer. */
     labels: z.array(z.string()).optional(),
-    /** The unit of the answer ("cm²", "ml", "km/h", "°C", "kg"), shown after the box. The `answer` is the number alone (P148). */
-    unit: z.string().optional(),
-    /** The places a question asks the answer to be rounded to ("correct to 2 decimal places": a number, a whole, a decimal, or a `list` or `table` question): an answer that rounds to the key there is right. 0 to 6, checked by the save gate (P148, P150). */
+    /** How many decimal places the question asks the answer to be rounded to ("correct to 1 decimal place" is 1): a value that rounds to the key's there is right. 0 to 6, checked by the save gate. */
     round: z.number().int().optional(),
     /** A `table` question: the table, with `null` in each cell the learner fills. */
     table: TableSchema.optional(),

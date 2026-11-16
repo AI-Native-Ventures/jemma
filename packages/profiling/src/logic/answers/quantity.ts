@@ -16,7 +16,7 @@ import { MEANING_ANSWER_KINDS } from '../../schemas/lesson'
 
 export type Mark = { correct: boolean; comparable: boolean }
 /** The value of a text made of numbers (no letter), or null. `suffix` drops a % or a degree sign at the end. This is `numeric` of `logic/meaning.ts`. */
-export type Reader = (text: string, suffix: boolean) => number | null
+export type NumberReader = (text: string, suffix: boolean) => number | null
 
 /** The most characters of a unit ("km/h", "cm²", "°C"), and the most places a question may round to. */
 export const MAX_UNIT_LENGTH = 12
@@ -150,7 +150,7 @@ export type QuantityFields = QuantityQuestion & { prompt?: string }
  * keeps its own verdict then. A money question and a number in rand (unit R) compare at the cent. A number, or a decimal or a whole number with a unit or a
  * `round`, is read without its unit, then it is right when it is the key, or rounds to the key at `round` places, or (a number) is the same percent.
  */
-export function markQuantity(q: QuantityQuestion, typed: string, read: Reader): Mark | null {
+export function markQuantity(q: QuantityQuestion, typed: string, read: NumberReader): Mark | null {
   const kind = q.answerKind
   const unit = cleanUnit(q.unit)
 
@@ -186,13 +186,9 @@ export function markQuantity(q: QuantityQuestion, typed: string, read: Reader): 
 
 /**
  * True when a question was written for a senior class (Grades 7 to 12). Every question the senior writer makes has worked `steps` (P127), a kind that is marked by
- * meaning, or a picture, a form, a unit or a round; a primary question has none of them. A whole or a decimal answer of such a question may be negative (the
- * save gate takes a negative key for it, and the screen gives its box a minus key), and a primary one may not.
+ * meaning, or a picture or a form; a primary question has none of them. A unit or a round does NOT make a question senior (a primary whole or decimal question may
+ * carry a unit). A whole or a decimal answer of a senior question may be negative (the save gate takes a negative key for it, and the screen gives its box a minus
+ * key), and a primary one may not.
  */
-export const isSeniorQuestion = (q: { steps?: string[]; answerKind: string; diagram?: unknown; form?: string; unit?: string; round?: number }): boolean =>
-  (q.steps?.some((s) => s.trim() !== '') ?? false) ||
-  (MEANING_ANSWER_KINDS as readonly string[]).includes(q.answerKind) ||
-  !!q.diagram ||
-  !!q.form ||
-  !!q.unit?.trim() ||
-  q.round !== undefined
+export const isSeniorQuestion = (q: { steps?: string[]; answerKind: string; diagram?: unknown; form?: string }): boolean =>
+  (q.steps?.some((s) => s.trim() !== '') ?? false) || (MEANING_ANSWER_KINDS as readonly string[]).includes(q.answerKind) || !!q.diagram || !!q.form

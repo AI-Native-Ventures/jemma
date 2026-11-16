@@ -102,16 +102,16 @@ export function writeLine(shape: AnswerShape): string {
       return 'Write the x and the y of the point, like (2; 3).'
     case 'number':
       return numberWriteLine(shape)
-    // P150: several values, with a semicolon between them (that is how the photo is read).
-    case 'list':
-    case 'order':
-    case 'table':
-      return paperValuesLine(shape)
     // P148: a time and a ratio.
     case 'time':
       return timeWriteLine(shape.style, shape.young === true)
     case 'ratio':
       return ratioWriteLine(shape.parts)
+    // P150: several values, with a semicolon between them (that is how the photo is read).
+    case 'list':
+    case 'order':
+    case 'table':
+      return paperValuesLine(shape)
     default:
       return 'Write your answer.'
   }

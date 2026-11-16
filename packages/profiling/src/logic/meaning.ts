@@ -912,7 +912,7 @@ export function markQuestion(
     const { correct, comparable } = markListQuestion(q, answer, readNumber)
     return { correct, comparable }
   }
-  // The signature is frozen (API freeze, 16 Nov 2026), so the optional fields of a whole question that P148 reads (prompt, unit, round) come from the same argument.
+  // The optional fields of a whole question that P148 reads (prompt, unit) come from the same argument.
   const more = q as QuantityFields
   if (q.answerKind === 'ratio') return markRatio(q.answer, answer, asksSimplest(more.prompt))
   const plain = isMeaningKind(q.answerKind) ? markByMeaning(q.answerKind, q.answer, answer, q.form) : markAnswer(answer, q.answer)

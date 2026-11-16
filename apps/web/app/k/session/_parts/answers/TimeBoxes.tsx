@@ -34,7 +34,7 @@ function HalfKey({ half, on, onPress }: { half: Half; on: boolean; onPress: () =
       aria-pressed={on}
       onMouseDown={(e) => e.preventDefault()}
       onClick={onPress}
-      className={`flex h-[34px] w-[60px] cursor-pointer items-center justify-center rounded-[12px] text-[17px] font-bold ${
+      className={`flex h-[44px] w-[60px] cursor-pointer items-center justify-center rounded-[12px] text-[17px] font-bold ${
         on ? 'border-[3px] border-ink bg-ink text-white' : 'border-2 border-edge bg-card text-ink'
       }`}
     >

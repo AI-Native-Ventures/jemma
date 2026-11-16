@@ -220,11 +220,6 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
           <MathAnswerField kind="number" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={numberHint(shape)} />
         </UnitFrame>
       )
-    case 'list':
-    case 'order':
-    case 'table':
-      // P150: several values (a row of boxes, chips to put in order, the empty cells of a table), sent as one text.
-      return <YoungSize young={shape.young}><ValuesAnswer shape={shape} onChange={b.set.text} /></YoungSize>
     // P148: a time and a ratio, each its own boxes (answers/TimeBoxes.tsx, RatioBoxes.tsx).
     case 'time':
       return (
@@ -240,6 +235,11 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
           <Hint>{ratioHint(shape.parts)}</Hint>
         </div>
       )
+    case 'list':
+    case 'order':
+    case 'table':
+      // P150: several values (a row of boxes, chips to put in order, the empty cells of a table), sent as one text.
+      return <YoungSize young={shape.young}><ValuesAnswer shape={shape} onChange={b.set.text} /></YoungSize>
     default:
       // The lesson gave no kind we know: one plain box.
       return (

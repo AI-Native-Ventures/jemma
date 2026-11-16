@@ -18,12 +18,14 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * The senior one and the wide one changed on purpose in P127 (16 Nov 2026): the senior question has a required `steps` (2 to 6 lines of maths), and the
  * wide `LessonSchema` that every reader and writer uses has it optional. Senior lessons have no recorded answer, so no recording depends on them.
  * Before P127 both were 8eb4995287795a596752a2f0406b694d57089b524c10e294d9b99ede40df6aa6.
+ * They moved again on purpose in P148 (16 Nov 2026): the question has two optional fields, `unit` and `round`, and the answer kinds `time` and `ratio`. After P127 they were
+ * 95bd01bd191e25f2ee7e8325989c3fde9ccb47893163cffb8a2a4172fc94d41a (senior) and a84500e7bc9893b2cf070f2019ea2e17cb739091f9eb50859981fd8804ae2a3c (wide).
  * P150 (16 Nov 2026) moved both again, on purpose: three more answer kinds (`list`, `order`, `table`) and four optional question fields (`ordered`, `labels`,
- * `round`, `table`). P148 moved them on purpose too: `unit` and `round`, and the answer kinds `time` and `ratio`.
+ * `round`, `table`); `round` is shared with P148. Senior lessons have no recorded answer, so no recording depends on them.
  * Every packet that changes the senior schema moves these two: recompute them after a merge.
  */
-const SENIOR_SHA = '0a9534a8b3e38557c821cef23b6947f5cba012a3e25696d577bb502e4b78a7e8'
-const WIDE_SHA = '10c5d7020c4783921f4e683a87a743c9b46b09a5c3f88596168d1ff01e749ceb'
+const SENIOR_SHA = '83ba72b46817181c48631f13aaac039527a1c7df91a33efb0d00dfe8dbf9633e'
+const WIDE_SHA = 'fc25ff0cde7d64b4bc307e80e8f0a3cf62d7ed0d3798b9859db15fa2e12a1e01'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({
