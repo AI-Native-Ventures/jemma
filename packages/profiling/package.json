@@ -42,6 +42,7 @@
     "./orchestrator": "./src/orchestrator.ts",
     "./caps": "./src/curriculum/caps.ts",
     "./own": "./src/own-workspace.ts",
+    "./parent-invite": "./src/parent-invite.ts",
     "./own-names": "./src/own-class-names.ts"
   }
 }
