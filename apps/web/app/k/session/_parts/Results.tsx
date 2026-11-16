@@ -1,8 +1,7 @@
 'use client'
 
-import { Fragment } from 'react'
 import { Frac, FractionText, hasMath, isFraction, MathText, withFractions } from './Frac'
-import { hasTypeset } from './typeset'
+import { hasTypeset, type TypesetMode } from './typeset'
 import { Bar, type Fill } from './Bars'
 import { Gem } from './Gems'
 import { besideNumber } from './prompt-layout'
@@ -53,7 +52,15 @@ export function termUnits(value: string): string[] | null {
 }
 
 /** A star, a root, a hyphen in front of a number or between two, in a written answer: only a senior class writes them. */
-const SENIOR_SIGN = /[*^\u221a]|sqrt|(^|\s)[-\u2212]\s?\d|\d\s[-\u2212]\s\d/
+const SENIOR_SIGN = /[*^\u221a\u00b1\u2213]|sqrt|(^|\s)[-\u2212]\s?\d|\d\s[-\u2212]\s\d/
+
+/**
+ * A question of a senior class (P135): it has worked steps, or algebra, a power, a root or a senior sign in its question or its answer. Its sentences are
+ * typeset as a senior class's are (a bare 2x is maths, a sum of numbers is maths); every other card is drawn as it always was.
+ */
+const isSenior = (m: MissedQuestion): boolean =>
+  (m.steps?.length ?? 0) > 0 || hasTypeset(m.prompt, 'algebra') || hasMath(m.prompt) || hasTypeset(m.right, 'algebra') || hasMath(m.right) || SENIOR_SIGN.test(m.right)
+const modeOf = (m: MissedQuestion): TypesetMode => (isSenior(m) ? 'all' : 'algebra')
 
 /** An answer needs the whole width of its box when it is more than a short number: more than 6 characters. */
 const isLong = (value: string) => value.trim().length > 6
@@ -65,7 +72,8 @@ function Stacked({ value, size, rule, gap, side }: { value: string; size: number
     return <Frac top={n!} bottom={d!} size={size} rule={rule} gap={gap} side={side} />
   }
   // A line of terms ("3x + 12 + 0", "x² + 4x + 4", "x = 3 or x = -1") keeps each term in one piece: it wraps only at a space between terms.
-  const units = termUnits(value)
+  // P135: an answer with a plus-minus sign is one piece of maths ("x = 2 ± √3"), not cut into terms.
+  const units = /[\u00b1\u2213]/.test(value) ? null : termUnits(value)
   // P129: an answer with a letter, a star, a root or a minus in it (a senior class) is drawn as a textbook draws it; every other answer is drawn as it always was.
   const textbook = hasMath(value) || hasTypeset(value, 'algebra') || SENIOR_SIGN.test(value)
   if (units && (textbook || withFractions(value, () => null).every((p) => typeof p === 'string'))) {
@@ -114,12 +122,16 @@ function RightBar({ m }: { m: MissedQuestion }) {
 /** "You wrote" and "Right answer" sit side by side, unless one answer is longer than a short number: then they stack, each as wide as the screen. */
 const stack = (m: MissedQuestion) => !m.unread && (isLong(m.wrote) || isLong(m.right))
 
-/** A question's card starts the same way, right or missed: its number, the question and its picture. */
+/**
+ * A question's card starts the same way, right or missed: its number, the question and its picture. "Question 1" is one line (never "Question" over "1"). A
+ * senior question has the whole width of the card under its number, left aligned, short or long (P135); only a primary one that is short stays beside it.
+ */
 function CardHead({ m }: { m: MissedQuestion }) {
   const fractionSum = m.terms && m.terms.length === 2
+  const beside = fractionSum || (besideNumber(m.prompt) && !isSenior(m))
   return (
     <>
-      {fractionSum || besideNumber(m.prompt) ? (
+      {beside ? (
         <div className="flex items-center justify-between gap-3">
           <h2 id={`r${m.n}`} className="m-0 text-[14px] font-semibold text-body">Question {m.n}</h2>
           <span data-question="true" className="flex items-center justify-end gap-2 text-right text-[24px] font-bold">
@@ -135,8 +147,8 @@ function CardHead({ m }: { m: MissedQuestion }) {
       ) : (
         // A long question (P130) has the whole width of the card under its number, its context in normal text and its maths line large.
         <div className="flex flex-col gap-2">
-          <h2 id={`r${m.n}`} className="m-0 text-[14px] font-semibold text-body">Question {m.n}</h2>
-          <CardQuestion prompt={m.prompt} />
+          <h2 id={`r${m.n}`} className="m-0 text-[14px] font-semibold whitespace-nowrap text-body">Question {m.n}</h2>
+          <CardQuestion prompt={m.prompt} typeset={modeOf(m)} />
         </div>
       )}
       <QuestionPicture spec={m.diagram} variant="card" />
@@ -145,23 +157,11 @@ function CardHead({ m }: { m: MissedQuestion }) {
 }
 
 /**
- * One line of worked maths ("x/2 + 6 = 10"), drawn by the same maths text as every answer on this screen (powers raised, fractions stacked), so it
- * follows when that component is upgraded. A line of terms is kept in whole terms: it wraps only at a space between terms, never between a sign and its number.
+ * One line of worked maths ("x/2 + 6 = 10"), drawn by the same maths text as every answer on this screen (powers raised, fractions stacked). The line is ONE
+ * piece of maths (P135), so the spaces around its signs are even and a line never breaks inside itself: if it is wider than the card it is scaled to fit.
  */
 function StepLine({ line }: { line: string }) {
-  const draw = (t: string) => <MathText text={t} size={20} rule={2} gap={2} side={3} className="mx-0.5 align-middle" />
-  const units = termUnits(line)
-  if (!units) return draw(line)
-  return (
-    <>
-      {units.map((unit, i) => (
-        <Fragment key={i}>
-          {i > 0 ? ' ' : null}
-          <span className="whitespace-nowrap">{draw(unit)}</span>
-        </Fragment>
-      ))}
-    </>
-  )
+  return <MathText text={line} size={20} rule={2} gap={2} side={3} className="mx-0.5 align-middle" />
 }
 
 /** "How to get there": the maths from the question to the answer, one line each, on a card of a question that has worked steps. Nothing is drawn without steps. */
@@ -195,7 +195,7 @@ function RightCard({ m }: { m: MissedQuestion }) {
         <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
       </span>
       <Steps steps={m.steps} />
-      <p className="m-0 text-[16px] leading-[1.5]"><strong className="font-bold">Why it works:</strong> <FractionText text={m.rightWay} size={22} rule={2} gap={3} side={3} /></p>
+      <p className="m-0 text-[16px] leading-[1.5]"><strong className="font-bold">Why it works:</strong> <FractionText text={m.rightWay} size={22} rule={2} gap={3} side={3} typeset={modeOf(m)} /></p>
     </article>
   )
 }
@@ -223,11 +223,11 @@ function MissedCard({ m }: { m: MissedQuestion }) {
           <Stacked value={m.right} size={20} rule={2} gap={2} side={3} />
         </span>
       </div>
-      <p className="m-0 text-[16px] leading-[1.5]"><strong className="font-bold">Why:</strong> <FractionText text={m.why} size={22} rule={2} gap={3} side={3} /></p>
+      <p className="m-0 text-[16px] leading-[1.5]"><strong className="font-bold">Why:</strong> <FractionText text={m.why} size={22} rule={2} gap={3} side={3} typeset={modeOf(m)} /></p>
       <Steps steps={m.steps} />
       <div className="flex flex-col gap-2 rounded-[16px] bg-[#F7F6FB] p-3.5">
         <span className="text-[15px] font-bold">The right way</span>
-        <span className="text-[16px] leading-[1.5]"><FractionText text={m.rightWay} size={22} rule={2} gap={3} side={3} /></span>
+        <span className="text-[16px] leading-[1.5]"><FractionText text={m.rightWay} size={22} rule={2} gap={3} side={3} typeset={modeOf(m)} /></span>
         <RightBar m={m} />
       </div>
     </article>

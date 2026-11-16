@@ -7,6 +7,7 @@ import { IconLabel } from '@/components/ui/IconLabel'
 import type { LessonForChild } from '../[sessionId]/types'
 import { BarRows, rowFills, type Fill, type RowSpec } from './Bars'
 import { FractionText } from './Frac'
+import { hasTypeset } from './typeset'
 import { DIAGRAM_ICON, LearnBadge } from './LearnCards'
 
 type Step = NonNullable<LessonForChild['diagram']>['steps'][number]
@@ -59,6 +60,8 @@ export function LearnDiagram({ lesson, onReady }: LearnDiagramProps) {
   const [plays, setPlays] = useState(0)
   const contrastRows = d.contrast ? rowsOf(d.contrast.diagram) : null
   const contrastLast = contrastRows?.[contrastRows.length - 1]
+  // P135: a lesson with algebra in a caption is a senior lesson: all its captions are typeset the way a senior class's are (a bare 2x is maths too). Any other lesson is as it was.
+  const mode = d.steps.some((s) => hasTypeset(s.caption, 'algebra')) || (d.contrast ? hasTypeset(d.contrast.caption, 'algebra') : false) ? 'all' : 'algebra'
   const contrastName = contrastLast?.label ?? (contrastLast ? `${contrastLast.shaded}/${contrastLast.parts}` : null)
   return (
     <main className="flex flex-1 flex-col gap-4 px-5 pt-[18px] pb-[26px]">
@@ -80,7 +83,14 @@ export function LearnDiagram({ lesson, onReady }: LearnDiagramProps) {
           >
             <span className="flex gap-2 text-[15px] font-semibold">
               <span className="flex size-[22px] flex-none items-center justify-center rounded-pill bg-ink text-[12px] text-white">{i + 1}</span>
-              <FractionText text={step.caption} size={20} rule={2} gap={3} side={3} />
+              {mode === 'all' ? (
+                // A senior lesson (P135): the caption may shrink to the card (min-w-0), so a whole equation in it moves to the next line or scales instead of pushing the card wider.
+                <span className="min-w-0 flex-1">
+                  <FractionText text={step.caption} size={20} rule={2} gap={3} side={3} typeset={mode} />
+                </span>
+              ) : (
+                <FractionText text={step.caption} size={20} rule={2} gap={3} side={3} />
+              )}
             </span>
             <Picture step={step} previous={d.steps[i - 1]} />
           </div>
@@ -110,7 +120,7 @@ export function LearnDiagram({ lesson, onReady }: LearnDiagramProps) {
             <DiagramView spec={d.contrast.diagram} variant="learn" />
           )}
           <span className="text-[15px] leading-[1.45]">
-            <FractionText text={d.contrast.caption} size={20} rule={2} gap={3} side={3} />
+            <FractionText text={d.contrast.caption} size={20} rule={2} gap={3} side={3} typeset={mode} />
           </span>
         </aside>
       ) : null}

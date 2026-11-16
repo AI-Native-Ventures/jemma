@@ -1,7 +1,10 @@
 import { fractionsIn } from '@jemma/profiling/logic'
-import katex from 'katex'
 import { Fragment, type CSSProperties, type ReactNode } from 'react'
+import { FitMath } from './FitMath'
+import { katexHtml } from './katex-html'
 import { hasTypeset, segments, type TypesetMode } from './typeset'
+
+export { katexHtml }
 
 export type FracProps = {
   /** A number, anything the child types in, or `null` for the part that is not known: an empty box. */
@@ -225,16 +228,6 @@ function mathParts(text: string): ReactNode[] {
   return out
 }
 
-/** One line of LaTeX as KaTeX HTML, drawn on the server or in the browser (no network, no script at all), or null when KaTeX cannot draw it. */
-export function katexHtml(latex: string): string | null {
-  try {
-    // throwOnError is on so that any error comes back as null (the text is then drawn as it was typed) and never as KaTeX's red error text.
-    return katex.renderToString(latex, { throwOnError: true, output: 'html', displayMode: false, strict: 'ignore' })
-  } catch {
-    return null
-  }
-}
-
 /**
  * A line of words with its maths typeset by KaTeX: fractions stacked, roots with their radical, powers raised, sin cos tan upright, pi and theta as their
  * signs, a degree sign. The words stay words. The drawing is hidden from a screen reader and the plain text is given to it instead. A text that has no
@@ -250,7 +243,8 @@ export function MathText({ text, size, rule, gap, side, color, className = 'mx-1
       <span aria-hidden="true" data-typeset="true">
         {parts.map((p, i) =>
           p.kind === 'math' && drawn[i] !== null ? (
-            <span key={i} data-math="true" className="jemma-math" style={{ fontSize: size, color }} dangerouslySetInnerHTML={{ __html: drawn[i]! }} />
+            // P135: a piece of maths is one block that does not break inside itself; it is scaled to fit its box (FitMath).
+            <FitMath key={`${i}|${p.latex}|${size}`} html={drawn[i]!} latex={p.latex} size={size} color={color} />
           ) : (
             // The words around the maths keep their stacked digit fractions and their empty boxes ("?/5"), drawn as they always were.
             <Fragment key={i}>

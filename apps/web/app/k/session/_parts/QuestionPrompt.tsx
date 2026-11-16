@@ -63,20 +63,20 @@ export function QuestionHeading({ prompt, typeset, tone }: { prompt: string; typ
  * The question of a results card, full width under "Question N": its context in normal text and then its maths line, large and typeset, or one block
  * (a little smaller when it is long) when the prompt is not cut. The words are read once, from the plain copy kept for a screen reader.
  */
-export function CardQuestion({ prompt }: { prompt: string }) {
-  const l = promptLayout(prompt, 'algebra')
+export function CardQuestion({ prompt, typeset = 'algebra' }: { prompt: string; typeset?: TypesetMode }) {
+  const l = promptLayout(prompt, typeset)
   const text = CARD.text[l.step]
-  const props = { size: CARD.math[l.step], rule: 2.5, gap: 3, side: 3 }
+  const props = { size: CARD.math[l.step], rule: 2.5, gap: 3, side: 3, typeset }
   return (
     <div data-question="true" className={`flex w-full ${WRAP} flex-col gap-2.5 text-left`}>
       {l.split ? (
         <>
           <span className="sr-only">{prompt}</span>
-          {l.before ? <QuestionContext text={l.before} typeset="algebra" card /> : null}
+          {l.before ? <QuestionContext text={l.before} typeset={typeset} card /> : null}
           <span aria-hidden="true" data-maths-line="true" data-step={l.step} className={`block ${WRAP} ${text} leading-[1.25] font-bold`}>
             <FractionText text={l.line} {...props} />
           </span>
-          {l.after ? <QuestionContext text={l.after} typeset="algebra" card /> : null}
+          {l.after ? <QuestionContext text={l.after} typeset={typeset} card /> : null}
         </>
       ) : (
         <span className={`block ${WRAP} ${text} leading-[1.25] font-bold`}>
