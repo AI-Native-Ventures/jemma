@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 import { IconLabel } from '@/components/ui/IconLabel'
 import { answerShape, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
+import { numberWriteLine, plainNumberWriteLine, ratioWriteLine, timeWriteLine } from './answers/hints'
 import { Frac, FractionText } from './Frac'
 import { QuestionPicture } from './QuestionPicture'
 
@@ -83,9 +84,9 @@ export function writeLine(shape: AnswerShape): string {
     case 'money':
       return 'Write the amount, like 12,50.'
     case 'decimal':
-      return 'Write a number with a comma, like 0,5.'
+      return shape.unit || shape.signed || shape.round !== undefined ? plainNumberWriteLine('decimal', shape) : 'Write a number with a comma, like 0,5.'
     case 'whole':
-      return 'Write a whole number.'
+      return shape.unit || shape.signed || shape.round !== undefined ? plainNumberWriteLine('whole', shape) : 'Write a whole number.'
     // The four kinds of a senior class: the same lines as the question screen, for a pencil.
     case 'expression':
       return shape.form === 'factorised'
@@ -98,7 +99,12 @@ export function writeLine(shape: AnswerShape): string {
     case 'point':
       return 'Write the x and the y of the point, like (2; 3).'
     case 'number':
-      return 'Write a number. It may be negative, like -3.'
+      return numberWriteLine(shape)
+    // P148: a time and a ratio.
+    case 'time':
+      return timeWriteLine(shape.style)
+    case 'ratio':
+      return ratioWriteLine(shape.parts)
     default:
       return 'Write your answer.'
   }
