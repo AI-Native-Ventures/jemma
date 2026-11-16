@@ -161,7 +161,7 @@ Env vars that matter (all in `.env.example`, with a comment for each):
 | `LLM_PROVIDER`, `LLM_MODEL`, `VISION_PROVIDER`, `VISION_MODEL` | The text and photo models. Free ids end in `:free`; the same id without it is the paid listing of the model (the hosted demo calls it first). |
 | `OPENROUTER_API_KEY` | Key for OpenRouter: the free models, and the paid hosting when the account has credit. |
 | `AI_MODE` | `live`, `record`, `replay` or `cache`. See below. |
-| `AI_MODEL_RANKING` | The hosted app only, with `LLM_PROVIDER=openrouter`. Set to `artificial-analysis` and the agent picks its free models itself every hour, ranked by Artificial Analysis and limited to models that can do the job (a photo job only gets models that take images). Unset, or anything else: only the model lists you set, as before. See "Dynamic model list" in [docs/runbook.md](docs/runbook.md). |
+| `AI_MODEL_RANKING` | The hosted app only, with `LLM_PROVIDER=openrouter`. Set to `artificial-analysis` and the agent picks its free models itself every hour, ranked by Artificial Analysis and limited to models that can do the job (a photo job only gets models that take images). Unset, or anything else: only the model lists you set, as before. Off on the hosted demo since 16 November. See "Dynamic model list" in [docs/runbook.md](docs/runbook.md). |
 | `AA_API_KEY` | A secret: the key of the Artificial Analysis API, used only with `AI_MODEL_RANKING`. Without it the newest free models come first. |
 | `JEMMA_ALLOWED_SUPABASE_REF` | The project ref the maintenance scripts may run against, besides the local database. |
 

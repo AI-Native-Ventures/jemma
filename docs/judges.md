@@ -4,7 +4,7 @@ This page is the shortest path through Jemma on the live link: https://jemma.ain
 
 Every person, school and paper in the demo is made up. Please do not type real information about real children.
 
-The demo can pick the best-ranked free AI model of the hour for each job (a photo job only gets models that take images), so the model that answers may change and may be a closed one; recorded answers are used first, and the open-weights full task is the goose path in [compliance.md](compliance.md). Model rankings: Artificial Analysis (artificialanalysis.ai), free API, used with attribution.
+The hosted demo uses open-weights models only: `nvidia/nemotron-3.5-super-vl:free` first, then `nvidia/nemotron-3-ultra-550b-a55b:free` and `google/gemma-4-31b-it:free` for text, and `google/gemma-4-31b-it:free` after it for photos. A dynamic list that picks the best-ranked free model of the hour (ranked by Artificial Analysis) is built but switched off, because the best-ranked free model refuses API callers. Recorded answers are used first, and the open-weights full task is the goose path in [compliance.md](compliance.md). Model rankings: Artificial Analysis (artificialanalysis.ai), free API, used with attribution.
 
 Entry rules and where each one is met are in [compliance.md](compliance.md). The one-page design is in [ARCHITECTURE.md](../ARCHITECTURE.md), and the evals are in [EVALS.md](../EVALS.md).
 
