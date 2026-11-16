@@ -59,13 +59,15 @@ function how(lesson: Lesson): string {
   return `with ${(kind && DIAGRAM_WORDS[kind]) ?? 'diagrams'}`
 }
 
-/** The plain error of a lesson that cannot go on because dropping the questions with nothing left of their feedback would leave a level too small. */
-function levelTooSmall(level: number, lost: number, left: number, because: readonly LabelDrop[]): Error {
-  const why = [...new Set(because.map((d) => d.reason))].join(' and ')
-  return new Error(
-    `Not saved: the "why" or the "right way" of ${lost} ${lost === 1 ? 'question' : 'questions'} of level ${level} had nothing left after leaving out sentences with a label (${why}), and that leaves level ${level} with ${left}. Each level needs at least ${MIN_PER_LEVEL} questions. Write it again about what was seen, with no labels, rankings or careers.`,
-  )
-}
+/**
+ * The plain lines that stand in for a "why" or a "right way" when the word check leaves nothing of it (P116). They say nothing about the learner, so
+ * they pass the word check themselves, and they hold no em dash.
+ */
+export const WHY_AFTER_LABELS = 'Go back over each step, one at a time, and check each number.'
+export const RIGHT_WAY_AFTER_LABELS = 'Work it out again one step at a time, then check the answer.'
+
+/** The reason of the `LabelDrop` that records a plain line put in place of a "why" or a "right way". */
+const REPLACED_WITH_PLAIN_LINE = 'replaced with a plain line: nothing was left after leaving out a label'
 
 /**
  * "A profile, never a label": the lines of a lesson that speak to or about the learner pass the word check before the lesson is saved. No database.
@@ -73,14 +75,10 @@ function levelTooSmall(level: number, lost: number, left: number, because: reado
  * label on a child. So only a sentence that names the learner, says you or your, or names learners in general is read, and only in the lines a
  * learner is spoken to in: the spoken script, the reading cards, and the "why" and "right way" under each question. A question, an answer, a
  * choice, a title and a picture are never read.
- * A sentence with a label, a ranking or career talk is left out and the rest is kept. A card with nothing left goes. A question (in the warm-up or
- * in the questions) whose "why" or "right way" has nothing left goes whole and is recorded in `dropped` (field `question 3`, `warm-up 2`), so one
- * hint never throws away a lesson. The lesson is refused only when no question is left, or when a level that lost a question is left with fewer
- * than `MIN_PER_LEVEL` (the minimum `dropInvalid` already keeps below). A script with nothing left still refuses the lesson.
- * This runs before the lesson is stored, so a dropped question never exists and nothing keys on the number it had: a session's answers are
- * numbered by their place in the session, and the paper indexes are read from the stored lesson. Careful: the readers parse the stored lesson with
- * `LessonSchema`, which asks for exactly 15 questions (5 per level) and a warm-up of 0 or 2, so a lesson that lost a question only opens for the
- * learner once those readers accept it (`dropInvalid` below already saves such lessons).
+ * A sentence with a label, a ranking or career talk is left out and the rest is kept. A card with nothing left goes. A "why" or a "right way"
+ * (in the warm-up or in the questions) with nothing left is replaced by a plain line (`WHY_AFTER_LABELS`, `RIGHT_WAY_AFTER_LABELS`) and the
+ * replacement is recorded in `dropped` (field `question 3 why`), so one hint never throws away a lesson. Every question stays, so the lesson keeps
+ * its 15 questions and its warm-up and still parses as a `Lesson` for the learner. A script with nothing left still refuses the lesson.
  * `check.people` is the learner's first name (Clever, Bright and Smart are first names).
  */
 export function screenLesson(lesson: Lesson, check: Pick<LabelCheck, 'people'> = {}): { lesson: Lesson; dropped: LabelDrop[] } {
@@ -95,21 +93,19 @@ export function screenLesson(lesson: Lesson, check: Pick<LabelCheck, 'people'> =
     if (text.trim() && !kept.text) throw labelsRefused(what, kept.dropped)
     return kept.text
   }
-  /** The questions whose "why" and "right way" still have something, and the ones that went whole, with the sentences that emptied them. */
-  const feedback = (questions: Question[], group: 'warm-up' | 'question') => {
-    const lost: { question: Question; because: LabelDrop[] }[] = []
-    const kept = questions.flatMap((q, i) => {
-      const why = read(q.why, `${group} ${i + 1} why`)
-      const rightWay = read(q.rightWay, `${group} ${i + 1} right way`)
-      if ((q.why.trim() && !why.text) || (q.rightWay.trim() && !rightWay.text)) {
-        dropped.push({ field: `${group} ${i + 1}`, text: q.prompt.trim() || `${group} ${i + 1}`, reason: 'left out whole: nothing was left of its "why" or its "right way"' })
-        lost.push({ question: q, because: [...why.dropped, ...rightWay.dropped] })
-        return []
-      }
-      return [{ ...q, why: why.text, rightWay: rightWay.text }]
-    })
-    return { kept, lost }
+  /** A hint (a "why" or a "right way"): what is left of it, or `plain` when nothing is left, and the replacement is recorded. */
+  const hint = (text: string, field: string, plain: string) => {
+    const kept = read(text, field)
+    if (!text.trim() || kept.text) return kept.text
+    dropped.push({ field, text: kept.dropped.map((d) => d.text).join(' '), reason: REPLACED_WITH_PLAIN_LINE })
+    return plain
   }
+  const feedback = (questions: Question[], group: 'warm-up' | 'question'): Question[] =>
+    questions.map((q, i) => ({
+      ...q,
+      why: hint(q.why, `${group} ${i + 1} why`, WHY_AFTER_LABELS),
+      rightWay: hint(q.rightWay, `${group} ${i + 1} right way`, RIGHT_WAY_AFTER_LABELS),
+    }))
 
   const audio = lesson.audio ? { ...lesson.audio, script: required(lesson.audio.script, 'spoken script', 'the spoken script') } : undefined
   const cards = lesson.cards?.flatMap((card, i) => {
@@ -124,19 +120,8 @@ export function screenLesson(lesson: Lesson, check: Pick<LabelCheck, 'people'> =
   if (lesson.format === 'reading' && lesson.cards?.length && !cards?.length) {
     throw labelsRefused('every reading card', dropped.filter((d) => /^card \d+ (heading|text)$/.test(d.field)))
   }
-  const warmupRead = feedback(lesson.warmup, 'warm-up')
-  const questionsRead = feedback(lesson.questions, 'question')
-  const warmup = warmupRead.kept
-  const questions = questionsRead.kept
-  if (questionsRead.lost.length) {
-    const sentences = questionsRead.lost.flatMap((l) => l.because)
-    if (!questions.length) throw labelsRefused('the "why" or the "right way" of every question', sentences)
-    for (const level of [1, 2, 3] as const) {
-      const lostHere = questionsRead.lost.filter((l) => l.question.difficulty === level)
-      const left = questions.filter((q) => q.difficulty === level).length
-      if (lostHere.length && left < MIN_PER_LEVEL) throw levelTooSmall(level, lostHere.length, left, lostHere.flatMap((l) => l.because))
-    }
-  }
+  const warmup = feedback(lesson.warmup, 'warm-up')
+  const questions = feedback(lesson.questions, 'question')
   if (dropped.length === 0) return { lesson, dropped }
   const screened: Lesson = { ...lesson, warmup, questions }
   if (audio) screened.audio = audio
