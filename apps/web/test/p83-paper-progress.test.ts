@@ -185,12 +185,13 @@ describe('the results of a paper answer that could not be read', () => {
     expect(missed).not.toHaveProperty('unread')
   })
 
-  it('finishSession reads the flag from the stored question and hands the missed ones back', async () => {
+  it('finishSession reads the flag from the stored question and hands back every try question, the unread one missed (P126)', async () => {
     state.session = { ...baseSession, status: 'done', right: 4, minutes: 9 }
     state.items = fiveTries([3])
     state.snaps = [{ id: 'e1', status: 'done' }]
     const done = await finishSession('s1')
-    expect(done.missed.map((m) => [m.n, m.wrote, m.unread])).toEqual([[3, '', true]])
+    expect(done.missed.map((m) => [m.n, m.correct])).toEqual([[1, true], [2, true], [3, false], [4, true], [5, true]])
+    expect(done.missed.filter((m) => !m.correct).map((m) => [m.n, m.wrote, m.unread])).toEqual([[3, '', true]])
     expect(done.minutes).toBe(9)
   })
 })

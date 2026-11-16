@@ -81,12 +81,24 @@ const PINNED: Record<string, string> = {
   'results:unread': 'd89488b11dcd290b47b12dded858a71f5c677363cd0b34dd19ae42161b6ce433',
 }
 
+/**
+ * P126 added two things to the results screen and nothing else: the "Not yet." marker on each missed card (with `data-verdict="missed"` on the card)
+ * and the new lead line ("Let's look at ... together." in place of the old "Most of your answers were right. Let's look at ... together."; the lists
+ * below hold one or two misses, which is what that old line said). With those taken out the HTML is byte for byte what it was on b11ae36: the
+ * pins did not move, so an old kind of answer is still drawn exactly as before.
+ */
+const withoutP126 = (markup: string) =>
+  markup
+    .replace(/ data-verdict="missed"/g, '')
+    .replace(/<p data-verdict-line="true" class="m-0"><span[^>]*>Not yet\.<\/span><\/p>/g, '')
+    .replace(/Let&#x27;s look at (this 1|these \d+) together\./, 'Most of your answers were right. Let&#x27;s look at $1 together.')
+
 describe('the screens of the old answer kinds are what they were', () => {
   it.each(Object.keys(CASES))('question screen: %s', (name) => {
     expect(sha(screen(CASES[name]!))).toBe(PINNED[`question:${name}`])
   })
 
   it.each(Object.keys(RESULTS))('results screen: %s', (name) => {
-    expect(sha(renderToStaticMarkup(<Results firstName="Amina" missed={RESULTS[name]!} />))).toBe(PINNED[`results:${name}`])
+    expect(sha(withoutP126(renderToStaticMarkup(<Results firstName="Amina" missed={RESULTS[name]!} />)))).toBe(PINNED[`results:${name}`])
   })
 })

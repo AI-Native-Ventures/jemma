@@ -4,7 +4,7 @@ import { Frac, FractionText, hasMath, isFraction, MathText, withFractions } from
 import { Bar, type Fill } from './Bars'
 import { Gem } from './Gems'
 import { QuestionPicture } from './QuestionPicture'
-import type { MissedQuestion } from '../[sessionId]/logic'
+import { scoreLines, type MissedQuestion } from '../[sessionId]/logic'
 
 /** A sign (or an equals sign) that stands alone between two terms of an answer. */
 const SIGNS = new Set(['+', '-', '\u2212', '\u00d7', '\u00f7', '*', '='])
@@ -105,13 +105,92 @@ function RightBar({ m }: { m: MissedQuestion }) {
 /** "You wrote" and "Right answer" sit side by side, unless one answer is longer than a short number: then they stack, each as wide as the screen. */
 const stack = (m: MissedQuestion) => !m.unread && (isLong(m.wrote) || isLong(m.right))
 
+/** A question's card starts the same way, right or missed: its number, the question and its picture. */
+function CardHead({ m }: { m: MissedQuestion }) {
+  return (
+    <>
+      <div className="flex items-center justify-between gap-3">
+        <h2 id={`r${m.n}`} className="m-0 text-[14px] font-semibold text-body">Question {m.n}</h2>
+        <span data-question="true" className="flex items-center justify-end gap-2 text-right text-[24px] font-bold">
+          {m.terms && m.terms.length === 2 ? (
+            <>
+              <Stacked value={m.terms[0]!} size={24} rule={2.5} gap={3} side={3} />+<Stacked value={m.terms[1]!} size={24} rule={2.5} gap={3} side={3} />
+            </>
+          ) : (
+            <FractionText text={m.prompt} size={26} rule={2.5} gap={3} side={3} />
+          )}
+        </span>
+      </div>
+      <QuestionPicture spec={m.diagram} variant="card" />
+    </>
+  )
+}
+
+/** A right answer: confirmed, with what the learner wrote and why that way works. No line about a usual mistake, nothing to correct. */
+function RightCard({ m }: { m: MissedQuestion }) {
+  return (
+    <article data-verdict="right" aria-labelledby={`r${m.n}`} className="flex flex-col gap-3.5 rounded-[24px] border border-line bg-card p-[18px]">
+      <CardHead m={m} />
+      <p data-verdict-line="true" className="m-0 flex items-center gap-2 text-[17px] leading-[1.3] font-bold">
+        <span aria-hidden="true" className="flex size-6 flex-none items-center justify-center rounded-pill bg-[#1E7B4B]">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+        </span>
+        Yes, you&apos;re right.
+      </p>
+      <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-[#1E7B4B] bg-[#EAF6EF] px-3.5 py-2.5 ${isLong(m.wrote) ? 'gap-3' : ''}`}>
+        <span className={isLong(m.wrote) ? 'flex-none text-[14px] font-semibold' : 'text-[14px] font-semibold'}>You wrote</span>
+        <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
+      </span>
+      <p className="m-0 text-[16px] leading-[1.5]"><strong className="font-bold">Why it works:</strong> <FractionText text={m.rightWay} size={22} rule={2} gap={3} side={3} /></p>
+    </article>
+  )
+}
+
+/** A missed answer, as it always was (what was written, the right answer, why, the right way), marked with a calm "Not yet.". */
+function MissedCard({ m }: { m: MissedQuestion }) {
+  return (
+    <article data-verdict="missed" aria-labelledby={`r${m.n}`} className="flex flex-col gap-3.5 rounded-[24px] border border-line bg-card p-[18px]">
+      <CardHead m={m} />
+      <p data-verdict-line="true" className="m-0">
+        <span className="inline-flex rounded-pill bg-coral-wash px-3 py-1 text-[14px] leading-[1.3] font-bold text-coral-text">Not yet.</span>
+      </p>
+      <div className={`grid ${stack(m) ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
+        {/* A paper answer that could not be read says so, in words, in the place of an empty answer (a long line gets the whole row). */}
+        <span className={`flex items-center justify-between rounded-14 bg-soft-2 px-3.5 py-2.5 ${m.unread ? 'col-span-2 gap-3' : stack(m) ? 'gap-3' : ''}`}>
+          <span className={stack(m) ? 'flex-none text-[14px] text-body' : 'text-[14px] text-body'}>You wrote</span>
+          {m.unread ? (
+            <span data-unread="true" className="text-right text-[15px] leading-[1.3] font-semibold">Jemma could not read this one</span>
+          ) : (
+            <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
+          )}
+        </span>
+        <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-coral bg-[#FFF1ED] px-3.5 py-2.5 ${m.unread ? 'col-span-2' : stack(m) ? 'gap-3' : ''}`}>
+          <span className={stack(m) ? 'flex-none text-[14px] font-semibold' : 'text-[14px] font-semibold'}>Right answer</span>
+          <Stacked value={m.right} size={20} rule={2} gap={2} side={3} />
+        </span>
+      </div>
+      <p className="m-0 text-[16px] leading-[1.5]"><strong className="font-bold">Why:</strong> <FractionText text={m.why} size={22} rule={2} gap={3} side={3} /></p>
+      <div className="flex flex-col gap-2 rounded-[16px] bg-[#F7F6FB] p-3.5">
+        <span className="text-[15px] font-bold">The right way</span>
+        <span className="text-[16px] leading-[1.5]"><FractionText text={m.rightWay} size={22} rule={2} gap={3} side={3} /></span>
+        <RightBar m={m} />
+      </div>
+    </article>
+  )
+}
+
+/**
+ * The results of a practice: every try question in order. A right answer is confirmed and explained, a missed one is corrected (what was written, the
+ * right answer, why, the right way). Under the greeting: how many were right and one kind line by the score. A list that does not say which answers
+ * were right (only misses, no `correct`) states no count and just says what it holds. Answers on paper come through the same view.
+ */
 export function Results({ firstName, missed }: { firstName: string; missed: MissedQuestion[] }) {
+  const graded = missed.some((m) => m.correct !== undefined)
+  const lines = missed.length > 0 && graded ? scoreLines(missed.filter((m) => m.correct).length, missed.length) : null
   const lead =
     missed.length === 0
       ? 'Nice work. There is nothing to go over this time.'
-      : missed.length * 2 <= 5
-        ? `Most of your answers were right. Let's look at ${missed.length === 1 ? 'this 1' : `these ${missed.length}`} together.`
-        : `Some of these were tricky. Let's look at ${missed.length === 1 ? 'this 1' : `these ${missed.length}`} together.`
+      : `Let's look at ${missed.length === 1 ? 'this 1' : `these ${missed.length}`} together.`
   return (
     <main className="flex flex-1 flex-col gap-[18px] px-5 pt-5 pb-[26px]">
       <div className="flex flex-col gap-2.5">
@@ -121,46 +200,16 @@ export function Results({ firstName, missed }: { firstName: string; missed: Miss
           <Gem kind="full" size={18} />
         </span>
         <h1 className="m-0 text-[32px] leading-[1.1] font-bold tracking-[-0.02em]">You finished, {firstName}!</h1>
-        <p className="m-0 text-[18px] leading-[1.45]">{lead}</p>
+        {lines ? (
+          <>
+            <p data-score="true" className="m-0 text-[22px] leading-[1.3] font-bold">{lines.score}</p>
+            <p data-cheer="true" className="m-0 text-[18px] leading-[1.45]">{lines.cheer}</p>
+          </>
+        ) : (
+          <p className="m-0 text-[18px] leading-[1.45]">{lead}</p>
+        )}
       </div>
-      {missed.map((m) => (
-        <article key={m.n} aria-labelledby={`r${m.n}`} className="flex flex-col gap-3.5 rounded-[24px] border border-line bg-card p-[18px]">
-          <div className="flex items-center justify-between gap-3">
-            <h2 id={`r${m.n}`} className="m-0 text-[14px] font-semibold text-body">Question {m.n}</h2>
-            <span data-question="true" className="flex items-center justify-end gap-2 text-right text-[24px] font-bold">
-              {m.terms && m.terms.length === 2 ? (
-                <>
-                  <Stacked value={m.terms[0]!} size={24} rule={2.5} gap={3} side={3} />+<Stacked value={m.terms[1]!} size={24} rule={2.5} gap={3} side={3} />
-                </>
-              ) : (
-                <FractionText text={m.prompt} size={26} rule={2.5} gap={3} side={3} />
-              )}
-            </span>
-          </div>
-          <QuestionPicture spec={m.diagram} variant="card" />
-          <div className={`grid ${stack(m) ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
-            {/* A paper answer that could not be read says so, in words, in the place of an empty answer (a long line gets the whole row). */}
-            <span className={`flex items-center justify-between rounded-14 bg-soft-2 px-3.5 py-2.5 ${m.unread ? 'col-span-2 gap-3' : stack(m) ? 'gap-3' : ''}`}>
-              <span className={stack(m) ? 'flex-none text-[14px] text-body' : 'text-[14px] text-body'}>You wrote</span>
-              {m.unread ? (
-                <span data-unread="true" className="text-right text-[15px] leading-[1.3] font-semibold">Jemma could not read this one</span>
-              ) : (
-                <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
-              )}
-            </span>
-            <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-coral bg-[#FFF1ED] px-3.5 py-2.5 ${m.unread ? 'col-span-2' : stack(m) ? 'gap-3' : ''}`}>
-              <span className={stack(m) ? 'flex-none text-[14px] font-semibold' : 'text-[14px] font-semibold'}>Right answer</span>
-              <Stacked value={m.right} size={20} rule={2} gap={2} side={3} />
-            </span>
-          </div>
-          <p className="m-0 text-[16px] leading-[1.5]"><strong className="font-bold">Why:</strong> <FractionText text={m.why} size={22} rule={2} gap={3} side={3} /></p>
-          <div className="flex flex-col gap-2 rounded-[16px] bg-[#F7F6FB] p-3.5">
-            <span className="text-[15px] font-bold">The right way</span>
-            <span className="text-[16px] leading-[1.5]"><FractionText text={m.rightWay} size={22} rule={2} gap={3} side={3} /></span>
-            <RightBar m={m} />
-          </div>
-        </article>
-      ))}
+      {missed.map((m) => (m.correct ? <RightCard key={m.n} m={m} /> : <MissedCard key={m.n} m={m} />))}
       <div className="flex-1" />
     </main>
   )

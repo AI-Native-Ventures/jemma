@@ -12,9 +12,9 @@ import {
   adaptedOf,
   DEFAULT_TRY_COUNT,
   finishAnswer,
-  missedOf,
   nextInSequence,
   paperQuestions,
+  reviewOf,
   stageAfter,
   stripQuestion,
   type QuestionForChild,
@@ -276,7 +276,7 @@ export async function finishSession(sessionId: string): Promise<FinishedSession>
   const next = upcoming?.[0]
 
   return {
-    missed: missedOf(run.items),
+    missed: reviewOf(run.items),
     stage,
     minutes: minutes ?? 1,
     topicName,
