@@ -287,11 +287,14 @@ describe('results: worked steps, "How to get there", on every card that has them
     expect(fraction!.querySelectorAll('.mfrac').length).toBe(2)
   })
 
-  it('a long line of terms is never cut between a sign and its number', () => {
+  it('a long line of terms is never cut between a sign and its number: the whole line is one piece of maths that does not break inside itself', () => {
     const card = page([wrong(2, { steps: ['3x + 12 + 0 = 3x + 12'] })]).querySelector('[data-steps]')!
-    const kept = [...card.querySelectorAll('.whitespace-nowrap')].map((n) => (n.textContent ?? '').replace(/\s+/g, ' ').trim())
-    expect(kept.join(' | ')).toContain('+ 12')
-    expect(kept.some((k) => k.includes('+ 0'))).toBe(true)
+    const pieces = [...card.querySelectorAll('[data-math]')]
+    // P135: one piece (it was one piece per term), drawn as one unbreakable block that is scaled to its box when it is wider.
+    expect(pieces).toHaveLength(1)
+    const piece = pieces[0] as HTMLElement
+    expect(piece.style.whiteSpace).toBe('nowrap')
+    expect((piece.textContent ?? '').replace(/\s+/g, '')).toContain('3x+12+0=3x+12')
   })
 
   it('reviewOf carries the steps a question has, only the lines that are words, and no key when there are none', () => {

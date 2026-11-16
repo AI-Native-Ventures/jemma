@@ -42,7 +42,8 @@ body {
 }
 
 /* Maths typeset by KaTeX (P125b). The size comes from the text around it (the component sets it); KaTeX's own 1.21em is taken off so a number is as big
-   as the number next to it. A long line wraps at its signs, and never wider than its box. */
+   as the number next to it. A piece never breaks inside itself and is never wider than its box (P135): it is one block that moves to the next line whole, and
+   scales down to fit when it is wider than the line (FitMath). */
 .jemma-math {
   max-width: 100%;
 }
