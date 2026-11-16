@@ -35,8 +35,9 @@ function lex(src: string): Tok[] {
       let j = i + 1
       while ((src[j]! >= 'a' && src[j]! <= 'z') || (src[j]! >= 'A' && src[j]! <= 'Z')) j++
       if (j === i + 1) {
-        // \% \{ \} \, \; \! \  and the like: one character after the backslash.
-        out.push({ k: 'cmd', name: src[i + 1] ?? '' })
+        // \, \; \! \: \  are spaces, left out. \% \{ \} and the like: one character after the backslash.
+        const one = src[i + 1] ?? ''
+        if (!/[,;!: ]/.test(one)) out.push({ k: 'cmd', name: one })
         i += 2
       } else {
         out.push({ k: 'cmd', name: src.slice(i + 1, j) })
@@ -53,11 +54,12 @@ function lex(src: string): Tok[] {
 // ---- The tree ------------------------------------------------------------------------------------------------------------------
 
 type Node =
-  | { t: 'atom'; s: string }
+  | { t: 'atom'; s: string; /** Euler's number, from \\mathrm{e}: never glued to a letter next to it */ euler?: true }
+  | { t: 'subs'; a: Node; b: Node }
   | { t: 'group'; a: Node }
   | { t: 'neg'; a: Node }
   | { t: 'pm'; a: Node }
-  | { t: 'sum'; terms: { op: '+' | '-'; a: Node }[] }
+  | { t: 'sum'; terms: { op: '+' | '-' | '\u00b1'; a: Node }[] }
   | { t: 'prod'; a: Node; op: 'times' | 'div' | 'implicit'; b: Node }
   | { t: 'frac'; a: Node; b: Node }
   | { t: 'pow'; a: Node; b: Node }
@@ -67,9 +69,42 @@ type Node =
   | { t: 'pct'; a: Node }
   | { t: 'rel'; parts: Node[]; ops: string[] }
 
-const ATOM_COMMANDS = new Set(['pi', 'theta', 'frac', 'dfrac', 'tfrac', 'sqrt', 'sin', 'cos', 'tan', 'left', 'mathrm', 'operatorname', 'mathit'])
-const FUNCTIONS = new Set(['sin', 'cos', 'tan'])
-const RELATIONS: Record<string, string> = { '=': '=', '<': '<', '>': '>', leq: '\u2264', le: '\u2264', geq: '\u2265', ge: '\u2265', neq: '\u2260', ne: '\u2260' }
+/** Greek letters and signs of geometry and calculus that are one thing each. The marking reads the letters; it cannot mark the signs yet (they are kept as typed). */
+const SYMBOLS: Record<string, string> = {
+  pi: '\u03c0',
+  theta: '\u03b8',
+  alpha: '\u03b1',
+  beta: '\u03b2',
+  gamma: '\u03b3',
+  delta: '\u03b4',
+  phi: '\u03c6',
+  lambda: '\u03bb',
+  omega: '\u03c9',
+  angle: '\u2220',
+  triangle: '\u25b3',
+  int: '\u222b',
+  sum: '\u03a3',
+  lim: 'lim',
+  infty: '\u221e',
+}
+const ATOM_COMMANDS = new Set([...Object.keys(SYMBOLS), 'frac', 'dfrac', 'tfrac', 'sqrt', 'sin', 'cos', 'tan', 'ln', 'log', 'left', 'mathrm', 'operatorname', 'mathit'])
+const FUNCTIONS = new Set(['sin', 'cos', 'tan', 'ln', 'log'])
+const RELATIONS: Record<string, string> = {
+  '=': '=',
+  '<': '<',
+  '>': '>',
+  leq: '\u2264',
+  le: '\u2264',
+  geq: '\u2265',
+  ge: '\u2265',
+  neq: '\u2260',
+  ne: '\u2260',
+  cong: '\u2245',
+  sim: '\u223c',
+  perp: '\u22a5',
+  parallel: '\u2225',
+  to: '\u2192',
+}
 
 function read(toks: Tok[]): Node {
   let pos = 0
@@ -134,10 +169,10 @@ function read(toks: Tok[]): Node {
 
   function sum(): Node {
     const first = product()
-    const terms: { op: '+' | '-'; a: Node }[] = [{ op: '+', a: first }]
-    for (let t = peek(); isSym(t, '+') || isSym(t, '-'); t = peek()) {
+    const terms: { op: '+' | '-' | '\u00b1'; a: Node }[] = [{ op: '+', a: first }]
+    for (let t = peek(); isSym(t, '+') || isSym(t, '-') || isCmd(t, 'pm'); t = peek()) {
       pos++
-      terms.push({ op: (t as { c: '+' | '-' }).c, a: product() })
+      terms.push({ op: t!.k === 'cmd' ? '\u00b1' : (t as { c: '+' | '-' }).c, a: product() })
     }
     return terms.length === 1 ? first : { t: 'sum', terms }
   }
@@ -221,7 +256,10 @@ function read(toks: Tok[]): Node {
         const sup = superscript()
         base = sup === 'degree' ? { t: 'deg', a: base } : { t: 'pow', a: base, b: sup }
       } else if (isSym(t, '_')) {
-        return no()
+        pos++
+        const sub = superscript()
+        if (sub === 'degree') return no()
+        base = { t: 'subs', a: base, b: sub }
       } else {
         return base
       }
@@ -266,18 +304,20 @@ function read(toks: Tok[]): Node {
       }
       return no()
     }
+    if (SYMBOLS[t.name]) return { t: 'atom', s: SYMBOLS[t.name]! }
     switch (t.name) {
-      case 'pi':
-        return { t: 'atom', s: '\u03c0' }
-      case 'theta':
-        return { t: 'atom', s: '\u03b8' }
       case 'left': {
         const open = toks[pos++]
-        if (!open || open.k !== 'sym' || (open.c !== '(' && open.c !== '[')) return no()
+        if (!open || open.k !== 'sym' || (open.c !== '(' && open.c !== '[' && open.c !== '|')) return no()
         const inside = relation()
         if (!isCmd(peek(), 'right')) return no()
         pos++
         const close = toks[pos++]
+        if (open.c === '|') {
+          // |x| is the absolute value
+          if (!close || close.k !== 'sym' || close.c !== '|') return no()
+          return { t: 'fn', name: 'abs', a: inside }
+        }
         if (!close || close.k !== 'sym' || (close.c !== ')' && close.c !== ']')) return no()
         return { t: 'group', a: inside }
       }
@@ -299,20 +339,28 @@ function read(toks: Tok[]): Node {
       }
       case 'mathrm':
       case 'operatorname':
-      case 'mathit':
-        return { t: 'atom', s: plainBraces().replace(/\s+/g, '') }
+      case 'mathit': {
+        const text = plainBraces().replace(/\s+/g, '')
+        // \mathrm{e}, the e of a book, is Euler's number.
+        return text === 'e' ? { t: 'atom', s: 'e', euler: true } : { t: 'atom', s: text }
+      }
       case 'sin':
       case 'cos':
-      case 'tan': {
+      case 'tan':
+      case 'ln':
+      case 'log': {
         let exp: Node | undefined
+        let name: string = t.name
         if (isSym(peek(), '^')) {
           pos++
           const sup = superscript()
           if (sup === 'degree') return no()
-          exp = sup
+          // sin with a little -1 is the inverse function (asin), not one over sin
+          if (sup.t === 'neg' && sup.a.t === 'atom' && sup.a.s === '1' && FUNCTIONS.has(name) && name !== 'ln' && name !== 'log') name = `a${name}`
+          else exp = sup
         }
         const a = argument()
-        return { t: 'fn', name: t.name, a, ...(exp ? { exp } : {}) }
+        return { t: 'fn', name, a, ...(exp ? { exp } : {}) }
       }
       default:
         return no()
@@ -375,6 +423,9 @@ function write(n: Node): Out {
       if (n.op === 'div') return { s: `${left} \u00f7 ${right}`, prec: 2 }
       if (n.op === 'times') return { s: `${left} \u00d7 ${right}`, prec: 2 }
       // Written next to each other: 2x, 3(x + 1), 2sin(x). A number after a number or a letter has a sign, or it would be read as one number.
+      // Euler's number next to a letter has a sign (e times x): the two letters side by side would be read as the one word ex.
+      const euler = (m: Node) => m.t === 'atom' && m.euler === true
+      if ((euler(n.a) && /^[A-Za-z]/.test(right)) || (euler(n.b) && /[A-Za-z]$/.test(left))) return { s: `${left} \u00d7 ${right}`, prec: 2 }
       // A rand sign in front of an amount is not a letter times a number: R12,50.
       if (a.s === 'R' && startsWithDigit(right)) return { s: `R${right}`, prec: 2 }
       if (startsWithDigit(right)) return { s: `${left} \u00d7 ${right}`, prec: 2 }
@@ -406,6 +457,12 @@ function write(n: Node): Out {
     case 'deg': {
       const a = write(n.a)
       return { s: `${asPiece(a)}\u00b0`, prec: 5 }
+    }
+    case 'subs': {
+      // x_1, the limits of a sum or an integral: kept as typed (the marking cannot read them yet)
+      const a = write(n.a)
+      const b = write(n.b)
+      return { s: `${asPiece(a)}_${b.prec === 5 && ONE_PIECE.test(b.s) ? b.s : bracket(b)}`, prec: 5 }
     }
     case 'pct': {
       const a = write(n.a)

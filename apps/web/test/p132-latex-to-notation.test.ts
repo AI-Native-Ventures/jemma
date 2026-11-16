@@ -107,7 +107,7 @@ describe('what cannot be read', () => {
   })
 
   it('an empty box left in the maths, or a sign Jemma has no use for, is null: the answer is not finished or not readable', () => {
-    for (const latex of ['\\placeholder{}', '\\frac{\\placeholder{}}{2}', '\\frac{1}{', '\\alpha', 'x_1', '\\int x', '\\left|x\\right|', '\\sqrt', '\\frac{1}{2}}']) {
+    for (const latex of ['\\placeholder{}', '\\frac{\\placeholder{}}{2}', '\\frac{1}{', '\\aleph', '\\text{hello}', '\\sqrt', '\\frac{1}{2}}', '\\left(x', '\\left|x\\right)']) {
       expect(latexToNotation(latex), latex).toBeNull()
     }
   })
@@ -145,5 +145,112 @@ describe('what comes out is read by the marking, by meaning', () => {
     expect(mark('equation', 'x = 2 or x = -2', 'x=\\pm2')).toBe(true)
     expect(mark('expression', '6x', 'f^{\\prime}\\left(x\\right)=6x')).toBe(true)
     expect(mark('expression', '6x', '\\frac{dy}{dx}=6x')).toBe(true)
+  })
+})
+
+// ---- P132b: the keys of the tabs ----------------------------------------------------------------------------------------------
+
+describe('e, ln, log, the inverse functions, |x| and Greek letters', () => {
+  const table: [latex: string, plain: string][] = [
+    ['\\mathrm{e}', 'e'],
+    ['\\mathrm{e}^{x}', 'e^x'],
+    ['2\\mathrm{e}^{x}', '2e^x'],
+    ['\\mathrm{e}^{2x}', 'e^(2x)'],
+    ['\\mathrm{e}x', 'e × x'],
+    ['x\\mathrm{e}', 'x × e'],
+    ['\\ln\\left(x\\right)', 'ln(x)'],
+    ['\\ln x', 'ln(x)'],
+    ['\\ln\\left(\\mathrm{e}^{2}\\right)', 'ln(e^2)'],
+    ['\\log\\left(100\\right)', 'log(100)'],
+    ['\\log x', 'log(x)'],
+    ['\\sin^{-1}\\left(0{,}5\\right)', 'asin(0,5)'],
+    ['\\cos^{-1}\\left(\\frac{1}{2}\\right)', 'acos(1/2)'],
+    ['\\tan^{-1}\\left(1\\right)', 'atan(1)'],
+    ['\\sin^{-1}x', 'asin(x)'],
+    ['\\left|x\\right|', 'abs(x)'],
+    ['\\left|x-3\\right|', 'abs(x - 3)'],
+    ['\\left|-5\\right|', 'abs(-5)'],
+    ['\\alpha+\\beta', 'α + β'],
+    ['\\alpha=30^\\circ', 'α = 30°'],
+    ['\\gamma', 'γ'],
+    ['\\delta x', 'δx'],
+  ]
+  it.each(table)('%s', (latex, plain) => expect(latexToNotation(latex)).toBe(plain))
+
+  it('a little 2 on sin is a square, not the inverse', () => {
+    expect(latexToNotation('\\sin^{2}x')).toBe('sin^2(x)')
+    expect(latexToNotation('\\ln^{2}x')).toBe('ln^2(x)')
+  })
+})
+
+describe('the relations', () => {
+  const table: [latex: string, plain: string][] = [
+    ['x<3', 'x < 3'],
+    ['x>3', 'x > 3'],
+    ['x\\le3', 'x ≤ 3'],
+    ['x\\ge3', 'x ≥ 3'],
+    ['x\\leq3', 'x ≤ 3'],
+    ['x\\ne0', 'x ≠ 0'],
+    ['-2<x\\le5', '-2 < x ≤ 5'],
+    ['x<-1\\text{ or }x>4', 'x < -1 or x > 4'],
+    ['x>1\\text{ and }x<5', 'x > 1 and x < 5'],
+    ['x=\\pm\\sqrt{2}', 'x = ±√2'],
+    ['y\\pm3', 'y ± 3'],
+  ]
+  it.each(table)('%s', (latex, plain) => expect(latexToNotation(latex)).toBe(plain))
+})
+
+describe('the signs of geometry and calculus are kept as typed (the marking cannot mark them yet), and thin spaces are left out', () => {
+  const table: [latex: string, plain: string][] = [
+    ['\\angle ABC=40^\\circ', '∠ABC = 40°'],
+    ['\\triangle ABC\\cong\\triangle DEF', '△ABC ≅ △DEF'],
+    ['AB\\parallel CD', 'AB ∥ CD'],
+    ['AB\\perp CD', 'AB ⊥ CD'],
+    ['\\triangle ABC\\sim\\triangle DEF', '△ABC ∼ △DEF'],
+    ['\\infty', '∞'],
+    ['\\int x\\,dx', '∫xdx'],
+    ['\\int_{0}^{1}x', '∫_0^1x'],
+    ['\\lim_{x\\to0}\\frac{\\sin x}{x}', 'lim_(x → 0)(sin(x)/x)'],
+    ['\\sum_{n=1}^{5}n', 'Σ_(n = 1)^5n'],
+    ['x_{1}+x_{2}', 'x_1 + x_2'],
+    ['3\\,5', '3 × 5'],
+  ]
+  it.each(table)('%s', (latex, plain) => expect(latexToNotation(latex)).toBe(plain))
+})
+
+describe('what the new keys type is marked by meaning', () => {
+  const mark = (kind: 'number' | 'expression' | 'equation', key: string, latex: string) => markByMeaning(kind, key, latexToNotation(latex) ?? '').correct
+
+  it('e, ln, log, the inverse functions and |x|', () => {
+    expect(mark('number', '1', '\\ln\\left(\\mathrm{e}\\right)')).toBe(true)
+    expect(mark('number', '2', '\\log\\left(100\\right)')).toBe(true)
+    expect(mark('number', '30', '\\sin^{-1}\\left(0{,}5\\right)')).toBe(true)
+    expect(mark('number', '60', '\\cos^{-1}\\left(\\frac{1}{2}\\right)')).toBe(true)
+    expect(mark('number', '45', '\\tan^{-1}\\left(1\\right)')).toBe(true)
+    expect(mark('number', '0,5', '\\sin^{-1}\\left(0{,}5\\right)')).toBe(false)
+    expect(mark('number', '3', '\\left|-3\\right|')).toBe(true)
+    expect(mark('expression', 'e^x', '\\mathrm{e}^{x}')).toBe(true)
+    expect(mark('expression', '2e^x', '2\\mathrm{e}^{x}')).toBe(true)
+    expect(mark('expression', 'ln(x)', '\\ln x')).toBe(true)
+    expect(mark('expression', 'abs(x)', '\\left|-x\\right|')).toBe(true)
+    expect(mark('expression', 'abs(x)', 'x')).toBe(false)
+  })
+
+  it('the relations and plus or minus', () => {
+    expect(mark('equation', 'x <= 3', 'x\\le3')).toBe(true)
+    expect(mark('equation', 'x <= 3', 'x<3')).toBe(false)
+    expect(mark('equation', '3 > x', 'x<3')).toBe(true)
+    expect(mark('equation', '-2 < x <= 5', '-2<x\\le5')).toBe(true)
+    expect(mark('equation', 'x != 0', 'x\\ne0')).toBe(true)
+    expect(mark('equation', 'x < -1 or x > 4', 'x>4\\text{ or }x<-1')).toBe(true)
+    expect(mark('equation', 'x = 2 or x = -2', 'x=\\pm2')).toBe(true)
+    expect(mark('equation', 'α = 30', '\\alpha=30^\\circ')).toBe(true)
+  })
+
+  it('a sign the marking cannot read is not marked right, whatever it is compared with', () => {
+    expect(mark('expression', 'x', '\\int x\\,dx')).toBe(false)
+    expect(mark('number', '1', '\\lim_{x\\to0}\\frac{\\sin x}{x}')).toBe(false)
+    expect(mark('number', '15', '\\sum_{n=1}^{5}n')).toBe(false)
+    expect(mark('equation', 'α = 40', '\\angle ABC=40^\\circ')).toBe(false)
   })
 })

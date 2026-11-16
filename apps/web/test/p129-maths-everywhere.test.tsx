@@ -381,12 +381,12 @@ describe('lesson cards and captions show textbook maths and no raw notation', ()
 
   it('the keys of a derivative question have d over dx and a raised power (P132: the keys are the maths editor\'s, drawn from LaTeX by the editor)', () => {
     const layout = keyboardLayout({ kind: 'expression', prompt: 'Differentiate y = x^2 + 3x with respect to x' })
-    const caps = layout.rows.flat().filter((k): k is Keycap => typeof k !== 'string')
-    expect(caps.find((k) => k.tooltip === 'd y by d x')!.latex).toBe('\\frac{dy}{dx}')
+    const caps = layout.layers.flatMap((l) => l.rows.flat()).filter((k): k is Keycap => typeof k !== 'string')
+    expect(caps.find((k) => k.tooltip === 'd by d x')!.latex).toBe('\\frac{d}{dx}')
     expect(caps.find((k) => k.tooltip === 'to the power of')!.latex).toBe('x^{\\square}')
-    expect(caps.find((k) => k.tooltip === 'fraction')!.latex).toBe('\\frac{#@}{#?}')
-    // No face is plain text with a slash or a caret: a plain label is a word (sin, cos, tan, or).
-    for (const k of caps) expect(k.label ?? '', k.tooltip).not.toMatch(/[/^]/)
+    expect(caps.find((k) => k.tooltip === 'fraction')!.latex).toBe('\\frac{\\square}{\\square}')
+    // No face is plain text with a slash or a caret: a plain label is a word (or), a tab face or a glyph.
+    for (const k of caps.filter((c) => !c.class?.includes('tab'))) expect(k.label ?? '', k.tooltip).not.toMatch(/[/^]/)
   })
 })
 
