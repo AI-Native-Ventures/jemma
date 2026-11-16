@@ -238,6 +238,7 @@ describe('no caller keeps the old order', () => {
       'app/t/[classId]/gaps/actions.ts',
       'app/t/[classId]/link-requests/actions.ts',
       'app/t/[classId]/snap/actions.ts',
+      'lib/class-join.ts',
       'lib/curriculum-map.ts',
       'lib/long-view.ts',
       'lib/send-guidance.ts',

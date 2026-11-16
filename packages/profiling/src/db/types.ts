@@ -376,6 +376,55 @@ export type Database = {
           },
         ]
       }
+      class_join_requests: {
+        Row: {
+          class_id: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          own_child_id: string
+          requested_name: string
+          status: string
+        }
+        ComputedFields: never
+        Insert: {
+          class_id: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          own_child_id: string
+          requested_name: string
+          status?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          own_child_id?: string
+          requested_name?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_join_requests_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_join_requests_own_child_id_fkey"
+            columns: ["own_child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           created_at: string
@@ -2067,6 +2116,7 @@ export type Database = {
         | "desktop_off"
         | "review_long_view"
         | "check_records"
+        | "approve_join"
       need_status: "open" | "done"
       obs_kind: "participation" | "confidence" | "effort" | "behaviour"
       paper_kind: "test" | "homework" | "textbook" | "report"
@@ -2221,6 +2271,7 @@ export const Constants = {
         "desktop_off",
         "review_long_view",
         "check_records",
+        "approve_join",
       ],
       need_status: ["open", "done"],
       obs_kind: ["participation", "confidence", "effort", "behaviour"],
