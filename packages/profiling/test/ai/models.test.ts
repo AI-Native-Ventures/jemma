@@ -107,8 +107,10 @@ test('a fallback model answers when the first stays overloaded, and a replay rec
   expect((await chain.doGenerate(params)).content).toEqual([{ type: 'text', text: 'from b' }])
   expect(chain.modelId).toBe('a')
   const bad = new MockLanguageModelV4({ modelId: 'c', doGenerate: async () => { throw Object.assign(new Error('bad request'), { statusCode: 400 }) } })
-  await expect(withFallbacks([bad, b] as never).doGenerate(params)).rejects.toThrow('bad request')
-  expect(b.doGenerateCalls.length).toBe(1)
+  // P121b: any error moves on to the next model, a 400 too. With no model left the first error goes up.
+  expect((await withFallbacks([bad, b] as never).doGenerate(params)).content).toEqual([{ type: 'text', text: 'from b' }])
+  expect(b.doGenerateCalls.length).toBe(2)
+  await expect(withFallbacks([bad, bad] as never).doGenerate(params)).rejects.toThrow('bad request')
   const miss = new MockLanguageModelV4({ modelId: 'd', doGenerate: async () => { throw new ReplayMissError('k') } })
   expect((await withFallbacks([miss, b] as never).doGenerate(params)).content).toEqual([{ type: 'text', text: 'from b' }])
 })

@@ -4,7 +4,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAI } from '@ai-sdk/openai'
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { wrapLanguageModel, type LanguageModelMiddleware, type SpeechModel } from 'ai'
-import { isFreeModelId, loadCatalog, rankModels } from './catalog'
+import { isFreeModelId, loadCatalog, markRefused, rankModels, refusedIds } from './catalog'
 import { withReplay, type AiMode } from './replay'
 import { ReplayMissError, type ReplayStore } from './stores'
 
@@ -55,13 +55,17 @@ export function modelList(primary: string | undefined, fallbacks: string | undef
   return [...new Set([(primary ?? '').trim(), ...rest])]
 }
 
-/** Words in an error that say the model is gone, not served to this account, or not paid for. */
-const MODEL_GONE_MESSAGE = /no endpoints|not a valid model|model.*not found|no allowed providers|not available|deprecated|insufficient credit|requires more credits|payment required/i
+/**
+ * Words in an error that say the model is gone, not served to this account, not paid for, or refused to this kind of caller (OpenRouter says
+ * "... is only available on agentic harnesses" for the free listing of some models when an API key calls it).
+ */
+const MODEL_GONE_MESSAGE =
+  /no endpoints|not a valid model|model.*not found|no allowed providers|not available|deprecated|insufficient credit|requires more credits|payment required|only available on|agentic harness/i
 
 /**
  * An error that says this model cannot answer at all, now: it was removed (404, "no endpoints", "not a valid model"), is not served
- * ("no allowed providers", "not available", "deprecated") or is not paid for (402, "insufficient credit"). Asking it again changes
- * nothing, so it is neither retried nor allowed to stop the chain: the next model gets the call.
+ * ("no allowed providers", "not available", "deprecated"), is not paid for (402, "insufficient credit") or refuses this caller ("only available
+ * on", "agentic harness"). Asking it again changes nothing, so it is never retried on the same model: the next model gets the call.
  */
 export function isModelGoneError(err: unknown): boolean {
   if (typeof err !== 'object' || err === null) return false
@@ -70,6 +74,38 @@ export function isModelGoneError(err: unknown): boolean {
   if (code === 402 || code === 404) return true
   if (typeof e.message === 'string' && MODEL_GONE_MESSAGE.test(e.message)) return true
   return e.cause ? isModelGoneError(e.cause) : false
+}
+
+/**
+ * An error after which the dynamic list leaves this model out of its ranked part for an hour (`markRefused`): a 4xx other than 408 (timeout) and
+ * 429 (rate limit), or an error that says the model is gone, unpaid or refused (`isModelGoneError`). A 5xx, a timeout, a rate limit and an error with
+ * no status and no such words are not: they say nothing lasting about the model.
+ */
+export function isRefusalError(err: unknown): boolean {
+  if (typeof err !== 'object' || err === null) return false
+  if (isModelGoneError(err)) return true
+  const e = err as { statusCode?: number; status?: number; cause?: unknown }
+  const code = e.statusCode ?? e.status
+  if (typeof code === 'number' && code >= 400 && code < 500 && code !== 408 && code !== 429) return true
+  return e.cause ? isRefusalError(e.cause) : false
+}
+
+/**
+ * Runs `onRefused` when a live try of the model ends with an error that `isRefusalError` knows, and passes every error on unchanged. Not when the
+ * caller cancelled the call (that says nothing about the model). Sits between the replay layer and the retry layer, so it sees the end of a try.
+ */
+function noteRefusals(onRefused: () => void): LanguageModelMiddleware {
+  return {
+    specificationVersion: 'v4',
+    wrapGenerate: async ({ doGenerate, params }) => {
+      try {
+        return await doGenerate()
+      } catch (err) {
+        if (!params.abortSignal?.aborted && isRefusalError(err)) onRefused()
+        throw err
+      }
+    },
+  }
 }
 
 /**
@@ -191,17 +227,21 @@ function rawModel(label: string, provider: string, modelId: string, env: AiEnv) 
 
 type Chained = ReturnType<typeof wrapLanguageModel>
 
-/** Tries each model in order. Moves on after a 5xx, overload, timeout, replay miss, or a model that is gone or unpaid (404, 402); any other error is the caller's. With no model left, the first error goes up. */
+/**
+ * Tries each model in order and moves on to the next after ANY error (a 5xx, a timeout, a replay miss, a model that is gone, unpaid or refuses
+ * the caller, a 400, an answer that could not be read): one model that will not answer never stops a job while another could. The one
+ * exception is the caller's own cancel (`abortSignal` aborted): that goes up at once. With no model left, the first error goes up.
+ */
 export function withFallbacks(models: Chained[]): Chained {
   if (models.length === 1) return models[0]!
   const first = models[0]!
-  const next = async <T>(call: (m: Chained) => PromiseLike<T>): Promise<T> => {
+  const next = async <T>(call: (m: Chained) => PromiseLike<T>, signal: AbortSignal | undefined): Promise<T> => {
     let firstError: unknown
     for (const m of models) {
       try {
         return await call(m)
       } catch (err) {
-        if (!(err instanceof ReplayMissError) && !(err instanceof ModelTimeoutError) && !isRetryableModelError(err) && !isModelGoneError(err)) throw err
+        if (signal?.aborted) throw err
         firstError ??= err
       }
     }
@@ -218,8 +258,8 @@ export function withFallbacks(models: Chained[]): Chained {
     get supportedUrls() {
       return first.supportedUrls
     },
-    doGenerate: (options: Parameters<Chained['doGenerate']>[0]) => next((m) => m.doGenerate(options)),
-    doStream: (options: Parameters<Chained['doStream']>[0]) => next((m) => m.doStream(options)),
+    doGenerate: (options: Parameters<Chained['doGenerate']>[0]) => next((m) => m.doGenerate(options), options.abortSignal),
+    doStream: (options: Parameters<Chained['doStream']>[0]) => next((m) => m.doStream(options), options.abortSignal),
   } as Chained
 }
 
@@ -272,7 +312,7 @@ export function recordedFirst(lookups: Chained[], then: Chained | null, tolerate
  * every id (recorded answers of the free ids still hit when the paid id is first), and only on a miss call the models. In `replay` there is no
  * model to call, so the lookups are the whole chain.
  */
-function buildChain(label: string, provider: string, ids: string[], lookupIds: string[], env: AiEnv, dynamic: boolean): Chained {
+function buildChain(label: string, provider: string, ids: string[], lookupIds: string[], env: AiEnv, dynamic: boolean, onRefused?: (id: string) => void): Chained {
   const mode = env.AI_MODE ?? 'live'
   const lookupFirst = lookupIds.length > 1 && (mode === 'cache' || mode === 'replay')
   // Each model has its own replay layer, so an answer is recorded and replayed under the id of the model that wrote it. Each has its own
@@ -282,7 +322,11 @@ function buildChain(label: string, provider: string, ids: string[], lookupIds: s
       ids.map((id) =>
         wrapLanguageModel({
           model: rawModel(label, provider, id, env),
-          middleware: [withReplay(env.replayStore, mode), withModelRetry(undefined, undefined, modelCallTimeoutMs(provider, id, dynamic))],
+          middleware: [
+            withReplay(env.replayStore, mode),
+            ...(onRefused ? [noteRefusals(() => onRefused(id))] : []),
+            withModelRetry(undefined, undefined, modelCallTimeoutMs(provider, id, dynamic)),
+          ],
         }),
       ),
     )
@@ -301,8 +345,9 @@ function rankedModel(kind: ModelKind, label: string, provider: string, pinned: s
   const head = rawModel(label, provider, pinned[0]!, env)
   const chain = async () => {
     const catalog = await loadCatalog(env, (url, init) => globalThis.fetch(url, init))
-    const ids = rankModels({ kind, openrouter: catalog.openrouter, aa: catalog.aa, pinned })
-    return buildChain(label, provider, ids, [...new Set([...ids, ...pinned.filter(Boolean)])], env, true)
+    // A model that refused a call in the last hour is left out of the ranked part (a pinned id never is), and one that refuses now is noted.
+    const ids = rankModels({ kind, openrouter: catalog.openrouter, aa: catalog.aa, pinned, refused: refusedIds() })
+    return buildChain(label, provider, ids, [...new Set([...ids, ...pinned.filter(Boolean)])], env, true, (id) => markRefused(id))
   }
   return {
     specificationVersion: head.specificationVersion,
