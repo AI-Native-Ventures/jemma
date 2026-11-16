@@ -28,20 +28,3 @@ export async function writtenLatex(page: Page): Promise<string> {
   const field = await mathField(page)
   return field.evaluate((el) => (el as HTMLElement & { getValue(format: string): string }).getValue('latex'))
 }
-
-/**
- * Taps outside the box (the question's heading) until the keyboard has gone: the box loses the focus and the editor hides its keyboard a moment after, and
- * not at all while it is still being shown, so a tap that comes too early is made again.
- */
-export async function tapAwayKeyboard(page: Page): Promise<void> {
-  await expect
-    .poll(
-      async () => {
-        const visible = await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible)
-        if (visible) await page.locator('h1[data-prompt]').click()
-        return visible
-      },
-      { timeout: 30_000, intervals: [600, 1000, 1500] },
-    )
-    .toBe(false)
-}
