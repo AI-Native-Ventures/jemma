@@ -33,19 +33,32 @@ const wordOf = (face: string | undefined) => {
 }
 
 describe('the layers: one for each tab of the kind of answer', () => {
-  it('Letters, Trig, Compare, Shapes and Calculus for an expression or an equation, and no numbers tab any more', () => {
+  it('Letters, Trig, Compare and Calculus for an expression or an equation, and no numbers tab and no Shapes tab any more (P146)', () => {
     for (const kind of ['expression', 'equation'] as const) {
-      expect(algebra(kind).layers.map((l) => l.id).sort()).toEqual(['jemma-calculus', 'jemma-compare', 'jemma-letters', 'jemma-shapes', 'jemma-trig'])
+      expect(algebra(kind).layers.map((l) => l.id).sort()).toEqual(['jemma-calculus', 'jemma-compare', 'jemma-letters', 'jemma-trig'])
     }
-    expect(TABS.map((t) => t.id)).toEqual(['letters', 'trig', 'compare', 'shapes', 'calculus'])
-    expect(TABS.map((t) => layerId(t.id))).toEqual(['jemma-letters', 'jemma-trig', 'jemma-compare', 'jemma-shapes', 'jemma-calculus'])
+    expect(TABS.map((t) => t.id)).toEqual(['letters', 'trig', 'compare', 'calculus'])
+    expect(TABS.map((t) => layerId(t.id))).toEqual(['jemma-letters', 'jemma-trig', 'jemma-compare', 'jemma-calculus'])
     expect(TABS.map((t) => t.id)).not.toContain('numbers')
+    expect(TABS.map((t) => t.id)).not.toContain('shapes' as never)
   })
 
-  it('a number answer has no letters and no calculus: Trig, Compare and Shapes only', () => {
-    expect(algebra('number').layers.map((l) => l.id).sort()).toEqual(['jemma-compare', 'jemma-shapes', 'jemma-trig'])
-    expect(tabsFor('number').map((t) => t.id)).toEqual(['trig', 'compare', 'shapes'])
-    expect(tabsFor('expression').map((t) => t.id)).toEqual(['letters', 'trig', 'compare', 'shapes', 'calculus'])
+  it('a number answer has no letters and no calculus: Trig and Compare only', () => {
+    expect(algebra('number').layers.map((l) => l.id).sort()).toEqual(['jemma-compare', 'jemma-trig'])
+    expect(tabsFor('number').map((t) => t.id)).toEqual(['trig', 'compare'])
+    expect(tabsFor('expression').map((t) => t.id)).toEqual(['letters', 'trig', 'compare', 'calculus'])
+  })
+
+  it('every tab has at least 6 keys of its own on rows 4 and 5 (a tab with fewer is not a tab: the Shapes tab had 3, the degree sign, theta and pi, which Trig has)', () => {
+    for (const { kind, strand, layout } of all) {
+      for (const layer of layout.layers) {
+        const own = layer.rows.slice(3, 5).flat().filter((k) => k !== BLANK)
+        expect(own.length, `${kind} ${strand} ${layer.id}`).toBeGreaterThanOrEqual(6)
+      }
+    }
+    // the keys of the old Shapes tab are all on Trig
+    const trig = layerOf(algebra('expression'), 'trig').rows.flatMap(names)
+    for (const name of ['degrees', 'theta', 'pi']) expect(trig).toContain(name)
   })
 
   it('every layer has the same number of rows (six), so every tab is as tall as the others', () => {
@@ -128,30 +141,54 @@ describe('rows 4 and 5, which are what a tab changes', () => {
     expect(CAPS.asin.latex).toBe('\\sin^{-1}')
   })
 
-  it('Compare: < > <= >= != plus or minus, |x|, %, R and one blank, then (P147) the keys of an interval and four blanks', () => {
+  it('Compare: < > <= >= != plus or minus, |x|, %, R and the word or (a number answer has a blank where or is), then (P147) the keys of an interval and three blanks', () => {
     const [a, b] = rows45('compare')
-    expect(names(a!)).toEqual(['less than', 'greater than', 'less than or equal to', 'greater than or equal to', 'not equal to', 'plus or minus', 'absolute value', 'percent', 'rand', BLANK])
+    expect(names(a!)).toEqual(['less than', 'greater than', 'less than or equal to', 'greater than or equal to', 'not equal to', 'plus or minus', 'absolute value', 'percent', 'rand', 'or'])
     expect(names(b!)).toEqual(['open square bracket', 'close square bracket', 'semicolon', 'infinity', 'union', 'element of', 'the real numbers', ...blanks(3)])
     expect(CAPS.abs.latex).toBe('\\left|\\square\\right|')
+    // P146: the word or types the word between two answers, so three answers, or x < -1 or x > 4, can be written in one box
+    expect(CAPS.or.insert).toBe('\\text{ or }')
+    expect(widths(a!)).toEqual(Array.from({ length: 10 }, () => 1))
+    for (const kind of ['expression', 'equation'] as const) expect(names(rows45('compare', kind)[0]!)).toContain('or')
+    expect(names(rows45('compare', 'number')[0]!)).toEqual(['less than', 'greater than', 'less than or equal to', 'greater than or equal to', 'not equal to', 'plus or minus', 'absolute value', 'percent', 'rand', BLANK])
   })
 
-  it('Shapes: angle, triangle, perpendicular, parallel, congruent, similar, the degree sign, theta, pi and one blank, then a row of blanks', () => {
-    const [a, b] = rows45('shapes')
-    expect(names(a!)).toEqual(['angle', 'triangle', 'perpendicular', 'parallel', 'congruent', 'similar', 'degrees', 'theta', 'pi', BLANK])
-    expect(names(b!)).toEqual(blanks(10))
-  })
-
-  it('Calculus: d/dx and f prime of x (two units each), the integral, lim, the sum, infinity, to, e, then ln, log, f(x), x, y and blanks', () => {
+  it('Calculus: d/dx and f prime of x (two units each), infinity, e, then ln, log, f(x), x, y and blanks (no integral, lim, sum or arrow)', () => {
     const [a, b] = rows45('calculus')
-    expect(names(a!)).toEqual(['d by d x', 'f prime of x', 'integral', 'limit', 'sum', 'infinity', 'tends to', 'the number e'])
+    expect(names(a!)).toEqual(['d by d x', 'f prime of x', 'infinity', 'the number e', ...blanks(4)])
     expect(widths(a!)).toEqual([2, 2, 1, 1, 1, 1, 1, 1])
     expect(names(b!)).toEqual(['natural logarithm', 'logarithm', 'f of x', 'the letter x', 'the letter y', ...blanks(5)])
     expect(CAPS.ddx.latex).toBe('\\frac{d}{dx}')
     expect(CAPS.fPrime.latex).toBe("f'(x)")
   })
 
-  it('a number answer sees the same rows 4 and 5 on the tabs it has', () => {
-    for (const tab of ['trig', 'compare', 'shapes'] as const) expect(rows45(tab, 'number').map(names)).toEqual(rows45(tab, 'expression').map(names))
+  it('P146: no key whose sign the marking can never read is on any layer (angle, triangle, perpendicular, parallel, congruent, similar, integral, lim, sum, to)', () => {
+    const hidden = ['angle', 'triangle', 'perpendicular', 'parallel', 'congruent', 'similar', 'integral', 'limit', 'sum', 'tends to']
+    const unreadable = [CAPS.angle, CAPS.triangle, CAPS.perpendicular, CAPS.parallel, CAPS.congruent, CAPS.similar, CAPS.integral, CAPS.limit, CAPS.sum, CAPS.arrow]
+    expect(unreadable.map((k) => k.tooltip)).toEqual(hidden)
+    for (const { kind, strand, layout } of all) {
+      for (const layer of layout.layers) {
+        const found = layer.rows.flatMap(names)
+        for (const name of hidden) expect(found, `${kind} ${strand} ${layer.id}`).not.toContain(name)
+        // none of their faces is anywhere on the layer either
+        const latex = layer.rows.flat().map((k) => (typeof k === 'string' ? '' : (k.latex ?? '')))
+        for (const sign of ['\\angle', '\\triangle', '\\perp', '\\parallel', '\\cong', '\\sim', '\\int', '\\lim', '\\sum', '\\to']) expect(latex, `${layer.id} ${sign}`).not.toContain(sign)
+      }
+    }
+  })
+
+  it('infinity stays, on the Calculus tab', () => {
+    expect(names(rows45('calculus')[0]!)).toContain('infinity')
+  })
+
+  it('a number answer sees the same rows 4 and 5 on the tabs it has, apart from the word or (a number is one number)', () => {
+    expect(rows45('trig', 'number').map(names)).toEqual(rows45('trig', 'expression').map(names))
+    const [numberRow] = rows45('compare', 'number').map(names)
+    const [expressionRow] = rows45('compare', 'expression').map(names)
+    expect(numberRow!.slice(0, 9)).toEqual(expressionRow!.slice(0, 9))
+    expect(expressionRow![9]).toBe('or')
+    expect(numberRow![9]).toBe(BLANK)
+    expect(names(rows45('compare', 'number')[1]!)).toEqual(names(rows45('compare', 'expression')[1]!))
   })
 
   it('a number answer has no letter key on any of its tabs, and no key is twice on a layer', () => {
@@ -170,24 +207,27 @@ describe('the strip of tabs, the last row', () => {
   const strip = (layer: KeyboardLayer) => layer.rows.at(-1)!
   const tabKeys = (layer: KeyboardLayer) => keycaps(strip(layer)).filter((k) => k.class?.includes('tab'))
 
-  it('five tabs for an expression or an equation, in this order, each with its word on one face and two units wide, and no key that hides the keyboard', () => {
+  it('four tabs for an expression or an equation, in this order, each with its word on one face and two units wide, then the key that hides the keyboard, two units wide, at the end', () => {
     for (const kind of ['expression', 'equation'] as const) {
       for (const layer of algebra(kind).layers) {
         const keys = tabKeys(layer)
-        expect(keys.map((k) => wordOf(k.label)), `${kind} ${layer.id}`).toEqual(['Letters', 'Trig', 'Compare', 'Shapes', 'Calculus'])
+        expect(keys.map((k) => wordOf(k.label)), `${kind} ${layer.id}`).toEqual(['Letters', 'Trig', 'Compare', 'Calculus'])
         expect(widths(strip(layer))).toEqual([2, 2, 2, 2, 2])
-        expect(keycaps(strip(layer)).some((k) => k.tooltip === 'hide the keyboard')).toBe(false)
+        const last = strip(layer).at(-1) as Keycap
+        expect(last.tooltip).toBe('hide the keyboard')
+        expect(last.label).toBe('[hide-keyboard]')
+        expect(last.width).toBe(2)
         expect(strip(layer)).toHaveLength(5)
       }
     }
   })
 
-  it('a number answer has Trig, Compare, Shapes (two units each), then two blanks, then the key that hides the keyboard, two units wide, at the end', () => {
+  it('a number answer has Trig and Compare (two units each), then four blanks, then the key that hides the keyboard, two units wide, at the end', () => {
     for (const layer of algebra('number').layers) {
       const row = strip(layer)
-      expect(tabKeys(layer).map((k) => wordOf(k.label)), layer.id).toEqual(['Trig', 'Compare', 'Shapes'])
-      expect(widths(row)).toEqual([2, 2, 2, 1, 1, 2])
-      expect(row.slice(3, 5)).toEqual([BLANK, BLANK])
+      expect(tabKeys(layer).map((k) => wordOf(k.label)), layer.id).toEqual(['Trig', 'Compare'])
+      expect(widths(row)).toEqual([2, 2, 1, 1, 1, 1, 2])
+      expect(row.slice(2, 6)).toEqual([BLANK, BLANK, BLANK, BLANK])
       const last = row.at(-1) as Keycap
       expect(last.tooltip).toBe('hide the keyboard')
       expect(last.label).toBe('[hide-keyboard]')
@@ -217,21 +257,21 @@ describe('the strip of tabs, the last row', () => {
       expect(holder.childNodes, tab.id).toHaveLength(1)
       expect(holder.textContent).toMatch(/^[A-Z][a-z]+$/)
     }
-    expect(TABS.map((t) => wordOf(t.face))).toEqual(['Letters', 'Trig', 'Compare', 'Shapes', 'Calculus'])
+    expect(TABS.map((t) => wordOf(t.face))).toEqual(['Letters', 'Trig', 'Compare', 'Calculus'])
   })
 })
 
 describe('the tab the keyboard opens on', () => {
   const first = (kind: TypedKind, strand: keyof typeof prompts) => keyboardLayout({ kind, prompt: prompts[strand] }).layers[0]!.id
 
-  it('Calculus for a derivative, Trig for trigonometry, Shapes for angles and shapes', () => {
+  it('Calculus for a derivative, Trig for trigonometry and for angles and shapes (there is no Shapes tab: its keys are on Trig)', () => {
     for (const kind of ['expression', 'equation'] as const) {
       expect(first(kind, 'calculus')).toBe('jemma-calculus')
       expect(first(kind, 'trigonometry')).toBe('jemma-trig')
-      expect(first(kind, 'geometry')).toBe('jemma-shapes')
+      expect(first(kind, 'geometry')).toBe('jemma-trig')
     }
     expect(first('number', 'trigonometry')).toBe('jemma-trig')
-    expect(first('number', 'geometry')).toBe('jemma-shapes')
+    expect(first('number', 'geometry')).toBe('jemma-trig')
   })
 
   it('otherwise Letters for an expression or an equation, and Compare for a number', () => {
@@ -252,7 +292,7 @@ describe('the tab the keyboard opens on', () => {
     const table: Record<Strand, Record<TypedKind, TabId>> = {
       algebra: { number: 'compare', expression: 'letters', equation: 'letters' },
       trigonometry: { number: 'trig', expression: 'trig', equation: 'trig' },
-      geometry: { number: 'shapes', expression: 'shapes', equation: 'shapes' },
+      geometry: { number: 'trig', expression: 'trig', equation: 'trig' },
       functions: { number: 'compare', expression: 'letters', equation: 'letters' },
       calculus: { number: 'trig', expression: 'calculus', equation: 'calculus' },
       finance: { number: 'compare', expression: 'letters', equation: 'letters' },
@@ -264,7 +304,7 @@ describe('the tab the keyboard opens on', () => {
 
   it('the layers after the first keep the order of the tabs', () => {
     const layout = keyboardLayout({ kind: 'expression', prompt: prompts.calculus })
-    expect(layout.layers.map((l) => l.id)).toEqual(['jemma-calculus', 'jemma-letters', 'jemma-trig', 'jemma-compare', 'jemma-shapes'])
+    expect(layout.layers.map((l) => l.id)).toEqual(['jemma-calculus', 'jemma-letters', 'jemma-trig', 'jemma-compare'])
   })
 })
 

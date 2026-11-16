@@ -36,9 +36,10 @@ describe('the Compare tab', () => {
     }
   })
 
-  it('row 4 is as it was, and no key is on the tab twice', () => {
+  it('row 4 is as it was, with the word or (P146) in the place of the last blank for an expression or an equation, and no key is on the tab twice', () => {
     const row4 = names(compare('equation').rows[3]!)
-    expect(row4).toEqual(['less than', 'greater than', 'less than or equal to', 'greater than or equal to', 'not equal to', 'plus or minus', 'absolute value', 'percent', 'rand', BLANK])
+    expect(row4).toEqual(['less than', 'greater than', 'less than or equal to', 'greater than or equal to', 'not equal to', 'plus or minus', 'absolute value', 'percent', 'rand', 'or'])
+    expect(names(compare('number').rows[3]!)).toEqual([...row4.slice(0, 9), BLANK])
     for (const kind of kinds) {
       const found = compare(kind).rows.flatMap(names).filter((n) => n !== BLANK && n !== 'backspace')
       expect(new Set(found).size, kind).toBe(found.length)

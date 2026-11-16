@@ -1,6 +1,7 @@
 import { fractionsIn } from '@jemma/profiling/logic'
 import { Fragment, type CSSProperties, type ReactNode } from 'react'
 import { FitMath } from './FitMath'
+import { SignText } from './answers/Signs'
 import { katexHtml } from './katex-html'
 import { hasTypeset, segments, type TypesetMode } from './typeset'
 
@@ -250,7 +251,7 @@ export function MathText({ text, size, rule, gap, side, color, className = 'mx-1
             <Fragment key={i}>
               {withFractions(p.kind === 'math' ? p.plain : p.text, (n, d, k) => (
                 <Frac key={k} top={n} bottom={d} size={size} rule={rule} gap={gap} side={side} color={color} className={className} />
-              ))}
+              )).map((part, j) => (typeof part === 'string' ? <SignText key={`s${j}`} text={part} /> : part))}
             </Fragment>
           ),
         )}
@@ -287,11 +288,12 @@ export function FractionText({ text, size, rule, gap, side, color, className = '
   const parts = withFractions(text, (n, d, k) => (
     <Frac key={k} top={n} bottom={d} size={size} rule={rule} gap={gap} side={side} color={color} className={className} />
   ))
-  if (parts.every((p) => typeof p === 'string')) return <>{text}</>
+  // P149c: a geometry sign (parallel, perpendicular, angle) is drawn from a font that has it; a line with none is the same text.
+  if (parts.every((p) => typeof p === 'string')) return <SignText text={text} />
   return (
     <>
       <span className="sr-only">{text}</span>
-      <span aria-hidden="true">{parts}</span>
+      <span aria-hidden="true">{parts.map((part, i) => (typeof part === 'string' ? <SignText key={`s${i}`} text={part} /> : part))}</span>
     </>
   )
 }

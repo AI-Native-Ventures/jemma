@@ -1,5 +1,8 @@
 import { MEANING_ANSWER_KINDS, type Choice, type Form, type MeaningKind } from '../schemas/lesson'
 import { markAnswer } from './answers'
+import { markQuantity, type QuantityFields } from './answers/quantity'
+import { markRatio, asksSimplest, readRatio } from './answers/ratio'
+import { markTime, readTime } from './answers/time'
 import { equationFamilyReadable, expandPlusMinus, isLetteredPairKey, isSetKey, markEquationFamily, type EquationTools } from './answers/equation-family'
 import { finishPicked } from './answers/pick'
 import { completeAnswer } from './complete-answer'
@@ -687,7 +690,7 @@ const inForm = (n: MathNode, form: Form | undefined): boolean => (form === 'fact
 
 // ---- An equation: one letter, one or more values ------------------------------------------------------------------------------
 
-type Equation = { letter: string | null; values: number[] }
+export type Equation = { letter: string | null; values: number[] }
 
 /** Cuts "x = 3 or x = -1" at `;`, `or`, `and` and at a comma that is not the comma of a decimal (a comma between two digits). */
 const pieces = (text: string): string[] => {
@@ -717,6 +720,10 @@ const pieces = (text: string): string[] => {
   return out
 }
 
+/** The label a paper sheet prints for each answer of a question with several ("Answer 1: ____  Answer 2: ____", P146): not part of the answer. */
+const FIRST_LABEL = /^\s*answers?\s*\d+\s*[:.)]?/i
+const LABEL = /\banswers?\s*\d+\s*[:.)]?/gi
+
 /** The values of several readings of an equation put together: they must all read, and name the same letter (or none). */
 const mergeEquations = (parts: (Equation | null)[]): Equation | null => {
   let letter: string | null = null
@@ -732,11 +739,11 @@ const mergeEquations = (parts: (Equation | null)[]): Equation | null => {
   return { letter, values }
 }
 
-const readEquation = (text: string): Equation | null => {
+export const readEquation = (text: string): Equation | null => {
   // P147: x = 1 ± √3 is two values. Each text that sign stands for is read, and the values of all of them are the values of the equation.
   const expanded = expandPlusMinus(text)
   if (expanded) return mergeEquations(expanded.map(readEquation))
-  const s = text.replace(MINUS_SIGNS, '-').trim()
+  const s = text.replace(MINUS_SIGNS, '-').replace(FIRST_LABEL, '').replace(LABEL, ';').trim()
   if (!s || s.length > MEANING_MAX_LENGTH) return null
   let letter: string | null = null
   const values: number[] = []
@@ -767,7 +774,7 @@ const readEquation = (text: string): Equation | null => {
 type Op = '<' | '<=' | '>' | '>=' | '!=' | '='
 /** All of these hold at once. */
 type Branch = { op: Op; v: number }[]
-type Inequality = { letter: string; branches: Branch[] }
+export type Inequality = { letter: string; branches: Branch[] }
 
 const RELATION = /(<=|>=|!=|≤|≥|≠|<|>|=)/
 const OPS: Record<string, Op> = { '<=': '<=', '≤': '<=', '>=': '>=', '≥': '>=', '!=': '!=', '≠': '!=', '<': '<', '>': '>', '=': '=' }
@@ -778,7 +785,7 @@ const LETTER_ALONE = /^\s*([a-zA-ZθΘαβγδφλω])\s*$/
  * "x < 3", "3 <= x", "-2 < x <= 5", "x != 0", "x < -1 or x > 4", "x > 1 and x < 5". `needed` says a sign of inequality must be in the text (the key of an
  * inequality has one); an answer may be a plain "x = 3" too. Null when it does not read: more than one letter, or a side that is not a number.
  */
-const readInequality = (text: string, needed: boolean): Inequality | null => {
+export const readInequality = (text: string, needed: boolean): Inequality | null => {
   const s = text.replace(MINUS_SIGNS, '-').trim()
   if (!s || s.length > MEANING_MAX_LENGTH) return null
   if (needed && !/[<>≤≥≠]|!=/.test(s)) return null
@@ -938,10 +945,19 @@ export function markByMeaning(kind: MeaningKind, key: string, answer: string, fo
       if (!k || !a) return UNREAD
       return { correct: close(k[0], a[0]) && close(k[1], a[1]), comparable: true }
     }
+    // P148: a time (14:30 = 2:30 pm, 2 h 15 min = 135 min) and a ratio (3 : 4 = 6 : 8): logic/answers/time.ts and ratio.ts.
+    case 'time':
+      return markTime(key, answer)
+    case 'ratio':
+      return markRatio(key, answer)
   }
 }
 
-/** The one place a lesson question is marked: the four new kinds by meaning, every old kind by `markAnswer` exactly as it always was. */
+/**
+ * The one place a lesson question is marked: the new kinds by meaning, every old kind by `markAnswer` exactly as it always was.
+ * P148: an answer that is not right is looked at once more as a quantity (a unit, money to the cent, a percent, a rounded number: logic/answers/quantity.ts),
+ * and a ratio asked in its simplest form is marked by that. An answer that was right stays right.
+ */
 export function markQuestion(
   q: { answer: string; answerKind: string; form?: Form; ordered?: boolean; labels?: string[]; round?: number },
   answer: string,
@@ -951,7 +967,11 @@ export function markQuestion(
     const { correct, comparable } = markListQuestion(q, answer, readNumber)
     return { correct, comparable }
   }
-  return isMeaningKind(q.answerKind) ? markByMeaning(q.answerKind, q.answer, answer, q.form) : markAnswer(answer, q.answer)
+  // The optional fields of a whole question that P148 reads (prompt, unit) come from the same argument.
+  const more = q as QuantityFields
+  if (q.answerKind === 'ratio') return markRatio(q.answer, answer, asksSimplest(more.prompt))
+  const plain = isMeaningKind(q.answerKind) ? markByMeaning(q.answerKind, q.answer, answer, q.form) : markAnswer(answer, q.answer)
+  return plain.correct ? plain : (markQuantity(more, answer, numeric) ?? plain)
 }
 
 /** The value of one number or expression (a % or a degree sign dropped), or null: the reader the values of a list, an order and a table are marked with. */
@@ -970,10 +990,12 @@ export function finishAnswer(
   const picked = finishPicked(q, typed, (key, value) => markByMeaning('number', key, value).correct)
   if (picked) return picked
   if (isMeaningKind(q.answerKind) || isListKind(q.answerKind)) return { stored: typed.trim(), correct: markQuestion(q, typed).correct }
-  return completeAnswer(q, typed)
+  const done = completeAnswer(q, typed)
+  // P148: a money, decimal or whole answer with a unit or a round is looked at once more as a quantity (the unit and the round come from the same argument); a right one stays right.
+  return done.correct || !markQuantity(q as QuantityFields, typed, numeric)?.correct ? done : { stored: done.stored, correct: true }
 }
 
-const ARTICLE: Record<MeaningKind, string> = { number: 'a number', expression: 'an expression', equation: 'an equation', point: 'a point' }
+const ARTICLE: Record<MeaningKind, string> = { number: 'a number', expression: 'an expression', equation: 'an equation', point: 'a point', time: 'a time', ratio: 'a ratio' }
 
 /**
  * Why a key cannot be marked by its kind, or null when it can: a `number` has no letter, an `expression` has a letter, an `equation` has at least
@@ -990,6 +1012,8 @@ export function meaningKeyProblem(kind: MeaningKind, key: string): string | null
         return lettersOf(tree).size > 0 || (hasRoot(tree) && !Number.isNaN(valueOf(tree, {})))
       })()
     : kind === 'equation' ? readEquation(key) !== null || readInequality(key, true) !== null || equationFamilyReadable(key, EQUATION_TOOLS, true)
+    : kind === 'time' ? readTime(key) !== null
+    : kind === 'ratio' ? readRatio(key) !== null
     : readPoint(key) !== null
   return fine ? null : `answer "${key}" is not ${ARTICLE[kind]}`
 }

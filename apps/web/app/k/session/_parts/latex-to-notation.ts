@@ -11,6 +11,67 @@ const no = (): never => {
 type Tok = { k: 'num'; text: string } | { k: 'letter'; text: string } | { k: 'cmd'; name: string } | { k: 'sym'; c: string }
 
 /** Cuts LaTeX into numbers, letters, commands and signs. A decimal comma written {,} between digits belongs to the number. */
+/**
+ * P147b: a sign typed or pasted as the character itself is the same as its command: \u2264 is \le, \u00b1 is \pm, a minus sign or a dash is a minus, \u221a covers the bracket or the whole
+ * number after it. The editor's own LaTeX has the commands; a phone's keyboard, a paste or a speech tool brings the characters.
+ */
+const SIGN_COMMANDS: Record<string, string> = {
+  '\u2264': '\\le ',
+  '\u2265': '\\ge ',
+  '\u2260': '\\ne ',
+  '\u00b1': '\\pm ',
+  '\u00d7': '\\times ',
+  '\u00f7': '\\div ',
+  '\u00b7': '\\cdot ',
+  '\u22c5': '\\cdot ',
+  '\u221e': '\\infty ',
+  '\u2208': '\\in ',
+  '\u222a': '\\cup ',
+  '\u211d': '\\mathbb{R}',
+  '\u03c0': '\\pi ',
+  '\u03b8': '\\theta ',
+  '\u03b1': '\\alpha ',
+  '\u03b2': '\\beta ',
+  '\u03b3': '\\gamma ',
+  '\u03b4': '\\delta ',
+  '\u03c6': '\\phi ',
+  '\u03bb': '\\lambda ',
+  '\u03c9': '\\omega ',
+  '\u00b0': '^\\circ ',
+}
+const DASHES = /[\u2212\u2010-\u2013]/g
+
+function unicodeSigns(src: string): string {
+  let out = ''
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i]!
+    if (c === '\u221a' || c === '\u221b') {
+      const root = c === '\u221a' ? '\\sqrt' : '\\sqrt[3]'
+      const number = /^\d+(?:[.,]\d+)?/.exec(src.slice(i + 1))
+      if (src[i + 1] === '(') {
+        // the bracket is the radicand: \u221a(x + 1)
+        let depth = 0
+        let end = -1
+        for (let j = i + 1; j < src.length && end < 0; j++) {
+          if (src[j] === '(') depth++
+          else if (src[j] === ')' && --depth === 0) end = j
+        }
+        if (end > 0) {
+          out += `${root}{${unicodeSigns(src.slice(i + 2, end))}}`
+          i = end
+          continue
+        }
+      } else if (number) {
+        out += `${root}{${number[0]}}`
+        i += number[0].length
+        continue
+      }
+      out += `${root} `
+    } else out += SIGN_COMMANDS[c] ?? c
+  }
+  return out.replace(DASHES, '-')
+}
+
 function lex(src: string): Tok[] {
   const out: Tok[] = []
   let i = 0
@@ -22,8 +83,9 @@ function lex(src: string): Tok[] {
     } else if (digit(c) || (c === '.' && digit(src[i + 1]))) {
       let j = i
       while (digit(src[j])) j++
-      if ((src[j] === '.' && digit(src[j + 1])) || (src.startsWith('{,}', j) && digit(src[j + 3]))) {
-        j += src[j] === '.' ? 1 : 3
+      // A decimal point, a decimal comma written {,}, or (P147b) a plain comma between two digits (a keyboard types 2,5 as it is): all one number.
+      if (((src[j] === '.' || src[j] === ',') && digit(src[j + 1])) || (src.startsWith('{,}', j) && digit(src[j + 3]))) {
+        j += src[j] === '{' ? 3 : 1
         while (digit(src[j])) j++
       }
       out.push({ k: 'num', text: src.slice(i, j).replace('{,}', ',') })
@@ -50,6 +112,28 @@ function lex(src: string): Tok[] {
     } else {
       out.push({ k: 'sym', c })
       i++
+    }
+  }
+  return out
+}
+
+/**
+ * The word or typed with the two letter keys (P146): on a laptop a learner types "x=3orx=2", and the editor gives the italic letters o and r. Between the end
+ * of one part (a number, a letter, a closing bracket, a percent) and the start of the next, those two letters are the word, as if \text{ or } had been typed.
+ */
+function orWords(toks: Tok[]): Tok[] {
+  const endsPart = (t: Tok | undefined): boolean =>
+    !!t && (t.k === 'num' || t.k === 'letter' || (t.k === 'sym' && (t.c === ')' || t.c === '}' || t.c === ']')) || (t.k === 'cmd' && ['%', 'pi', 'theta', 'circ'].includes(t.name)))
+  const startsPart = (t: Tok | undefined): boolean =>
+    !!t && (t.k === 'num' || t.k === 'letter' || (t.k === 'sym' && (t.c === '(' || t.c === '-' || t.c === '{')) || (t.k === 'cmd' && ['pi', 'theta', 'sqrt', 'frac', 'dfrac', 'left'].includes(t.name)))
+  const out: Tok[] = []
+  for (let i = 0; i < toks.length; i++) {
+    const [a, b] = [toks[i]!, toks[i + 1]]
+    if (a.k === 'letter' && a.text === 'o' && b?.k === 'letter' && b.text === 'r' && endsPart(out[out.length - 1]) && startsPart(toks[i + 2])) {
+      out.push({ k: 'cmd', name: 'or' })
+      i++
+    } else {
+      out.push(a)
     }
   }
   return out
@@ -110,6 +194,13 @@ const RELATIONS: Record<string, string> = {
   perp: '\u22a5',
   parallel: '\u2225',
   to: '\u2192',
+  // other names TeX has for the same signs (P147b)
+  lt: '<',
+  gt: '>',
+  leqslant: '\u2264',
+  geqslant: '\u2265',
+  leqq: '\u2264',
+  geqq: '\u2265',
   in: '\u2208',
   cup: '\u222a',
 }
@@ -181,6 +272,14 @@ function read(toks: Tok[]): Node {
       } else if (t && t.k === 'cmd' && RELATIONS[t.name]) {
         pos++
         ops.push(RELATIONS[t.name]!)
+      } else if (isCmd(t, 'or')) {
+        // the word typed as the letters o and r (see orWords)
+        pos++
+        ops.push('or')
+      } else if (isCmd(t, 'lor', 'vee', 'land', 'wedge')) {
+        // The editor turns the letters "or" and "and" into the signs of logic as they are typed (its inline shortcuts): they are the words between two answers.
+        pos++
+        ops.push(isCmd(t, 'lor', 'vee') ? 'or' : 'and')
       } else if (t && t.k === 'sym' && (t.c === ',' || t.c === ';')) {
         // P147: the semicolon or comma between the two ends of an interval, or between two answers (x = 2; y = 3). It is written as a semicolon.
         pos++
@@ -531,7 +630,7 @@ export function latexToNotation(latex: string): string | null {
   if (!src) return ''
   if (/\\placeholder|\\mathbb\{\}/.test(src)) return null
   try {
-    return write(read(lex(LEIBNIZ(src)))).s
+    return write(read(orWords(lex(LEIBNIZ(unicodeSigns(src)))))).s
   } catch (e) {
     if (e instanceof Unreadable) return null
     throw e
