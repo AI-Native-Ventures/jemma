@@ -8,6 +8,7 @@ import { besideNumber } from './prompt-layout'
 import { CardQuestion } from './QuestionPrompt'
 import { QuestionPicture } from './QuestionPicture'
 import { scoreLines, type MissedQuestion } from '../[sessionId]/logic'
+import { CellResults } from './answers/CellResults'
 
 /** A sign (or an equals sign) that stands alone between two terms of an answer. */
 const SIGNS = new Set(['+', '-', '\u2212', '\u00d7', '\u00f7', '*', '='])
@@ -190,10 +191,14 @@ function RightCard({ m }: { m: MissedQuestion }) {
         </span>
         Yes, you&apos;re right.
       </p>
-      <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-[#1E7B4B] bg-[#EAF6EF] px-3.5 py-2.5 ${isLong(m.wrote) ? 'gap-3' : ''}`}>
-        <span className={isLong(m.wrote) ? 'flex-none text-[14px] font-semibold' : 'text-[14px] font-semibold'}>You wrote</span>
-        <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
-      </span>
+      {m.cells ? (
+        <CellResults m={m} showRight={false} />
+      ) : (
+        <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-[#1E7B4B] bg-[#EAF6EF] px-3.5 py-2.5 ${isLong(m.wrote) ? 'gap-3' : ''}`}>
+          <span className={isLong(m.wrote) ? 'flex-none text-[14px] font-semibold' : 'text-[14px] font-semibold'}>You wrote</span>
+          <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
+        </span>
+      )}
       <Steps steps={m.steps} />
       <p className="m-0 text-[16px] leading-[1.5]"><strong className="font-bold">Why it works:</strong> <FractionText text={m.rightWay} size={22} rule={2} gap={3} side={3} typeset={modeOf(m)} /></p>
     </article>
@@ -208,21 +213,25 @@ function MissedCard({ m }: { m: MissedQuestion }) {
       <p data-verdict-line="true" className="m-0">
         <span className="inline-flex rounded-pill bg-coral-wash px-3 py-1 text-[14px] leading-[1.3] font-bold text-coral-text">Not yet.</span>
       </p>
-      <div className={`grid ${stack(m) ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
-        {/* A paper answer that could not be read says so, in words, in the place of an empty answer (a long line gets the whole row). */}
-        <span className={`flex items-center justify-between rounded-14 bg-soft-2 px-3.5 py-2.5 ${m.unread ? 'col-span-2 gap-3' : stack(m) ? 'gap-3' : ''}`}>
-          <span className={stack(m) ? 'flex-none text-[14px] text-body' : 'text-[14px] text-body'}>You wrote</span>
-          {m.unread ? (
-            <span data-unread="true" className="text-right text-[15px] leading-[1.3] font-semibold">Jemma could not read this one</span>
-          ) : (
-            <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
-          )}
-        </span>
-        <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-coral bg-[#FFF1ED] px-3.5 py-2.5 ${m.unread ? 'col-span-2' : stack(m) ? 'gap-3' : ''}`}>
-          <span className={stack(m) ? 'flex-none text-[14px] font-semibold' : 'text-[14px] font-semibold'}>Right answer</span>
-          <Stacked value={m.right} size={20} rule={2} gap={2} side={3} />
-        </span>
-      </div>
+      {m.cells ? (
+        <CellResults m={m} showRight />
+      ) : (
+        <div className={`grid ${stack(m) ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
+          {/* A paper answer that could not be read says so, in words, in the place of an empty answer (a long line gets the whole row). */}
+          <span className={`flex items-center justify-between rounded-14 bg-soft-2 px-3.5 py-2.5 ${m.unread ? 'col-span-2 gap-3' : stack(m) ? 'gap-3' : ''}`}>
+            <span className={stack(m) ? 'flex-none text-[14px] text-body' : 'text-[14px] text-body'}>You wrote</span>
+            {m.unread ? (
+              <span data-unread="true" className="text-right text-[15px] leading-[1.3] font-semibold">Jemma could not read this one</span>
+            ) : (
+              <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
+            )}
+          </span>
+          <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-coral bg-[#FFF1ED] px-3.5 py-2.5 ${m.unread ? 'col-span-2' : stack(m) ? 'gap-3' : ''}`}>
+            <span className={stack(m) ? 'flex-none text-[14px] font-semibold' : 'text-[14px] font-semibold'}>Right answer</span>
+            <Stacked value={m.right} size={20} rule={2} gap={2} side={3} />
+          </span>
+        </div>
+      )}
       <p className="m-0 text-[16px] leading-[1.5]"><strong className="font-bold">Why:</strong> <FractionText text={m.why} size={22} rule={2} gap={3} side={3} typeset={modeOf(m)} /></p>
       <Steps steps={m.steps} />
       <div className="flex flex-col gap-2 rounded-[16px] bg-[#F7F6FB] p-3.5">
