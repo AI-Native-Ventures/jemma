@@ -2099,6 +2099,98 @@ export type Database = {
           },
         ]
       }
+      topic_lesson_progress: {
+        Row: {
+          child_id: string
+          finished_at: string | null
+          practice_right: number | null
+          practice_total: number | null
+          started_at: string
+          topic_lesson_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          child_id: string
+          finished_at?: string | null
+          practice_right?: number | null
+          practice_total?: number | null
+          started_at?: string
+          topic_lesson_id: string
+        }
+        Update: {
+          child_id?: string
+          finished_at?: string | null
+          practice_right?: number | null
+          practice_total?: number | null
+          started_at?: string
+          topic_lesson_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topic_lesson_progress_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topic_lesson_progress_topic_lesson_id_fkey"
+            columns: ["topic_lesson_id"]
+            isOneToOne: false
+            referencedRelation: "topic_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      topic_lessons: {
+        Row: {
+          base_name: string
+          checks: NonNullable<Json>
+          content: NonNullable<Json>
+          created_at: string
+          family: string
+          grade: number
+          id: string
+          model: string
+          position: number
+          source: NonNullable<Json>
+          status: string
+          title: string
+          version: number
+        }
+        ComputedFields: never
+        Insert: {
+          base_name: string
+          checks?: NonNullable<Json>
+          content: NonNullable<Json>
+          created_at?: string
+          family: string
+          grade: number
+          id?: string
+          model: string
+          position: number
+          source: NonNullable<Json>
+          status: string
+          title: string
+          version?: number
+        }
+        Update: {
+          base_name?: string
+          checks?: NonNullable<Json>
+          content?: NonNullable<Json>
+          created_at?: string
+          family?: string
+          grade?: number
+          id?: string
+          model?: string
+          position?: number
+          source?: NonNullable<Json>
+          status?: string
+          title?: string
+          version?: number
+        }
+        Relationships: []
+      }
       topics: {
         Row: {
           created_at: string
