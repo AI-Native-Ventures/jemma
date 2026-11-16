@@ -19,7 +19,8 @@ export type ProgressRow = { topic_lesson_id: string; started_at: string; finishe
 
 /**
  * A question as the browser may hold it before the learner answers: the words, the kind of answer, the choices (text, or a picture: P149), whether a reason also
- * asks for a value, and the picture. Never the answer. It is what `stripQuestion` hands a session question, without where it stands in a run.
+ * asks for a value, what a list, an order or a table sends (P150: a count, labels, shuffled items, the table with its blanks, the places to round to), and the
+ * picture. Never the answer. It is what `stripQuestion` hands a session question, without where it stands in a run.
  */
 export type StrippedQuestion = Omit<QuestionForChild, 'position' | 'phase' | 'index' | 'of'>
 
