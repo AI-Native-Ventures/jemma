@@ -1,6 +1,7 @@
 import { requireRole } from '@/lib/auth'
 import { cleanCode, findClass } from '@/lib/data/p22'
 import { AddChildForm } from './AddChildForm'
+import { LinkChildCode } from './LinkChildCode'
 import { BackHeader, Main, Page } from './_parts'
 
 export const metadata = { title: 'Add a child · Jemma' }
@@ -28,6 +29,7 @@ export default async function AddChildPage({ searchParams }: { searchParams: Pro
           aloneOpen={q.alone === '1'}
           found={found && { className: found.className, teacherName: found.teacherName, grade: found.grade, schoolName: found.schoolName }}
         />
+        <LinkChildCode />
       </Main>
     </Page>
   )

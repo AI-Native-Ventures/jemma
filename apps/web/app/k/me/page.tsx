@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getChildName } from '@/lib/data/p28'
+import { LinkParent } from './LinkParent'
 import { MeForm } from './MeForm'
 
 export default async function ChildAccountPage() {
@@ -16,6 +17,7 @@ export default async function ChildAccountPage() {
       </header>
       <main className="mx-auto lg:max-w-[560px]" style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '18px 20px 30px' }}>
         <MeForm firstName={firstName} initial={initial} />
+        <LinkParent />
       </main>
     </div>
   )
