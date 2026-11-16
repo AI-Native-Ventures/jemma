@@ -7,6 +7,7 @@ import { segments, toLatexRun } from '../app/k/session/_parts/typeset'
 import { LearnCards } from '../app/k/session/_parts/LearnCards'
 import { LearnDiagram } from '../app/k/session/_parts/LearnDiagram'
 import type { LessonForChild } from '../app/k/session/[sessionId]/types'
+import { keyboardLayout, type Keycap } from '../app/k/session/_parts/math-keyboard'
 
 // P129: every piece of maths a learner sees is shown as maths, the labels drawn on a graph or a triangle too. The labels are SVG text, so powers are raised
 // with tspans (a smaller size, shifted up), variables are slanted, roots lined, the minus is a true minus. A label of plain words is not touched. react-dom
@@ -378,12 +379,14 @@ describe('lesson cards and captions show textbook maths and no raw notation', ()
     expect(seen(box.querySelector('aside')!)).not.toMatch(RAW)
   })
 
-  it('the keys of a derivative question have d over dx and a raised power', () => {
-    const page = screen(ask({ prompt: 'Differentiate y = x^2 + 3x with respect to x', answerKind: 'expression', form: 'any' } as Partial<QuestionForChild>))
-    expect(page.querySelector('[data-keys] button[aria-label="d by dx"] .flex-col')!.textContent).toBe('ddx')
-    expect(page.querySelector('[data-keys] button[aria-label="to the power of"] sup')).not.toBeNull()
-    expect(page.querySelector('[data-keys] button[aria-label="fraction"] .flex-col')!.textContent).toBe('ab')
-    expect(seen(page.querySelector('[data-keys]')!)).not.toMatch(/[/^]/)
+  it('the keys of a derivative question have d over dx and a raised power (P132: the keys are the maths editor\'s, drawn from LaTeX by the editor)', () => {
+    const layout = keyboardLayout({ kind: 'expression', prompt: 'Differentiate y = x^2 + 3x with respect to x' })
+    const caps = layout.rows.flat().filter((k): k is Keycap => typeof k !== 'string')
+    expect(caps.find((k) => k.tooltip === 'd y by d x')!.latex).toBe('\\frac{dy}{dx}')
+    expect(caps.find((k) => k.tooltip === 'to the power of')!.latex).toBe('x^{\\square}')
+    expect(caps.find((k) => k.tooltip === 'fraction')!.latex).toBe('\\frac{#@}{#?}')
+    // No face is plain text with a slash or a caret: a plain label is a word (sin, cos, tan, or).
+    for (const k of caps) expect(k.label ?? '', k.tooltip).not.toMatch(/[/^]/)
   })
 })
 

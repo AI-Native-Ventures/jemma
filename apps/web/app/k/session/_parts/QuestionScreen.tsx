@@ -4,8 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { answerShape, answerValue, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
 import { PendingButton } from '@/components/ui/Button'
 import { Frac, FractionText, withFractions } from './Frac'
-import { keySet, numberChars, pressKey, toggleSign, type KeySet, type MathKey } from './maths-keys'
-import { MathPreview } from './MathPreview'
+import { MathAnswerField } from './MathAnswerField'
 import { promptLayout } from './prompt-layout'
 import { QuestionContext, QuestionHeading } from './QuestionPrompt'
 import { QuestionPicture } from './QuestionPicture'
@@ -81,9 +80,6 @@ function FractionBoxes({ top, bottom, onTop, onBottom }: { top: string; bottom: 
 // ---- The four kinds of a senior class (P86): an expression, an equation, a point and a number that may be negative ------------------------------------------
 
 const MINUS = '\u2212'
-/** The longest answer the server takes. */
-const MAX_TEXT = 40
-
 /** A number as it is typed with a minus: digits, a comma or a point, and a minus in front. A phone's number pad has no minus, so there is a key for it. */
 const signedNumber = (s: string, max: number) => {
   const kept = s.replace(/\u2212/g, '-').replace(/[^\d.,-]/g, '')
@@ -97,155 +93,6 @@ const FORM_HINTS = {
   expanded: 'Type it with no brackets, like x\u00b2 + 4x + 4.',
 } as const
 const EQUATION_HINT = 'Type the answer, like x = 4. Two answers: x = 3 or x = -1.'
-
-const keyClass = 'flex min-h-12 min-w-12 cursor-pointer items-center justify-center rounded-14 border-2 border-edge bg-card font-bold text-ink'
-/** A key with a long face (sin, d/dx, f'(x)) has a smaller face, so it fits a key as narrow as the P90 rule allows. */
-const faceClass = (text: string): string => {
-  const length = [...text].length
-  return length <= 2 ? 'px-1.5 text-[22px]' : length === 3 ? 'px-1 text-[18px]' : length === 4 ? 'px-0.5 text-[16px]' : 'px-0.5 text-[14px]'
-}
-
-/**
- * The columns of the key row: one row for five keys or fewer (five keys are 49 px wide even on a 320 px phone), else two even rows (10 keys are 5 + 5).
- * The classes are written out so the stylesheet has them.
- */
-export function keyColumns(count: number): string {
-  const columns = count <= 5 ? count : Math.ceil(count / 2)
-  return ({ 1: 'grid-cols-1', 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4', 5: 'grid-cols-5' } as Record<number, string>)[columns] ?? 'grid-cols-4'
-}
-
-/**
- * The grid of a panel of keys. Nine or ten keys are five columns wide; on a phone narrower than 350 px (a key would be under 48 px and the row would
- * push the page sideways) they are four columns wide, and wrap onto a third row.
- */
-export const keyGrid = (count: number): string => `${keyColumns(count)}${count > 8 ? ' max-[349px]:grid-cols-4' : ''}`
-
-/** One key of the row. It never takes the keyboard away from the box. */
-function MathKeyButton({ k, onPress }: { k: MathKey; onPress: (k: MathKey) => void }) {
-  return (
-    <button type="button" aria-label={k.label} onMouseDown={(e) => e.preventDefault()} onClick={() => onPress(k)} className={`${keyClass} ${faceClass(k.text)}`}>
-      <KeyFace text={k.text} />
-    </button>
-  )
-}
-
-/** The face of a key as a textbook writes it: a fraction stacked (a over b, d over dx) and a power raised (x with a small n). Every other key shows its sign. */
-function KeyFace({ text }: { text: string }) {
-  if (text === 'a/b' || text === 'd/dx') {
-    const [top, bottom] = text === 'a/b' ? ['a', 'b'] : ['d', 'dx']
-    return <Frac top={top} bottom={bottom} size={17} rule={2} gap={1} side={2} color="currentColor" />
-  }
-  if (text === '^')
-    return (
-      <span>
-        x<sup style={{ fontSize: '0.62em', lineHeight: 0, position: 'relative', top: '-0.55em', verticalAlign: 'baseline' }}>n</sup>
-      </span>
-    )
-  return <>{text}</>
-}
-
-/** It reads: the line under the keys is drawn only for a number that is more than digits (a plain number is its own picture). */
-const isPlainNumber = (text: string) => /^[-−]?\s*[\d.,]*\s*$/.test(text)
-
-type TypedMathProps = {
-  value: string
-  onChange: (v: string) => void
-  keys: KeySet
-  hint: string
-  /** The kind of phone keyboard: letters for algebra, a number pad for a number (the keys type the rest). */
-  mode?: 'text' | 'decimal'
-  /** What the box keeps of what is typed. */
-  clean?: (s: string) => string
-  /** A key put before the box (the minus key of a number). */
-  lead?: ReactNode
-  /** Draw "It reads:" for any answer, not only one that is more than digits. */
-  alwaysRead?: boolean
-}
-
-/**
- * One text box for an answer made of letters or maths signs, and under it the keys that put their sign where the cursor is, ten to see and the rest
- * behind "More keys". Under the keys the answer is drawn as it will be read ("It reads: 2x² + 7x"). A key never takes the keyboard away from the box.
- */
-function TypedMath({ value, onChange, keys, hint, mode = 'text', clean = (s) => s.slice(0, MAX_TEXT), lead, alwaysRead = true }: TypedMathProps) {
-  const input = useRef<HTMLInputElement>(null)
-  const caret = useRef<number | null>(null)
-  const [more, setMore] = useState(false)
-  // The box is given its new text by React, which puts the cursor at the end: it is put back after the sign that was inserted.
-  useEffect(() => {
-    if (caret.current !== null && input.current) {
-      input.current.setSelectionRange(caret.current, caret.current)
-      caret.current = null
-    }
-  }, [value])
-  const press = (pressed: MathKey) => {
-    const el = input.current
-    const from = el?.selectionStart ?? value.length
-    const to = el?.selectionEnd ?? from
-    const done = pressKey(value, from, to, pressed, MAX_TEXT)
-    if (!done) return
-    // A close bracket that was already there is stepped over: the text stays, only the cursor moves.
-    if (done.text === value) {
-      el?.setSelectionRange(done.caret, done.caret)
-    } else {
-      caret.current = done.caret
-      onChange(done.text)
-    }
-    el?.focus()
-  }
-  const shown = value.trim()
-  return (
-    <div className="flex w-full flex-col items-center gap-3.5">
-      <label htmlFor="answer" className="sr-only">Your answer</label>
-      <div className="flex w-full max-w-[360px] items-center justify-center gap-2.5">
-        {lead}
-        <input
-          id="answer"
-          ref={input}
-          type="text"
-          inputMode={mode}
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck={false}
-          maxLength={MAX_TEXT}
-          value={value}
-          onChange={(e) => onChange(clean(e.target.value))}
-          className="mx-auto block h-[64px] w-full min-w-0 rounded-18 border-[3px] border-coral bg-card px-3 text-center text-[28px] font-bold text-ink outline-none"
-        />
-      </div>
-      <div data-keys="true" className={`grid w-full max-w-[360px] gap-2 ${keyGrid(keys.keys.length)}`}>
-        {keys.keys.map((k) => (
-          <MathKeyButton key={k.label} k={k} onPress={press} />
-        ))}
-      </div>
-      {more ? (
-        <div data-keys-more="true" className={`grid w-full max-w-[360px] gap-2 ${keyGrid(keys.more.length)}`}>
-          {keys.more.map((k) => (
-            <MathKeyButton key={k.label} k={k} onPress={press} />
-          ))}
-        </div>
-      ) : null}
-      {keys.more.length > 0 ? (
-        <button
-          type="button"
-          data-more-toggle="true"
-          aria-expanded={more}
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => setMore(!more)}
-          className="flex min-h-12 w-full max-w-[360px] cursor-pointer items-center justify-center rounded-14 border-2 border-edge bg-card px-5 py-2 text-[16px] font-bold text-ink"
-        >
-          {more ? 'Fewer keys' : 'More keys'}
-        </button>
-      ) : null}
-      {shown && (alwaysRead || !isPlainNumber(shown)) ? (
-        <p data-reads="true" className="m-0 text-center text-[16px] leading-[1.4] text-body">
-          It reads: <span className="text-[22px] font-bold text-ink"><MathPreview text={shown} size={22} rule={2} gap={3} side={3} className="mx-0.5 align-middle" /></span>
-        </p>
-      ) : null}
-      <Hint>{hint}</Hint>
-    </div>
-  )
-}
 
 /** The minus key of a number: a phone's number pad has none. It puts a minus in front of the number, and takes it away again. */
 function MinusKey({ label, onPress, className = 'h-[76px] w-14 text-[34px]' }: { label: string; onPress: () => void; className?: string }) {
@@ -341,9 +188,9 @@ function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b: Boxes;
         </div>
       )
     case 'expression':
-      return <TypedMath value={b.text} onChange={b.set.text} keys={keySet({ kind: 'expression', topic, prompt, form: shape.form })} hint={FORM_HINTS[shape.form]} />
+      return <MathAnswerField kind="expression" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={FORM_HINTS[shape.form]} />
     case 'equation':
-      return <TypedMath value={b.text} onChange={b.set.text} keys={keySet({ kind: 'equation', topic, prompt })} hint={EQUATION_HINT} />
+      return <MathAnswerField kind="equation" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint={EQUATION_HINT} />
     case 'point':
       return (
         <div className="flex flex-col items-center gap-3.5">
@@ -358,18 +205,7 @@ function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b: Boxes;
         </div>
       )
     case 'number':
-      return (
-        <TypedMath
-          value={b.text}
-          onChange={b.set.text}
-          keys={keySet({ kind: 'number', topic, prompt })}
-          hint="Type a number. It may be negative, like -3."
-          mode="decimal"
-          clean={(v) => numberChars(v, MAX_TEXT)}
-          alwaysRead={false}
-          lead={<MinusKey label="Minus sign" onPress={() => b.set.text(toggleSign(b.text, MAX_TEXT))} className="h-[64px] w-14 text-[30px]" />}
-        />
-      )
+      return <MathAnswerField kind="number" topic={topic} prompt={prompt} value={b.text} onChange={b.set.text} hint="Type a number. It may be negative, like -3." />
     default:
       // The lesson gave no kind we know: one plain box.
       return (

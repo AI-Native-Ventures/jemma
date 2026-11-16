@@ -6,6 +6,8 @@ export const START_LEVEL = 2
 /** Same default the agent uses when it moves a gap on a finished lesson. */
 export const FIX_AFTER_DAYS = 3
 export const DEFAULT_TRY_COUNT = 5
+/** The longest answer the server takes: the longest the marking reads (60 characters), so a fraction sum from the maths editor fits. */
+export const ANSWER_MAX_LENGTH = 60
 
 export type Phase = 'warmup' | 'try'
 

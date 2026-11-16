@@ -5,6 +5,7 @@ import { pictureProblem } from '@jemma/profiling/logic'
 import { createServiceClient, type Json } from '@jemma/profiling/db'
 import { LessonSchema, type Lesson, type Question } from '@jemma/profiling/schemas'
 import { expect, test as base, type Locator, type Page } from '@playwright/test'
+import { writeAnswer, writtenLatex } from './helpers/math-field'
 import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 
 // A learner of a Grade 10 class meets a graph and a triangle inside a question, types the answers, and finds the parts of their own map on My maths.
@@ -171,13 +172,13 @@ test.describe('a learner of a Grade 10 class meets a graph and a triangle in a q
     const sessionId = await makeSenior(sb.childId, sb.classId)
     await toTheFirstQuestion(page)
 
-    // Question 1: a line on a grid. The gradient is typed in one box.
+    // Question 1: a line on a grid. The gradient is written in the maths editor.
     await expect(page.locator('h1[data-prompt]')).toHaveAttribute('data-prompt', 'What is the gradient of this line?')
     await seesThePicture(page, LINE_NAME, answerBox(page))
     await expect(page.locator('[data-picture] svg path[data-graph]')).toHaveCount(1)
     await noHorizontalScroll(page)
     await proof(page, 'line')
-    await answerBox(page).fill('2')
+    await writeAnswer(page, '2')
     await next(page).click()
 
     // Question 2: a triangle with a right angle and an angle called x.
@@ -190,7 +191,7 @@ test.describe('a learner of a Grade 10 class meets a graph and a triangle in a q
     await expect(page.locator('[data-picture] svg')).not.toContainText('30')
     await noHorizontalScroll(page)
     await proof(page, 'triangle')
-    await answerBox(page).fill('30')
+    await writeAnswer(page, '30')
     await next(page).click()
 
     // Question 3: another line, and a point to type (the picture sits above the two boxes).
@@ -205,14 +206,12 @@ test.describe('a learner of a Grade 10 class meets a graph and a triangle in a q
     // Questions 4 and 5 have no picture: nothing is drawn for them, and no empty box is left.
     await check(page.getByText('Question 4 of 5')).toBeVisible()
     await expect(page.locator('[data-picture]')).toHaveCount(0)
-    await answerBox(page).fill('3')
-    await page.getByRole('button', { name: 'Minus sign', exact: true }).click()
-    await expect(answerBox(page)).toHaveValue('-3')
+    await writeAnswer(page, '-3')
+    expect(await writtenLatex(page)).toBe('-3')
     await next(page).click()
     await check(page.getByText('Question 5 of 5')).toBeVisible()
     await expect(page.locator('[data-picture]')).toHaveCount(0)
-    await answerBox(page).fill('5')
-    await page.getByRole('button', { name: 'Minus sign', exact: true }).click()
+    await writeAnswer(page, '-5')
     await next(page).click()
 
     // The results show every question (P126); the one that was missed has its picture under the heading; now the answer is shown, the description has the equation.

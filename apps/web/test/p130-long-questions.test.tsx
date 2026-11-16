@@ -155,7 +155,8 @@ describe('the question screen, a long question', () => {
 
   it('the answer box comes after the question and nothing in the question has a fixed height or is cut off', () => {
     const html = renderToStaticMarkup(<QuestionScreen q={q} busy={false} onAnswer={() => {}} />)
-    expect(html.indexOf('<input')).toBeGreaterThan(html.indexOf('data-maths-line'))
+    // The answer box is the maths editor since P132.
+    expect(html.indexOf('<math-field')).toBeGreaterThan(html.indexOf('data-maths-line'))
     const page = dom(<QuestionScreen q={q} busy={false} onAnswer={() => {}} />)
     const h1 = page.querySelector('h1[data-prompt]')!
     for (const el of [h1, ...h1.querySelectorAll('*')]) {

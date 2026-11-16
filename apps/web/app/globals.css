@@ -49,3 +49,38 @@ body {
 .jemma-math .katex {
   font-size: 1em;
 }
+
+/* The maths editor of a senior answer (P132, MathLive's <math-field>): the box the old text box was, drawn before the editor has started too. Its menu
+   button is hidden; the keyboard under it is the editor's own. */
+math-field.jemma-answer {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 360px;
+  min-height: 64px;
+  margin: 0 auto;
+  padding: 6px 12px;
+  font-size: 28px;
+  color: var(--color-ink);
+  background: var(--color-card);
+  border: 3px solid var(--color-coral);
+  border-radius: 18px;
+  outline: none;
+  --hue: 15;
+}
+math-field.jemma-answer:focus-within {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+math-field.jemma-answer::part(menu-toggle) {
+  display: none;
+}
+
+/* The keyboard of the maths editor (P132): seven keys to a row, so each key is 48 px on a 360 px phone (the editor's own default is ten to a row). These are the
+   editor's own variables; nothing else in the app reads them. */
+:root {
+  --keycap-width: min(72px, calc(100vw / 7));
+  --keycap-gap: 4px;
+  --keycap-height: 48px;
+  --keycap-font-size: 20px;
+}

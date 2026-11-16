@@ -43,7 +43,7 @@ describe('the question screen', () => {
     expect(pictures(page)).toEqual([LINE_LABEL])
     const prompt = html.indexOf('data-prompt=')
     const picture = picAt(html)
-    const box = html.indexOf('<input')
+    const box = html.indexOf('<math-field')
     expect(prompt).toBeGreaterThan(-1)
     expect(picture).toBeGreaterThan(prompt)
     expect(box).toBeGreaterThan(picture)
@@ -53,7 +53,7 @@ describe('the question screen', () => {
     const html = screen(ask({ phase: 'warmup', of: 2, diagram: TRIANGLE, answerKind: 'number' }))
     expect(pictures(dom(html))).toEqual([TRIANGLE_LABEL])
     expect(picAt(html)).toBeGreaterThan(html.indexOf('data-prompt='))
-    expect(html.indexOf('<input')).toBeGreaterThan(picAt(html))
+    expect(html.indexOf('<math-field')).toBeGreaterThan(picAt(html))
   })
 
   it('is at most 300 px tall on a phone, and as wide as the card', () => {
@@ -71,7 +71,7 @@ describe('the question screen', () => {
   it('a picture that makes no sense is "Picture missing", and the question can still be answered', () => {
     const page = dom(screen(ask({ diagram: { ...LINE, xMin: 5, xMax: -5 } as SeniorDiagramSpec })))
     expect(page.textContent).toContain('Picture missing')
-    expect(page.querySelector('input')).not.toBeNull()
+    expect(page.querySelector('math-field')).not.toBeNull()
   })
 
   it('a question without a picture draws no picture and no wrapper', () => {

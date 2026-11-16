@@ -33,7 +33,8 @@ export type TrigName = 'sin' | 'cos' | 'tan'
 type Tok =
   | { k: 'num'; v: number; raw: string }
   | { k: 'var'; c: string }
-  | { k: 'sqrt' }
+  /** A square root, or a cube root (the cube root sign, or the word cbrt). */
+  | { k: 'sqrt'; cube?: true }
   | { k: 'pi' }
   | { k: 'deg' }
   | { k: 'fn'; name: TrigName }
@@ -51,7 +52,7 @@ export type MathNode =
   | { t: 'fn'; name: TrigName; a: MathNode }
   | { t: 'neg'; a: MathNode }
   | { t: 'group'; a: MathNode }
-  | { t: 'sqrt'; a: MathNode }
+  | { t: 'sqrt'; a: MathNode; /** a cube root: it takes the root of a negative number too (the cube root of -8 is -2) */ cube?: true }
   | { t: 'pow'; a: MathNode; b: MathNode }
   | { t: 'add' | 'sub' | 'mul' | 'div'; a: MathNode; b: MathNode; /** a product typed with a sign (2 \u00d7 3), not by writing the two next to each other */ explicit?: boolean }
 
@@ -105,6 +106,9 @@ const tokenize = (text: string): Tok[] => {
           if (run.startsWith('sqrt', at)) {
             out.push({ k: 'sqrt' })
             at += 4
+          } else if (run.startsWith('cbrt', at)) {
+            out.push({ k: 'sqrt', cube: true })
+            at += 4
           } else if (name) {
             out.push({ k: 'fn', name })
             at += 3
@@ -126,6 +130,9 @@ const tokenize = (text: string): Tok[] => {
       i++
     } else if (c === '\u221a') {
       out.push({ k: 'sqrt' })
+      i++
+    } else if (c === '\u221b') {
+      out.push({ k: 'sqrt', cube: true })
       i++
     } else if (SUPERSCRIPT.includes(c) || c === SUPER_MINUS) {
       let j = i
@@ -171,7 +178,7 @@ const tokenize = (text: string): Tok[] => {
  *   unary    := ('-' | '+') unary | power
  *   power    := atom '°'* ('^' exponent)?                 x^2, x^(n+1), x², 30°, and a power of a power goes from the right
  *   atom     := number | letter | 'π' | '(' sum ')' | root | trig
- *   root     := ('√' | 'sqrt') (number | letter | 'π' | '(' sum ')')      the root covers the one number, letter or bracket right after it
+ *   root     := ('√' | 'sqrt' | '∛' | 'cbrt') (number | letter | 'π' | '(' sum ')')      the root covers the one number, letter or bracket right after it
  *   trig     := ('sin' | 'cos' | 'tan') ('^' exponent)? argument         sin(30°), sin 30, sin²x, sin^2(x), sin 2x
  *   argument := '(' sum ')' | '-'? term                   a term is numbers, letters, π and roots written next to each other, with their powers and degree signs
  */
@@ -290,10 +297,11 @@ const parseTokens = (toks: Tok[]): MathNode => {
     if (t.k === 'sqrt') {
       const r = toks[pos++]
       if (!r) return giveUp()
-      if (r.k === 'num') return { t: 'sqrt', a: { t: 'num', v: r.v, raw: r.raw } }
-      if (r.k === 'var') return { t: 'sqrt', a: { t: 'var', name: r.c } }
-      if (r.k === 'pi') return { t: 'sqrt', a: { t: 'pi' } }
-      if (r.k === 'lp') return { t: 'sqrt', a: bracket() }
+      const cube = t.cube ? { cube: true as const } : {}
+      if (r.k === 'num') return { t: 'sqrt', a: { t: 'num', v: r.v, raw: r.raw }, ...cube }
+      if (r.k === 'var') return { t: 'sqrt', a: { t: 'var', name: r.c }, ...cube }
+      if (r.k === 'pi') return { t: 'sqrt', a: { t: 'pi' }, ...cube }
+      if (r.k === 'lp') return { t: 'sqrt', a: bracket(), ...cube }
     }
     return giveUp()
   }
@@ -373,6 +381,7 @@ const valueOf = (n: MathNode, env: Env): number => {
       return -valueOf(n.a, env)
     case 'sqrt': {
       const a = valueOf(n.a, env)
+      if (n.cube) return defined(Math.cbrt(a))
       return a < 0 ? NaN : defined(Math.sqrt(a))
     }
     case 'add':

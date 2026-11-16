@@ -1,10 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { QuestionScreen, keyColumns } from '../app/k/session/_parts/QuestionScreen'
 import { Results, termUnits } from '../app/k/session/_parts/Results'
-import type { MissedQuestion, QuestionForChild } from '../app/k/session/[sessionId]/logic'
+import type { MissedQuestion } from '../app/k/session/[sessionId]/logic'
 
-// P90 add-on: on a phone an algebra answer on the results screen never breaks in the middle of a term, and the maths keys sit in even rows.
+// P90 add-on: on a phone an algebra answer on the results screen never breaks in the middle of a term.
 // react-dom/server only: no server, no browser.
 
 const html = (node: React.ReactElement) => {
@@ -129,58 +128,5 @@ describe('results: short answers keep today\'s side by side look', () => {
     expect(grid.classList.contains('grid-cols-1')).toBe(true)
     expect(right.querySelectorAll('span.inline-flex')).toHaveLength(1)
     expect(right.querySelector('.whitespace-nowrap')).toBeNull()
-  })
-})
-
-describe('the maths keys sit in even rows', () => {
-  const ask = (over: Partial<QuestionForChild>): QuestionForChild => ({ position: 3, phase: 'try', index: 1, of: 5, prompt: 'Work it out', render: 'text', answerKind: 'whole', ...over })
-  const keys = (q: QuestionForChild) => {
-    const row = html(<QuestionScreen q={q} busy={false} onAnswer={() => undefined} />).querySelector('[data-keys]')!
-    return { row, buttons: [...row.querySelectorAll('button')] }
-  }
-  /** The width of one key in a row of `count` columns on a phone `phone` px wide: the screen leaves 20 px at each side, the row has 8 px between keys. */
-  const keyWidth = (phone: number, count: number) => (Math.min(360, phone - 40) - 8 * (count - 1)) / count
-
-  it('an expression has 10 keys in a grid of 5 columns: 5 + 5 (P125; the rest are behind More keys)', () => {
-    const { row, buttons } = keys(ask({ answerKind: 'expression' }))
-    expect(buttons).toHaveLength(10)
-    expect(row.classList.contains('grid')).toBe(true)
-    expect(row.classList.contains('grid-cols-5')).toBe(true)
-    expect(row.classList.contains('flex-wrap')).toBe(false)
-  })
-
-  it('an equation has 10 keys in a grid of 5 columns: 5 + 5 (P125)', () => {
-    const { row, buttons } = keys(ask({ answerKind: 'equation' }))
-    expect(buttons).toHaveLength(10)
-    expect(row.classList.contains('grid-cols-5')).toBe(true)
-  })
-
-  it('every key is at least 48 px wide and tall, and has no fixed height', () => {
-    for (const kind of ['expression', 'equation'] as const) {
-      const { buttons } = keys(ask({ answerKind: kind }))
-      for (const b of buttons) {
-        expect(b.classList.contains('min-h-12'), `${kind}: ${b.textContent}`).toBe(true)
-        expect(b.classList.contains('min-w-12')).toBe(true)
-        expect([...b.classList].filter((c) => /^h-/.test(c))).toEqual([])
-      }
-    }
-  })
-
-  it('on a 360 px phone (and a 320 px one) each key is at least 48 px wide in both rows', () => {
-    for (const phone of [390, 360, 320]) {
-      expect(keyWidth(phone, 4), `8 keys at ${phone}`).toBeGreaterThanOrEqual(48)
-      expect(keyWidth(phone, 5), `5 keys at ${phone}`).toBeGreaterThanOrEqual(48)
-    }
-  })
-
-  it('the row is as wide as the answer box and no wider', () => {
-    const { row } = keys(ask({ answerKind: 'expression' }))
-    expect(row.classList.contains('w-full')).toBe(true)
-    expect(row.classList.contains('max-w-[360px]')).toBe(true)
-  })
-
-  it('keyColumns: one row up to 5 keys, else two even rows', () => {
-    expect([1, 2, 3, 4, 5].map(keyColumns)).toEqual(['grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4', 'grid-cols-5'])
-    expect([6, 8, 10].map(keyColumns)).toEqual(['grid-cols-3', 'grid-cols-4', 'grid-cols-5'])
   })
 })

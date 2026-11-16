@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { createServiceClient, type Json } from '@jemma/profiling/db'
 import { LessonSchema, type Lesson, type Question } from '@jemma/profiling/schemas'
 import { expect, test as base, type Page } from '@playwright/test'
+import { hideKeyboard, mathField, writeAnswer, writtenLatex } from './helpers/math-field'
 import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 
 // A learner of a senior class (Mathematics, Grade 10) types algebra, an equation, a point and a negative number, and code marks them by meaning.
@@ -115,10 +116,6 @@ const noHorizontalScroll = async (page: Page) =>
 
 const next = (page: Page) => page.getByRole('button', { name: 'Next', exact: true })
 const answerBox = (page: Page) => page.getByLabel('Your answer', { exact: true })
-const key = (page: Page, name: string) => page.getByRole('button', { name, exact: true })
-/** The faces of the keys in view under the answer box (P125: ten of them, the rest are behind "More keys"). */
-// P129: the power key is drawn as x with a raised n (text xn) and the fraction key as a over b (text ab).
-const keyFaces = (page: Page) => page.locator('[data-keys] button').allTextContents()
 
 /** From the learner's home to the first question on the screen: the warm-up, the lesson, "I'm ready", "Answer on the screen". */
 async function toTheFirstQuestion(page: Page) {
@@ -142,43 +139,46 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     const sessionId = await makeSenior(sb.childId, sb.classId)
     await toTheFirstQuestion(page)
 
-    // Question 1: an expression. One text box set up for letters, the row of maths keys, the help line. Next waits for something.
+    // Question 1: an expression. The maths editor (P132), labelled "Your answer", with its help line. Next waits for something.
     await expect(page.locator('h1[data-prompt]')).toHaveAttribute('data-prompt', 'Simplify x + x + 3')
-    const box = answerBox(page)
-    await expect(box).toHaveAttribute('inputmode', 'text')
-    await expect(box).toHaveAttribute('autocorrect', 'off')
-    await expect(box).toHaveAttribute('autocapitalize', 'off')
-    await expect(box).toHaveAttribute('spellcheck', 'false')
-    await expect(box).toHaveAttribute('maxlength', '40')
-    expect(await keyFaces(page)).toEqual(expect.arrayContaining(['x', 'y', '²', 'xn', 'ab', '(', ')', MINUS, '√']))
-    await page.getByRole('button', { name: 'More keys', exact: true }).click()
-    await expect(page.locator('[data-keys-more] button').first()).toBeVisible()
-    await page.getByRole('button', { name: 'Fewer keys', exact: true }).click()
-    await expect(page.locator('[data-keys-more]')).toHaveCount(0)
+    const field = await mathField(page)
+    await expect(field).toHaveAttribute('aria-label', 'Your answer')
+    await expect(page.locator('input#answer')).toHaveCount(0)
     await expect(page.getByText('Type an expression, like 2x + 3.')).toBeVisible()
     await expect(next(page)).toBeDisabled()
-    await box.fill('3 + 2')
-    await key(page, 'x').click()
-    await expect(box).toHaveValue('3 + 2x')
+    // The keyboard of the editor comes up when the box is touched: our layout, in five rows of seven keys, each key at least 44 px.
+    await field.click()
+    await expect.poll(() => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible)).toBe(true)
+    const layoutId = await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { layouts: { id: string }[] } }).mathVirtualKeyboard.layouts[0]!.id)
+    expect(layoutId).toMatch(/^jemma-expression-/)
+    const keycap = page.locator('.MLK__keycap').first()
+    await expect(keycap).toBeVisible()
+    const size = (await keycap.boundingBox())!
+    expect(size.width).toBeGreaterThanOrEqual(44)
+    expect(size.height).toBeGreaterThanOrEqual(44)
+    await noHorizontalScroll(page)
+    await proof(page, 'expression-keyboard')
+    // The keys of the keyboard write into the box: a digit, the plus on the top row, and the fraction (a top and a bottom).
+    const keycap7 = page.locator('.MLK__keycap[data-keycap-value="7"]').first()
+    await keycap7.click()
+    await page.locator('.MLK__keycap[data-tooltip="plus"], .MLK__keycap[data-keycap-value="+"]').first().click()
+    await page.locator('.MLK__keycap[data-keycap-value="3"]').first().click()
+    expect(await writtenLatex(page)).toBe('7+3')
+    await page.locator('.MLK__keycap[data-tooltip="fraction"], .MLK__keycap[data-keycap-value*="frac"]').first().click()
+    expect(await writtenLatex(page)).toContain('\\frac')
+    await hideKeyboard(page)
+    await writeAnswer(page, '3+2x')
     await expect(next(page)).toBeEnabled()
-    await expect(page.locator('[data-reads]')).toContainText('It reads:')
     await noHorizontalScroll(page)
     await proof(page, 'expression')
     await next(page).click()
 
-    // Question 2: an equation, with the keys x = minus root or. Typed with the keys and a few digits.
+    // Question 2: an equation, with two answers and the word between them.
     await check(page.getByText('Question 2 of 5')).toBeVisible()
-    expect(await keyFaces(page)).toEqual(expect.arrayContaining(['x', '=', MINUS, '√', 'or', 'ab']))
     await expect(page.getByText('Type the answer, like x = 4. Two answers: x = 3 or x = -1.')).toBeVisible()
-    await key(page, 'x').click()
-    await key(page, 'equals').click()
-    await key(page, 'minus').click()
-    await page.keyboard.type('1')
-    await key(page, 'or').click()
-    await key(page, 'x').click()
-    await key(page, 'equals').click()
-    await page.keyboard.type('3')
-    await expect(answerBox(page)).toHaveValue(`x = ${MINUS}1 or x = 3`)
+    await expect(next(page)).toBeDisabled()
+    await writeAnswer(page, 'x=-1\\text{ or }x=3')
+    await expect(next(page)).toBeEnabled()
     await noHorizontalScroll(page)
     await proof(page, 'equation')
     await next(page).click()
@@ -197,22 +197,20 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await proof(page, 'point')
     await next(page).click()
 
-    // Question 4: a number that may be negative, with one minus key beside the box.
+    // Question 4: a number that may be negative, in the same editor.
     await check(page.getByText('Question 4 of 5')).toBeVisible()
     await expect(page.getByText('Type a number. It may be negative, like -3.')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Minus sign', exact: true })).toHaveCount(1)
-    await answerBox(page).fill('3')
-    await page.getByRole('button', { name: 'Minus sign', exact: true }).click()
-    await expect(answerBox(page)).toHaveValue('-3')
+    await writeAnswer(page, '-3')
+    await expect(next(page)).toBeEnabled()
     await noHorizontalScroll(page)
     await proof(page, 'number')
     await next(page).click()
 
-    // Question 5: an expression that has to be factorised. The line says so, and x^2 - 4 is drawn with a raised 2 under the keys.
+    // Question 5: an expression that has to be factorised. The line says so; x^2 - 4 is not in that form.
     await check(page.getByText('Question 5 of 5')).toBeVisible()
     await expect(page.getByText('Type it as a product of brackets, like (x + 2)(x - 2).')).toBeVisible()
-    await answerBox(page).fill('x^2 - 4')
-    await expect(page.locator('[data-reads] .msupsub')).toHaveText('2')
+    await writeAnswer(page, 'x^{2}-4')
+    await expect(next(page)).toBeEnabled()
     await noHorizontalScroll(page)
     await proof(page, 'factorised')
     await next(page).click()
@@ -234,7 +232,7 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     // What was stored: each answer as typed, marked by meaning.
     const rows = (await admin().from('session_items').select('position, phase, answer, correct').eq('session_id', sessionId).eq('phase', 'try').order('position')).data ?? []
     expect(rows.map((r) => r.correct)).toEqual([true, true, false, true, false])
-    expect(rows.map((r) => r.answer)).toEqual(['3 + 2x', `x = ${MINUS}1 or x = 3`, '(-3; 2)', '-3', 'x^2 - 4'])
+    expect(rows.map((r) => r.answer)).toEqual(['3 + 2x', 'x = -1 or x = 3', '(-3; 2)', '-3', 'x^2 - 4'])
   })
 
   test('the demo path boxes are the ones they always were: a fraction question of a Grade 6 class has no maths keys', async ({ page }, testInfo) => {
@@ -242,6 +240,7 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     const sb = await openSandbox(page, { stage: 'marked', role: 'learner' })
     opened.push(sb)
     await toTheFirstQuestion(page)
+    await expect(page.locator('math-field')).toHaveCount(0)
     await expect(page.locator('[data-keys]')).toHaveCount(0)
     await expect(page.locator('[data-point]')).toHaveCount(0)
     await expect(page.locator('[data-reads]')).toHaveCount(0)

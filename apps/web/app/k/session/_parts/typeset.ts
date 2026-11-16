@@ -22,7 +22,7 @@ export function toLatex(n: MathNode): string {
     case 'group':
       return `\\left(${toLatex(n.a)}\\right)`
     case 'sqrt':
-      return `\\sqrt{${toLatex(inner(n.a))}}`
+      return n.cube ? `\\sqrt[3]{${toLatex(inner(n.a))}}` : `\\sqrt{${toLatex(inner(n.a))}}`
     case 'fn':
       return `\\${n.name}\\left(${toLatex(inner(n.a))}\\right)`
     case 'pow':
@@ -109,7 +109,7 @@ export type TypesetMode = 'force' | 'all' | 'algebra'
 type Kind = 'word' | 'op' | 'letter' | 'math'
 type Tok = { start: number; end: number; core: string; trail: string; kind: Kind }
 
-const ALLOWED = /^[A-Za-z0-9+\-−×÷*/=<>≤≥≠^√πθ°⁰¹²³⁴⁵⁶⁷⁸⁹⁻()[\].,·]+$/
+const ALLOWED = /^[A-Za-z0-9+\-−×÷*/=<>≤≥≠^√∛πθ°⁰¹²³⁴⁵⁶⁷⁸⁹⁻()[\].,·]+$/
 const FUNCTION_WORDS = new Set(['sin', 'cos', 'tan', 'sqrt', 'pi', 'PI'])
 
 /** What a piece of text without spaces is: a word, a sign, a lone letter, or maths. A letter run of two or more that is not a function is a word. */
@@ -118,12 +118,12 @@ function classify(core: string): Kind {
   // A comma or a point is a decimal one only between two digits.
   if (/(^|[^0-9])[.,]|[.,]($|[^0-9])/.test(core)) return 'word'
   for (const run of core.match(/[A-Za-z]+/g) ?? []) if (run.length > 1 && !FUNCTION_WORDS.has(run)) return 'word'
-  if (!/[A-Za-z0-9√πθ°⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/.test(core)) return 'op'
+  if (!/[A-Za-z0-9√∛πθ°⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/.test(core)) return 'op'
   return /^[A-Za-z]$/.test(core) ? 'letter' : 'math'
 }
 
-const HAS_STRUCTURE = /[+\-−×÷*/=<>≤≥≠^√πθ°⁰¹²³⁴⁵⁶⁷⁸⁹⁻]|sin|cos|tan|sqrt|pi|PI/
-const HAS_SYMBOL = /[\^√πθ⁰¹²³⁴⁵⁶⁷⁸⁹⁻]|sin|cos|tan|sqrt|pi|PI/
+const HAS_STRUCTURE = /[+\-−×÷*/=<>≤≥≠^√∛πθ°⁰¹²³⁴⁵⁶⁷⁸⁹⁻]|sin|cos|tan|sqrt|pi|PI/
+const HAS_SYMBOL = /[\^√∛πθ⁰¹²³⁴⁵⁶⁷⁸⁹⁻]|sin|cos|tan|sqrt|pi|PI/
 
 /**
  * Algebra: a power, a root, pi, theta or a function; or a letter joined to a number or a sign inside one piece (2x, x/2, (x); or a letter and a number
