@@ -66,6 +66,21 @@ describe('latexToPlain', () => {
   })
 })
 
+describe('cleaning', () => {
+  test('an align environment loses its begin and end and its alignment marks', () => {
+    const out = latexToPlain('\\begin{align*} a &= 1 \\\\ b &= 2 \\end{align*}')
+    expect(out).not.toMatch(/begin|end|&|align/)
+    expect(out.replace(/\s+/g, ' ').trim()).toBe('a = 1 b = 2')
+  })
+
+  test('empty bullets and empty table cells are dropped', () => {
+    const text = htmlToText(page('x', `<ul><li></li><li>Real point of the lesson ${'word '.repeat(50)}</li><li> </li></ul><table><tr><td></td><td>9</td></tr></table>`))
+    expect(text).toContain('- Real point')
+    expect(text).not.toMatch(/^-\s*$/m)
+    expect(text).not.toMatch(/^\|\s*$/m)
+  })
+})
+
 describe('licence', () => {
   test('a page with the Creative Commons Attribution line has a licence, one without has none', () => {
     expect(licenceOf(page('a', BODY))).toContain('Creative Commons Attribution License')
@@ -231,6 +246,15 @@ describe('reference text', () => {
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
+  })
+
+  test('a chapter on one page with no headings is one section named after the chapter; ids carry the chapter number', () => {
+    const doc = { url: 'u', title: 'x', licence: 'l', text: `# Chapter 14: Pythagoras' theorem\n\n${'word '.repeat(100)}` }
+    expect(sectionsOf(doc, true)).toEqual([{ id: '14.0', title: "Chapter 14: Pythagoras' theorem", text: doc.text.trim() }])
+  })
+
+  test('a section page keeps its number as its id and loses it from its title', () => {
+    expect(sectionsOf({ url: 'u', title: '5.3 Hyperbolic functions', licence: 'l', text: 'text' }, false)).toEqual([{ id: '5.3', title: 'Hyperbolic functions', text: 'text' }])
   })
 
   test('sectionsOf cuts a one-page chapter at its headings', () => {

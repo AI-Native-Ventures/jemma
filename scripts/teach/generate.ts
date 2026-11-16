@@ -8,7 +8,7 @@ import { Chain, callJson, modelsFromEnv, type Attempt } from './chain'
 import { checkLesson } from './checks'
 import { appendLedger, readLedger, summarize, type LedgerRecord } from './ledger'
 import { runOpencode, type Runner } from './opencode'
-import { OutlineSchema, ReviewSchema, lessonRange, outlinePrompt, reviewPrompt, writePrompt, type Outline } from './prompts'
+import { OutlineSchema, ReviewSchema, lessonRange, outlinePrompt, reviewPrompt, writePrompt, type Outline } from './build-prompts'
 import { referenceFor, type Reference } from './sources'
 import { PITCH_TOPICS, REPO_ROOT, lessonPath, topicFileNames, topicGroups, type TopicGroup } from './topics'
 

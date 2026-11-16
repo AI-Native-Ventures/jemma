@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, test } from 'vitest'
-import { OutlineSchema, ReviewSchema, fill, lessonRange, lessonSchemaText, outlinePrompt, reviewPrompt, writePrompt } from '../prompts'
+import { OutlineSchema, ReviewSchema, fill, lessonRange, lessonSchemaText, outlinePrompt, reviewPrompt, writePrompt } from '../build-prompts'
 import { capsReference, overview } from '../sources'
 import { topicGroups } from '../topics'
 import { goodLesson } from './fixtures'

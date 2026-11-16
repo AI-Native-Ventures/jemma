@@ -8,3 +8,4 @@
 {"time":"2026-11-16T18:33:23.562Z","model":"opencode/longcat-2.5-free","kind":"probe","seconds":2.7,"ok":false,"limited":true,"error":"Free usage limit reached"}
 {"time":"2026-11-16T18:33:26.791Z","model":"opencode/nemotron-3.5-lightning-free","kind":"probe","seconds":2.9,"ok":false,"limited":true,"error":"Free usage limit reached"}
 {"time": "2026-11-16T18:33:42.000Z", "model": "opencode/minimax-m3.1-flash-free", "kind": "probe", "seconds": 8, "ok": false, "limited": true, "error": "Free usage limit reached (debug probe)"}
+{"time":"2026-11-16T18:34:52.709Z","model":"opencode/deepseek-v4.1-flash-free","kind":"probe","seconds":2.7,"ok":false,"limited":true,"error":"Free usage limit reached"}

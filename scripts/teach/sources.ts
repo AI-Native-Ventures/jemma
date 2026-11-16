@@ -58,6 +58,7 @@ export function latexToPlain(input: string): string {
       s = next
     }
   }
+  s = s.replace(/\\begin\{(align|aligned|array|cases|gather)\*?\}([\s\S]*?)\\end\{\1\*?\}/g, (_m, _env, body: string) => body.replace(/\\\\/g, '\n').replace(/&/g, ' '))
   s = s.replace(/\\\(|\\\)|\\\[|\\\]/g, '').replace(/\\left|\\right/g, '').replace(/\\,|\\;|\\:|\\!|\\ |\\quad|\\qquad/g, ' ')
   s = s.replace(/\^\{?\\circ\}?/g, '\u00b0')
   group(/\^\{([^{}]*)\}/g, (_m, a = '') => (a.length === 1 || /^\d+$/.test(a) ? `^${a}` : `^(${a})`))
@@ -106,6 +107,7 @@ export function htmlToText(html: string): string {
     .replace(DASHES, '-')
     .replace(/[ \t ]+/g, ' ')
     .replace(/ *\n */g, '\n')
+    .replace(/^[-|]\s*$/gm, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
   return text
@@ -284,16 +286,18 @@ async function gradeIndex(grade: number, deps: SourceDeps): Promise<Chapter[]> {
 
 /** A page cut into sections: each page of a section-per-page book is one, a chapter on one page is cut at its `##` headings. */
 export function sectionsOf(doc: Doc, chapterOnePage: boolean): Section[] {
+  const withoutNumber = (t: string) => t.replace(/^\d+(?:\.\d+)?\s+/, '')
   if (!chapterOnePage) {
     const id = /^(\d+(?:\.\d+)?)\b/.exec(doc.title)?.[1] ?? doc.title.slice(0, 12)
-    return [{ id, title: doc.title, text: doc.text }]
+    return [{ id, title: withoutNumber(doc.title), text: doc.text }]
   }
+  const chapterNo = /^# Chapter (\d+)/m.exec(doc.text)?.[1] ?? /Chapter (\d+)/.exec(doc.title)?.[1] ?? '0'
+  const chapterTitle = /^# (Chapter \d+:.*)$/m.exec(doc.text)?.[1]?.trim() ?? doc.title
   const parts = doc.text.split(/\n\n(?=## )/)
-  const chapterNo = /Chapter (\d+)/.exec(doc.title)?.[1] ?? '0'
   let n = 0
-  return parts.flatMap((part) => {
+  return parts.flatMap((part, i) => {
     const heading = /^## (.*)\n?/.exec(part)
-    if (!heading) return part.trim().length > 200 ? [{ id: `${chapterNo}.0`, title: doc.title, text: part.trim() }] : []
+    if (!heading) return part.trim().length > 200 ? [{ id: `${chapterNo}.0`, title: parts.length === 1 ? chapterTitle : 'Introduction', text: part.trim() }] : []
     n += 1
     return [{ id: `${chapterNo}.${n}`, title: heading[1]!.trim(), text: part.trim() }]
   })
