@@ -98,7 +98,9 @@ export async function processEvent(o: RunnerOptions, event: ClaimedEvent): Promi
       const step = (await plan(event)).find((s) => !done.has(stepKey(s)))
       if (!step) {
         if (o.asService) {
-          const unmet = await postconditions(EventSchema.parse({ ...(event.payload as object), type: event.type }), o.supabase)
+          // `claim_event` hands back the whole events row, so `created_at` is there (the `ClaimedEvent` type does not list it): a practice the learner started meanwhile still counts.
+          const since = (event as ClaimedEvent & { created_at?: string }).created_at
+          const unmet = await postconditions(EventSchema.parse({ ...(event.payload as object), type: event.type }), o.supabase, undefined, since)
           if (unmet.length) return await finish(o.supabase, event.id, 'failed', `Jemma did not finish: ${unmet.join('; ')}`)
         }
         return await finish(o.supabase, event.id, 'done', null)
