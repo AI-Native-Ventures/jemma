@@ -1,3 +1,4 @@
+import { AiTokens } from '@/components/AiTokens'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getLearnerView } from '@/lib/data/p19'
@@ -90,6 +91,7 @@ export default async function LearnerPage({ params }: { params: Promise<{ classI
             {v.awayLabel ? `Away on ${v.awayLabel}. ` : ''}Today&apos;s register comes next.
           </p>
         </section>
+        <AiTokens childId={v.id} />
       </div>
     </Page>
   )

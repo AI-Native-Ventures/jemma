@@ -142,6 +142,104 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_usage: {
+        Row: {
+          child_id: string | null
+          class_id: string | null
+          completion_tokens: number | null
+          created_at: string
+          id: string
+          job: string
+          lesson_id: string | null
+          model: string | null
+          prompt_tokens: number | null
+          provider: string | null
+          reported: boolean
+          school_id: string | null
+          session_id: string | null
+          test_id: string | null
+          total_tokens: number | null
+        }
+        ComputedFields: never
+        Insert: {
+          child_id?: string | null
+          class_id?: string | null
+          completion_tokens?: number | null
+          created_at?: string
+          id?: string
+          job: string
+          lesson_id?: string | null
+          model?: string | null
+          prompt_tokens?: number | null
+          provider?: string | null
+          reported?: boolean
+          school_id?: string | null
+          session_id?: string | null
+          test_id?: string | null
+          total_tokens?: number | null
+        }
+        Update: {
+          child_id?: string | null
+          class_id?: string | null
+          completion_tokens?: number | null
+          created_at?: string
+          id?: string
+          job?: string
+          lesson_id?: string | null
+          model?: string | null
+          prompt_tokens?: number | null
+          provider?: string | null
+          reported?: boolean
+          school_id?: string | null
+          session_id?: string | null
+          test_id?: string | null
+          total_tokens?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       answer_keys: {
         Row: {
           approved_at: string | null
