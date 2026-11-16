@@ -59,6 +59,34 @@ export function modelList(primary: string | undefined, fallbacks: string | undef
   return [...new Set([(primary ?? '').trim(), ...rest])]
 }
 
+/** The providers `rawModel` knows: the names an id of `LLM_MODEL`, `LLM_MODEL_FALLBACKS` or the vision pair may start with, before a colon. */
+export const PROVIDER_PREFIXES = ['openrouter', 'workers-ai', 'deepseek', 'anthropic', 'google', 'openai', 'opencode'] as const
+
+/** One model of a chain: the provider it is built with, and its bare id (what the provider is asked for, and what a replay is keyed by). */
+export type ModelRef = { provider: string; id: string }
+
+/**
+ * Splits `<provider>:<id>` into the provider and the bare id, so one list can mix providers (Cloudflare Workers AI first, free OpenRouter models
+ * after it: `@cf/zai-org/glm-5.3-flash,openrouter:nvidia/nemotron-3.5-super-vl:free`). Only the exact name of a known provider before the FIRST
+ * colon counts, so an OpenRouter id such as `nvidia/nemotron-3.5-super-vl:free` or `google/gemma-4-31b-it:free` has no prefix and stays as it is.
+ * An id without a prefix goes with `defaultProvider`, the provider of the kind, exactly as before.
+ */
+export function splitProviderId(raw: string, defaultProvider: string): ModelRef {
+  const text = raw.trim()
+  const colon = text.indexOf(':')
+  if (colon > 0) {
+    const prefix = text.slice(0, colon)
+    if ((PROVIDER_PREFIXES as readonly string[]).includes(prefix)) return { provider: prefix, id: text.slice(colon + 1).trim() }
+  }
+  return { provider: defaultProvider, id: text }
+}
+
+/** The models of a list of ids, each with its provider, without repeats (the same provider and the same bare id). */
+function modelRefs(rawIds: string[], defaultProvider: string): ModelRef[] {
+  const seen = new Set<string>()
+  return rawIds.map((raw) => splitProviderId(raw, defaultProvider)).filter((ref) => !seen.has(`${ref.provider}\u0000${ref.id}`) && !!seen.add(`${ref.provider}\u0000${ref.id}`))
+}
+
 /**
  * Words in an error that say the model is gone, not served to this account, not paid for, or refused to this kind of caller (OpenRouter says
  * "... is only available on agentic harnesses" for the free listing of some models when an API key calls it).
@@ -409,28 +437,35 @@ export function recordedFirst(lookups: Chained[], then: Chained | null, tolerate
  * every id (recorded answers of the free ids still hit when the paid id is first), and only on a miss call the models. In `replay` there is no
  * model to call, so the lookups are the whole chain.
  */
-function buildChain(label: string, provider: string, ids: string[], baseLookupIds: string[], env: AiEnv, dynamic: boolean, onRefused?: (id: string) => void): Chained {
+function buildChain(label: string, provider: string, refs: ModelRef[], baseLookupRefs: ModelRef[], env: AiEnv, dynamic: boolean, onRefused?: (id: string) => void): Chained {
   const mode = env.AI_MODE ?? 'live'
-  // `AI_RECORDED_IDS` are looked up after the model ids and never called: the old ids that the demo path's answers were saved under.
-  const lookupIds = [...new Set([...baseLookupIds, ...recordedIdList(env.AI_RECORDED_IDS)])]
-  const lookupFirst = lookupIds.length > 1 && (mode === 'cache' || mode === 'replay')
+  // `AI_RECORDED_IDS` are looked up after the model ids and never called: the old ids that the demo path's answers were saved under. A lookup is by
+  // the bare id (the replay key never holds a provider prefix) and each bare id is looked up once.
+  const seen = new Set<string>()
+  const lookupRefs = [...baseLookupRefs, ...recordedIdList(env.AI_RECORDED_IDS).map((id): ModelRef => ({ provider, id }))].filter((ref) => !seen.has(ref.id) && !!seen.add(ref.id))
+  const lookupFirst = lookupRefs.length > 1 && (mode === 'cache' || mode === 'replay')
+  // A chain that mixes providers (Cloudflare first, free OpenRouter models after): a free OpenRouter id that comes after a model that is not a free
+  // OpenRouter model has 2 minutes a try instead of 4, so 3 Cloudflare tries and 2 free tries stay inside the 15 minutes of a queued job.
+  const mixed = new Set(refs.map((r) => r.provider)).size > 1
+  const freeOpenRouter = (r: ModelRef) => r.provider === 'openrouter' && isFreeId(r.id)
   // Each model has its own replay layer, so an answer is recorded and replayed under the id of the model that wrote it. Each has its own
-  // time limit: 90 seconds for a paid model, 4 minutes for a free one (2 minutes in the dynamic list).
+  // provider and time limit: 150 seconds for Workers AI, 90 seconds for a paid OpenRouter model, 4 minutes for a free one (2 minutes in the
+  // dynamic list, and after a model of another kind in a mixed chain).
   const live = () =>
     withFallbacks(
-      ids.map((id) =>
+      refs.map((ref, i) =>
         wrapLanguageModel({
-          model: rawModel(label, provider, id, env),
+          model: rawModel(label, ref.provider, ref.id, env),
           middleware: [
             withReplay(env.replayStore, mode),
-            ...(onRefused ? [noteRefusals(() => onRefused(id))] : []),
-            withModelRetry(undefined, undefined, modelCallTimeoutMs(provider, id, dynamic)),
+            ...(onRefused ? [noteRefusals(() => onRefused(ref.id))] : []),
+            withModelRetry(undefined, undefined, modelCallTimeoutMs(ref.provider, ref.id, dynamic || (mixed && freeOpenRouter(ref) && refs.slice(0, i).some((r) => !freeOpenRouter(r))))),
           ],
         }),
       ),
     )
   if (!lookupFirst) return live()
-  const lookups = lookupIds.map((id) => wrapLanguageModel({ model: rawModel(label, provider, id, env), middleware: withReplay(env.replayStore, 'replay') }))
+  const lookups = lookupRefs.map((ref) => wrapLanguageModel({ model: rawModel(label, ref.provider, ref.id, env), middleware: withReplay(env.replayStore, 'replay') }))
   return recordedFirst(lookups, mode === 'cache' ? live() : null, mode === 'cache')
 }
 
@@ -446,7 +481,8 @@ function rankedModel(kind: ModelKind, label: string, provider: string, pinned: s
     const catalog = await loadCatalog(env, (url, init) => globalThis.fetch(url, init))
     // A model that refused a call in the last hour is left out of the ranked part (a pinned id never is), and one that refuses now is noted.
     const ids = rankModels({ kind, openrouter: catalog.openrouter, aa: catalog.aa, pinned, refused: refusedIds() })
-    return buildChain(label, provider, ids, [...new Set([...ids, ...pinned.filter(Boolean)])], env, true, (id) => markRefused(id))
+    const refs = (list: string[]): ModelRef[] => list.map((id) => ({ provider, id }))
+    return buildChain(label, provider, refs(ids), refs([...new Set([...ids, ...pinned.filter(Boolean)])]), env, true, (id) => markRefused(id))
   }
   return {
     specificationVersion: head.specificationVersion,
@@ -469,7 +505,9 @@ export function getModel(kind: ModelKind, env: AiEnv): Chained {
   const provider = (kind === 'vision' ? env.VISION_PROVIDER : env.LLM_PROVIDER) ?? 'deepseek'
   const ids = modelList(kind === 'vision' ? env.VISION_MODEL : env.LLM_MODEL, kind === 'vision' ? env.VISION_MODEL_FALLBACKS : env.LLM_MODEL_FALLBACKS)
   if (provider === 'openrouter' && env.AI_MODEL_RANKING === 'artificial-analysis') return rankedModel(kind, label, provider, ids, env)
-  return buildChain(label, provider, ids, ids, env, false)
+  // An id may name its own provider (`openrouter:nvidia/...:free`): each model of the list is then built with its own provider.
+  const refs = modelRefs(ids, provider)
+  return buildChain(label, provider, refs, refs, env, false)
 }
 
 export function getSpeechModel(env: AiEnv): SpeechModel {
