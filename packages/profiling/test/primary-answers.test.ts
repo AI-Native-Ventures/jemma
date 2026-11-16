@@ -172,7 +172,7 @@ describe('the new kinds a topic is told about, and how simply (Grades 1 to 3) or
 
   test('the lines hold no em dash and no way to give the answer away', () => {
     for (const kit of ['time', 'measure', 'order', 'patterns', 'data', 'money', 'place'] as const)
-      for (const grade of [1, 3, 4, 6]) expect(primaryAnswerBlock(kit, klass(grade))).not.toContain('—')
+      for (const grade of [1, 3, 4, 6]) expect(primaryAnswerBlock(kit, klass(grade))).not.toContain(String.fromCharCode(0x2014))
   })
 
   test('money is in rand in South Africa only', () => {

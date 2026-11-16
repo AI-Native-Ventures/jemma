@@ -56,6 +56,8 @@ export type QuestionForChild = {
   table?: ListParts['table']
   /** P150: the places the answer is rounded to, when the question asks for it ("correct to 1 decimal place"). A count, so it may be sent. */
   round?: number
+  /** P151: the learner is in Grade 1 to 6, so the lists, orders and tables are drawn bigger and worded simply. Only ever true. */
+  young?: true
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -101,9 +103,12 @@ export type MissedQuestion = {
   ordered?: boolean
 }
 
+/** A learner of Grade 1 to 6 (P151): the screens of the new answer kinds are drawn bigger for them. */
+export const isYoungGrade = (grade: unknown): boolean => typeof grade === 'number' && Number.isInteger(grade) && grade >= 1 && grade <= 6
+
 export function stripQuestion(
   q: Question,
-  at: { position: number; phase: Phase; index: number; of: number },
+  at: { position: number; phase: Phase; index: number; of: number; young?: boolean },
 ): QuestionForChild {
   return {
     position: at.position,
@@ -120,6 +125,7 @@ export function stripQuestion(
     // P150: a count, the labels, the items to put in order (shuffled), the table with its blanks: never the key's values or order.
     ...listAnswerParts(q),
     ...(isListKind(q.answerKind) && q.round !== undefined ? { round: q.round } : {}),
+    ...(at.young ? { young: true as const } : {}),
   }
 }
 
@@ -175,20 +181,20 @@ export type AnswerShape =
   | { kind: 'number' | 'equation' | 'point' }
   | { kind: 'expression'; form: Form }
   /** P150: several values. A row of boxes (a list), the chips of an order, or the empty cells of a table. */
-  | { kind: 'list'; count: number; ordered: boolean; plain: boolean; labels?: string[]; round?: number }
-  | { kind: 'order'; items: string[] }
-  | { kind: 'table'; table: NonNullable<ListParts['table']>; round?: number }
+  | { kind: 'list'; count: number; ordered: boolean; plain: boolean; labels?: string[]; round?: number; young?: true }
+  | { kind: 'order'; items: string[]; young?: true }
+  | { kind: 'table'; table: NonNullable<ListParts['table']>; round?: number; young?: true }
 
 /** What `answerShape` reads besides the old four fields: the parts the server sent (a whole `Question` fits too: its table has no `plain`, so its boxes are the full keyboard). */
-type ShapeParts = { list?: ListParts['list']; items?: string[]; table?: { columns: string[]; rows: (string | null)[][]; plain?: boolean }; round?: number }
+type ShapeParts = { list?: ListParts['list']; items?: string[]; table?: { columns: string[]; rows: (string | null)[][]; plain?: boolean }; round?: number; young?: true }
 
 export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> & ShapeParts): AnswerShape {
   if (q.choices?.length) return { kind: 'choice' }
   // P150: a list, an order and a table are drawn from the parts the server sent (a question that came without them gets the plain box below).
-  const places = q.round !== undefined ? { round: q.round } : {}
+  const places = { ...(q.round !== undefined ? { round: q.round } : {}), ...(q.young ? { young: true as const } : {}) }
   // A shape with nothing to fill (no box, one chip, no empty cell) could never be answered, so it falls to the plain box rather than leave the learner stuck.
   if (q.answerKind === 'list' && q.list && q.list.count > 0) return { kind: 'list', ...q.list, ...places }
-  if (q.answerKind === 'order' && q.items && q.items.length > 1) return { kind: 'order', items: q.items }
+  if (q.answerKind === 'order' && q.items && q.items.length > 1) return { kind: 'order', items: q.items, ...(q.young ? { young: true as const } : {}) }
   if (q.answerKind === 'table' && q.table && q.table.rows.some((row) => row.includes(null))) return { kind: 'table', table: { ...q.table, plain: q.table.plain ?? false }, ...places }
   // A question marked by meaning is never a missing number in a fraction, whatever its prompt holds.
   if (q.answerKind === 'expression') return { kind: 'expression', form: q.form ?? 'any' }

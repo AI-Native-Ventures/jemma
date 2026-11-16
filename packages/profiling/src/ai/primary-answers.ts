@@ -66,7 +66,7 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
   const young = c.grade <= 3
   const rand = c.country === 'ZA'
   const lines: string[] = [
-    '- This topic may also use the new answer kinds named below. Use one only when it fits better than a number, and keep most questions as they are. Write the `answer` exactly as shown, because the computer reads it. Never put the answer in the `prompt`.',
+    '- This topic may also use the new answer kinds named below. Use one only when it fits better than a number, and keep most questions as they are. Use them only for the 15 questions, never in the warm-up. Write the `answer` exactly as shown, because the computer reads it. Never put the answer in the `prompt`.',
   ]
   const when = (text: string) => lines.push(text)
 
@@ -91,25 +91,25 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
     case 'order':
       when(
         young
-          ? '- `order`: the learner puts numbers in order. Give at most 5 small whole numbers in the `prompt` ("Put these numbers in order, smallest first: 45, 18, 72, 9"), and write the `answer` as the numbers in the right order, separated by `; ` (`9; 18; 45; 72`). Say "smallest first" or "biggest first".'
-          : '- `order`: the learner puts numbers in order. Give 3 to 6 numbers in the `prompt` (whole numbers, decimals or fractions: "Put these numbers in order, smallest first: 0,5; 0,25; 0,75"), and write the `answer` as the numbers in the right order, separated by `; ` (`0,25; 0,5; 0,75`). Say "smallest first" or "biggest first".',
+          ? '- `order`: the learner puts numbers in order. Give at most 5 whole numbers: the `answer` is the numbers in the right order, separated by `; ` (`9; 18; 45; 72`), and the screen shows them as chips in a mixed-up order for the learner to tap. The `prompt` says which way: "Put the numbers in order. Start with the smallest." or "Start with the biggest."'
+          : '- `order`: the learner puts numbers in order. Give 3 to 6 numbers (whole numbers, decimals or fractions): the `answer` is the numbers in the right order, separated by `; ` (`0,25; 0,5; 0,75`), and the screen shows them as chips in a mixed-up order for the learner to tap. The `prompt` says which way: "Put the numbers in order. Start with the smallest." or "Start with the biggest."',
       )
       break
     case 'patterns':
       when(
         young
-          ? '- `list`: several numbers in a row. Use it for the next numbers of a pattern ("What are the next three numbers? 2, 4, 6, 8, ..."): at most 3 numbers, the `answer` is the numbers separated by `; ` (`10; 12; 14`) and `ordered` is `true`.'
-          : '- `list`: several values in a row. Use it for the next terms of a number pattern ("What are the next three numbers? 3, 7, 11, 15, ..."): the `answer` is the values separated by `; ` (`19; 23; 27`) and `ordered` is `true`.',
+          ? '- `list`: several numbers in a row, with a semicolon between them. Use it for the next numbers of a pattern ("What are the next three numbers? 2, 4, 6, 8, ..."): at most 3 numbers, the `answer` is `10; 12; 14` and `ordered` is `true`.'
+          : '- `list`: several values in a row, with a semicolon between them (a comma is part of a decimal, so never cut a list at a comma). Use it for the next terms of a number pattern ("What are the next three numbers? 3, 7, 11, 15, ..."): the `answer` is `19; 23; 27` and `ordered` is `true`.',
       )
       break
     case 'data':
       when(
         young
-          ? '- `table`: a small table the learner fills in (a tally or a count of things). Keep it to 2 x 3: 2 columns and 3 rows, with one or two empty cells. Give the `columns` (the headings) and the `rows`, with the number or word where it is given and `null` where the learner types. The `answer` is the missing cells in order, separated by `; `.'
-          : '- `table`: a small table the learner fills in (a tally or frequency table, the numbers read from a graph). Give the `columns` (the headings, at most 4) and the `rows` (at most 6), with the number or word where it is given and `null` where the learner types. The `answer` is the missing cells in order, separated by `; `.',
+          ? '- `table`: a small table the learner fills in (a tally or a count of things). Keep it to 2 x 3: 2 columns and 3 rows, with one or two empty cells. Give `table` with `columns` (the headings) and `rows` (each row has one entry for each column: the text that is given, or `null` for a cell the learner fills). The `answer` holds the values of the `null` cells, left to right and top to bottom, separated by `; `, so it has exactly as many values as the table has `null`s.'
+          : '- `table`: a small table the learner fills in (a tally or frequency table, the numbers read from a graph). Give `table` with `columns` (the headings, at most 4) and `rows` (at most 6; each row has one entry for each column: the text that is given, or `null` for a cell the learner fills). The `answer` holds the values of the `null` cells, left to right and top to bottom, separated by `; `, so it has exactly as many values as the table has `null`s.',
       )
       when(
-        '- `list`: several values in a row, for when the answer is more than one number (the heights of the bars of a graph, the numbers of a tally): the `answer` is the values separated by `; ` and `ordered` is `true` when the order matters, `false` when it does not.',
+        '- `list`: several values in a row, for when the answer is more than one number (the heights of the bars of a graph, the numbers of a tally): the `answer` is the values with a semicolon between them (`3; 5; 7`), and `ordered` is `true` when the order matters and `false` when any order is right.',
       )
       break
     case 'money':
@@ -121,22 +121,22 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
       when(
         '- `order`: the learner puts amounts in order. Give ' +
           (young ? 'at most 5' : '3 to 6') +
-          ` amounts in the \`prompt\` ("Put these amounts in order, smallest first: ${rand ? 'R5; R2,50; R10' : '5; 2,50; 10'}"), and write the \`answer\` as the amounts in the right order, separated by \`; \`.`,
+          ` amounts as plain numbers: the \`answer\` is the amounts in the right order, separated by \`; \` (\`${rand ? '2,5; 5; 10' : '2.5; 5; 10'}\`), and the screen shows them as chips in a mixed-up order for the learner to tap. The \`prompt\` says which way: "Put the amounts in order. Start with the smallest."`,
       )
       when(
         '- `table`: a small price list or a bill the learner fills in. ' +
           (young ? 'Keep it to 2 x 3. ' : 'At most 4 columns and 6 rows. ') +
-          'Give the `columns` and the `rows`, with `null` where the learner types. The `answer` is the missing cells in order, separated by `; `.',
+          'Give `table` with `columns` and `rows` (the text that is given, or `null` for a cell the learner fills). The `answer` holds the values of the `null` cells, left to right and top to bottom, separated by `; `.',
       )
       break
     case 'place':
       when(
-        '- `list`: the parts of a number, for example a number written in expanded form (`300; 40; 5` for 345): the `answer` is the parts separated by `; ` and `ordered` is `true`.',
+        '- `list`: the parts of a number, for example a number written in expanded form: the `answer` is `300; 40; 5` for 345 (a semicolon between the parts) and `ordered` is `true`.',
       )
       when(
         young
-          ? '- `order`: the learner puts numbers in order. Give at most 5 whole numbers in the `prompt` ("Put these numbers in order, smallest first: 45, 18, 72, 9"), and write the `answer` as the numbers in the right order, separated by `; `.'
-          : '- `order`: the learner puts numbers in order. Give 3 to 6 numbers in the `prompt`, and write the `answer` as the numbers in the right order, separated by `; `.',
+          ? '- `order`: the learner puts numbers in order. Give at most 5 whole numbers: the `answer` is the numbers in the right order, separated by `; ` (`18; 45; 72`), and the screen shows them as chips in a mixed-up order for the learner to tap. The `prompt` says which way: "Put the numbers in order. Start with the smallest."'
+          : '- `order`: the learner puts numbers in order. Give 3 to 6 numbers: the `answer` is the numbers in the right order, separated by `; ` (`1205; 1250; 2105`), and the screen shows them as chips in a mixed-up order for the learner to tap. The `prompt` says which way: "Put the numbers in order. Start with the smallest."',
       )
       break
   }

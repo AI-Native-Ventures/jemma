@@ -5,6 +5,7 @@ import { answerShape, answerValue, type AnswerShape, type QuestionForChild } fro
 import { PendingButton } from '@/components/ui/Button'
 import { Frac, FractionText, withFractions } from './Frac'
 import { isValuesShape, ValuesAnswer } from './answers/ValuesAnswer'
+import { YoungSize } from './answers/YoungSize'
 import { MathAnswerField } from './MathAnswerField'
 import { promptLayout } from './prompt-layout'
 import { QuestionContext, QuestionHeading } from './QuestionPrompt'
@@ -211,7 +212,7 @@ function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b: Boxes;
     case 'order':
     case 'table':
       // P150: several values (a row of boxes, chips to put in order, the empty cells of a table), sent as one text.
-      return <ValuesAnswer shape={shape} onChange={b.set.text} />
+      return <YoungSize young={shape.young}><ValuesAnswer shape={shape} onChange={b.set.text} /></YoungSize>
     default:
       // The lesson gave no kind we know: one plain box.
       return (
