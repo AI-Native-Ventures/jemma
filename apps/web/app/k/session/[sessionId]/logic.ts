@@ -62,6 +62,8 @@ export type MissedQuestion = {
   right: string
   why: string
   rightWay: string
+  /** The maths from the question to the answer, one line each (a senior lesson: 2 to 6 lines). Absent when the question has none: the card then shows the right way alone. */
+  steps?: string[]
 }
 
 export function stripQuestion(
@@ -192,6 +194,15 @@ export function answerText(q: Question, value: string): string {
   return value
 }
 
+/**
+ * The worked steps a question carries, only the lines that are words. Read defensively whatever the stored question holds: the field is optional
+ * (a lesson saved before P127, a primary class, a save that left them out) and a stored row is JSON, so a missing, empty or non-list field means none.
+ */
+function stepsOf(q: Question): string[] {
+  const raw: unknown = q.steps
+  return Array.isArray(raw) ? raw.filter((s): s is string => typeof s === 'string' && s.trim() !== '') : []
+}
+
 /** Every try question in order, each marked right or missed: what the results screen draws one card for. */
 export function reviewOf(items: StoredItem[]): MissedQuestion[] {
   return sorted(items, 'try')
@@ -209,6 +220,7 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       right: answerText(item.question, item.question.answer),
       why: item.question.why,
       rightWay: item.question.rightWay,
+      ...(stepsOf(item.question).length > 0 ? { steps: stepsOf(item.question) } : {}),
     }))
 }
 
