@@ -65,7 +65,39 @@ describe('the keyboard of the maths editor, as tabs by kind of symbol', () => {
         expect(layer.style).toContain('.is-current-tab')
       }
     }
-    expect(TABS.map((t) => t.face)).toEqual(['123', '<i>abc</i>', '<i>f</i>(<i>x</i>)', '&#x2220;', '&#x222B;'])
+    expect(TABS.map((t) => t.tooltip)).toEqual(['numbers and signs', 'letters', 'functions and constants', 'geometry and Greek letters', 'calculus'])
+  })
+
+  it('the face of a tab is one element on one line (a key is a flex column: loose pieces of a label would be stacked), and the CSS gives a tab no padding and 16 px', () => {
+    for (const tab of TABS) {
+      const holder = document.createElement('div')
+      holder.innerHTML = tab.face
+      expect(holder.children, tab.id).toHaveLength(1)
+      expect(holder.firstElementChild!.className).toBe('tab-face')
+      expect(holder.childNodes, tab.id).toHaveLength(1)
+    }
+    const text = (id: TabId) => {
+      const holder = document.createElement('div')
+      holder.innerHTML = TABS.find((t) => t.id === id)!.face
+      return holder.textContent
+    }
+    expect(text('numbers')).toBe('123')
+    expect(text('letters')).toBe('abc')
+    // f(x) is one piece of text: the f, the brackets and the x are inside one face, not beside it
+    expect(text('functions')).toBe('f(x)')
+    // the angle and the integral are drawn lines at 22 px, not a sign from a font
+    for (const id of ['geometry', 'calculus'] as const) {
+      const holder = document.createElement('div')
+      holder.innerHTML = TABS.find((t) => t.id === id)!.face
+      expect(holder.querySelector('svg path'), id).not.toBeNull()
+      expect(holder.textContent, id).toBe('')
+    }
+    const style = keyboardLayout({ kind: 'expression', prompt: 'x' }).layers[0]!.style
+    expect(style).toMatch(/\.tab \{[^}]*padding: 0 !important/)
+    expect(style).toMatch(/\.tab \{[^}]*font-size: 16px !important/)
+    expect(style).toContain('white-space: nowrap')
+    expect(style).toMatch(/\.tab svg \{[^}]*width: 22px; height: 22px/)
+    expect(style).toContain('.is-current-tab')
   })
 
   it('123: + - x / = ( ) on the top row, then the fraction, root, cube root, x squared, x to a power and backspace, then the digits, the comma and the arrows', () => {

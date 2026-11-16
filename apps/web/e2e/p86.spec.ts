@@ -160,6 +160,29 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     expect(size.width).toBeGreaterThanOrEqual(44)
     expect(size.height).toBeGreaterThanOrEqual(44)
     await noHorizontalScroll(page)
+    // The row of tabs: five tabs and the key that hides the keyboard. Each face is one line, readable (16 px text, a 22 px drawing), and inside its key,
+    // at 390 px and at 360 px.
+    const tabFaces = async (label: string) => {
+      const tabs = page.locator('.MLK__layer.is-visible .tab')
+      await expect(tabs).toHaveCount(5)
+      for (let i = 0; i < 5; i++) {
+        const key = (await tabs.nth(i).boundingBox())!
+        const face = (await tabs.nth(i).locator('.tab-face').boundingBox())!
+        const at = `${label}, tab ${i}`
+        expect(key.width, at).toBeGreaterThanOrEqual(44)
+        expect(face.height, at).toBeGreaterThanOrEqual(14)
+        expect(face.height, at).toBeLessThanOrEqual(26)
+        expect(face.width, at).toBeGreaterThanOrEqual(14)
+        expect(face.x, at).toBeGreaterThanOrEqual(key.x - 0.5)
+        expect(face.x + face.width, at).toBeLessThanOrEqual(key.x + key.width + 0.5)
+      }
+      for (const i of [0, 1, 2]) expect(await tabs.nth(i).locator('.tab-face').evaluate((el) => getComputedStyle(el).fontSize), `${label}, tab ${i}`).toBe('16px')
+    }
+    await tabFaces('390 px')
+    await page.setViewportSize({ width: 360, height: 844 })
+    await tabFaces('360 px')
+    await noHorizontalScroll(page)
+    await page.setViewportSize({ width: 390, height: 844 })
     await proof(page, 'expression-keyboard')
     // The abc tab has the letters, italic, apart from the signs; the 123 tab has them back.
     await page.locator('.MLK__layer.is-visible [data-tooltip="letters"], .MLK__layer.is-visible [data-command*="jemma-letters"]').first().click()
