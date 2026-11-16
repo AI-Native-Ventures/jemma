@@ -79,6 +79,11 @@ describe('answerShape', () => {
   it('a question that came without its parts gets the plain box, not a crash', () => {
     for (const answerKind of ['list', 'order', 'table'] as const) expect(answerShape({ prompt: 'p', answerKind })).toEqual({ kind: 'text' })
   })
+  it('a shape with nothing to fill falls to the plain box, so the learner is never stuck on a question that cannot be answered', () => {
+    expect(answerShape({ prompt: 'p', answerKind: 'list', list: { count: 0, ordered: false, plain: true } })).toEqual({ kind: 'text' })
+    expect(answerShape({ prompt: 'p', answerKind: 'order', items: ['1'] })).toEqual({ kind: 'text' })
+    expect(answerShape({ prompt: 'p', answerKind: 'table', table: { columns: ['a'], rows: [['1'], ['2']], plain: true } })).toEqual({ kind: 'text' })
+  })
   it('the old kinds are as they were', () => {
     expect(answerShape({ prompt: 'p', answerKind: 'point' })).toEqual({ kind: 'point' })
     expect(answerShape({ prompt: 'p', answerKind: 'money' })).toEqual({ kind: 'money' })

@@ -39,6 +39,8 @@ export type Reader = (text: string) => number | null
 const spaced = (t: string): string[] | null => {
   const words = t.trim().split(/\s+/)
   if (words.length < 2 || !words.every((w) => /^-?[\d.,/]+$/.test(w))) return null
+  // A space between the thousands ("1 250") is one number, as everywhere else.
+  if (/^-?\d{1,3}( \d{3})+([.,]\d+)?$/.test(t.trim())) return null
   return words.length === 2 && /^\d+$/.test(words[0]!) && /^\d+\/\d+$/.test(words[1]!) ? null : words
 }
 

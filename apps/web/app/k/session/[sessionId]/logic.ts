@@ -185,9 +185,10 @@ export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices
   if (q.choices?.length) return { kind: 'choice' }
   // P150: a list, an order and a table are drawn from the parts the server sent (a question that came without them gets the plain box below).
   const places = q.round !== undefined ? { round: q.round } : {}
-  if (q.answerKind === 'list' && q.list) return { kind: 'list', ...q.list, ...places }
-  if (q.answerKind === 'order' && q.items?.length) return { kind: 'order', items: q.items }
-  if (q.answerKind === 'table' && q.table) return { kind: 'table', table: { ...q.table, plain: q.table.plain ?? false }, ...places }
+  // A shape with nothing to fill (no box, one chip, no empty cell) could never be answered, so it falls to the plain box rather than leave the learner stuck.
+  if (q.answerKind === 'list' && q.list && q.list.count > 0) return { kind: 'list', ...q.list, ...places }
+  if (q.answerKind === 'order' && q.items && q.items.length > 1) return { kind: 'order', items: q.items }
+  if (q.answerKind === 'table' && q.table && q.table.rows.some((row) => row.includes(null))) return { kind: 'table', table: { ...q.table, plain: q.table.plain ?? false }, ...places }
   // A question marked by meaning is never a missing number in a fraction, whatever its prompt holds.
   if (q.answerKind === 'expression') return { kind: 'expression', form: q.form ?? 'any' }
   if (q.answerKind === 'number' || q.answerKind === 'equation' || q.answerKind === 'point') return { kind: q.answerKind }

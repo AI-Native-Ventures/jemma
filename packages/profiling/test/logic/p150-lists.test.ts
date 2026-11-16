@@ -41,6 +41,7 @@ describe('splitValues', () => {
     expect(splitValues('2,5 4')).toEqual(['2,5', '4'])
     expect(splitValues('-2 3/4 9')).toEqual(['-2', '3/4', '9'])
     expect(splitValues('1 1/2')).toEqual(['1 1/2'])
+    expect(splitValues('1 250')).toEqual(['1 250'])
     expect(splitValues('x y')).toEqual(['x y'])
   })
   test('a value of one table cell may be a mixed number', () => {
