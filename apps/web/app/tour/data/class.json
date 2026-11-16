@@ -71,21 +71,12 @@
     ]
   },
   "tokens": {
+    "model": { "name": "DeepSeek V4.1 Flash", "provider": "Cloudflare Workers AI" },
     "jobs": [
-      { "key": "lesson", "label": "Writing the lesson", "input": 3200, "output": 5400 },
-      { "key": "questions", "label": "Writing the questions", "input": 2100, "output": 4800 },
-      { "key": "marking", "label": "Marking the answers", "input": 1800, "output": 420 },
-      { "key": "analysis", "label": "Analysing the class", "input": 2600, "output": 780 }
+      { "key": "write_lesson", "label": "Lesson and 15 questions", "note": "Written by the model", "input": 8644, "output": 10998 },
+      { "key": "marking", "label": "Marking the typed answers", "note": "Jemma's own marking code, no AI", "input": 0, "output": 0 },
+      { "key": "analysis", "label": "The teacher's AI analysis", "note": "Built from the notes the AI already wrote", "input": 0, "output": 0 }
     ],
-    "perLearner": [
-      { "name": "Thabo", "input": 230, "output": 52 },
-      { "name": "Naledi", "input": 230, "output": 52 },
-      { "name": "Kagiso", "input": 230, "output": 52 },
-      { "name": "Zanele", "input": 230, "output": 52 },
-      { "name": "Sipho", "input": 230, "output": 52 },
-      { "name": "Ayanda", "input": 230, "output": 52 },
-      { "name": "Refilwe", "input": 230, "output": 52 },
-      { "name": "Mpho", "input": 230, "output": 52 }
-    ]
+    "perLearner": "About 19,600 tokens per learner practice (one lesson with its questions)"
   }
 }

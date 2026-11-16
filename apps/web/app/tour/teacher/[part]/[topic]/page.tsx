@@ -99,7 +99,8 @@ export default async function TourTeacherTopicPage({ params }: { params: Promise
 
           <div className="flex flex-col gap-5">
             <AnalysisCard analysis={TOUR_CLASS.analysis} />
-            <TokensCard tokens={TOUR_CLASS.tokens} />
+            {/* Every learner on the list practised: the class's eight and the tour learner. */}
+            <TokensCard tokens={TOUR_CLASS.tokens} practised={learners.length + 1} />
           </div>
         </div>
       </main>
