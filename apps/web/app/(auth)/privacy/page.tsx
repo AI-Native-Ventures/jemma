@@ -21,7 +21,7 @@ const SEES = [
   },
   {
     who: 'Parent',
-    what: 'Children they are linked to, after the teacher says yes',
+    what: "Children they added, or are linked to by a teacher's yes or by the child's code",
     icon: (
       <svg {...stroke}>
         <circle cx="9" cy="7.5" r="3" />
@@ -109,7 +109,10 @@ export default function PrivacyPage() {
         </Section>
 
         <Section id="kids" title="Children" gap={10}>
-          <p style={para}>South Africa&apos;s POPIA law treats under-18s as children, so a parent or guardian agrees before a child&apos;s work is used.</p>
+          <p style={para}>South Africa&apos;s POPIA law treats under-18s as children. A child gets into Jemma in one of three ways.</p>
+          <p style={para}>A teacher adds a learner, and the parent agrees when they link to the child.</p>
+          <p style={para}>A parent adds their own child, and adding the child is the parent&apos;s agreement.</p>
+          <p style={para}>A learner can also sign up alone. Jemma does not ask their age and no parent is asked. They can link a parent later with a code from Me.</p>
         </Section>
 
         <Section id="rights" title="Your rights" gap={6}>

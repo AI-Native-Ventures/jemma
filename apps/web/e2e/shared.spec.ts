@@ -204,9 +204,14 @@ test('privacy matches the board', async ({ page }, testInfo) => {
     await expect(page.getByRole('heading', { name: h, exact: true })).toBeVisible()
   }
   await expect(page.getByText('Paper photos and marks')).toBeVisible()
-  await expect(page.getByText('Children they are linked to, after the teacher says yes')).toBeVisible()
+  await expect(page.getByText("Children they added, or are linked to by a teacher's yes or by the child's code")).toBeVisible()
   await expect(page.getByText('Nobody, unless you ask us for help')).toBeVisible()
-  await expect(page.getByText("South Africa's POPIA law treats under-18s as children, so a parent or guardian agrees before a child's work is used.")).toBeVisible()
+  await expect(page.getByText("South Africa's POPIA law treats under-18s as children. A child gets into Jemma in one of three ways.")).toBeVisible()
+  await expect(page.getByText('A teacher adds a learner, and the parent agrees when they link to the child.')).toBeVisible()
+  await expect(page.getByText("A parent adds their own child, and adding the child is the parent's agreement.")).toBeVisible()
+  await expect(
+    page.getByText('A learner can also sign up alone. Jemma does not ask their age and no parent is asked. They can link a parent later with a code from Me.'),
+  ).toBeVisible()
   await expect(page.getByRole('link', { name: /Privacy and your data/ })).toHaveAttribute('href', '/p/data')
   await expect(page.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/sign-up')
   await noHorizontalScroll(page)
