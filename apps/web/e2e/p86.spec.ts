@@ -168,6 +168,18 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     // The editor shows its keyboard a moment after the touch (300 ms) and builds it once more then: it is measured when it has settled.
     await page.waitForTimeout(900)
     expect(await visibleLayer()).toBe('jemma-letters')
+    // The answer box is above the keyboard, not under it (P140b): how far the top of the keys is below the bottom of the box. The page scrolls the box into view
+    // (smoothly, so it is polled), so this is 0 or more once the keyboard is up and the scroll is done.
+    const gapAboveKeyboard = () =>
+      page.evaluate(() => {
+        const answer = document.querySelector('math-field#answer')
+        const plate = document.querySelector('.ML__keyboard .MLK__plate')
+        if (!answer || !plate) return null
+        return plate.getBoundingClientRect().top - answer.getBoundingClientRect().bottom
+      })
+    await expect.poll(gapAboveKeyboard, { timeout: 10_000, message: 'the answer box is above the keyboard' }).toBeGreaterThanOrEqual(-1)
+    // The backspace key shows only its own sign: MathLive's clear-all icon (the trash, a second face of the key) is hidden.
+    expect(await page.locator('.MLK__layer.is-visible .MLK__shift').evaluateAll((els) => els.filter((el) => getComputedStyle(el).display !== 'none').length)).toBe(0)
     const showKeyboard = async () => {
       // A change of the window size may put the keyboard away: it is brought back if it went, and measured when it has settled.
       const up = await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible)
@@ -260,6 +272,28 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     expect(await writtenLatex(page)).toBe('k7+3')
     await page.locator('.MLK__layer.is-visible .MLK__keycap[data-tooltip="fraction"], .MLK__layer.is-visible .MLK__keycap[data-keycap-value*="frac"]').first().click()
     expect(await writtenLatex(page)).toContain('\\frac')
+    // A short phone window: the box sits low and the open keyboard would cover it. The screen is scrolled so the box is just above the keyboard, whatever it showed
+    // before (P140b): on a phone the session screen is a fixed layer that scrolls inside itself, so that layer is scrolled, not the window. The keyboard is put away
+    // first (it would cover the tap), the window is made short, the screen is scrolled back to its top, and the box is tapped; the keyboard comes up again.
+    await page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { hide(): void } }).mathVirtualKeyboard.hide())
+    await expect.poll(() => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible)).toBe(false)
+    await page.setViewportSize({ width: 390, height: 520 })
+    await page.evaluate(() => {
+      window.scrollTo(0, 0)
+      document.querySelectorAll('.fixed.inset-0').forEach((layer) => layer.scrollTo(0, 0))
+    })
+    await field.click()
+    await showKeyboard()
+    await expect.poll(gapAboveKeyboard, { timeout: 10_000, message: 'the answer box is above the keyboard in a short window' }).toBeGreaterThanOrEqual(-1)
+    const inWindow = await page.evaluate(() => {
+      const r = document.querySelector('math-field#answer')!.getBoundingClientRect()
+      return { top: r.top, bottom: r.bottom, height: window.innerHeight }
+    })
+    // The box is on the screen (its top is not above the window), and above the keyboard.
+    expect(inWindow.top).toBeGreaterThanOrEqual(0)
+    expect(inWindow.bottom).toBeLessThanOrEqual(inWindow.height)
+    await page.setViewportSize({ width: 390, height: 844 })
+    await showKeyboard()
     // Tapping outside the box puts the keyboard away (the box loses the focus; the editor hides its keyboard a moment after).
     await page.locator('h1[data-prompt]').click()
     await expect.poll(() => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { visible: boolean } }).mathVirtualKeyboard.visible), { timeout: 15_000 }).toBe(false)
