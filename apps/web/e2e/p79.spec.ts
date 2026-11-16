@@ -75,17 +75,20 @@ test.describe('a learner can always practise', () => {
     test.skip(testInfo.project.name !== 'phone', 'the learner screens are phone screens')
     const sb = await sandbox(page, 'session_done')
     await page.goto('/k')
-    await check(page.getByRole('heading', { level: 1, name: /^No new lesson from your class tonight\. Your next lesson is on \w+day\.$/ })).toBeVisible()
+    // P128: the home is My maths: "My maths" is the heading, the old home heading is the line under it, and the suggestion card is the first card
+    await check(page.getByRole('heading', { level: 1, name: 'My maths' })).toBeVisible()
+    await expect(page.getByText(/^No new lesson from your class tonight\. Your next lesson is on \w+day\.$/)).toBeVisible()
     await expect(page.getByText('Jemma is getting your next lesson ready.')).toHaveCount(0)
     await expect(page.getByText('Keep a fixed gap fixed')).toHaveCount(0)
-    await expect(page.getByText('Suggested for you')).toBeVisible()
-    await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(1)
-    await expect(page.getByRole('link', { name: 'Choose something else' })).toBeVisible()
+    await expect(page.getByText('Suggested next')).toBeVisible()
+    // the card's Practise button is the first one on the page (the lists under it have theirs)
+    await expect(page.getByRole('button', { name: /^Practise / }).first()).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Choose something else' })).toHaveCount(0)
     await expect(page.getByText("You've fixed 3 gaps so far")).toBeVisible()
     await proof(page, 'practise-now')
 
     // the tap: one event with the learner's choice, queued (the stand-in answers 202), and the home says Jemma is writing
-    await page.getByRole('button', { name: /^Practise / }).click()
+    await page.getByRole('button', { name: /^Practise / }).first().click()
     await check(page.getByText('Jemma is writing your practice.')).toBeVisible()
     await expect(page.getByText('A minute or two. You can wait here.')).toBeVisible()
     await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(0)
@@ -106,7 +109,7 @@ test.describe('a learner can always practise', () => {
     expect((await db.from('lessons').update({ content: written.content }).eq('id', plan.lessonId!)).error).toBeNull()
 
     // the home asks again every 3 seconds, so tonight's session shows by itself, with the same Start the normal sessions have
-    await check(page.getByRole('heading', { level: 1, name: "Hi Amina. One thing tonight, then you're done." })).toBeVisible({ timeout: 60_000 })
+    await check(page.getByText("Hi Amina. One thing tonight, then you're done.")).toBeVisible({ timeout: 60_000 })
     await expect(page.getByRole('link', { name: 'Start' })).toBeVisible()
     await proof(page, 'tonight-offered')
   })
@@ -115,7 +118,7 @@ test.describe('a learner can always practise', () => {
     test.skip(testInfo.project.name !== 'phone', 'the learner screens are phone screens')
     const sb = await sandbox(page, 'session_done')
     await page.goto('/k')
-    await page.getByRole('button', { name: /^Practise / }).click()
+    await page.getByRole('button', { name: /^Practise / }).first().click()
     await check(page.getByText('Jemma is writing your practice.')).toBeVisible()
     const [event] = await practiceEvents(sb.childId)
     expect(event).toBeTruthy()
@@ -125,7 +128,8 @@ test.describe('a learner can always practise', () => {
     expect((await db.from('events').update({ status: 'failed', error: 'Jemma stopped answering. Try again.', finished_at: new Date().toISOString() }).eq('id', event!.id)).error).toBeNull()
     await check(page.getByRole('heading', { name: 'Jemma could not write your practice.' })).toBeVisible({ timeout: 60_000 })
     await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
-    await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(0)
+    // the card has no Practise button (the lists under it on the same page still do: she may choose another topic)
+    await expect(page.getByRole('alert').getByRole('button', { name: /^Practise / })).toHaveCount(0)
     await proof(page, 'failed')
 
     // Try again: the same event goes back to queued (the stand-in answers 202), and the home is writing again
@@ -148,10 +152,11 @@ test.describe('a learner can always practise', () => {
     if (classes.length) await db.from('curriculum_maps').update({ status: 'draft' }).in('class_id', classes)
 
     await page.goto('/k')
-    await check(page.getByRole('heading', { level: 1, name: 'No new lesson from your class tonight.' })).toBeVisible()
+    await check(page.getByRole('heading', { level: 1, name: 'My maths' })).toBeVisible()
+    await expect(page.getByText('No new lesson from your class tonight.')).toBeVisible()
     await expect(page.getByText('Practice starts after your teacher marks a test.')).toBeVisible()
     await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(0)
-    await expect(page.getByRole('link', { name: 'See my maths' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'See my maths' })).toHaveCount(0)
     await expect(page.getByText('Jemma is getting your next lesson ready.')).toHaveCount(0)
     await proof(page, 'nothing-to-practise')
   })

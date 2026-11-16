@@ -170,7 +170,7 @@ test.describe('a learner who signed up alone joins their school class', () => {
       await expect(page.getByRole('button', { name: 'My own', exact: true })).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 })
     }).toPass({ timeout: 45_000 })
     await page.getByRole('link', { name: 'My maths' }).first().click()
-    await expect(page).toHaveURL(/\/k\/maths$/, { timeout: 45_000 })
+    await expect(page).toHaveURL(/\/k$/, { timeout: 45_000 })
     const grades = page.getByRole('navigation', { name: 'Grades' })
     await expect(grades.getByRole('link', { name: 'Grade 6' })).toHaveAttribute('aria-current', 'page')
     await atEveryWidth(page, 'my-own')

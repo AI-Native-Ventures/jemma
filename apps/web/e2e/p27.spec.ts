@@ -68,7 +68,9 @@ async function tryQuestion(page: Page, n: number, wrong: boolean) {
 test('today shows tonight with its numbers', async ({ page }, testInfo) => {
   sandbox = await openSandbox(page, { stage: 'marked', role: 'learner' })
   await page.goto('/k')
-  await expect(page.getByRole('heading', { name: "Hi Amina. One thing tonight, then you're done." })).toBeVisible()
+  // P128: the home is My maths: the heading is "My maths", the old home heading is the short line under it, and tonight's lesson is the first card
+  await expect(page.getByRole('heading', { level: 1, name: 'My maths' })).toBeVisible()
+  await expect(page.getByText("Hi Amina. One thing tonight, then you're done.")).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Adding fractions with different denominators' })).toBeVisible()
   await expect(page.getByText('12 minutes')).toBeVisible()
   await expect(page.getByText('With a diagram')).toBeVisible()
@@ -82,13 +84,14 @@ test('today shows tonight with its numbers', async ({ page }, testInfo) => {
 test('nothing tonight after the session is done', async ({ page }, testInfo) => {
   sandbox = await openSandbox(page, { stage: 'session_done', role: 'learner' })
   await page.goto('/k')
-  await expect(page.getByRole('heading', { name: /^No new lesson from your class tonight\. Your next lesson is on \w+day\.$/ })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'My maths' })).toBeVisible()
+  await expect(page.getByText(/^No new lesson from your class tonight\. Your next lesson is on \w+day\.$/)).toBeVisible()
   // The card of the next lesson (its heading is #wed). The suggestion below it can name the same topic, so the heading is not looked for on its own.
   await expect(page.locator('h2#wed')).toHaveText('Adding decimals')
   // nothing is planned for tonight and Amina has gaps: her home suggests what to practise (the card that said "Keep a fixed gap fixed" was a link to a list)
-  await expect(page.getByText('Suggested for you')).toBeVisible()
-  await expect(page.getByRole('button', { name: /^Practise / })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Choose something else' })).toBeVisible()
+  await expect(page.getByText('Suggested next')).toBeVisible()
+  await expect(page.getByRole('button', { name: /^Practise / }).first()).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Choose something else' })).toHaveCount(0)
   await expect(page.getByText('Keep a fixed gap fixed')).toHaveCount(0)
   await expect(page.getByText("You've fixed 3 gaps so far")).toBeVisible()
   await noHorizontalScroll(page)

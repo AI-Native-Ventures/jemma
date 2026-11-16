@@ -85,11 +85,11 @@ test.describe('My maths', () => {
     await page.goto('/k')
     await check(page.getByRole('heading', { level: 1 })).toBeVisible()
 
-    // the tab: on the phone the tab bar, on the laptop the sidebar
-    await page.getByRole('link', { name: 'My maths' }).first().click()
-    await expect(page).toHaveURL(/\/k\/maths$/, { timeout: 45_000 })
+    // P128: the home is My maths (the tab, on the phone the tab bar and on the laptop the sidebar, is the page she is on, at /k): the suggestion card
+    // first, then her gaps and the parts
     await check(page.getByRole('heading', { level: 1, name: 'My maths' })).toBeVisible()
-    await expect(page.getByRole('heading', { level: 2, name: 'Suggested for you' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'My maths' }).first()).toHaveAttribute('href', '/k')
+    await expect(page.getByText('Suggested next')).toBeVisible()
     await expect(page.getByRole('heading', { level: 2, name: 'Your gaps' })).toBeVisible()
     await expect(page.getByRole('heading', { level: 2, name: 'All of Mathematics' })).toBeVisible()
 
@@ -121,7 +121,7 @@ test.describe('My maths', () => {
     await noSidewaysScroll(page)
     await proof(page, 'my-maths-fractions')
 
-    // a tap on Practise asks for that topic and sends her to today, where Jemma is writing it
+    // a tap on Practise asks for that topic and sends her to My maths (/k), where Jemma is writing it
     const first = page.getByRole('button', { name: /^Practise / }).first()
     const name = (await first.getAttribute('aria-label'))!.replace(/^Practise /, '')
     await first.click()
@@ -132,11 +132,11 @@ test.describe('My maths', () => {
     expect(events[0]).toMatchObject({ status: 'queued', payload: { childId: sb.childId, topicName: name } })
     await proof(page, 'writing')
 
-    // while it is written no Practise button is shown on My maths: one line and a link to today
+    // while it is written no Practise button is shown on My maths (the same page at /k/maths): the card says it once, with no link to go anywhere
     await page.goto('/k/maths')
     await check(page.getByText(/Jemma is writing your practice\./)).toBeVisible()
     await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(0)
-    await expect(page.getByRole('link', { name: 'Go to today' })).toBeVisible()
+    await expect(page.getByRole('link', { name: /^Go to / })).toHaveCount(0)
     testInfo.annotations.push({ type: 'topic', description: name })
   })
 
@@ -174,7 +174,8 @@ test.describe('My maths', () => {
     await sandbox(page, 'marked')
     await page.goto('/k/maths')
     await check(page.getByText(/Finish tonight's lesson first\./)).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Go to today' })).toBeVisible()
+    // the lesson is the first card of this page, with Start
+    await expect(page.getByRole('link', { name: 'Start' })).toBeVisible()
     await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(0)
     // the counts and the way into each part stay
     await expect(page.getByRole('region', { name: 'All of Mathematics' }).getByRole('link')).toHaveCount(6)
@@ -186,19 +187,20 @@ test.describe('My maths', () => {
     await noSidewaysScroll(page)
   })
 
-  test('the home suggests the first thing and has a link to choose something else, which opens My maths', async ({ page }) => {
+  test('My maths (P128) suggests the first thing at the top, with no link to choose something else, and /k/maths is the same page', async ({ page }) => {
     await sandbox(page, 'session_done')
     await page.goto('/k')
-    await check(page.getByText('Suggested for you')).toBeVisible()
-    await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(1)
+    await check(page.getByText('Suggested next')).toBeVisible()
+    // the card's Practise button is the first one on the page; the lists under it have theirs
+    await expect(page.getByRole('button', { name: /^Practise / }).first()).toBeVisible()
     await expect(page.getByText('Practise now')).toHaveCount(0)
+    await expect(page.getByRole('link', { name: 'Choose something else' })).toHaveCount(0)
     await proof(page, 'home-suggestion')
-    await page.getByRole('link', { name: 'Choose something else' }).click()
-    await expect(page).toHaveURL(/\/k\/maths$/, { timeout: 45_000 })
-    // the card "You've fixed N gaps so far" opens My maths too
-    await page.goto('/k')
-    await page.getByRole('link', { name: /You've fixed \d+ gaps? so far/ }).click()
-    await expect(page).toHaveURL(/\/k\/maths$/, { timeout: 45_000 })
+    // the line "You've fixed N gaps so far" sits with Your gaps and is not a link
+    await expect(page.getByRole('region', { name: 'Your gaps' }).getByText(/You've fixed \d+ gaps? so far/)).toBeVisible()
+    await page.goto('/k/maths')
+    await check(page.getByRole('heading', { level: 1, name: 'My maths' })).toBeVisible()
+    await expect(page.getByText('Suggested next')).toBeVisible()
   })
 
   test('the old address /k/gaps goes to My maths', async ({ page }) => {

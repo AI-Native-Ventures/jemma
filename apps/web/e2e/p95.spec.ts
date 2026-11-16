@@ -78,9 +78,10 @@ test.describe('My own, the screens', () => {
     await noSidewaysScroll(page)
     await proof(page, 'home-own')
 
-    // My maths, the switch still there and My own still on: one chip for each grade (Grade 6 is hers, so it is the chosen one), and the last chip.
-    await page.getByRole('link', { name: 'My maths' }).first().click()
-    await expect(page).toHaveURL(/\/k\/maths$/, { timeout: 45_000 })
+    // My maths (P128: the home is My maths, the tab is at /k), the switch still there and My own still on: one chip for each grade (Grade 6 is hers, so
+    // it is the chosen one), and the last chip.
+    await expect(page.getByRole('link', { name: 'My maths' }).first()).toHaveAttribute('href', '/k')
+    await expect(page).toHaveURL(/\/k$/)
     await check(page.getByRole('heading', { level: 1, name: 'My maths' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'My own' })).toHaveAttribute('aria-pressed', 'true')
     const grades = page.getByRole('navigation', { name: 'Grades' })
