@@ -359,13 +359,17 @@ describe('the demo path still replays with Workers AI first (the committed fixtu
 
 // P121e: no API token. The agent's own Workers AI binding (env.AI) takes the same OpenAI chat body and returns the same completion object, so the
 // OpenAI provider runs through a `fetch` that is backed by the binding.
+/**
+ * What the real binding returned for DeepSeek V4.1 Flash and GLM 5.3 Flash (coordinator's live check, 16 November 2026): the OpenAI chat-completion
+ * object with the keys id, object, created, model, choices and usage, where usage also holds `prompt_tokens_details` and an extra `neurons`.
+ */
 const openaiOutput = (model: string, text: string) => ({
   id: 'chatcmpl-1',
   object: 'chat.completion',
   created: 1,
   model,
   choices: [{ index: 0, message: { role: 'assistant', content: text }, finish_reason: 'stop' }],
-  usage: { prompt_tokens: 3, completion_tokens: 4, total_tokens: 7 },
+  usage: { prompt_tokens: 3, completion_tokens: 4, total_tokens: 7, prompt_tokens_details: { cached_tokens: 0 }, neurons: 12.5 },
 })
 
 type Run = { model: string; input: Record<string, unknown>; options: unknown[] }
@@ -554,6 +558,19 @@ describe('the workers-ai provider through the binding (no token)', () => {
     const parts = runs[0]!.input.messages as Array<{ content: Array<{ type: string; image_url?: { url: string } }> }>
     expect(parts[0]!.content.map((p) => p.type)).toEqual(['text', 'image_url'])
     expect(parts[0]!.content[1]!.image_url?.url).toMatch(/^data:image\/png;base64,/)
+  })
+
+  test('the extra usage fields of the real binding output (prompt_tokens_details, neurons) are tolerated, and cached tokens are read', async () => {
+    network()
+    const output = { ...openaiOutput(DEEPSEEK, 'ok'), usage: { prompt_tokens: 10, completion_tokens: 4, total_tokens: 14, prompt_tokens_details: { cached_tokens: 6 }, neurons: 99.25 } }
+    const { binding } = fakeBinding(() => output)
+    const out = await generateText({ model: getModel('text', bindingEnv(binding)), prompt: 'hi' })
+    expect(out.text).toBe('ok')
+    expect(out.usage.inputTokens).toBe(10)
+    expect(out.usage.outputTokens).toBe(4)
+    expect(out.usage.totalTokens).toBe(14)
+    // The answer is also what the replay layer would store: the output goes through the provider like any other.
+    expect(out.finishReason).toBe('stop')
   })
 
   test('JSON asked for in the prompt (generateJson) works through the binding', async () => {
