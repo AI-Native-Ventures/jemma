@@ -173,7 +173,7 @@ describe('a senior class (Mathematics, Grades 7 to 12)', () => {
   test('a Grade 10 South African class: the old kinds and the four new ones with an example each, and the form', () => {
     const out = lesson(10)
     expect(out.startsWith('Subject: Mathematics. Grade: 10. Country: South Africa.\n\n')).toBe(true)
-    for (const kind of ['`fraction` (`3/4`)', '`mixed` (`1 1/2`)', '`decimal` (`0,75`)', '`whole` (`12`)', '`money` (`R5`)', '`choice` (a letter A to D)']) expect(out).toContain(kind)
+    for (const kind of ['`fraction` (`3/4`)', '`mixed` (`1 1/2`)', '`decimal` (`0,75`)', '`whole` (`12`)', '`money` (`R5`)', '`choice` (a letter A to E)']) expect(out).toContain(kind)
     for (const example of ['`number` (`-3`, `15%` or `30°`', '`expression` (`2x^2 + 7x`', 'powers with `^` and roots with `sqrt()`', '`equation` (`x = 3 or x = -1`', '`point` (`(2; -3)`)']) {
       expect(out).toContain(example)
     }
