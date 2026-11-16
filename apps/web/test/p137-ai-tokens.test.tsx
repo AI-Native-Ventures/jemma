@@ -10,7 +10,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../lib/supabase/server', () => ({ createSupabaseServer: vi.fn() }))
 
-import { AiTokens, AiTokensView, groupOf, summariseUsage, thousands, type UsageRow } from '@/components/AiTokens'
+import { AiTokens, AiTokensView, byLearner, groupOf, summariseUsage, thousands, type UsageRow } from '@/components/AiTokens'
 import { createSupabaseServer } from '../lib/supabase/server'
 
 const row = (job: string, total: number | null, over: Partial<UsageRow> = {}): UsageRow => ({
@@ -197,6 +197,59 @@ describe('AiTokens', () => {
   })
 })
 
+describe('by learner and the topic pages (P137b)', () => {
+  const LEARNERS = [
+    { id: 'c1', name: 'Amina' },
+    { id: 'c2', name: 'Ben' },
+    { id: 'c3', name: 'Chipo' },
+  ]
+  const mine = (childId: string | null, job: string, total: number | null): UsageRow => ({ ...row(job, total), child_id: childId })
+  const ROWS_BY: UsageRow[] = [mine('c1', 'write_lesson', 3000), mine('c1', 'diagnose', 200), mine('c2', 'write_lesson', 1100), mine(null, 'class_report', 400), mine('gone', 'guidance', 50), mine('c3', 'read_paper', null)]
+
+  it('adds up the tokens of each learner of the list, biggest first, and leaves out learners with none', () => {
+    expect(byLearner(ROWS_BY, LEARNERS)).toEqual({ shown: [{ name: 'Amina', tokens: 3200 }, { name: 'Ben', tokens: 1100 }], more: 0 })
+  })
+
+  it('leaves class rows (no learner) and learners that are not in the list out of the split, and keeps them in the total', () => {
+    const out = text(html(<AiTokensView rows={ROWS_BY} whose="class" learners={LEARNERS} />))
+    expect(out).toContain('AI used 4,750 tokens')
+    expect(out).toContain('By learner: Amina 3,200 · Ben 1,100')
+    expect(out).not.toContain('Chipo')
+  })
+
+  it('shows the five biggest and says how many more there are', () => {
+    const many = Array.from({ length: 7 }, (_, i) => ({ id: `k${i}`, name: `Learner${i}` }))
+    const rows = many.map((l, i) => mine(l.id, 'write_lesson', 1000 - i * 10))
+    expect(byLearner(rows, many).shown.map((l) => l.name)).toEqual(['Learner0', 'Learner1', 'Learner2', 'Learner3', 'Learner4'])
+    expect(byLearner(rows, many).more).toBe(2)
+    expect(text(html(<AiTokensView rows={rows} whose="class" learners={many} />))).toContain('and 2 more')
+  })
+
+  it('has no learner line when no list is given (the class screen) or no learner has tokens', () => {
+    expect(text(html(<AiTokensView rows={ROWS_BY} whose="class" />))).not.toContain('By learner')
+    expect(text(html(<AiTokensView rows={[mine(null, 'class_report', 400)]} whose="class" learners={LEARNERS} />))).not.toContain('By learner')
+  })
+
+  it('says plainly that a figure on a topic page is the whole class and every topic together', () => {
+    const out = text(html(<AiTokensView rows={ROWS_BY} whose="class" acrossTopics />))
+    expect(out).toContain('for this class, all topics together')
+    expect(text(html(<AiTokensView rows={ROWS_BY} whose="class" />))).toContain('for this class')
+    expect(text(html(<AiTokensView rows={ROWS_BY} whose="class" />))).not.toContain('all topics together')
+  })
+
+  it('AiTokens reads the learner of each row and passes the list and the label on', async () => {
+    fakeClient({ data: ROWS_BY, error: null })
+    const out = text(html(await AiTokens({ classId: 'class-1', acrossTopics: true, learners: LEARNERS })))
+    expect(out).toContain('for this class, all topics together')
+    expect(out).toContain('By learner: Amina 3,200')
+  })
+
+  it('selects the learner column, and no jargon or em dash reaches the screen', async () => {
+    expect(readFileSync(resolve(import.meta.dirname, '../components/AiTokens.tsx'), 'utf8')).toContain("'job, prompt_tokens, completion_tokens, total_tokens, reported, child_id'")
+    expect(text(html(<AiTokensView rows={ROWS_BY} whose="class" acrossTopics learners={LEARNERS} />))).not.toContain(DASH)
+  })
+})
+
 describe('the two teacher pages', () => {
   const webRoot = resolve(import.meta.dirname, '..')
   const read = (file: string) => readFileSync(resolve(webRoot, file), 'utf8')
@@ -208,6 +261,17 @@ describe('the two teacher pages', () => {
     expect(gap).toContain('<AiTokens classId={classId} />')
     expect(learner.match(/<AiTokens /g)).toHaveLength(1)
     expect(learner).toContain('<AiTokens childId={v.id} />')
+  })
+
+  it('the Topics screens (class and one topic) show it in the marked spot, and the marker is gone', () => {
+    const classWide = read('app/t/[classId]/topics/page.tsx')
+    const oneTopic = read('app/t/[classId]/topics/[family]/[topicId]/page.tsx')
+    for (const source of [classWide, oneTopic]) {
+      expect(source.match(/<AiTokens /g)).toHaveLength(1)
+      expect(source).not.toContain('P137 token card')
+    }
+    expect(classWide).toContain('<AiTokens classId={classId} />')
+    expect(oneTopic).toContain('<AiTokens classId={classId} acrossTopics learners={c.learners} />')
   })
 
   it('the component file has no em dash', () => {

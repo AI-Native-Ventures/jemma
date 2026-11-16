@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { canonicalSubject } from '@jemma/profiling/logic'
+import { AiTokens } from '@/components/AiTokens'
 import { loadTopicsClass } from './data'
 import { partLines, percentOf, sessionsByTopic, tally } from './logic'
 import { EmptyCard, Heading, PartCard, Shell, Stat } from './parts'
@@ -25,7 +26,7 @@ export default async function TopicsPage({ params }: { params: Promise<{ classId
 
   return (
     <Shell href={base} backLabel="Back to the class" eyebrow={c.name} title="Topics">
-      {/* P137 token card */}
+      <AiTokens classId={classId} />
       <Heading title={subject} line="How the class is doing in practice, part by part. Tap a part to see its topics." />
       {lines.length === 0 ? (
         <EmptyCard>
