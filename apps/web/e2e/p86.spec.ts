@@ -162,13 +162,20 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await noHorizontalScroll(page)
     // The row of tabs: five tabs and the key that hides the keyboard. Each face is one line, readable (16 px text, a 22 px drawing), and inside its key,
     // at 390 px and at 360 px.
+    const showKeyboard = () => page.evaluate(() => (window as unknown as { mathVirtualKeyboard: { show(): void } }).mathVirtualKeyboard.show())
     const tabFaces = async (label: string) => {
+      // A change of the window size may put the keyboard away: it is brought back, and measured when it is on the screen.
+      await showKeyboard()
       const tabs = page.locator('.MLK__layer.is-visible .tab')
       await expect(tabs).toHaveCount(5)
+      await expect(tabs.first()).toBeVisible()
       for (let i = 0; i < 5; i++) {
-        const key = (await tabs.nth(i).boundingBox())!
-        const face = (await tabs.nth(i).locator('.tab-face').boundingBox())!
         const at = `${label}, tab ${i}`
+        const key = await tabs.nth(i).boundingBox()
+        const face = await tabs.nth(i).locator('.tab-face').boundingBox()
+        expect(key, `${at}: the key has a box`).not.toBeNull()
+        expect(face, `${at}: the face has a box`).not.toBeNull()
+        if (!key || !face) continue
         expect(key.width, at).toBeGreaterThanOrEqual(44)
         expect(face.height, at).toBeGreaterThanOrEqual(14)
         expect(face.height, at).toBeLessThanOrEqual(26)
@@ -183,6 +190,8 @@ test.describe('a learner of a Grade 10 class types algebra', () => {
     await tabFaces('360 px')
     await noHorizontalScroll(page)
     await page.setViewportSize({ width: 390, height: 844 })
+    await showKeyboard()
+    await expect(page.locator('.MLK__layer.is-visible .tab').first()).toBeVisible()
     await proof(page, 'expression-keyboard')
     // The abc tab has the letters, italic, apart from the signs; the 123 tab has them back.
     await page.locator('.MLK__layer.is-visible [data-tooltip="letters"], .MLK__layer.is-visible [data-command*="jemma-letters"]').first().click()
