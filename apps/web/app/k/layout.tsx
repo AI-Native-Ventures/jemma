@@ -12,9 +12,11 @@ import { isPublicPath } from '@/lib/public-paths'
 import { activeTab } from '@/lib/space'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
-/** Screens drawn without the tab bar: the session flow, the hand-back screen and Me (boards child-*). */
-const BARE = ['/k/session', '/k/done', '/k/me']
-const isBare = (pathname: string) => BARE.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+/** Screens drawn without the tab bar: the session flow and the hand-back screen. */
+const NO_BAR = ['/k/session', '/k/done']
+/** Screens drawn without the laptop sidebar: those, and Me (boards child-*). Me has the phone's bar, where it is the third tab. */
+const NO_SIDEBAR = [...NO_BAR, '/k/me']
+const under = (list: string[], pathname: string) => list.some((p) => pathname === p || pathname.startsWith(`${p}/`))
 
 /**
  * Learner space. The phone has no top bar (each screen greets the child); the laptop gets the sidebar.
@@ -35,14 +37,15 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
   if (me?.role === 'parent') {
     const handover = await handoverAllows((await cookies()).get(HANDOVER_COOKIE)?.value, pathname)
     if (!handover) redirect('/p')
-    if (isOwnHandover(handover) && !isBare(pathname)) {
+    if (isOwnHandover(handover) && !under(NO_SIDEBAR, pathname)) {
       return (
         <div className="flex min-h-dvh flex-col bg-ground">
           <main className="flex-1">{children}</main>
           <Link href={`/p/${handover.childId}`} className="flex min-h-12 items-center justify-center px-5 py-3 text-center text-[15px] font-semibold text-body underline underline-offset-[3px]">
             Grown-up? Take the phone back.
           </Link>
-          <TabBar role="learner" active={await activeTab('learner', '/k')} label="Practise at home" />
+          {/* The account page (Me) is not theirs to open: the bar is Today and My maths. */}
+          <TabBar role="learner" active={await activeTab('learner', '/k')} label="Practise at home" only={['today', 'maths']} />
         </div>
       )
     }
@@ -57,11 +60,12 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
   const active = await activeTab('learner', '/k')
   const name = `${child.first_name}'s Jemma`
   const subtitle = `Grade ${child.grade} · ${isOwnRecord(child) ? 'My own' : (child.schools?.name ?? '')}`
-  const bare = isBare(pathname)
+  const noSidebar = under(NO_SIDEBAR, pathname)
+  const noBar = under(NO_BAR, pathname)
 
   return (
     <div className="flex min-h-dvh flex-col bg-ground lg:flex-row">
-      {!bare && (
+      {!noSidebar && (
         <Sidebar
           role="learner"
           active={active}
@@ -75,7 +79,7 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
       )}
       <div className="flex min-w-0 flex-1 flex-col">
         <main className="flex-1">{children}</main>
-        {!bare && <TabBar role="learner" active={active} label={name} />}
+        {!noBar && <TabBar role="learner" active={active} label={name} />}
       </div>
     </div>
   )

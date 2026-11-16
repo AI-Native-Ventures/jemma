@@ -25,7 +25,8 @@ export type TabId =
   | 'maths'
   | 'me'
 
-export type TabDef = { id: TabId; label: string; path: string; icon: (size: number) => ReactNode }
+/** `phoneOnly`: a tab of the phone's bottom bar that the laptop sidebar does not list (the sidebar has Settings, at the bottom, for it). */
+export type TabDef = { id: TabId; label: string; path: string; icon: (size: number) => ReactNode; phoneOnly?: boolean }
 
 /** Tab order is the contract: Snap sits in the centre for teacher and parent. */
 export const TABS: Record<Role, TabDef[]> = {
@@ -45,6 +46,8 @@ export const TABS: Record<Role, TabDef[]> = {
   learner: [
     { id: 'today', label: 'Today', path: '', icon: (s) => <SunIcon size={s} /> },
     { id: 'maths', label: 'My maths', path: '/maths', icon: (s) => <GapsIcon size={s} /> },
+    // Me is the learner's own page (/k/me): the phone reaches it from the bar, the laptop from the gear in the sidebar.
+    { id: 'me', label: 'Me', path: '/me', icon: (s) => <PersonIcon size={s} />, phoneOnly: true },
   ],
 }
 

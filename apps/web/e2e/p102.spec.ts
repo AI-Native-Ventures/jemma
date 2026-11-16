@@ -5,6 +5,7 @@ import { openSandbox, type OpenedSandbox } from './helpers/sandbox'
 // first used to keep marking the old tab until a full reload. The bar now reads the address in the browser.
 //  1. Amina opens Today: "Today" is the current tab. She taps "My maths" in the bar: the address is /k/maths and "My maths" is the current tab,
 //     with no reload of the page (a mark set on the window before the tap is still there). She taps "Today": the address is /k and "Today" is current.
+//     P123: she taps "Me" (the third tab): the address is /k/me, the bar is still there and "Me" is current; "Today" takes her back.
 //
 // RUNS IN CI on every push (job "Feature specs in a browser", .github/workflows/ci.yml), on CI's own local database, on the phone: the tab bar is hidden
 // from width 1024, where the sidebar takes over. No model is called. Never run it against the hosted preview database.
@@ -50,5 +51,15 @@ test.describe('the tab bar marks the screen the learner is on', () => {
     await expect(bar(page).getByRole('link', { name: 'Today' })).toHaveAttribute('aria-current', 'page')
     await expect(bar(page).getByRole('link', { name: 'My maths' })).not.toHaveAttribute('aria-current', 'page')
     expect(await page.evaluate(() => (window as unknown as { __p102?: number }).__p102), 'the page was loaded again').toBe(1)
+
+    // P123: the bar has a third tab, Me, for the learner's own page. It stays on screen there and is the marked tab; Today takes her back.
+    await expect(bar(page).getByRole('link')).toHaveCount(3)
+    await bar(page).getByRole('link', { name: 'Me', exact: true }).click()
+    await expect(page).toHaveURL(/\/k\/me$/, { timeout: 45_000 })
+    await expect(bar(page).getByRole('link', { name: 'Me', exact: true })).toHaveAttribute('aria-current', 'page')
+    await expect(bar(page).getByRole('link', { name: 'Today' })).not.toHaveAttribute('aria-current', 'page')
+    await bar(page).getByRole('link', { name: 'Today' }).click()
+    await expect(page).toHaveURL(/\/k$/, { timeout: 45_000 })
+    await expect(bar(page).getByRole('link', { name: 'Today' })).toHaveAttribute('aria-current', 'page')
   })
 })
