@@ -51,7 +51,7 @@ export function AnalysisCard({ analysis }: { analysis: TourClass['analysis'] }) 
   )
 }
 
-const cell = 'py-2 text-right tabular-nums'
+const cell = 'py-2 text-right whitespace-nowrap tabular-nums'
 
 function Rows({ head, rows, total }: { head: string; rows: ({ label: string } & TokenRow)[]; total: TokenRow }) {
   return (

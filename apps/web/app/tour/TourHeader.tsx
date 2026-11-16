@@ -7,7 +7,7 @@ export type TourView = 'learner' | 'teacher'
 export const LEARNER_WIDTH = 'max-w-[560px]'
 export const TEACHER_WIDTH = 'max-w-[960px]'
 
-const tab = 'flex min-h-10 items-center rounded-pill px-4 text-[15px] font-semibold no-underline'
+const tab = 'flex min-h-11 items-center rounded-pill px-3.5 text-[15px] font-semibold no-underline'
 
 /**
  * The bar at the top of every page of the tour except the lesson itself: the app's mark and name, and the two views side by side so the tour can be
@@ -20,7 +20,7 @@ export function TourHeader({ view, className }: { view: TourView; className: str
         <Link href={view === 'learner' ? '/tour' : '/tour/teacher'} className="flex min-h-11 min-w-0 items-center gap-2.5 text-ink no-underline">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icons/jemma-app-icon.svg" alt="" width={34} height={34} className="block size-[34px] flex-none" />
-          <span className="truncate text-[19px] font-bold">{view === 'learner' ? `${TOUR_LEARNER}'s Jemma` : 'Jemma for teachers'}</span>
+          <span className="truncate text-[19px] font-bold">{view === 'learner' ? `${TOUR_LEARNER}'s Jemma` : 'Jemma'}</span>
         </Link>
         <nav aria-label="View" className="flex flex-none gap-1 rounded-pill bg-soft-4 p-1">
           <Link href="/tour" aria-current={view === 'learner' ? 'page' : undefined} className={`${tab} ${view === 'learner' ? 'bg-ink text-white' : 'text-ink'}`}>

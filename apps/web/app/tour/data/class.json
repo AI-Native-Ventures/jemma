@@ -42,11 +42,11 @@
     "mistakes": [
       {
         "title": "Fractions not cleared properly",
-        "detail": "On Solve: (x + 1)/2 − (x − 3)/3 = 2, six learners multiplied the left side by 6 but left the 2 on the right side as it was. Two of them also dropped the minus sign in front of the second fraction."
+        "detail": "On the equation (x + 1)/2 − (x − 3)/3 = 2, six learners multiplied the left side by 6 but left the 2 on the right side as it was. Two of them also dropped the minus sign in front of the second fraction."
       },
       {
         "title": "Only one answer to a quadratic",
-        "detail": "On Solve: x^2 − 5x + 6 = 0, three learners factorised correctly to (x − 2)(x − 3) = 0 and then gave only one of the two answers. One learner factorised with the wrong signs."
+        "detail": "On the equation x^2 − 5x + 6 = 0, three learners factorised correctly to (x − 2)(x − 3) = 0 and then gave only one of the two answers. One learner factorised with the wrong signs."
       },
       {
         "title": "Finding x but not y",

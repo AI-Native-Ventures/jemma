@@ -36,5 +36,6 @@ export const totalOf = (row: TokenRow): number => row.input + row.output
 /** The sum of a list of rows. */
 export const sumOf = (rows: TokenRow[]): TokenRow => ({ input: rows.reduce((n, r) => n + r.input, 0), output: rows.reduce((n, r) => n + r.output, 0) })
 
-/** A count in groups of three digits with a thin space ("12 400"): written by hand so the server and the browser draw the same text. */
-export const countText = (n: number): string => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+/** A count in groups of three digits with a no-break space ("12 400"): written by hand so the server and the browser draw the same text. */
+const NO_BREAK_SPACE = String.fromCharCode(0xa0)
+export const countText = (n: number): string => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, NO_BREAK_SPACE)
