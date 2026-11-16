@@ -26,6 +26,8 @@ vi.mock('../lib/data/p19', () => ({
   }),
 }))
 vi.mock('../app/t/[classId]/learners/[childId]/NoteForm', () => ({ NoteForm: () => <div data-testid="note-form" /> }))
+// P137: the learner's page shows the AI tokens through an async server component, which Testing Library cannot render. It has its own test (p137-ai-tokens).
+vi.mock('../components/AiTokens', () => ({ AiTokens: () => null }))
 
 import OwnPracticePage from '../app/t/[classId]/learners/[childId]/own/page'
 import LearnerPage from '../app/t/[classId]/learners/[childId]/page'

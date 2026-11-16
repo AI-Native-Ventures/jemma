@@ -1,3 +1,4 @@
+import { AiTokens } from '@/components/AiTokens'
 import { PendingButton } from '@/components/ui/Button'
 import { IconLabel } from '@/components/ui/IconLabel'
 import Link from 'next/link'
@@ -169,6 +170,7 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
             <p className="m-0 text-[13px] leading-[1.4] text-body">Jemma checks this gap again in each learner&apos;s next session.</p>
           </section>
         ) : null}
+        <AiTokens classId={classId} />
       </div>
     </div>
   )
