@@ -18,9 +18,12 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * The senior one and the wide one changed on purpose in P127 (16 Nov 2026): the senior question has a required `steps` (2 to 6 lines of maths), and the
  * wide `LessonSchema` that every reader and writer uses has it optional. Senior lessons have no recorded answer, so no recording depends on them.
  * Before P127 both were 8eb4995287795a596752a2f0406b694d57089b524c10e294d9b99ede40df6aa6.
+ * They changed on purpose again in P149 (16 Nov 2026): a `choices` entry may be an object with `text` and/or a `diagram` (a picture choice), and `truefalse` and `reason`
+ * are two more answer kinds. Before P149 they were 95bd01bd191e25f2ee7e8325989c3fde9ccb47893163cffb8a2a4172fc94d41a (senior) and
+ * a84500e7bc9893b2cf070f2019ea2e17cb739091f9eb50859981fd8804ae2a3c (wide). The primary one did not move.
  */
-const SENIOR_SHA = '95bd01bd191e25f2ee7e8325989c3fde9ccb47893163cffb8a2a4172fc94d41a'
-const WIDE_SHA = 'a84500e7bc9893b2cf070f2019ea2e17cb739091f9eb50859981fd8804ae2a3c'
+const SENIOR_SHA = 'ff7eb5e0bb30990af5f84ca02d524b3aef3f21fc5834b1a51f6f6e71270733b4'
+const WIDE_SHA = '94953ca10afdbdd8dd729f40e6521b9cd50b192f0ec3220addaf8834c443f7bf'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({
