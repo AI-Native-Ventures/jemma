@@ -44,8 +44,9 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
           <Link href={`/p/${handover.childId}`} className="flex min-h-12 items-center justify-center px-5 py-3 text-center text-[15px] font-semibold text-body underline underline-offset-[3px]">
             Grown-up? Take the phone back.
           </Link>
-          {/* The account page (Me) is not theirs to open: the bar is Today and My maths. */}
-          <TabBar role="learner" active={await activeTab('learner', '/k')} label="Practise at home" only={['today', 'maths']} />
+          {/* The account page (Me) is not theirs to open, and My maths is the one page there is besides it (P128): the bar is the one tab, My maths, so
+              a screen below it (a part, the learner's own work) is one tap from the page. */}
+          <TabBar role="learner" active={await activeTab('learner', '/k')} label="Practise at home" only={['maths']} />
         </div>
       )
     }

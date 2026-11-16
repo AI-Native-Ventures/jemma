@@ -26,6 +26,11 @@ vi.mock('../lib/data/p80', () => ({
 }))
 // P120: "Your practice" on My maths reads the learner's finished practices; this test has none.
 vi.mock('../lib/data/p120', () => ({ getPastPractice: async () => [] }))
+// P128: the page is also the learner's home, so it reads what the home read. The workspace follows the shape the test chose; nothing planned, nothing to practise.
+vi.mock('../lib/data/p27', () => ({
+  getLearnerToday: async () => ({ firstName: 'Amina', workspace: (state.shape as { workspace: string }).workspace, tonight: null, next: null, gems: [], fixed: 0, toGo: 0, practice: 'none', suggestion: null }),
+}))
+vi.mock('../app/k/join/JoinClassCard', () => ({ JoinClassCard: () => null }))
 vi.mock('../lib/data/own-screens', () => ({
   getScreenShape: async (query?: unknown) => {
     state.gradeParams.push(query)
@@ -221,7 +226,7 @@ describe('the chips of a learner who has their own curriculum of a grade (P95c)'
 })
 
 describe('the way to the learner\'s own work (P97\'s pages at /k/own)', () => {
-  it('My own has one row "Add your own work" with its line, linking to /k/own, right under the grade chips', async () => {
+  it('My own has one row "Add your own work" with its line, linking to /k/own, after the grade chips and the suggestions and before the parts (P128 order)', async () => {
     await page('7')
     const link = screen.getByRole('link', { name: /Add your own work/ })
     expect(link.getAttribute('href')).toBe('/k/own')
@@ -230,7 +235,9 @@ describe('the way to the learner\'s own work (P97\'s pages at /k/own)', () => {
     const chips = screen.getByRole('navigation', { name: 'Grades' })
     expect(chips.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     const suggested = screen.getByRole('heading', { level: 2, name: 'Suggested for you' })
-    expect(link.compareDocumentPosition(suggested) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(suggested.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    const parts = screen.getByRole('heading', { level: 2, name: /^All of / })
+    expect(link.compareDocumentPosition(parts) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   it('is there for a grade with no topics, and for a learner with no grade yet', async () => {

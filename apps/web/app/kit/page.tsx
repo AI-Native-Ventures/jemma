@@ -106,7 +106,7 @@ export default function KitPage() {
       </Frame>
 
       <Frame title="Learner: tab bar">
-        <TabBar role="learner" active="today" label="Amina" base="#" />
+        <TabBar role="learner" active="maths" label="Amina" base="#" />
         <TabBar role="learner" active="maths" label="Amina" base="#" />
       </Frame>
 

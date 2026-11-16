@@ -1,5 +1,5 @@
 import type { TriangleSpec } from '@jemma/profiling/schemas'
-import { Rich } from './math-label'
+import { Rich, fracLabel } from './math-label'
 import { CORAL_TEXT, INK, SOFT, Svg } from './shared'
 import { layoutTriangle, rightCorner, triangleAngles } from './triangle-math'
 
@@ -51,16 +51,18 @@ export function Triangle(props: TriangleProps) {
             <text data-vertex={i} x={r1(l.names[i]!.x)} y={r1(l.names[i]!.y + 5)} fontSize={16} fontWeight={700} fill={INK} textAnchor="middle">
               {props.vertices[i] ?? ''}
             </text>
-            {text(props.sides, i) && (
-              <text data-side={i} x={r1(l.sides[i]!.at.x)} y={r1(l.sides[i]!.at.y + 4)} fontSize={13} fontWeight={600} fill={INK} textAnchor={l.sides[i]!.anchor}>
-                <Rich text={text(props.sides, i)} size={13} />
-              </text>
-            )}
-            {text(props.angleLabels, i) && (
-              <text data-angle={i} x={r1(l.angles[i]!.at.x)} y={r1(l.angles[i]!.at.y + 4)} fontSize={13} fontWeight={700} fill={CORAL_TEXT} textAnchor="middle">
-                <Rich text={text(props.angleLabels, i)} size={13} />
-              </text>
-            )}
+            {text(props.sides, i) &&
+              (fracLabel({ text: text(props.sides, i), x: r1(l.sides[i]!.at.x), y: r1(l.sides[i]!.at.y + 4), size: 13, weight: 600, fill: INK, anchor: l.sides[i]!.anchor, attrs: { 'data-side': String(i) } }) ?? (
+                <text data-side={i} x={r1(l.sides[i]!.at.x)} y={r1(l.sides[i]!.at.y + 4)} fontSize={13} fontWeight={600} fill={INK} textAnchor={l.sides[i]!.anchor}>
+                  <Rich text={text(props.sides, i)} size={13} />
+                </text>
+              ))}
+            {text(props.angleLabels, i) &&
+              (fracLabel({ text: text(props.angleLabels, i), x: r1(l.angles[i]!.at.x), y: r1(l.angles[i]!.at.y + 4), size: 13, weight: 700, fill: CORAL_TEXT, anchor: 'middle', attrs: { 'data-angle': String(i) } }) ?? (
+                <text data-angle={i} x={r1(l.angles[i]!.at.x)} y={r1(l.angles[i]!.at.y + 4)} fontSize={13} fontWeight={700} fill={CORAL_TEXT} textAnchor="middle">
+                  <Rich text={text(props.angleLabels, i)} size={13} />
+                </text>
+              ))}
           </g>
         )
       })}

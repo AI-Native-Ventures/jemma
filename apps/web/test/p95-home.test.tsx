@@ -14,6 +14,29 @@ vi.mock('../app/k/own-actions', () => ({ setWorkspace: vi.fn(async () => ({ ok: 
 vi.mock('../lib/data/p27', () => ({ getLearnerToday: async () => state.today }))
 // P112: the "Join your school class" card reads the database by itself; it has its own tests (p112-join-card.test.tsx).
 vi.mock('../app/k/join/JoinClassCard', () => ({ JoinClassCard: () => null }))
+// P128: the page is also My maths, so it reads the maths too: a double of a learner with one part and one topic, no gap and nothing suggested (the
+// card of the home is what this test looks at). The workspace follows the home the test chose.
+vi.mock('../lib/data/own-screens', () => ({
+  getScreenShape: async () => {
+    const t = state.today as { workspace: string; alone?: boolean }
+    const chip = { classId: 'c6', grade: 6, caps: true, name: 'Grade 6' }
+    return t.workspace === 'own' ? { workspace: 'own', schoolGrade: 6, grades: [chip], picked: chip, alone: t.alone } : { workspace: 'school' }
+  },
+}))
+vi.mock('../lib/data/p80', () => ({
+  getMyMaths: async () => ({
+    firstName: 'Amina',
+    initial: 'A',
+    status: 'free',
+    maths: {
+      subject: 'Mathematics',
+      strands: [{ family: 'fractions', label: 'Fractions', score: { right: 0, asked: 0 }, topics: [{ id: 't1', name: 'Adding fractions', family: 'fractions', term: 1, position: 1, score: { right: 0, asked: 0 }, gap: null }] }],
+      gaps: [],
+      suggestions: [],
+    },
+  }),
+}))
+vi.mock('../lib/data/p120', () => ({ getPastPractice: async () => [] }))
 
 import ChildToday from '../app/k/page'
 import { PracticeCard } from '../app/k/PracticeCard'
@@ -47,13 +70,12 @@ describe('the home in My own', () => {
     expect(group.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
-  it('with no session and no suggestion it offers the card "Pick something to practise", which links to My maths', async () => {
+  it('with no session and no suggestion it offers the card "Pick something to practise", which points at the lists below it and links nowhere', async () => {
     await page()
     const card = screen.getByRole('region', { name: 'Pick something to practise' })
-    expect(card.textContent).toContain('Pick a topic in My maths to start.')
-    const link = screen.getByRole('link', { name: 'See my maths' })
-    expect(link.getAttribute('href')).toBe('/k/maths')
-    expect(card.contains(link)).toBe(true)
+    expect(card.textContent).toContain('Pick a topic below to start.')
+    expect(card.querySelector('a')).toBeNull()
+    expect(screen.queryByRole('link', { name: 'See my maths' })).toBeNull()
   })
 
   it('says nothing about a teacher or a test being marked (the only school is the line that says nothing goes there)', async () => {
@@ -66,7 +88,7 @@ describe('the home in My own', () => {
   it('with a suggestion it shows the suggestion as before and not the empty card', async () => {
     state.today = today({ practice: 'ready', suggestion })
     await page()
-    expect(screen.getByText('Suggested for you')).toBeTruthy()
+    expect(screen.getByText('Suggested next')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Practise Adding fractions' })).toBeTruthy()
     expect(screen.queryByRole('region', { name: 'Pick something to practise' })).toBeNull()
   })
@@ -165,10 +187,8 @@ describe('the practice card by workspace', () => {
     expect(screen.getByText('Practice starts after your teacher marks a test.')).toBeTruthy()
   })
 
-  it('the card\'s link is tall and has room at the sides', () => {
+  it('the card has no link: the lists it points at are on the same page (P128)', () => {
     render(<PracticeCard state="none" suggestion={null} workspace="own" />)
-    const classes = screen.getByRole('link', { name: 'See my maths' }).className.split(/\s+/)
-    expect(classes.some((c) => c.startsWith('min-h-'))).toBe(true)
-    expect(classes.some((c) => /^px-(5|6)$/.test(c))).toBe(true)
+    expect(screen.queryByRole('link')).toBeNull()
   })
 })

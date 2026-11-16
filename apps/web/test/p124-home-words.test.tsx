@@ -3,10 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MyMathsSuggestion } from '@jemma/profiling/logic'
 import type { LearnerToday } from '../lib/data/p27'
 
-// The learner's home never shows a dead line (P124). Four headings by state: a learner on their own with nothing planned is asked what they will
-// practise; a school learner with nothing planned is told plainly that no lesson comes from the class tonight (and, when one is booked, which day);
-// a planned lesson keeps "Tonight" and Start. "You've fixed N gaps so far" is there from one fixed gap on, never at none. Nothing on a learner's own
-// home speaks of a teacher, a school or a class. The data, the router and the actions are doubles.
+// The learner's one page never shows a dead line (P124, P128). Four lines under "My maths" by state: a learner on their own with nothing planned is
+// asked what they will practise; a school learner with nothing planned is told plainly that no lesson comes from the class tonight (and, when one is
+// booked, which day); a planned lesson keeps "Tonight" and Start. "You've fixed N gaps so far" is there from one fixed gap on, never at none, and sits
+// with "Your gaps". Nothing on a learner's own page speaks of a teacher, a school or a class. The data, the router and the actions are doubles.
 
 const state = vi.hoisted(() => ({ today: null as unknown }))
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }), usePathname: () => '/k' }))
@@ -15,6 +15,29 @@ vi.mock('../app/k/own-actions', () => ({ setWorkspace: vi.fn(async () => ({ ok: 
 vi.mock('../lib/data/p27', () => ({ getLearnerToday: async () => state.today }))
 // The "Join your school class" card reads the database by itself and has its own tests (p112-join-card.test.tsx).
 vi.mock('../app/k/join/JoinClassCard', () => ({ JoinClassCard: () => null }))
+// P128: the page is also My maths, so it reads the maths too: a double of a learner with one part and one topic, no gap and nothing suggested (the
+// card of the home is what this test looks at). The workspace follows the home the test chose.
+vi.mock('../lib/data/own-screens', () => ({
+  getScreenShape: async () => {
+    const t = state.today as { workspace: string; alone?: boolean }
+    const chip = { classId: 'c6', grade: 6, caps: true, name: 'Grade 6' }
+    return t.workspace === 'own' ? { workspace: 'own', schoolGrade: 6, grades: [chip], picked: chip, alone: t.alone } : { workspace: 'school' }
+  },
+}))
+vi.mock('../lib/data/p80', () => ({
+  getMyMaths: async () => ({
+    firstName: 'Amina',
+    initial: 'A',
+    status: 'free',
+    maths: {
+      subject: 'Mathematics',
+      strands: [{ family: 'fractions', label: 'Fractions', score: { right: 0, asked: 0 }, topics: [{ id: 't1', name: 'Adding fractions', family: 'fractions', term: 1, position: 1, score: { right: 0, asked: 0 }, gap: null }] }],
+      gaps: [],
+      suggestions: [],
+    },
+  }),
+}))
+vi.mock('../lib/data/p120', () => ({ getPastPractice: async () => [] }))
 
 import ChildToday from '../app/k/page'
 
@@ -33,7 +56,8 @@ const today = (over: Partial<LearnerToday> = {}): LearnerToday => ({
   ...over,
 })
 const page = async () => render(await ChildToday())
-const h1 = () => screen.getByRole('heading', { level: 1 }).textContent
+/** The one short line under "My maths" (the old home heading, P124): the paragraph that follows the heading. */
+const h1 = () => screen.getByRole('heading', { level: 1 }).parentElement!.nextElementSibling!.textContent
 const body = () => document.body.textContent ?? ''
 
 beforeEach(() => {
@@ -41,16 +65,16 @@ beforeEach(() => {
   state.today = today()
 })
 
-describe('the four headings by state', () => {
-  it('own record, nothing planned: "What will you practise today, {name}?" with the suggestion right under it', async () => {
+describe('the four lines by state', () => {
+  it('own record, nothing planned: "What will you practise today, {name}?" with the suggestion card first', async () => {
     state.today = today({ workspace: 'own' })
     await page()
     expect(h1()).toBe('What will you practise today, Amina?')
     expect(body()).not.toContain('Nothing new tonight')
-    const card = screen.getByText('Suggested for you').closest('section')!
+    const card = screen.getByText('Suggested next').closest('section')!
     expect(card).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Practise Adding fractions' })).toBeTruthy()
-    // right under the heading: no card between the heading and the suggestion
+    // right under the heading: no card ahead of the suggestion
     const sections = Array.from(document.querySelectorAll('section'))
     expect(sections[0]).toBe(card)
   })
@@ -66,27 +90,29 @@ describe('the four headings by state', () => {
     expect(h1()).toBe('No new lesson from your class tonight.')
     expect(body()).not.toContain('Nothing new tonight')
     const line = screen.getByText('Pick something to practise.')
-    const card = screen.getByText('Suggested for you').closest('section')!
+    const card = screen.getByText('Suggested next').closest('section')!
     expect(line.tagName).toBe('P')
     expect(line.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Practise Adding fractions' })).toBeTruthy()
   })
 
-  it('school learner, nothing planned and nothing to suggest: the heading, and no line that points at a card that is not there', async () => {
+  it('school learner, nothing planned and nothing to suggest: the line, and no line that points at a card that is not there', async () => {
     state.today = today({ practice: 'none', suggestion: null })
     await page()
     expect(h1()).toBe('No new lesson from your class tonight.')
     expect(screen.queryByText('Pick something to practise.')).toBeNull()
-    expect(screen.queryByText('Suggested for you')).toBeNull()
+    expect(screen.queryByText('Suggested next')).toBeNull()
   })
 
-  it('school learner, a later lesson booked: the heading says so and the card of that lesson stays', async () => {
+  it('school learner, a later lesson booked: the line says so and the card of that lesson stays (after the practice card)', async () => {
     state.today = today({ next: { day: 'Wednesday', topic: 'Adding decimals', minutes: 10, format: 'reading' } })
     await page()
     expect(h1()).toBe('No new lesson from your class tonight. Your next lesson is on Wednesday.')
     expect(body()).not.toContain('Nothing new tonight')
     expect(screen.getByRole('heading', { level: 2, name: 'Adding decimals' })).toBeTruthy()
-    expect(screen.getByText('Suggested for you')).toBeTruthy()
+    const practice = screen.getByText('Suggested next').closest('section')!
+    const booked = screen.getByRole('heading', { level: 2, name: 'Adding decimals' }).closest('section')!
+    expect(practice.compareDocumentPosition(booked) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   it('a planned lesson, school or own: "Tonight" and Start, unchanged', async () => {
@@ -101,7 +127,7 @@ describe('the four headings by state', () => {
     }
   })
 
-  it('the writing state keeps its card under the heading (own and school)', async () => {
+  it('the writing state keeps its card under the line (own and school)', async () => {
     state.today = today({ workspace: 'own', practice: 'writing', suggestion: null })
     await page()
     expect(h1()).toBe('What will you practise today, Amina?')
@@ -116,7 +142,8 @@ describe('the four headings by state', () => {
 })
 
 describe('the line "You\'ve fixed N gaps so far"', () => {
-  const fixedLine = () => screen.queryByRole('link', { name: /You've fixed/ })
+  // P128: the line is a card of "Your gaps", not a link (the page it used to open is this page).
+  const fixedLine = () => screen.queryByText(/You've fixed/)
 
   it('is hidden at 0, on every screen of the home', async () => {
     for (const over of [{}, { workspace: 'own' as const }, { tonight }, { workspace: 'own' as const, tonight }]) {
@@ -135,11 +162,12 @@ describe('the line "You\'ve fixed N gaps so far"', () => {
     expect(body()).not.toContain('1 gaps')
   })
 
-  it('is plural at 2, and at more, and still opens My maths', async () => {
+  it('is plural at 2, and at more, and sits with Your gaps (no link to the page it is on)', async () => {
     state.today = today({ fixed: 2, toGo: 0, gems: ['full', 'full'] })
     await page()
     expect(fixedLine()!.textContent).toContain("You've fixed 2 gaps so far")
-    expect(fixedLine()!.getAttribute('href')).toBe('/k/maths')
+    expect(fixedLine()!.closest('a')).toBeNull()
+    expect(fixedLine()!.closest('section')).toBe(screen.getByRole('region', { name: 'Your gaps' }))
     cleanup()
     state.today = today({ fixed: 3, tonight })
     await page()

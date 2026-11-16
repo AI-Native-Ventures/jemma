@@ -13,6 +13,8 @@ export type Run = {
   italic?: boolean
   /** A line over it: what is under a root sign. */
   over?: boolean
+  /** A fraction: the top over the bottom, with a line between them. `text` is then the top and the bottom in a row, as they are spoken ("opposite/hypotenuse"). */
+  frac?: { num: Run[]; den: Run[] }
 }
 
 const MINUS = '−'
@@ -171,7 +173,7 @@ function merged(runs: Run[]): Run[] {
   const out: Run[] = []
   for (const r of runs) {
     const last = out[out.length - 1]
-    if (last && !!last.sup === !!r.sup && !!last.italic === !!r.italic && !!last.over === !!r.over) last.text += r.text
+    if (last && !last.frac && !r.frac && !!last.sup === !!r.sup && !!last.italic === !!r.italic && !!last.over === !!r.over) last.text += r.text
     else out.push({ ...r })
   }
   return out
@@ -227,12 +229,107 @@ function convert(text: string, ctx: Context): Run[] {
   return merged(out)
 }
 
+// ---- Fractions ----------------------------------------------------------------------------------------------------------------------------
+
+const OPERAND = /[A-Za-z0-9.,\u00b2\u00b3\u00b9\u00b0\u03b8\u03c0\u221a^]/
+const UNIT = /^(?:mm|cm|m|km|mg|g|kg|ml|l|s|ms|min|h|hr)$/
+const isWord = (s: string) => /^[A-Za-z]{2,}$/.test(s) && !/^(?:sin|cos|tan|sqrt|pi|theta)$/.test(s)
+
+/** The start of the bracket that closes at `close`, or -1. */
+function opening(text: string, close: number): number {
+  let depth = 0
+  for (let i = close; i >= 0; i--) {
+    if (text[i] === ')') depth++
+    else if (text[i] === '(' && --depth === 0) return i
+  }
+  return -1
+}
+
+type Operand = { from: number; to: number; content: string }
+
+/** What stands before the slash at `slash`: a bracket (taken without its brackets, unless a function name stands in front of it), or a run of letters, numbers and signs. */
+function leftOperand(text: string, slash: number): Operand | null {
+  let to = slash
+  while (to > 0 && isSpace(text[to - 1])) to--
+  if (to === 0) return null
+  if (text[to - 1] === ')') {
+    const open = opening(text, to - 1)
+    if (open < 0) return null
+    let from = open
+    while (from > 0 && isLetter(text[from - 1])) from--
+    return from < open ? { from, to, content: text.slice(from, to) } : { from, to, content: text.slice(open + 1, to - 1) }
+  }
+  let from = to
+  while (from > 0 && OPERAND.test(text[from - 1]!)) from--
+  return from === to ? null : { from, to, content: text.slice(from, to) }
+}
+
+/** What stands after the slash: the same, read forwards. */
+function rightOperand(text: string, slash: number): Operand | null {
+  let from = slash + 1
+  while (from < text.length && isSpace(text[from])) from++
+  if (from >= text.length) return null
+  let end = from
+  if (text[from] === '(') {
+    const close = closing(text, from)
+    return close < 0 ? null : { from, to: close + 1, content: text.slice(from + 1, close) }
+  }
+  while (end < text.length && OPERAND.test(text[end]!)) end++
+  if (end === from) return null
+  if (text[end] === '(' && isLetter(text[from])) {
+    const close = closing(text, end)
+    if (close >= 0) return { from, to: close + 1, content: text.slice(from, close + 1) }
+  }
+  return { from, to: end, content: text.slice(from, end) }
+}
+
+type Piece = { text: string } | { num: string; den: string }
+
+/**
+ * The label cut at its fractions: "x/2", "(x + 1)/(x - 1)", "opposite / hypotenuse". A fraction needs a letter, a power or a root in it (or the label to be
+ * maths): "3/4" and "5 m/s" are left as they were. Two words make a fraction only when spaces stand round the slash ("and/or" is a word).
+ */
+function pieces(text: string, maths: boolean): Piece[] {
+  const out: Piece[] = []
+  let done = 0
+  for (let i = text.indexOf('/'); i >= 0; i = text.indexOf('/', i + 1)) {
+    const l = leftOperand(text, i)
+    const r = rightOperand(text, i)
+    if (!l || !r || l.from < done) continue
+    const words = isWord(l.content) && isWord(r.content)
+    if (words && !(isSpace(text[i - 1]) && isSpace(text[i + 1]))) continue
+    // A unit is not a fraction: "5 m/s", "km/h".
+    if (isLetter(l.content[0]) && /^[A-Za-z]+$/.test(l.content) && isDigit(before(text, l.from))) continue
+    if (UNIT.test(l.content) && UNIT.test(r.content)) continue
+    if (!maths && !/[A-Za-z\u03b8\u03c0\u221a^]/.test(l.content + r.content)) continue
+    if (l.from > done) out.push({ text: text.slice(done, l.from) })
+    out.push({ num: l.content, den: r.content })
+    done = r.to
+  }
+  if (done < text.length) out.push({ text: text.slice(done) })
+  return out
+}
+
 /**
  * The label cut into the runs it is drawn in, or `null` when it is words, numbers and units that are drawn as they were typed. A label is changed only
- * when it is maths: a power ("x^2", "x⁴"), a root, theta or pi, a function (sin cos tan), or a sign with a letter that stands alone ("y = 2x").
+ * when it is maths: a power ("x^2", "x⁴"), a root, theta or pi, a function (sin cos tan), a fraction with a letter in it, or a sign with a letter that stands alone ("y = 2x").
  */
 export function labelRuns(text: string): Run[] | null {
-  const runs = convert(text, { maths: isMaths(text), inner: false })
+  const maths = isMaths(text)
+  const cut = pieces(text, maths)
+  if (cut.some((p) => 'num' in p)) {
+    return merged(
+      cut.flatMap((p): Run[] => {
+        if ('num' in p) {
+          const num = convert(p.num, { maths: true, inner: true })
+          const den = convert(p.den, { maths: true, inner: true })
+          return [{ text: `${num.map((r) => r.text).join('')}/${den.map((r) => r.text).join('')}`, frac: { num, den } }]
+        }
+        return convert(p.text, { maths, inner: false })
+      }),
+    )
+  }
+  const runs = convert(text, { maths, inner: false })
   const one = runs.length === 1 ? runs[0]! : null
   if (one && !one.sup && !one.italic && !one.over && one.text === text) return null
   return runs
@@ -241,8 +338,10 @@ export function labelRuns(text: string): Run[] | null {
 /** The label as the plain text of what is drawn (the raised part follows its base with no sign between). */
 export const plainLabel = (text: string): string => (labelRuns(text) ?? [{ text }]).map((r) => r.text).join('')
 
-/** Does the label have a raised part? The place of the label then keeps room above it. */
-export const raisedLabel = (text: string): boolean => (labelRuns(text) ?? []).some((r) => r.sup)
+/** Does the label stand higher than a line of words (a raised part, a fraction)? The place of the label then keeps room above it. */
+export const raisedLabel = (text: string): boolean => (labelRuns(text) ?? []).some((r) => r.sup || r.frac)
+/** Is a fraction in the label? It cannot be written in an SVG text: it is drawn in a box of its own (see `fracLabel`). */
+export const hasFraction = (text: string): boolean => (labelRuns(text) ?? []).some((r) => r.frac)
 
 // ---- The drawings --------------------------------------------------------------------------------------------------------------------------
 
@@ -276,12 +375,18 @@ export function Rich({ text, size }: { text: string; size: number }): ReactNode 
   })
 }
 
-/** The same label on a page (a line under a drawing): <sup> for a power, <i> for a letter, a line over a root. A plain label is the text itself. */
-export function RichHtml({ text }: { text: string }): ReactNode {
-  const runs = labelRuns(text)
-  if (!runs) return text
+const runStyle = (r: Run) => (r.over ? { textDecoration: 'overline' } : undefined)
+
+function htmlRuns(runs: Run[]): ReactNode {
   return runs.map((r, i) => {
-    const style = r.over ? { textDecoration: 'overline' } : undefined
+    if (r.frac)
+      return (
+        <span key={i} data-frac="true" style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'stretch', textAlign: 'center', verticalAlign: 'middle', lineHeight: 1.1, margin: '0 0.15em' }}>
+          <span data-num="true" style={{ padding: '0 0.2em 0.1em' }}>{htmlRuns(r.frac.num)}</span>
+          <span data-den="true" style={{ padding: '0.1em 0.2em 0', borderTop: '0.07em solid currentColor' }}>{htmlRuns(r.frac.den)}</span>
+        </span>
+      )
+    const style = runStyle(r)
     if (r.sup)
       return (
         <sup key={i} style={{ fontSize: '0.7em', lineHeight: 0, ...style }}>
@@ -291,4 +396,62 @@ export function RichHtml({ text }: { text: string }): ReactNode {
     if (r.italic) return <i key={i} style={style}>{r.text}</i>
     return style ? <span key={i} style={style}>{r.text}</span> : r.text
   })
+}
+
+/** The same label on a page (a line under a drawing): <sup> for a power, <i> for a letter, a line over a root, a fraction stacked. A plain label is the text itself. */
+export function RichHtml({ text }: { text: string }): ReactNode {
+  const runs = labelRuns(text)
+  return runs ? htmlRuns(runs) : text
+}
+
+/** A rough width of the runs, in px at `size`: enough to give the box of a fraction room, not a measurement (the box is aligned to the side it grows from). */
+function widthOf(runs: Run[], size: number): number {
+  return runs.reduce((w, r) => w + (r.frac ? Math.max(widthOf(r.frac.num, size), widthOf(r.frac.den, size)) + size * 0.5 : [...r.text].length * size * 0.62), 0)
+}
+
+type FracLabelProps = {
+  text: string
+  x: number
+  y: number
+  size: number
+  weight?: number
+  fill: string
+  anchor: 'start' | 'middle' | 'end'
+  /** A white halo round the letters, so that the label is read over a line of the grid. */
+  halo?: boolean
+  attrs?: Record<string, string>
+}
+
+/**
+ * A label with a fraction in it ("y = x/2", "sin θ = opposite / hypotenuse") cannot be one SVG text: it is a box of its own in the drawing (foreignObject),
+ * a row that grows from the side the label is anchored to, centred on the line of the maths (a little above the line of the letters). `null` when the
+ * label has no fraction: it is then drawn as a text, as it always was.
+ */
+export function fracLabel({ text, x, y, size, weight = 400, fill, anchor, halo, attrs }: FracLabelProps): ReactNode {
+  const runs = labelRuns(text)
+  if (!runs || !runs.some((r) => r.frac)) return null
+  const width = Math.ceil(widthOf(runs, size) + size)
+  const height = Math.ceil(size * 3.4)
+  const left = anchor === 'start' ? x : anchor === 'end' ? x - width : x - width / 2
+  const shadow = '0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff, 0 0 2px #fff'
+  return (
+    <foreignObject {...attrs} x={Math.round(left * 10) / 10} y={Math.round((y - size * 0.3 - height / 2) * 10) / 10} width={width} height={height} style={{ overflow: 'visible' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: anchor === 'start' ? 'flex-start' : anchor === 'end' ? 'flex-end' : 'center',
+          height: '100%',
+          fontSize: size,
+          fontWeight: weight,
+          color: fill,
+          lineHeight: 1,
+          whiteSpace: 'nowrap',
+          ...(halo ? { textShadow: shadow } : {}),
+        }}
+      >
+        <span>{htmlRuns(runs)}</span>
+      </div>
+    </foreignObject>
+  )
 }

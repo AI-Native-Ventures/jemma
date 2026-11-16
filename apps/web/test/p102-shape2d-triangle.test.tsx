@@ -115,8 +115,8 @@ describe('triangle, labels too long for a side (the formulas)', () => {
     ['the contrast', CONTRAST],
   ])('%s: every formula is text under the drawing, one a line, and none is drawn on it', (_name, labels) => {
     const { container } = triangle(labels)
-    // P129: a power is raised on the page, so the text of a formula has no caret (sin^-1 is sin with a raised minus 1).
-    expect(notes(container)).toEqual(labels.map((l) => l.replace('^-1', '\u22121')))
+    // P129: a power is raised on the page and a fraction is stacked, so the text of a formula has no caret and no slash (sin^-1 is sin with a raised minus 1).
+    expect(notes(container)).toEqual(labels.map((l) => l.replace('^-1', '\u22121').replace(/ \/ /g, '')))
     expect(drawn(container)).toEqual([])
   })
 
@@ -152,7 +152,8 @@ describe('triangle, labels too long for a side (the formulas)', () => {
 
   it('through the diagram view, as the lesson draws it', () => {
     const { container } = render(<DiagramView spec={{ kind: 'shape_2d', shape: 'triangle', labels: STEP_2 }} />)
-    expect(notes(container)).toEqual(STEP_2)
+    // P129: the fractions are stacked, so no slash is written
+    expect(notes(container)).toEqual(STEP_2.map((l) => l.replace(/ \/ /g, '')))
   })
 })
 

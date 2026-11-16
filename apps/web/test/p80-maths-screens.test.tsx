@@ -15,6 +15,11 @@ vi.mock('next/navigation', () => ({
 }))
 vi.mock('../app/k/actions', () => ({ startPractice: vi.fn(async () => ({ ok: true })), retryPractice: vi.fn(async () => ({ ok: true })) }))
 vi.mock('../lib/data/p80', () => ({ getMyMaths: async () => state.view }))
+// P128: the page is also the learner's home, so it reads what the home read. Nothing planned and nothing to practise: the card is the one plain line.
+vi.mock('../lib/data/p27', () => ({
+  getLearnerToday: async () => ({ firstName: 'Amina', workspace: 'school', tonight: null, next: null, gems: [], fixed: 0, toGo: 0, practice: 'none', suggestion: null }),
+}))
+vi.mock('../app/k/join/JoinClassCard', () => ({ JoinClassCard: () => null }))
 // P120: "Your practice" on My maths reads the learner's finished practices; this test has none.
 vi.mock('../lib/data/p120', () => ({ getPastPractice: async () => [] }))
 // These tests are the "My school" screens (P95 added the "My own" ones, tested in p95-my-maths-own.test.tsx).
@@ -113,12 +118,12 @@ describe('/k/maths', () => {
     expect(text).not.toMatch(/%|percent|grade|rank|classmate|class average|strand|subtopic|out of/i)
   })
 
-  it('while tonight\'s lesson waits there is no Practise button, one line and a link to today', async () => {
+  it('while tonight\'s lesson waits there is no Practise button and one line (the lesson is the first card of this page, so the line has no link)', async () => {
     state.view = view({ status: 'due' })
     await page()
     expect(screen.queryAllByRole('button', { name: /^Practise/ })).toHaveLength(0)
     expect(screen.getByText(/Finish tonight's lesson first\./)).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Go to today' }).getAttribute('href')).toBe('/k')
+    expect(screen.queryByRole('link', { name: /Go to/ })).toBeNull()
     // the circles and the way into each part stay
     expect(screen.getByText('1 of 3 secure \u00b7 1 started')).toBeTruthy()
   })
@@ -128,7 +133,7 @@ describe('/k/maths', () => {
     await page()
     expect(screen.queryAllByRole('button', { name: /^Practise/ })).toHaveLength(0)
     expect(screen.getByText(/Jemma is writing your practice\./)).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Go to today' }).getAttribute('href')).toBe('/k')
+    expect(screen.queryByRole('link', { name: /Go to/ })).toBeNull()
   })
 
   it('a learner with no gap and nothing to suggest sees only the parts, each with "No score yet"', async () => {

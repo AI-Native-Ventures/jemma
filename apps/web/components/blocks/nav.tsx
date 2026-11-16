@@ -8,7 +8,6 @@ import {
   LayersIcon,
   PeopleIcon,
   PersonIcon,
-  SunIcon,
 } from '../ui/icons'
 
 export type Role = 'teacher' | 'parent' | 'learner'
@@ -21,7 +20,6 @@ export type TabId =
   | 'curriculum'
   | 'profile'
   | 'learn'
-  | 'today'
   | 'maths'
   | 'me'
 
@@ -44,8 +42,9 @@ export const TABS: Record<Role, TabDef[]> = {
     { id: 'tests', label: 'Tests', path: '/tests', icon: (s) => <ClipboardIcon size={s} /> },
   ],
   learner: [
-    { id: 'today', label: 'Today', path: '', icon: (s) => <SunIcon size={s} /> },
-    { id: 'maths', label: 'My maths', path: '/maths', icon: (s) => <GapsIcon size={s} /> },
+    // P128: the learner's one main page. My maths lives at /k (and /k/maths is the same page), so its tab is the first one: an address with no tab of its
+    // own folder (the home, /k/maths and every screen below it, /k/own, /k/upload) marks it.
+    { id: 'maths', label: 'My maths', path: '', icon: (s) => <GapsIcon size={s} /> },
     // Me is the learner's own page (/k/me): the phone reaches it from the bar, the laptop from the gear in the sidebar.
     { id: 'me', label: 'Me', path: '/me', icon: (s) => <PersonIcon size={s} />, phoneOnly: true },
   ],

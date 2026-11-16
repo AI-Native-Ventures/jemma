@@ -3,6 +3,7 @@ import type { CoordinatePlaneSpec, TriangleSpec } from '@jemma/profiling/schemas
 import { describe, expect, it } from 'vitest'
 import { CoordinatePlane, DiagramView, Shape2D, Triangle } from '@/components/diagrams'
 import { RichHtml, labelRuns, plainLabel, raisedLabel, type Run } from '@/components/diagrams/math-label'
+import { segments, toLatexRun } from '../app/k/session/_parts/typeset'
 import { LearnCards } from '../app/k/session/_parts/LearnCards'
 import { LearnDiagram } from '../app/k/session/_parts/LearnDiagram'
 import type { LessonForChild } from '../app/k/session/[sessionId]/types'
@@ -42,7 +43,8 @@ describe('the runs of a label', () => {
   it('raises the power on a function name: sin^-1(x)', () => {
     const runs = labelRuns('θ = sin^-1(opposite / hypotenuse)')
     expect(raised(runs)).toEqual([`${MINUS}1`])
-    expect(joined(runs)).toBe(`θ = sin${MINUS}1(opposite / hypotenuse)`)
+    expect(joined(runs)).toBe(`θ = sin${MINUS}1(opposite/hypotenuse)`)
+    expect(runs!.some((r) => r.frac)).toBe(true)
     // sin is a function and the words are words: none of them is slanted
     expect(runs!.filter((r) => r.italic).map((r) => r.text)).toEqual(['θ'])
   })
@@ -86,6 +88,60 @@ describe('the runs of a label', () => {
   it('says when a label has a raised part, so that its place leaves room above', () => {
     expect(raisedLabel('y = x^2 - 4')).toBe(true)
     expect(raisedLabel('y = x')).toBe(false)
+  })
+})
+
+describe('a fraction in a label is stacked', () => {
+  it('cuts "x/2", "(x + 1)/(x - 1)" and "opposite / hypotenuse" at the slash, and takes the brackets off', () => {
+    const f = (t: string) => labelRuns(t)!.find((r) => r.frac)!.frac!
+    expect(f('y = x/2').num.map((r) => r.text).join('')).toBe('x')
+    expect(f('y = x/2').den.map((r) => r.text).join('')).toBe('2')
+    expect(f('y = (x + 1)/(x - 1)').num.map((r) => r.text).join('')).toBe('x + 1')
+    expect(f('y = (x + 1)/(x - 1)').den.map((r) => r.text).join('')).toBe(`x ${MINUS} 1`)
+    expect(f('cos θ = adjacent / hypotenuse').num.map((r) => r.text).join('')).toBe('adjacent')
+    expect(f('y = x^2/4').num.map((r) => r.text).join('')).toBe('x2')
+  })
+
+  it('leaves a fraction of numbers, a unit and a word with a slash as they were', () => {
+    for (const t of ['3/4', '1/2', '5 m/s', 'km/h', 'and/or', '12/11/2026']) expect(labelRuns(t), t).toBeNull()
+  })
+
+  it('draws a graph label with a fraction in a box of its own: top over bottom, no slash', () => {
+    const box = html(<CoordinatePlane {...plane({ graphs: [{ type: 'line', m: 0.5, c: 0, label: 'y = x/2' }] })} />)
+    const label = box.querySelector('foreignObject[data-graph-label="0"]')!
+    expect(label).not.toBeNull()
+    expect(label.textContent).not.toContain('/')
+    expect(label.querySelector('[data-frac] [data-num]')!.textContent).toBe('x')
+    expect(label.querySelector('[data-frac] [data-den]')!.textContent).toBe('2')
+    // inside the grid, as a text label is
+    const x = Number(label.getAttribute('x'))
+    const w = Number(label.getAttribute('width'))
+    expect(x).toBeGreaterThanOrEqual(0)
+    expect(x + w).toBeLessThanOrEqual(320 + 40)
+  })
+
+  it('draws a side of a triangle that is a fraction stacked', () => {
+    const box = html(<Triangle {...triangle({ sides: ['x/2', '', ''] })} />)
+    const side = box.querySelector('foreignObject[data-side="0"]')!
+    expect(side.querySelector('[data-num]')!.textContent).toBe('x')
+    expect(box.querySelector('text[data-side="0"]')).toBeNull()
+  })
+
+  it('draws the formulas under a triangle stacked, with no slash', () => {
+    const under = html(<Shape2D kind="shape_2d" shape="triangle" labels={['θ', 'opposite', 'adjacent', 'hypotenuse', '90°', 'sin θ = opposite / hypotenuse', 'θ = sin^-1(opposite / hypotenuse)']} />)
+    const notes = [...under.querySelectorAll('[data-part="notes"] > *')]
+    expect(notes).toHaveLength(2)
+    for (const n of notes) {
+      expect(n.textContent).not.toMatch(/[/^]/)
+      expect(n.querySelector('[data-frac] [data-num]')!.textContent).toBe('opposite')
+      expect(n.querySelector('[data-frac] [data-den]')!.textContent).toBe('hypotenuse')
+    }
+  })
+
+  it('leaves the fraction ticks of a number line of the demo class as they were', () => {
+    const box = html(<DiagramView spec={{ kind: 'number_line', min: 0, max: 1, step: 0.25, marks: [{ value: 0.75, label: '3/4' }] }} />)
+    expect(box.querySelectorAll('foreignObject')).toHaveLength(0)
+    expect(box.textContent).toContain('3/4')
   })
 })
 
@@ -221,5 +277,129 @@ describe('the pictures of the demo class are drawn as they were', () => {
       expect(box.querySelector('svg'), spec.kind).not.toBeNull()
       expect(box.querySelectorAll('tspan'), spec.kind).toHaveLength(0)
     }
+  })
+})
+
+// ---- Textbook notation on every learner screen (owner, 16 Nov): no slash, caret, sqrt or star in the maths that is seen ----------------------------
+
+import { render } from '@testing-library/react'
+import { QuestionScreen } from '../app/k/session/_parts/QuestionScreen'
+import { Results } from '../app/k/session/_parts/Results'
+import type { MissedQuestion, QuestionForChild } from '../app/k/session/[sessionId]/logic'
+
+/** What a child sees as text: the screen with the copy that is only for a screen reader taken out (the keys of the keyboard are seen, so their faces are held to the same rule). */
+const seen = (el: Element) => {
+  const copy = el.cloneNode(true) as HTMLElement
+  copy.querySelectorAll('.sr-only, script, style').forEach((e) => e.remove())
+  return (copy.textContent ?? '').replace(/​/g, '')
+}
+/** A character the textbook does not use in maths: a slash (a fraction), a caret (a power), a star (times), the word sqrt, or a hyphen used as a minus. */
+const RAW = /[/^*]|sqrt|\d\s?-\s?[\dxy(]|(?:^|[\s(=])-\s?[\dxy(]/
+
+const ask = (over: Partial<QuestionForChild>): QuestionForChild => ({ position: 3, phase: 'try', index: 1, of: 5, prompt: 'Work it out', render: 'text', answerKind: 'whole', ...over })
+const screen = (q: QuestionForChild) => {
+  const el = document.createElement('div')
+  el.innerHTML = renderToStaticMarkup(<QuestionScreen q={q} busy={false} onAnswer={() => {}} />)
+  return el
+}
+
+describe('a question screen of a senior class shows textbook maths and no raw notation', () => {
+  const cases: [string, Partial<QuestionForChild>][] = [
+    ['a factorised answer (the hint has an example)', { prompt: 'Factorise: x^2 - 4', answerKind: 'expression', form: 'factorised' } as Partial<QuestionForChild>],
+    ['an expression with a fraction', { prompt: 'Simplify (x^2 - 9)/(x - 3)', answerKind: 'expression', form: 'any' } as Partial<QuestionForChild>],
+    ['an equation (its hint has two answers)', { prompt: 'Solve: 2 * x - 5 = 3', answerKind: 'equation' }],
+    ['a number with a root and a times between numbers', { prompt: 'What is sqrt(16) + 3 x 4 - 2?', answerKind: 'number' }],
+    ['a number question (the hint has a negative number)', { prompt: 'What is 3 - 6?', answerKind: 'number' }],
+    ['a trig question', { prompt: 'Find sin(30°) + cos^2(x) when x = 60°', answerKind: 'number' }],
+    ['a derivative question (its keys include d over dx and the power key)', { prompt: 'Differentiate y = x^2 + 3x with respect to x', answerKind: 'expression', form: 'any' } as Partial<QuestionForChild>],
+    ['a warm-up with choices', { phase: 'warmup', of: 2, prompt: 'Which is equal to x^2/4?', answerKind: 'choice', choices: ['x/2', '(x/2)^2', 'sqrt(x)', '2 * x', '3 x 4'] }],
+  ]
+  it.each(cases)('%s', (_name, over) => {
+    const page = screen(ask(over))
+    expect(seen(page)).not.toMatch(RAW)
+    expect(page.querySelector('.katex')).not.toBeNull()
+  })
+
+  it('a product of numbers written with x or * is drawn with the times sign', () => {
+    const h1 = screen(ask({ prompt: 'What is 3 x 4 + 2 * 5?', answerKind: 'number' })).querySelector('h1[data-prompt]')!
+    expect(h1.textContent).toContain('×')
+    expect(seen(h1)).not.toMatch(/[x*]/)
+  })
+})
+
+describe('a results card shows textbook maths and no raw notation', () => {
+  const missed = (over: Partial<MissedQuestion>): MissedQuestion => ({
+    n: 1,
+    correct: false,
+    prompt: 'Solve: x/2 + 6 = 10',
+    render: 'text',
+    wrote: '2 * 4',
+    right: 'x = 8',
+    why: 'You took 6 * 2 away and not 6: x/2 = 4 and x^2 = 64.',
+    rightWay: 'x/2 = 4, so x = 2 * 4 = 8. Check: sqrt(64) = 8 and (x + 2)/(x - 2) = 10/6.',
+    steps: ['x/2 + 6 = 10', 'x/2 = 4', 'x = 2 * 4', 'x = sqrt(64)'],
+    ...over,
+  })
+  it.each([
+    ['a missed answer', missed({})],
+    ['a right answer', missed({ correct: true, wrote: 'x = 8' })],
+    ['a missed answer with a power and a root as the answer', missed({ wrote: 'x^2', right: 'sqrt(x)' })],
+  ])('%s', (_name, m) => {
+    const { container } = render(<Results firstName="Amina" missed={[m]} />)
+    expect(seen(container)).not.toMatch(RAW)
+    expect(container.querySelector('.katex')).not.toBeNull()
+  })
+})
+
+describe('lesson cards and captions show textbook maths and no raw notation', () => {
+  it('a card with a fraction, a power, a root, a times and a minus', () => {
+    const lesson = {
+      title: 'Fractions of letters',
+      format: 'reading',
+      cards: [{ heading: 'Cancel (x^2 - 9)/(x - 3)', body: 'Factorise the top: (x - 3)(x + 3). Then x^2 = 9 means x = sqrt(9) = 3 and 2 * 3 = 6.' }],
+    } as unknown as LessonForChild
+    const box = html(<LearnCards lesson={lesson} card={0} onBack={() => {}} onNext={() => {}} />)
+    expect(seen(box.querySelector('article')!)).not.toMatch(RAW)
+    expect(box.querySelectorAll('article .mfrac').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('a step caption and a contrast caption of a diagram lesson', () => {
+    const lesson = {
+      title: 'A line',
+      format: 'diagram',
+      diagram: {
+        caption: 'A line',
+        steps: [{ caption: 'The gradient is (y2 - y1)/(x2 - x1) = 6/3', diagram: { kind: 'coordinate_plane', xMin: -5, xMax: 5, yMin: -5, yMax: 5, graphs: [{ type: 'line', m: 2, c: 0, label: 'y = 2x' }] } }],
+        contrast: { caption: 'Not x^2 - 4, which curves, and not 3 x 4 = 12.', diagram: { kind: 'coordinate_plane', xMin: -5, xMax: 5, yMin: -5, yMax: 5, graphs: [{ type: 'parabola', a: 1, q: -4, label: 'y = x^2/4' }] } },
+      },
+    } as unknown as LessonForChild
+    const box = html(<LearnDiagram lesson={lesson} onReady={() => {}} />)
+    expect(seen(box.querySelector('figure')!)).not.toMatch(RAW)
+    expect(seen(box.querySelector('aside')!)).not.toMatch(RAW)
+  })
+
+  it('the keys of a derivative question have d over dx and a raised power', () => {
+    const page = screen(ask({ prompt: 'Differentiate y = x^2 + 3x with respect to x', answerKind: 'expression', form: 'any' } as Partial<QuestionForChild>))
+    expect(page.querySelector('[data-keys] button[aria-label="d by dx"] .flex-col')!.textContent).toBe('ddx')
+    expect(page.querySelector('[data-keys] button[aria-label="to the power of"] sup')).not.toBeNull()
+    expect(page.querySelector('[data-keys] button[aria-label="fraction"] .flex-col')!.textContent).toBe('ab')
+    expect(seen(page.querySelector('[data-keys]')!)).not.toMatch(/[/^]/)
+  })
+})
+
+describe('the typesetting of a line of maths (P129)', () => {
+  it('a letter with a digit after it is a letter with a small number below it', () => {
+    expect(toLatexRun('(y2 - y1)/(x2 - x1)')).toBe('\\displaystyle \\frac{y_{2}-y_{1}}{x_{2}-x_{1}}')
+    expect(toLatexRun('a1 + a2')).toBe('\\displaystyle a_{1}+a_{2}')
+    // a cell of a grid, or a capital letter with a number, is not one
+    expect(toLatexRun('B2')).toBeNull()
+  })
+
+  it('an x between two numbers is the times sign, and a star too', () => {
+    const math = (text: string) => segments(text, 'all').filter((s) => s.kind === 'math').map((s) => (s as { latex: string }).latex)
+    expect(math('What is 3 x 4?')).toEqual(['\\displaystyle 3\\times 4'])
+    expect(math('What is 3 * 4?')).toEqual(['\\displaystyle 3\\times 4'])
+    // an x beside a letter or a sign stays a letter
+    expect(math('Solve 2 + x = 5')).toEqual(['\\displaystyle 2+x=5'])
   })
 })
