@@ -3,7 +3,7 @@ import { HANDOVER_COOKIE, verifyHandover } from '../handover'
 import { buildMyMaths, type MyMaths, type MyMathsSuggestion } from '@jemma/profiling/logic'
 import { loadMyMathsInput } from '@jemma/profiling/orchestrator'
 import { isIndependent, isOwnRecord } from '@jemma/profiling/own-names'
-import { LessonSchema, QuestionSchema, type Lesson, type SeniorDiagramSpec } from '@jemma/profiling/schemas'
+import { QuestionSchema, StoredLessonSchema, type Lesson, type SeniorDiagramSpec } from '@jemma/profiling/schemas'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
 import { stripQuestion, type QuestionForChild } from '@/app/k/session/[sessionId]/logic'
@@ -207,7 +207,7 @@ export async function tonightFrom(
   const tonightRow = open[open.length - 1]
   if (!tonightRow) return null
   const { data: lessonRow } = await supabase.from('lessons').select('content').eq('id', tonightRow.lesson_id!).maybeSingle()
-  const lesson = LessonSchema.safeParse(lessonRow?.content)
+  const lesson = StoredLessonSchema.safeParse(lessonRow?.content)
   const waiting = !lessonHasQuestions(lessonRow?.content) && (asked?.status === 'queued' || asked?.status === 'running' || asked?.status === 'failed')
   if (waiting) return null
   return {

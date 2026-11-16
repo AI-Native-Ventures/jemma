@@ -1,7 +1,7 @@
 'use server'
 
 import { PAPER_QUESTION_COUNT, type Stage } from '@jemma/profiling/logic'
-import { LessonSchema, QuestionSchema, type Lesson, type Question } from '@jemma/profiling/schemas'
+import { QuestionSchema, StoredLessonSchema, type Lesson, type Question } from '@jemma/profiling/schemas'
 import type { JemmaDb, Json } from '@jemma/profiling/db'
 import { sendEvent } from '@/lib/agent'
 import { myChild } from '@/lib/data/p27'
@@ -66,7 +66,7 @@ async function loadRun(sessionId: string): Promise<Run> {
     .select('id, topic_id, topic_name, content, audio_path')
     .eq('id', session.lesson_id)
     .maybeSingle()
-  const lesson = LessonSchema.safeParse(lessonRow?.content)
+  const lesson = StoredLessonSchema.safeParse(lessonRow?.content)
   if (!lessonRow || !lesson.success) throw new Error('The lesson could not be loaded')
 
   const admin = createSupabaseAdmin()
