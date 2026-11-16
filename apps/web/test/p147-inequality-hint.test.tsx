@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
-import { equationHint, INEQUALITY_HINT, INEQUALITY_WRITE_LINE, PAIR_HINT, PAIR_WRITE_LINE } from '../app/k/session/_parts/answers/hints'
+import { equationShapeHint, INEQUALITY_HINT, INEQUALITY_WRITE_LINE, PAIR_HINT, PAIR_WRITE_LINE } from '../app/k/session/_parts/answers/hints'
 import { PaperSheet, writeLine } from '../app/k/session/_parts/Paper'
 import { QuestionScreen } from '../app/k/session/_parts/QuestionScreen'
 import { answerShape, stripQuestion, type QuestionForChild } from '../app/k/session/[sessionId]/logic'
@@ -66,11 +66,11 @@ describe('the server sends the shape of an inequality key, never its values', ()
 describe('the line under the box', () => {
   it('is exactly "Type the answer, like x < 4 or -2 ≤ x < 3." for an inequality, and the old line for any other equation', () => {
     expect(INEQUALITY_HINT).toBe('Type the answer, like x < 4 or -2 ≤ x < 3.')
-    expect(equationHint({ kind: 'equation', inequality: true }, 'OLD')).toBe(INEQUALITY_HINT)
+    expect(equationShapeHint({ kind: 'equation', inequality: true }, 'OLD')).toBe(INEQUALITY_HINT)
     expect(PAIR_HINT).toBe('Type both answers, like x = 2, y = 3.')
-    expect(equationHint({ kind: 'equation', pair: true }, 'OLD')).toBe(PAIR_HINT)
-    expect(equationHint({ kind: 'equation' }, 'OLD')).toBe('OLD')
-    expect(equationHint({ kind: 'number' }, 'OLD')).toBe('OLD')
+    expect(equationShapeHint({ kind: 'equation', pair: true }, 'OLD')).toBe(PAIR_HINT)
+    expect(equationShapeHint({ kind: 'equation' }, 'OLD')).toBe('OLD')
+    expect(equationShapeHint({ kind: 'number' }, 'OLD')).toBe('OLD')
   })
 
   it('the question screen shows it for an inequality key and keeps the old line for another equation', async () => {

@@ -15,7 +15,7 @@ export const PAIR_WRITE_LINE = 'Write both answers, like x = 2, y = 3.'
  * The line under the box of an equation answer: the inequality line when the key is an inequality or an interval, the pair line when it is a pair, otherwise
  * `otherwise` (the line it always had).
  */
-export function equationHint(shape: AnswerShape, otherwise: string): string {
+export function equationShapeHint(shape: AnswerShape, otherwise: string): string {
   if (shape.kind !== 'equation') return otherwise
   return shape.inequality ? INEQUALITY_HINT : shape.pair ? PAIR_HINT : otherwise
 }
