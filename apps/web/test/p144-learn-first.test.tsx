@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { LibraryEntry } from '../lib/teaching'
 
-// P142: the Learn step of a practice. A topic that has lessons in the library shows "Learn it first" (the lessons with a tick for each one done, a button
+// P144: the Learn step of a practice. A topic that has lessons in the library shows "Learn it first" (the lessons with a tick for each one done, a button
 // to start or go on, and "I know this, go to practice"). A topic without lessons shows the Learn step exactly as it always was: the cards, the diagram or
 // the audio memo. The server actions and the router are doubles: no server, no browser, no database.
 

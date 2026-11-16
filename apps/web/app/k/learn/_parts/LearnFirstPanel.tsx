@@ -8,7 +8,7 @@ const skipButton =
   'flex min-h-[56px] w-full cursor-pointer items-center justify-center rounded-18 border-[1.5px] border-ink bg-card px-5 py-3 text-center text-[17px] font-semibold text-balance text-ink'
 
 /**
- * The Learn step of a practice, for a topic that has lessons in the teaching library (P142): "Learn it first". The lessons in order with a tick for each one
+ * The Learn step of a practice, for a topic that has lessons in the teaching library (P144): "Learn it first". The lessons in order with a tick for each one
  * done, one button to start (or go on with) the first one that is not finished, and "I know this, go to practice" for a learner who wants the questions now.
  * A lesson opens from here with the practice in the address (`?session=`), so the way back to this practice is on its screens. Drawn in place of the cards, the
  * diagram or the audio memo the practice's own lesson has; the questions after it are the same.

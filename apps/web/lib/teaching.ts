@@ -1,4 +1,4 @@
-// The teaching library as the learner's side holds it (P142). Pure: no database, no clock, no router, so it is tested without any of them.
+// The teaching library as the learner's side holds it (P144). Pure: no database, no clock, no router, so it is tested without any of them.
 //
 // A lesson is stored whole, answers and all (`TeachingLesson`). The browser never gets the answers of the questions the learner is asked: `forChild` takes
 // them out before a lesson leaves the server, and the answer is marked on the server (`markLessonQuestion`) when the learner sends it. The worked examples

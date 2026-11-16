@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { libraryKey, TeachingLessonSchema, type TeachingBlock, type TeachingLesson } from '../../src/schemas/teaching'
 
-// P141 and P142: the shape of one teaching lesson, and the name a library entry is stored under. No database, no model.
+// P141 and P144: the shape of one teaching lesson, and the name a library entry is stored under. No database, no model.
 
 const question = (n: number) => ({
   prompt: `Question ${n}: what is 1/2 + 1/4?`,

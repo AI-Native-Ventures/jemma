@@ -6,7 +6,7 @@ import { storedLesson, underSessionHandover } from '@/lib/data/teaching'
 import { markLessonQuestion, questionAt, type LessonAnswerResult, type LessonWhere } from '@/lib/teaching'
 import { ANSWER_MAX_LENGTH } from '../session/[sessionId]/logic'
 
-// The learner's side of a teaching lesson (P142). The browser holds the lesson without the answers of its questions; an answer is sent here and marked on
+// The learner's side of a teaching lesson (P144). The browser holds the lesson without the answers of its questions; an answer is sent here and marked on
 // the server with the same marking a practice session uses. Progress is written with the service client after the learner is found (`myChild`), the way
 // every other row of a learner is written: a learner's own session can read it but not write it.
 

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { LibraryEntry, TeachingLessonForChild } from '../lib/teaching'
 import type { Delivery } from '../app/k/learn/_parts/delivery'
 
-// P142: the lesson reader in its three deliveries. The same blocks in the same order in all three; the pictures stay in Listen, the words stay in Pictures;
+// P144: the lesson reader in its three deliveries. The same blocks in the same order in all three; the pictures stay in Listen, the words stay in Pictures;
 // the voice says `speech` and nothing else; an answer goes to the server and nothing about it is on the page before. The server actions are doubles, the
 // voice is a double: no database, no browser, no model.
 

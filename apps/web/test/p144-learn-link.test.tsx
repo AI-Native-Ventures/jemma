@@ -3,7 +3,7 @@ import { buildMyMaths } from '@jemma/profiling/logic'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MyMathsView } from '../lib/data/p80'
 
-// P142: a topic that has lessons in the library gets a "Learn" button beside "Practise" on its row of "My maths". A topic without lessons looks exactly as it
+// P144: a topic that has lessons in the library gets a "Learn" button beside "Practise" on its row of "My maths". A topic without lessons looks exactly as it
 // did: no button. The row of the second teaching of a topic ("Common fractions (Term 4)") finds the same lessons. The data, the router and the actions are
 // doubles: no database, no server, no browser.
 

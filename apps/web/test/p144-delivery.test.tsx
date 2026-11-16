@@ -2,7 +2,7 @@ import type { BlockForChild } from '../lib/teaching'
 import { describe, expect, it } from 'vitest'
 import { blockView, DELIVERIES, defaultDelivery, firstSentence, readDelivery, speechOf, type Delivery } from '../app/k/learn/_parts/delivery'
 
-// P142: three deliveries of one lesson. The learner's style is an EMPHASIS, never an exclusion: Listen keeps the pictures, Pictures keeps the words, Read keeps
+// P144: three deliveries of one lesson. The learner's style is an EMPHASIS, never an exclusion: Listen keeps the pictures, Pictures keeps the words, Read keeps
 // the pictures. The same blocks come in the same order in all three; only how each block is shown changes. Pure rules here, no browser, no database.
 
 const picture = { kind: 'fraction_bar' as const, rows: [{ parts: 4, shaded: 1 }] }

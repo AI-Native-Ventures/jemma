@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-// P142: the reads of the teaching library that decide who sees what: a topic is the learner's only when it is in one of their classes, a session is theirs
+// P144: the reads of the teaching library that decide who sees what: a topic is the learner's only when it is in one of their classes, a session is theirs
 // only when it is one of theirs, a lesson list is the ready lessons (newest version, lesson 1 present) by grade and by the name without "(Term N)", and
 // a parent's hand-over of one session gets no lessons. The database is a small fake that filters rows the way the queries ask: no database, no server.
 

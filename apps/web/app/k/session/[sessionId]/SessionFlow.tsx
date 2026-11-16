@@ -46,7 +46,7 @@ export type SessionFlowProps = {
   tryCount: number
   topic: string
   /**
-   * P142: the lessons the teaching library has for this topic. When there are some (and the id of their topic is given), the Learn step is "Learn it first"
+   * P144: the lessons the teaching library has for this topic. When there are some (and the id of their topic is given), the Learn step is "Learn it first"
    * instead of the cards, the diagram or the audio memo. Missing or empty: the Learn step is exactly as it always was.
    */
   library?: LibraryEntry[]

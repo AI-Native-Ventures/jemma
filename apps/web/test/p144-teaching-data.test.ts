@@ -2,7 +2,7 @@ import { TeachingLessonSchema, type TeachingBlock, type TeachingLesson } from '@
 import { describe, expect, it } from 'vitest'
 import { buildEntries, forChild, inLibrary, markLessonQuestion, questionAt, readyLessons, type LessonRow } from '../lib/teaching'
 
-// P142: the pure parts of the teaching library on the learner's side: what the browser may hold before an answer, which stored rows count as the
+// P144: the pure parts of the teaching library on the learner's side: what the browser may hold before an answer, which stored rows count as the
 // lessons of a topic, and how an answer is marked. No database, no router, no model.
 
 const q = (n: number, over: Record<string, unknown> = {}) => ({

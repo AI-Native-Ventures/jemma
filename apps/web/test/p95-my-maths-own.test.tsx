@@ -31,7 +31,7 @@ vi.mock('../lib/data/p27', () => ({
   getLearnerToday: async () => ({ firstName: 'Amina', workspace: (state.shape as { workspace: string }).workspace, tonight: null, next: null, gems: [], fixed: 0, toGo: 0, practice: 'none', suggestion: null }),
 }))
 vi.mock('../app/k/join/JoinClassCard', () => ({ JoinClassCard: () => null }))
-// P142: a part page asks the teaching library which topics have lessons; here none does, and nothing reaches a database.
+// P144: a part page asks the teaching library which topics have lessons; here none does, and nothing reaches a database.
 vi.mock('../lib/data/teaching', () => ({ libraryNames: async () => new Set<string>() }))
 vi.mock('../lib/data/own-screens', () => ({
   getScreenShape: async (query?: unknown) => {

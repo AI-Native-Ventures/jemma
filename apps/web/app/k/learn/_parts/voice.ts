@@ -1,4 +1,4 @@
-// The voice of the Listen delivery (P142): the browser's own speech (`speechSynthesis`), the one `LearnAudio` already falls back to. It says the `speech` of a
+// The voice of the Listen delivery (P144): the browser's own speech (`speechSynthesis`), the one `LearnAudio` already falls back to. It says the `speech` of a
 // block, which holds words only. A phone that cannot speak is told so by `canSpeak`, and the lesson then shows the words.
 
 let current = 0

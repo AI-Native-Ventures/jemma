@@ -1,4 +1,4 @@
--- P142: the teaching library. Every CAPS Mathematics topic (Grades 1 to 12) gets 1 to 8 full lessons, written once, checked, stored here, and the same for
+-- P144: the teaching library. Every CAPS Mathematics topic (Grades 1 to 12) gets 1 to 8 full lessons, written once, checked, stored here, and the same for
 -- every learner. A learner opens them from "My maths" (a Learn button on each topic) and from the Learn step of a practice. `topic_lessons` holds the
 -- lessons (one row for each lesson of a topic), `topic_lesson_progress` holds which of them a learner started and finished and how the practice at the
 -- end of the lesson went.

@@ -1,6 +1,6 @@
 import type { BlockForChild } from '@/lib/teaching'
 
-// Three deliveries of one lesson (P142): Read, Pictures, Listen. The learner's style is an EMPHASIS, never an exclusion: Listen keeps the pictures,
+// Three deliveries of one lesson (P144): Read, Pictures, Listen. The learner's style is an EMPHASIS, never an exclusion: Listen keeps the pictures,
 // Pictures keeps the words, Read keeps the pictures. The blocks are the same and come in the same order in all three; only how a block is shown changes.
 // Pure: no browser, no database, so the rules are tested without either.
 

@@ -6,7 +6,7 @@ import { buildEntries, forChild, isUuid, readyLessons, type LessonRow, type Libr
 import { classIdsOfChild } from '@/lib/topics'
 import { myChild } from './p27'
 
-// The teaching library as the learner's screens read it (P142). The lessons are global (one set for each grade and CAPS topic name, written once, the same
+// The teaching library as the learner's screens read it (P144). The lessons are global (one set for each grade and CAPS topic name, written once, the same
 // for every learner), so they are read with the service client; the learner is found the way every learner screen finds them (`myChild`) and only their own
 // progress is read or written. Every read that fails says "no library" and the screen keeps today's flow: the Learn button is not drawn, the Learn step of
 // a practice is the one it always was.

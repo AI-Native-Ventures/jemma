@@ -41,7 +41,7 @@ export default async function MyMathsPartPage({ params, searchParams }: { params
   const lock = lockOf(status)
   const byTerm = screen.kind === 'topics' ? groupByTerm(screen.topics, source) : null
   const from = screen.kind === 'topics' ? capsLine(source) : null
-  // P142: the topics of this grade that have lessons in the teaching library get a Learn button (one read for the whole part). No grade, no lessons.
+  // P144: the topics of this grade that have lessons in the teaching library get a Learn button (one read for the whole part). No grade, no lessons.
   const libraryGrade = grade ?? source?.grade ?? null
   const withLessons = screen.kind === 'topics' && libraryGrade !== null ? await libraryNames(libraryGrade) : new Set<string>()
   const row = (t: MyMathsTopic, name: string) => (
