@@ -12,7 +12,8 @@ import { strandOf, type Strand, type TypedKind } from './maths-keys'
 // Rows 4 and 5 depend on the tab (blank keys fill a row, so every tab is as tall as the others):
 //   Letters   x y z a b c k m n p / d f g h q r s t u v
 //   Trig      sin cos tan and their inverses, the degree sign, theta, alpha, beta / pi, gamma, delta, phi
-//   Compare   < > <= >= != plus-or-minus |x| % R, and the word or (an expression or an equation: 3 answers, or x < -1 or x > 4, in one box)
+//   Compare   < > <= >= != plus-or-minus |x| % R, and the word or (an expression or an equation: 3 answers, or x < -1 or x > 4, in one box) /
+//             [ ] ; infinity union element-of the-real-numbers (P147: intervals and sets)
 //   Calculus  d/dx, f'(x), infinity, e / ln, log, f(x), x, y
 // P146: the signs of geometry and calculus that the marking can never read (angle, triangle, perpendicular, parallel, congruent, similar, the integral, lim,
 // the sum, to) are not on any key: an answer written with one could only be marked unreadable. They are still defined in CAPS, so a key comes back when the
@@ -83,6 +84,13 @@ export const CAPS = {
   greaterEqual: cap('greater than or equal to', { latex: '\\ge' }),
   notEqual: cap('not equal to', { latex: '\\ne' }),
   plusMinus: cap('plus or minus', { latex: '\\pm' }),
+  // intervals, sets of numbers and domains (P147): the square brackets, the semicolon between the two ends, union, element of and the real numbers (infinity is in the calculus group below)
+  openSquare: cap('open square bracket', { latex: '[', class: 'big-op' }),
+  closeSquare: cap('close square bracket', { latex: ']', class: 'big-op' }),
+  semicolon: cap('semicolon', { latex: ';', class: 'big-op' }),
+  union: cap('union', { latex: '\\cup' }),
+  element: cap('element of', { latex: '\\in' }),
+  reals: cap('the real numbers', { latex: '\\mathbb{R}' }),
   or: cap('or', { label: 'or', insert: '\\text{ or }', class: 'small' }),
   // geometry and Greek letters
   degree: cap('degrees', { latex: '{}^{\\circ}', insert: '^{\\circ}' }),
@@ -188,7 +196,7 @@ function tabRows(tab: TabId, kind: TypedKind): [(string | Keycap)[], (string | K
     case 'compare':
       return [
         filled([CAPS.less, CAPS.greater, CAPS.lessEqual, CAPS.greaterEqual, CAPS.notEqual, CAPS.plusMinus, CAPS.abs, CAPS.percent, CAPS.rand, ...(kind === 'number' ? [] : [CAPS.or])]),
-        filled([]),
+        filled([CAPS.openSquare, CAPS.closeSquare, CAPS.semicolon, CAPS.infinity, CAPS.union, CAPS.element, CAPS.reals]),
       ]
     case 'calculus':
       return [filled([wide(CAPS.ddx, 2), wide(CAPS.fPrime, 2), CAPS.infinity, CAPS.e]), filled([CAPS.ln, CAPS.log, CAPS.fx, letter('x'), letter('y')])]

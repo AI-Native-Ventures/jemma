@@ -1,9 +1,12 @@
 import {
   answerCountOf,
+  choiceLabel,
   completeAnswer,
   fillMissing,
   finishAnswer,
+  isInequalityKey,
   isListKind,
+  isPairKey,
   listAnswerParts,
   LIST_MAX_LENGTH,
   missingPart,
@@ -11,13 +14,17 @@ import {
   nextStage,
   paperQuestions,
   readNumber,
+  readTrueFalse,
+  reasonKeyHasValue,
   resultCells,
   rightValues,
+  trueFalseLabel,
+  CHOICE_LETTERS,
   type ListParts,
   type MissingPart,
   type Stage,
 } from '@jemma/profiling/logic'
-import type { Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
+import type { Choice, Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -44,7 +51,10 @@ export type QuestionForChild = {
   render: Question['render']
   terms?: string[]
   answerKind: Question['answerKind']
-  choices?: string[]
+  /** The options of a choice question, A to E: a plain string, or (a senior class) words and/or a picture. They are options, not the answer: the key never goes to the browser. */
+  choices?: Choice[]
+  /** A `reason` question that also asks for a value (a box above the list of reasons). A shape hint only: the value itself is never sent. */
+  withValue?: boolean
   /** The form an expression has to be in, when the question asks for one (a senior class only). */
   form?: Form
   /** The picture the question needs, drawn between its words and the answer box (a senior class only). It never holds the answer. */
@@ -56,6 +66,8 @@ export type QuestionForChild = {
   answerCount?: number
   /** An equation question only: the letter of the key ("x"), so a box can start with "x =". */
   answerLetter?: string
+  /** P147: the SHAPE of the answer when its key is an inequality or an interval ('inequality') or two letters with a value each ('pair'), so the screen can say how to type it. Never the key itself. */
+  answerShape?: 'inequality' | 'pair'
   /** P150, a list: how many boxes, whether the place of a value matters, whether a number pad is enough, and a label over each box. Never a value. */
   list?: ListParts['list']
   /** P150, an order: the items to put in order, shuffled (never in the right order). */
@@ -122,10 +134,13 @@ export function stripQuestion(
     render: q.render,
     ...(q.terms ? { terms: q.terms } : {}),
     answerKind: q.answerKind,
-    ...(q.choices ? { choices: q.choices } : {}),
+    // A true or false and a reason question ignore any choices they carry (the screen shows True and False, or the list of reasons).
+    ...(q.choices && q.answerKind !== 'truefalse' && q.answerKind !== 'reason' ? { choices: q.choices } : {}),
+    ...(q.answerKind === 'reason' && reasonKeyHasValue(q.answer) ? { withValue: true } : {}),
     ...(q.form ? { form: q.form } : {}),
     ...(q.diagram ? { diagram: q.diagram } : {}),
     ...answerFactsOf(q),
+    ...(q.answerKind === 'equation' && isInequalityKey(q.answer) ? { answerShape: 'inequality' as const } : q.answerKind === 'equation' && isPairKey(q.answer) ? { answerShape: 'pair' as const } : {}),
     // P150: a count, the labels, the items to put in order (shuffled), the table with its blanks: never the key's values or order.
     ...listAnswerParts(q),
     ...(isListKind(q.answerKind) && q.round !== undefined ? { round: q.round } : {}),
@@ -137,7 +152,8 @@ export function stripQuestion(
  * not read (a pair, an interval) has none: it is one answer, in one box.
  */
 function answerFactsOf(q: Question): Pick<QuestionForChild, 'answerCount' | 'answerLetter'> {
-  const facts = q.answerKind === 'equation' ? answerCountOf(q.answer) : null
+  // An inequality, an interval and a pair (P147) are one answer in one box, whatever the pieces of their key look like.
+  const facts = q.answerKind === 'equation' && !isInequalityKey(q.answer) && !isPairKey(q.answer) ? answerCountOf(q.answer) : null
   return facts && facts.count > 0 ? { answerCount: facts.count, ...(facts.letter ? { answerLetter: facts.letter } : {}) } : {}
 }
 
@@ -191,11 +207,15 @@ export type AnswerShape =
   | { kind: 'fraction' | 'mixed' | 'whole' | 'decimal' | 'money' | 'text' }
   /** The four kinds of a senior class, marked by meaning: a number that may be negative, an expression, an equation, a point. */
   | { kind: 'number' | 'point' }
-  /** An equation with one answer, or with more than the screen has boxes for, or an inequality or a key the screen was not told about (no count): one maths field. */
-  | { kind: 'equation'; count?: number }
+  /** An equation answer. `count` is how many values its key has when the screen was told (P146, one answer: one field); `inequality` when its key is an inequality or an interval, `pair` when it is two letters with a value each (P147): they change the line under the box. */
+  | { kind: 'equation'; count?: number; inequality?: true; pair?: true }
   /** An equation with 2 to 4 answers (P146): one box for each, "Answer 1", "Answer 2", sent as "x = a or x = b". */
   | { kind: 'answers'; count: number; letter?: string }
   | { kind: 'expression'; form: Form }
+  /** P149: two big buttons, True and False. */
+  | { kind: 'truefalse' }
+  /** P149: the reason for a step of a geometry proof, picked from a list, with a box for the value of the step when the question asks for one. */
+  | { kind: 'reason'; withValue: boolean }
   /** P150: several values. A row of boxes (a list), the chips of an order, or the empty cells of a table. */
   | { kind: 'list'; count: number; ordered: boolean; plain: boolean; labels?: string[]; round?: number }
   | { kind: 'order'; items: string[] }
@@ -207,8 +227,13 @@ export const MAX_ANSWER_BOXES = 4
 /** What `answerShape` reads besides the old four fields: the parts the server sent (a whole `Question` fits too: its table has no `plain`, so its boxes are the full keyboard). */
 type ShapeParts = { list?: ListParts['list']; items?: string[]; table?: { columns: string[]; rows: (string | null)[][]; plain?: boolean }; round?: number }
 
-export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> & ShapeParts & Pick<QuestionForChild, 'answerCount' | 'answerLetter'>): AnswerShape {
+export function answerShape(q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> & ShapeParts & { withValue?: boolean } & Pick<QuestionForChild, 'answerShape' | 'answerCount' | 'answerLetter'>): AnswerShape {
+  if (q.answerKind === 'truefalse') return { kind: 'truefalse' }
+  if (q.answerKind === 'reason') return { kind: 'reason', withValue: q.withValue === true }
   if (q.choices?.length) return { kind: 'choice' }
+  // P147: an equation whose key is an inequality or an interval, or two letters with a value each, says so in its line under the box.
+  if (q.answerKind === 'equation' && q.answerShape === 'inequality') return { kind: 'equation', inequality: true }
+  if (q.answerKind === 'equation' && q.answerShape === 'pair') return { kind: 'equation', pair: true }
   // P150: a list, an order and a table are drawn from the parts the server sent (a question that came without them gets the plain box below).
   const places = q.round !== undefined ? { round: q.round } : {}
   // A shape with nothing to fill (no box, one chip, no empty cell) could never be answered, so it falls to the plain box rather than leave the learner stuck.
@@ -269,10 +294,15 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
   }
 }
 
-/** The text of an answer: a choice letter becomes the choice itself. */
+/** The text of an answer: a choice letter becomes the choice itself (a picture with no words is "Picture B"), and true or false is written True or False. */
 export function answerText(q: Question, value: string): string {
-  const letter = /^\(?([a-d])\)?\.?$/i.exec(value.trim())
-  if (q.choices && letter) return q.choices['ABCD'.indexOf(letter[1]!.toUpperCase())] ?? value
+  if (q.answerKind === 'truefalse') {
+    const side = readTrueFalse(value)
+    return side === null ? value : trueFalseLabel(side)
+  }
+  const letter = /^\(?([a-e])\)?\.?$/i.exec(value.trim())
+  const at = letter && q.answerKind !== 'reason' ? CHOICE_LETTERS.indexOf(letter[1]!.toUpperCase() as (typeof CHOICE_LETTERS)[number]) : -1
+  if (q.choices && at >= 0 && q.choices[at] !== undefined) return choiceLabel(q.choices[at]!, at)
   return value
 }
 

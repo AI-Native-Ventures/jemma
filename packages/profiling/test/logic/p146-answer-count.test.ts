@@ -28,6 +28,11 @@ describe('answerCountOf: the number of values in the key of an equation question
     expect(answerCountOf('x = ±0')).toEqual({ count: 1, letter: 'x' })
   })
 
+  it('a plus or minus with a surd (P147) is two values too', () => {
+    expect(answerCountOf('x = 1 ± √3')).toEqual({ count: 2, letter: 'x' })
+    expect(answerCountOf('x = ±√2')).toEqual({ count: 2, letter: 'x' })
+  })
+
   it('three values are 3 and the same value written twice is counted once', () => {
     expect(answerCountOf('x = 1 or x = 2 or x = 3')).toEqual({ count: 3, letter: 'x' })
     expect(answerCountOf('x = 1 or x = 2 or x = 2')).toEqual({ count: 2, letter: 'x' })

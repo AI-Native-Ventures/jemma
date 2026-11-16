@@ -5,7 +5,7 @@
 // are shown, never typed, so they go as they are.
 
 import { finishAnswer } from '@jemma/profiling/logic'
-import { libraryKey, type Question, type SeniorDiagramSpec, type TeachingBlock, type TeachingLesson } from '@jemma/profiling/schemas'
+import { libraryKey, type Question, type TeachingBlock, type TeachingLesson } from '@jemma/profiling/schemas'
 import { answerText, stripQuestion, type QuestionForChild } from '@/app/k/session/[sessionId]/logic'
 
 /** One lesson of a topic in the lesson list: what the learner sees before opening it. `done` and `started` are for the signed-in learner. */
@@ -17,16 +17,11 @@ export type LessonRow = { id: string; position: number; version: number; title: 
 /** The learner's progress row of a lesson. */
 export type ProgressRow = { topic_lesson_id: string; started_at: string; finished_at: string | null }
 
-/** A question as the browser may hold it before the learner answers: the words, the kind of answer, the choices and the picture. Never the answer. */
-export type StrippedQuestion = {
-  prompt: string
-  render: Question['render']
-  terms?: string[]
-  answerKind: Question['answerKind']
-  choices?: string[]
-  form?: Question['form']
-  diagram?: SeniorDiagramSpec
-}
+/**
+ * A question as the browser may hold it before the learner answers: the words, the kind of answer, the choices (text, or a picture: P149), whether a reason also
+ * asks for a value, and the picture. Never the answer. It is what `stripQuestion` hands a session question, without where it stands in a run.
+ */
+export type StrippedQuestion = Omit<QuestionForChild, 'position' | 'phase' | 'index' | 'of'>
 
 /** A block as the browser holds it: a `try` block has a stripped question. Every other kind is as it was stored. */
 export type BlockForChild = Exclude<TeachingBlock, { kind: 'try' }> | { kind: 'try'; question: StrippedQuestion; hint: string; speech: string }

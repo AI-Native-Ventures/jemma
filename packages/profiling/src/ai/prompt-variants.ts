@@ -1,3 +1,4 @@
+import { GEOMETRY_REASONS } from '../logic/answers/geometry-reasons'
 import { isBaselineClass, isSeniorMaths, subjectProfile, type ClassContext } from './subject-profile'
 import { seniorLists } from './senior-lists-prompt'
 
@@ -41,6 +42,42 @@ const numberFormat = (c: ClassContext) => notSouthAfrica(c) || notMaths(c)
 const outsidePrimary = (c: ClassContext) => c.grade < 1 || c.grade > 7
 
 /**
+ * The forms an `equation` answer takes, each as the writer is shown it (P147). Every one is read by the save gate and marked right when typed back; a test checks
+ * both, and that each is in the prompt. A learner may type an inequality as an interval and the other way round, and an equation in any equivalent form.
+ */
+export const SENIOR_EQUATION_EXAMPLES = [
+  'x = 4',
+  'x = 2 or x = 3',
+  'x = 1 \u00b1 \u221a3',
+  'x = (5 \u00b1 \u221a17)/4',
+  'x < -1 or x > 4',
+  '-2 \u2264 x < 3',
+  'y \u2265 -4',
+  'x \u2260 2',
+  '(-\u221e; 3]',
+  '[2; \u221e)',
+  '(1; 4)',
+  '(-\u221e; -1) \u222a (4; \u221e)',
+  'x \u2208 \u211d',
+  'x = 2 and y = 3',
+  'y = 2x + 3',
+  '(x - 1)^2 + (y + 2)^2 = 9',
+  'x^2 + y^2 = 25',
+] as const
+
+/** When to use each form of an `equation` answer: the sentence that follows the kind lines for a senior class. */
+const SENIOR_EQUATION_FORMS =
+  'An `equation` answer is one of these, so use the one the question asks for: ' +
+  `one value (\`${SENIOR_EQUATION_EXAMPLES[0]}\`); ` +
+  `several values joined with \`or\` (\`${SENIOR_EQUATION_EXAMPLES[1]}\`), and \`${SENIOR_EQUATION_EXAMPLES[2]}\` or \`${SENIOR_EQUATION_EXAMPLES[3]}\` for the two values of a root; ` +
+  `an inequality when the question asks which values work (\`${SENIOR_EQUATION_EXAMPLES[4]}\`, \`${SENIOR_EQUATION_EXAMPLES[5]}\`, \`${SENIOR_EQUATION_EXAMPLES[6]}\`, \`${SENIOR_EQUATION_EXAMPLES[7]}\`); ` +
+  `an interval, the same answer as its inequality, when the question asks for interval notation (\`${SENIOR_EQUATION_EXAMPLES[8]}\`, \`${SENIOR_EQUATION_EXAMPLES[9]}\`, \`${SENIOR_EQUATION_EXAMPLES[10]}\`, \`${SENIOR_EQUATION_EXAMPLES[11]}\`; write \`\u221e\` for infinity and \`\u222a\` for a union), ` +
+  `and \`${SENIOR_EQUATION_EXAMPLES[12]}\` for a domain or a range over all numbers; ` +
+  `a pair, one letter and its value each, when the question has two unknowns (\`${SENIOR_EQUATION_EXAMPLES[13]}\`); ` +
+  `the equation of a line or a circle when the question asks for the equation itself (\`${SENIOR_EQUATION_EXAMPLES[14]}\`, \`${SENIOR_EQUATION_EXAMPLES[15]}\`, \`${SENIOR_EQUATION_EXAMPLES[16]}\`). ` +
+  'Use `point` for coordinates and `number` for one value. '
+
+/**
  * What a senior class's lesson writer is told about answers: the six old kinds and the four that code marks by meaning, one example each, and the `form`
  * of an expression. Decimals use a comma and money is in rand in South Africa only; elsewhere a decimal is written the way the class writes it.
  */
@@ -52,15 +89,16 @@ const seniorAnswers = (c: ClassContext) => {
     za ? '`decimal` (`0,75`)' : '`decimal` (a decimal written the way the class writes it)',
     '`whole` (`12`)',
     ...(za ? ['`money` (`R5`)'] : []),
-    '`choice` (a letter A to D)',
+    '`choice` (a letter A to E)',
   ].join(', ')
   return (
     '`answer` must be one value that a computer can mark, and `answerKind` must match it. ' +
     `The kinds: ${old}. For algebra and signed numbers there are four more: ` +
     '`number` (`-3`, `15%` or `30°`: a number that may be negative, with a % or a ° at the end), ' +
     '`expression` (`2x^2 + 7x`: write powers with `^` and roots with `sqrt()`), ' +
-    '`equation` (`x = 3 or x = -1`: one letter and its value or values) and ' +
+    '`equation` (`x = 3 or x = -1`: one letter and its value or values, or one of the forms below) and ' +
     '`point` (`(2; -3)`). ' +
+    SENIOR_EQUATION_FORMS +
     'When a question asks for the answer factorised or expanded, set `form` to `factorised` or `expanded`.' +
     (za ? ' Money is in rand, decimals use a comma.' : '')
   )
@@ -95,6 +133,24 @@ const SENIOR_NOTATION =
   'A word problem (money, data, a real situation) may keep one or two short sentences of context, then the maths on its own line. ' +
   'The same holds for the warm-up questions and their `choices` (an expression or a number, not a sentence), for `why` and `rightWay` (show each step as maths, such as `x/2 = 4` and then `x = 8`), and for a card or a diagram step. ' +
   'The `answer` itself stays as the answer kinds say. Only the `audio` script is spoken, so there the maths is said in words.'
+
+/**
+ * The last bullet a senior class's lesson writer gets after the questions bullet, about answering by tapping (P149): picture options ("Which graph is y = x^2 - 4?"), `truefalse`, and a `reason` from the fixed list of
+ * Euclidean geometry reasons (`GEOMETRY_REASONS`: the prompt, the question screen and the marking all read the one list), each with when to use it. A `choice` is under 25% of the
+ * questions and a `reason` is Euclidean geometry only.
+ */
+const SENIOR_PICKS =
+  'Three ways for a learner to answer by tapping. Use them now and then: most questions stay typed. ' +
+  'A `choice` question has 2 to 5 options, lettered A to E, and its `answer` is the letter. Keep `choice` questions to fewer than 1 in 4 of the 15 questions (at most 3); the warm-up questions are `choice` anyway. ' +
+  'Give the options as pictures when the learner has to tell graphs or shapes apart ("Which graph is y = x^2 − 4?", "Which graph shows the reflection?", which transformation moved a shape): ' +
+  'each entry of `choices` is then `{ "diagram": { ... } }`, or `{ "text": "a short caption", "diagram": { ... } }`, a `coordinate_plane` or a `triangle` of the same size for every option, 3 or 4 options, one of them right. ' +
+  'Make the wrong options the usual mistakes (a sign slip, a graph moved the wrong way), and never put the answer in a label. A text option is a plain string, as before. ' +
+  'A `truefalse` question is a statement that is true or false ("The graph of y = 2x + 1 crosses the y-axis at 1."): `answerKind` is `truefalse`, `answer` is `true` or `false`, and it has no `choices`. ' +
+  'Use it for a common misconception, and make about half of them false. ' +
+  `A \`reason\` question is for Euclidean geometry only (parallel lines, triangles, circles): the learner picks the reason for a step from this fixed list, in these words and no others: ${GEOMETRY_REASONS.map((r) => `\`${r}\``).join(', ')}. ` +
+  '`answerKind` is `reason` and `answer` is one reason of the list, word for word. ' +
+  'When the question also asks for the value of the step, `answer` is the value, a semicolon, then the reason: `40; angles in the same segment` (the value is a whole number or a decimal, an angle or a length). ' +
+  'Name parallel lines AB and CD, because the three reasons about parallel lines use those names. Use a `reason` question only in Euclidean geometry, and never as a warm-up question.'
 
 /**
  * The second bullet a senior class's lesson writer gets after the questions bullet (P127): `steps`, the worked calculation of every question, shown to the
@@ -223,7 +279,7 @@ export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
     {
       find: SENIOR_QUESTIONS_BULLET,
       when: isSeniorMaths,
-      replace: (c) => `${SENIOR_QUESTIONS_BULLET}\n- ${SENIOR_NOTATION}\n- ${SENIOR_PLAIN}\n- ${seniorMeaning(c)}\n- ${SENIOR_STEPS}`,
+      replace: (c) => `${SENIOR_QUESTIONS_BULLET}\n- ${SENIOR_NOTATION}\n- ${SENIOR_PLAIN}\n- ${seniorMeaning(c)}\n- ${SENIOR_STEPS}\n- ${SENIOR_PICKS}`,
     },
     // A senior class: graphs on a grid and triangles, in a card, a step or a question.
     { find: 'Use only the diagram kinds in the schema.', when: isSeniorMaths, replace: () => SENIOR_PICTURES },

@@ -43,6 +43,10 @@ function lex(src: string): Tok[] {
         out.push({ k: 'cmd', name: src.slice(i + 1, j) })
         i = j
       }
+    } else if (src.startsWith('{,}', i)) {
+      // P147: a decimal comma between digits belongs to its number (above); any other {,} is the comma that separates the two ends of an interval, or two answers.
+      out.push({ k: 'sym', c: ',' })
+      i += 3
     } else {
       out.push({ k: 'sym', c })
       i++
@@ -79,6 +83,8 @@ type Node =
   | { t: 'atom'; s: string; /** Euler's number, from \\mathrm{e}: never glued to a letter next to it */ euler?: true }
   | { t: 'subs'; a: Node; b: Node }
   | { t: 'group'; a: Node }
+  /** P147: an interval, (1; 4) or [2; \u221e): a bracket pair that is a group of two numbers, or whose two brackets are not the same kind. */
+  | { t: 'span'; open: string; close: string; a: Node }
   | { t: 'neg'; a: Node }
   | { t: 'pm'; a: Node }
   | { t: 'sum'; terms: { op: '+' | '-' | '\u00b1'; a: Node }[] }
@@ -109,7 +115,7 @@ const SYMBOLS: Record<string, string> = {
   lim: 'lim',
   infty: '\u221e',
 }
-const ATOM_COMMANDS = new Set([...Object.keys(SYMBOLS), 'frac', 'dfrac', 'tfrac', 'sqrt', 'sin', 'cos', 'tan', 'ln', 'log', 'left', 'mathrm', 'operatorname', 'mathit'])
+const ATOM_COMMANDS = new Set([...Object.keys(SYMBOLS), 'frac', 'dfrac', 'tfrac', 'sqrt', 'sin', 'cos', 'tan', 'ln', 'log', 'left', 'mathrm', 'operatorname', 'mathit', 'mathbb'])
 const FUNCTIONS = new Set(['sin', 'cos', 'tan', 'ln', 'log'])
 const RELATIONS: Record<string, string> = {
   '=': '=',
@@ -126,6 +132,8 @@ const RELATIONS: Record<string, string> = {
   perp: '\u22a5',
   parallel: '\u2225',
   to: '\u2192',
+  in: '\u2208',
+  cup: '\u222a',
 }
 
 function read(toks: Tok[]): Node {
@@ -203,8 +211,8 @@ function read(toks: Tok[]): Node {
         // The editor turns the letters "or" and "and" into the signs of logic as they are typed (its inline shortcuts): they are the words between two answers.
         pos++
         ops.push(isCmd(t, 'lor', 'vee') ? 'or' : 'and')
-      } else if (isSym(t, ';')) {
-        // x = 3; x = 2: a semicolon between two answers, as the marking reads it
+      } else if (t && t.k === 'sym' && (t.c === ',' || t.c === ';')) {
+        // P147: the semicolon or comma between the two ends of an interval, or between two answers (x = 2; y = 3). It is written as a semicolon.
         pos++
         ops.push(';')
       } else if (isCmd(t, 'text')) {
@@ -313,6 +321,13 @@ function read(toks: Tok[]): Node {
     }
   }
 
+  /** A bracket pair is a group, unless it holds a separator (an interval) or its brackets are not the same kind (a half-open interval, [2; 5)). */
+  const bracketed = (open: string, close: string, inside: Node): Node => {
+    const matched = (open === '(' && close === ')') || (open === '[' && close === ']')
+    const separated = inside.t === 'rel' && inside.ops.includes(';')
+    return !matched || separated ? { t: 'span', open, close, a: inside } : { t: 'group', a: inside }
+  }
+
   const markPrime = (n: Node): Node => (n.t === 'atom' ? { t: 'atom', s: `${n.s}\u2032` } : no())
 
   /** What sin, cos and tan work on: a bracket, or a term (30, 30°, 2x, π, √2) with an optional minus. */
@@ -340,10 +355,11 @@ function read(toks: Tok[]): Node {
     if (t.k === 'num') return { t: 'atom', s: t.text }
     if (t.k === 'letter') return { t: 'atom', s: t.text }
     if (t.k === 'sym') {
-      if (t.c === '(') {
+      if (t.c === '(' || t.c === '[') {
         const inside = relation()
-        expectSym(')')
-        return { t: 'group', a: inside }
+        const close = toks[pos++]
+        if (!close || close.k !== 'sym' || (close.c !== ')' && close.c !== ']')) return no()
+        return bracketed(t.c, close.c, inside)
       }
       if (t.c === '{') {
         pos--
@@ -366,7 +382,7 @@ function read(toks: Tok[]): Node {
           return { t: 'fn', name: 'abs', a: inside }
         }
         if (!close || close.k !== 'sym' || (close.c !== ')' && close.c !== ']')) return no()
-        return { t: 'group', a: inside }
+        return bracketed(open.c, close.c, inside)
       }
       case 'frac':
       case 'dfrac':
@@ -390,6 +406,11 @@ function read(toks: Tok[]): Node {
         const text = plainBraces().replace(/\s+/g, '')
         // \mathrm{e}, the e of a book, is Euler's number.
         return text === 'e' ? { t: 'atom', s: 'e', euler: true } : { t: 'atom', s: text }
+      }
+      case 'mathbb': {
+        // P147: the real numbers, \mathbb{R}. No other double-struck letter has a use here.
+        if (plainBraces().trim() !== 'R') return no()
+        return { t: 'atom', s: '\u211d' }
       }
       case 'sin':
       case 'cos':
@@ -439,6 +460,8 @@ function write(n: Node): Out {
       return { s: n.s, prec: 5 }
     case 'group':
       return { s: bracket(write(n.a)), prec: 5 }
+    case 'span':
+      return { s: `${n.open}${write(n.a).s}${n.close}`, prec: 5 }
     case 'neg': {
       const a = write(n.a)
       return { s: `-${a.prec < 2 ? bracket(a) : a.s}`, prec: 3 }

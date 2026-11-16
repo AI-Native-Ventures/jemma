@@ -141,10 +141,10 @@ describe('rows 4 and 5, which are what a tab changes', () => {
     expect(CAPS.asin.latex).toBe('\\sin^{-1}')
   })
 
-  it('Compare: < > <= >= != plus or minus, |x|, %, R and the word or, then a row of blanks (a number answer has a blank where or is)', () => {
+  it('Compare: < > <= >= != plus or minus, |x|, %, R and the word or (a number answer has a blank where or is), then (P147) the keys of an interval and three blanks', () => {
     const [a, b] = rows45('compare')
     expect(names(a!)).toEqual(['less than', 'greater than', 'less than or equal to', 'greater than or equal to', 'not equal to', 'plus or minus', 'absolute value', 'percent', 'rand', 'or'])
-    expect(names(b!)).toEqual(blanks(10))
+    expect(names(b!)).toEqual(['open square bracket', 'close square bracket', 'semicolon', 'infinity', 'union', 'element of', 'the real numbers', ...blanks(3)])
     expect(CAPS.abs.latex).toBe('\\left|\\square\\right|')
     // P146: the word or types the word between two answers, so three answers, or x < -1 or x > 4, can be written in one box
     expect(CAPS.or.insert).toBe('\\text{ or }')

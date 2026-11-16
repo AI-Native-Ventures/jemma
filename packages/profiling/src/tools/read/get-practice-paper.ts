@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { choiceLabel } from '../../logic/answers/choices'
 import { EventSchema } from '../../schemas/events'
 import { QuestionSchema, type Question } from '../../schemas/lesson'
 import { assertInSchool, defineTool, maybe, ok, withImages, type ToolContext } from '../context'
@@ -75,7 +76,9 @@ export const getPracticePaper = defineTool({
   async run(ctx, { sessionId }) {
     const practice = await loadPractice(ctx, sessionId)
     const files = await readStored(ctx.db, 'papers', [practice.path])
-    const questions = practice.questions.map(({ n, question }) => ({ n, prompt: question.prompt, ...(question.choices ? { choices: question.choices } : {}) }))
+    // The reader only needs the words of an option ("Picture B" for an option that is only a picture): the sheet names it by its letter. A true or false and a reason question have no choices.
+    const keep = (q: Question) => !!q.choices?.length && q.answerKind !== 'truefalse' && q.answerKind !== 'reason'
+    const questions = practice.questions.map(({ n, question }) => ({ n, prompt: question.prompt, ...(keep(question) ? { choices: question.choices!.map(choiceLabel) } : {}) }))
     return withImages({ sessionId, pageCount: files.length, questions }, files)
   },
 })
