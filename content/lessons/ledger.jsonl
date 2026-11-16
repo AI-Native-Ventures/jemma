@@ -13,3 +13,5 @@
 {"time":"2026-11-16T18:39:02.596Z","model":"opencode/mimo-v2.6-flash-free","kind":"probe","seconds":3,"ok":false,"limited":true,"error":"Free usage limit reached"}
 {"time":"2026-11-16T18:45:06.292Z","model":"opencode/hy4-flash-free","kind":"probe","seconds":3.3,"ok":false,"limited":true,"error":"Free usage limit reached"}
 {"time":"2026-11-16T18:51:09.564Z","model":"opencode/inkling-2-small-free","kind":"probe","seconds":2.8,"ok":false,"limited":true,"error":"Free usage limit reached"}
+{"time":"2026-11-16T18:57:13.268Z","model":"opencode/beam-free","kind":"probe","seconds":3.3,"ok":false,"limited":true,"error":"Free usage limit reached"}
+{"time":"2026-11-16T19:03:18.777Z","model":"opencode/flint-40b-free","kind":"probe","seconds":5.1,"ok":false,"limited":true,"error":"Free usage limit reached"}
