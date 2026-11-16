@@ -17,6 +17,9 @@ export type DiagramViewProps = {
   variant?: Variant | 'learn'
   highlight?: string[]
   className?: string
+  /** P145: the caption of the step the picture is in, and whether the lesson is a senior one. Only a number line reads them. */
+  caption?: string
+  senior?: boolean
 }
 
 export function PictureMissing({ className }: { className?: string }) {
@@ -31,7 +34,7 @@ export function PictureMissing({ className }: { className?: string }) {
   )
 }
 
-export function DiagramView({ spec, variant, highlight, className }: DiagramViewProps) {
+export function DiagramView({ spec, variant, highlight, className, caption, senior }: DiagramViewProps) {
   // The wide schema: a lesson of a senior class (Mathematics, Grades 7 to 12) may hold two more kinds. It reads the seven old kinds exactly as
   // the primary schema does, so a lesson of the demo class draws what it always drew.
   const parsed = SeniorDiagramSpecSchema.safeParse(spec)
@@ -44,7 +47,7 @@ export function DiagramView({ spec, variant, highlight, className }: DiagramView
       case 'fraction_bar':
         return <FractionBar {...s} variant={variant} />
       case 'number_line':
-        return <NumberLine {...s} />
+        return <NumberLine {...s} caption={caption} senior={senior} />
       case 'area_model':
         return <AreaModel {...s} />
       case 'place_value':

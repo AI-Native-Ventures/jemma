@@ -9,7 +9,7 @@ import { findPart, findTopic, LESSON_PART, LESSON_TOPIC, TOUR_LEARNER } from '..
 import { TEACHER_WIDTH, TourHeader } from '../../../TourHeader'
 import { AverageBar, Back, classLevel, helpLine } from '../../Bits'
 import { AnalysisCard, TokensCard } from '../../Cards'
-import { LearnerRow } from '../../LearnerRow'
+import { LearnerRow, MARK_COLUMN, MARK_GAP, SCORE_COLUMN } from '../../LearnerRow'
 import { YouRow } from '../../YouRow'
 
 export const metadata: Metadata = { title: 'Equations and inequalities' }
@@ -59,12 +59,12 @@ export default async function TourTeacherTopicPage({ params }: { params: Promise
               <div>
                 <div className="flex items-center gap-3 pb-2 text-[12px] font-semibold text-body">
                   <span className="min-w-0 flex-1">Learner</span>
-                  <span aria-hidden="true" className="flex flex-none gap-1.5">
+                  <span aria-hidden="true" data-marks-head="true" className={`flex flex-none ${MARK_GAP}`}>
                     {TOUR_QUESTIONS.map((_, i) => (
-                      <span key={i} className="w-6 text-center">Q{i + 1}</span>
+                      <span key={i} className={`${MARK_COLUMN} text-center`}>Q{i + 1}</span>
                     ))}
                   </span>
-                  <span className="w-14 flex-none text-right">Score</span>
+                  <span className={`${SCORE_COLUMN} flex-none text-right`}>Score</span>
                 </div>
                 <ul className="m-0 flex list-none flex-col p-0">
                   <YouRow name={TOUR_LEARNER} />
@@ -74,12 +74,12 @@ export default async function TourTeacherTopicPage({ params }: { params: Promise
                 </ul>
                 <div className="flex items-center gap-3 border-t-2 border-ink pt-2.5 text-[13px] font-semibold">
                   <span className="min-w-0 flex-1">Learners right</span>
-                  <span className="flex flex-none gap-1.5">
+                  <span className={`flex flex-none ${MARK_GAP}`}>
                     {TOUR_QUESTIONS.map((_, i) => (
-                      <span key={i} data-column={i + 1} className="w-6 text-center tabular-nums">{learners.filter((l) => l.results[i]).length}</span>
+                      <span key={i} data-column={i + 1} className={`${MARK_COLUMN} text-center tabular-nums`}>{learners.filter((l) => l.results[i]).length}</span>
                     ))}
                   </span>
-                  <span className="w-14 flex-none" />
+                  <span className={`${SCORE_COLUMN} flex-none`} />
                 </div>
               </div>
             </section>

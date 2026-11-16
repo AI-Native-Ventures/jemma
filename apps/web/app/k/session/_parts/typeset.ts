@@ -225,6 +225,11 @@ const isAlgebra = (group: Tok[], run: string): boolean =>
  */
 const BARE_TERM = /^[0-9]+(?:[.,][0-9]+)?[a-ce-fi-kn-rt-zθαβγδφλω]$/
 const OPENS_A_RUN = /^[(\-−+±∓]/
+/**
+ * A lone variable (P141): x, y, z or n standing as a word of its own ("for every x, so", "Solve for x.", "(x)"), in a senior line. It is maths there, like the
+ * equations around it. Another letter is text: a capital, the article "a", a letter that is part of a word ("x-axis" is one word, so it never gets here).
+ */
+const LONE_VARIABLE = /^\(?[xyzn]\)?$/
 
 const PM_TYPED = /^\+\/?[-−](?=$|[0-9A-Za-z√(πθ])/
 
@@ -280,7 +285,8 @@ export function segments(text: string, mode: TypesetMode): Segment[] {
     while (group.length > 0 && group[group.length - 1]!.kind === 'op' && !/\)$/.test(group[group.length - 1]!.core)) group.pop()
     if (group.length === 0) continue
     const run = group.map((t) => t.core).join(' ')
-    if (mode !== 'force' && ((!HAS_STRUCTURE.test(run) && !(mode === 'all' && group.length === 1 && BARE_TERM.test(run))) || (mode === 'algebra' && !isAlgebra(group, run)))) continue
+    const loneVariable = mode === 'all' && group.length === 1 && LONE_VARIABLE.test(run)
+    if (mode !== 'force' && ((!HAS_STRUCTURE.test(run) && !loneVariable && !(mode === 'all' && group.length === 1 && BARE_TERM.test(run))) || (mode === 'algebra' && !isAlgebra(group, run)))) continue
     if (mode === 'force' && group.every((t) => t.kind === 'op')) continue
     const latex = toLatexRun(run)
     if (latex === null) continue

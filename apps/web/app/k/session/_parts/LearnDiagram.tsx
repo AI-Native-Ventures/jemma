@@ -33,9 +33,10 @@ function stepRows(step: Step, previous?: Step) {
   return { rows, fills: rowFills(rows, carry), dashed: undefined }
 }
 
-function Picture({ step, previous }: { step: Step; previous?: Step }) {
+function Picture({ step, previous, senior }: { step: Step; previous?: Step; senior: boolean }) {
   const drawn = stepRows(step, previous)
-  if (!drawn) return <DiagramView spec={step.diagram} variant="learn" />
+  // P145: a number line of a senior lesson reads the caption of its step (an inequality said in words is drawn as a circle and a ray).
+  if (!drawn) return <DiagramView spec={step.diagram} variant="learn" caption={step.caption} senior={senior} />
   return (
     <BarRows
       rows={drawn.rows}
@@ -92,7 +93,7 @@ export function LearnDiagram({ lesson, onReady }: LearnDiagramProps) {
                 <FractionText text={step.caption} size={20} rule={2} gap={3} side={3} />
               )}
             </span>
-            <Picture step={step} previous={d.steps[i - 1]} />
+            <Picture step={step} previous={d.steps[i - 1]} senior={mode === 'all'} />
           </div>
         ))}
       </figure>
@@ -117,7 +118,7 @@ export function LearnDiagram({ lesson, onReady }: LearnDiagramProps) {
               gap={10}
             />
           ) : (
-            <DiagramView spec={d.contrast.diagram} variant="learn" />
+            <DiagramView spec={d.contrast.diagram} variant="learn" caption={d.contrast.caption} senior={mode === 'all'} />
           )}
           <span className="text-[15px] leading-[1.45]">
             <FractionText text={d.contrast.caption} size={20} rule={2} gap={3} side={3} typeset={mode} />

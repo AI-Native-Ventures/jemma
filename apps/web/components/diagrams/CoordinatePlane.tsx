@@ -110,6 +110,10 @@ function graphLabelAt(end: { x: number; y: number }, text: string, nudge = 0, mi
 type Spot = { x: number; y: number; anchor: Anchor }
 const NUMBER_SIZE = 12
 const LABEL_SIZE = 14
+/** P141: the numbers of an axis count by 1, 2, 5, 10 ... steps (of the step of the grid) when every one would crowd the next. */
+const COUNT_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000]
+/** At most this many numbers are put to the test of crowding for an axis (a frame of a thousand steps starts from a count that has about this many). */
+const MOST_TESTED = 60
 /** The whole drawing, and the grid (the graph labels stay inside the grid). */
 const DRAWING: Box = { l: 2, r: W - 2, t: 2, b: H - 2 }
 const GRID_BOX: Box = { l: LEFT + 1, r: LEFT + PLOT_W - 1, t: TOP, b: TOP + PLOT_H }
@@ -143,9 +147,53 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
 
   // Where each label goes (P134): clear of the axis numbers and of the labels placed before it, graphs first.
   const numberBox = (x: number, y: number, anchor: Anchor, text: string) => boxOf(x, y, anchor, labelWidth(text, NUMBER_SIZE) + 2, 10, 3)
+  // P141: the numbers of an axis that are written. A long axis counts by 2, 5, 10 ... steps of its grid (from 0): the first count at which no number is over another
+  // number, over a number of the other axis, or over the 0 at the origin. The grid lines and the ticks stay at every step.
+  const xGrid = defaultStep(xMin, xMax, props.step)
+  const yGrid = defaultStep(yMin, yMax, props.step)
+  const countOf = (v: number, grid: number) => Math.round(v / grid)
+  const written = (ticks: number[], grid: number, every: number) => ticks.filter((v) => v !== 0 && countOf(v, grid) % every === 0)
+  /** The box a number takes up when it is written (digits sit on the baseline: nothing hangs below it but the halo). */
+  const crowdBox = (x: number, y: number, anchor: Anchor, text: string): Box => boxOf(x, y, anchor, labelWidth(text, NUMBER_SIZE), 9, 2)
+  /** Two numbers of one axis keep a pixel between them. */
+  const apart = (b: Box): Box => ({ l: b.l - 0.5, r: b.r + 0.5, t: b.t - 0.5, b: b.b + 0.5 })
+  const everyOf = (ticks: number[], grid: number) => COUNT_STEPS.find((k) => written(ticks, grid, k).length <= MOST_TESTED) ?? COUNT_STEPS[COUNT_STEPS.length - 1]!
+  const crowded = (kx: number, ky: number): 'x' | 'y' | null => {
+    const items = [
+      ...written(xTicks, xGrid, kx).map((v) => ({ axis: 'x' as const, box: crowdBox(px(v), xAxisY + 17, 'middle', numeral(v)) })),
+      ...written(yTicks, yGrid, ky).map((v) => ({ axis: 'y' as const, box: crowdBox(yAxisX - 7, py(v) + 4, 'end', numeral(v)) })),
+      ...(origin ? [{ axis: 'zero' as const, box: crowdBox(yAxisX - 7, xAxisY + 17, 'end', '0') }] : []),
+    ]
+    const nx = items.filter((i) => i.axis === 'x').length
+    const ny = items.filter((i) => i.axis === 'y').length
+    for (let i = 0; i < items.length; i++) {
+      for (let j = i + 1; j < items.length; j++) {
+        const a = items[i]!
+        const b = items[j]!
+        if (!(a.axis === b.axis ? hits(apart(a.box), apart(b.box)) : hits(a.box, b.box))) continue
+        if (a.axis === 'zero') return b.axis as 'x' | 'y'
+        if (b.axis === 'zero') return a.axis as 'x' | 'y'
+        return a.axis === b.axis ? (a.axis as 'x' | 'y') : nx >= ny ? 'x' : 'y'
+      }
+    }
+    return null
+  }
+  let everyX = everyOf(xTicks, xGrid)
+  let everyY = everyOf(yTicks, yGrid)
+  const nextCount = (k: number) => COUNT_STEPS[COUNT_STEPS.indexOf(k) + 1] ?? k
+  for (let guard = 0; guard < 40; guard++) {
+    const c = crowded(everyX, everyY)
+    if (!c) break
+    const next = c === 'x' ? nextCount(everyX) : nextCount(everyY)
+    if (next === (c === 'x' ? everyX : everyY)) break
+    if (c === 'x') everyX = next
+    else everyY = next
+  }
+  const xWritten = written(xTicks, xGrid, everyX)
+  const yWritten = written(yTicks, yGrid, everyY)
   const numbers = [
-    ...xTicks.filter((v) => v !== 0).map((v) => ({ key: `x${v}`, box: numberBox(px(v), xAxisY + 17, 'middle', numeral(v)) })),
-    ...yTicks.filter((v) => v !== 0).map((v) => ({ key: `y${v}`, box: numberBox(yAxisX - 7, py(v) + 4, 'end', numeral(v)) })),
+    ...xWritten.map((v) => ({ key: `x${v}`, box: numberBox(px(v), xAxisY + 17, 'middle', numeral(v)) })),
+    ...yWritten.map((v) => ({ key: `y${v}`, box: numberBox(yAxisX - 7, py(v) + 4, 'end', numeral(v)) })),
     ...(origin ? [{ key: 'zero', box: numberBox(yAxisX - 7, xAxisY + 17, 'end', '0') }] : []),
   ]
   const taken: Box[] = []
@@ -238,10 +286,10 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
         ))}
       </g>
       {/* The numbers, the axis names and the labels are not clipped, and sit over the graphs (their white halo keeps them readable where a line crosses). */}
-      {xTicks.filter((v) => v !== 0 && !hidden.has(`x${v}`)).map((v) => (
+      {xWritten.filter((v) => !hidden.has(`x${v}`)).map((v) => (
         <Num key={`nx${v}`} x={px(v)} y={xAxisY + 17} anchor="middle" extra={{ 'data-tick': 'x' }}>{numeral(v)}</Num>
       ))}
-      {yTicks.filter((v) => v !== 0 && !hidden.has(`y${v}`)).map((v) => (
+      {yWritten.filter((v) => !hidden.has(`y${v}`)).map((v) => (
         <Num key={`ny${v}`} x={yAxisX - 7} y={py(v) + 4} anchor="end" extra={{ 'data-tick': 'y' }}>{numeral(v)}</Num>
       ))}
       {origin && !hidden.has('zero') && (
