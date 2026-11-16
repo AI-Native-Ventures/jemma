@@ -46,15 +46,17 @@ type TextProps = {
   weight?: number
   fill?: string
   anchor?: 'start' | 'middle' | 'end'
+  /** Extra attributes on the text (a data-* name for a test to find it by). */
+  attrs?: Record<string, string>
   children: ReactNode
 }
 
-export function T({ x, y, size, weight = 400, fill = INK, anchor = 'middle', children }: TextProps) {
+export function T({ x, y, size, weight = 400, fill = INK, anchor = 'middle', attrs, children }: TextProps) {
   // A label with a fraction in it (a letter over a number) is a box of its own; every other label is a text.
-  const stacked = typeof children === 'string' ? fracLabel({ text: children, x, y, size, weight, fill, anchor }) : null
+  const stacked = typeof children === 'string' ? fracLabel({ text: children, x, y, size, weight, fill, anchor, attrs }) : null
   if (stacked) return stacked
   return (
-    <text x={x} y={y} fontSize={size} textAnchor={anchor} fill={fill} fontWeight={weight}>
+    <text x={x} y={y} fontSize={size} textAnchor={anchor} fill={fill} fontWeight={weight} {...attrs}>
       {typeof children === 'string' ? <Rich text={children} size={size} /> : children}
     </text>
   )

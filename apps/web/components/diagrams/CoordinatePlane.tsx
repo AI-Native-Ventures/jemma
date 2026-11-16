@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import type { CoordinatePlaneSpec } from '@jemma/profiling/schemas'
-import { Rich, fracLabel, raisedLabel } from './math-label'
+import { Rich, fracLabel, labelWidth, raisedLabel } from './math-label'
+import { boxOf, hits, hitsAny, within, type Anchor, type Box } from './label-clear'
 import { BODY, CORAL, CORAL_TEXT, INK, Line, Svg, WHITE, fmt, type Variant } from './shared'
 import { defaultStep, graphEquation, sampleGraph, ticksOf, type Pt } from './plane-math'
 
@@ -86,18 +87,35 @@ const pathOf = (piece: Pt[], px: (x: number) => number, py: (y: number) => numbe
 /** About how wide one letter of a graph label is (bold, 14 px), with the halo: enough to keep the words inside the grid, not a measurement. */
 const LABEL_LETTER = 8.7
 const LABEL_HALO = 6
-/** Where the label of a graph goes: beside the end of the curve, inside the grid. It is first put to the right of the end (or to the left, near the right side), then moved so that all of its words are inside. */
-function graphLabelAt(end: { x: number; y: number }, text: string) {
+/**
+ * Where the label of a graph goes: beside the end of the curve, inside the grid. It is first put to the right of the end (or to the left, near the right side), then moved so that all of its words are inside.
+ * `nudge` moves it up (minus) or down, and `mirror` puts it on the other side of the end: the places to try when the first is taken (see `Spot`).
+ */
+function graphLabelAt(end: { x: number; y: number }, text: string, nudge = 0, mirror = false) {
   const left = LEFT + 3
   const right = LEFT + PLOT_W - 3
   const width = text.length * LABEL_LETTER + LABEL_HALO
-  const flip = end.x > LEFT + PLOT_W * 0.7 || end.x + 6 + width > right
+  const flip = (end.x > LEFT + PLOT_W * 0.7 || end.x + 6 + width > right) !== mirror
   const x = flip ? Math.min(right, Math.max(left + width, end.x - 6)) : Math.max(left, end.x + 6)
   // A label with a raised part (x squared) keeps more room above it: the 2 stands higher than the line.
   const room = raisedLabel(text) ? 18 : 12
-  const y = Math.min(TOP + PLOT_H - 4, Math.max(TOP + room, end.y + (end.y < TOP + 20 ? 14 : -8)))
+  const y = Math.min(TOP + PLOT_H - 4, Math.max(TOP + room, end.y + (end.y < TOP + 20 ? 14 : -8) + nudge))
   return { x, y, anchor: flip ? ('end' as const) : ('start' as const) }
 }
+
+// P134: a label is never drawn on top of the numbers of an axis, or of another label. Each label has a list of places (the one it always had first); it is
+// drawn at the first of them that is clear and inside its limit (the first place of a graph label is inside the grid by its own rule, so it is not checked).
+// The axis numbers and the labels are boxes of a rough size (see `labelWidth`). When no place is clear, the label keeps the first and the numbers under
+// it are left out: the label wins (the place that covers least is taken).
+type Spot = { x: number; y: number; anchor: Anchor }
+const NUMBER_SIZE = 12
+const LABEL_SIZE = 14
+/** The whole drawing, and the grid (the graph labels stay inside the grid). */
+const DRAWING: Box = { l: 2, r: W - 2, t: 2, b: H - 2 }
+const GRID_BOX: Box = { l: LEFT + 1, r: LEFT + PLOT_W - 1, t: TOP, b: TOP + PLOT_H }
+const labelBox = (s: Spot, text: string): Box => boxOf(s.x, s.y, s.anchor, labelWidth(text, LABEL_SIZE) + 3, raisedLabel(text) ? 18 : 12, 4)
+/** Rows to try above and below the first place, and the two sides of the end. */
+const NUDGES = [0, -14, 14, -28, 28, -42, 42]
 
 /**
  * Graphs on a grid. The model gives the frame, the graphs by their constants and a few points; this draws it all: a light grid, the axes with
@@ -122,6 +140,57 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
     return { g, i, pieces, end: longest?.at(-1), colour: GRAPH[Math.min(i, GRAPH.length - 1)]! }
   })
   const points = (props.points ?? []).filter((p) => p.x >= xMin && p.x <= xMax && p.y >= yMin && p.y <= yMax)
+
+  // Where each label goes (P134): clear of the axis numbers and of the labels placed before it, graphs first.
+  const numberBox = (x: number, y: number, anchor: Anchor, text: string) => boxOf(x, y, anchor, labelWidth(text, NUMBER_SIZE) + 2, 10, 3)
+  const numbers = [
+    ...xTicks.filter((v) => v !== 0).map((v) => ({ key: `x${v}`, box: numberBox(px(v), xAxisY + 17, 'middle', numeral(v)) })),
+    ...yTicks.filter((v) => v !== 0).map((v) => ({ key: `y${v}`, box: numberBox(yAxisX - 7, py(v) + 4, 'end', numeral(v)) })),
+    ...(origin ? [{ key: 'zero', box: numberBox(yAxisX - 7, xAxisY + 17, 'end', '0') }] : []),
+  ]
+  const taken: Box[] = []
+  const hidden = new Set<string>()
+  const settle = (text: string, spots: Spot[], limit: Box, checkFirst: boolean): Spot => {
+    const covers = (s: Spot) => {
+      const b = labelBox(s, text)
+      return { numbers: numbers.filter((n) => hits(b, n.box)), labels: taken.filter((o) => hits(b, o)).length }
+    }
+    const inside = (s: Spot, i: number) => !(checkFirst || i > 0) || within(labelBox(s, text), limit)
+    const clear = (s: Spot, i: number) => {
+      const c = covers(s)
+      return inside(s, i) && c.numbers.length === 0 && c.labels === 0
+    }
+    let at = spots.findIndex(clear)
+    if (at < 0) {
+      // No place is clear: the one that covers least (outside the limit counts most, then another label, then a number).
+      const cost = (s: Spot, i: number) => {
+        const c = covers(s)
+        return (inside(s, i) ? 0 : 1000) + c.labels * 10 + c.numbers.length
+      }
+      at = spots.reduce((best, s, i) => (cost(s, i) < cost(spots[best]!, best) ? i : best), 0)
+      for (const n of covers(spots[at]!).numbers) hidden.add(n.key)
+    }
+    const spot = spots[at]!
+    taken.push(labelBox(spot, text))
+    return spot
+  }
+  const graphSpot = new Map<number, Spot>()
+  for (const { g, i, end } of graphs) {
+    if (!g.label || !end) continue
+    const e = { x: px(end.x), y: py(end.y) }
+    const spots = NUDGES.flatMap((nudge) => [false, true].map((mirror) => graphLabelAt(e, g.label!, nudge, mirror)))
+    graphSpot.set(i, settle(g.label, spots, GRID_BOX, false))
+  }
+  const pointSpot = new Map<number, Spot>()
+  points.forEach((p, i) => {
+    if (!p.label) return
+    const near = px(p.x) > LEFT + PLOT_W - 44
+    // The place it always had (above, to the right, or to the left near the right side), then the other side, then below the point, then further out.
+    const spots = [-8, 16, -24, 28].flatMap((dy) =>
+      (near ? [-8, 8] : [8, -8]).map((dx): Spot => ({ x: px(p.x) + dx, y: py(p.y) + dy, anchor: dx > 0 ? 'start' : 'end' })),
+    )
+    pointSpot.set(i, settle(p.label, spots, DRAWING, true))
+  })
 
   return (
     <Svg width={W} height={H} label={describeCoordinatePlane(props, variant)}>
@@ -169,13 +238,13 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
         ))}
       </g>
       {/* The numbers, the axis names and the labels are not clipped, and sit over the graphs (their white halo keeps them readable where a line crosses). */}
-      {xTicks.filter((v) => v !== 0).map((v) => (
+      {xTicks.filter((v) => v !== 0 && !hidden.has(`x${v}`)).map((v) => (
         <Num key={`nx${v}`} x={px(v)} y={xAxisY + 17} anchor="middle" extra={{ 'data-tick': 'x' }}>{numeral(v)}</Num>
       ))}
-      {yTicks.filter((v) => v !== 0).map((v) => (
+      {yTicks.filter((v) => v !== 0 && !hidden.has(`y${v}`)).map((v) => (
         <Num key={`ny${v}`} x={yAxisX - 7} y={py(v) + 4} anchor="end" extra={{ 'data-tick': 'y' }}>{numeral(v)}</Num>
       ))}
-      {origin && (
+      {origin && !hidden.has('zero') && (
         <Num x={yAxisX - 7} y={xAxisY + 17} anchor="end" extra={{ 'data-zero': '' }}>
           0
         </Num>
@@ -186,9 +255,9 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
       <text data-axis="y" x={r1(yAxisX)} y={TOP - 8} fontSize={15} fontStyle="italic" fontWeight={600} fill={INK} textAnchor="middle">
         y
       </text>
-      {graphs.map(({ g, i, end, colour }) => {
-        if (!g.label || !end) return null
-        const at = graphLabelAt({ x: px(end.x), y: py(end.y) }, g.label)
+      {graphs.map(({ g, i, colour }) => {
+        const at = graphSpot.get(i)
+        if (!g.label || !at) return null
         return (
           <Num key={`gl${i}`} x={at.x} y={at.y} anchor={at.anchor} size={14} weight={700} fill={colour.text} rich extra={{ 'data-graph-label': String(i) }}>
             {g.label}
@@ -196,10 +265,10 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
         )
       })}
       {points.map((p, i) => {
-        if (!p.label) return null
-        const near = px(p.x) > LEFT + PLOT_W - 44
+        const at = pointSpot.get(i)
+        if (!p.label || !at) return null
         return (
-          <Num key={`pl${i}`} x={px(p.x) + (near ? -8 : 8)} y={py(p.y) - 8} anchor={near ? 'end' : 'start'} size={14} weight={700} fill={INK} rich extra={{ 'data-point-label': String(i) }}>
+          <Num key={`pl${i}`} x={at.x} y={at.y} anchor={at.anchor} size={14} weight={700} fill={INK} rich extra={{ 'data-point-label': String(i) }}>
             {p.label}
           </Num>
         )
