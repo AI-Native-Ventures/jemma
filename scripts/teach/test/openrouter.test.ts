@@ -6,7 +6,7 @@ import { MockLanguageModelV4 } from 'ai/test'
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import { backendFromEnv, limitParkMsFor, modelsFor, runnerFor } from '../backend'
 import { FatalBackendError, LIMIT_PARK_MS } from '../chain'
-import { OPENROUTER_MODELS, OPENROUTER_PARK_MS, ESTIMATE_PER_M, makeOpenRouterRunner, openrouterModel, openrouterModelsFromEnv, readKey } from '../openrouter'
+import { OPENROUTER_MODELS, OPENROUTER_PARK_MS, ESTIMATE_PER_M, effortFromEnv, makeOpenRouterRunner, openrouterModel, openrouterModelsFromEnv, readKey } from '../openrouter'
 import { runOpencode } from '../opencode'
 
 const KEY = 'test-secret-key-0123456789'
@@ -80,6 +80,14 @@ describe('the OpenRouter runner', () => {
     expect(r.error).toContain('[key]')
     const plain = await runnerOf(() => Promise.reject(new Error(`boom ${KEY}`)))('m/x', 'p', { timeoutMs: 5000 })
     expect(plain.error).not.toContain(KEY)
+  })
+
+  test('the reasoning effort is low unless TEACH_EFFORT says another, and it reaches the model', () => {
+    expect(effortFromEnv({})).toBe('low')
+    expect(effortFromEnv({ TEACH_EFFORT: ' None ' })).toBe('none')
+    expect(() => effortFromEnv({ TEACH_EFFORT: 'max' })).toThrow(/none, minimal, low or medium/)
+    const model = openrouterModel(KEY, 'none')('deepseek/deepseek-v4-flash') as unknown as { settings?: Record<string, unknown> }
+    expect(model.settings).toMatchObject({ reasoning: { effort: 'none' }, usage: { include: true } })
   })
 
   test('the model is built with low reasoning effort and usage accounting', () => {

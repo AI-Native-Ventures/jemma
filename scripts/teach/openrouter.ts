@@ -53,13 +53,25 @@ export function readKey(env: Record<string, string | undefined> = process.env): 
 type Usage = { promptTokens?: number; completionTokens?: number; promptTokensDetails?: { cachedTokens?: number }; cost?: number }
 
 /** The model of a call: OpenRouter's chat model with low reasoning effort and usage accounting (cost and cached tokens) switched on. */
+export type Effort = 'minimal' | 'low' | 'medium' | 'none'
+export const EFFORTS: Effort[] = ['none', 'minimal', 'low', 'medium']
+
+/** `TEACH_EFFORT` (none, minimal, low, medium) or low: how hard the models are asked to think before they answer. Thinking tokens are paid as output. */
+export function effortFromEnv(env: Record<string, string | undefined> = process.env): Effort {
+  const value = (env.TEACH_EFFORT ?? 'low').trim().toLowerCase()
+  if ((EFFORTS as string[]).includes(value)) return value as Effort
+  throw new Error(`TEACH_EFFORT must be none, minimal, low or medium (got "${env.TEACH_EFFORT}")`)
+}
+
 export const openrouterModel =
-  (apiKey: string) =>
+  (apiKey: string, effort: Effort = 'low') =>
   (modelId: string): LanguageModel =>
-    createOpenRouter({ apiKey }).chat(modelId, { reasoning: { effort: 'low' }, usage: { include: true } })
+    createOpenRouter({ apiKey }).chat(modelId, { reasoning: { effort }, usage: { include: true } })
 
 export type OpenRouterOptions = {
   apiKey: string
+  /** Reasoning effort of every call (default low). */
+  effort?: Effort
   /** Replaced in tests. */
   makeModel?: (modelId: string) => LanguageModel
   /** A whole lesson is about 6,000 to 10,000 tokens of JSON. */
@@ -67,7 +79,7 @@ export type OpenRouterOptions = {
 }
 
 export function makeOpenRouterRunner(opts: OpenRouterOptions): Runner {
-  const makeModel = opts.makeModel ?? openrouterModel(opts.apiKey)
+  const makeModel = opts.makeModel ?? openrouterModel(opts.apiKey, opts.effort)
   const clean = (text: string) => (opts.apiKey ? text.split(opts.apiKey).join('[key]') : text)
   return async (modelId, prompt, { timeoutMs }): Promise<RunResult> => {
     try {
