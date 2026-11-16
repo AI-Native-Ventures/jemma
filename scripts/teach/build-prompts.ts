@@ -32,6 +32,8 @@ export const OutlineSchema = z.object({
         title: z.string().min(1),
         objectives: z.array(z.string().min(1)).min(2).max(4),
         sections: z.array(z.string()).optional(),
+        /** On a retry: why an earlier version of this lesson was refused (never asked of a model). */
+        hints: z.array(z.string()).optional(),
       }),
     )
     .min(1)
@@ -124,6 +126,8 @@ export type WriteInput = {
   title: string
   objectives: string[]
   sections?: string[]
+  /** Why an earlier version of this lesson was refused, when the lesson is written again from the start (a retry). */
+  hints?: string[]
   /** On a rewrite: what was wrong, and the lesson that had it. */
   rewrite?: { problems: string[]; previous: TeachingLesson }
 }
@@ -170,6 +174,7 @@ export function writePrompt(input: WriteInput): string {
     ? `\n## Your last attempt had problems: fix every one\n\n${input.rewrite.problems.map((p) => `- ${p}`).join('\n')}\n\nHere is the lesson you wrote. Write the whole lesson again with every problem fixed and everything else as good as before or better:\n\n${JSON.stringify(input.rewrite.previous)}\n`
     : ''
   // The sections this lesson draws on, in full, go with the part that changes: the fixed reference above is the same for every lesson of the topic.
+  const hints = !input.rewrite && input.hints?.length ? `\n## An earlier version of this lesson was refused for these reasons: do not repeat them\n\n${input.hints.map((p) => `- ${p}`).join('\n')}\n` : ''
   const picked = input.sections?.length ? input.ref.sections.filter((s) => input.sections!.includes(s.id)) : []
   const focus = picked.length ? `\n## The sections of the reference to teach this lesson from, in full\n\n${referenceText(input.ref, input.sections)}\n` : ''
   return fill(read('write.md'), {
@@ -190,7 +195,7 @@ export function writePrompt(input: WriteInput): string {
     TITLE: input.title,
     OBJECTIVES: input.objectives.map((o) => `  - ${o}`).join('\n'),
     FOCUS: focus,
-    PROBLEMS: problems,
+    PROBLEMS: hints + problems,
   })
 }
 

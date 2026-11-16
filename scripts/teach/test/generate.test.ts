@@ -185,12 +185,19 @@ describe('generate', () => {
     expect(before.lessons).toHaveLength(1)
     expect(failList().lessons[0]).toMatchObject({ position: 2, title: 'Lesson 2 title' })
 
+    const prompts: string[] = []
     const second = fake({ lessons: 2 })
     const plain = await make(second).generateTopic(group, fileName)
     expect(plain.status).toBe('skipped')
     expect(second.calls).toEqual([])
 
-    const retry = await make(second, { retryFailed: true }).generateTopic(group, fileName)
+    const asking: Runner = async (m, p) => {
+      prompts.push(p)
+      return second.run(m, p, { timeoutMs: 1 })
+    }
+    const retry = await make(second, { retryFailed: true, run: asking }).generateTopic(group, fileName)
+    // the writer is told why the earlier version was refused
+    expect(prompts.find((p) => p.includes('# Task: write ONE full maths lesson'))).toMatch(/earlier version of this lesson was refused[\s\S]*last step/)
     expect(retry).toMatchObject({ status: 'done', ready: 2, failed: 0 })
     expect(second.calls.map((c) => c.kind)).toEqual(['write', 'review'])
     const after = TopicLessonsSchema.parse(JSON.parse(readFileSync(filePath(), 'utf8')))

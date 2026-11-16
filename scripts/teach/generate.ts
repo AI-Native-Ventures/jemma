@@ -280,7 +280,7 @@ export class Generator {
     const item = outline.lessons[index]!
     const titles = outline.lessons.map((l) => l.title)
     const ctx = { grade: group.grade, source: ref.source }
-    const input = { group, ref, titles, position, title: item.title, objectives: item.objectives, sections: item.sections }
+    const input = { group, ref, titles, position, title: item.title, objectives: item.objectives, sections: item.sections, hints: item.hints }
     const schema = lessonSchema(position, item)
     const failed = (problems: string[], writer: string, reviewer: string): LessonResult => ({ position, status: 'failed', problems, writer, reviewer })
 
@@ -382,7 +382,7 @@ export class Generator {
       } else {
         const entry = failed.find((l) => l.position === status.position)
         if (!entry || !entry.title || !goodObjectives(entry.objectives)) return null
-        lessons.push({ title: entry.title, objectives: entry.objectives, sections: entry.sections })
+        lessons.push({ title: entry.title, objectives: entry.objectives, sections: entry.sections, hints: entry.problems.slice(0, 6) })
       }
     }
     const outline = { lessons }
