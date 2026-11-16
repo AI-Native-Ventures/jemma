@@ -11,10 +11,12 @@ import {
   aaPageUrl,
   aaScore,
   loadCatalog,
+  markRefused,
   normaliseAaName,
   normaliseOpenRouterId,
   openRouterKeys,
   rankModels,
+  refusedIds,
   resetCatalogMemo,
   stripVariantWords,
   type AaModel,
@@ -662,5 +664,130 @@ describe('loadCatalog', () => {
     await loadCatalog({ AA_API_KEY: 'two' }, fn as never, now)
     // OpenRouter once, then the two AA pages for each key.
     expect(fn).toHaveBeenCalledTimes(5)
+  })
+})
+
+// P121b: a model that refuses a call (OpenRouter refused the free Inkling listing for API callers) is left out of the ranked part for an hour.
+describe('the refusal memo', () => {
+  beforeEach(() => resetCatalogMemo())
+
+  test('a refused id is remembered for an hour, and not longer', () => {
+    let t = 5_000_000
+    markRefused(INKLING, () => t)
+    expect([...refusedIds(() => t)]).toEqual([INKLING])
+    t += CATALOG_TTL_MS - 1
+    expect(refusedIds(() => t).has(INKLING)).toBe(true)
+    t += 1
+    expect(refusedIds(() => t).size).toBe(0)
+  })
+
+  test('marking an id again starts its hour again, and each id has its own hour', () => {
+    let t = 1_000
+    markRefused(INKLING, () => t)
+    t += 30 * 60_000
+    markRefused(SUPER, () => t)
+    t += 30 * 60_000
+    markRefused(INKLING, () => t)
+    t += 20 * 60_000
+    expect([...refusedIds(() => t)].sort()).toEqual([INKLING, SUPER].sort())
+    t += 15 * 60_000
+    expect([...refusedIds(() => t)]).toEqual([INKLING])
+  })
+
+  test('ids are kept in lower case, and a plain number works as the clock', () => {
+    markRefused('Some/Model:FREE', 1_000)
+    expect(refusedIds(1_000).has('some/model:free')).toBe(true)
+    expect(refusedIds(1_000 + CATALOG_TTL_MS).size).toBe(0)
+  })
+
+  test('resetCatalogMemo forgets every refusal', () => {
+    markRefused(INKLING, () => 1)
+    resetCatalogMemo()
+    expect(refusedIds(() => 1).size).toBe(0)
+  })
+
+  test('with no clock given the real time is used', () => {
+    markRefused(INKLING)
+    expect(refusedIds().has(INKLING)).toBe(true)
+  })
+})
+
+describe('rankModels with refused ids', () => {
+  const rank = (over: Partial<Parameters<typeof rankModels>[0]> = {}) => rankModels({ kind: 'text', openrouter: OR, aa: AA, pinned: [], ...over })
+  const refused = (...ids: string[]) => new Set(ids.map((id) => id.toLowerCase()))
+
+  test('a refused id is left out of the ranked part and the next best model takes its place', () => {
+    expect(rank({ refused: refused(INKLING) })).toEqual([SUPER, ULTRA, LIGHTNING, NORTH])
+    expect(rank({ refused: refused(INKLING, SUPER) })).toEqual([ULTRA, LIGHTNING, NORTH, GEMMA31])
+    expect(rank({ refused: refused() })).toEqual([INKLING, SUPER, ULTRA, LIGHTNING])
+  })
+
+  test('a pinned id is never taken out by the memo: it stays, after the ranked ones', () => {
+    expect(rank({ refused: refused(INKLING), pinned: [INKLING] })).toEqual([SUPER, ULTRA, LIGHTNING, NORTH, INKLING])
+    expect(rank({ refused: refused(PAID, SUPER), pinned: [PAID, SUPER] })).toEqual([PAID, INKLING, ULTRA, LIGHTNING, NORTH, SUPER])
+  })
+
+  test('it also holds for a photo job, for the newest-first list and for the backup list', () => {
+    expect(rank({ kind: 'vision', refused: refused(INKLING) })).toEqual([SUPER, GEMMA31])
+    expect(rank({ aa: null, refused: refused(LING) })).toEqual([ERNIE, INKLING, LFM, PARTICLE])
+    const backup = OR.map((m) => ({ ...m, aaIndex: ({ [LING]: 31, [ULTRA]: 28, [SUPER]: 26, [INKLING]: 24 } as Record<string, number>)[m.id] ?? null }))
+    expect(rank({ openrouter: backup, aa: null, refused: refused(LING) })).toEqual([ULTRA, SUPER, INKLING])
+  })
+
+  test('when every candidate is refused the pinned list comes back, never an empty list', () => {
+    const all = new Set(OR.map((m) => m.id.toLowerCase()))
+    expect(rank({ refused: all, pinned: [PAID, SUPER] })).toEqual([PAID, SUPER])
+    expect(rank({ refused: all, pinned: [] })).toEqual([])
+  })
+})
+
+// P121b: when Artificial Analysis cannot be read, OpenRouter's own copy of the index is the backup (benchmarks.artificial_analysis.intelligence_index).
+describe('backup ranking by the index in the OpenRouter list', () => {
+  /** The fixture list with an invented index on some ids (the fixture holds none): the others have none. */
+  const scores = { [LING]: 31, [ULTRA]: 28, [SUPER]: 26, [INKLING]: 24, [GEMMA31]: 20 } as Record<string, number>
+  const withIndex = (list: OpenRouterModel[], by: Record<string, number>) => list.map((m) => ({ ...m, aaIndex: by[m.id] ?? null }))
+  const BACKUP = withIndex(OR, scores)
+  const rank = (over: Partial<Parameters<typeof rankModels>[0]> = {}) => rankModels({ kind: 'text', openrouter: BACKUP, aa: null, pinned: [], ...over })
+
+  test('with no AA list the models are ranked by OpenRouter\'s own index, and models with no index are dropped', () => {
+    expect(rank()).toEqual([LING, ULTRA, SUPER, INKLING])
+    expect(rank({ top: 20 })).toEqual([LING, ULTRA, SUPER, INKLING, GEMMA31])
+    expect(rank({ aa: [] })).toEqual([LING, ULTRA, SUPER, INKLING])
+  })
+
+  test('a tie goes to the larger context, then to the id', () => {
+    const list = [orModel('b/x:free'), orModel('a/x:free'), orModel('c/big:free', { context_length: 900_000 })].map((m) => ({ ...m, aaIndex: 10 }))
+    expect(rank({ openrouter: list })).toEqual(['c/big:free', 'a/x:free', 'b/x:free'])
+  })
+
+  test('a photo job still gets only models that take images', () => {
+    const out = rank({ kind: 'vision' })
+    expect(out).toEqual([LING, SUPER, INKLING, GEMMA31])
+    for (const id of out) expect(hasImage(id), id).toBe(true)
+  })
+
+  test('the AA list wins when it is there: the OpenRouter index is only the backup', () => {
+    expect(rank({ aa: AA })).toEqual([INKLING, SUPER, ULTRA, LIGHTNING])
+  })
+
+  test('if no candidate has an index the newest come first, as before', () => {
+    expect(rank({ openrouter: OR })).toEqual([LING, ERNIE, INKLING, LFM])
+    expect(rank({ openrouter: withIndex(OR, {}) })).toEqual([LING, ERNIE, INKLING, LFM])
+    // An index on a model that is not a candidate (not free) does not count.
+    expect(rank({ openrouter: withIndex(OR, { [PAID]: 50 }) })).toEqual([LING, ERNIE, INKLING, LFM])
+  })
+
+  test('the pinned ids follow, as for the other lists', () => {
+    expect(rank({ pinned: [PAID, SUPER, ULTRA, GEMMA31], top: 2 })).toEqual([PAID, LING, ULTRA, SUPER, GEMMA31])
+  })
+
+  test('the index is read from benchmarks.artificial_analysis.intelligence_index, and anything else is null', async () => {
+    resetCatalogMemo()
+    const at = (v: unknown) => ({ benchmarks: { artificial_analysis: { intelligence_index: v } } })
+    const body = { data: [{ ...OR[0], ...at(17.5) }, { ...OR[1], benchmarks: {} }, { ...OR[2], ...at(null) }, { ...OR[3], ...at('high') }, { ...OR[4], benchmarks: { artificial_analysis: null } }, { ...OR[5], benchmarks: 'nope' }, OR[6]] }
+    const fn = vi.fn(async () => new Response(JSON.stringify(body), { status: 200 }))
+    const catalog = await loadCatalog({}, fn as never, () => 1)
+    expect(catalog.openrouter?.map((m) => m.aaIndex)).toEqual([17.5, null, null, null, null, null, null])
+    vi.restoreAllMocks()
   })
 })

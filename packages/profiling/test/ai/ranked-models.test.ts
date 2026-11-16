@@ -13,6 +13,7 @@ import {
   aaPageUrl,
   getModel,
   isModelGoneError,
+  isRefusalError,
   modelCallTimeoutMs,
   replayKey,
   resetCatalogMemo,
@@ -73,6 +74,9 @@ type Net = {
   /** Called for each model call. Return a Response, or a promise that never settles to hang. */
   chat?: (model: string, init: RequestInit) => Response | Promise<Response>
   aa?: 'ok' | 'fail'
+  /** The AA pages served (default: the two pages of the fixture), and a page number that answers 500. */
+  aaPages?: unknown[]
+  aaFailPage?: number
   openrouter?: 'ok' | 'fail'
   /** The OpenRouter list served: default is the whole fixture. */
   list?: unknown[]
@@ -88,7 +92,9 @@ function network(net: Net = {}) {
     if (url === OPENROUTER_MODELS_URL) return net.openrouter === 'fail' ? json({}, 503) : json({ data: net.list ?? OR.data })
     if (url.startsWith(AA_FREE_MODELS_URL)) {
       const page = Number(new URL(url).searchParams.get('page'))
-      return net.aa === 'fail' ? json({}, 401) : json(AA_PAGES[page - 1] ?? { data: [] })
+      if (net.aa === 'fail') return json({}, 401)
+      if (net.aaFailPage === page) return json({}, 500)
+      return json((net.aaPages ?? AA_PAGES)[page - 1] ?? { data: [] })
     }
     if (url === CHAT_URL) {
       const model = JSON.parse(init?.body as string).model as string
@@ -193,6 +199,49 @@ describe('the dynamic list in a live call', () => {
     const { asked } = network({ chat: gone, aa: 'fail' })
     await expect(getModel('text', env()).doGenerate(params)).rejects.toThrow()
     expect(asked.slice(0, 3)).toEqual([PAID, LING, ERNIE])
+  })
+
+  const row = (slug: string, name: string, score: number) => ({ slug, name, evaluations: { artificial_analysis_intelligence_index: score } })
+  const page = (n: number, hasMore: boolean, data: unknown[]) => ({ tier: 'free', pagination: { page: n, page_size: 3, total_pages: 2, has_more: hasMore }, data })
+  /** The best models of the hour are on page 2, as the best of the real list were on later pages. */
+  const lateBest = [
+    page(1, true, [row('nemotron-3-5-lightning', 'Nemotron 3.5 Lightning', 35), row('north-mini-code', 'North Mini Code', 32), row('claude-opus-5-5', 'Claude Opus 5.5', 70)]),
+    page(2, false, [row('inkling-2-small', 'Inkling 2 Small', 44), row('nemotron-3-5-super-vl', 'Nemotron 3.5 Super VL', 41), row('nvidia-nemotron-3-ultra-550b-a55b', 'Nemotron 3 Ultra', 38)]),
+  ]
+
+  test('the best model can be on page 2 of the AA list: it still ranks first, and page 1 alone would not have found it', async () => {
+    const { asked, catalogCalls } = network({ chat: gone, aaPages: lateBest })
+    await expect(getModel('text', env()).doGenerate(params)).rejects.toThrow()
+    expect(asked).toEqual([PAID, INKLING, SUPER, ULTRA, LIGHTNING, GEMMA31])
+    expect(catalogCalls()).toEqual([OPENROUTER_MODELS_URL, aaPageUrl(1), aaPageUrl(2)])
+    // The same answer cut to page 1 (what reading one page gives) puts the late models nowhere.
+    resetCatalogMemo()
+    vi.unstubAllGlobals()
+    const first = network({ chat: gone, aaPages: [{ ...lateBest[0] as object, pagination: { page: 1, has_more: false } }] })
+    await expect(getModel('text', env()).doGenerate(params)).rejects.toThrow()
+    expect(first.asked).toEqual([PAID, LIGHTNING, 'cohere/north-mini-code:free', SUPER, ULTRA, GEMMA31])
+  })
+
+  test('the best model can be on page 2 for a photo job as well', async () => {
+    const { asked } = network({ chat: gone, aaPages: lateBest })
+    const vision = getModel('vision', env({ VISION_PROVIDER: 'openrouter', VISION_MODEL: PAID, VISION_MODEL_FALLBACKS: [SUPER, ULTRA, GEMMA31].join(',') }))
+    await expect(vision.doGenerate(params)).rejects.toThrow()
+    expect(asked).toEqual([PAID, INKLING, SUPER, GEMMA31])
+  })
+
+  test('if page 2 fails the AA list is unavailable: the newest free models come first, and the list is asked for again after 5 minutes', async () => {
+    const { asked, catalogCalls } = network({ chat: gone, aaFailPage: 2 })
+    await expect(getModel('text', env()).doGenerate(params)).rejects.toThrow()
+    expect(asked).toEqual([PAID, LING, ERNIE, INKLING, LFM, SUPER, ULTRA, GEMMA31])
+    expect(catalogCalls()).toEqual([OPENROUTER_MODELS_URL, aaPageUrl(1), aaPageUrl(2)])
+  })
+
+  test('an AA answer with no pagination block is read as one page', async () => {
+    const onlyPage = { data: [row('inkling-2-small', 'Inkling 2 Small', 44), row('nemotron-3-5-lightning', 'Nemotron 3.5 Lightning', 35)] }
+    const { asked, catalogCalls } = network({ chat: gone, aaPages: [onlyPage] })
+    await expect(getModel('text', env()).doGenerate(params)).rejects.toThrow()
+    expect(asked).toEqual([PAID, INKLING, LIGHTNING, SUPER, ULTRA, GEMMA31])
+    expect(catalogCalls()).toEqual([OPENROUTER_MODELS_URL, aaPageUrl(1)])
   })
 
   test('with the OpenRouter list unreadable the pinned list is called as it is', async () => {
@@ -410,14 +459,14 @@ describe('a model that is gone or unpaid does not stop the chain', () => {
     expect(b.doGenerateCalls.length).toBe(1)
   })
 
-  test('with no model left the first error goes up, and a 400 still stops the chain', async () => {
+  test('with no model left the first error goes up, and a 400 moves on too (P121b)', async () => {
     const first = Object.assign(new Error('Not Found'), { statusCode: 404 })
     const second = Object.assign(new Error('Payment Required'), { statusCode: 402 })
     await expect(withFallbacks([failing('a', first), failing('b', second)] as never).doGenerate(params)).rejects.toBe(first)
     const bad = failing('c', Object.assign(new Error('bad request'), { statusCode: 400 }))
     const b = ok('from b')
-    await expect(withFallbacks([bad, b] as never).doGenerate(params)).rejects.toThrow('bad request')
-    expect(b.doGenerateCalls.length).toBe(0)
+    expect(textOf(await withFallbacks([bad, b] as never).doGenerate(params))).toBe('from b')
+    expect(b.doGenerateCalls.length).toBe(1)
   })
 
   test('a single model that is gone gives its own error', async () => {
@@ -470,5 +519,188 @@ describe('a model that is gone or unpaid does not stop the chain', () => {
     const out = await getModel('text', env()).doGenerate(params)
     expect(textOf(out)).toBe(`from ${SUPER}`)
     expect(asked).toEqual([PAID, INKLING, SUPER])
+  })
+})
+
+// P121b: OpenRouter refused the free Inkling listing for API callers ("... is only available on agentic harnesses ..."), and the chain stopped on
+// that error instead of moving on to the next model.
+const INKLING_REFUSAL = 'thinkingmachines/inkling-2-small:free is only available on agentic harnesses. Try plugging it into a coding agent or productivity app listed on https://openrouter.ai/apps'
+const refusal = (status?: number) => Object.assign(new Error(INKLING_REFUSAL), status === undefined ? {} : { statusCode: status })
+const refusalResponse = () => json({ error: { message: INKLING_REFUSAL, code: 403 } }, 403)
+const okModel = (text: string) => new MockLanguageModelV4({ modelId: text, doGenerate: async () => answer(text) })
+const failModel = (id: string, err: unknown) => new MockLanguageModelV4({ modelId: id, doGenerate: async () => { throw err } })
+const callWith = (signal?: AbortSignal) => ({ prompt: [{ role: 'user', content: [{ type: 'text', text: 'Write a practice' }] }], abortSignal: signal }) as never
+
+describe('a model that refuses never stops a job (P121b)', () => {
+  test.each([403, 400, 401, 422, undefined])('withFallbacks moves on after the Inkling refusal with status %s, and the next model answers', async (status) => {
+    const a = failModel('a', refusal(status))
+    const b = okModel('from b')
+    expect(textOf(await withFallbacks([a, b] as never).doGenerate(params))).toBe('from b')
+    expect(a.doGenerateCalls.length).toBe(1)
+    expect(b.doGenerateCalls.length).toBe(1)
+  })
+
+  test.each([
+    ['a plain error', new Error('boom')],
+    ['a type error', new TypeError('x is not a function')],
+    ['a 200 answer that could not be read', Object.assign(new Error('Invalid JSON response'), { statusCode: 200 })],
+    ['something that is not an error', 'weird'],
+  ])('withFallbacks moves on after %s too', async (_name, err) => {
+    const a = failModel('a', err)
+    const b = okModel('from b')
+    expect(textOf(await withFallbacks([a, b] as never).doGenerate(params))).toBe('from b')
+    expect(a.doGenerateCalls.length).toBe(1)
+  })
+
+  test('the stream call moves on in the same way', async () => {
+    const a = new MockLanguageModelV4({ modelId: 'a', doStream: async () => { throw refusal(403) } })
+    const b = new MockLanguageModelV4({ modelId: 'b', doStream: async () => ({ stream: new ReadableStream({ start: (c) => c.close() }) }) })
+    await withFallbacks([a, b] as never).doStream(params)
+    expect(a.doStreamCalls.length).toBe(1)
+    expect(b.doStreamCalls.length).toBe(1)
+  })
+
+  test('with no model left the first error goes up, and every model was asked once', async () => {
+    const first = refusal(403)
+    const models = [failModel('a', first), failModel('b', new Error('second')), failModel('c', refusal(400))]
+    await expect(withFallbacks(models as never).doGenerate(params)).rejects.toBe(first)
+    expect(models.map((m) => m.doGenerateCalls.length)).toEqual([1, 1, 1])
+  })
+
+  test('a caller abort throws at once and the next model is not tried', async () => {
+    const controller = new AbortController()
+    const a = new MockLanguageModelV4({ modelId: 'a', doGenerate: async () => { controller.abort(); throw new Error('This operation was aborted') } })
+    const b = okModel('from b')
+    await expect(withFallbacks([a, b] as never).doGenerate(callWith(controller.signal))).rejects.toThrow('This operation was aborted')
+    expect(a.doGenerateCalls.length).toBe(1)
+    expect(b.doGenerateCalls.length).toBe(0)
+  })
+
+  test('a call that was cancelled before it started is not passed on either, whatever the error says', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    const a = failModel('a', refusal(403))
+    const b = okModel('from b')
+    await expect(withFallbacks([a, b] as never).doGenerate(callWith(controller.signal))).rejects.toThrow('only available on agentic harnesses')
+    expect(b.doGenerateCalls.length).toBe(0)
+  })
+
+  test('a signal that is not aborted does not stop the chain', async () => {
+    const controller = new AbortController()
+    const a = failModel('a', refusal(403))
+    const b = okModel('from b')
+    expect(textOf(await withFallbacks([a, b] as never).doGenerate(callWith(controller.signal)))).toBe('from b')
+  })
+
+  test('the refusal is never tried again on the same model, even with a 5xx status', async () => {
+    const waits: number[] = []
+    const a = failModel('a', refusal(503))
+    const chain = withFallbacks([wrapLanguageModel({ model: a, middleware: withModelRetry(async (ms) => void waits.push(ms), [1, 2, 3]) }), okModel('from b')] as never)
+    expect(textOf(await chain.doGenerate(params))).toBe('from b')
+    expect(a.doGenerateCalls.length).toBe(1)
+    expect(waits).toEqual([])
+  })
+
+  test('the words of the refusal count as "gone"', () => {
+    expect(isModelGoneError(refusal())).toBe(true)
+    expect(isModelGoneError(new Error('This model is only available on a paid plan'))).toBe(true)
+    expect(isModelGoneError(new Error('Only for an Agentic Harness'))).toBe(true)
+  })
+
+  test('isRefusalError: 4xx except 408 and 429, or a gone/refused message, and nothing else', () => {
+    for (const code of [400, 401, 402, 403, 404, 410, 422, 451]) expect(isRefusalError(Object.assign(new Error('x'), { statusCode: code })), String(code)).toBe(true)
+    expect(isRefusalError(Object.assign(new Error('x'), { status: 403 }))).toBe(true)
+    expect(isRefusalError(refusal())).toBe(true)
+    expect(isRefusalError({ cause: refusal(403) })).toBe(true)
+    for (const code of [200, 408, 429, 500, 502, 503]) expect(isRefusalError(Object.assign(new Error('x'), { statusCode: code })), String(code)).toBe(false)
+    expect(isRefusalError(new Error('boom'))).toBe(false)
+    expect(isRefusalError(new ModelTimeoutError(1000))).toBe(false)
+    expect(isRefusalError(null)).toBe(false)
+    expect(isRefusalError('403')).toBe(false)
+  })
+
+  describe('in the dynamic list', () => {
+    const T0 = '2026-11-16T10:00:00Z'
+    const at = (iso: string) => vi.setSystemTime(new Date(iso))
+
+    test('the first call moves on to the next model; after a refusal the next call leaves that id out of the ranked part; it comes back after an hour', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] })
+      at(T0)
+      const { asked } = network({ chat: (m) => (m === PAID ? gone(m) : m === INKLING ? refusalResponse() : completion(m, `from ${m}`)) })
+      const model = getModel('text', env())
+      expect(textOf(await model.doGenerate(params))).toBe(`from ${SUPER}`)
+      expect(asked).toEqual([PAID, INKLING, SUPER])
+      // The pinned paid id was refused as well (404), and the memo never takes out a pinned id: it is still asked first.
+      asked.length = 0
+      expect(textOf(await model.doGenerate(params))).toBe(`from ${SUPER}`)
+      expect(asked).toEqual([PAID, SUPER])
+      asked.length = 0
+      at('2026-11-16T10:59:59Z')
+      await model.doGenerate(params)
+      expect(asked).toEqual([PAID, SUPER])
+      asked.length = 0
+      at('2026-11-16T11:00:01Z')
+      await model.doGenerate(params)
+      expect(asked).toEqual([PAID, INKLING, SUPER])
+    })
+
+    test('a pinned id that refuses is not taken out: it stays in the list after the ranked ones', async () => {
+      const { asked } = network({ chat: (m) => (m === INKLING ? refusalResponse() : gone(m)) })
+      const model = getModel('text', env({ LLM_MODEL_FALLBACKS: INKLING }))
+      await expect(model.doGenerate(params)).rejects.toThrow()
+      expect(asked).toEqual([PAID, INKLING, SUPER, ULTRA, LIGHTNING])
+      // Every one of them was refused or gone: the ranked ones step aside for the next best two, the pinned ones stay.
+      asked.length = 0
+      await expect(model.doGenerate(params)).rejects.toThrow()
+      expect(asked).toEqual([PAID, 'cohere/north-mini-code:free', GEMMA31, INKLING])
+    })
+
+    test('an error that is not a refusal moves on and marks nothing: the same model is asked again next time', async () => {
+      const { asked } = network({ chat: (m) => (m === PAID ? gone(m) : m === INKLING ? new Response('not json', { status: 200 }) : completion(m, `from ${m}`)) })
+      const model = getModel('text', env())
+      expect(textOf(await model.doGenerate(params))).toBe(`from ${SUPER}`)
+      expect(asked).toEqual([PAID, INKLING, SUPER])
+      asked.length = 0
+      expect(textOf(await model.doGenerate(params))).toBe(`from ${SUPER}`)
+      expect(asked).toEqual([PAID, INKLING, SUPER])
+    })
+
+    test('with the switch off the refusal moves on too, and nothing is remembered', async () => {
+      const { asked } = network({ chat: (m) => (m === PAID ? refusalResponse() : completion(m, `from ${m}`)) })
+      const model = getModel('text', env({ AI_MODEL_RANKING: undefined }))
+      expect(textOf(await model.doGenerate(params))).toBe(`from ${SUPER}`)
+      expect(textOf(await model.doGenerate(params))).toBe(`from ${SUPER}`)
+      expect(asked).toEqual([PAID, SUPER, PAID, SUPER])
+    })
+  })
+
+  describe('backup ranking, end to end', () => {
+    const scores: Record<string, number> = { [LING]: 31, [ULTRA]: 28, [SUPER]: 26, [INKLING]: 24 }
+    const decorated = OR.data.map((m) => (scores[m.id] === undefined ? m : { ...m, benchmarks: { artificial_analysis: { intelligence_index: scores[m.id] } } }))
+
+    test('with no AA key the list is ranked by the index in the OpenRouter list', async () => {
+      const { asked, catalogCalls } = network({ chat: gone, list: decorated })
+      await expect(getModel('text', env({ AA_API_KEY: undefined })).doGenerate(params)).rejects.toThrow()
+      expect(asked).toEqual([PAID, LING, ULTRA, SUPER, INKLING, GEMMA31])
+      expect(catalogCalls()).toEqual([OPENROUTER_MODELS_URL])
+    })
+
+    test('with AA unreadable the same list', async () => {
+      const { asked } = network({ chat: gone, list: decorated, aa: 'fail' })
+      await expect(getModel('text', env()).doGenerate(params)).rejects.toThrow()
+      expect(asked).toEqual([PAID, LING, ULTRA, SUPER, INKLING, GEMMA31])
+    })
+
+    test('with AA readable the AA ranking is used, not the backup', async () => {
+      const { asked } = network({ chat: gone, list: decorated })
+      await expect(getModel('text', env()).doGenerate(params)).rejects.toThrow()
+      expect(asked).toEqual([PAID, INKLING, SUPER, ULTRA, LIGHTNING, GEMMA31])
+    })
+
+    test('with neither, the newest come first', async () => {
+      const { asked } = network({ chat: gone })
+      await expect(getModel('text', env({ AA_API_KEY: undefined })).doGenerate(params)).rejects.toThrow()
+      expect(asked.slice(0, 3)).toEqual([PAID, LING, ERNIE])
+    })
   })
 })

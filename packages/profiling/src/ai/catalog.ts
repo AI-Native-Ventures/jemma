@@ -32,6 +32,11 @@ export type OpenRouterModel = {
   architecture?: { input_modalities?: string[] }
   supported_parameters?: string[]
   pricing?: { prompt?: string; completion?: string }
+  /**
+   * OpenRouter's own copy of the Artificial Analysis Intelligence Index (`benchmarks.artificial_analysis.intelligence_index` in its public list),
+   * or null when the model has none. Set by `loadCatalog`. It is the backup ranking when the Artificial Analysis list cannot be read.
+   */
+  aaIndex?: number | null
 }
 
 /** One row of the Artificial Analysis list. `score` is the Intelligence Index, or null when the row has none (unrated). */
@@ -54,8 +59,18 @@ const text = (v: unknown) => (typeof v === 'string' && v.trim() !== '' ? v.trim(
 function parseOpenRouter(body: unknown): OpenRouterModel[] | null {
   const rows = isRecord(body) ? body.data : null
   if (!Array.isArray(rows)) return null
-  const models = rows.filter((r): r is OpenRouterModel => isRecord(r) && typeof r.id === 'string' && r.id.trim() !== '')
+  const models = rows
+    .filter((r): r is OpenRouterModel & Record<string, unknown> => isRecord(r) && typeof r.id === 'string' && r.id.trim() !== '')
+    .map((r): OpenRouterModel => ({ ...r, aaIndex: openRouterIndexOf(r) }))
   return models.length > 0 ? models : null
+}
+
+/** `benchmarks.artificial_analysis.intelligence_index` of an OpenRouter row, if it is a number. */
+function openRouterIndexOf(row: Record<string, unknown>): number | null {
+  const benchmarks = isRecord(row.benchmarks) ? row.benchmarks : {}
+  const aa = isRecord(benchmarks.artificial_analysis) ? benchmarks.artificial_analysis : {}
+  const v = aa.intelligence_index
+  return typeof v === 'number' && Number.isFinite(v) ? v : null
 }
 
 /** Where the score may sit. The free endpoint returns fewer fields than the paid one, so the places are tried in turn and a missing score is unrated. */
@@ -116,10 +131,33 @@ type Slot<T> = { value: T | null; until: number; key: string }
 let openrouterSlot: Slot<OpenRouterModel[]> | null = null
 let aaSlot: Slot<AaModel[]> | null = null
 
-/** Forgets both lists. For tests. */
+// Models that refused a call (P121b), by lower-case id, with the time the memo of each ends. Kept per isolate, like the lists.
+const refusedUntil = new Map<string, number>()
+
+type Clock = number | (() => number)
+const clockNow = (now: Clock) => (typeof now === 'function' ? now() : now)
+
+/**
+ * Notes that a model refused a call (OpenRouter refuses some free listings to API callers, with a 403 and "is only available on agentic
+ * harnesses"). The dynamic list leaves it out of the ranked part for an hour (`refusedIds`). Marking an id again starts its hour again.
+ */
+export function markRefused(id: string, now: Clock = Date.now): void {
+  const key = id.trim().toLowerCase()
+  if (key) refusedUntil.set(key, clockNow(now) + CATALOG_TTL_MS)
+}
+
+/** The ids (lower case) that refused a call within the last hour. Ids whose hour has passed are forgotten. */
+export function refusedIds(now: Clock = Date.now): Set<string> {
+  const t = clockNow(now)
+  for (const [id, until] of refusedUntil) if (t >= until) refusedUntil.delete(id)
+  return new Set(refusedUntil.keys())
+}
+
+/** Forgets both lists and every refusal. For tests. */
 export function resetCatalogMemo(): void {
   openrouterSlot = null
   aaSlot = null
+  refusedUntil.clear()
 }
 
 async function openrouterList(fetchFn: CatalogFetch, now: () => number): Promise<OpenRouterModel[] | null> {
@@ -255,6 +293,8 @@ export type RankInput = {
   pinned: string[]
   top?: number
   minContext?: number
+  /** Ids (lower case) that refused a call lately (`refusedIds`). They are left out of the ranked part. A pinned id is never left out by this. */
+  refused?: ReadonlySet<string>
 }
 
 const takesImages = (m: OpenRouterModel) => m.architecture?.input_modalities?.includes('image') === true
@@ -268,31 +308,41 @@ const unique = (ids: string[]) => {
  * The ids to try, in order.
  * 1. Candidates: free listings (`:free`) that take tools and have room (`minContext`), and for a photo job (`vision`) that take images. Closed
  *    and open models alike.
- * 2. With Artificial Analysis data: only rated candidates, best score first, a tie to the larger context and then the id. Without it: the
- *    newest first. The first `top` are kept.
+ *    An id in `refused` is not a candidate (it is still added below when it is pinned).
+ * 2. With Artificial Analysis data: only rated candidates, best score first, a tie to the larger context and then the id. Without it (no key,
+ *    or the read failed): the same with OpenRouter's own copy of the index (`aaIndex`), and only if no candidate has one, the newest first.
+ *    The first `top` are kept.
  * 3. The pinned ids follow, in their order, with no repeats. A pinned paid id (no `:free`) goes before the ranked ones. A pinned free id that
  *    OpenRouter no longer lists is dropped. A pinned id that OpenRouter lists as text-only is dropped from a photo job.
  * 4. With no OpenRouter list the pinned list is returned as it is, and so it is when nothing is left: the result is never empty unless
  *    there is nothing pinned.
  */
-export function rankModels({ kind, openrouter, aa, pinned, top = RANKED_TOP, minContext = MIN_CONTEXT }: RankInput): string[] {
+export function rankModels({ kind, openrouter, aa, pinned, top = RANKED_TOP, minContext = MIN_CONTEXT, refused }: RankInput): string[] {
   const asGiven = [...pinned]
   if (!openrouter) return asGiven
   const listed = new Map(openrouter.map((m) => [m.id.toLowerCase(), m]))
   const candidates = openrouter.filter(
-    (m) => isFreeModelId(m.id) && m.supported_parameters?.includes('tools') === true && bigger(m) >= minContext && (kind !== 'vision' || takesImages(m)),
+    (m) =>
+      isFreeModelId(m.id) &&
+      m.supported_parameters?.includes('tools') === true &&
+      bigger(m) >= minContext &&
+      (kind !== 'vision' || takesImages(m)) &&
+      !refused?.has(m.id.toLowerCase()),
   )
   const order = (a: OpenRouterModel, b: OpenRouterModel) => bigger(b) - bigger(a) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
   const index = aa && aa.length > 0 ? aaIndex(aa) : null
-  const ranked = (
+  const byScore = (rows: { m: OpenRouterModel; score: number }[]) => rows.sort((a, b) => b.score - a.score || order(a.m, b.m))
+  // The backup: OpenRouter's own copy of the index, for the candidates that have one (the others are unrated and dropped).
+  const backup = candidates.flatMap((m) => (typeof m.aaIndex === 'number' ? [{ m, score: m.aaIndex }] : []))
+  const ranked = byScore(
     index
-      ? candidates
-          .flatMap((m) => {
-            const score = scoreIn(index, m.id)
-            return score === null ? [] : [{ m, score }]
-          })
-          .sort((a, b) => b.score - a.score || order(a.m, b.m))
-      : candidates.map((m) => ({ m, score: m.created ?? 0 })).sort((a, b) => b.score - a.score || order(a.m, b.m))
+      ? candidates.flatMap((m) => {
+          const score = scoreIn(index, m.id)
+          return score === null ? [] : [{ m, score }]
+        })
+      : backup.length > 0
+        ? backup
+        : candidates.map((m) => ({ m, score: m.created ?? 0 })),
   )
     .slice(0, Math.max(0, top))
     .map((x) => x.m.id)
