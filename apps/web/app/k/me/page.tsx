@@ -1,9 +1,13 @@
 import Link from 'next/link'
+import { isCodeLoginEmail } from '@/lib/child-login'
 import { getChildName } from '@/lib/data/p28'
+import { createSupabaseServer } from '@/lib/supabase/server'
 import { MeForm } from './MeForm'
 
 export default async function ChildAccountPage() {
   const { firstName, initial } = await getChildName()
+  // A learner who signed up alone has a real email and a password: no PIN to change.
+  const { data: auth } = await (await createSupabaseServer()).auth.getUser()
   return (
     <div style={{ background: '#F7F7FA', color: '#1F1D36', lineHeight: 'normal' }}>
       <header className="lg:hidden" style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '10px 12px 6px 8px' }}>
@@ -15,7 +19,7 @@ export default async function ChildAccountPage() {
         <span style={{ fontSize: 19, fontWeight: 700 }}>Me</span>
       </header>
       <main className="mx-auto lg:max-w-[560px]" style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '18px 20px 30px' }}>
-        <MeForm firstName={firstName} initial={initial} />
+        <MeForm firstName={firstName} initial={initial} hasPin={isCodeLoginEmail(auth.user?.email)} />
       </main>
     </div>
   )

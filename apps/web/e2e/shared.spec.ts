@@ -80,7 +80,7 @@ test('sign-up matches the board and needs the agreement before making the accoun
   await page.goto('/sign-up')
   await expect(page.getByRole('heading', { name: "Make your Jemma account. It's free for families." })).toBeVisible()
   await expect(
-    page.getByText('For teachers and parents. Learners sign in with a code from a parent or teacher.'),
+    page.getByText('For teachers, parents and learners. Got a code from a parent or teacher? Learners can sign in with it instead.'),
   ).toBeVisible()
   await expect(page.getByLabel('Your name')).toBeVisible()
   await expect(page.getByLabel('Email')).toBeVisible()
@@ -147,9 +147,9 @@ test.describe('first sign-in with an emailed code', () => {
         await expect(page.getByText('This decides what you see first.')).toBeVisible()
         await expect(page.getByText("I snap my class's tests and see what they don't get yet.")).toBeVisible()
         await expect(page.getByText("I support my child at home and want to know they're okay.")).toBeVisible()
-        await expect(page.getByText('Learner · Grade 8 to 12')).toBeVisible()
-        await expect(page.getByText('I fix my own gaps with my Jemma.')).toBeVisible()
-        await expect(page.getByText('Learners sign in with a code from a parent or teacher.')).toBeVisible()
+        await expect(page.getByRole('button', { name: /^Learner/ })).toBeVisible()
+        await expect(page.getByText('I practise maths at any grade, 1 to 12.')).toBeVisible()
+        await expect(page.getByText('Got a code from a parent or teacher?')).toBeVisible()
         await expect(page.getByRole('link', { name: 'Sign in with your code' })).toHaveAttribute('href', '/k/sign-in')
         await noHorizontalScroll(page)
         if (role === 'teacher') await shot(page, testInfo, 'shared-role')
@@ -162,7 +162,7 @@ test.describe('first sign-in with an emailed code', () => {
     })
   }
 
-  test('learner card opens the coming-later sheet', async ({ page }) => {
+  test('learner card opens the grade screen (P111)', async ({ page }) => {
     const user = await newUserWithCode('learner')
     try {
       skipIfCodeLengthDiffers(user.code)
@@ -171,7 +171,8 @@ test.describe('first sign-in with an emailed code', () => {
       await page.getByRole('button', { name: 'Sign in' }).click()
       await expect(page).toHaveURL(/\/role$/)
       await page.getByRole('button', { name: /^Learner/ }).click()
-      await expect(page.getByRole('dialog', { name: 'Coming after the challenge' })).toBeVisible()
+      await expect(page).toHaveURL(/\/role\/learner/)
+      await expect(page.getByRole('heading', { name: 'Which grade are you in?' })).toBeVisible()
     } finally {
       await admin().auth.admin.deleteUser(user.userId)
     }

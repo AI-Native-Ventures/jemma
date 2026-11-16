@@ -30,7 +30,8 @@ function write(key: string, value: string) {
   }
 }
 
-export function MeForm({ firstName, initial }: { firstName: string; initial: string }) {
+/** `hasPin` is false for a learner who signed up alone (P111): they sign in with an email and a password, so there is no PIN to change. */
+export function MeForm({ firstName, initial, hasPin = true }: { firstName: string; initial: string; hasPin?: boolean }) {
   const [colour, setColour] = useState<string>('Peach')
   const [aloud, setAloud] = useState(false)
 
@@ -119,7 +120,7 @@ export function MeForm({ firstName, initial }: { firstName: string; initial: str
           I&apos;m done for today
         </PendingButton>
       </form>
-      <p style={{ margin: 0, textAlign: 'center', fontSize: 16, lineHeight: 1.45, color: '#5D5A73' }}>A grown-up can change your PIN.</p>
+      {hasPin ? <p style={{ margin: 0, textAlign: 'center', fontSize: 16, lineHeight: 1.45, color: '#5D5A73' }}>A grown-up can change your PIN.</p> : null}
     </>
   )
 }
