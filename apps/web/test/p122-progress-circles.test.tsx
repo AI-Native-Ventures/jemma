@@ -18,6 +18,11 @@ vi.mock('next/navigation', () => ({
 vi.mock('../app/k/actions', () => ({ startPractice: vi.fn(async () => ({ ok: true })), retryPractice: vi.fn(async () => ({ ok: true })) }))
 vi.mock('../lib/data/p80', () => ({ getMyMaths: async () => state.view }))
 vi.mock('../lib/data/own-screens', () => ({ getScreenShape: async () => state.shape }))
+// P128: the page is also the learner's home, so it reads what the home read. The workspace follows the shape the test chose; nothing planned, nothing to practise.
+vi.mock('../lib/data/p27', () => ({
+  getLearnerToday: async () => ({ firstName: 'Amina', workspace: (state.shape as { workspace: string }).workspace, tonight: null, next: null, gems: [], fixed: 0, toGo: 0, practice: 'none', suggestion: null }),
+}))
+vi.mock('../app/k/join/JoinClassCard', () => ({ JoinClassCard: () => null }))
 vi.mock('../app/k/own-actions', () => ({ setWorkspace: vi.fn(async () => ({ ok: true })), addMyGrade: vi.fn(async () => ({ ok: true })) }))
 
 import MyMathsPage from '../app/k/maths/page'

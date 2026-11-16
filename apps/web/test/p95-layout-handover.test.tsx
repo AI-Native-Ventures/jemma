@@ -26,7 +26,7 @@ vi.mock('@/lib/supabase/server', () => ({
 }))
 vi.mock('@/lib/auth', () => ({ requireRole: async () => ({ userId: 'u1', profile: { display_name: 'Amina M' } }) }))
 vi.mock('@/lib/data/p27', () => ({ myChild: async () => ({ child: { first_name: 'Amina', grade: 6, private_of: null, schools: { name: 'Hillview' } } }) }))
-vi.mock('@/lib/space', () => ({ activeTab: async () => 'today' }))
+vi.mock('@/lib/space', () => ({ activeTab: async () => 'maths' }))
 vi.mock('@/components/blocks', () => ({
   Sidebar: () => <aside data-testid="sidebar" />,
   TabBar: ({ label }: { label: string }) => <nav aria-label={label} data-testid="tabbar" />,

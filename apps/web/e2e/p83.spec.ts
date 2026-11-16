@@ -120,7 +120,7 @@ const snaps = async (sessionId: string) =>
 /** From the learner's home to the choice: the warm-up, the lesson, "I'm ready". */
 async function toTheChoice(page: Page) {
   await page.goto('/k')
-  await page.getByRole('link', { name: 'Start' }).click()
+  await page.getByRole('link', { name: 'Start', exact: true }).click()
   for (const n of [1, 2]) {
     await check(page.getByText(`Warm-up · ${n} of 2`)).toBeVisible()
     await page.getByRole('button', { pressed: false }).first().click()

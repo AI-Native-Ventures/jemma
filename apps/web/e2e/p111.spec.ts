@@ -127,7 +127,7 @@ test('a learner signs up alone, picks Grade 5, lands on their own home, signs ou
 
   // My maths: the Grade 5 chip (their own grade, chosen) and "+ Another grade", no other grade.
   await page.getByRole('link', { name: 'My maths' }).first().click()
-  await expect(page).toHaveURL(/\/k\/maths$/, { timeout: 45_000 })
+  await expect(page).toHaveURL(/\/k$/, { timeout: 45_000 })
   await check(page.getByRole('heading', { level: 1, name: 'My maths' })).toBeVisible()
   const grades = page.getByRole('navigation', { name: 'Grades' })
   await expect(grades.getByRole('link', { name: 'Grade 5' })).toHaveAttribute('aria-current', 'page')

@@ -17,13 +17,14 @@ beforeEach(() => {
 })
 
 describe('activeTabFor: the tab for a role, a base and an address', () => {
-  it('learner: Today for the home and for screens that are not My maths, My maths for its pages', () => {
-    expect(activeTabFor('learner', '/k', '/k')).toBe('today')
+  it('learner (P128): My maths for the home, for /k/maths and everything below it and for screens that are not Me; Me for its page', () => {
+    expect(activeTabFor('learner', '/k', '/k')).toBe('maths')
     expect(activeTabFor('learner', '/k', '/k/maths')).toBe('maths')
     expect(activeTabFor('learner', '/k', '/k/maths/fractions')).toBe('maths')
     expect(activeTabFor('learner', '/k', '/k/maths/')).toBe('maths')
-    expect(activeTabFor('learner', '/k', '/k/own')).toBe('today')
-    expect(activeTabFor('learner', '/k', '/k/upload')).toBe('today')
+    expect(activeTabFor('learner', '/k', '/k/own')).toBe('maths')
+    expect(activeTabFor('learner', '/k', '/k/upload')).toBe('maths')
+    expect(activeTabFor('learner', '/k', '/k/me')).toBe('me')
   })
 
   it('parent: Profile for the child, then the tab whose folder the address is in', () => {
@@ -65,12 +66,12 @@ describe('activeTabFor: the tab for a role, a base and an address', () => {
   })
 
   it('a folder whose name only begins like a tab folder is not that tab', () => {
-    expect(activeTabFor('learner', '/k', '/k/mathsy')).toBe('today')
+    expect(activeTabFor('learner', '/k', '/k/mexico')).toBe('maths')
     expect(activeTabFor('teacher', '/t/xyz', '/t/xyz/learnersx')).toBe('class')
   })
 
   it('an address outside the base gives the first tab, as the server always did', () => {
-    expect(activeTabFor('learner', '/k', '/kit')).toBe('today')
+    expect(activeTabFor('learner', '/k', '/kit')).toBe('maths')
     expect(activeTabFor('parent', '/p/abc', '/p/other/learn')).toBe('profile')
     expect(activeTabFor('teacher', '/t/xyz', '/')).toBe('class')
   })
@@ -79,14 +80,16 @@ describe('activeTabFor: the tab for a role, a base and an address', () => {
 const current = (html: string) => [...html.matchAll(/<a[^>]*aria-current="page"[^>]*>(.*?)<\/a>/g)].map((m) => m[1]!.replace(/<[^>]+>/g, '').trim())
 
 describe('TabBar and Sidebar draw the tab of the address they are in', () => {
-  it('a learner taps My maths: the bar marks My maths, and Today again after the way back', () => {
-    const bar = () => renderToStaticMarkup(<TabBar role="learner" active="today" label="Amina" />)
+  it('a learner taps Me: the bar marks Me, and My maths again after the way back (and on /k/maths, the same page)', () => {
+    const bar = () => renderToStaticMarkup(<TabBar role="learner" active="maths" label="Amina" />)
     state.pathname = '/k'
-    expect(current(bar())).toEqual(['Today'])
+    expect(current(bar())).toEqual(['My maths'])
+    state.pathname = '/k/me'
+    expect(current(bar())).toEqual(['Me'])
+    state.pathname = '/k'
+    expect(current(bar())).toEqual(['My maths'])
     state.pathname = '/k/maths'
     expect(current(bar())).toEqual(['My maths'])
-    state.pathname = '/k'
-    expect(current(bar())).toEqual(['Today'])
   })
 
   it('the first paint (the tab the server passed) holds where the address cannot be read', () => {
@@ -117,7 +120,7 @@ describe('TabBar and Sidebar draw the tab of the address they are in', () => {
 
   it('the hand-over bar of a parent\'s phone (learner tabs under /k) follows the address too', () => {
     state.pathname = '/k/maths'
-    expect(current(renderToStaticMarkup(<TabBar role="learner" active="today" label="Practise at home" />))).toEqual(['My maths'])
+    expect(current(renderToStaticMarkup(<TabBar role="learner" active="maths" label="Practise at home" only={['maths']} />))).toEqual(['My maths'])
   })
 
   it('a bar a page draws for a screen with no tab folder of its own keeps the tab the page named', () => {
@@ -132,12 +135,12 @@ describe('TabBar and Sidebar draw the tab of the address they are in', () => {
   it('the laptop sidebar follows the address as the bar does', () => {
     const side = () =>
       renderToStaticMarkup(
-        <Sidebar role="learner" active="today" label="Amina" name="Amina" subtitle="Grade 6" switchHref="/k" user={{ name: 'A', initials: 'A' }} settingsHref="/k/me" />,
+        <Sidebar role="learner" active="maths" label="Amina" name="Amina" subtitle="Grade 6" switchHref="/k" user={{ name: 'A', initials: 'A' }} settingsHref="/k/me" />,
       )
     state.pathname = '/k/maths/fractions'
     expect(current(side())).toEqual(['My maths'])
     state.pathname = '/k'
-    expect(current(side())).toEqual(['Today'])
+    expect(current(side())).toEqual(['My maths'])
   })
 
   it('exactly one tab is marked, and the link of the marked tab keeps its address', () => {

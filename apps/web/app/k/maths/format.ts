@@ -77,10 +77,13 @@ export function strandScreen(strand: MyMathsStrand, noMapLine: string = NO_MAP_L
   return { kind: 'no-topics', title: strand.label, score, line: noMapLine, button: `Practise ${strand.label}`, choice: { topicName: strand.label } }
 }
 
-/** Where nothing should be offered to practise: tonight's lesson waits, or a practice is being written. */
+/**
+ * Where nothing should be offered to practise: tonight's lesson waits, or a practice is being written. The link goes to My maths, where tonight's
+ * lesson and the practice that is being written are the first card (P128: there is no "Today" page). My maths itself shows the text without it.
+ */
 export type Lock = { text: string; href: '/k'; link: string }
 export function lockOf(status: 'free' | 'due' | 'writing'): Lock | null {
-  if (status === 'due') return { text: "Finish tonight's lesson first.", href: '/k', link: 'Go to today' }
-  if (status === 'writing') return { text: 'Jemma is writing your practice.', href: '/k', link: 'Go to today' }
+  if (status === 'due') return { text: "Finish tonight's lesson first.", href: '/k', link: 'Go to My maths' }
+  if (status === 'writing') return { text: 'Jemma is writing your practice.', href: '/k', link: 'Go to My maths' }
   return null
 }

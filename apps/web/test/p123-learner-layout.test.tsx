@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
-// P123: what the learner's layout draws around a screen now that the phone bar has a Me tab. A learner sees the bar on Today, My maths and Me (the
+// P123: what the learner's layout draws around a screen now that the phone bar has a Me tab. A learner sees the bar on My maths and Me (the
 // laptop sidebar is not drawn on Me, as before; the bar is the phone's). The session flow and the hand-back screen have no bar. A parent's phone with a
-// hand-over of the learner's own practice gets the bar with Today and My maths only: the account page is not theirs to open. The cookies, the headers and
+// hand-over of the learner's own practice gets the bar with My maths only: the account page is not theirs to open. The cookies, the headers and
 // the client are stand-ins: no browser, no server, no database.
 
 const state = vi.hoisted(() => ({
@@ -33,7 +33,7 @@ vi.mock('@/lib/supabase/server', () => ({
 }))
 vi.mock('@/lib/auth', () => ({ requireRole: async () => ({ userId: 'u1', profile: { display_name: 'Amina M' } }) }))
 vi.mock('@/lib/data/p27', () => ({ myChild: async () => ({ child: { first_name: 'Amina', grade: 6, private_of: null, schools: { name: 'Hillview' } } }) }))
-vi.mock('@/lib/space', () => ({ activeTab: async () => 'today' }))
+vi.mock('@/lib/space', () => ({ activeTab: async () => 'maths' }))
 vi.mock('@/components/blocks', () => ({
   Sidebar: () => {
     state.sidebar += 1
@@ -71,7 +71,7 @@ describe('the learner on their own phone', () => {
     expect(screen.getByTestId('sidebar')).toBeTruthy()
   })
 
-  it('Me has the bar, so the Me tab is there to be marked and a tap on Today goes back; the laptop sidebar is still not drawn on Me', async () => {
+  it('Me has the bar, so the Me tab is there to be marked and a tap on My maths goes back; the laptop sidebar is still not drawn on Me', async () => {
     state.pathname = '/k/me'
     await page()
     expect(screen.getByText('the screen')).toBeTruthy()
@@ -95,11 +95,11 @@ describe('a parent\'s phone with a hand-over of the learner\'s own practice', ()
     state.cookie = await signHandover(OWN_HANDOVER, 'child-1')
   })
 
-  it.each(['/k', '/k/maths'])('%s: the bar is limited to Today and My maths, with no Me', async (path) => {
+  it.each(['/k', '/k/maths'])('%s: the bar is limited to My maths (the one page, P128), with no Me', async (path) => {
     state.pathname = path
     await page()
     expect(screen.getByTestId('tabbar')).toBeTruthy()
-    expect(state.bar).toMatchObject({ role: 'learner', label: 'Practise at home', only: ['today', 'maths'] })
+    expect(state.bar).toMatchObject({ role: 'learner', label: 'Practise at home', only: ['maths'] })
     expect(state.bar?.only).not.toContain('me')
     expect(screen.getByRole('link', { name: /Take the phone back/ }).getAttribute('href')).toBe('/p/child-1')
   })

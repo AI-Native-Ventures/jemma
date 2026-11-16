@@ -13,7 +13,7 @@ export default async function ChildAccountPage() {
   return (
     <div style={{ background: '#F7F7FA', color: '#1F1D36', lineHeight: 'normal' }}>
       <header className="lg:hidden" style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '10px 12px 6px 8px' }}>
-        <Link href="/k" aria-label="Back to Today" style={{ width: 44, height: 44, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12, color: '#1F1D36' }}>
+        <Link href="/k" aria-label="Back to My maths" style={{ width: 44, height: 44, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12, color: '#1F1D36' }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="m15 6-6 6 6 6" />
           </svg>

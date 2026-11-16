@@ -28,7 +28,7 @@ vi.mock('@/lib/supabase/server', () => ({
 }))
 vi.mock('@/lib/auth', () => ({ requireRole: async () => ({ userId: 'login-1', profile: { display_name: 'Naledi Dlamini' } }) }))
 vi.mock('@/lib/data/p27', () => ({ myChild: async () => ({ child: state.child }) }))
-vi.mock('@/lib/space', () => ({ activeTab: async () => 'today' }))
+vi.mock('@/lib/space', () => ({ activeTab: async () => 'maths' }))
 vi.mock('@/components/blocks', () => ({
   Sidebar: (props: { label: string; subtitle: string; switchHref: string }) => {
     state.sidebar = props
