@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -157,7 +157,7 @@ const KILL_GRACE_MS = 3000
  */
 export async function runOpencode(model: string, prompt: string, opts: RunOpts & { bin?: string }): Promise<RunResult> {
   const bin = opts.bin ?? process.env.TEACH_OPENCODE_BIN ?? 'opencode'
-  const root = mkdtempSync(join(tmpdir(), 'teach-oc-'))
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'teach-oc-')))
   const work = join(root, 'work')
   const config = join(root, 'config')
   mkdirSync(work)
@@ -165,7 +165,8 @@ export async function runOpencode(model: string, prompt: string, opts: RunOpts &
   writeFileSync(join(work, 'opencode.json'), JSON.stringify(DENY_ALL_CONFIG, null, 2))
   writeFileSync(join(work, 'prompt.md'), prompt)
   const args = ['run', '--pure', '--print-logs', '--log-level', 'ERROR', '--format', 'json', '--title', 'teach', '-m', model, 'Follow the attached file. Reply with one JSON object only.', '-f', 'prompt.md']
-  const env = { ...process.env, XDG_CONFIG_HOME: config, OPENCODE_DISABLE_CLAUDE_CODE: '1' }
+  // PWD is set as well: OpenCode finds the attached file from $PWD, and a child started with `cwd` does not get it changed by itself.
+  const env = { ...process.env, PWD: work, XDG_CONFIG_HOME: config, OPENCODE_DISABLE_CLAUDE_CODE: '1' }
 
   try {
     return await new Promise<RunResult>((resolve) => {

@@ -90,7 +90,7 @@ const args = process.argv.slice(2)
 const file = args[args.indexOf('-f') + 1]
 const prompt = fs.readFileSync(file, 'utf8')
 const out = (o) => console.log(JSON.stringify(o))
-out({ type: 'text', part: { type: 'text', text: JSON.stringify({ echoed: prompt, args: args.filter((a) => a.startsWith('--') || a === '-m' || a === 'opencode/fake-free'), cwd: process.cwd(), cfg: process.env.XDG_CONFIG_HOME }) } })
+out({ type: 'text', part: { type: 'text', text: JSON.stringify({ echoed: prompt, args: args.filter((a) => a.startsWith('--') || a === '-m' || a === 'opencode/fake-free'), cwd: process.cwd(), pwd: process.env.PWD, cfg: process.env.XDG_CONFIG_HOME }) } })
 out({ type: 'step_finish', part: { type: 'step-finish', tokens: { input: 11, output: 7 } } })`,
     )
     const r = await runOpencode('opencode/fake-free', 'hello prompt', { timeoutMs: 20_000, bin })
@@ -98,10 +98,12 @@ out({ type: 'step_finish', part: { type: 'step-finish', tokens: { input: 11, out
     expect(r.error).toBeUndefined()
     expect(r.tokensIn).toBe(11)
     expect(r.tokensOut).toBe(7)
-    const got = JSON.parse(r.text) as { echoed: string; args: string[]; cfg: string }
+    const got = JSON.parse(r.text) as { echoed: string; args: string[]; cfg: string; cwd: string; pwd: string }
     expect(got.echoed).toBe('hello prompt')
     expect(got.args).toEqual(expect.arrayContaining(['--pure', '--format', '--title', '-m', 'opencode/fake-free']))
     expect(got.cfg).not.toContain('.config')
+    // OpenCode resolves the attached file from $PWD: it must be the folder the child runs in
+    expect(got.pwd).toBe(got.cwd)
   })
 
   test('a limited model is stopped at once and reported as limited', async () => {
