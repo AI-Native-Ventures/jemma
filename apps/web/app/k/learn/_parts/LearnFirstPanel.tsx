@@ -1,6 +1,7 @@
 import { libraryKey } from '@jemma/profiling/schemas'
 import Link from 'next/link'
 import { entryButton, nextEntry, type LibraryEntry } from '@/lib/teaching'
+import { LessonInline } from './LessonText'
 
 const startLink =
   'flex min-h-[60px] w-full items-center justify-center rounded-18 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white no-underline'
@@ -41,7 +42,9 @@ export function LearnFirstPanel({ library, topicId, sessionId, topic, onSkip }: 
                 )}
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="text-[17px] leading-[1.3] font-semibold text-pretty">{e.title}</span>
+                <span className="text-[17px] leading-[1.3] font-semibold text-pretty">
+                  <LessonInline text={e.title} typeset="algebra" size={20} />
+                </span>
                 <span className="text-[14px] leading-[1.35] text-body">
                   {e.minutes} min{e.done ? ' · Done' : e.started ? ' · Started' : ''}
                 </span>

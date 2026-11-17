@@ -5,8 +5,9 @@
 // are shown, never typed, so they go as they are.
 
 import { finishAnswer } from '@jemma/profiling/logic'
-import { libraryKey, type Question, type TeachingBlock, type TeachingLesson } from '@jemma/profiling/schemas'
+import { libraryKey, type Choice, type Question, type TeachingBlock, type TeachingLesson } from '@jemma/profiling/schemas'
 import { answerText, stripQuestion, type QuestionForChild } from '@/app/k/session/[sessionId]/logic'
+import { readableMaths } from './lesson-maths'
 
 /** One lesson of a topic in the lesson list: what the learner sees before opening it. `done` and `started` are for the signed-in learner. */
 export type LibraryEntry = { id: string; position: number; title: string; minutes: number; done: boolean; started: boolean }
@@ -35,8 +36,20 @@ export function stripLessonQuestion(q: Question): StrippedQuestion {
   return rest
 }
 
+/** A choice (words, or words and a picture) with its words written the way `readableMaths` does. A picture stays as it is. */
+const readableChoice = (c: Choice): Choice => (typeof c === 'string' ? readableMaths(c) : c.text ? { ...c, text: readableMaths(c.text) } : c)
+
 /** A stripped question as the question screen of a practice takes it: numbered, inside a run of `of` questions (index is 1-based). */
-export const forScreen = (q: StrippedQuestion, index: number, of: number): QuestionForChild => ({ ...q, position: index, phase: 'try', index, of })
+export const forScreen = (q: StrippedQuestion, index: number, of: number): QuestionForChild => ({
+  ...q,
+  // The words of a question go through the same rule as every other text of a lesson (`readableMaths`), so "ax^2" is drawn as a power in a question too.
+  prompt: readableMaths(q.prompt),
+  ...(q.choices ? { choices: q.choices.map(readableChoice) } : {}),
+  position: index,
+  phase: 'try',
+  index,
+  of,
+})
 
 /** The lesson as the browser may hold it. The blocks keep their places, so an answer is sent as "block 6", and the server finds the question. */
 export function forChild(lesson: TeachingLesson): TeachingLessonForChild {
