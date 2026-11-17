@@ -8,7 +8,7 @@ export const TOUR_GRADE = 11
 export const TOUR_SUBJECT = 'Mathematics'
 
 /** The learner of the tour: the one who is on the screen, and the one row of the teacher's list that is today's. */
-export const TOUR_LEARNER = 'Lwazi'
+export const TOUR_LEARNER = 'Sarah'
 
 /** The one topic of the tour that has a lesson: the learner opens it, and the teacher's page of the class goes down to it. */
 export const LESSON_PART = 'algebra'
