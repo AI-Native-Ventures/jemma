@@ -228,6 +228,19 @@ async function toResults() {
   for (let n = 0; n < 4; n++) await skip()
 }
 
+/** P156: the same, but the four skips are one tap on Skip the rest (no answer card, no wait). */
+async function toResultsSkippingTheRest() {
+  render(<TourSession />)
+  press(/go to the questions/i)
+  await flush()
+  await flush()
+  fireEvent.change(screen.getByLabelText('Answer 1'), { target: { value: '3' } })
+  fireEvent.change(screen.getByLabelText('Answer 2'), { target: { value: '2' } })
+  press('Next')
+  await flush()
+  press('Skip the rest')
+}
+
 /** Types into the plain answer box of the check, or into the two boxes of a question with two answers. */
 const typeCheck = (...values: string[]) => {
   if (values.length === 1) fireEvent.change(screen.getByLabelText('Your answer'), { target: { value: values[0] } })
@@ -361,6 +374,50 @@ describe('the Results step', () => {
     await toResults()
     expect(sessionStorage.getItem(TOUR_RETEACH_KEY)).toBeNull()
     expect(JSON.parse(sessionStorage.getItem(TOUR_RESULT_KEY) ?? 'null')).toEqual([true, false, false, false, false])
+  })
+})
+
+describe('P156: Skip the rest, then the results and Teach again', () => {
+  it('is on the results at once as 1 of 5, and the old outcome of Teach again is gone, as after five single skips', async () => {
+    saveReteach(sessionStorage, DEFAULT_RETEACH)
+    await toResultsSkippingTheRest()
+    expect(document.querySelector('[data-score]')?.textContent).toBe('You got 1 of 5 right.')
+    expect(screen.getByRole('button', { name: 'Let Jemma teach what you missed' })).toBeTruthy()
+    expect(sessionStorage.getItem(TOUR_RETEACH_KEY)).toBeNull()
+    expect(JSON.parse(sessionStorage.getItem(TOUR_RESULT_KEY) ?? 'null')).toEqual([true, false, false, false, false])
+    const steps = within(screen.getByRole('list', { name: 'Session steps' })).getAllByRole('listitem')
+    expect(steps[2]!.getAttribute('aria-current')).toBe('step')
+  })
+
+  it('Teach again lists the same parts after Skip the rest as after five single skips', async () => {
+    const partsAndAlso = () => {
+      press('Let Jemma teach what you missed')
+      return {
+        heading: screen.getByRole('heading', { level: 1 }).textContent,
+        parts: within(screen.getByRole('list', { name: 'Parts to teach again' }))
+          .getAllByRole('listitem')
+          .map((p) => p.textContent),
+        also: document.querySelector('[data-also]')?.textContent,
+      }
+    }
+    await toResults()
+    const longWay = partsAndAlso()
+    cleanup()
+    sessionStorage.clear()
+    await toResultsSkippingTheRest()
+    const shortWay = partsAndAlso()
+    expect(shortWay).toEqual(longWay)
+    expect(shortWay.parts).toEqual(['Part 1Simultaneous equationsQuestions 3 and 5 missed', 'Part 2Quadratic inequalitiesQuestion 4 missed'])
+    expect(shortWay.also).toBe('Also missed: Question 2. Jemma teaches it in your next practice.')
+  })
+
+  it('the way through Teach again works after it: Teach me again opens the first part with its three ways to learn', async () => {
+    await toResultsSkippingTheRest()
+    press('Let Jemma teach what you missed')
+    press('Teach me again')
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('How do you want to learn it?')
+    expect(screen.getByText('Part 1 of 2')).toBeTruthy()
+    expect(Array.from(document.querySelectorAll('[data-delivery]')).map((b) => b.getAttribute('aria-label'))).toEqual(['Read', 'Pictures', 'Listen'])
   })
 })
 

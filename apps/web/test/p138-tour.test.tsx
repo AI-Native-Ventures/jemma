@@ -263,6 +263,130 @@ describe('the way the learner goes through the tour', () => {
     expect(screen.getByText('Question 2 of 5')).toBeTruthy()
     expect(screen.queryByRole('status')).toBeNull()
   })
+
+  // P156: "Skip the rest" under Skip, for the two minutes of the pitch: one tap skips this question and every later one and goes straight to the results.
+  const toQuestions = async () => {
+    render(<TourSession />)
+    fireEvent.click(screen.getByRole('button', { name: /go to the questions/i }))
+    await flush()
+    await flush()
+  }
+  const answerQ1 = async () => {
+    fireEvent.change(screen.getByLabelText('Answer 1'), { target: { value: '3' } })
+    fireEvent.change(screen.getByLabelText('Answer 2'), { target: { value: '2' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    await flush()
+  }
+  const skipRest = () => fireEvent.click(screen.getByRole('button', { name: 'Skip the rest' }))
+  /** What the results screen says: the score line, how each question was marked and what each card says was written. */
+  const resultsLook = () => ({
+    score: document.querySelector('[data-score]')?.textContent,
+    verdicts: Array.from(document.querySelectorAll('[data-verdict]')).map((e) => e.getAttribute('data-verdict')),
+    stored: sessionStorage.getItem(TOUR_RESULT_KEY),
+  })
+
+  it('P156: Skip the rest sits under Skip on Questions 1 to 4 and is not on Question 5', async () => {
+    await toQuestions()
+    await answerQ1()
+    for (const n of [2, 3, 4]) {
+      expect(screen.getByText(`Question ${n} of 5`)).toBeTruthy()
+      const skipButton = screen.getByRole('button', { name: 'Skip' })
+      const restButton = screen.getByRole('button', { name: 'Skip the rest' })
+      // under the existing Skip, in the same group, and the same look
+      expect(skipButton.parentElement).toBe(restButton.parentElement)
+      expect(skipButton.nextElementSibling).toBe(restButton)
+      expect(restButton.className).toBe(skipButton.className)
+      await skip()
+    }
+    expect(screen.getByText('Question 5 of 5')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Skip' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Skip the rest' })).toBeNull()
+  })
+
+  it('P156: it is on Question 1 too, so a learner who answers nothing can use it', async () => {
+    await toQuestions()
+    expect(screen.getByText('Question 1 of 5')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Skip the rest' })).toBeTruthy()
+    skipRest()
+    expect(document.querySelector('[data-score]')?.textContent).toBe('You got 0 of 5 right.')
+    expect(JSON.parse(sessionStorage.getItem(TOUR_RESULT_KEY) ?? 'null')).toEqual([false, false, false, false, false])
+  })
+
+  it('P156: with Question 1 right, Skip the rest is on the results at once as 1 of 5, with no wait and no answer card, every skipped question explained', async () => {
+    await toQuestions()
+    await answerQ1()
+    expect(screen.getByText('Question 2 of 5')).toBeTruthy()
+    skipRest()
+    // no timer was advanced: the results are already there, and the answer card never showed
+    expect(screen.queryByRole('status')).toBeNull()
+    expect(document.querySelector('[data-score]')?.textContent).toBe('You got 1 of 5 right.')
+    expect(document.querySelectorAll('[data-verdict="right"]')).toHaveLength(1)
+    const missed = document.querySelectorAll('[data-verdict="missed"]')
+    expect(missed).toHaveLength(4)
+    for (const card of Array.from(missed)) expect(card.querySelector('[data-steps]')).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'Let Jemma teach what you missed' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: /teacher/i }).getAttribute('href')).toBe('/tour/teacher')
+    expect(screen.queryByRole('button', { name: 'Skip the rest' })).toBeNull()
+    // waiting changes nothing: no timer is left over from a single skip
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000)
+    })
+    expect(document.querySelector('[data-score]')?.textContent).toBe('You got 1 of 5 right.')
+  })
+
+  it('P156: it stores the same result, and shows the same results, as five single skips', async () => {
+    // the long way: Question 1 right, then Skip four times
+    await toQuestions()
+    await answerQ1()
+    for (let n = 0; n < 4; n++) await skip()
+    const longWay = resultsLook()
+    cleanup()
+    sessionStorage.clear()
+    // the short way: Question 1 right, then Skip the rest
+    await toQuestions()
+    await answerQ1()
+    skipRest()
+    const shortWay = resultsLook()
+    expect(shortWay).toEqual(longWay)
+    expect(shortWay.stored).toBe(JSON.stringify([true, false, false, false, false]))
+    expect(shortWay.verdicts).toEqual(['right', 'missed', 'missed', 'missed', 'missed'])
+  })
+
+  it('P156: it works from the middle of the questions too: Question 1 right, one single skip, Skip the rest on Question 3, and the teacher page reads the result', async () => {
+    await toQuestions()
+    await answerQ1()
+    await skip()
+    expect(screen.getByText('Question 3 of 5')).toBeTruthy()
+    skipRest()
+    expect(document.querySelector('[data-score]')?.textContent).toBe('You got 1 of 5 right.')
+    expect(JSON.parse(sessionStorage.getItem(TOUR_RESULT_KEY) ?? 'null')).toEqual([true, false, false, false, false])
+    expect(readTourResult(sessionStorage)).toEqual([true, false, false, false, false])
+  })
+
+  it('P156: Skip the rest waits while the answer card of a single Skip is on the screen, and Start again begins a new run with the button back', async () => {
+    await toQuestions()
+    fireEvent.click(screen.getByRole('button', { name: 'Skip' }))
+    expect(screen.getByRole('status')).toBeTruthy()
+    const rest = screen.getByRole('button', { name: 'Skip the rest' }) as HTMLButtonElement
+    expect(rest.disabled).toBe(true)
+    fireEvent.click(rest)
+    // nothing happened: still the question, still the card
+    expect(screen.getByText('Question 1 of 5')).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: /results/i })).toBeNull()
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500)
+    })
+    expect(screen.getByText('Question 2 of 5')).toBeTruthy()
+    expect((screen.getByRole('button', { name: 'Skip the rest' }) as HTMLButtonElement).disabled).toBe(false)
+    skipRest()
+    expect(document.querySelector('[data-score]')?.textContent).toBe('You got 0 of 5 right.')
+    fireEvent.click(screen.getByRole('button', { name: 'Start again' }))
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Learn it first')
+    fireEvent.click(screen.getByRole('button', { name: /go to the questions/i }))
+    await flush()
+    expect(screen.getByText('Question 1 of 5')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Skip the rest' })).toBeTruthy()
+  })
 })
 
 /** Every link on the screen stays inside the tour: nothing here may send a signed-out person to the signed-in app. */
