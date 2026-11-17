@@ -65,6 +65,39 @@ describe('readableMaths: what a lesson hands the typesetter', () => {
     for (const same of ['x^2 - 4', 'y = x^2', 'y = a(x + p)^2 + q', 'y = 2ax^2', 'sin^2 x + cos^2 x = 1', 'f(x) = x + 3', 'Add 3 + 4']) expect(readableMaths(same), same).toBe(same)
   })
 
+  it('raises the power of the name of a side of a triangle, and never spaces its capitals', () => {
+    expect(readableMaths('AB^2 = AC^2 + BC^2')).toBe('AB\u00b2 = AC\u00b2 + BC\u00b2')
+    expect(readableMaths('OS^2 = 5^2 + 12^2')).toBe('OS\u00b2 = 5^2 + 12^2')
+    expect(readableMaths('In triangle OQP: OP^2 = OQ^2 + QP^2 (Pythagoras).')).toBe('In triangle OQP: OP\u00b2 = OQ\u00b2 + QP\u00b2 (Pythagoras).')
+  })
+
+  it('writes a product in brackets and under a root as separate letters, only next to a sign', () => {
+    expect(readableMaths('For y = sqrt(ax + b), the inside is not negative')).toBe('For y = sqrt(a x + b), the inside is not negative')
+    expect(readableMaths('y = (ax + b)^2')).toBe('y = (a x + b)^2')
+    expect(readableMaths('y = sin(kx) + 1')).toBe('y = sin(k x) + 1')
+    // a unit or a word in brackets is a word: with no sign next to it, or with one ("P(red) + P(blue)"), and a run with no variable in it
+    for (const same of ['The length is 5 (cm).', 'a width (km) and a depth', 'Use sqrt(3) (see below)', 'P(red) + P(blue) = 1', '(red) + (blue)', '(row) - (column)', 'y = (ab + c)']) expect(readableMaths(same), same).toBe(same)
+    // units with a power are units
+    for (const same of ['The area is 24 cm\u00b2.', 'a volume of 5 cm\u00b3', '3 mm\u00b2 + 4 mm\u00b2']) expect(readableMaths(same), same).toBe(same)
+  })
+
+  it('writes a product in an exponent, a product in a bracket with a power on it, and a power followed by a letter, with the letters apart', () => {
+    expect(readableMaths('(a^m)^n = a^(mn)')).toBe('(a^m)^n = a^(m n)')
+    expect(readableMaths('(xk)^2 = x^2k^2')).toBe('(x k)^2 = x^2 k^2')
+    expect(readableMaths('(ab)^n = a^n b^n')).toBe('(a b)^n = a^n b^n')
+    expect(readableMaths('18b^2q(4 - bq)')).toBe('18b^2 q(4 - bq)')
+    // a unit with a power is not a product
+    for (const same of ['The area is 5 (cm)^2', '3 (km)^2']) expect(readableMaths(same), same).toBe(same)
+  })
+
+  it('writes the power of a unit of length as the raised digit, so no caret shows', () => {
+    expect(readableMaths('Area = 22 cm^2')).toBe('Area = 22 cm\u00b2')
+    expect(readableMaths('V = 2^3 = 8 cm^3 and 4 mm^2.')).toBe('V = 2^3 = 8 cm\u00b3 and 4 mm\u00b2.')
+    expect(readableMaths('= 30π cm^2')).toBe('= 30π cm\u00b2')
+    // a variable m is not a unit, and a power of ten is left alone
+    for (const same of ['m^2 = 9', 'cm^12']) expect(readableMaths(same), same).toBe(same)
+  })
+
   it('leaves words alone, also next to a sign', () => {
     for (const same of [
       'The line is far from zero',
@@ -74,7 +107,6 @@ describe('readableMaths: what a lesson hands the typesetter', () => {
       'the sum of x and y',
       'Add x + y and then say it',
       'Two is not one + the rest',
-      'AB^2 = AC^2 + BC^2',
       'Is x in the set?',
     ])
       expect(readableMaths(same), same).toBe(same)
