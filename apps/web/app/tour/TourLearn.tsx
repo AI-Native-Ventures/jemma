@@ -28,7 +28,7 @@ export function TourLearn({ onReady }: { onReady: () => void }) {
 
   if (open !== null) {
     return (
-      <TourLessonReader key={open} position={open} delivery={delivery} onDelivery={setDelivery} back={{ label: 'Back to the lessons', onClick: () => setOpen(null) }}>
+      <TourLessonReader key={open} position={open} delivery={delivery} onDelivery={setDelivery} back={{ label: 'Back', onClick: () => setOpen(null) }}>
         <button type="button" onClick={onReady} className={startButton}>
           Go to the questions
         </button>

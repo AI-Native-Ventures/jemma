@@ -60,6 +60,7 @@ export function TourSession() {
   }, [phase, at])
 
   const review = useMemo(() => reviewTour(TOUR_QUESTIONS, typed), [typed])
+  const correct = useMemo(() => review.map((m) => m.correct ?? false), [review])
 
   /** Keeps what the learner did on this question (null for a skip) and moves on: to the next question, or to the results after the last. */
   const record = (value: string | null) => {
@@ -118,7 +119,7 @@ export function TourSession() {
           <>
             <Results firstName={TOUR_LEARNER} missed={review} />
             <div className="flex flex-col gap-3 px-5 pb-[26px]">
-              {review.some((m) => !m.correct) ? (
+              {correct.includes(false) ? (
                 <button type="button" onClick={() => setPhase('teach')} className={`${bigButton} border-0 bg-ink text-white`}>
                   Let Jemma teach what you missed
                 </button>
@@ -132,7 +133,7 @@ export function TourSession() {
             </div>
           </>
         ) : null}
-        {phase === 'teach' ? <TourTeach correct={review.map((m) => m.correct ?? false)} onAgain={again} /> : null}
+        {phase === 'teach' ? <TourTeach correct={correct} onAgain={again} /> : null}
       </div>
       {reveal !== null ? <Reveal answer={reveal} /> : null}
     </div>
