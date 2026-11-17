@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react'
 import { DiagramView } from '@/components/diagrams'
-import type { BlockForChild } from '@/lib/teaching'
+import type { BlockForChild, LessonAnswerResult } from '@/lib/teaching'
 import type { TypesetMode } from '../../session/_parts/typeset'
 import { blockView, firstSentence, type BlockView, type Delivery } from './delivery'
 import { LessonText } from './LessonText'
@@ -23,6 +23,8 @@ export type LessonBlockProps = {
   /** The try block whose answer box is open (one at a time), and what opens another. */
   activeTry: number | null
   onOpenTry: (index: number) => void
+  /** The saved tour only: marks the answer of the try block at `index` in the browser. Absent in the app, where the server marks. */
+  markTry?: (index: number, value: string) => LessonAnswerResult | Promise<LessonAnswerResult>
 }
 
 const LABEL: Record<BlockForChild['kind'], string> = {
@@ -162,7 +164,7 @@ function MistakeBlock({ block, view, typeset }: { block: Extract<BlockForChild, 
 }
 
 /** One block of a lesson, shown the way the delivery says (`blockView`). The same block, in the same place, in every delivery. */
-export function LessonBlock({ index, block, delivery, typeset, voice, topicLessonId, topic, activeTry, onOpenTry }: LessonBlockProps) {
+export function LessonBlock({ index, block, delivery, typeset, voice, topicLessonId, topic, activeTry, onOpenTry, markTry }: LessonBlockProps) {
   const view = blockView(block, delivery)
   return (
     <Frame index={index} kind={block.kind} view={view} voice={voice}>
@@ -187,6 +189,7 @@ export function LessonBlock({ index, block, delivery, typeset, voice, topicLesso
           pictureFirst={view.diagramFirst}
           open={activeTry === index}
           onOpen={() => onOpenTry(index)}
+          {...(markTry ? { mark: (value: string) => markTry(index, value) } : {})}
         />
       ) : null}
       {block.kind === 'mistake' ? <MistakeBlock block={block} view={view} typeset={typeset} /> : null}

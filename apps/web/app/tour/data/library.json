@@ -1,0 +1,3779 @@
+[
+ {
+  "grade": 11,
+  "base_name": "Equations and inequalities",
+  "family": "algebra",
+  "position": 1,
+  "title": "Solving quadratic equations by factorising",
+  "version": 1,
+  "source": {
+   "kind": "caps",
+   "title": "Curriculum and Assessment Policy Statement (CAPS) Mathematics, Further Education and Training Phase, Grades 10-12",
+   "credit": "Follows the CAPS Mathematics curriculum, Department of Basic Education",
+   "address": "https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20FET%20_%20MATHEMATICS%20_%20GR%2010-12%20_%20Web_1133.pdf"
+  },
+  "content": {
+   "title": "Solving quadratic equations by factorising",
+   "blocks": [
+    {
+     "kind": "explain",
+     "text": "A quadratic equation is an equation in which the highest power of the unknown is 2. For example, x² - 5x + 6 = 0 and 3x² = 12 are quadratic equations, while 2x + 1 = 0 is not.\n\nIn Grade 10 you factorised expressions such as x² - 5x + 6 into (x - 2)(x - 3). In this lesson that skill becomes a solving method: once a product equals zero, each factor can be examined on its own.",
+     "speech": "A quadratic equation is an equation in which the highest power of the unknown is two. For example, x squared minus five x plus six equals zero, and three x squared equals twelve, are quadratic equations, while two x plus one equals zero is not. In Grade 10 you factorised expressions such as x squared minus five x plus six into x minus two times x minus three. In this lesson that skill becomes a solving method: once a product equals zero, each factor can be examined on its own."
+    },
+    {
+     "kind": "explain",
+     "text": "Before you factorise, write the equation in standard form: ax² + bx + c = 0, with a not equal to 0. The right side must be zero.\n\nIf it is not zero, move every term to the left side and simplify. In 2x² - 7x + 3 = 0, a = 2, b = -7 and c = 3. These numbers are the coefficients.",
+     "speech": "Before you factorise, write the equation in standard form: a x squared plus b x plus c equals zero, with a not equal to zero. The right side must be zero. If it is not zero, move every term to the left side and simplify. In two x squared minus seven x plus three equals zero, a is two, b is minus seven and c is three. These numbers are the coefficients."
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "kind": "coordinate_plane",
+      "step": 1,
+      "xMax": 6,
+      "xMin": -1,
+      "yMax": 8,
+      "yMin": -2,
+      "graphs": [
+       {
+        "a": 1,
+        "p": 2,
+        "q": -1,
+        "type": "parabola",
+        "label": "y = x² - 4x + 3"
+       }
+      ],
+      "points": [
+       {
+        "x": 1,
+        "y": 0,
+        "label": "1"
+       },
+       {
+        "x": 3,
+        "y": 0,
+        "label": "3"
+       }
+      ]
+     },
+     "speech": "A parabola opening upwards is drawn on a set of axes. It is the graph of y equals x squared minus four x plus three. The curve comes down, touches the x-axis at x equals one, dips below, and comes back up through the x-axis at x equals three. The two points where the curve cuts the x-axis are marked one and three. Those two x-intercepts are the solutions of x squared minus four x plus three equals zero.",
+     "caption": "The parabola y = x² - 4x + 3 cuts the x-axis at x = 1 and x = 3. Those two x-intercepts are the solutions of x² - 4x + 3 = 0."
+    },
+    {
+     "kind": "explain",
+     "text": "The zero product rule says: if two numbers multiply to give zero, then at least one of them must be zero. So if A × B = 0, then A = 0 or B = 0.\n\nWhy does this help? A factorised equation such as (x - 2)(x - 3) = 0 is a product equal to zero, so one bracket must be zero. That turns one hard equation into two easy ones.",
+     "speech": "The zero product rule says: if two numbers multiply to give zero, then at least one of them must be zero. So if A times B equals zero, then A equals zero or B equals zero. Why does this help? A factorised equation such as x minus two times x minus three equals zero is a product equal to zero, so one bracket must be zero. That turns one hard equation into two easy ones."
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "max": 6,
+      "min": -1,
+      "kind": "number_line",
+      "step": 1,
+      "marks": [
+       {
+        "label": "x = 1",
+        "value": 1
+       },
+       {
+        "label": "x = 3",
+        "value": 3
+       }
+      ]
+     },
+     "speech": "A number line runs from minus one to six, marked in steps of one. Two points are marked with labels: x equals one, and x equals three. These are the two solutions of x minus one times x minus three equals zero, shown together on one number line. A quadratic equation usually has two solutions.",
+     "caption": "The two solutions of (x - 1)(x - 3) = 0 shown on one number line. A quadratic equation usually has two solutions."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "x² - 5x + 6 = 0",
+       "reason": "The equation is already in standard form, with a = 1, b = -5 and c = 6."
+      },
+      {
+       "line": "(x - 2)(x - 3) = 0",
+       "reason": "Find two numbers that multiply to 6 and add to -5. They are -2 and -3, so the trinomial factorises."
+      },
+      {
+       "line": "x - 2 = 0 or x - 3 = 0",
+       "reason": "By the zero product rule, one of the two brackets must be zero."
+      },
+      {
+       "line": "x = 2 or x = 3",
+       "reason": "Solve each small linear equation by adding the number across."
+      }
+     ],
+     "answer": "x = 2 or x = 3",
+     "speech": "Solve x squared minus five x plus six equals zero. Step one: the equation is already in standard form, with a equal to one, b equal to minus five and c equal to six. Step two: find two numbers that multiply to six and add to minus five. They are minus two and minus three, so the equation becomes x minus two times x minus three equals zero. Step three: by the zero product rule, x minus two equals zero or x minus three equals zero. Step four: solve each small equation. The answer is x equals two or x equals three.",
+     "problem": "Solve for x: x² - 5x + 6 = 0",
+     "answerKind": "equation"
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "x² - 3x - 10 = 0",
+       "reason": "Subtract 3x and subtract 10 from both sides so that the right side becomes zero."
+      },
+      {
+       "line": "(x - 5)(x + 2) = 0",
+       "reason": "Find two numbers that multiply to -10 and add to -3. They are -5 and 2."
+      },
+      {
+       "line": "x - 5 = 0 or x + 2 = 0",
+       "reason": "By the zero product rule, one of the brackets must be zero."
+      },
+      {
+       "line": "x = 5 or x = -2",
+       "reason": "Solve each small linear equation."
+      }
+     ],
+     "answer": "x = 5 or x = -2",
+     "speech": "Solve x squared equals three x plus ten. Step one: subtract three x and subtract ten from both sides so that the right side becomes zero. The equation is x squared minus three x minus ten equals zero. Step two: find two numbers that multiply to minus ten and add to minus three. They are minus five and two, so the equation becomes x minus five times x plus two equals zero. Step three: by the zero product rule, x minus five equals zero or x plus two equals zero. Step four: solve each small equation. The answer is x equals five or x equals minus two.",
+     "problem": "Solve for x: x² = 3x + 10",
+     "answerKind": "equation"
+    },
+    {
+     "hint": "Look for two numbers that multiply to give -12 and add to give -1.",
+     "kind": "try",
+     "speech": "Solve for x: x squared minus x minus twelve equals zero.",
+     "question": {
+      "why": "Learners often attach the wrong signs to the answers, writing x = -4 or x = 3.",
+      "steps": [
+       "x² - x - 12 = 0",
+       "(x - 4)(x + 3) = 0",
+       "x = 4 or x = -3"
+      ],
+      "answer": "x = 4 or x = -3",
+      "prompt": "Solve for x: x² - x - 12 = 0",
+      "render": "text",
+      "rightWay": "Look for two numbers that multiply to -12 and add to -1; they are -4 and 3. So (x - 4)(x + 3) = 0 and x = 4 or x = -3.",
+      "answerKind": "equation",
+      "difficulty": 2
+     }
+    },
+    {
+     "why": "Dividing by x throws away the solution x = 0, because you may not divide by a quantity that can be zero. Move everything to one side and factorise instead, then use the zero product rule.",
+     "kind": "mistake",
+     "right": "x² - 5x = 0, so x(x - 5) = 0, so x = 0 or x = 5",
+     "wrong": "x² = 5x, so divide both sides by x and get x = 5",
+     "speech": "Here is a common mistake. The wrong way says: x squared equals five x, so divide both sides by x and get x equals five. The right way says: x squared minus five x equals zero, so x times x minus five equals zero, so x equals zero or x equals five. Dividing by x throws away the solution x equals zero, because you may not divide by a quantity that can be zero. Move everything to one side and factorise instead, then use the zero product rule.",
+     "diagram": {
+      "max": 6,
+      "min": -1,
+      "kind": "number_line",
+      "step": 1,
+      "marks": [
+       {
+        "label": "x = 0",
+        "value": 0
+       },
+       {
+        "label": "x = 5",
+        "value": 5
+       }
+      ]
+     }
+    },
+    {
+     "kind": "explain",
+     "text": "Two factorising patterns appear again and again. First, the common factor: if every term shares a factor, take it out before doing anything else. For example, 2x² - 18 = 2(x² - 9).\n\nSecond, the difference of squares: a² - b² = (a - b)(a + b). So x² - 9 = (x - 3)(x + 3) and 4x² - 25 = (2x - 5)(2x + 5).",
+     "speech": "Two factorising patterns appear again and again. First, the common factor: if every term shares a factor, take it out before doing anything else. For example, two x squared minus eighteen equals two times x squared minus nine. Second, the difference of squares: a squared minus b squared equals a minus b times a plus b. So x squared minus nine equals x minus three times x plus three, and four x squared minus twenty five equals two x minus five times two x plus five."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "2x² - 18 = 0",
+       "reason": "There is no x term, so this is a difference of squares after taking out a common factor."
+      },
+      {
+       "line": "2(x² - 9) = 0",
+       "reason": "Take out the common factor 2 from both terms."
+      },
+      {
+       "line": "2(x - 3)(x + 3) = 0",
+       "reason": "Factorise x² - 9 as a difference of squares: (x - 3)(x + 3)."
+      },
+      {
+       "line": "x - 3 = 0 or x + 3 = 0",
+       "reason": "The factor 2 is never zero, so by the zero product rule one of the brackets must be zero."
+      },
+      {
+       "line": "x = 3 or x = -3",
+       "reason": "Solve each small linear equation."
+      }
+     ],
+     "answer": "x = 3 or x = -3",
+     "speech": "Solve two x squared minus eighteen equals zero. Step one: there is no x term, so this is a difference of squares after taking out a common factor. Step two: take out the common factor two, giving two times x squared minus nine equals zero. Step three: factorise x squared minus nine as a difference of squares, giving two times x minus three times x plus three equals zero. Step four: the factor two is never zero, so by the zero product rule one of the brackets must be zero. Step five: solve each small equation. The answer is x equals three or x equals minus three.",
+     "problem": "Solve for x: 2x² - 18 = 0",
+     "answerKind": "equation"
+    },
+    {
+     "kind": "explain",
+     "text": "When the coefficient of x² is not 1, the brackets are not both (x + something). For 2x² + x - 6, multiply a and c: 2 × (-6) = -12. Find two numbers that multiply to -12 and add to b = 1: they are 4 and -3.\n\nSplit the middle term with those two numbers, group in pairs, and take out the common bracket. Always finish by multiplying the brackets back to check.",
+     "speech": "When the coefficient of x squared is not one, the brackets are not both x plus something. For two x squared plus x minus six, multiply a and c: two times minus six is minus twelve. Find two numbers that multiply to minus twelve and add to b, which is one: they are four and minus three. Split the middle term with those two numbers, group in pairs, and take out the common bracket. Always finish by multiplying the brackets back to check."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "2x² + x - 6 = 0",
+       "reason": "The equation is in standard form with a = 2, b = 1 and c = -6."
+      },
+      {
+       "line": "a × c = 2 × (-6) = -12",
+       "reason": "Multiply a and c to get the number the two key numbers must multiply to."
+      },
+      {
+       "line": "4 × (-3) = -12 and 4 + (-3) = 1",
+       "reason": "Find two numbers that multiply to -12 and add to b = 1."
+      },
+      {
+       "line": "2x² + 4x - 3x - 6 = 0",
+       "reason": "Split the middle term x into 4x - 3x."
+      },
+      {
+       "line": "2x(x + 2) - 3(x + 2) = 0",
+       "reason": "Group in pairs and take out the common factor from each pair."
+      },
+      {
+       "line": "(2x - 3)(x + 2) = 0",
+       "reason": "Take out the common bracket (x + 2)."
+      },
+      {
+       "line": "2x - 3 = 0 or x + 2 = 0",
+       "reason": "By the zero product rule, one bracket must be zero."
+      },
+      {
+       "line": "x = 3/2 or x = -2",
+       "reason": "Solve each small linear equation."
+      }
+     ],
+     "answer": "x = 3/2 or x = -2",
+     "speech": "Solve two x squared plus x minus six equals zero. Step one: the equation is in standard form with a equal to two, b equal to one and c equal to minus six. Step two: multiply a and c to get minus twelve. Step three: find two numbers that multiply to minus twelve and add to one; they are four and minus three. Step four: split the middle term, giving two x squared plus four x minus three x minus six equals zero. Step five: group in pairs and take out the common factor from each pair, giving two x times x plus two minus three times x plus two equals zero. Step six: take out the common bracket x plus two, giving two x minus three times x plus two equals zero. Step seven: by the zero product rule, two x minus three equals zero or x plus two equals zero. Step eight: solve each small equation. The answer is x equals three over two or x equals minus two.",
+     "problem": "Solve for x: 2x² + x - 6 = 0",
+     "answerKind": "equation"
+    },
+    {
+     "hint": "Multiply a and c first, then look for two numbers that multiply to that value and add to -5.",
+     "kind": "try",
+     "speech": "Solve for x: two x squared minus five x minus three equals zero.",
+     "question": {
+      "why": "Learners guess brackets like (2x - 1)(x + 3) without checking that the middle term comes out right.",
+      "steps": [
+       "2x² - 5x - 3 = 0",
+       "2x² - 6x + x - 3 = 0",
+       "2x(x - 3) + 1(x - 3) = 0",
+       "(2x + 1)(x - 3) = 0",
+       "x = -1/2 or x = 3"
+      ],
+      "answer": "x = -1/2 or x = 3",
+      "prompt": "Solve for x: 2x² - 5x - 3 = 0",
+      "render": "text",
+      "rightWay": "Multiply a and c: 2 × (-3) = -6. The two numbers are -6 and 1. Splitting and grouping gives (2x + 1)(x - 3) = 0, so x = -1/2 or x = 3.",
+      "answerKind": "equation",
+      "difficulty": 3
+     }
+    },
+    {
+     "kind": "explain",
+     "text": "Always check your solutions in the original equation. Substitute x = 3 into x² - 5x + 6: 9 - 15 + 6 = 0, so x = 3 is correct.\n\nA value that fails the check is not a solution. Writing the substitution down also earns method marks, and it catches sign errors immediately.",
+     "speech": "Always check your solutions in the original equation. Substitute x equals three into x squared minus five x plus six: nine minus fifteen plus six equals zero, so x equals three is correct. A value that fails the check is not a solution. Writing the substitution down also earns method marks, and it catches sign errors immediately."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "Let the smaller integer be x, so the next integer is x + 1",
+       "reason": "Give the unknown a name and write the next integer in terms of it."
+      },
+      {
+       "line": "x(x + 1) = 72",
+       "reason": "The product of the two integers is 72, which is the given information."
+      },
+      {
+       "line": "x² + x - 72 = 0",
+       "reason": "Expand the bracket and subtract 72 from both sides to reach standard form."
+      },
+      {
+       "line": "(x + 9)(x - 8) = 0",
+       "reason": "Find two numbers that multiply to -72 and add to 1: they are 9 and -8."
+      },
+      {
+       "line": "x = -9 or x = 8",
+       "reason": "By the zero product rule, x + 9 = 0 or x - 8 = 0."
+      },
+      {
+       "line": "Smaller integer = 8",
+       "reason": "The integers are positive, so x = -9 is rejected and only x = 8 is kept."
+      }
+     ],
+     "answer": "8",
+     "speech": "The product of two consecutive positive integers is seventy two. Find the smaller integer. Step one: let the smaller integer be x, so the next integer is x plus one. Step two: the product of the two integers is seventy two, so x times x plus one equals seventy two. Step three: expand the bracket and subtract seventy two from both sides, giving x squared plus x minus seventy two equals zero. Step four: find two numbers that multiply to minus seventy two and add to one; they are nine and minus eight, so x plus nine times x minus eight equals zero. Step five: by the zero product rule, x equals minus nine or x equals eight. Step six: the integers are positive, so x equals minus nine is rejected and only x equals eight is kept. The answer is eight; the integers are eight and nine.",
+     "problem": "The product of two consecutive positive integers is 72. Find the smaller integer.",
+     "answerKind": "whole"
+    },
+    {
+     "kind": "explain",
+     "text": "Every equation in this lesson follows the same path: write it in standard form, factorise completely, apply the zero product rule, solve each small equation, then check.\n\nIf an equation cannot be factorised with whole numbers, this method stops working and another method is needed. That is the subject of the next lessons.",
+     "speech": "Every equation in this lesson follows the same path: write it in standard form, factorise completely, apply the zero product rule, solve each small equation, then check. If an equation cannot be factorised with whole numbers, this method stops working and another method is needed. That is the subject of the next lessons."
+    }
+   ],
+   "minutes": 22,
+   "summary": [
+    "A quadratic equation has the highest power of x equal to 2, and must be written as ax² + bx + c = 0 before you factorise.",
+    "Take out a common factor first, then use the difference of squares a² - b² = (a - b)(a + b) or factorise the trinomial.",
+    "For a trinomial with a not equal to 1, multiply a by c, find two numbers that multiply to that and add to b, split the middle term and group.",
+    "The zero product rule: if a product is zero, one of the factors is zero, so set each bracket equal to zero.",
+    "Never divide both sides by x, because that loses the solution x = 0.",
+    "Substitute each solution back into the original equation to check it."
+   ],
+   "keyWords": [
+    {
+     "word": "quadratic equation",
+     "meaning": "An equation in which the highest power of the unknown is 2, for example x² - 5x + 6 = 0."
+    },
+    {
+     "word": "standard form",
+     "meaning": "The form ax² + bx + c = 0, where the whole expression is on one side and zero is on the other."
+    },
+    {
+     "word": "coefficient",
+     "meaning": "The number in front of a power of x, such as the 2 in 2x² or the -7 in -7x."
+    },
+    {
+     "word": "factorise",
+     "meaning": "To write an expression as a product of factors, for example x² - 5x + 6 = (x - 2)(x - 3)."
+    },
+    {
+     "word": "zero product rule",
+     "meaning": "If a product of two numbers is zero, then at least one of the numbers must be zero."
+    },
+    {
+     "word": "difference of squares",
+     "meaning": "The pattern a² - b² = (a - b)(a + b), for example x² - 9 = (x - 3)(x + 3)."
+    },
+    {
+     "word": "solution",
+     "meaning": "A value of x that makes the equation true; also called a root."
+    },
+    {
+     "word": "x-intercept",
+     "meaning": "The x-value where a graph cuts the x-axis, where y = 0."
+    }
+   ],
+   "position": 1,
+   "practice": [
+    {
+     "why": "Sign errors when solving x + 5 = 0, giving x = 5 instead of x = -5.",
+     "steps": [
+      "(x - 2)(x + 5) = 0",
+      "x - 2 = 0 or x + 5 = 0",
+      "x = 2 or x = -5"
+     ],
+     "answer": "x = 2 or x = -5",
+     "prompt": "Solve for x: (x - 2)(x + 5) = 0",
+     "render": "text",
+     "rightWay": "Set each bracket to zero: x - 2 = 0 gives x = 2 and x + 5 = 0 gives x = -5.",
+     "answerKind": "equation",
+     "difficulty": 1
+    },
+    {
+     "why": "Dividing both sides by x and reporting only x = 7, which loses a solution.",
+     "steps": [
+      "x² - 7x = 0",
+      "x(x - 7) = 0",
+      "x = 0 or x = 7"
+     ],
+     "answer": "x = 0 or x = 7",
+     "prompt": "Solve for x: x² - 7x = 0",
+     "render": "text",
+     "rightWay": "Take out the common factor x, then use the zero product rule: x = 0 or x - 7 = 0.",
+     "answerKind": "equation",
+     "difficulty": 1
+    },
+    {
+     "why": "Using 5 and -2 as the numbers, which multiply to -10 but add to 3 only with the signs the other way round.",
+     "steps": [
+      "x² + 3x - 10 = 0",
+      "(x + 5)(x - 2) = 0",
+      "x = -5 or x = 2"
+     ],
+     "answer": "x = -5 or x = 2",
+     "prompt": "Solve for x: x² + 3x - 10 = 0",
+     "render": "text",
+     "rightWay": "The numbers 5 and -2 multiply to -10 and add to 3, so (x + 5)(x - 2) = 0 and x = -5 or x = 2.",
+     "answerKind": "equation",
+     "difficulty": 2
+    },
+    {
+     "why": "Factorising before the equation is in standard form, or moving the terms to the wrong side and getting -20 instead of +20.",
+     "steps": [
+      "x² - 9x + 20 = 0",
+      "(x - 4)(x - 5) = 0",
+      "x = 4 or x = 5"
+     ],
+     "answer": "x = 4 or x = 5",
+     "prompt": "Solve for x: x² = 9x - 20",
+     "render": "text",
+     "rightWay": "Subtract 9x and add 20 on both sides to get x² - 9x + 20 = 0, then factorise as (x - 4)(x - 5) = 0.",
+     "answerKind": "equation",
+     "difficulty": 2
+    },
+    {
+     "why": "Dividing by 2 and then forgetting the negative root, giving only x = 2.",
+     "steps": [
+      "2x² - 8 = 0",
+      "2(x² - 4) = 0",
+      "2(x - 2)(x + 2) = 0",
+      "x = 2 or x = -2"
+     ],
+     "answer": "x = 2 or x = -2",
+     "prompt": "Solve for x: 2x² - 8 = 0",
+     "render": "text",
+     "rightWay": "Take out 2, factorise the difference of squares, and remember that both (x - 2) and (x + 2) can be zero.",
+     "answerKind": "equation",
+     "difficulty": 2
+    },
+    {
+     "why": "Writing (3x - 4)(3x - 4) or (9x - 4)(x + 4), which do not multiply back to 9x² - 16.",
+     "steps": [
+      "9x² - 16 = 0",
+      "(3x - 4)(3x + 4) = 0",
+      "3x - 4 = 0 or 3x + 4 = 0",
+      "x = 4/3 or x = -4/3"
+     ],
+     "answer": "x = 4/3 or x = -4/3",
+     "prompt": "Solve for x: 9x² - 16 = 0",
+     "render": "text",
+     "rightWay": "Note that 9x² = (3x)² and 16 = 4², so the difference of squares gives (3x - 4)(3x + 4) = 0.",
+     "answerKind": "equation",
+     "difficulty": 3
+    },
+    {
+     "why": "Using x + 1 for the next integer, which gives consecutive integers instead of consecutive odd integers.",
+     "steps": [
+      "Let the smaller odd integer be x, so the next odd integer is x + 2",
+      "x(x + 2) = 143",
+      "x² + 2x - 143 = 0",
+      "(x + 13)(x - 11) = 0",
+      "x = -13 or x = 11",
+      "Smaller integer = 11"
+     ],
+     "answer": "11",
+     "prompt": "The product of two consecutive positive odd integers is 143. Find the smaller integer.",
+     "render": "text",
+     "rightWay": "Consecutive odd integers differ by 2, so use x and x + 2, solve x² + 2x - 143 = 0, and reject the negative root.",
+     "answerKind": "whole",
+     "difficulty": 3
+    }
+   ],
+   "objectives": [
+    "You will be able to write a quadratic equation in the form a x squared plus b x plus c equals 0.",
+    "You will be able to factorise common factors, difference of squares and trinomials.",
+    "You will be able to use the zero product rule to find the solutions and check them."
+   ]
+  }
+ },
+ {
+  "grade": 11,
+  "base_name": "Equations and inequalities",
+  "family": "algebra",
+  "position": 2,
+  "title": "Completing the square to solve quadratic equations",
+  "version": 1,
+  "source": {
+   "kind": "caps",
+   "title": "Curriculum and Assessment Policy Statement (CAPS) Mathematics, Further Education and Training Phase, Grades 10-12",
+   "credit": "Follows the CAPS Mathematics curriculum, Department of Basic Education",
+   "address": "https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20FET%20_%20MATHEMATICS%20_%20GR%2010-12%20_%20Web_1133.pdf"
+  },
+  "content": {
+   "title": "Completing the square to solve quadratic equations",
+   "blocks": [
+    {
+     "kind": "explain",
+     "text": "In the last lesson we solved quadratics by factorising. Many quadratics do not factorise neatly. Completing the square changes any quadratic into a perfect square plus a constant, so we can solve it by taking square roots.\n\nIt also shows the turning point of the parabola and the exact roots.",
+     "speech": "In the last lesson we solved quadratic equations by factorising. Many quadratics do not factorise neatly. Completing the square changes any quadratic into a perfect square plus a constant, so we can solve it by taking square roots. It also shows the turning point of the parabola and the exact roots."
+    },
+    {
+     "kind": "explain",
+     "text": "A perfect square has the pattern (x + p)^2 = x^2 + 2px + p^2. The number p is half of the coefficient of x.\n\nSo to make x^2 + bx a perfect square, add the square of half of b: (b/2)^2.",
+     "speech": "A perfect square has the pattern x plus p squared equals x squared plus two p x plus p squared. The number p is half of the coefficient of x. So to make x squared plus b x a perfect square, add the square of half of b: b over two squared."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "x^2 - 6x = -8",
+       "reason": "Move the constant to the right side."
+      },
+      {
+       "line": "Half of -6 is -3, and (-3)^2 = 9",
+       "reason": "Find the number to add to make a perfect square."
+      },
+      {
+       "line": "x^2 - 6x + 9 = -8 + 9",
+       "reason": "Add 9 to both sides to keep the equation balanced."
+      },
+      {
+       "line": "(x - 3)^2 = 1",
+       "reason": "Write the left side as a perfect square."
+      },
+      {
+       "line": "x - 3 = ±1",
+       "reason": "Take the square root of both sides; a square can give a positive or negative value."
+      },
+      {
+       "line": "x = 3 ± 1",
+       "reason": "Add 3 to both sides."
+      },
+      {
+       "line": "x = 4 or x = 2",
+       "reason": "Work out both values."
+      }
+     ],
+     "answer": "x = 4 or x = 2",
+     "speech": "Solve x squared minus six x plus eight equals zero by completing the square. Move the constant to the right side: x squared minus six x equals minus eight. Half of minus six is minus three, and minus three squared is nine. Add nine to both sides: x squared minus six x plus nine equals one. Write the left side as a perfect square: x minus three squared equals one. Take the square root of both sides: x minus three equals plus or minus one. Add three to both sides: x equals three plus or minus one. So x equals four or x equals two.",
+     "problem": "Solve x^2 - 6x + 8 = 0 by completing the square.",
+     "answerKind": "equation"
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "kind": "coordinate_plane",
+      "step": 1,
+      "xMax": 6,
+      "xMin": -1,
+      "yMax": 8,
+      "yMin": -2,
+      "graphs": [
+       {
+        "a": 1,
+        "p": 3,
+        "q": -1,
+        "type": "parabola",
+        "label": "y = (x - 3)^2 - 1"
+       }
+      ],
+      "points": [
+       {
+        "x": 2,
+        "y": 0,
+        "label": "x = 2"
+       },
+       {
+        "x": 4,
+        "y": 0,
+        "label": "x = 4"
+       }
+      ]
+     },
+     "speech": "The picture shows a parabola. The completed square form is y equals x minus three squared minus one. It crosses the x axis at x equals two and x equals four. These are the two roots of the equation.",
+     "caption": "The completed square form shows the parabola crosses the x-axis at x = 2 and x = 4."
+    },
+    {
+     "kind": "explain",
+     "text": "For a monic quadratic x^2 + bx + c = 0:\n1. Move c to the other side.\n2. Add (b/2)^2 to both sides.\n3. Write the left side as (x + b/2)^2.\n4. Take square roots and solve both cases.",
+     "speech": "For a monic quadratic x squared plus b x plus c equals zero, follow these steps. First move c to the other side. Second add b over two squared to both sides. Third write the left side as x plus b over two squared. Fourth take square roots and solve both cases."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "x^2 + 4x = 1",
+       "reason": "Move the constant to the right side."
+      },
+      {
+       "line": "Half of 4 is 2, and 2^2 = 4",
+       "reason": "Find the number to add to make a perfect square."
+      },
+      {
+       "line": "x^2 + 4x + 4 = 1 + 4",
+       "reason": "Add 4 to both sides."
+      },
+      {
+       "line": "(x + 2)^2 = 5",
+       "reason": "Write the left side as a perfect square."
+      },
+      {
+       "line": "x + 2 = ±sqrt(5)",
+       "reason": "Take the square root of both sides."
+      },
+      {
+       "line": "x = -2 ± sqrt(5)",
+       "reason": "Subtract 2 from both sides."
+      },
+      {
+       "line": "x = -2 + sqrt(5) or x = -2 - sqrt(5)",
+       "reason": "Write the two exact roots."
+      }
+     ],
+     "answer": "x = -2 + sqrt(5) or x = -2 - sqrt(5)",
+     "speech": "Solve x squared plus four x minus one equals zero by completing the square. Move the constant to the right side: x squared plus four x equals one. Half of four is two, and two squared is four. Add four to both sides: x squared plus four x plus four equals five. Write the left side as a perfect square: x plus two squared equals five. Take the square root of both sides: x plus two equals plus or minus the square root of five. Subtract two from both sides: x equals minus two plus or minus the square root of five. So x equals minus two plus the square root of five or x equals minus two minus the square root of five.",
+     "problem": "Solve x^2 + 4x - 1 = 0 by completing the square.",
+     "answerKind": "equation"
+    },
+    {
+     "kind": "explain",
+     "text": "When the leading coefficient is not 1, divide the whole equation by that number first. Then the coefficient of x^2 becomes 1 and the method works as before.\n\nDo not divide only some terms. Every term must be divided by the leading coefficient.",
+     "speech": "When the leading coefficient is not one, divide the whole equation by that number first. Then the coefficient of x squared becomes one and the method works as before. Do not divide only some terms. Every term must be divided by the leading coefficient."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "x^2 - 4x + 3/2 = 0",
+       "reason": "Divide every term by the leading coefficient 2."
+      },
+      {
+       "line": "x^2 - 4x = -3/2",
+       "reason": "Move the constant to the right side."
+      },
+      {
+       "line": "Half of -4 is -2, and (-2)^2 = 4",
+       "reason": "Find the number to add to make a perfect square."
+      },
+      {
+       "line": "x^2 - 4x + 4 = -3/2 + 4",
+       "reason": "Add 4 to both sides."
+      },
+      {
+       "line": "(x - 2)^2 = 5/2",
+       "reason": "Write the left side as a perfect square and simplify the right side."
+      },
+      {
+       "line": "x - 2 = ±sqrt(5/2)",
+       "reason": "Take the square root of both sides."
+      },
+      {
+       "line": "x = 2 ± sqrt(10)/2",
+       "reason": "Add 2 to both sides and simplify the surd."
+      },
+      {
+       "line": "x = 2 + sqrt(10)/2 or x = 2 - sqrt(10)/2",
+       "reason": "Write the two exact roots."
+      }
+     ],
+     "answer": "x = 2 + sqrt(10)/2 or x = 2 - sqrt(10)/2",
+     "speech": "Solve two x squared minus eight x plus three equals zero by completing the square. Divide every term by the leading coefficient two: x squared minus four x plus three over two equals zero. Move the constant to the right side: x squared minus four x equals minus three over two. Half of minus four is minus two, and minus two squared is four. Add four to both sides: x squared minus four x plus four equals minus three over two plus four, which is five over two. Write the left side as a perfect square: x minus two squared equals five over two. Take the square root of both sides: x minus two equals plus or minus the square root of five over two. Add two to both sides: x equals two plus or minus the square root of ten over two. So x equals two plus the square root of ten over two or x equals two minus the square root of ten over two.",
+     "problem": "Solve 2x^2 - 8x + 3 = 0 by completing the square.",
+     "answerKind": "equation"
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "kind": "coordinate_plane",
+      "step": 1,
+      "xMax": 5,
+      "xMin": -1,
+      "yMax": 8,
+      "yMin": -8,
+      "graphs": [
+       {
+        "a": 2,
+        "p": 2,
+        "q": -5,
+        "type": "parabola",
+        "label": "y = 2(x - 2)^2 - 5"
+       }
+      ]
+     },
+     "speech": "The picture shows the parabola y equals two times x minus two squared minus five. It crosses the x axis twice. Those two crossing points are the two roots of the equation two x squared minus eight x plus three equals zero.",
+     "caption": "After dividing by 2 and completing the square, the parabola has equation y = 2(x - 2)^2 - 5. Its two x-intercepts are the roots of 2x^2 - 8x + 3 = 0."
+    },
+    {
+     "kind": "explain",
+     "text": "Negative coefficients and fractions follow the same rule. Half of a negative number is negative. Square it carefully: the square is positive.\n\nIf half of b is a fraction, square both the numerator and the denominator.",
+     "speech": "Negative coefficients and fractions follow the same rule. Half of a negative number is negative. Square it carefully: the square is positive. If half of b is a fraction, square both the numerator and the denominator."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "x^2 + 2x - 1/3 = 0",
+       "reason": "Divide every term by the leading coefficient 3."
+      },
+      {
+       "line": "x^2 + 2x = 1/3",
+       "reason": "Move the constant to the right side."
+      },
+      {
+       "line": "Half of 2 is 1, and 1^2 = 1",
+       "reason": "Find the number to add to make a perfect square."
+      },
+      {
+       "line": "x^2 + 2x + 1 = 1/3 + 1",
+       "reason": "Add 1 to both sides."
+      },
+      {
+       "line": "(x + 1)^2 = 4/3",
+       "reason": "Write the left side as a perfect square and simplify the right side."
+      },
+      {
+       "line": "x + 1 = ±2/sqrt(3)",
+       "reason": "Take the square root of both sides."
+      },
+      {
+       "line": "x = -1 ± 2*sqrt(3)/3",
+       "reason": "Subtract 1 and rationalise the denominator."
+      },
+      {
+       "line": "x = -1 + 2*sqrt(3)/3 or x = -1 - 2*sqrt(3)/3",
+       "reason": "Write the two exact roots."
+      }
+     ],
+     "answer": "x = -1 + 2*sqrt(3)/3 or x = -1 - 2*sqrt(3)/3",
+     "speech": "Solve three x squared plus six x minus one equals zero by completing the square. Divide every term by the leading coefficient three: x squared plus two x minus one third equals zero. Move the constant to the right side: x squared plus two x equals one third. Half of two is one, and one squared is one. Add one to both sides: x squared plus two x plus one equals four thirds. Write the left side as a perfect square: x plus one squared equals four thirds. Take the square root of both sides: x plus one equals plus or minus two over the square root of three. Subtract one from both sides: x equals minus one plus or minus two times the square root of three over three. So x equals minus one plus two times the square root of three over three or x equals minus one minus two times the square root of three over three.",
+     "problem": "Solve 3x^2 + 6x - 1 = 0 by completing the square.",
+     "answerKind": "equation"
+    },
+    {
+     "hint": "Move 21 to the other side, then add the square of half of negative ten.",
+     "kind": "try",
+     "speech": "Solve x squared minus ten x plus twenty one equals zero by completing the square. Move the constant to the other side, then add the square of half of negative ten. Work out both roots. Stop here and answer.",
+     "question": {
+      "why": "Learners often add half of the x coefficient instead of its square.",
+      "steps": [
+       "x^2 - 10x = -21",
+       "Half of -10 is -5, and (-5)^2 = 25",
+       "x^2 - 10x + 25 = 4",
+       "(x - 5)^2 = 4",
+       "x - 5 = ±2",
+       "x = 3 or x = 7"
+      ],
+      "answer": "x = 3 or x = 7",
+      "prompt": "Solve x^2 - 10x + 21 = 0 by completing the square.",
+      "render": "text",
+      "rightWay": "Move 21 to the other side, add 25 to both sides, then take both square roots.",
+      "answerKind": "equation",
+      "difficulty": 2
+     }
+    },
+    {
+     "why": "A square can equal 9 when the inside is 3 or -3. Taking only the positive value loses one root.",
+     "kind": "mistake",
+     "right": "x^2 - 4x - 5 = 0 gives (x - 2)^2 = 9, so x - 2 = ±3, giving x = 5 or x = -1.",
+     "wrong": "x^2 - 4x - 5 = 0 gives (x - 2)^2 = 9, so x - 2 = 3 and x = 5.",
+     "speech": "The wrong way is to solve x squared minus four x minus five equals zero by writing x minus two squared equals nine, then taking only x minus two equals three, giving only x equals five. The right way is to write x minus two equals plus or minus three, giving x equals five or x equals minus one. A square can equal nine when the inside is three or minus three. Taking only the positive value loses one root."
+    },
+    {
+     "kind": "explain",
+     "text": "Always check your roots in the original equation. A completed square gives exact roots, so you can leave surds in the answer unless the question asks for a decimal.\n\nEvery quadratic can be solved this way, even when factorising fails.",
+     "speech": "Always check your roots in the original equation. A completed square gives exact roots, so you can leave surds in the answer unless the question asks for a decimal. Every quadratic can be solved this way, even when factorising fails."
+    },
+    {
+     "kind": "explain",
+     "text": "To complete the square, make the coefficient of x^2 equal to 1, add the square of half the x-coefficient, write the perfect square, then take both square roots. This turns a quadratic equation into a simple square-root equation.",
+     "speech": "To complete the square, make the coefficient of x squared equal to one, add the square of half the x coefficient, write the perfect square, then take both square roots. This turns a quadratic equation into a simple square root equation."
+    }
+   ],
+   "minutes": 22,
+   "summary": [
+    "Make the coefficient of x^2 equal to 1 by dividing the whole equation if needed.",
+    "Add (b/2)^2 to both sides to form a perfect square.",
+    "Write the left side as (x + b/2)^2.",
+    "Take both square roots: use ±.",
+    "Write exact roots with surds in simplest form."
+   ],
+   "keyWords": [
+    {
+     "word": "perfect square",
+     "meaning": "An expression that is the square of another expression, like (x + 3)^2."
+    },
+    {
+     "word": "completing the square",
+     "meaning": "Rewriting a quadratic expression in the form a(x + p)^2 + q by adding and subtracting a number."
+    },
+    {
+     "word": "leading coefficient",
+     "meaning": "The number in front of the x^2 term in a quadratic expression."
+    },
+    {
+     "word": "root",
+     "meaning": "A value of x that makes the equation true."
+    },
+    {
+     "word": "square root",
+     "meaning": "A number that multiplies by itself to give the value inside the root."
+    },
+    {
+     "word": "surd",
+     "meaning": "An exact answer left in root form, such as sqrt(5)."
+    }
+   ],
+   "position": 2,
+   "practice": [
+    {
+     "why": "The coefficient is used as it is instead of being halved.",
+     "steps": [
+      "Half of 8 is 4.",
+      "4^2 = 16.",
+      "The number to add is 16."
+     ],
+     "answer": "16",
+     "prompt": "What number must be added to x^2 + 8x to make a perfect square?",
+     "render": "text",
+     "rightWay": "Take half of the coefficient of x, then square it.",
+     "answerKind": "whole",
+     "difficulty": 1
+    },
+    {
+     "why": "The negative square root is sometimes left out.",
+     "steps": [
+      "x^2 + 6x = -5",
+      "Half of 6 is 3, and 3^2 = 9",
+      "x^2 + 6x + 9 = 4",
+      "(x + 3)^2 = 4",
+      "x + 3 = ±2",
+      "x = -1 or x = -5"
+     ],
+     "answer": "x = -1 or x = -5",
+     "prompt": "Solve x^2 + 6x + 5 = 0 by completing the square.",
+     "render": "text",
+     "rightWay": "After writing the perfect square, take both positive and negative square roots.",
+     "answerKind": "equation",
+     "difficulty": 1
+    },
+    {
+     "why": "The sign of the constant inside the perfect square is often written as plus instead of minus.",
+     "steps": [
+      "x^2 - 2x = 4",
+      "Half of -2 is -1, and (-1)^2 = 1",
+      "x^2 - 2x + 1 = 5",
+      "(x - 1)^2 = 5",
+      "x - 1 = ±sqrt(5)",
+      "x = 1 + sqrt(5) or x = 1 - sqrt(5)"
+     ],
+     "answer": "x = 1 + sqrt(5) or x = 1 - sqrt(5)",
+     "prompt": "Solve x^2 - 2x - 4 = 0 by completing the square.",
+     "render": "text",
+     "rightWay": "x^2 - 2x + 1 = (x - 1)^2, so the bracket has a minus sign.",
+     "answerKind": "equation",
+     "difficulty": 2
+    },
+    {
+     "why": "Learners add 25 to the right side but forget to subtract 18 first.",
+     "steps": [
+      "x^2 - 10x = -18",
+      "Half of -10 is -5, and (-5)^2 = 25",
+      "x^2 - 10x + 25 = 7",
+      "(x - 5)^2 = 7"
+     ],
+     "answer": "A",
+     "prompt": "Which equation is the completed-square form of x^2 - 10x + 18 = 0?",
+     "render": "text",
+     "choices": [
+      "A (x - 5)^2 = 7",
+      "B (x - 5)^2 = -7",
+      "C (x + 5)^2 = 7",
+      "D (x - 5)^2 = 43"
+     ],
+     "rightWay": "Move 18 to the right side, then add 25 to both sides to get (x - 5)^2 = 7.",
+     "answerKind": "choice",
+     "difficulty": 2
+    },
+    {
+     "why": "The leading coefficient 2 is not divided into every term.",
+     "steps": [
+      "x^2 + 4x - 3/2 = 0",
+      "x^2 + 4x = 3/2",
+      "Add 2^2 = 4: x^2 + 4x + 4 = 11/2",
+      "(x + 2)^2 = 11/2",
+      "x + 2 = ±sqrt(22)/2",
+      "x = -2 ± sqrt(22)/2"
+     ],
+     "answer": "x = -2 + sqrt(22)/2 or x = -2 - sqrt(22)/2",
+     "prompt": "Solve 2x^2 + 8x - 3 = 0 by completing the square.",
+     "render": "text",
+     "rightWay": "Divide the whole equation by 2 first, then complete the square.",
+     "answerKind": "equation",
+     "difficulty": 2
+    },
+    {
+     "why": "The fraction 1/3 is not divided correctly or the square root is not simplified.",
+     "steps": [
+      "x^2 - 2x + 1/3 = 0",
+      "x^2 - 2x = -1/3",
+      "Add (-1)^2 = 1: x^2 - 2x + 1 = 2/3",
+      "(x - 1)^2 = 2/3",
+      "x - 1 = ±sqrt(6)/3",
+      "x = 1 ± sqrt(6)/3"
+     ],
+     "answer": "x = 1 + sqrt(6)/3 or x = 1 - sqrt(6)/3",
+     "prompt": "Solve 3x^2 - 6x + 1 = 0 by completing the square.",
+     "render": "text",
+     "rightWay": "Divide by 3, add 1 to both sides, then simplify the square root of 2/3.",
+     "answerKind": "equation",
+     "difficulty": 3
+    },
+    {
+     "why": "Half of 5 is written as 5 instead of 5/2.",
+     "steps": [
+      "x^2 + 5x = -2",
+      "Add (5/2)^2 = 25/4: x^2 + 5x + 25/4 = 17/4",
+      "(x + 5/2)^2 = 17/4",
+      "x + 5/2 = ±sqrt(17)/2",
+      "x = (-5 ± sqrt(17))/2",
+      "x = (-5 + sqrt(17))/2 or x = (-5 - sqrt(17))/2"
+     ],
+     "answer": "x = (-5 + sqrt(17))/2 or x = (-5 - sqrt(17))/2",
+     "prompt": "Solve x^2 + 5x + 2 = 0 by completing the square.",
+     "render": "text",
+     "rightWay": "Half of 5 is 5/2; square it to get 25/4, then write the perfect square.",
+     "answerKind": "equation",
+     "difficulty": 3
+    }
+   ],
+   "objectives": [
+    "You will be able to rewrite a quadratic expression as a perfect square plus a constant.",
+    "You will be able to solve a quadratic equation by completing the square.",
+    "You will be able to handle a leading coefficient that is not 1."
+   ]
+  }
+ },
+ {
+  "grade": 11,
+  "base_name": "Equations and inequalities",
+  "family": "algebra",
+  "position": 3,
+  "title": "Using the quadratic formula",
+  "version": 1,
+  "source": {
+   "kind": "caps",
+   "title": "Curriculum and Assessment Policy Statement (CAPS) Mathematics, Further Education and Training Phase, Grades 10-12",
+   "credit": "Follows the CAPS Mathematics curriculum, Department of Basic Education",
+   "address": "https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20FET%20_%20MATHEMATICS%20_%20GR%2010-12%20_%20Web_1133.pdf"
+  },
+  "content": {
+   "title": "Using the quadratic formula",
+   "blocks": [
+    {
+     "kind": "explain",
+     "text": "A quadratic equation has an x squared term as its highest power. Some quadratics factorise easily, but many do not. The quadratic formula solves every quadratic equation, even when the factors are not whole numbers.\n\nIt is especially useful when the numbers are awkward or when the answer contains a square root.",
+     "speech": "A quadratic equation has an x squared term as its highest power. Some quadratics factorise easily, but many do not. The quadratic formula solves every quadratic equation, even when the factors are not whole numbers. It is especially useful when the numbers are awkward or when the answer contains a square root."
+    },
+    {
+     "kind": "explain",
+     "text": "Before using the formula, write the equation in standard form: ax^2 + bx + c = 0. Move every term to one side so that the other side is zero.\n\nFor example, 3x^2 = 4x + 5 becomes 3x^2 - 4x - 5 = 0. Now a = 3, b = -4 and c = -5.",
+     "speech": "Before using the formula, write the equation in standard form: a x squared plus b x plus c equals zero. Move every term to one side so that the other side is zero. For example, three x squared equals four x plus five becomes three x squared minus four x minus five equals zero. Now a is three, b is minus four and c is minus five."
+    },
+    {
+     "kind": "explain",
+     "text": "The numbers a, b and c are coefficients. Take each sign with its number: in x^2 - 5x + 6 = 0, a = 1, b = -5 and c = 6.\n\nThe value of a can never be zero, otherwise the equation is not quadratic.",
+     "speech": "The numbers a, b and c are coefficients. Take each sign with its number. In x squared minus five x plus six equals zero, a is one, b is minus five and c is six. The value of a can never be zero, otherwise the equation is not quadratic."
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "kind": "coordinate_plane",
+      "step": 1,
+      "xMax": 5,
+      "xMin": -1,
+      "yMax": 6,
+      "yMin": -5,
+      "graphs": [
+       {
+        "a": 1,
+        "p": 2,
+        "q": -3,
+        "type": "parabola",
+        "label": "y = x^2 - 4x + 1"
+       }
+      ],
+      "points": [
+       {
+        "x": 0.27,
+        "y": 0,
+        "label": "root"
+       },
+       {
+        "x": 3.73,
+        "y": 0,
+        "label": "root"
+       }
+      ]
+     },
+     "speech": "The picture shows a parabola that opens upwards. It cuts the x-axis at two points, one near x equals zero point two seven and one near x equals three point seven three. Those two x-values are the roots the formula finds.",
+     "caption": "The parabola y = x^2 - 4x + 1 cuts the x-axis twice. Those two x-values are the roots the formula finds."
+    },
+    {
+     "kind": "explain",
+     "text": "The quadratic formula is x = (-b ± sqrt(b^2 - 4ac))/(2a).\n\nThe ± sign gives two answers: one with plus and one with minus. The whole numerator, -b ± sqrt(...), is divided by 2a.",
+     "speech": "The quadratic formula is x equals minus b plus or minus the square root of b squared minus four a c, all over two a. The plus or minus sign gives two answers: one with plus and one with minus. The whole numerator, minus b plus or minus the square root, is divided by two a."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "a = 1, b = -5, c = 6",
+       "reason": "Compare with ax^2 + bx + c = 0 and read off the coefficients, keeping signs."
+      },
+      {
+       "line": "x = (-b ± sqrt(b^2 - 4ac))/(2a)",
+       "reason": "Write the quadratic formula."
+      },
+      {
+       "line": "x = (5 ± sqrt((-5)^2 - 4(1)(6)))/(2(1))",
+       "reason": "Substitute a, b and c, and note that -b = 5."
+      },
+      {
+       "line": "x = (5 ± sqrt(25 - 24))/2",
+       "reason": "Square -5, and multiply 4 times 1 times 6."
+      },
+      {
+       "line": "x = (5 ± sqrt(1))/2",
+       "reason": "Subtract inside the square root."
+      },
+      {
+       "line": "x = (5 ± 1)/2",
+       "reason": "The square root of 1 is 1."
+      },
+      {
+       "line": "x = 6/2 or x = 4/2",
+       "reason": "Work out the plus case and the minus case."
+      },
+      {
+       "line": "x = 3 or x = 2",
+       "reason": "Simplify each fraction."
+      }
+     ],
+     "answer": "x = 3 or x = 2",
+     "speech": "Solve x squared minus five x plus six equals zero using the quadratic formula. First compare with a x squared plus b x plus c equals zero. a is one, b is minus five and c is six. Write the formula. Substitute. Note that minus b is five. Square minus five and multiply. Subtract inside the square root. The square root of one is one. Work out the two cases. The answers are x equals three or x equals two.",
+     "problem": "Solve x^2 - 5x + 6 = 0 using the quadratic formula.",
+     "answerKind": "equation"
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "max": 5,
+      "min": 0,
+      "kind": "number_line",
+      "step": 1,
+      "marks": [
+       {
+        "label": "x = 2",
+        "value": 2
+       },
+       {
+        "label": "x = 3",
+        "value": 3
+       }
+      ]
+     },
+     "speech": "This number line shows the two roots from the first worked example. The points x equals two and x equals three are marked.",
+     "caption": "The two roots of x^2 - 5x + 6 = 0 are the points x = 2 and x = 3 on the number line."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "a = 2, b = 7, c = -4",
+       "reason": "The equation is already in standard form, so read off a, b and c with signs."
+      },
+      {
+       "line": "x = (-b ± sqrt(b^2 - 4ac))/(2a)",
+       "reason": "Write the quadratic formula."
+      },
+      {
+       "line": "x = (-7 ± sqrt(7^2 - 4(2)(-4)))/(2(2))",
+       "reason": "Substitute a, b and c, and note that -b = -7."
+      },
+      {
+       "line": "x = (-7 ± sqrt(49 + 32))/4",
+       "reason": "Square 7, and multiply 4 times 2 times -4 to get -32, so subtract -32."
+      },
+      {
+       "line": "x = (-7 ± sqrt(81))/4",
+       "reason": "Add inside the square root."
+      },
+      {
+       "line": "x = (-7 ± 9)/4",
+       "reason": "The square root of 81 is 9."
+      },
+      {
+       "line": "x = 2/4 or x = -16/4",
+       "reason": "Work out the plus case and the minus case."
+      },
+      {
+       "line": "x = 1/2 or x = -4",
+       "reason": "Simplify each fraction."
+      }
+     ],
+     "answer": "x = 1/2 or x = -4",
+     "speech": "Solve two x squared plus seven x minus four equals zero using the quadratic formula. a is two, b is seven and c is minus four. Write the formula. Substitute. Minus b is minus seven. Square seven, and note that minus four a c becomes plus thirty two. Add to get eighty one. The square root is nine. Work out the two cases. The answers are x equals one half or x equals minus four.",
+     "problem": "Solve 2x^2 + 7x - 4 = 0 using the quadratic formula.",
+     "answerKind": "equation"
+    },
+    {
+     "kind": "explain",
+     "text": "If b^2 - 4ac is not a perfect square, the answer contains a square root. Leave it in simplest surd form unless the question asks for a decimal.\n\nFor example, sqrt(65) cannot be simplified because 65 has no square factor. Write the exact answer, then round only at the end if asked.",
+     "speech": "If b squared minus four a c is not a perfect square, the answer contains a square root. Leave it in simplest surd form unless the question asks for a decimal. For example, the square root of sixty five cannot be simplified because sixty five has no square factor. Write the exact answer, then round only at the end if asked."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "a = 2, b = -3, c = -7",
+       "reason": "Compare with ax^2 + bx + c = 0 and keep the signs."
+      },
+      {
+       "line": "x = (-b ± sqrt(b^2 - 4ac))/(2a)",
+       "reason": "Write the quadratic formula."
+      },
+      {
+       "line": "x = (3 ± sqrt((-3)^2 - 4(2)(-7)))/(2(2))",
+       "reason": "Substitute a, b and c, and note that -b = 3."
+      },
+      {
+       "line": "x = (3 ± sqrt(9 + 56))/4",
+       "reason": "Square -3, and multiply 4 times 2 times -7 to get -56, so subtract -56."
+      },
+      {
+       "line": "x = (3 ± sqrt(65))/4",
+       "reason": "Add inside the square root."
+      },
+      {
+       "line": "x = (3 + sqrt(65))/4 or x = (3 - sqrt(65))/4",
+       "reason": "Split the plus and minus cases. The surd cannot be simplified."
+      }
+     ],
+     "answer": "x = (3 + sqrt(65))/4 or x = (3 - sqrt(65))/4",
+     "speech": "Solve two x squared minus three x minus seven equals zero using the quadratic formula. a is two, b is minus three and c is minus seven. Write the formula. Substitute. Minus b is three. Square minus three, and note that minus four a c becomes plus fifty six. Add to get sixty five. The square root of sixty five cannot be simplified. The answers are x equals three plus the square root of sixty five over four, or x equals three minus the square root of sixty five over four.",
+     "problem": "Solve 2x^2 - 3x - 7 = 0 using the quadratic formula.",
+     "answerKind": "equation"
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "Let the width be x m. Then length = (2x + 3) m",
+       "reason": "Name the unknown and write the length in terms of the width."
+      },
+      {
+       "line": "x(2x + 3) = 30",
+       "reason": "Area of a rectangle is width times length."
+      },
+      {
+       "line": "2x^2 + 3x - 30 = 0",
+       "reason": "Expand and subtract 30 to get standard form."
+      },
+      {
+       "line": "a = 2, b = 3, c = -30",
+       "reason": "Read off a, b and c with signs."
+      },
+      {
+       "line": "x = (-3 ± sqrt(3^2 - 4(2)(-30)))/(2(2))",
+       "reason": "Substitute into the quadratic formula."
+      },
+      {
+       "line": "x = (-3 ± sqrt(9 + 240))/4 = (-3 ± sqrt(249))/4",
+       "reason": "Simplify inside the square root."
+      },
+      {
+       "line": "x ≈ (-3 + 15,7797)/4 ≈ 3,19 or x ≈ (-3 - 15,7797)/4 ≈ -4,69",
+       "reason": "Work out the two cases and round the positive one to two decimal places."
+      },
+      {
+       "line": "3,19",
+       "reason": "The width cannot be negative, so the width is 3,19 m."
+      }
+     ],
+     "answer": "3,19",
+     "speech": "The area of a rectangle is thirty square metres. Its length is three metres more than twice its width. Find the width, rounded to two decimal places. Let the width be x metres. Then the length is two x plus three metres. Width times length equals thirty, so x times two x plus three equals thirty. Expand and subtract thirty: two x squared plus three x minus thirty equals zero. a is two, b is three and c is minus thirty. Substitute into the formula. Inside the square root we get nine plus two hundred and forty, which is two hundred and forty nine. The square root is about fifteen point seven seven nine seven. The two values are about three point one nine and about minus four point six nine. A width cannot be negative, so the width is three point one nine metres.",
+     "problem": "The area of a rectangle is 30 m^2. Its length is 3 m more than twice its width. Find the width, rounded to two decimal places.",
+     "answerKind": "decimal"
+    },
+    {
+     "why": "The coefficient c is -4. In -4ac the two minus signs make +32, not -32.",
+     "kind": "mistake",
+     "right": "x = (-7 ± sqrt(49 + 32))/4 = (-7 ± 9)/4, so x = 1/2 or x = -4",
+     "wrong": "x = (-7 ± sqrt(49 - 32))/4 = (-7 ± sqrt(17))/4",
+     "speech": "Here is the usual mistake. For two x squared plus seven x minus four equals zero, someone writes x equals minus seven plus or minus the square root of forty nine minus thirty two, all over four, and gets minus seven plus or minus the square root of seventeen over four. The right way keeps the sign of c. c is minus four. In minus four a c the two minus signs make plus thirty two, not minus thirty two. So the square root is eighty one, and the answers are x equals one half or x equals minus four."
+    },
+    {
+     "hint": "Identify a, b and c with their signs before you substitute into the formula.",
+     "kind": "try",
+     "speech": "Solve three x squared plus x minus two equals zero using the quadratic formula. Write down a, b and c with their signs first.",
+     "question": {
+      "why": "A common error is to use c = 2 and lose the plus sign under the square root.",
+      "steps": [
+       "a = 3, b = 1, c = -2",
+       "x = (-1 ± sqrt(1 + 24))/(6)",
+       "x = (-1 ± 5)/6",
+       "x = 4/6 or x = -6/6",
+       "x = 2/3 or x = -1"
+      ],
+      "answer": "x = 2/3 or x = -1",
+      "prompt": "Solve 3x^2 + x - 2 = 0 using the quadratic formula.",
+      "render": "text",
+      "rightWay": "Keep c = -2, so -4ac = -4(3)(-2) = 24.",
+      "answerKind": "equation",
+      "difficulty": 2
+     }
+    },
+    {
+     "kind": "explain",
+     "text": "The formula gives all real roots. In a word problem, check each root against the situation. A length or width cannot be negative, so reject any negative result.\n\nAlways state the answer in the units of the problem.",
+     "speech": "The formula gives all real roots. In a word problem, check each root against the situation. A length or width cannot be negative, so reject any negative result. Always state the answer in the units of the problem."
+    },
+    {
+     "hint": "The value of b is -4, so start by working out -b and b^2 carefully.",
+     "kind": "try",
+     "speech": "Solve four x squared minus four x minus three equals zero using the quadratic formula. Start by comparing it with a x squared plus b x plus c equals zero.",
+     "question": {
+      "why": "Writing b = 4 instead of -4 changes the sign of the first term.",
+      "steps": [
+       "a = 4, b = -4, c = -3",
+       "x = (4 ± sqrt(16 + 48))/8",
+       "x = (4 ± sqrt(64))/8",
+       "x = (4 ± 8)/8",
+       "x = 12/8 or x = -4/8",
+       "x = 3/2 or x = -1/2"
+      ],
+      "answer": "x = 3/2 or x = -1/2",
+      "prompt": "Solve 4x^2 - 4x - 3 = 0 using the quadratic formula.",
+      "render": "text",
+      "rightWay": "Use b = -4, so -b = 4 and b^2 = 16.",
+      "answerKind": "equation",
+      "difficulty": 2
+     }
+    },
+    {
+     "kind": "explain",
+     "text": "To use the quadratic formula reliably: write standard form, list a, b and c with signs, substitute carefully, simplify the surd, and split the ± into two roots.\n\nThe formula is the general method; factorising is often quicker only when the factors are obvious.",
+     "speech": "To use the quadratic formula reliably: write standard form, list a, b and c with signs, substitute carefully, simplify the surd, and split the plus or minus into two roots. The formula is the general method; factorising is often quicker only when the factors are obvious."
+    }
+   ],
+   "minutes": 22,
+   "summary": [
+    "Write the equation as ax^2 + bx + c = 0 before using the formula.",
+    "Keep the signs of a, b and c; in -4ac the sign of c matters.",
+    "The formula is x = (-b ± sqrt(b^2 - 4ac))/(2a).",
+    "The ± gives two roots; divide the whole numerator by 2a.",
+    "Leave answers in surd form unless a decimal is asked; reject impossible roots in context."
+   ],
+   "keyWords": [
+    {
+     "word": "quadratic equation",
+     "meaning": "An equation that can be written as ax^2 + bx + c = 0, where a is not zero."
+    },
+    {
+     "word": "standard form",
+     "meaning": "The form ax^2 + bx + c = 0 with the squared term first, then the x term, then the constant, and zero on the right."
+    },
+    {
+     "word": "coefficient",
+     "meaning": "The number in front of a letter, for example 3 in 3x^2; the sign belongs to the coefficient."
+    },
+    {
+     "word": "quadratic formula",
+     "meaning": "x = (-b ± sqrt(b^2 - 4ac))/(2a), which gives the roots of any quadratic equation."
+    },
+    {
+     "word": "root",
+     "meaning": "A value of x that makes the equation true; on a graph it is an x-intercept."
+    }
+   ],
+   "position": 3,
+   "practice": [
+    {
+     "why": "The minus sign belongs to b.",
+     "steps": [
+      "Compare with ax^2 + bx + c = 0",
+      "b is the coefficient of x",
+      "b = -2"
+     ],
+     "answer": "-2",
+     "prompt": "In the equation 5x^2 - 2x + 7 = 0, what is b?",
+     "render": "text",
+     "rightWay": "The term is -2x, so b = -2.",
+     "answerKind": "number",
+     "difficulty": 1
+    },
+    {
+     "why": "Using b = 4 instead of -4 gives wrong signs.",
+     "steps": [
+      "a = 1, b = -4, c = 3",
+      "x = (4 ± sqrt((-4)^2 - 4(1)(3)))/2",
+      "x = (4 ± sqrt(16 - 12))/2",
+      "x = (4 ± 2)/2",
+      "x = 6/2 or x = 2/2",
+      "x = 3 or x = 1"
+     ],
+     "answer": "x = 3 or x = 1",
+     "prompt": "Solve x^2 - 4x + 3 = 0 using the quadratic formula.",
+     "render": "text",
+     "rightWay": "b = -4, so -b = 4.",
+     "answerKind": "equation",
+     "difficulty": 1
+    },
+    {
+     "why": "Forgetting c = -3 gives 25 - 24 under the root.",
+     "steps": [
+      "a = 2, b = 5, c = -3",
+      "x = (-5 ± sqrt(25 + 24))/4",
+      "x = (-5 ± 7)/4",
+      "x = 2/4 or x = -12/4",
+      "x = 1/2 or x = -3"
+     ],
+     "answer": "x = 1/2 or x = -3",
+     "prompt": "Solve 2x^2 + 5x - 3 = 0 using the quadratic formula.",
+     "render": "text",
+     "rightWay": "Use c = -3, so -4ac = +24.",
+     "answerKind": "equation",
+     "difficulty": 2
+    },
+    {
+     "why": "Dividing only the square root by 2 is wrong; the whole numerator is divided by 2.",
+     "steps": [
+      "a = 1, b = -6, c = 4",
+      "x = (6 ± sqrt(36 - 16))/2",
+      "x = (6 ± sqrt(20))/2",
+      "sqrt(20) = 2sqrt(5), so x = (6 ± 2sqrt(5))/2",
+      "x = 3 + sqrt(5) or x = 3 - sqrt(5)"
+     ],
+     "answer": "x = 3 + sqrt(5) or x = 3 - sqrt(5)",
+     "prompt": "Solve x^2 - 6x + 4 = 0 using the quadratic formula.",
+     "render": "text",
+     "rightWay": "After simplifying, (6 ± 2sqrt(5))/2 = 3 ± sqrt(5).",
+     "answerKind": "equation",
+     "difficulty": 2
+    },
+    {
+     "why": "sqrt(72) simplifies to 6sqrt(2), then the whole numerator is divided by 4.",
+     "steps": [
+      "a = 2, b = -4, c = -7",
+      "x = (4 ± sqrt(16 + 56))/4",
+      "x = (4 ± sqrt(72))/4",
+      "sqrt(72) = 6sqrt(2), so x = (4 ± 6sqrt(2))/4",
+      "x = (2 + 3sqrt(2))/2 or x = (2 - 3sqrt(2))/2"
+     ],
+     "answer": "x = (2 + 3*sqrt(2))/2 or x = (2 - 3*sqrt(2))/2",
+     "prompt": "Solve 2x^2 - 4x - 7 = 0 using the quadratic formula.",
+     "render": "text",
+     "rightWay": "Divide each term by 2: (4 ± 6sqrt(2))/4 = (2 ± 3sqrt(2))/2.",
+     "answerKind": "equation",
+     "difficulty": 2
+    },
+    {
+     "why": "Accepting the negative root gives an impossible width.",
+     "steps": [
+      "Let the width be x m. Then length = (3x + 2) m",
+      "x(3x + 2) = 40 gives 3x^2 + 2x - 40 = 0",
+      "x = (-2 ± sqrt(4 + 480))/6 = (-2 ± 22)/6",
+      "x = 20/6 = 10/3 or x = -24/6 = -4",
+      "Width = 10/3 m, since width cannot be negative"
+     ],
+     "answer": "10/3",
+     "prompt": "A rectangle has area 40 m^2. Its length is 2 m more than three times its width. Find the width in metres.",
+     "render": "text",
+     "rightWay": "The positive root is 10/3, so the width is 10/3 m.",
+     "answerKind": "fraction",
+     "difficulty": 3
+    },
+    {
+     "why": "Moving terms without changing signs gives wrong a, b and c.",
+     "steps": [
+      "4x^2 + 8x - 3 = 0",
+      "a = 4, b = 8, c = -3",
+      "x = (-8 ± sqrt(64 + 48))/8 = (-8 ± sqrt(112))/8",
+      "sqrt(112) = 4sqrt(7), so x = (-8 ± 4sqrt(7))/8",
+      "x = (-2 + sqrt(7))/2 or x = (-2 - sqrt(7))/2"
+     ],
+     "answer": "x = (-2 + sqrt(7))/2 or x = (-2 - sqrt(7))/2",
+     "prompt": "Solve 4x^2 = 3 - 8x using the quadratic formula.",
+     "render": "text",
+     "rightWay": "Subtract 3 and add 8x: 4x^2 + 8x - 3 = 0.",
+     "answerKind": "equation",
+     "difficulty": 3
+    }
+   ],
+   "objectives": [
+    "You will be able to identify a, b and c from a quadratic equation in standard form.",
+    "You will be able to substitute into the quadratic formula and simplify the answer.",
+    "You will be able to use the formula when factorising is difficult or impossible."
+   ]
+  }
+ },
+ {
+  "grade": 11,
+  "base_name": "Equations and inequalities",
+  "family": "algebra",
+  "position": 4,
+  "title": "The discriminant and the nature of roots",
+  "version": 1,
+  "source": {
+   "kind": "caps",
+   "title": "Curriculum and Assessment Policy Statement (CAPS) Mathematics, Further Education and Training Phase, Grades 10-12",
+   "credit": "Follows the CAPS Mathematics curriculum, Department of Basic Education",
+   "address": "https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20FET%20_%20MATHEMATICS%20_%20GR%2010-12%20_%20Web_1133.pdf"
+  },
+  "content": {
+   "title": "The discriminant and the nature of roots",
+   "blocks": [
+    {
+     "kind": "explain",
+     "text": "You already know the quadratic formula: x = (-b ± √(b^2 - 4ac)) / (2a). It solves every quadratic equation ax^2 + bx + c = 0, with a not equal to 0.\n\nAll the information that decides which kind of roots come out sits in the part under the square root. So we can describe the roots without solving the whole equation.",
+     "speech": "You already know the quadratic formula. x equals minus b, plus or minus the square root of b squared minus four a c, all divided by two a. It solves every quadratic equation a x squared plus b x plus c equals zero, as long as a is not zero. All the information that decides which kind of roots come out sits inside that square root. So we can describe the roots without solving the whole equation."
+    },
+    {
+     "kind": "explain",
+     "text": "The part under the square root has a name. It is the discriminant, written D (also called delta).\n\nFor ax^2 + bx + c = 0: D = b^2 - 4ac.\n\nD is one number, built from a, b and c only. You can find it before you solve anything, and it tells you the nature of the roots.",
+     "speech": "That part under the square root has a name. It is called the discriminant, and we write it as a capital D, or as delta. For a x squared plus b x plus c equals zero, the discriminant is b squared minus four a c. It is one number, built from a, b and c only. You can find it before you solve anything, and it tells you the nature of the roots."
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "kind": "coordinate_plane",
+      "step": 1,
+      "xMax": 4,
+      "xMin": -4,
+      "yMax": 12,
+      "yMin": -8,
+      "graphs": [
+       {
+        "a": 1,
+        "p": 0,
+        "q": -4,
+        "type": "parabola",
+        "label": "cuts twice: D > 0"
+       },
+       {
+        "a": 1,
+        "p": 0,
+        "q": 0,
+        "type": "parabola",
+        "label": "touches once: D = 0"
+       },
+       {
+        "a": 1,
+        "p": 0,
+        "q": 4,
+        "type": "parabola",
+        "label": "never cuts: D < 0"
+       }
+      ]
+     },
+     "speech": "The picture shows three parabolas. The first one, y equals x squared minus four, cuts the x axis in two places, and its discriminant is positive. The second one, y equals x squared, only touches the x axis at the origin, and its discriminant is zero. The third one, y equals x squared plus four, sits above the x axis and never meets it, and its discriminant is negative.",
+     "caption": "The number of places where the parabola meets the x-axis is the number of real roots, and D decides that number."
+    },
+    {
+     "kind": "explain",
+     "text": "D > 0: √D is a real number, so the ± gives two different real roots. The parabola cuts the x-axis twice.\n\nD = 0: √D = 0, so the ± disappears and x = -b/(2a) is the only root. The parabola touches the x-axis at its turning point.\n\nD < 0: no real number squared gives a negative, so √D is not real. The roots are non-real and the parabola never meets the x-axis.",
+     "speech": "Case one. D is greater than zero. The square root is a real number, so the plus or minus gives two different real roots, and the parabola cuts the x axis twice. Case two. D equals zero. The square root is zero, the plus or minus disappears, and there is only one root, x equals minus b over two a, so the parabola touches the x axis at its turning point. Case three. D is less than zero. No real number squared gives a negative, so the square root is not real, the roots are non-real, and the parabola never meets the x axis."
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "max": 5,
+      "min": -5,
+      "kind": "number_line",
+      "step": 1,
+      "marks": [
+       {
+        "label": "D < 0: non-real",
+        "value": -2
+       },
+       {
+        "label": "D = 0: equal real roots",
+        "value": 0
+       },
+       {
+        "label": "D > 0: two unequal real roots",
+        "value": 2
+       }
+      ]
+     },
+     "speech": "The picture is a number line. To the left of zero the discriminant is negative, and there the roots are non-real. At zero the discriminant is zero, and there the equation has equal real roots. To the right of zero the discriminant is positive, and there the equation has two unequal real roots. So only the position of D on the number line is needed for the first decision.",
+     "caption": "Only the position of D on the number line decides real or non-real, and one root or two."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "a = 1, b = -5, c = 6",
+       "reason": "Write down a, b and c from ax^2 + bx + c = 0, with the signs."
+      },
+      {
+       "line": "D = b^2 - 4ac = (-5)^2 - 4(1)(6)",
+       "reason": "Substitute into the discriminant and keep the minus sign of b inside brackets."
+      },
+      {
+       "line": "D = 25 - 24 = 1",
+       "reason": "Simplify."
+      },
+      {
+       "line": "D > 0 and 1 = 1^2 is a perfect square",
+       "reason": "A positive D gives two real roots; a perfect square makes them rational."
+      },
+      {
+       "line": "two unequal rational real roots",
+       "reason": "Write the nature of the roots in words, as the question asks."
+      }
+     ],
+     "answer": "two unequal rational real roots",
+     "speech": "Describe the nature of the roots of x squared minus five x plus six equals zero. First write down a equals one, b equals minus five, c equals six. Substitute into the discriminant: D equals minus five, in brackets, squared, minus four times one times six. That is twenty five minus twenty four, which is one. One is greater than zero, so there are two real roots, and one is a perfect square, one squared, so the roots are also rational. The roots are two unequal rational real roots.",
+     "problem": "Describe the nature of the roots of x^2 - 5x + 6 = 0.",
+     "answerKind": "choice"
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "a = 2, b = 3, c = 5",
+       "reason": "Read a, b and c off the equation."
+      },
+      {
+       "line": "D = (3)^2 - 4(2)(5)",
+       "reason": "Substitute into D = b^2 - 4ac."
+      },
+      {
+       "line": "D = 9 - 40 = -31",
+       "reason": "Simplify."
+      },
+      {
+       "line": "D < 0",
+       "reason": "The discriminant is negative, so there is no real square root."
+      },
+      {
+       "line": "non-real roots",
+       "reason": "A negative discriminant means the equation has non-real roots."
+      }
+     ],
+     "answer": "non-real roots",
+     "speech": "Describe the nature of the roots of two x squared plus three x plus five equals zero. a is two, b is three, c is five. D equals three squared minus four times two times five, which is nine minus forty, so minus thirty one. The discriminant is less than zero, so there is no real square root, and the equation has non-real roots.",
+     "problem": "Describe the nature of the roots of 2x^2 + 3x + 5 = 0.",
+     "answerKind": "choice"
+    },
+    {
+     "kind": "explain",
+     "text": "D tells us more than real or non-real. When a, b and c are rational numbers, the roots are rational exactly when D is a perfect square.\n\nFor example, D = 25 gives √D = 5, so x = (-b ± 5)/(2a) is rational. D = 5 gives √5, which is not a fraction, so both roots are irrational.\n\nWhen D = 0 the two roots are equal, and they are rational whenever b and a are rational.",
+     "speech": "The discriminant tells us more than real or non-real. When a, b and c are rational numbers, the roots are rational exactly when the discriminant is a perfect square. For example, D equals twenty five gives a square root of five, so x equals minus b plus or minus five, all over two a, which is rational. D equals five gives the square root of five, which is not a fraction, so both roots are irrational. When D equals zero the two roots are equal, and they are rational whenever b and a are rational."
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "max": 16,
+      "min": 0,
+      "kind": "number_line",
+      "step": 1,
+      "marks": [
+       {
+        "label": "1 = 1^2",
+        "value": 1
+       },
+       {
+        "label": "4 = 2^2",
+        "value": 4
+       },
+       {
+        "label": "5 is not a perfect square",
+        "value": 5
+       },
+       {
+        "label": "9 = 3^2",
+        "value": 9
+       },
+       {
+        "label": "16 = 4^2",
+        "value": 16
+       }
+      ]
+     },
+     "speech": "The picture is a number line from zero to sixteen showing perfect squares. One is one squared, four is two squared, nine is three squared, and sixteen is four squared. Five sits between four and nine, so five is not a perfect square, and its square root is irrational. A discriminant that lands on a perfect square gives rational roots; one that does not gives irrational roots.",
+     "caption": "Perfect squares sit at whole number positions. A discriminant that is not one of them gives irrational roots."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "a = 1, b = -3, c = 1",
+       "reason": "Read a, b and c off the equation."
+      },
+      {
+       "line": "D = (-3)^2 - 4(1)(1)",
+       "reason": "Substitute into D = b^2 - 4ac."
+      },
+      {
+       "line": "D = 9 - 4 = 5",
+       "reason": "Simplify."
+      },
+      {
+       "line": "D > 0, so there are two unequal real roots",
+       "reason": "A positive discriminant gives two different real roots."
+      },
+      {
+       "line": "5 is not a perfect square, so the square root of 5 is irrational",
+       "reason": "There is no whole number whose square is 5."
+      },
+      {
+       "line": "two unequal irrational real roots",
+       "reason": "Combine the two facts into the description."
+      }
+     ],
+     "answer": "two unequal irrational real roots",
+     "speech": "Describe the nature of the roots of x squared minus three x plus one equals zero. a is one, b is minus three, c is one. D equals minus three, in brackets, squared, minus four times one times one, which is nine minus four, so five. Five is greater than zero, so there are two unequal real roots. Five is not a perfect square, so the square root of five is irrational. The roots are two unequal irrational real roots.",
+     "problem": "Describe the nature of the roots of x^2 - 3x + 1 = 0.",
+     "answerKind": "choice"
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "a = 1, b = k, c = 9",
+       "reason": "Read a, b and c off the equation; b is the whole coefficient k."
+      },
+      {
+       "line": "D = (k)^2 - 4(1)(9)",
+       "reason": "Substitute into D = b^2 - 4ac."
+      },
+      {
+       "line": "D = k^2 - 36",
+       "reason": "Simplify."
+      },
+      {
+       "line": "Equal roots need D = 0, so k^2 - 36 = 0",
+       "reason": "Set the discriminant equal to zero for equal roots."
+      },
+      {
+       "line": "k^2 = 36",
+       "reason": "Add 36 to both sides."
+      },
+      {
+       "line": "k = 6 or k = -6",
+       "reason": "A square has two square roots, one positive and one negative."
+      }
+     ],
+     "answer": "k = 6 or k = -6",
+     "speech": "For which values of k does x squared plus k x plus nine equals zero have equal roots? a is one, b is k, c is nine. D equals k squared minus four times one times nine, which is k squared minus thirty six. Equal roots need a discriminant of zero, so k squared minus thirty six equals zero. Then k squared equals thirty six, and k equals six or k equals minus six. Both values work, because squaring either one gives thirty six.",
+     "problem": "For which values of k does x^2 + kx + 9 = 0 have equal roots?",
+     "answerKind": "equation"
+    },
+    {
+     "hint": "Write down a, b and c first, and put b in brackets before you square it.",
+     "kind": "try",
+     "speech": "Calculate the discriminant of two x squared minus seven x plus three equals zero.",
+     "question": {
+      "why": "The minus sign of b is often dropped, or b is squared without brackets, so 49 becomes -49.",
+      "steps": [
+       "a = 2, b = -7, c = 3",
+       "D = (-7)^2 - 4(2)(3)",
+       "D = 49 - 24",
+       "D = 25"
+      ],
+      "answer": "25",
+      "prompt": "Calculate the discriminant of 2x^2 - 7x + 3 = 0.",
+      "render": "text",
+      "rightWay": "Put b in brackets before squaring: D = (-7)^2 - 4(2)(3) = 49 - 24 = 25.",
+      "answerKind": "whole",
+      "difficulty": 1
+     }
+    },
+    {
+     "hint": "Find the discriminant first; here only its sign matters.",
+     "kind": "try",
+     "speech": "Describe the nature of the roots of three x squared minus two x plus one equals zero. Look at the four options on the screen and choose the one that fits.",
+     "question": {
+      "why": "A negative discriminant is often read as equal roots or as no answer at all.",
+      "steps": [
+       "a = 3, b = -2, c = 1",
+       "D = (-2)^2 - 4(3)(1) = 4 - 12",
+       "D = -8 < 0, so the roots are non-real",
+       "D: non-real roots"
+      ],
+      "answer": "D",
+      "prompt": "Describe the nature of the roots of 3x^2 - 2x + 1 = 0.",
+      "render": "text",
+      "choices": [
+       "two unequal rational real roots",
+       "two equal real roots",
+       "two unequal irrational real roots",
+       "non-real roots"
+      ],
+      "rightWay": "D = 4 - 12 = -8, which is less than zero, so the roots are non-real.",
+      "answerKind": "choice",
+      "difficulty": 2
+     }
+    },
+    {
+     "hint": "Equal roots means the discriminant equals zero, and c here is the letter k.",
+     "kind": "try",
+     "speech": "For which value of k does x squared minus eight x plus k equals zero have equal roots?",
+     "question": {
+      "why": "Learners set D equal to zero but forget that c is k and not a number.",
+      "steps": [
+       "a = 1, b = -8, c = k",
+       "D = (-8)^2 - 4(1)(k) = 64 - 4k",
+       "Equal roots: D = 0",
+       "64 - 4k = 0",
+       "k = 16"
+      ],
+      "answer": "16",
+      "prompt": "For which value of k does x^2 - 8x + k = 0 have equal roots?",
+      "render": "text",
+      "rightWay": "D = 64 - 4k, and D = 0 gives 64 = 4k, so k = 16.",
+      "answerKind": "whole",
+      "difficulty": 2
+     }
+    },
+    {
+     "why": "Without brackets, -6^2 means minus (6 squared), which is negative. The square of a negative number is positive, so b = -6 must go inside brackets.",
+     "kind": "mistake",
+     "right": "x^2 - 6x + 4 = 0: D = (-6)^2 - 4(1)(4) = 36 - 16 = 20, so there are two unequal irrational real roots",
+     "wrong": "x^2 - 6x + 4 = 0: D = -6^2 - 4(1)(4) = -36 - 16 = -52, so the roots are non-real",
+     "speech": "Here is a usual mistake. For x squared minus six x plus four equals zero, somebody writes D equals minus six squared minus four times one times four, which is minus thirty six minus sixteen, so minus fifty two, and then says the roots are non-real. The correct working puts b in brackets: D equals minus six, in brackets, squared, minus four times one times four, which is thirty six minus sixteen, so twenty. Twenty is greater than zero but it is not a perfect square, so there are two unequal irrational real roots. The reason is that without brackets, minus six squared means minus, six squared, which is negative. The square of a negative number is positive."
+    },
+    {
+     "kind": "explain",
+     "text": "The method every time: write the equation as ax^2 + bx + c = 0, read off a, b and c with their signs, and compute D = b^2 - 4ac.\n\nThe sign of D gives real or non-real, and one root or two. Then, only when D > 0, ask whether D is a perfect square to choose rational or irrational. You describe the roots without ever solving the equation.",
+     "speech": "So the method every time is this. Write the equation as a x squared plus b x plus c equals zero, read off a, b and c with their signs, and compute the discriminant, b squared minus four a c. The sign of the discriminant gives real or non-real, and one root or two. Then, only when the discriminant is positive, check whether it is a perfect square to choose rational or irrational. You can describe the roots without ever solving the equation."
+    }
+   ],
+   "minutes": 22,
+   "summary": [
+    "For ax^2 + bx + c = 0 the discriminant is D = b^2 - 4ac.",
+    "D > 0 gives two unequal real roots; D = 0 gives equal real roots; D < 0 gives non-real roots.",
+    "With rational a, b and c, a perfect square D gives rational roots; a positive D that is not a perfect square gives irrational roots.",
+    "Put a negative b in brackets before squaring: (-6)^2 = 36, but -6^2 = -36.",
+    "Equal roots means D = 0, and that is how an unknown k or p is found."
+   ],
+   "keyWords": [
+    {
+     "word": "discriminant",
+     "meaning": "For ax^2 + bx + c = 0 it is the number D = b^2 - 4ac, the number that decides the nature of the roots."
+    },
+    {
+     "word": "nature of roots",
+     "meaning": "The description of the roots as real or non-real, equal or unequal, rational or irrational."
+    },
+    {
+     "word": "real roots",
+     "meaning": "Roots that are real numbers, so the graph of the equation meets the x-axis."
+    },
+    {
+     "word": "non-real roots",
+     "meaning": "Roots that are not real numbers, because they contain the square root of a negative number."
+    },
+    {
+     "word": "rational number",
+     "meaning": "A number that can be written as a fraction a/b of whole numbers, with b not equal to 0."
+    },
+    {
+     "word": "irrational number",
+     "meaning": "A real number that cannot be written as a fraction of whole numbers, like the square root of 2 or of 5."
+    },
+    {
+     "word": "perfect square",
+     "meaning": "A number that is the square of a whole number, like 1, 4, 9, 25 and 36."
+    },
+    {
+     "word": "equal roots",
+     "meaning": "When a quadratic equation has only one root, counted twice; this happens when the discriminant is zero."
+    }
+   ],
+   "position": 4,
+   "practice": [
+    {
+     "why": "The 4ac term is sometimes added instead of subtracted.",
+     "steps": [
+      "a = 1, b = 5, c = 4",
+      "D = 5^2 - 4(1)(4)",
+      "D = 25 - 16",
+      "D = 9"
+     ],
+     "answer": "9",
+     "prompt": "Calculate the discriminant of x^2 + 5x + 4 = 0.",
+     "render": "text",
+     "rightWay": "D = 25 - 16 = 9.",
+     "answerKind": "whole",
+     "difficulty": 1
+    },
+    {
+     "why": "Learners work out 4 times 7 wrongly or forget that 4 - 28 is negative.",
+     "steps": [
+      "a = 1, b = -2, c = 7",
+      "D = (-2)^2 - 4(1)(7)",
+      "D = 4 - 28",
+      "D = -24"
+     ],
+     "answer": "-24",
+     "prompt": "Calculate the discriminant of x^2 - 2x + 7 = 0.",
+     "render": "text",
+     "rightWay": "D = 4 - 28 = -24.",
+     "answerKind": "number",
+     "difficulty": 1
+    },
+    {
+     "why": "A discriminant of zero is often called non-real, but zero is a real number.",
+     "steps": [
+      "a = 1, b = -6, c = 9",
+      "D = (-6)^2 - 4(1)(9) = 36 - 36",
+      "D = 0, so the roots are equal",
+      "B: two equal real roots"
+     ],
+     "answer": "B",
+     "prompt": "Describe the nature of the roots of x^2 - 6x + 9 = 0.",
+     "render": "text",
+     "choices": [
+      "two unequal rational real roots",
+      "two equal real roots",
+      "two unequal irrational real roots",
+      "non-real roots"
+     ],
+     "rightWay": "D = 0 gives one repeated real root, so the roots are equal.",
+     "answerKind": "choice",
+     "difficulty": 2
+    },
+    {
+     "why": "The negative discriminant is often ignored and the roots are called rational.",
+     "steps": [
+      "a = 2, b = -4, c = 5",
+      "D = (-4)^2 - 4(2)(5) = 16 - 40",
+      "D = -24 < 0, so the roots are non-real",
+      "C: non-real roots"
+     ],
+     "answer": "C",
+     "prompt": "Describe the nature of the roots of 2x^2 - 4x + 5 = 0.",
+     "render": "text",
+     "choices": [
+      "two equal real roots",
+      "two unequal rational real roots",
+      "non-real roots",
+      "two unequal irrational real roots"
+     ],
+     "rightWay": "D = -24 is less than zero, so the roots are non-real.",
+     "answerKind": "choice",
+     "difficulty": 2
+    },
+    {
+     "why": "A positive discriminant is sometimes called rational without checking for a perfect square.",
+     "steps": [
+      "a = 1, b = -5, c = 2",
+      "D = (-5)^2 - 4(1)(2) = 25 - 8",
+      "D = 17 > 0, and 17 is not a perfect square",
+      "D: two unequal irrational real roots"
+     ],
+     "answer": "D",
+     "prompt": "Describe the nature of the roots of x^2 - 5x + 2 = 0.",
+     "render": "text",
+     "choices": [
+      "non-real roots",
+      "two equal rational real roots",
+      "two unequal rational real roots",
+      "two unequal irrational real roots"
+     ],
+     "rightWay": "D = 17 is positive but not a perfect square, so the roots are irrational.",
+     "answerKind": "choice",
+     "difficulty": 2
+    },
+    {
+     "why": "Only the positive square root is given, so one answer is lost.",
+     "steps": [
+      "a = 1, b = k, c = 16",
+      "D = k^2 - 4(1)(16) = k^2 - 64",
+      "Equal roots: D = 0",
+      "k^2 - 64 = 0",
+      "k^2 = 64",
+      "k = 8 or k = -8"
+     ],
+     "answer": "k = 8 or k = -8",
+     "prompt": "For which values of k does x^2 + kx + 16 = 0 have equal roots?",
+     "render": "text",
+     "rightWay": "k^2 = 64 gives k = 8 or k = -8; both make the discriminant zero.",
+     "answerKind": "equation",
+     "difficulty": 3
+    },
+    {
+     "why": "Dividing by a negative number without turning the inequality around gives the wrong side.",
+     "steps": [
+      "a = 3, b = -4, c = k",
+      "D = (-4)^2 - 4(3)(k) = 16 - 12k",
+      "Non-real roots: D < 0",
+      "16 - 12k < 0",
+      "-12k < -16",
+      "k > 4/3"
+     ],
+     "answer": "A",
+     "prompt": "For which values of k does 3x^2 - 4x + k = 0 have non-real roots?",
+     "render": "text",
+     "choices": [
+      "k > 4/3",
+      "k < 4/3",
+      "k > 16/3",
+      "k = 4/3"
+     ],
+     "rightWay": "16 - 12k < 0 gives -12k < -16, and dividing by -12 turns the sign, so k > 4/3.",
+     "answerKind": "choice",
+     "difficulty": 3
+    },
+    {
+     "why": "Taking the square root of 16 as 4 only loses the second value of p.",
+     "steps": [
+      "a = 1, b = p + 1, c = 4",
+      "D = (p + 1)^2 - 4(1)(4) = (p + 1)^2 - 16",
+      "Equal roots: D = 0",
+      "(p + 1)^2 = 16",
+      "p + 1 = 4 or p + 1 = -4",
+      "p = 3 or p = -5"
+     ],
+     "answer": "p = 3 or p = -5",
+     "prompt": "The equation x^2 + (p + 1)x + 4 = 0 has equal roots. Find the possible values of p.",
+     "render": "text",
+     "rightWay": "(p + 1)^2 = 16 gives p + 1 = 4 or p + 1 = -4, so p = 3 or p = -5.",
+     "answerKind": "equation",
+     "difficulty": 3
+    }
+   ],
+   "objectives": [
+    "You will be able to calculate the discriminant b squared minus 4 a c.",
+    "You will be able to use the discriminant to decide whether roots are real or non-real.",
+    "You will be able to describe roots as equal, unequal, rational or irrational."
+   ]
+  }
+ },
+ {
+  "grade": 11,
+  "base_name": "Equations and inequalities",
+  "family": "algebra",
+  "position": 5,
+  "title": "Simultaneous equations with one linear and one quadratic",
+  "version": 1,
+  "source": {
+   "kind": "caps",
+   "title": "Curriculum and Assessment Policy Statement (CAPS) Mathematics, Further Education and Training Phase, Grades 10-12",
+   "credit": "Follows the CAPS Mathematics curriculum, Department of Basic Education",
+   "address": "https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20FET%20_%20MATHEMATICS%20_%20GR%2010-12%20_%20Web_1133.pdf"
+  },
+  "content": {
+   "title": "Simultaneous equations with one linear and one quadratic",
+   "blocks": [
+    {
+     "kind": "explain",
+     "text": "In this lesson you solve two equations at the same time: one is linear (a straight line) and one is quadratic (a parabola). A solution must make both equations true. The answer is not one number but a pair (x; y). You already know how to solve a quadratic by factorising and how to solve two linear equations by substitution. We now combine those skills.",
+     "speech": "In this lesson you solve two equations at the same time. One equation is linear, so its graph is a straight line. The other is quadratic, so its graph is a parabola. A solution must make both equations true at once. The answer is not one number but a pair of values, an x and a y. You already know how to solve a quadratic by factorising and how to use substitution with two linear equations. We now combine those skills."
+    },
+    {
+     "kind": "explain",
+     "text": "Method: (1) Make one variable the subject of the linear equation, usually y = ... . (2) Substitute that expression into the quadratic equation. (3) Solve the resulting quadratic for x. (4) Substitute each x back into the linear equation to find y. (5) Write the solution pairs and check them.",
+     "speech": "Here is the method. First, make one variable the subject of the linear equation, usually y equals something. Second, substitute that expression into the quadratic equation. Third, solve the resulting quadratic for x. Fourth, substitute each x back into the linear equation to find the matching y. Fifth, write the solution pairs and check them in both original equations."
+    },
+    {
+     "kind": "explain",
+     "text": "Why substitution works: if y = 5 - 2x, then anywhere y appears in the other equation you may replace it with 5 - 2x. The new equation contains only x. Solving it gives the x-values where both equations are true. The y-values come from the linear equation because it is simpler.",
+     "speech": "Why does substitution work? If y equals five minus two x, then anywhere y appears in the other equation you may replace it with five minus two x. The new equation contains only x. Solving it gives the x-values where both equations are true. The y-values come from the linear equation because it is simpler."
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "kind": "coordinate_plane",
+      "step": 1,
+      "xMax": 4,
+      "xMin": -4,
+      "yMax": 8,
+      "yMin": -4,
+      "graphs": [
+       {
+        "c": 1,
+        "m": 1,
+        "type": "line",
+        "label": "y = x + 1"
+       },
+       {
+        "a": 1,
+        "p": 0,
+        "q": -1,
+        "type": "parabola",
+        "label": "y = x^2 - 1"
+       }
+      ],
+      "points": [
+       {
+        "x": 2,
+        "y": 3,
+        "label": "A"
+       },
+       {
+        "x": -1,
+        "y": 0,
+        "label": "B"
+       }
+      ]
+     },
+     "speech": "The picture shows a straight line and a parabola on the same set of axes. The line is y equals x plus one. The parabola is y equals x squared minus one. They cross at two points. One point is labelled A at two and three. The other is labelled B at minus one and zero. These two points are the two solution pairs.",
+     "caption": "The line y = x + 1 and the parabola y = x^2 - 1 meet at two points: (2; 3) and (-1; 0)."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "x + 1 = x^2 - 1",
+       "reason": "Substitute x + 1 for y in the quadratic equation."
+      },
+      {
+       "line": "0 = x^2 - x - 2",
+       "reason": "Move all terms to one side so the equation equals 0."
+      },
+      {
+       "line": "0 = (x - 2)(x + 1)",
+       "reason": "Factorise the quadratic."
+      },
+      {
+       "line": "x = 2 or x = -1",
+       "reason": "Set each factor equal to 0."
+      },
+      {
+       "line": "If x = 2, y = 2 + 1 = 3",
+       "reason": "Substitute x into the linear equation to find y."
+      },
+      {
+       "line": "If x = -1, y = -1 + 1 = 0",
+       "reason": "Substitute the other x into the linear equation."
+      },
+      {
+       "line": "(2; 3) and (-1; 0)",
+       "reason": "Write each x with its matching y as a solution pair."
+      }
+     ],
+     "answer": "(2; 3) and (-1; 0)",
+     "speech": "Solve y equals x plus one and y equals x squared minus one. Substitute x plus one for y in the quadratic equation. This gives x plus one equals x squared minus one. Move all terms to one side to get zero equals x squared minus x minus two. Factorise to get zero equals x minus two times x plus one. So x equals two or x equals minus one. If x equals two, y equals two plus one, which is three. If x equals minus one, y equals minus one plus one, which is zero. The solution pairs are two and three, and minus one and zero.",
+     "problem": "Solve y = x + 1 and y = x^2 - 1.",
+     "answerKind": "choice"
+    },
+    {
+     "kind": "explain",
+     "text": "Always find both values. After solving for x, put each x into the linear equation, not the quadratic, because the linear equation is quicker. Then check each pair in both original equations. A pair that fails either equation is not a solution.",
+     "speech": "Always find both values. After solving for x, put each x into the linear equation, not the quadratic, because the linear equation is quicker. Then check each pair in both original equations. A pair that fails either equation is not a solution."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "y = 5 - 2x",
+       "reason": "Make y the subject of the linear equation."
+      },
+      {
+       "line": "5 - 2x = x^2 - 2x + 1",
+       "reason": "Substitute 5 - 2x for y in the quadratic equation."
+      },
+      {
+       "line": "5 = x^2 + 1",
+       "reason": "Add 2x to both sides; the -2x terms cancel."
+      },
+      {
+       "line": "x^2 = 4",
+       "reason": "Subtract 1 from both sides."
+      },
+      {
+       "line": "x = 2 or x = -2",
+       "reason": "Take the square root of both sides, remembering both signs."
+      },
+      {
+       "line": "If x = 2, y = 5 - 2(2) = 1",
+       "reason": "Substitute x into y = 5 - 2x."
+      },
+      {
+       "line": "If x = -2, y = 5 - 2(-2) = 9",
+       "reason": "Substitute the other x into y = 5 - 2x."
+      },
+      {
+       "line": "(2; 1) and (-2; 9)",
+       "reason": "Write each x with its matching y as a solution pair."
+      }
+     ],
+     "answer": "(2; 1) and (-2; 9)",
+     "speech": "Solve two x plus y equals five and y equals x squared minus two x plus one. Make y the subject of the linear equation: y equals five minus two x. Substitute this into the quadratic equation: five minus two x equals x squared minus two x plus one. Add two x to both sides; the minus two x terms cancel, so five equals x squared plus one. Subtract one: x squared equals four. So x equals two or x equals minus two. If x equals two, y equals five minus two times two, which is one. If x equals minus two, y equals five minus two times minus two, which is nine. The solution pairs are two and one, and minus two and nine.",
+     "problem": "Solve 2x + y = 5 and y = x^2 - 2x + 1.",
+     "answerKind": "choice"
+    },
+    {
+     "hint": "Substitute x + 3 for y, then move all terms to one side.",
+     "kind": "try",
+     "speech": "Solve the simultaneous equations y equals x plus three and y equals x squared plus one. Give the x-values of the solutions.",
+     "question": {
+      "why": "Learners often forget to move every term to the same side before factorising.",
+      "steps": [
+       "x + 3 = x^2 + 1",
+       "x^2 - x - 2 = 0",
+       "(x - 2)(x + 1) = 0",
+       "x = 2 or x = -1"
+      ],
+      "answer": "x = 2 or x = -1",
+      "prompt": "Solve y = x + 3 and y = x^2 + 1. Give the x-values of the solutions.",
+      "render": "text",
+      "rightWay": "Substitute x + 3 for y, then write the quadratic as x^2 - x - 2 = 0.",
+      "answerKind": "equation",
+      "difficulty": 2
+     }
+    },
+    {
+     "kind": "explain",
+     "text": "A line and a parabola can meet at two points, at one point, or at no real points. After substitution you get a quadratic. Its discriminant tells you which case: positive gives two solutions, zero gives one solution, negative gives no real solutions. In this lesson we mainly meet two or one.",
+     "speech": "A line and a parabola can meet at two points, at one point, or at no real points. After substitution you get a quadratic. Its discriminant tells you which case. A positive discriminant gives two solutions. A zero discriminant gives one solution. A negative discriminant gives no real solutions. In this lesson we mainly meet two or one."
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "kind": "coordinate_plane",
+      "step": 1,
+      "xMax": 6,
+      "xMin": -2,
+      "yMax": 10,
+      "yMin": -2,
+      "graphs": [
+       {
+        "c": -1,
+        "m": 2,
+        "type": "line",
+        "label": "y = 2x - 1"
+       },
+       {
+        "a": 1,
+        "p": 1,
+        "q": 2,
+        "type": "parabola",
+        "label": "y = x^2 - 2x + 3"
+       }
+      ],
+      "points": [
+       {
+        "x": 2,
+        "y": 3,
+        "label": "T"
+       }
+      ]
+     },
+     "speech": "The picture shows a straight line and a parabola. The line is y equals two x minus one. The parabola is y equals x squared minus two x plus three. The line touches the parabola at exactly one point, labelled T at two and three. So there is one solution pair.",
+     "caption": "The line y = 2x - 1 touches the parabola y = x^2 - 2x + 3 at one point, (2; 3)."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "x + y = 7, so y = 7 - x",
+       "reason": "Translate the sum and make y the subject."
+      },
+      {
+       "line": "xy = 12",
+       "reason": "Translate the product."
+      },
+      {
+       "line": "x(7 - x) = 12",
+       "reason": "Substitute 7 - x for y in the product equation."
+      },
+      {
+       "line": "7x - x^2 = 12",
+       "reason": "Expand the left side."
+      },
+      {
+       "line": "x^2 - 7x + 12 = 0",
+       "reason": "Move all terms to one side and multiply by -1."
+      },
+      {
+       "line": "(x - 3)(x - 4) = 0",
+       "reason": "Factorise the quadratic."
+      },
+      {
+       "line": "x = 3 or x = 4",
+       "reason": "Set each factor equal to 0."
+      },
+      {
+       "line": "(3; 4) and (4; 3)",
+       "reason": "Substitute each x into y = 7 - x and write the pairs; the numbers are 3 and 4."
+      }
+     ],
+     "answer": "(3; 4) and (4; 3)",
+     "speech": "The sum of two numbers is seven and their product is twelve. Find the two numbers. Let the numbers be x and y. The sum gives x plus y equals seven, so y equals seven minus x. The product gives x y equals twelve. Substitute seven minus x for y: x times seven minus x equals twelve. Expand: seven x minus x squared equals twelve. Move all terms to one side and multiply by minus one: x squared minus seven x plus twelve equals zero. Factorise: x minus three times x minus four equals zero. So x equals three or x equals four. If x equals three, y equals four. If x equals four, y equals three. The solution pairs are three and four, and four and three. The two numbers are three and four.",
+     "problem": "The sum of two numbers is 7 and their product is 12. Find the two numbers.",
+     "answerKind": "choice"
+    },
+    {
+     "hint": "Use the sum equation to write y in terms of x.",
+     "kind": "try",
+     "speech": "The sum of two numbers is eight and their product is fifteen. Give the smaller number.",
+     "question": {
+      "why": "Learners may answer both numbers or forget to choose the smaller one.",
+      "steps": [
+       "x + y = 8 and xy = 15",
+       "y = 8 - x",
+       "x(8 - x) = 15",
+       "x^2 - 8x + 15 = 0",
+       "(x - 3)(x - 5) = 0",
+       "Smaller number = 3"
+      ],
+      "answer": "3",
+      "prompt": "The sum of two numbers is 8 and their product is 15. Give the smaller number.",
+      "render": "text",
+      "rightWay": "Solve x^2 - 8x + 15 = 0 to get 3 and 5, then choose the smaller.",
+      "answerKind": "whole",
+      "difficulty": 2
+     }
+    },
+    {
+     "why": "A solution of simultaneous equations must satisfy both equations, so each x needs its matching y. Giving only x-values leaves half of each solution pair.",
+     "kind": "mistake",
+     "right": "(2; 3) and (-1; 0)",
+     "wrong": "x = 2 or x = -1",
+     "speech": "The wrong way stops at x equals two or x equals minus one. The right way substitutes each x back into the linear equation to get the pairs two and three, and minus one and zero. The reason is that a solution of simultaneous equations is a pair of values, one x and one y, that makes both equations true. Giving only x-values leaves half of each solution pair."
+    },
+    {
+     "kind": "explain",
+     "text": "Checklist for an exam answer: make one variable the subject; substitute into the quadratic; solve the quadratic; back-substitute to find the other variable; write each answer as (x; y); check both equations. Show the factorising and the substitution lines, because method marks are given for them.",
+     "speech": "Checklist for an exam answer. Make one variable the subject. Substitute into the quadratic. Solve the quadratic. Back-substitute to find the other variable. Write each answer as a pair, x and y. Check both equations. Show the factorising and the substitution lines, because method marks are given for them."
+    }
+   ],
+   "minutes": 20,
+   "summary": [
+    "Make one variable the subject of the linear equation first.",
+    "Substitute that expression into the quadratic equation and solve the resulting quadratic.",
+    "Each x-value must be substituted back into the linear equation to find its y-value.",
+    "Write the answer as solution pairs (x; y) and check each pair in both original equations.",
+    "A line and a parabola can meet at two points, one point, or no real points."
+   ],
+   "keyWords": [
+    {
+     "word": "simultaneous equations",
+     "meaning": "Two or more equations that must be true at the same time."
+    },
+    {
+     "word": "linear equation",
+     "meaning": "An equation whose variables are only to the first power and whose graph is a straight line."
+    },
+    {
+     "word": "quadratic equation",
+     "meaning": "An equation in which the highest power of the variable is two."
+    },
+    {
+     "word": "subject of the equation",
+     "meaning": "The variable written alone on one side, for example y = 5 - 2x."
+    },
+    {
+     "word": "substitution",
+     "meaning": "Replacing a variable with an expression that is equal to it."
+    },
+    {
+     "word": "solution pair",
+     "meaning": "An ordered pair (x; y) that makes both equations true."
+    },
+    {
+     "word": "back-substitution",
+     "meaning": "Putting a solved value back into an equation to find the other variable."
+    }
+   ],
+   "position": 5,
+   "practice": [
+    {
+     "why": "Learners sometimes change the sign of 3x incorrectly.",
+     "steps": [
+      "3x + y = 7",
+      "y = 7 - 3x"
+     ],
+     "answer": "7 - 3x",
+     "prompt": "Make y the subject of 3x + y = 7.",
+     "render": "text",
+     "rightWay": "Subtract 3x from both sides, so y = 7 - 3x.",
+     "answerKind": "expression",
+     "difficulty": 1
+    },
+    {
+     "why": "Moving terms to the wrong side can give the wrong signs.",
+     "steps": [
+      "x + 2 = x^2",
+      "x^2 - x - 2 = 0",
+      "(x - 2)(x + 1) = 0",
+      "x = 2 or x = -1"
+     ],
+     "answer": "x = 2 or x = -1",
+     "prompt": "Solve y = x + 2 and y = x^2. Give the x-values of the solutions.",
+     "render": "text",
+     "rightWay": "Substitute x + 2 for y, then solve x^2 - x - 2 = 0.",
+     "answerKind": "equation",
+     "difficulty": 1
+    },
+    {
+     "why": "Stopping after finding x-values misses the y-values.",
+     "steps": [
+      "x - 1 = x^2 - 3x + 2",
+      "0 = x^2 - 4x + 3",
+      "0 = (x - 1)(x - 3)",
+      "x = 1 or x = 3",
+      "If x = 1, y = 0; if x = 3, y = 2",
+      "B"
+     ],
+     "answer": "B",
+     "prompt": "Solve y = x - 1 and y = x^2 - 3x + 2. Which set gives all solution pairs?",
+     "render": "text",
+     "choices": [
+      "(0; 1) and (2; 3)",
+      "(1; 0) and (3; 2)",
+      "(1; 0) only",
+      "(3; 2) only"
+     ],
+     "rightWay": "Substitute each x into y = x - 1 to get the pairs.",
+     "answerKind": "choice",
+     "difficulty": 2
+    },
+    {
+     "why": "Learners may substitute into the wrong side or lose a negative root.",
+     "steps": [
+      "y = 4 - x",
+      "4 - x = x^2 - 2",
+      "x^2 + x - 6 = 0",
+      "(x + 3)(x - 2) = 0",
+      "x = -3 or x = 2"
+     ],
+     "answer": "x = -3 or x = 2",
+     "prompt": "Solve x + y = 4 and y = x^2 - 2. Give the x-values of the solutions.",
+     "render": "text",
+     "rightWay": "Make y the subject of x + y = 4, then solve x^2 + x - 6 = 0.",
+     "answerKind": "equation",
+     "difficulty": 2
+    },
+    {
+     "why": "Learners may use the sum and product in the wrong equations.",
+     "steps": [
+      "x + y = 9 and xy = 20",
+      "y = 9 - x",
+      "x(9 - x) = 20",
+      "x^2 - 9x + 20 = 0",
+      "(x - 4)(x - 5) = 0",
+      "C"
+     ],
+     "answer": "C",
+     "prompt": "The sum of two numbers is 9 and their product is 20. Which set gives the two numbers?",
+     "render": "text",
+     "choices": [
+      "2 and 10",
+      "1 and 20",
+      "4 and 5",
+      "3 and 6"
+     ],
+     "rightWay": "Use x + y = 9 and xy = 20, then substitute y = 9 - x.",
+     "answerKind": "choice",
+     "difficulty": 2
+    },
+    {
+     "why": "Learners may think a repeated root means no solution or two equal pairs.",
+     "steps": [
+      "2x - 1 = x^2 - 2x + 3",
+      "x^2 - 4x + 4 = 0",
+      "(x - 2)^2 = 0",
+      "x = 2",
+      "y = 2(2) - 1 = 3",
+      "(2; 3)"
+     ],
+     "answer": "(2; 3)",
+     "prompt": "Solve y = 2x - 1 and y = x^2 - 2x + 3. Give the solution pair.",
+     "render": "text",
+     "rightWay": "Solve to get x = 2, then substitute to get y = 3.",
+     "answerKind": "point",
+     "difficulty": 3
+    },
+    {
+     "why": "Learners may use perimeter without dividing by 2, or may not reject impossible dimensions.",
+     "steps": [
+      "2x + 2y = 20, so x + y = 10",
+      "xy = 21",
+      "y = 10 - x",
+      "x(10 - x) = 21",
+      "x^2 - 10x + 21 = 0, so (x - 3)(x - 7) = 0",
+      "D"
+     ],
+     "answer": "D",
+     "prompt": "A rectangle has perimeter 20 cm and area 21 cm^2. Let the length be x cm and the width y cm. Which set gives the dimensions?",
+     "render": "text",
+     "choices": [
+      "1 cm by 21 cm",
+      "2 cm by 9 cm",
+      "4 cm by 6 cm",
+      "3 cm by 7 cm"
+     ],
+     "rightWay": "Use x + y = 10 and xy = 21, then solve x^2 - 10x + 21 = 0.",
+     "answerKind": "choice",
+     "difficulty": 3
+    }
+   ],
+   "objectives": [
+    "You will be able to make one variable the subject of the linear equation.",
+    "You will be able to substitute this expression into the quadratic equation and solve it.",
+    "You will be able to give the solution as pairs of values and check them."
+   ]
+  }
+ },
+ {
+  "grade": 11,
+  "base_name": "Equations and inequalities",
+  "family": "algebra",
+  "position": 6,
+  "title": "Solving quadratic inequalities",
+  "version": 1,
+  "source": {
+   "kind": "caps",
+   "title": "Curriculum and Assessment Policy Statement (CAPS) Mathematics, Further Education and Training Phase, Grades 10-12",
+   "credit": "Follows the CAPS Mathematics curriculum, Department of Basic Education",
+   "address": "https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20FET%20_%20MATHEMATICS%20_%20GR%2010-12%20_%20Web_1133.pdf"
+  },
+  "content": {
+   "title": "Solving quadratic inequalities",
+   "blocks": [
+    {
+     "kind": "explain",
+     "text": "A quadratic inequality compares a quadratic expression with zero, for example x^2 - x - 6 < 0 or -x^2 + 4x + 5 ≥ 0. The solution is not usually one or two numbers, but one or more intervals of x-values. We find where the quadratic expression is negative, positive, or zero.",
+     "speech": "A quadratic inequality compares a quadratic expression with zero. For example, x squared minus x minus six is less than zero, or minus x squared plus four x plus five is greater than or equal to zero. The solution is not usually one or two numbers. It is usually one or more intervals of x values. We are finding where the quadratic expression is negative, positive, or zero."
+    },
+    {
+     "kind": "explain",
+     "text": "First solve the related equation ax^2 + bx + c = 0. Its roots are the critical values. Mark them on a number line. These values divide the line into intervals. Test one easy number in each interval in the factorised expression to find its sign. For < and > use open brackets; for ≤ and ≥ include the critical values.",
+     "speech": "First solve the related equation a x squared plus b x plus c equals zero. Its roots are the critical values. Mark them on a number line. These values divide the line into intervals. Test one easy number in each interval in the factorised expression to find its sign. For less than and greater than use open brackets. For less than or equal to and greater than or equal to include the critical values."
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "max": 4,
+      "min": -4,
+      "kind": "number_line",
+      "step": 1,
+      "marks": [
+       {
+        "label": "-2",
+        "value": -2
+       },
+       {
+        "label": "3",
+        "value": 3
+       }
+      ]
+     },
+     "speech": "A number line from minus four to four. The points minus two and three are marked. These two critical values divide the line into three intervals: left of minus two, between minus two and three, and right of three.",
+     "caption": "The critical values -2 and 3 cut the number line into three intervals: left of -2, between -2 and 3, and right of 3."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "x^2 - x - 6 = (x - 3)(x + 2)",
+       "reason": "Factorise the quadratic."
+      },
+      {
+       "line": "(x - 3)(x + 2) < 0",
+       "reason": "Replace the expression by its factorised form."
+      },
+      {
+       "line": "Critical values: x = 3 and x = -2",
+       "reason": "Set each factor equal to zero."
+      },
+      {
+       "line": "Test x = 0: (0 - 3)(0 + 2) = -6 < 0",
+       "reason": "The interval between -2 and 3 gives a negative product."
+      },
+      {
+       "line": "The upward parabola is below the x-axis between its roots.",
+       "reason": "So the expression is negative between the roots."
+      },
+      {
+       "line": "(-2; 3)",
+       "reason": "Use open brackets because the inequality is strict."
+      }
+     ],
+     "answer": "(-2; 3)",
+     "speech": "Solve x squared minus x minus six is less than zero. Factorise as x minus three times x plus two is less than zero. The critical values are x equals three and x equals minus two. Test x equals zero: minus three times two is minus six, which is less than zero, so the interval between the roots works. The parabola opens upward and is below the x axis between the roots. The solution is from minus two to three, with both endpoints excluded.",
+     "diagram": {
+      "kind": "coordinate_plane",
+      "step": 1,
+      "xMax": 5,
+      "xMin": -5,
+      "yMax": 8,
+      "yMin": -8,
+      "graphs": [
+       {
+        "a": 1,
+        "p": 0.5,
+        "q": -6.25,
+        "type": "parabola",
+        "label": "y = x^2 - x - 6"
+       }
+      ],
+      "points": [
+       {
+        "x": -2,
+        "y": 0,
+        "label": "-2"
+       },
+       {
+        "x": 3,
+        "y": 0,
+        "label": "3"
+       }
+      ]
+     },
+     "problem": "Solve x^2 - x - 6 < 0.",
+     "answerKind": "choice"
+    },
+    {
+     "kind": "explain",
+     "text": "On the graph of y = ax^2 + bx + c, the expression is the y-value. Where the parabola is below the x-axis, the expression is negative. Where it is above, it is positive. For an upward parabola, negative is between the roots. For a downward parabola, positive is between the roots.",
+     "speech": "On the graph of y equals a x squared plus b x plus c, the expression is the y value. Where the parabola is below the x axis, the expression is negative. Where it is above, it is positive. For an upward parabola, negative is between the roots. For a downward parabola, positive is between the roots."
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "kind": "coordinate_plane",
+      "step": 1,
+      "xMax": 5,
+      "xMin": -5,
+      "yMax": 8,
+      "yMin": -8,
+      "graphs": [
+       {
+        "a": 1,
+        "p": 0.5,
+        "q": -6.25,
+        "type": "parabola",
+        "label": "y = x^2 - x - 6"
+       }
+      ],
+      "points": [
+       {
+        "x": -2,
+        "y": 0,
+        "label": "-2"
+       },
+       {
+        "x": 3,
+        "y": 0,
+        "label": "3"
+       }
+      ]
+     },
+     "speech": "A set of axes with the parabola y equals x squared minus x minus six. The parabola opens upward and crosses the x axis at minus two and three. Between these two x values the graph is below the x axis, so the expression is negative there.",
+     "caption": "The parabola y = x^2 - x - 6 cuts the x-axis at -2 and 3. It is below the x-axis between these roots."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "Multiply by -1 and reverse the inequality: x^2 - 4x - 5 ≤ 0",
+       "reason": "Multiplying by a negative number reverses the inequality sign."
+      },
+      {
+       "line": "(x - 5)(x + 1) ≤ 0",
+       "reason": "Factorise the new quadratic."
+      },
+      {
+       "line": "Critical values: x = 5 and x = -1",
+       "reason": "Set each factor equal to zero."
+      },
+      {
+       "line": "Test x = 0: (0 - 5)(0 + 1) = -5 ≤ 0",
+       "reason": "The interval between -1 and 5 works."
+      },
+      {
+       "line": "The upward parabola is below or on the x-axis between its roots.",
+       "reason": "So the expression is negative or zero between the roots."
+      },
+      {
+       "line": "[-1; 5]",
+       "reason": "Include endpoints because the inequality after reversing is ≤."
+      }
+     ],
+     "answer": "[-1; 5]",
+     "speech": "Solve minus x squared plus four x plus five is greater than or equal to zero. Multiply by minus one and reverse the inequality to get x squared minus four x minus five is less than or equal to zero. Factorise as x minus five times x plus one is less than or equal to zero. The critical values are x equals five and x equals minus one. Test x equals zero: minus five times one is minus five, which is less than or equal to zero, so the interval between the roots works. The solution is from minus one to five, including both endpoints.",
+     "problem": "Solve -x^2 + 4x + 5 ≥ 0.",
+     "answerKind": "choice"
+    },
+    {
+     "kind": "explain",
+     "text": "Interval notation shows all x-values in a solution. Round brackets ( ) exclude an endpoint, so use them for < and >. Square brackets [ ] include an endpoint, so use them for ≤ and ≥. For example, -2 < x < 3 is (-2; 3), and -1 ≤ x ≤ 5 is [-1; 5]. Infinity always gets a round bracket.",
+     "speech": "Interval notation shows all x values in a solution. Round brackets exclude an endpoint, so use them for less than and greater than. Square brackets include an endpoint, so use them for less than or equal to and greater than or equal to. For example, minus two is less than x is less than three is written as from minus two to three with round brackets. And minus one is less than or equal to x is less than or equal to five is written with square brackets. Infinity always gets a round bracket."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "2x^2 - 5x - 3 = (2x + 1)(x - 3)",
+       "reason": "Factorise the quadratic."
+      },
+      {
+       "line": "(2x + 1)(x - 3) ≥ 0",
+       "reason": "Replace the expression by its factorised form."
+      },
+      {
+       "line": "Critical values: x = -1/2 and x = 3",
+       "reason": "Set each factor equal to zero."
+      },
+      {
+       "line": "Test x = 0: (1)(-3) = -3 < 0",
+       "reason": "The interval between the roots is not part of the solution."
+      },
+      {
+       "line": "The upward parabola is above or on the x-axis outside the roots.",
+       "reason": "So the expression is positive or zero outside the roots."
+      },
+      {
+       "line": "(-∞; -1/2] ∪ [3; ∞)",
+       "reason": "Include endpoints and use union for the two separate intervals."
+      }
+     ],
+     "answer": "(-∞; -1/2] ∪ [3; ∞)",
+     "speech": "Solve two x squared minus five x minus three is greater than or equal to zero. Factorise as two x plus one times x minus three is greater than or equal to zero. The critical values are x equals minus one half and x equals three. Test x equals zero: one times minus three is minus three, which is less than zero, so the interval between the roots is not part of the solution. The parabola opens upward, so it is above or on the x axis outside the roots. The solution is from minus infinity to minus one half, including minus one half, or from three to infinity, including three.",
+     "problem": "Solve 2x^2 - 5x - 3 ≥ 0.",
+     "answerKind": "choice"
+    },
+    {
+     "kind": "explain",
+     "text": "If the discriminant b^2 - 4ac is negative, the related equation has no real roots. There are no critical values. The parabola does not cross the x-axis, so the expression has the same sign everywhere. If a > 0 it is always positive; if a < 0 it is always negative.",
+     "speech": "If the discriminant b squared minus four a c is negative, the related equation has no real roots. There are no critical values. The parabola does not cross the x axis, so the expression has the same sign everywhere. If a is greater than zero it is always positive. If a is less than zero it is always negative."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "Discriminant: b^2 - 4ac = 2^2 - 4(1)(5) = -16",
+       "reason": "Calculate the discriminant."
+      },
+      {
+       "line": "The discriminant is negative, so there are no real roots.",
+       "reason": "The related equation has no real solutions."
+      },
+      {
+       "line": "The coefficient of x^2 is 1, so the parabola opens upward.",
+       "reason": "The sign of a is positive."
+      },
+      {
+       "line": "The parabola lies above the x-axis for every x.",
+       "reason": "With no roots and an upward opening, the graph never reaches the x-axis."
+      },
+      {
+       "line": "(-∞; ∞)",
+       "reason": "The inequality is true for all real x."
+      }
+     ],
+     "answer": "(-∞; ∞)",
+     "speech": "Solve x squared plus two x plus five is greater than zero. The discriminant is two squared minus four times one times five, which is minus sixteen. The discriminant is negative, so there are no real roots. The coefficient of x squared is one, so the parabola opens upward. The parabola lies above the x axis for every x value. The inequality is true for all real x.",
+     "diagram": {
+      "kind": "coordinate_plane",
+      "step": 1,
+      "xMax": 4,
+      "xMin": -6,
+      "yMax": 12,
+      "yMin": 0,
+      "graphs": [
+       {
+        "a": 1,
+        "p": -1,
+        "q": 4,
+        "type": "parabola",
+        "label": "y = x^2 + 2x + 5"
+       }
+      ],
+      "points": []
+     },
+     "problem": "Solve x^2 + 2x + 5 > 0.",
+     "answerKind": "choice"
+    },
+    {
+     "hint": "Find the critical values first, then test one number in each interval on a sign line.",
+     "kind": "try",
+     "speech": "Solve x squared minus four x minus five is greater than zero. A, from minus one to five, both endpoints excluded. B, from minus one to five, both endpoints included. C, from minus infinity to minus one, excluding minus one, or from five to infinity, excluding five. D, from minus infinity to minus one, including minus one, or from five to infinity, including five.",
+     "question": {
+      "why": "Many learners choose the interval between the roots, but the expression is negative there.",
+      "steps": [
+       "x^2 - 4x - 5 = (x - 5)(x + 1)",
+       "Critical values: x = 5 and x = -1",
+       "Test x = 0: (0 - 5)(0 + 1) = -5 < 0, so between the roots is negative",
+       "The upward parabola is positive outside the roots",
+       "(-∞; -1) ∪ (5; ∞)",
+       "C"
+      ],
+      "answer": "C",
+      "prompt": "Solve x^2 - 4x - 5 > 0.",
+      "render": "text",
+      "choices": [
+       "A (-1; 5)",
+       "B [-1; 5]",
+       "C (-∞; -1) ∪ (5; ∞)",
+       "D (-∞; -1] ∪ [5; ∞)"
+      ],
+      "rightWay": "Factor to get (x - 5)(x + 1), find roots -1 and 5, then choose the outside intervals with open brackets.",
+      "answerKind": "choice",
+      "difficulty": 2
+     }
+    },
+    {
+     "why": "The roots only divide the number line into intervals. You must test where the product is negative. Here it is negative between the roots, not outside them.",
+     "kind": "mistake",
+     "right": "-2 < x < 3",
+     "wrong": "x^2 - x - 6 < 0 gives x < 3 or x < -2",
+     "speech": "Wrong way: from x squared minus x minus six is less than zero, write x is less than three or x is less than minus two. Right way: minus two is less than x is less than three. The roots only divide the number line into intervals. You must test where the product is negative. Here it is negative between the roots, not outside them.",
+     "diagram": {
+      "max": 4,
+      "min": -4,
+      "kind": "number_line",
+      "step": 1,
+      "marks": [
+       {
+        "label": "-2",
+        "value": -2
+       },
+       {
+        "label": "3",
+        "value": 3
+       }
+      ]
+     }
+    },
+    {
+     "kind": "explain",
+     "text": "Method: write the inequality with zero on one side. Solve the related equation for critical values. Mark them on a sign line or sketch the parabola. Test intervals, or use the opening direction. Write the solution in interval notation with the correct brackets. Check the endpoints in the original inequality.",
+     "speech": "Method. Write the inequality with zero on one side. Solve the related equation for critical values. Mark them on a sign line or sketch the parabola. Test intervals, or use the opening direction. Write the solution in interval notation with the correct brackets. Check the endpoints in the original inequality."
+    }
+   ],
+   "minutes": 24,
+   "summary": [
+    "Solve the related quadratic equation to find the critical values.",
+    "Mark the critical values on a sign line or sketch the parabola.",
+    "Test intervals; for an upward parabola the expression is negative between the roots and positive outside.",
+    "Use round brackets for < and >, and square brackets for ≤ and ≥.",
+    "If there are no real roots, the sign is the same as the sign of a for every x.",
+    "Write separate parts of a solution with a union."
+   ],
+   "keyWords": [
+    {
+     "word": "quadratic inequality",
+     "meaning": "An inequality that can be written as ax^2 + bx + c < 0, > 0, ≤ 0 or ≥ 0, where a is not zero."
+    },
+    {
+     "word": "critical values",
+     "meaning": "The values of x that make the related quadratic expression equal zero; they are also called the roots."
+    },
+    {
+     "word": "sign line",
+     "meaning": "A number line with the critical values marked, used to test whether the expression is positive or negative in each interval."
+    },
+    {
+     "word": "solution set",
+     "meaning": "All the values of x that make the inequality true."
+    },
+    {
+     "word": "interval notation",
+     "meaning": "A way to write a solution set using brackets; round brackets exclude endpoints and square brackets include endpoints."
+    },
+    {
+     "word": "parabola",
+     "meaning": "The U-shaped graph of a quadratic expression."
+    },
+    {
+     "word": "discriminant",
+     "meaning": "The value b^2 - 4ac, which tells us how many real roots the related quadratic equation has."
+    },
+    {
+     "word": "union",
+     "meaning": "The joining of two intervals with the symbol ∪ when the solution has separate parts."
+    }
+   ],
+   "position": 6,
+   "practice": [
+    {
+     "why": "Learners often choose the outside intervals, but the product is negative between the roots.",
+     "steps": [
+      "The expression is already factorised: (x - 1)(x - 4) < 0",
+      "Critical values: x = 1 and x = 4",
+      "Test x = 2: (1)(-2) = -2 < 0, so between the roots is negative",
+      "B"
+     ],
+     "answer": "B",
+     "prompt": "Solve (x - 1)(x - 4) < 0.",
+     "render": "text",
+     "choices": [
+      "A (-∞; 1) ∪ (4; ∞)",
+      "B (1; 4)",
+      "C [1; 4]",
+      "D (-∞; 1] ∪ [4; ∞)"
+     ],
+     "rightWay": "Find roots 1 and 4, then choose the interval between them because the parabola opens upward and the inequality is strict.",
+     "answerKind": "choice",
+     "difficulty": 1
+    },
+    {
+     "why": "Learners often use round brackets even though the inequality includes equality.",
+     "steps": [
+      "x^2 - 9 = (x - 3)(x + 3)",
+      "Critical values: x = -3 and x = 3",
+      "Test x = 0: (-3)(3) = -9 ≤ 0, so between the roots works",
+      "C"
+     ],
+     "answer": "C",
+     "prompt": "Solve x^2 - 9 ≤ 0.",
+     "render": "text",
+     "choices": [
+      "A (-3; 3)",
+      "B (-∞; -3] ∪ [3; ∞)",
+      "C [-3; 3]",
+      "D (-∞; -3) ∪ (3; ∞)"
+     ],
+     "rightWay": "Factor, find roots -3 and 3, then use square brackets because the inequality is ≤.",
+     "answerKind": "choice",
+     "difficulty": 1
+    },
+    {
+     "why": "Learners often choose the between interval or include endpoints when the inequality is strict.",
+     "steps": [
+      "x^2 + x - 6 = (x + 3)(x - 2)",
+      "Critical values: x = -3 and x = 2",
+      "Test x = 0: (3)(-2) = -6 < 0, so between the roots is negative",
+      "The upward parabola is positive outside the roots",
+      "D"
+     ],
+     "answer": "D",
+     "prompt": "Solve x^2 + x - 6 > 0.",
+     "render": "text",
+     "choices": [
+      "A (-3; 2)",
+      "B [-3; 2]",
+      "C (-∞; -3] ∪ [2; ∞)",
+      "D (-∞; -3) ∪ (2; ∞)"
+     ],
+     "rightWay": "Factor, find roots -3 and 2, then choose the outside intervals with open brackets.",
+     "answerKind": "choice",
+     "difficulty": 2
+    },
+    {
+     "why": "Learners forget to reverse the inequality when multiplying by -1.",
+     "steps": [
+      "Multiply by -1 and reverse: x^2 - 6x + 8 ≤ 0",
+      "x^2 - 6x + 8 = (x - 2)(x - 4)",
+      "Critical values: x = 2 and x = 4",
+      "Between the roots the product is negative or zero",
+      "A"
+     ],
+     "answer": "A",
+     "prompt": "Solve -x^2 + 6x - 8 ≥ 0.",
+     "render": "text",
+     "choices": [
+      "A [2; 4]",
+      "B (2; 4)",
+      "C (-∞; 2] ∪ [4; ∞)",
+      "D (-∞; 2) ∪ (4; ∞)"
+     ],
+     "rightWay": "Multiply by -1 and reverse to ≤, factor, then choose the closed interval between roots 2 and 4.",
+     "answerKind": "choice",
+     "difficulty": 2
+    },
+    {
+     "why": "Learners often choose the outside intervals or include the endpoints.",
+     "steps": [
+      "2x^2 - 7x + 3 = (2x - 1)(x - 3)",
+      "Critical values: x = 1/2 and x = 3",
+      "Test x = 1: (1)(-2) = -2 < 0, so between the roots is negative",
+      "The upward parabola is negative between the roots",
+      "C"
+     ],
+     "answer": "C",
+     "prompt": "Solve 2x^2 - 7x + 3 < 0.",
+     "render": "text",
+     "choices": [
+      "A [1/2; 3]",
+      "B (-∞; 1/2) ∪ (3; ∞)",
+      "C (1/2; 3)",
+      "D (-∞; 1/2] ∪ [3; ∞)"
+     ],
+     "rightWay": "Factor, find roots 1/2 and 3, then choose the open interval between them.",
+     "answerKind": "choice",
+     "difficulty": 3
+    },
+    {
+     "why": "Learners may try to find roots that do not exist and then guess an interval.",
+     "steps": [
+      "Discriminant: (-4)^2 - 4(1)(7) = 16 - 28 = -12",
+      "No real roots, so no critical values",
+      "a = 1 > 0, so the parabola is always above the x-axis",
+      "The inequality is true for all real x",
+      "B"
+     ],
+     "answer": "B",
+     "prompt": "Solve x^2 - 4x + 7 > 0.",
+     "render": "text",
+     "choices": [
+      "A no real values of x",
+      "B all real values of x",
+      "C x > 2",
+      "D 0 < x < 4"
+     ],
+     "rightWay": "Use the discriminant to show there are no real roots, then note that a is positive so the expression is always positive.",
+     "answerKind": "choice",
+     "difficulty": 3
+    }
+   ],
+   "objectives": [
+    "You will be able to solve the related quadratic equation to find critical values.",
+    "You will be able to use a sign line or a sketch of the parabola to test intervals.",
+    "You will be able to write the solution set in interval notation."
+   ]
+  }
+ },
+ {
+  "grade": 11,
+  "base_name": "Equations and inequalities",
+  "family": "algebra",
+  "position": 7,
+  "title": "Solving equations with square roots",
+  "version": 1,
+  "source": {
+   "kind": "caps",
+   "title": "Curriculum and Assessment Policy Statement (CAPS) Mathematics, Further Education and Training Phase, Grades 10-12",
+   "credit": "Follows the CAPS Mathematics curriculum, Department of Basic Education",
+   "address": "https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20FET%20_%20MATHEMATICS%20_%20GR%2010-12%20_%20Web_1133.pdf"
+  },
+  "content": {
+   "title": "Solving equations with square roots",
+   "blocks": [
+    {
+     "kind": "explain",
+     "text": "A square root equation has the unknown under a square root, for example sqrt(x + 5) = 3. To solve it, we undo the square root by squaring. But squaring is not reversible in one step: it can turn a false statement into a true one. That is why every answer must be checked in the original equation.",
+     "speech": "A square root equation has the unknown under a square root, for example the square root of x plus five equals three. To solve it, we undo the square root by squaring. But squaring is not reversible in one step: it can turn a false statement into a true one. That is why every answer must be checked in the original equation."
+    },
+    {
+     "kind": "explain",
+     "text": "Before squaring, get the square root term alone. If the equation is sqrt(3x - 2) + 1 = 5, first subtract 1 to get sqrt(3x - 2) = 4. Squaring too early makes the algebra harder and often wrong.",
+     "speech": "Before squaring, get the square root term alone. If the equation is the square root of three x minus two, plus one, equals five, first subtract one to get the square root of three x minus two equals four. Squaring too early makes the algebra harder and often wrong."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "sqrt(x + 5) = 3",
+       "reason": "Given equation."
+      },
+      {
+       "line": "x + 5 = 9",
+       "reason": "Square both sides."
+      },
+      {
+       "line": "x = 4",
+       "reason": "Subtract 5 from both sides."
+      },
+      {
+       "line": "Check: sqrt(4 + 5) = sqrt(9) = 3",
+       "reason": "Substitute x = 4 into the original equation."
+      },
+      {
+       "line": "x = 4",
+       "reason": "The check is true."
+      }
+     ],
+     "answer": "x = 4",
+     "speech": "Solve the square root of x plus five equals three. The square root is already alone. Square both sides to get x plus five equals nine. Subtract five to get x equals four. Check: the square root of four plus five is the square root of nine, which is three. The answer is x equals four.",
+     "problem": "Solve sqrt(x + 5) = 3.",
+     "answerKind": "equation"
+    },
+    {
+     "kind": "explain",
+     "text": "To remove a square root, square both sides as whole sides. If sqrt(x + 3) = x + 1, then x + 3 = (x + 1)^2, not x + 3 = x^2 + 1. The right side is a binomial, so expand it fully.",
+     "speech": "To remove a square root, square both sides as whole sides. If the square root of x plus three equals x plus one, then x plus three equals x plus one squared, not x plus three equals x squared plus one. The right side is a binomial, so expand it fully."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "sqrt(3x - 2) + 1 = 5",
+       "reason": "Given equation."
+      },
+      {
+       "line": "sqrt(3x - 2) = 4",
+       "reason": "Subtract 1 from both sides to isolate the square root."
+      },
+      {
+       "line": "3x - 2 = 16",
+       "reason": "Square both sides."
+      },
+      {
+       "line": "3x = 18",
+       "reason": "Add 2 to both sides."
+      },
+      {
+       "line": "x = 6",
+       "reason": "Divide both sides by 3."
+      },
+      {
+       "line": "Check: sqrt(18 - 2) + 1 = sqrt(16) + 1 = 5",
+       "reason": "Substitute x = 6 into the original equation."
+      },
+      {
+       "line": "x = 6",
+       "reason": "The check is true."
+      }
+     ],
+     "answer": "x = 6",
+     "speech": "Solve the square root of three x minus two, plus one, equals five. Subtract one to isolate the square root: the square root of three x minus two equals four. Square both sides: three x minus two equals sixteen. Add two: three x equals eighteen. Divide by three: x equals six. Check: the square root of eighteen minus two plus one is the square root of sixteen plus one, which is five. The answer is x equals six.",
+     "problem": "Solve sqrt(3x - 2) + 1 = 5.",
+     "answerKind": "equation"
+    },
+    {
+     "kind": "explain",
+     "text": "Squaring can create an extraneous solution: a value that solves the squared equation but not the original one. For example, x = -2 solves x + 3 = (x + 1)^2, but sqrt(-2 + 3) = 1 while -2 + 1 = -1. Always substitute each answer into the original equation.",
+     "speech": "Squaring can create an extraneous solution: a value that solves the squared equation but not the original one. For example, x equals minus two solves x plus three equals x plus one squared, but the square root of minus two plus three is one, while minus two plus one is minus one. Always substitute each answer into the original equation."
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "kind": "coordinate_plane",
+      "step": 1,
+      "xMax": 4,
+      "xMin": -4,
+      "yMax": 8,
+      "yMin": -2,
+      "graphs": [
+       {
+        "c": 3,
+        "m": 1,
+        "type": "line",
+        "label": "y = x + 3"
+       },
+       {
+        "a": 1,
+        "p": -1,
+        "q": 0,
+        "type": "parabola",
+        "label": "y = (x + 1)^2"
+       }
+      ],
+      "points": [
+       {
+        "x": 1,
+        "y": 4,
+        "label": "A"
+       },
+       {
+        "x": -2,
+        "y": 1,
+        "label": "B"
+       }
+      ]
+     },
+     "speech": "The picture shows a straight line y equals x plus three and a parabola y equals x plus one squared. They meet at two points, labelled A at x equals one and B at x equals minus two. Both points solve the squared equation, but only the point at x equals one satisfies the original square root equation. The other point is extraneous.",
+     "caption": "Squaring sqrt(x + 3) = x + 1 gives x + 3 = (x + 1)^2. The graphs meet at x = -2 and x = 1, but only x = 1 satisfies the original equation."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "sqrt(x + 3) = x + 1",
+       "reason": "The square root is already on its own."
+      },
+      {
+       "line": "x + 3 = (x + 1)^2",
+       "reason": "Square both sides to remove the square root."
+      },
+      {
+       "line": "x + 3 = x^2 + 2x + 1",
+       "reason": "Expand the right side."
+      },
+      {
+       "line": "0 = x^2 + x - 2",
+       "reason": "Bring all terms to one side."
+      },
+      {
+       "line": "0 = (x + 2)(x - 1)",
+       "reason": "Factorise the quadratic."
+      },
+      {
+       "line": "x = -2 or x = 1",
+       "reason": "Set each factor equal to zero."
+      },
+      {
+       "line": "Check x = -2: sqrt(1) = 1, but -2 + 1 = -1, so reject.",
+       "reason": "The original right side is negative, so this root is extraneous."
+      },
+      {
+       "line": "x = 1",
+       "reason": "Check x = 1: sqrt(4) = 2 and 1 + 1 = 2, so it is valid."
+      }
+     ],
+     "answer": "x = 1",
+     "speech": "Solve the square root of x plus three equals x plus one. Square both sides: x plus three equals x plus one squared. Expand: x plus three equals x squared plus two x plus one. Bring all terms to one side: zero equals x squared plus x minus two. Factorise: zero equals x plus two times x minus one. So x equals minus two or x equals one. Check x equals minus two: the square root of one is one, but minus two plus one is minus one, so reject it. Check x equals one: the square root of four is two and one plus one is two, so it is valid. The answer is x equals one.",
+     "problem": "Solve sqrt(x + 3) = x + 1.",
+     "answerKind": "equation"
+    },
+    {
+     "kind": "explain",
+     "text": "If two square roots appear, isolate one root first, then square. After squaring, a square root may still remain. Isolate it again and square again. Check the final answer in the original equation.",
+     "speech": "If two square roots appear, isolate one root first, then square. After squaring, a square root may still remain. Isolate it again and square again. Check the final answer in the original equation."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "sqrt(x + 5) = sqrt(x) + 1",
+       "reason": "Isolate one square root by adding sqrt(x) to both sides."
+      },
+      {
+       "line": "x + 5 = x + 2sqrt(x) + 1",
+       "reason": "Square both sides; the right side is a binomial."
+      },
+      {
+       "line": "4 = 2sqrt(x)",
+       "reason": "Subtract x and 1 from both sides."
+      },
+      {
+       "line": "2 = sqrt(x)",
+       "reason": "Divide both sides by 2."
+      },
+      {
+       "line": "4 = x",
+       "reason": "Square both sides."
+      },
+      {
+       "line": "Check: sqrt(9) - sqrt(4) = 3 - 2 = 1",
+       "reason": "Substitute x = 4 into the original equation."
+      },
+      {
+       "line": "x = 4",
+       "reason": "The check is true, so the solution is valid."
+      }
+     ],
+     "answer": "x = 4",
+     "speech": "Solve the square root of x plus five minus the square root of x equals one. Add the square root of x to both sides: the square root of x plus five equals the square root of x plus one. Square both sides: x plus five equals x plus two times the square root of x plus one. Subtract x and one: four equals two times the square root of x. Divide by two: two equals the square root of x. Square both sides: four equals x. Check: the square root of nine minus the square root of four is three minus two, which is one. The answer is x equals four.",
+     "problem": "Solve sqrt(x + 5) - sqrt(x) = 1.",
+     "answerKind": "equation"
+    },
+    {
+     "hint": "Square both sides, solve the quadratic, then test each root in the original equation.",
+     "kind": "try",
+     "speech": "Solve the square root of two x plus seven equals x plus two. Square both sides, solve the quadratic that appears, and then test each root in the original equation.",
+     "question": {
+      "why": "Squaring can create a root that makes the right side negative.",
+      "steps": [
+       "sqrt(2x + 7) = x + 2",
+       "2x + 7 = x^2 + 4x + 4",
+       "0 = x^2 + 2x - 3",
+       "0 = (x + 3)(x - 1)",
+       "x = -3 or x = 1; x = -3 fails the check",
+       "x = 1"
+      ],
+      "answer": "x = 1",
+      "prompt": "Solve sqrt(2x + 7) = x + 2.",
+      "render": "text",
+      "rightWay": "Check both roots in the original equation and keep only x = 1.",
+      "answerKind": "equation",
+      "difficulty": 2
+     }
+    },
+    {
+     "why": "Squaring both sides can create a solution that does not satisfy the original equation, so every answer must be checked.",
+     "kind": "mistake",
+     "right": "x = 1 only; x = -2 fails the check.",
+     "wrong": "sqrt(x + 3) = x + 1 gives x = -2 or x = 1, so both are solutions.",
+     "speech": "The wrong way says the square root of x plus three equals x plus one gives x equals minus two or x equals one, so both are solutions. The right way says x equals one only, because x equals minus two fails the check. Squaring both sides can create a solution that does not satisfy the original equation, so every answer must be checked."
+    },
+    {
+     "kind": "explain",
+     "text": "The method is: isolate the square root, square both sides, solve the resulting equation, then check every answer in the original equation. If a check fails, reject that value. Write the final answer as the values that pass the check.",
+     "speech": "The method is: isolate the square root, square both sides, solve the resulting equation, then check every answer in the original equation. If a check fails, reject that value. Write the final answer as the values that pass the check."
+    },
+    {
+     "kind": "explain",
+     "text": "Square root equations are solved by undoing the root, but the undo step can add false answers. The check is not optional; it is part of the solution. A correct answer must satisfy the original equation, not only the squared one.",
+     "speech": "Square root equations are solved by undoing the root, but the undo step can add false answers. The check is not optional; it is part of the solution. A correct answer must satisfy the original equation, not only the squared one."
+    }
+   ],
+   "minutes": 22,
+   "summary": [
+    "Isolate the square root before squaring both sides.",
+    "Square the whole side, not each term separately.",
+    "After squaring, solve the resulting equation.",
+    "Always check every answer in the original equation.",
+    "Reject extraneous solutions that do not satisfy the original equation."
+   ],
+   "keyWords": [
+    {
+     "word": "square root equation",
+     "meaning": "An equation in which the unknown appears under a square root."
+    },
+    {
+     "word": "isolate",
+     "meaning": "To get the square root term alone on one side of the equation."
+    },
+    {
+     "word": "square both sides",
+     "meaning": "To raise both sides of an equation to the power 2, which removes a square root but can add extra solutions."
+    },
+    {
+     "word": "extraneous solution",
+     "meaning": "A value that comes from squaring both sides but does not satisfy the original equation."
+    },
+    {
+     "word": "check",
+     "meaning": "To substitute a possible answer back into the original equation to see whether it is true."
+    },
+    {
+     "word": "domain",
+     "meaning": "The set of values for which the expression is defined; for a square root, the part under the root may not be negative."
+    }
+   ],
+   "position": 7,
+   "practice": [
+    {
+     "why": "Some learners forget to square the 5 as well as the left side.",
+     "steps": [
+      "sqrt(x + 4) = 5",
+      "x + 4 = 25",
+      "x = 21",
+      "Check: sqrt(21 + 4) = sqrt(25) = 5",
+      "x = 21"
+     ],
+     "answer": "x = 21",
+     "prompt": "Solve sqrt(x + 4) = 5.",
+     "render": "text",
+     "rightWay": "Square both sides: x + 4 = 25, so x = 21.",
+     "answerKind": "equation",
+     "difficulty": 1
+    },
+    {
+     "why": "A common error is to square only 2x or only -3.",
+     "steps": [
+      "sqrt(2x - 3) = 3",
+      "2x - 3 = 9",
+      "2x = 12",
+      "x = 6",
+      "Check: sqrt(12 - 3) = sqrt(9) = 3",
+      "x = 6"
+     ],
+     "answer": "x = 6",
+     "prompt": "Solve sqrt(2x - 3) = 3.",
+     "render": "text",
+     "rightWay": "Square the whole left side and the whole right side: 2x - 3 = 9.",
+     "answerKind": "equation",
+     "difficulty": 1
+    },
+    {
+     "why": "Learners sometimes square before isolating the square root.",
+     "steps": [
+      "sqrt(3x + 1) - 2 = 3",
+      "sqrt(3x + 1) = 5",
+      "3x + 1 = 25",
+      "3x = 24",
+      "x = 8"
+     ],
+     "answer": "x = 8",
+     "prompt": "Solve sqrt(3x + 1) - 2 = 3.",
+     "render": "text",
+     "rightWay": "First add 2 to both sides to get sqrt(3x + 1) = 5, then square.",
+     "answerKind": "equation",
+     "difficulty": 2
+    },
+    {
+     "why": "The root x = -2 makes the right side negative, so it is extraneous.",
+     "steps": [
+      "sqrt(x + 6) = x",
+      "x + 6 = x^2",
+      "0 = x^2 - x - 6",
+      "0 = (x - 3)(x + 2)",
+      "x = 3 or x = -2; x = -2 fails the check",
+      "x = 3"
+     ],
+     "answer": "x = 3",
+     "prompt": "Solve sqrt(x + 6) = x.",
+     "render": "text",
+     "rightWay": "Square both sides, solve x^2 - x - 6 = 0, then check both roots in the original equation.",
+     "answerKind": "equation",
+     "difficulty": 2
+    },
+    {
+     "why": "Squaring can create an extra root that does not satisfy the original equation.",
+     "steps": [
+      "sqrt(2x + 5) = x + 1",
+      "2x + 5 = x^2 + 2x + 1",
+      "0 = x^2 - 4",
+      "0 = (x - 2)(x + 2)",
+      "x = 2 or x = -2; x = -2 fails the check",
+      "x = 2"
+     ],
+     "answer": "x = 2",
+     "prompt": "Solve sqrt(2x + 5) = x + 1.",
+     "render": "text",
+     "rightWay": "Expand (x + 1)^2 correctly, solve, then check both roots.",
+     "answerKind": "equation",
+     "difficulty": 2
+    },
+    {
+     "why": "The root x = 2 makes x - 4 negative, so it is extraneous.",
+     "steps": [
+      "sqrt(x + 2) = x - 4",
+      "x + 2 = x^2 - 8x + 16",
+      "0 = x^2 - 9x + 14",
+      "0 = (x - 7)(x - 2)",
+      "x = 7 or x = 2; x = 2 fails the check",
+      "x = 7"
+     ],
+     "answer": "x = 7",
+     "prompt": "Solve sqrt(x + 2) = x - 4.",
+     "render": "text",
+     "rightWay": "Square both sides, factorise x^2 - 9x + 14, and reject the root that fails the original equation.",
+     "answerKind": "equation",
+     "difficulty": 3
+    },
+    {
+     "why": "Learners sometimes square 14 incorrectly or forget to divide by 9,8.",
+     "steps": [
+      "sqrt(9,8d) = 14",
+      "9,8d = 196",
+      "d = 20",
+      "d = 20"
+     ],
+     "answer": "20",
+     "prompt": "A wave has speed v = sqrt(9,8d) m/s, where d is the depth in metres. Find d when v = 14 m/s.",
+     "render": "text",
+     "rightWay": "Square both sides to get 9,8d = 196, then divide by 9,8.",
+     "answerKind": "number",
+     "difficulty": 3
+    }
+   ],
+   "objectives": [
+    "You will be able to isolate the square root term before squaring both sides.",
+    "You will be able to square both sides and solve the resulting equation.",
+    "You will be able to check each answer and reject extraneous solutions."
+   ]
+  }
+ },
+ {
+  "grade": 11,
+  "base_name": "Equations and inequalities",
+  "family": "algebra",
+  "position": 8,
+  "title": "Quadratic word problems",
+  "version": 1,
+  "source": {
+   "kind": "caps",
+   "title": "Curriculum and Assessment Policy Statement (CAPS) Mathematics, Further Education and Training Phase, Grades 10-12",
+   "credit": "Follows the CAPS Mathematics curriculum, Department of Basic Education",
+   "address": "https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20FET%20_%20MATHEMATICS%20_%20GR%2010-12%20_%20Web_1133.pdf"
+  },
+  "content": {
+   "title": "Quadratic word problems",
+   "blocks": [
+    {
+     "kind": "explain",
+     "text": "Many exam questions describe a situation in words and ask for one number. The words hide a quadratic equation. Your task is to find that equation, solve it, and then answer the question in words.\n\nThe plan is always the same:\n1. Choose a variable and say exactly what it stands for.\n2. Turn the words into an equation.\n3. Write it as ax^2 + bx + c = 0.\n4. Solve by factorising or by the quadratic formula.\n5. Reject roots that cannot fit the story, then answer in words.",
+     "speech": "Many exam questions describe a situation in words and ask for one number. The words hide a quadratic equation. Your task is to find that equation, solve it, and then answer the question in words. The plan is always the same. First, choose a variable and say exactly what it stands for. Second, turn the words into an equation. Third, write the equation as a x squared plus b x plus c equals zero. Fourth, solve it by factorising or by the quadratic formula. Fifth, reject the roots that cannot fit the story, and then answer in words."
+    },
+    {
+     "kind": "explain",
+     "text": "Choose x to be the smallest unknown, or the thing the question asks for, and write 'Let x = ...' with its unit.\n\nTranslations you will use again and again:\n- consecutive integers: x and x + 1\n- consecutive even or odd integers: x and x + 2\n- 'is 3 more than': add 3\n- 'product': multiply the two expressions\n- 'area of a rectangle': length x breadth\n- 'time': distance / speed",
+     "speech": "Choose x to be the smallest unknown, or the thing the question asks for, and write, let x equal, with its unit. Here are translations you will use again and again. Consecutive integers are x and x plus one. Consecutive even or odd integers are x and x plus two. Is three more than means add three. Product means multiply the two expressions. The area of a rectangle is length times breadth. Time is distance divided by speed."
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "max": 10,
+      "min": 4,
+      "kind": "number_line",
+      "step": 1,
+      "marks": [
+       {
+        "label": "x",
+        "value": 6
+       },
+       {
+        "label": "x + 1",
+        "value": 7
+       },
+       {
+        "label": "x + 2",
+        "value": 8
+       }
+      ]
+     },
+     "speech": "A number line running from four to ten. The mark at six is labelled x, the mark at seven is labelled x plus one, and the mark at eight is labelled x plus two. Consecutive integers are one apart, so each integer is the previous one plus one.",
+     "caption": "Consecutive integers are one apart: x, x + 1, x + 2."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "Let x = the smaller integer, then x + 1 = the next integer",
+       "reason": "Name the unknown and write the next consecutive integer in terms of it"
+      },
+      {
+       "line": "x(x + 1) = 56",
+       "reason": "The product of the two integers is 56"
+      },
+      {
+       "line": "x^2 + x - 56 = 0",
+       "reason": "Expand the bracket and subtract 56 so that the right side is zero"
+      },
+      {
+       "line": "(x + 8)(x - 7) = 0",
+       "reason": "Factorise: 8 and -7 multiply to -56 and add to 1"
+      },
+      {
+       "line": "x = -8 or x = 7",
+       "reason": "Set each factor equal to zero"
+      },
+      {
+       "line": "Reject x = -8, because the integers are positive",
+       "reason": "A negative integer does not fit the word positive"
+      },
+      {
+       "line": "Smaller integer = 7",
+       "reason": "Keep the root that fits the story"
+      }
+     ],
+     "answer": "7",
+     "speech": "The product of two consecutive positive integers is fifty six. Find the smaller integer. Let x be the smaller integer, then x plus one is the next integer. The product is fifty six, so x times, open bracket, x plus one, close bracket, equals fifty six. Expand and subtract fifty six: x squared plus x minus fifty six equals zero. Factorise: x plus eight, times x minus seven, equals zero, because eight and minus seven multiply to minus fifty six and add to one. So x equals minus eight or x equals seven. Reject x equals minus eight, because the integers are positive. The smaller integer is seven. Check: seven times eight is fifty six, so it fits.",
+     "problem": "The product of two consecutive positive integers is 56. Find the smaller integer.",
+     "answerKind": "whole"
+    },
+    {
+     "kind": "explain",
+     "text": "Once the equation is built, expand every bracket and move all the terms to one side so that the other side is zero. You then have ax^2 + bx + c = 0 with a not equal to zero.\n\nOnly in this standard form can you factorise or use the quadratic formula. Keep the numbers exactly as the story gives them; do not round anything yet.",
+     "speech": "Once the equation is built, expand every bracket and move all the terms to one side so that the other side is zero. You then have a x squared plus b x plus c equals zero, with a not equal to zero. Only in this standard form can you factorise or use the quadratic formula. Keep the numbers exactly as the story gives them, and do not round anything yet."
+    },
+    {
+     "kind": "explain",
+     "text": "A quadratic equation usually has two roots, and both make the equation true. A word problem is finished only when the root fits the story.\n\nLengths, areas, speeds and counts of objects cannot be negative, and a speed cannot be zero. Test each root in the words and reject the ones that give an impossible value.",
+     "speech": "A quadratic equation usually has two roots, and both make the equation true. A word problem is finished only when the root fits the story. Lengths, areas, speeds and counts of objects cannot be negative, and a speed cannot be zero. Test each root in the words and reject the ones that give an impossible value."
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "kind": "coordinate_plane",
+      "step": 1,
+      "xMax": 8,
+      "xMin": -10,
+      "yMax": 20,
+      "yMin": -50,
+      "graphs": [
+       {
+        "a": 1,
+        "p": -1.5,
+        "q": -42.25,
+        "type": "parabola",
+        "label": "y = x² + 3x - 40"
+       }
+      ],
+      "points": [
+       {
+        "x": -8,
+        "y": 0,
+        "label": "-8"
+       },
+       {
+        "x": 5,
+        "y": 0,
+        "label": "5"
+       }
+      ]
+     },
+     "speech": "A parabola opening upwards. It is the graph of y equals x squared plus three x minus forty, and it cuts the x axis at minus eight and at five. Both numbers are roots of the equation, but only five can be the breadth of a rectangle, because a breadth cannot be negative. So minus eight is rejected.",
+     "caption": "Both -8 and 5 make x^2 + 3x - 40 equal to zero, but only 5 can be the breadth of a rectangle."
+    },
+    {
+     "kind": "explain",
+     "text": "For an area problem, sketch the rectangle and label the two sides in terms of x. The area is length x breadth, and that product gives your equation.\n\nWrite the unit next to x before you solve, so that the final answer can be given in the correct unit.",
+     "speech": "For an area problem, sketch the rectangle and label the two sides in terms of x. The area is length times breadth, and that product gives your equation. Write the unit next to x before you solve, so that the final answer can be given in the correct unit."
+    },
+    {
+     "kind": "diagram",
+     "spec": {
+      "kind": "shape_2d",
+      "shape": "rectangle",
+      "labels": [
+       "x + 3",
+       "x"
+      ]
+     },
+     "speech": "A rectangle. One side is labelled x plus three and the other side is labelled x. If x is the breadth, then x plus three is the length, and the area is x times, open bracket, x plus three, close bracket.",
+     "caption": "A rectangle with breadth x and length x + 3, so area = x(x + 3)."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "Let the breadth = x cm, then the length = (x + 3) cm",
+       "reason": "Name the unknown side and write the longer side in terms of it"
+      },
+      {
+       "line": "x(x + 3) = 40",
+       "reason": "Area of a rectangle is length x breadth"
+      },
+      {
+       "line": "x^2 + 3x - 40 = 0",
+       "reason": "Expand the bracket and subtract 40 so one side is zero"
+      },
+      {
+       "line": "(x + 8)(x - 5) = 0",
+       "reason": "Factorise: 8 and -5 multiply to -40 and add to 3"
+      },
+      {
+       "line": "x = -8 or x = 5",
+       "reason": "Set each factor equal to zero"
+      },
+      {
+       "line": "Reject x = -8, because a breadth cannot be negative",
+       "reason": "A length must be positive"
+      },
+      {
+       "line": "Breadth = 5 cm",
+       "reason": "The root that fits the story; the length is then 8 cm"
+      }
+     ],
+     "answer": "5",
+     "speech": "The length of a rectangle is three centimetres more than its breadth. The area is forty square centimetres. Find the breadth. Let the breadth be x centimetres, then the length is x plus three centimetres. Area is length times breadth, so x times, open bracket, x plus three, close bracket, equals forty. Expand and subtract forty: x squared plus three x minus forty equals zero. Factorise: x plus eight, times x minus five, equals zero, because eight and minus five multiply to minus forty and add to three. So x equals minus eight or x equals five. Reject minus eight, because a breadth cannot be negative. The breadth is five centimetres, and the length is then eight centimetres. Check: five times eight is forty.",
+     "problem": "The length of a rectangle is 3 cm more than its breadth. The area of the rectangle is 40 cm^2. Find the breadth.",
+     "answerKind": "whole"
+    },
+    {
+     "kind": "explain",
+     "text": "Time is distance divided by speed. If the speed is x, the time is distance / x. A second speed gives a second time, and the words tell you the difference between the two times; that difference is your equation.\n\nMultiply both sides by the product of the denominators to clear the fractions, and remember that x cannot be zero.",
+     "speech": "Time is distance divided by speed. If the speed is x, the time is the distance divided by x. A second speed gives a second time, and the words tell you the difference between the two times. That difference is your equation. Multiply both sides by the product of the denominators to clear the fractions, and remember that x cannot be zero."
+    },
+    {
+     "kind": "worked",
+     "steps": [
+      {
+       "line": "Let the speed = x km/h",
+       "reason": "Name the unknown speed and give its unit"
+      },
+      {
+       "line": "Time at x km/h = 240/x hours and time at (x + 20) km/h = 240/(x + 20) hours",
+       "reason": "Time is distance divided by speed"
+      },
+      {
+       "line": "240/x - 240/(x + 20) = 1",
+       "reason": "The faster trip takes 1 hour less"
+      },
+      {
+       "line": "240(x + 20) - 240x = x(x + 20)",
+       "reason": "Multiply both sides by x(x + 20), the product of the denominators"
+      },
+      {
+       "line": "240x + 4800 - 240x = x^2 + 20x",
+       "reason": "Expand both sides"
+      },
+      {
+       "line": "x^2 + 20x - 4800 = 0",
+       "reason": "Collect all terms on one side to get standard form"
+      },
+      {
+       "line": "(x + 80)(x - 60) = 0, so x = -80 or x = 60",
+       "reason": "Factorise: 80 and -60 multiply to -4800 and add to 20"
+      },
+      {
+       "line": "Speed = 60 km/h",
+       "reason": "Reject -80 because a speed must be positive"
+      }
+     ],
+     "answer": "60",
+     "speech": "A bus travels two hundred and forty kilometres at a constant average speed. If the speed were twenty kilometres per hour greater, the journey would take one hour less. Find the average speed. Let the speed be x kilometres per hour. The time at x kilometres per hour is two hundred and forty divided by x hours, and the time at x plus twenty kilometres per hour is two hundred and forty divided by x plus twenty hours. The faster trip takes one hour less, so two hundred and forty over x, minus two hundred and forty over x plus twenty, equals one. Multiply both sides by x times x plus twenty, the product of the denominators: two hundred and forty times x plus twenty, minus two hundred and forty x, equals x times x plus twenty. Expand: two hundred and forty x plus four thousand eight hundred, minus two hundred and forty x, equals x squared plus twenty x. The x terms cancel on the left, giving x squared plus twenty x minus four thousand eight hundred equals zero. Factorise: x plus eighty, times x minus sixty, equals zero, so x equals minus eighty or x equals sixty. Reject minus eighty because a speed must be positive. The speed is sixty kilometres per hour. Check: at sixty it takes four hours, at eighty it takes three hours, and that is one hour less.",
+     "problem": "A bus travels 240 km at a constant average speed. If the speed were 20 km/h greater, the journey would take 1 hour less. Find the average speed.",
+     "answerKind": "whole"
+    },
+    {
+     "hint": "Let the breadth be x and write the length as x plus seven, then set length times breadth equal to the area.",
+     "kind": "try",
+     "speech": "The area of a rectangle is sixty square centimetres. Its length is seven centimetres more than its breadth. Find the breadth in centimetres. Start by letting the breadth be x and writing the length in terms of x, then use area equals length times breadth.",
+     "question": {
+      "why": "The negative root is often kept, or the length is given instead of the breadth.",
+      "steps": [
+       "Let the breadth = x cm and the length = (x + 7) cm",
+       "x(x + 7) = 60",
+       "x^2 + 7x - 60 = 0",
+       "(x + 12)(x - 5) = 0",
+       "x = -12 or x = 5",
+       "Breadth = 5 cm"
+      ],
+      "answer": "5",
+      "prompt": "The area of a rectangle is 60 cm^2. Its length is 7 cm more than its breadth. Find the breadth in cm.",
+      "render": "text",
+      "rightWay": "Form x(x + 7) = 60, factorise to (x + 12)(x - 5) = 0, and keep only the positive root because a breadth is a length.",
+      "answerKind": "whole",
+      "difficulty": 2
+     }
+    },
+    {
+     "why": "Both roots solve the equation, but a breadth is a length, so it cannot be negative. The root -8 does not fit the story and must be rejected; only the root that fits the words is an answer.",
+     "kind": "mistake",
+     "right": "x = 5, so the breadth is 5 cm and the length is 8 cm",
+     "wrong": "x^2 + 3x - 40 = 0 gives x = -8 or x = 5, so the breadth is -8 cm",
+     "speech": "Here is the usual mistake. A learner solves x squared plus three x minus forty equals zero and gets x equals minus eight or x equals five, then writes that the breadth is minus eight centimetres. That is wrong. The right way is to keep x equals five, so the breadth is five centimetres and the length is eight centimetres. Both roots solve the equation, but a breadth is a length, so it cannot be negative. The root minus eight does not fit the story and must be rejected. Only the root that fits the words is an answer."
+    },
+    {
+     "kind": "explain",
+     "text": "Before you write the final answer, put your number back into the story: is the product right, is the area right, is the time difference right?\n\nThen answer exactly what was asked. If the question asks for the breadth, give the breadth, and give the unit with it.",
+     "speech": "Before you write the final answer, put your number back into the story: is the product right, is the area right, is the time difference right? Then answer exactly what was asked. If the question asks for the breadth, give the breadth, and give the unit with it."
+    }
+   ],
+   "minutes": 25,
+   "summary": [
+    "Write 'Let x = ...' and say what x stands for and in which unit.",
+    "Translate the words: consecutive integers are x and x + 1, area is length x breadth, time is distance / speed.",
+    "Write the equation as ax^2 + bx + c = 0, then factorise or use the quadratic formula.",
+    "Both roots solve the equation, but reject any root that cannot fit the story, such as a negative length or speed.",
+    "Check the answer in the words and answer exactly what was asked, with the unit."
+   ],
+   "keyWords": [
+    {
+     "word": "variable",
+     "meaning": "a letter that stands for an unknown number you want to find."
+    },
+    {
+     "word": "quadratic equation",
+     "meaning": "an equation in which the highest power of the variable is 2, for example x^2 + 3x - 40 = 0."
+    },
+    {
+     "word": "consecutive integers",
+     "meaning": "whole numbers that follow one another without a gap, such as 7 and 8, written x and x + 1."
+    },
+    {
+     "word": "product",
+     "meaning": "the answer you get when two or more numbers are multiplied."
+    },
+    {
+     "word": "area",
+     "meaning": "the space inside a flat shape, measured in square units; for a rectangle area = length x breadth."
+    },
+    {
+     "word": "average speed",
+     "meaning": "the distance travelled divided by the time taken, in kilometres per hour."
+    },
+    {
+     "word": "reject",
+     "meaning": "throw away a solution because it does not fit the story of the problem."
+    },
+    {
+     "word": "check",
+     "meaning": "put your answer back into the words or the equation to see that it is true."
+    }
+   ],
+   "position": 8,
+   "practice": [
+    {
+     "why": "The negative root is often kept even though the question says positive integers.",
+     "steps": [
+      "x(x + 1) = 42",
+      "x^2 + x - 42 = 0",
+      "(x + 7)(x - 6) = 0",
+      "x = -7 or x = 6",
+      "Smaller integer = 6"
+     ],
+     "answer": "6",
+     "prompt": "The product of two consecutive positive integers is 42. Find the smaller integer.",
+     "render": "text",
+     "rightWay": "Form x(x + 1) = 42, factorise to (x + 7)(x - 6) = 0, and keep the positive root.",
+     "answerKind": "whole",
+     "difficulty": 1
+    },
+    {
+     "why": "Learners often give x + 5, the length, instead of the breadth that was asked for.",
+     "steps": [
+      "x(x + 5) = 24",
+      "x^2 + 5x - 24 = 0",
+      "(x + 8)(x - 3) = 0",
+      "x = -8 or x = 3",
+      "Breadth = 3 cm"
+     ],
+     "answer": "3",
+     "prompt": "A rectangle has breadth x cm and length (x + 5) cm. Its area is 24 cm^2. Find the breadth in cm.",
+     "render": "text",
+     "rightWay": "Solve x(x + 5) = 24 to get x = 3, and remember x stands for the breadth.",
+     "answerKind": "whole",
+     "difficulty": 1
+    },
+    {
+     "why": "Adding 6 to the area instead of multiplying the two sides is a common slip.",
+     "steps": [
+      "Area = length x breadth",
+      "length = x + 6 and breadth = x",
+      "x(x + 6) = 27"
+     ],
+     "answer": "B",
+     "prompt": "The length of a rectangle is 6 cm more than its breadth. The area is 27 cm^2. Let the breadth be x cm. Which equation is correct?",
+     "render": "text",
+     "choices": [
+      "x + 6 = 27",
+      "x(x + 6) = 27",
+      "x^2 + 6 = 27",
+      "2x + 6 = 27"
+     ],
+     "rightWay": "The length is x + 6 and the breadth is x, so the area gives x(x + 6) = 27.",
+     "answerKind": "choice",
+     "difficulty": 1
+    },
+    {
+     "why": "Consecutive odd integers are written as x and x + 1 instead of x and x + 2.",
+     "steps": [
+      "x(x + 2) = 63",
+      "x^2 + 2x - 63 = 0",
+      "(x + 9)(x - 7) = 0",
+      "x = -9 or x = 7",
+      "Smaller integer = 7"
+     ],
+     "answer": "7",
+     "prompt": "The product of two consecutive positive odd integers is 63. Find the smaller integer.",
+     "render": "text",
+     "rightWay": "Consecutive odd integers differ by 2, so use x and x + 2 and solve x(x + 2) = 63.",
+     "answerKind": "whole",
+     "difficulty": 2
+    },
+    {
+     "why": "The negative root is kept, or the two roots are added instead of the factors being set to zero.",
+     "steps": [
+      "Let the width = x m, so the length = (x + 2) m",
+      "x(x + 2) = 168",
+      "x^2 + 2x - 168 = 0",
+      "(x + 14)(x - 12) = 0",
+      "x = -14 or x = 12",
+      "Width = 12 m"
+     ],
+     "answer": "12",
+     "prompt": "A rectangular garden is 2 m longer than it is wide. Its area is 168 m^2. Find the width in metres.",
+     "render": "text",
+     "rightWay": "Form x(x + 2) = 168, factorise to (x + 14)(x - 12) = 0, and keep the positive root.",
+     "answerKind": "whole",
+     "difficulty": 2
+    },
+    {
+     "why": "The time difference is written the wrong way round, or the fractions are not cleared correctly.",
+     "steps": [
+      "60/x - 60/(x + 5) = 1",
+      "60(x + 5) - 60x = x(x + 5)",
+      "300 = x^2 + 5x",
+      "x^2 + 5x - 300 = 0",
+      "(x + 20)(x - 15) = 0",
+      "Speed = 15 km/h"
+     ],
+     "answer": "15",
+     "prompt": "A cyclist covers 60 km at a constant average speed. If the speed were 5 km/h greater, the trip would take 1 hour less. Find the speed in km/h.",
+     "render": "text",
+     "rightWay": "The slower trip takes longer, so 60/x - 60/(x + 5) = 1; multiply by x(x + 5) and solve.",
+     "answerKind": "whole",
+     "difficulty": 3
+    },
+    {
+     "why": "The positive root is chosen out of habit, even though the question says both integers are negative.",
+     "steps": [
+      "x(x + 1) = 156",
+      "x^2 + x - 156 = 0",
+      "(x + 13)(x - 12) = 0",
+      "x = -13 or x = 12",
+      "Both negative, so the smaller integer = -13"
+     ],
+     "answer": "-13",
+     "prompt": "The product of two consecutive integers is 156. Both integers are negative. Find the smaller integer.",
+     "render": "text",
+     "rightWay": "Solve x(x + 1) = 156 to get x = -13 or x = 12, then keep -13 because both integers must be negative.",
+     "answerKind": "number",
+     "difficulty": 3
+    }
+   ],
+   "objectives": [
+    "You will be able to choose a variable and translate the words into an equation.",
+    "You will be able to form and solve a quadratic equation from the problem.",
+    "You will be able to reject impossible answers and give the answer in context."
+   ]
+  }
+ }
+]

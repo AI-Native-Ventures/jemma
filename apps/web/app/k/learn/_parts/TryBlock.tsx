@@ -34,6 +34,8 @@ export type TryBlockProps = {
   /** Only one answer box is on the page at a time (the maths editor and its keyboard are shared), so a block opens when the learner chooses it. */
   open: boolean
   onOpen: () => void
+  /** The saved tour only: marks the answer in the browser instead of sending it to the server. Absent in the app, where the server marks. */
+  mark?: (value: string) => LessonAnswerResult | Promise<LessonAnswerResult>
 }
 
 /**
@@ -41,7 +43,7 @@ export type TryBlockProps = {
  * marked on the server (`answerLessonQuestion`): the screen holds no answer until it is sent. Then the right answer, the steps and the right way are shown,
  * and a wrong answer can be tried again.
  */
-export function TryBlock({ index, question, hint, topicLessonId, topic, typeset, pictureFirst, open, onOpen }: TryBlockProps) {
+export function TryBlock({ index, question, hint, topicLessonId, topic, typeset, pictureFirst, open, onOpen, mark }: TryBlockProps) {
   const [picked, setPicked] = useState<string | null>(null)
   const [whole, setWhole] = useState('')
   const [top, setTop] = useState('')
@@ -73,7 +75,7 @@ export function TryBlock({ index, question, hint, topicLessonId, topic, typeset,
     setBusy(true)
     setError(null)
     try {
-      setResult({ ...(await answerLessonQuestion(topicLessonId, { kind: 'try', block: index }, value)), wrote })
+      setResult({ ...(await (mark ? mark(value) : answerLessonQuestion(topicLessonId, { kind: 'try', block: index }, value))), wrote })
     } catch {
       setError('That did not go through. Check your connection and try again.')
     } finally {
