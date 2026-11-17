@@ -121,6 +121,16 @@ export type PracticeChoice = { topicId?: string | null; topicName: string }
 /** The choice as the planner plans it, in the words of what it found (never the words the learner typed). */
 export type ChosenTopic = { topicName: string; topicId: string | null; family: string; kind: 'map' | 'gap' | 'strand' }
 
+/**
+ * Whether a planned session is the practice of this choice: the same topic by id when both have one, else the same name (case and outer spaces
+ * aside). A session of another topic is another session: a learner who practises Algebra while tonight's lesson is Fractions asks for a new session,
+ * and the lesson of tonight stays where it is. A session with no topic says nothing and is never the choice's.
+ */
+export function isSessionOfChoice(session: { topic_id: string | null; topic_name: string | null }, choice: { topicId?: string | null; topicName: string }): boolean {
+  if (choice.topicId && session.topic_id) return choice.topicId === session.topic_id
+  return !!session.topic_name && same(session.topic_name, choice.topicName)
+}
+
 export type ChoiceRules = {
   /** The topics of the approved maps of the classes the learner is in. */
   mapTopics: { id: string; name: string; family: string }[]

@@ -222,10 +222,46 @@ describe('practice: true with a choice', () => {
   }
   const planned_ = (db: MemoryDb) => sessions(db).filter((s) => s.status === 'planned')
 
-  test('a session that is due stays what it is and is returned: one thing at a time', async () => {
+  // P155: tonight's lesson is never a gate. A choice on another topic is its own new session, planned for today, and tonight's lesson is not touched.
+  test('a session that is due on another topic stays as it is, and the choice is planned for today as its own session (tonight never blocks a practice)', async () => {
+    for (const dueDay of [TODAY, '2026-11-10']) {
+      const [session, lesson] = planned(dueDay)
+      const db = world({ ...withMap, sessions: [session], lessons: [lesson] })
+      const out = await plan(db, true, { topicName: 'Angles', topicId: T_SHAPE })
+      expect(out).toMatchObject({ planned: true, reused: false, topicName: 'Angles', topicId: T_SHAPE, plannedFor: TODAY, queue: [{ topicName: 'Angles', reason: 'review' }] })
+      expect(out.sessionId).not.toBe(session.id)
+      expect(sessions(db)).toHaveLength(2)
+      // tonight's session and its written lesson are exactly as they were
+      expect(sessions(db).find((s) => s.id === session.id)).toMatchObject({ status: 'planned', planned_for: dueDay, lesson_id: lesson.id, topic_name: 'Fractions with different denominators' })
+      expect(db.tables.lessons!.find((l) => l.id === lesson.id)!.content).toEqual({ questions: [{ n: 1 }] })
+      // the new session is a placeholder on the chosen topic, with its own lesson row to be written
+      expect(db.tables.lessons!.find((l) => l.id === out.lessonId)).toMatchObject({ topic_id: T_SHAPE, topic_name: 'Angles', content: {} })
+    }
+  })
+
+  test('a session that is due on the chosen topic is the practice and is returned: nothing new is planned', async () => {
     const [session, lesson] = planned(TODAY)
     const db = world({ ...withMap, sessions: [session], lessons: [lesson] })
-    expect(await plan(db, true, { topicName: 'Angles', topicId: T_SHAPE })).toMatchObject({ planned: true, reused: true, sessionId: session.id, plannedFor: TODAY, topicName: 'Fractions with different denominators' })
+    for (const choice of [{ topicName: 'x', topicId: T_FRAC }, { topicName: 'FRACTIONS with different denominators' }]) {
+      expect(await plan(db, true, choice)).toMatchObject({ planned: true, reused: true, sessionId: session.id, plannedFor: TODAY, topicName: 'Fractions with different denominators' })
+    }
+    expect(sessions(db)).toHaveLength(1)
+  })
+
+  test('tonight on the same day as the choice: asked again, the choice returns its own session and not tonight\'s', async () => {
+    const [tonight, lesson] = planned(TODAY)
+    const db = world({ ...withMap, sessions: [tonight], lessons: [lesson] })
+    const first = await plan(db, true, { topicName: 'Angles' })
+    const second = await plan(db, true, { topicName: 'Angles' })
+    expect(second).toMatchObject({ reused: true, sessionId: first.sessionId, topicName: 'Angles' })
+    expect(first.sessionId).not.toBe(tonight.id)
+    expect(sessions(db)).toHaveLength(2)
+  })
+
+  test('a choice that is refused leaves a session that is due where it is: planned false, nothing written', async () => {
+    const [session, lesson] = planned(TODAY)
+    const db = world({ ...withMap, sessions: [session], lessons: [lesson] })
+    expect(await plan(db, true, { topicName: 'Quadratic equations' })).toMatchObject({ planned: false, sessionId: null })
     expect(sessions(db)).toHaveLength(1)
   })
 
@@ -247,12 +283,16 @@ describe('practice: true with a choice', () => {
     expect(out).toMatchObject({ planned: true, topicName: 'Angles', topicId: T_SHAPE, plannedFor: TODAY, queue: [{ reason: 'review' }] })
   })
 
-  test('the choice is planned once: asked again it returns the session it planned', async () => {
+  test('the choice is planned once: asked again it returns the session it planned; another choice is another session', async () => {
     const db = world(withMap)
     const first = await plan(db, true, { topicName: 'Angles' })
-    const second = await plan(db, true, { topicName: 'Adding decimals' })
-    expect(second).toMatchObject({ reused: true, sessionId: first.sessionId })
+    const again = await plan(db, true, { topicName: 'angles' })
+    expect(again).toMatchObject({ reused: true, sessionId: first.sessionId })
     expect(sessions(db)).toHaveLength(1)
+    const other = await plan(db, true, { topicName: 'Adding decimals' })
+    expect(other).toMatchObject({ reused: false, topicName: 'Adding decimals' })
+    expect(other.sessionId).not.toBe(first.sessionId)
+    expect(sessions(db)).toHaveLength(2)
   })
 
   test('a topic of another class\'s map, a name nobody knows and an empty name are refused: planned false, nothing written', async () => {

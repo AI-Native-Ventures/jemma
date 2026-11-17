@@ -19,14 +19,17 @@ const reasonOf = (e: unknown) => (e instanceof Error ? e.message : String(e))
  * chose what to practise; it is checked here by the planner's own rule (`resolveChoice`: a topic of their map, one of their gaps or a strand of
  * their subject) before an event is sent, and the event carries the words the rule found, not the words that came in. A refused choice answers a
  * plain message and sends nothing. The learner is found the way the learner's screens find them (their own session, or a parent's device after
- * hand-over). Does nothing while a session is due tonight or a practice is being written (one event queued or running), so a second tap
- * makes no second event. Never throws to the screen.
+ * hand-over). Does nothing while a practice is being written (one event queued or running), so a second tap makes no second event: that one is kept
+ * because the screens follow only the newest event and the plan takes the latest session, so two practices written at once would be told and picked
+ * wrongly. Tonight's lesson is never a gate (P155): a learner who chose what to practise gets a new session for it next to tonight's lesson, which is
+ * not touched (the plan and the planner make it a session of its own). Only a practice asked for with no choice still counts a lesson that is due
+ * tonight as the practice, as it always did. Never throws to the screen.
  */
 export async function startPractice(choice?: PracticeChoice): Promise<ActionResult> {
   try {
     const { supabase, child } = await myChild()
     const newest = await newestPracticeEvent(child.id)
-    if (await inTheWay(supabase, child.id, newest)) return done()
+    if (await inTheWay(supabase, child.id, newest, choice !== undefined)) return done()
     if (!choice) return await ask(child.id, {})
     const chosen = resolveChoice(choice, await loadChoiceRules(createSupabaseAdmin(), child.id))
     if (!chosen) return fail(NOT_YOURS)
@@ -46,7 +49,7 @@ export async function retryPractice(): Promise<ActionResult> {
   try {
     const { supabase, child } = await myChild()
     const newest = await newestPracticeEvent(child.id)
-    if (await inTheWay(supabase, child.id, newest)) return done()
+    if (await inTheWay(supabase, child.id, newest, false)) return done()
     if (newest?.status !== 'failed') return await ask(child.id, {})
     try {
       await retryEvent(newest.id)
@@ -63,9 +66,13 @@ export async function retryPractice(): Promise<ActionResult> {
   }
 }
 
-/** A practice is being written, or a session is due tonight (the home's own rule): then a new practice is not asked for. */
-async function inTheWay(supabase: Awaited<ReturnType<typeof myChild>>['supabase'], childId: string, newest: { status: string } | null): Promise<boolean> {
+/**
+ * A practice is being written: then a new practice is not asked for. A session that is due tonight (the home's own rule) is in the way of a practice
+ * asked for with no choice (`chosen` false: it is that practice), and never in the way of one the learner chose (P155).
+ */
+async function inTheWay(supabase: Awaited<ReturnType<typeof myChild>>['supabase'], childId: string, newest: { status: string } | null, chosen: boolean): Promise<boolean> {
   if (newest?.status === 'queued' || newest?.status === 'running') return true
+  if (chosen) return false
   const sessions = await loadLearnerSessions(supabase, childId)
   return (await tonightFrom(supabase, sessions, newest, new Date().toISOString().slice(0, 10))) !== null
 }

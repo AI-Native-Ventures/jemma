@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
-import { gapLine, lockOf, NO_MAP_LINE, rowScore, stageWords, strandScreen, topicLine } from '../app/k/maths/format'
+import { gapLine, lockOf, NO_MAP_LINE, rowScore, stageWords, strandScreen, topicLine, waitingOf } from '../app/k/maths/format'
 import type { MyMathsStrand } from '@jemma/profiling/logic'
 
 // The pure pieces of the two "My maths" screens: what a row says for a score, for a stage, and what the part's screen shows when the class has
@@ -53,8 +53,8 @@ describe('the screen of one part', () => {
 })
 
 describe('when no Practise button is shown', () => {
-  it('while tonight\'s lesson waits: one line and a link to today', () => {
-    expect(lockOf('due')).toEqual({ text: "Finish tonight's lesson first.", href: '/k', link: 'Go to My maths' })
+  it('tonight\'s lesson waiting holds nothing back (P155): the learner may practise whatever they like', () => {
+    expect(lockOf('due')).toBeNull()
   })
 
   it('while a practice is being written: one line and a link to today', () => {
@@ -63,5 +63,19 @@ describe('when no Practise button is shown', () => {
 
   it('otherwise nothing is in the way', () => {
     expect(lockOf('free')).toBeNull()
+  })
+
+  it('never says "first": no line tells a learner to finish something before they practise', () => {
+    for (const status of ['free', 'due', 'writing'] as const) {
+      expect(JSON.stringify([lockOf(status), waitingOf(status)])).not.toMatch(/first|finish/i)
+    }
+  })
+})
+
+describe('the quiet pointer on a part page while tonight\'s lesson waits (P155)', () => {
+  it('is only there while tonight\'s lesson waits, and points to My maths', () => {
+    expect(waitingOf('due')).toEqual({ text: "Tonight's lesson is waiting on", href: '/k', link: 'My maths' })
+    expect(waitingOf('free')).toBeNull()
+    expect(waitingOf('writing')).toBeNull()
   })
 })

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { classIdFor } from '../../ai/subject-profile'
 import type { Json, JemmaDb } from '../../db'
-import { orderOpenGaps, pickPractice, resolveChoice, type ChosenTopic, type PracticePick } from '../../logic'
+import { isSessionOfChoice, orderOpenGaps, pickPractice, resolveChoice, type ChosenTopic, type PracticePick } from '../../logic'
 import { FormatSchema, type Format } from '../../schemas/lesson'
 import { assertInSchool, contextFor, defineTool, ok, type ToolContext } from '../context'
 import { loadChoiceRules, loadPracticeInput } from '../read/practice-input'
@@ -68,7 +68,8 @@ const leastTried = (trials: { format: Format }[]): Format => {
  * Plans one session: a placeholder lesson row holds the topic and format until save_lesson fills it, and the session row points at it.
  * Two runs planning the same child at once (the papers of a test are read three at a time) both get here: the oldest planned session stays
  * and the other run removes its own and returns the oldest. `among` says which sessions that is: `later` (today or later, the normal rule)
- * or `today` (a learner's choice for today: a session planned for a later day is a different session and stays where it is).
+ * or `today` (a learner's choice for today: a session planned for a later day is a different session and stays where it is, and so does a session
+ * of tonight on another topic: only a session planned for today on the same topic is the same request, P155).
  */
 async function createPlanned(
   db: JemmaDb,
@@ -88,7 +89,7 @@ async function createPlanned(
   )
   const waiting = db.from('sessions').select('id, lesson_id, planned_for, topic_id, topic_name, format').eq('child_id', childId).eq('status', 'planned')
   const ahead = await ok((among === 'today' ? waiting.eq('planned_for', today) : waiting.gte('planned_for', today)).order('created_at').order('id'))
-  const keeper = ahead[0]
+  const keeper = among === 'today' ? ahead.find((a) => isSessionOfChoice(a, pick)) : ahead[0]
   if (keeper && keeper.id !== session.id) {
     await db.from('sessions').delete().eq('id', session.id)
     await db.from('lessons').delete().eq('id', lesson.id)
@@ -125,15 +126,20 @@ export const planNextSession = defineTool({
     const now = ctx.now()
     const today = isoDay(now)
 
+    // A learner's choice is checked first (`resolveChoice`): it is theirs to choose, and what is planned is in the words of what was found.
+    const chosen = practice && choice ? resolveChoice(choice, await loadChoiceRules(db, childId)) : null
+
     if (practice) {
       // The learner asked to practise now: a planned session that is not finished is the practice. The one the home starts is the latest
       // that is due (today or earlier); with none due, the earliest one ahead is brought forward to today.
       const waiting = await ok(
-        db.from('sessions').select('id, lesson_id, planned_for, topic_id, topic_name, format').eq('child_id', childId).eq('status', 'planned').order('planned_for'),
+        db.from('sessions').select('id, lesson_id, planned_for, created_at, topic_id, topic_name, format').eq('child_id', childId).eq('status', 'planned').order('planned_for'),
       )
-      const due = waiting.filter((s) => s.planned_for <= today)
-      // With a choice, only a session that is due is the practice (one thing at a time). A session ahead stays where it is.
-      const asked = choice ? due[due.length - 1] : (due[due.length - 1] ?? waiting[0])
+      const inOrder = [...waiting].sort((a, b) => a.planned_for.localeCompare(b.planned_for) || String(a.created_at ?? '').localeCompare(String(b.created_at ?? '')))
+      const due = inOrder.filter((s) => s.planned_for <= today)
+      // With a choice, only a session that is due AND is on the chosen topic is the practice. A session ahead stays where it is, and so does a session that
+      // is due on another topic (tonight's lesson, P155): the choice is its own new session, planned below.
+      const asked = choice ? (chosen ? due.filter((s) => isSessionOfChoice(s, chosen)).pop() : undefined) : (due[due.length - 1] ?? inOrder[0])
       if (asked) {
         const forward = asked.planned_for > today
         const reused = await reusedPlan(db, asked, forward ? today : asked.planned_for)
@@ -153,12 +159,9 @@ export const planNextSession = defineTool({
       }
     }
 
-    // The learner chose what to practise: it is theirs to choose (`resolveChoice`), and it is planned for today as its own session. The
-    // normal plan (open gaps, days away) does not run: the choice is what they asked for.
-    if (practice && choice) {
-      const chosen = resolveChoice(choice, await loadChoiceRules(db, childId))
-      return chosen ? planChosen(db, childId, chosen, today) : none
-    }
+    // The learner chose what to practise: it is planned for today as its own session. The normal plan (open gaps, days away) does not run:
+    // the choice is what they asked for.
+    if (practice && choice) return chosen ? planChosen(db, childId, chosen, today) : none
 
     const enrolments = await ok(db.from('enrolments').select('class_id').eq('child_id', childId))
     // A child in several classes is planned from the class whose event started the planning, when it can be told: that class's

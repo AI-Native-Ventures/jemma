@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { orderOpenGaps, pickPractice, resolveChoice, type ChoiceRules, type PracticeInput } from '../../src/logic'
+import { isSessionOfChoice, orderOpenGaps, pickPractice, resolveChoice, type ChoiceRules, type PracticeInput } from '../../src/logic'
 
 // What a learner practises when nothing is planned: a fixed gap kept fixed, else the weakest strand of the past records, else the first topic
 // of the term. One pure function: no database, no clock but the `now` it is given. An open gap never comes here (the planner plans it).
@@ -274,5 +274,24 @@ describe('resolveChoice: the learner\'s choice is theirs to make', () => {
 
   test('the key of a strand is not its label: only the label is accepted', () => {
     expect(choose('whole_numbers')).toBeNull()
+  })
+})
+
+describe('isSessionOfChoice: is a planned session the practice the learner chose', () => {
+  test('by topic id when both have one: another id is another session even with the same words', () => {
+    expect(isSessionOfChoice({ topic_id: 't1', topic_name: 'Algebra' }, { topicId: 't1', topicName: 'x' })).toBe(true)
+    expect(isSessionOfChoice({ topic_id: 't1', topic_name: 'Algebra' }, { topicId: 't2', topicName: 'Algebra' })).toBe(false)
+  })
+
+  test('by name otherwise, case and outer spaces aside', () => {
+    expect(isSessionOfChoice({ topic_id: null, topic_name: 'Fractions' }, { topicName: '  fractions ' })).toBe(true)
+    expect(isSessionOfChoice({ topic_id: 't1', topic_name: 'Fractions' }, { topicId: null, topicName: 'FRACTIONS' })).toBe(true)
+    expect(isSessionOfChoice({ topic_id: null, topic_name: 'Fractions' }, { topicId: 't9', topicName: 'Fractions' })).toBe(true)
+    expect(isSessionOfChoice({ topic_id: null, topic_name: 'Fractions' }, { topicName: 'Decimals' })).toBe(false)
+  })
+
+  test('a session with no topic is never the choice\'s', () => {
+    expect(isSessionOfChoice({ topic_id: null, topic_name: null }, { topicName: 'Fractions' })).toBe(false)
+    expect(isSessionOfChoice({ topic_id: null, topic_name: '' }, { topicName: '' })).toBe(false)
   })
 })

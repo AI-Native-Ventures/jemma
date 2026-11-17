@@ -78,12 +78,17 @@ export function strandScreen(strand: MyMathsStrand, noMapLine: string = NO_MAP_L
 }
 
 /**
- * Where nothing should be offered to practise: tonight's lesson waits, or a practice is being written. The link goes to My maths, where tonight's
- * lesson and the practice that is being written are the first card (P128: there is no "Today" page). My maths itself shows the text without it.
+ * When the Practise button is held back: only while a practice is being written (P155: tonight's lesson is never a gate, a learner may learn and practise
+ * whatever they like). The link goes to My maths, where the practice that is being written is the first card (P128: there is no "Today" page). My
+ * maths itself shows the text without it. The Learn button of a topic is never held back, in any status.
  */
 export type Lock = { text: string; href: '/k'; link: string }
 export function lockOf(status: 'free' | 'due' | 'writing'): Lock | null {
-  if (status === 'due') return { text: "Finish tonight's lesson first.", href: '/k', link: 'Go to My maths' }
   if (status === 'writing') return { text: 'Jemma is writing your practice.', href: '/k', link: 'Go to My maths' }
   return null
+}
+
+/** A quiet pointer on a part page while tonight's lesson waits: it holds nothing back, every button stays. */
+export function waitingOf(status: 'free' | 'due' | 'writing'): { text: string; href: '/k'; link: string } | null {
+  return status === 'due' ? { text: "Tonight's lesson is waiting on", href: '/k', link: 'My maths' } : null
 }

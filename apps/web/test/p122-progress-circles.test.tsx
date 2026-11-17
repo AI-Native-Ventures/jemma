@@ -211,11 +211,11 @@ describe('/k/maths/[family]: a circle for each topic', () => {
     expect(screen.getByRole('button', { name: 'Practise Decimals' })).toBeTruthy()
   })
 
-  it('a topic while tonight\'s lesson waits still has its circle, and no Practise button', async () => {
+  it('a topic while tonight\'s lesson waits still has its circle, and its Practise button too (P155: tonight\'s lesson is not a gate)', async () => {
     state.view = { ...viewOf(ALGEBRA, ANSWERS), status: 'due' } as MyMathsView
     await part('algebra')
     expect(levelsIn(screen.getAllByRole('listitem')[0]!)).toEqual(['full'])
-    expect(screen.queryAllByRole('button', { name: /^Practise/ })).toHaveLength(0)
+    expect(screen.queryAllByRole('button', { name: /^Practise/ }).length).toBeGreaterThan(0)
   })
 })
 

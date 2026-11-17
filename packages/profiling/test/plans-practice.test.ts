@@ -118,11 +118,59 @@ describe('a practice the learner chose', () => {
   })
 
   test('once the choice is planned, the plan is write_lesson for that session, and once it is written nothing', async () => {
-    const due = session(TODAY, 'l1')
+    const due = session(TODAY, 'l1', { topic_name: 'Fractions' })
     const db = world({ sessions: [due, session('2026-11-14', 'l2')], lessons: [lesson('l1', {}), lesson('l2', withQuestions)] })
     expect(await run(db, { topicName: 'Fractions' })).toEqual([{ job: 'write_lesson', ids: { childId: CHILD, sessionId: due.id } }])
     db.tables.lessons![0]!.content = withQuestions
     expect(await run(db, { topicName: 'Fractions' })).toEqual([])
+  })
+
+  // P155: tonight's lesson is never a gate. A written session that is due on ANOTHER topic is not the practice the learner chose.
+  describe('while tonight\'s lesson waits on another topic', () => {
+    const tonight = () => session(TODAY, 'l1', { topic_id: 't-frac', topic_name: 'Fractions', created_at: '2026-11-13T05:00:00.000Z' })
+    const withTonight = () => world({ sessions: [tonight()], lessons: [lesson('l1', withQuestions)] })
+
+    test('the choice is planned as a new session: plan_next_session with the choice, then write_lesson', async () => {
+      expect(await run(withTonight(), { topicId: 't-dec', topicName: 'Adding decimals' })).toEqual([
+        { job: 'plan_next_session', ids: { childId: CHILD, practice: '1', topicName: 'Adding decimals', topicId: 't-dec' } },
+        { job: 'write_lesson', ids: { childId: CHILD } },
+      ])
+    })
+
+    test('a choice of the same topic is tonight\'s lesson: nothing to do (by id, or by name)', async () => {
+      expect(await run(withTonight(), { topicId: 't-frac', topicName: 'Fractions' })).toEqual([])
+      expect(await run(withTonight(), { topicName: ' fractions ' })).toEqual([])
+    })
+
+    test('a practice with no choice is as it was: tonight\'s lesson is the practice, nothing to do', async () => {
+      expect(await jobPlan(EventSchema.parse(event), withTonight(), NOW)).toEqual([])
+    })
+
+    test('once the new session is planned, the lesson is written for IT by id (not for tonight\'s), and tonight\'s lesson is never written again', async () => {
+      const db = withTonight()
+      const made = session(TODAY, 'l2', { topic_id: 't-dec', topic_name: 'Adding decimals', created_at: '2026-11-13T15:00:01.000Z' })
+      db.tables.sessions!.push(made)
+      db.tables.lessons!.push(lesson('l2', {}))
+      expect(await run(db, { topicId: 't-dec', topicName: 'Adding decimals' })).toEqual([{ job: 'write_lesson', ids: { childId: CHILD, sessionId: made.id } }])
+      db.tables.lessons![1]!.content = withQuestions
+      expect(await run(db, { topicId: 't-dec', topicName: 'Adding decimals' })).toEqual([])
+    })
+
+    test('the postcondition is not met by tonight\'s lesson: the practice that was chosen has to be written (but met once it is, or for tonight\'s own topic)', async () => {
+      const open = { id: 'g1', child_id: CHILD, topic_id: null, topic_name: 'Adding decimals', stage: 'new' }
+      const at = (db: MemoryDb, over: Record<string, unknown>) => postconditions(EventSchema.parse({ ...event, ...over }), db, NOW)
+      const choice = { topicId: 't-dec', topicName: 'Adding decimals' }
+      const db = world({ gaps: [open], sessions: [tonight()], lessons: [lesson('l1', withQuestions)] })
+      expect(await at(db, choice)).toEqual([`no practice written for child ${CHILD}`])
+      // without a choice, tonight's lesson is the practice, as it always was
+      expect(await at(db, {})).toEqual([])
+      // the choice is tonight's own topic
+      expect(await at(db, { topicId: 't-frac', topicName: 'Fractions' })).toEqual([])
+      // once the chosen session is written
+      db.tables.sessions!.push(session(TODAY, 'l2', { topic_id: 't-dec', topic_name: 'Adding decimals' }))
+      db.tables.lessons!.push(lesson('l2', withQuestions))
+      expect(await at(db, choice)).toEqual([])
+    })
   })
 })
 
@@ -266,5 +314,69 @@ describe('runEvent of a practice the learner already started (P118)', () => {
     const db = ended(BEFORE)
     expect(await run(db)).toEqual({ status: 'failed' })
     expect(db.tables.events![0]).toMatchObject({ status: 'failed', error: `Jemma did not finish: no practice written for child ${CHILD}` })
+  })
+})
+
+// P155, the whole wiring: tonight's lesson is written and waits (a different topic), the learner chooses another topic. The real planning step plans a new
+// session, the lesson is written for that session by id, the event ends done, and tonight's session and lesson are exactly as they were.
+describe('runEvent of a practice chosen while tonight\'s lesson waits (P155)', () => {
+  const EVENT = '99999999-9999-4999-8999-999999999999'
+  const T_FRAC = 't-frac'
+  const T_ANG = 't-ang'
+  const topic = (id: string, name: string, family: string): Row => ({ id, map_id: MAP, name, family, term: 4, position: 1, prerequisite_ids: [] })
+  const asked = (over: Record<string, unknown>): Row => ({
+    id: EVENT, school_id: 's', type: 'practice.requested', status: 'queued', runner: 'cloud', claimed_by: null, attempts: 0,
+    payload: { type: 'practice.requested', childId: CHILD, ...over }, created_at: '2026-11-13T14:18:18.000Z',
+  })
+  const tonight = session(TODAY, 'l1', { topic_id: T_FRAC, topic_name: 'Fractions', created_at: '2026-11-13T05:00:00.000Z', planned_minutes: 10 })
+  const setup = (over: Record<string, unknown>) =>
+    world({
+      schools: [{ id: 's' }],
+      events: [asked(over)],
+      curriculum_maps: [{ id: MAP, class_id: CLASS, status: 'approved' }],
+      topics: [topic(T_FRAC, 'Fractions', 'fractions'), topic(T_ANG, 'Angles', 'shapes')],
+      sessions: [{ ...tonight }],
+      lessons: [{ ...lesson('l1', withQuestions), topic_name: 'Fractions' }],
+    })
+  const written: Record<string, string>[] = []
+  const run = (db: MemoryDb) =>
+    runEvent(EVENT, {
+      db,
+      env: {} as never,
+      jobs: {
+        // a stand-in for the AI: it fills the lesson of the session it is told (or, with no id, of the latest planned one), as the real job does
+        write_lesson: async (_ctx, _id, ids) => {
+          written.push(ids)
+          const target = ids.sessionId ? db.tables.sessions!.find((s) => s.id === ids.sessionId) : undefined
+          const row = db.tables.lessons!.find((l) => l.id === target?.lesson_id)
+          if (row && !(row.content as { questions?: unknown[] })?.questions?.length) row.content = withQuestions
+        },
+      },
+      sleep: async () => {},
+      now: () => NOW,
+    })
+
+  test('a different topic: the event ends done, a second session is planned and written, and tonight\'s session and lesson are untouched', async () => {
+    written.length = 0
+    const db = setup({ topicId: T_ANG, topicName: 'Angles' })
+    expect(await run(db)).toEqual({ status: 'done' })
+    const all = db.tables.sessions!
+    expect(all).toHaveLength(2)
+    const made = all.find((s) => s.id !== tonight.id)!
+    expect(made).toMatchObject({ status: 'planned', planned_for: TODAY, topic_id: T_ANG, topic_name: 'Angles' })
+    expect(written).toEqual([{ childId: CHILD, sessionId: made.id }])
+    expect(db.tables.lessons!.find((l) => l.id === made.lesson_id)!.content).toEqual(withQuestions)
+    // tonight: still planned, same day, same lesson row, same questions
+    expect(all.find((s) => s.id === tonight.id)).toMatchObject({ status: 'planned', planned_for: TODAY, lesson_id: 'l1', topic_name: 'Fractions' })
+    expect(db.tables.lessons!.find((l) => l.id === 'l1')!.content).toEqual(withQuestions)
+    expect(db.tables.events![0]).toMatchObject({ status: 'done', error: null })
+  })
+
+  test('the topic of tonight\'s own lesson: nothing is planned or written, and the event ends done (tonight\'s lesson is the practice)', async () => {
+    written.length = 0
+    const db = setup({ topicId: T_FRAC, topicName: 'Fractions' })
+    expect(await run(db)).toEqual({ status: 'done' })
+    expect(db.tables.sessions).toHaveLength(1)
+    expect(written).toEqual([])
   })
 })
