@@ -253,6 +253,16 @@ describe('the question screen of an equation with two answers', () => {
     expect(out).toContain('min-w-0 flex-1')
     expect(out).not.toMatch(/data-answers="2"[^>]*style=/)
   })
+
+  it('P146b: each numbered box says the short "Tap to write", so the words are not cut off beside "x =" on a phone', async () => {
+    show(TWO)
+    await ready(2)
+    expect(fields().map((f) => f.getAttribute('placeholder'))).toEqual(['\\text{Tap to write}', '\\text{Tap to write}'])
+    // and on the server, in the markup, for every box of three
+    const out = html(ask({ answerCount: 3, answerLetter: 'x' }))
+    expect(out.match(/placeholder="\\text\{Tap to write\}"/g)).toHaveLength(3)
+    expect(out).not.toContain('Tap here to write')
+  })
 })
 
 describe('an equation with one answer, an inequality, or too many answers keeps one field', () => {
@@ -263,6 +273,15 @@ describe('an equation with one answer, an inequality, or too many answers keeps 
     expect(screen.getByText('Type the answer, like x = 4.')).toBeTruthy()
     expect(document.body.textContent).not.toContain('Two answers')
     expect(document.body.textContent).not.toContain('Answer 1')
+  })
+
+  it('P146b: the one box keeps "Tap here to write" (it has the room), on the screen and in the markup', async () => {
+    show(ask({ answerCount: 1, answerLetter: 'x' }))
+    await waitFor(() => expect(fields()).toHaveLength(1))
+    expect(fields()[0]!.getAttribute('placeholder')).toBe('\\text{Tap here to write}')
+    const out = html(ask({}))
+    expect(out).toContain('placeholder="\\text{Tap here to write}"')
+    expect(out).not.toContain('Tap to write')
   })
 
   it('a screen that was not told (an older session) is the one box too', () => {

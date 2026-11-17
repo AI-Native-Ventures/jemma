@@ -26,6 +26,8 @@ export type MathAnswerFieldProps = {
   /** The id of the box and its label for a screen reader. A question with several boxes gives each its own ("answer-1", "Answer 1"). */
   id?: string
   label?: string
+  /** The words in the empty box, in plain words (no LaTeX). A box that is narrow on a phone, like the numbered boxes with "x =" in front of them, gives a shorter line so no word is cut off. Default "Tap here to write". */
+  placeholder?: string
 }
 
 const FONTS = '/mathlive/fonts'
@@ -83,7 +85,7 @@ function Hint({ children }: { children: string }) {
   )
 }
 
-export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id = 'answer', label = 'Your answer' }: MathAnswerFieldProps) {
+export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id = 'answer', label = 'Your answer', placeholder = 'Tap here to write' }: MathAnswerFieldProps) {
   const field = useRef<MathfieldElement | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading')
   const [problem, setProblem] = useState<'empty-box' | 'sign' | 'long' | null>(null)
@@ -238,7 +240,7 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id
         aria-label={label}
         className="jemma-answer"
         default-mode="math"
-        placeholder="\text{Tap here to write}"
+        placeholder={`\\text{${placeholder}}`}
       />
       {problem ? (
         <p role="status" data-problem={problem} className="m-0 text-center text-[16px] leading-[1.4] font-semibold text-ink">
