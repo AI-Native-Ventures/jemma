@@ -48,6 +48,8 @@ const RUN_ON = /\b(sin|cos|tan|cosec|sec|cot)x\b/g
  */
 export function readableMaths(text: string): string {
   const out = text
+    // The name at the start of a sentence ("Theta is the angle"): the letter. In the middle of a sentence a capital is a name, so it is left.
+    .replace(/(^|[.!?]\s+|\n)(Theta|Alpha|Beta)\b/g, (_all, before: string, word: string) => before + GREEK[word.toLowerCase()]!)
     .replace(/\b(theta|alpha|beta|gamma|delta)\b/g, (word) => GREEK[word]!)
     .replace(RUN_ON, '$1 x')
     .replace(/sqrt\[2\]/g, 'sqrt')

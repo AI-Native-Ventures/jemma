@@ -73,6 +73,27 @@ describe('Greek letters written as words are the letters, whole words only', () 
     expect(r.latex[0]).not.toContain('theta=')
   })
 
+  it('"tan alpha = 3/4" and "cos beta = 1,2" are one piece of maths each, and "2sqrt(3)" is 2 and the root', () => {
+    expect(readableMaths('tan alpha = 3/4')).toBe('tan \u03b1 = 3/4')
+    const a = seen('tan alpha = 3/4')
+    expect(a.raw).toBe('')
+    expect(a.latex).toEqual(['\\displaystyle \\tan\\left(\\alpha \\right)=\\frac{3}{4}'])
+    const b = seen('cos beta = 1,2')
+    expect(b.raw).toBe('')
+    expect(b.latex).toHaveLength(1)
+    expect(b.latex[0]).toContain('\\beta')
+    expect(b.latex[0]).toContain('1{,}2')
+    expect(seen('2sqrt(3)')).toEqual({ latex: ['\\displaystyle 2\\sqrt{3}'], raw: '' })
+  })
+
+  it('the name at the start of a sentence is the letter too: "Theta is ..." reads "\u03b8 is ..."', () => {
+    expect(readableMaths('Theta is the angle between the sides.')).toBe('\u03b8 is the angle between the sides.')
+    expect(readableMaths('Draw it. Alpha is acute. Is Beta obtuse? Beta is.')).toBe('Draw it. \u03b1 is acute. Is Beta obtuse? \u03b2 is.')
+    expect(readableMaths('Line one.\nTheta again')).toBe('Line one.\n\u03b8 again')
+    // in the middle of a sentence a capital is a name, and a word that holds it is a word
+    for (const same of ['The Theta function', 'Alphabet soup', 'Betamax', 'Thetas are angles']) expect(readableMaths(same), same).toBe(same)
+  })
+
   it('a line with a root and theta is not split by the word', () => {
     // "sec" is not a function the typesetter knows, so it stays a word in front of the maths; the letter and the root after it are one piece of maths
     const r = seen('sec theta = r/x = sqrt(t^2 + 4)/2')
@@ -89,7 +110,7 @@ describe('Greek letters written as words are the letters, whole words only', () 
   })
 
   it('does not touch a word that holds one', () => {
-    for (const same of ['betaken', 'Alphabet', 'alphabetical order', 'thetas', 'deltas', 'gammarays', 'Theta', 'alphabeta']) expect(readableMaths(same), same).toBe(same)
+    for (const same of ['betaken', 'Alphabet', 'alphabetical order', 'thetas', 'deltas', 'gammarays', 'alphabeta']) expect(readableMaths(same), same).toBe(same)
   })
 
   it('"tanx" is "tan x", and sine, cosine and secant are not cut', () => {
