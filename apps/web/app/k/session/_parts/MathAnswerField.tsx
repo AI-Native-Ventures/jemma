@@ -187,11 +187,19 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id
       clearTimeout(settle)
       settle = setTimeout(() => keepInView(el), KEYBOARD_SETTLE_MS)
     }
+    // A laptop shows the keyboard on focus only, and the box keeps focus after the keyboard is hidden (its own hide key): a click on the same box fires no new focus,
+    // so it asks again. Only while the keyboard is down, and show() opens on the tab the learner left it on, so the tab they picked stays.
+    const again = () => {
+      if (!window.mathVirtualKeyboard.visible) show()
+    }
     el.addEventListener('input', read)
     el.addEventListener('focusin', tapped)
     el.addEventListener('pointerup', tapped)
     // A phone's editor shows its keyboard itself, a moment after the box is touched: a second show from here would build the keyboard again under the child's finger.
-    if (!touch) el.addEventListener('focusin', show)
+    if (!touch) {
+      el.addEventListener('focusin', show)
+      el.addEventListener('pointerup', again)
+    }
     el.addEventListener('focusout', leave)
     // The page's checks wait for this: the editor is started and listening.
     el.setAttribute('data-ready', 'true')
@@ -201,7 +209,10 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id
       el.removeEventListener('input', read)
       el.removeEventListener('focusin', tapped)
       el.removeEventListener('pointerup', tapped)
-      if (!touch) el.removeEventListener('focusin', show)
+      if (!touch) {
+        el.removeEventListener('focusin', show)
+        el.removeEventListener('pointerup', again)
+      }
       el.removeEventListener('focusout', leave)
     }
   }, [status])

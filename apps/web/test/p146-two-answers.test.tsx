@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
@@ -252,6 +254,75 @@ describe('the question screen of an equation with two answers', () => {
     const out = html(TWO)
     expect(out).toContain('min-w-0 flex-1')
     expect(out).not.toMatch(/data-answers="2"[^>]*style=/)
+  })
+
+  it('P146c: "Answer N", the "x =" and the box are one group, centred in the card, no wider than a single-answer box plus the "x ="', async () => {
+    show(TWO)
+    await ready(2)
+    const groups = Array.from(document.querySelectorAll('[data-answer-group]'))
+    expect(groups.map((g) => g.getAttribute('data-answer-group'))).toEqual(['1', '2'])
+    groups.forEach((group, i) => {
+      // all three are inside the one group, in reading order: label, then "x =", then the box
+      const label = group.querySelector('[data-answer-label]')!
+      const letter = group.querySelector('[data-letter]')!
+      const box = group.querySelector('math-field')!
+      expect(label.textContent).toBe(`Answer ${i + 1}`)
+      expect(letter.textContent).toBe('x =')
+      expect(box.getAttribute('aria-label')).toBe(`Answer ${i + 1}`)
+      expect(label.compareDocumentPosition(letter) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+      expect(letter.compareDocumentPosition(box) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+      // the group sits in the list of groups, which is as wide as the card
+      expect(group.parentElement!.hasAttribute('data-answers')).toBe(true)
+      // centred in the card, full width up to its maximum
+      const classes = group.className.split(/\s+/)
+      expect(classes).toContain('mx-auto')
+      expect(classes).toContain('w-full')
+      expect(classes).toContain('flex-col')
+    })
+    // the letter and the box stay in one row inside the group, the box taking what is left of it (it may shrink on a phone)
+    const row = groups[0]!.querySelector('[data-letter]')!.parentElement!
+    expect(row.className).toContain('flex items-center')
+    expect(row.contains(groups[0]!.querySelector('math-field'))).toBe(true)
+    // (the box's own wrapper is inside that cell)
+    expect(groups[0]!.querySelector('math-field')!.parentElement!.parentElement!.className).toContain('min-w-0 flex-1')
+  })
+
+  it('P146c: the group is no wider than the single-answer box (360 px in the css) plus the gap and the "x =", so nothing is pulled apart on a laptop', async () => {
+    show(TWO)
+    await ready(2)
+    const css = readFileSync(resolve(import.meta.dirname, '..', 'app/globals.css'), 'utf8')
+    const boxMax = Number(/math-field\.jemma-answer \{[^}]*max-width:\s*(\d+)px/.exec(css)![1])
+    expect(boxMax).toBe(360)
+    const groups = Array.from(document.querySelectorAll('[data-answer-group]'))
+    expect(groups).toHaveLength(2)
+    for (const group of groups) {
+      const max = Number(/max-w-\[(\d+)px\]/.exec(group.className)![1])
+      // the box plus a 10 px gap plus "x =" (40 to 60 px): not 360 alone (the box would shrink), and not much more (the label would sit away from the "x =")
+      expect(max).toBeGreaterThanOrEqual(boxMax + 10 + 40)
+      expect(max).toBeLessThanOrEqual(boxMax + 10 + 60)
+    }
+  })
+
+  it('P146c: an equation with no letter in its key has no "x =", and its group is as wide as the box alone', async () => {
+    show(ask({ answerCount: 2 }))
+    await ready(2)
+    const groups = Array.from(document.querySelectorAll('[data-answer-group]'))
+    expect(groups).toHaveLength(2)
+    for (const group of groups) {
+      expect(group.querySelector('[data-letter]')).toBeNull()
+      expect(group.className).toContain('mx-auto')
+      expect(group.className).toContain('max-w-[360px]')
+      expect(group.className).not.toContain('max-w-[420px]')
+    }
+  })
+
+  it('P146c: on the server the group is in the markup with its centring and its maximum, and a phone gets no fixed width', () => {
+    const out = html(TWO)
+    expect(out.match(/data-answer-group="/g)).toHaveLength(2)
+    expect(out).toMatch(/data-answer-group="1" class="[^"]*\bmx-auto\b[^"]*\bw-full\b[^"]*\bmax-w-\[420px\]/)
+    // "Tap to write" is still the words in the box (it must fit beside "x =" at 390 px), and no group has an inline style
+    expect(out.match(/placeholder="\\text\{Tap to write\}"/g)).toHaveLength(2)
+    expect(out).not.toMatch(/data-answer-group="\d"[^>]*style=/)
   })
 
   it('P146b: each numbered box says the short "Tap to write", so the words are not cut off beside "x =" on a phone', async () => {

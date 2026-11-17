@@ -18,6 +18,14 @@ export function equationCountHint(count?: number): string {
   return 'Type the answer, like x = 4.'
 }
 
+/**
+ * P146c: "Answer N", the "x =" and the box are one group, centred in the card and no wider than a single-answer box (360 px, `math-field.jemma-answer` in globals.css) with
+ * the "x =" (about 40 px) and the gap in front of it (10 px). The box centres itself in whatever room its cell has, so on a laptop a group as wide as the card pulled the
+ * label and the "x =" to the far left and the box 400 px away from them. On a phone the group is narrower than this, so it is the full width, as before.
+ */
+const GROUP_NO_LETTER = 'max-w-[360px]'
+const GROUP_WITH_LETTER = 'max-w-[420px]'
+
 /** A box holds a value when it has a digit or pi in it: a letter or a sign alone is a step, not an answer (the same rule a number answer has). */
 const hasValue = (text: string) => /\d|π|\bpi\b/i.test(text)
 
@@ -69,7 +77,7 @@ export function MultiAnswer({ count, letter, topic, prompt, onChange }: MultiAns
   return (
     <div data-answers={count} className="flex w-full flex-col gap-[18px]">
       {typed.map((value, i) => (
-        <div key={i} className="flex flex-col gap-1.5">
+        <div key={i} data-answer-group={i + 1} className={`mx-auto flex w-full flex-col gap-1.5 ${letter ? GROUP_WITH_LETTER : GROUP_NO_LETTER}`}>
           <span data-answer-label="true" aria-hidden="true" className="text-[15px] font-semibold text-body">Answer {i + 1}</span>
           <div className="flex items-center gap-2.5">
             {letter ? (
