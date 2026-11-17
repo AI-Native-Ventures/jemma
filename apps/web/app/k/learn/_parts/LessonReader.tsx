@@ -9,7 +9,7 @@ import { LessonBlock } from './Block'
 import { DeliverySwitch } from './DeliverySwitch'
 import { deviceStorage, readDelivery, saveDelivery, speechOf, type Delivery } from './delivery'
 import { LessonPractice } from './LessonPractice'
-import { LessonText, typesetFor } from './LessonText'
+import { LessonInline, LessonText, typesetFor } from './LessonText'
 import { canSpeak, speakText, stopSpeaking } from './voice'
 
 const primaryLink =
@@ -155,7 +155,9 @@ export function LessonReader({ topicId, topicName, grade, entry, count, lesson, 
             <p className="m-0 text-[15px] font-semibold text-body">
               Lesson {entry.position} of {count} · {lesson.minutes} min
             </p>
-            <h1 className="m-0 text-[30px] leading-[1.14] font-bold tracking-[-0.02em] text-pretty">{lesson.title}</h1>
+            <h1 className="m-0 text-[30px] leading-[1.14] font-bold tracking-[-0.02em] text-pretty">
+              <LessonInline text={lesson.title} typeset={typeset} size={34} />
+            </h1>
           </div>
 
           <section aria-labelledby="goals" className="flex flex-col gap-2 rounded-[22px] border border-line bg-card p-4 lg:p-5">
@@ -256,7 +258,7 @@ export function LessonReader({ topicId, topicName, grade, entry, count, lesson, 
             <div className="flex flex-col gap-3">
               {next ? (
                 <Link href={`/k/learn/${topicId}/${next.position}${query}`} className={primaryLink}>
-                  Next lesson: {next.title}
+                  Next lesson: <LessonInline text={next.title} typeset={typeset} size={22} color="#FFFFFF" />
                 </Link>
               ) : null}
               <Link href={listHref} className={next ? secondaryLink : primaryLink}>

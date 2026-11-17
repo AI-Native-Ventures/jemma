@@ -6,6 +6,7 @@ import { myChild } from '@/lib/data/p27'
 import { libraryFor, resolveTopic } from '@/lib/data/teaching'
 import { entryButton, isUuid, nextEntry } from '@/lib/teaching'
 import { AppHeader } from '../../session/_parts/AppHeader'
+import { LessonInline, typesetFor } from '../_parts/LessonText'
 import { Diamond } from '../../session/_parts/Gems'
 
 export const metadata: Metadata = { title: 'Lessons' }
@@ -72,7 +73,9 @@ export default async function LessonListPage({ params, searchParams }: { params:
                     )}
                   </span>
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="text-[17px] leading-[1.3] font-semibold text-pretty">{e.title}</span>
+                    <span className="text-[17px] leading-[1.3] font-semibold text-pretty">
+                      <LessonInline text={e.title} typeset={typesetFor(topic.grade)} size={20} />
+                    </span>
                     <span className="text-[14px] leading-[1.35] text-body">
                       {e.minutes} min{e.done ? ' · Done' : e.started ? ' · Started' : ''}
                     </span>

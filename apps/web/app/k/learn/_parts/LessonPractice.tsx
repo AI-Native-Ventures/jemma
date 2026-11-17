@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react'
 import { CHOICE_LETTERS, choiceLabel } from '@jemma/profiling/logic'
+import { readableMaths } from '@/lib/lesson-maths'
 import { forScreen, type LessonAnswerResult, type StrippedQuestion } from '@/lib/teaching'
 import { scoreLines } from '../../session/[sessionId]/logic'
 import { CardQuestion } from '../../session/_parts/QuestionPrompt'
@@ -107,7 +108,7 @@ export function LessonPractice({ topicLessonId, questions, topic, typeset, onPro
             {missed.map((m) => (
               <li key={m.n} className="flex flex-col gap-3 rounded-20 border border-line bg-card p-4">
                 <p className="m-0 text-[15px] font-semibold text-body">Question {m.n}</p>
-                <CardQuestion prompt={m.q.prompt} typeset={typeset} />
+                <CardQuestion prompt={readableMaths(m.q.prompt)} typeset={typeset} />
                 <QuestionPicture spec={m.q.diagram} variant="card" />
                 <p className="m-0 text-[15px] text-body">You wrote:</p>
                 <LessonText text={m.wrote} typeset="all" size={22} className="font-semibold" />
