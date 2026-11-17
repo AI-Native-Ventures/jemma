@@ -24,6 +24,9 @@ const STEP: Record<Phase, number> = { learn: 0, try: 1, results: 2, teach: 3 }
 
 /** The column of every screen of the session: as wide as a phone, in the middle of a laptop screen, with the step bar inside it. */
 const column = 'mx-auto flex w-full max-w-[560px] flex-1 flex-col'
+/** The Skip family under a question: Skip, and Skip the rest. */
+const skipButton =
+  'flex min-h-[56px] w-full cursor-pointer items-center justify-center rounded-18 border-2 border-edge bg-card px-5 py-3 text-center text-[18px] font-semibold text-ink disabled:cursor-default disabled:opacity-60'
 const bigButton = 'flex min-h-[60px] w-full cursor-pointer items-center justify-center rounded-18 px-5 py-3 text-center text-[19px] font-bold text-balance no-underline'
 
 /** The right answer, on top of the question for a moment: "Answer:" and the answer drawn as maths. */
@@ -42,9 +45,9 @@ function Reveal({ answer }: { answer: string }) {
 
 /**
  * The learner's way through the saved lessons: learn (the eight lessons of the library for the topic, each in Read, Pictures or Listen), answer Question 1, skip
- * the others (each skip shows the right answer for a moment and counts as wrong), then the results with every question explained, and then Jemma teaches
- * again what was missed, in the way the learner picks. A button goes to the teacher's view. The screens are the app's own (the lessons, the question screen
- * with its maths editor, the results); only the data is saved, and nothing is sent anywhere.
+ * the others (each skip shows the right answer for a moment and counts as wrong; Skip the rest does all the remaining ones at once, with no answer shown), then
+ * the results with every question explained, and then Jemma teaches again what was missed, in the way the learner picks. A button goes to the teacher's view.
+ * The screens are the app's own (the lessons, the question screen with its maths editor, the results); only the data is saved, and nothing is sent anywhere.
  */
 export function TourSession() {
   const questions = useMemo(tourQuestionsForChild, [])
@@ -62,6 +65,14 @@ export function TourSession() {
   const review = useMemo(() => reviewTour(TOUR_QUESTIONS, typed), [typed])
   const correct = useMemo(() => review.map((m) => m.correct ?? false), [review])
 
+  /** The one way out of the questions: keeps the result of the five (a skip is wrong), forgets what Jemma found about the last one, and shows the results. */
+  const finish = (done: Typed) => {
+    saveTourResult(sessionStorage, reviewTour(TOUR_QUESTIONS, done).map((m) => m.correct ?? false))
+    // What Jemma found the last time the lesson was taught again was about the last result: it is old now.
+    clearReteach(sessionStorage)
+    setPhase('results')
+  }
+
   /** Keeps what the learner did on this question (null for a skip) and moves on: to the next question, or to the results after the last. */
   const record = (value: string | null) => {
     // A tap on Next behind the answer card (a key press) does not count.
@@ -69,21 +80,29 @@ export function TourSession() {
     const next = [...typed.slice(0, at), value]
     setTyped(next)
     if (at + 1 < questions.length) return void setAt(at + 1)
-    saveTourResult(sessionStorage, reviewTour(TOUR_QUESTIONS, next).map((m) => m.correct ?? false))
-    // What Jemma found the last time the lesson was taught again was about the last result: it is old now.
-    clearReteach(sessionStorage)
-    setPhase('results')
+    finish(next)
   }
+
+  /** The maths keyboard of the question goes down, so nothing is hidden behind it. */
+  const hideKeyboard = () => (window as unknown as { mathVirtualKeyboard?: { hide: () => void } }).mathVirtualKeyboard?.hide()
 
   const skip = () => {
     if (reveal !== null) return
-    // The maths keyboard of the question goes down, so the answer is not hidden behind it.
-    ;(window as unknown as { mathVirtualKeyboard?: { hide: () => void } }).mathVirtualKeyboard?.hide()
+    hideKeyboard()
     setReveal(answerText(TOUR_QUESTIONS[at]!, TOUR_QUESTIONS[at]!.answer))
     timer.current = setTimeout(() => {
       setReveal(null)
       record(null)
     }, SKIP_MS)
+  }
+
+  /** This question and every later one are skipped at once (wrong, no answer shown), and the learner is on the results, as after five single skips. */
+  const skipRest = () => {
+    if (reveal !== null) return
+    hideKeyboard()
+    const done: Typed = [...typed.slice(0, at), ...questions.slice(at).map(() => null)]
+    setTyped(done)
+    finish(done)
   }
 
   const again = () => {
@@ -103,15 +122,15 @@ export function TourSession() {
         {phase === 'try' ? (
           <>
             <QuestionScreen key={q.position} q={q} topic={TOUR_TOPIC_NAME} busy={false} onAnswer={record} />
-            <div className="px-5 pb-7">
-              <button
-                type="button"
-                onClick={skip}
-                disabled={reveal !== null}
-                className="flex min-h-[56px] w-full cursor-pointer items-center justify-center rounded-18 border-2 border-edge bg-card px-5 py-3 text-center text-[18px] font-semibold text-ink disabled:cursor-default disabled:opacity-60"
-              >
+            <div className="flex flex-col gap-3 px-5 pb-7">
+              <button type="button" onClick={skip} disabled={reveal !== null} className={skipButton}>
                 Skip
               </button>
+              {at + 1 < questions.length ? (
+                <button type="button" onClick={skipRest} disabled={reveal !== null} className={skipButton}>
+                  Skip the rest
+                </button>
+              ) : null}
             </div>
           </>
         ) : null}
