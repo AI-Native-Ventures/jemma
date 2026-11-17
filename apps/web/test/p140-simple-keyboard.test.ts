@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { CAPS, keyboardLayout, keyName, layerId, openingTab, ROW_WIDTH, rowUnits, TABS, tabsFor, type Keycap, type KeyboardLayer, type KeyboardLayout, type TabId } from '../app/k/session/_parts/math-keyboard'
+import { describe, expect, it, vi } from 'vitest'
+import { CAPS, giveKeyboard, keyboardLayout, keyName, layerId, openingLayerId, openingTab, ROW_WIDTH, rowUnits, TABS, tabsFor, type Keycap, type KeyboardHandle, type KeyboardLayer, type KeyboardLayout, type TabId } from '../app/k/session/_parts/math-keyboard'
 import type { Strand, TypedKind } from '../app/k/session/_parts/maths-keys'
 
 // P140: the maths keyboard is simpler. Every tab has the same three rows on top (the digits, the signs, the fraction/root/power keys), two rows that the tab
@@ -305,6 +305,65 @@ describe('the tab the keyboard opens on', () => {
   it('the layers after the first keep the order of the tabs', () => {
     const layout = keyboardLayout({ kind: 'expression', prompt: prompts.calculus })
     expect(layout.layers.map((l) => l.id)).toEqual(['jemma-calculus', 'jemma-letters', 'jemma-trig', 'jemma-compare'])
+  })
+})
+
+describe('P146b: the keyboard opens on the tab that fits the question, not on the tab the last question was left on', () => {
+  /** The editor's keyboard as the helper sees it, left by the last question on `left` (MathLive remembers the layer from one question to the next). */
+  const keyboardLeftOn = (left: string, visible = false) => {
+    const show = vi.fn()
+    const executeCommand = vi.fn()
+    const keyboard: KeyboardHandle & { show: typeof show; executeCommand: typeof executeCommand } = { visible, layouts: [], currentLayer: left, show, executeCommand }
+    return keyboard
+  }
+  const everyTab = TABS.map((t) => layerId(t.id))
+
+  it('the reported case: left on Calculus, an algebra equation opens on Letters', () => {
+    const keyboard = keyboardLeftOn('jemma-calculus')
+    const layout = keyboardLayout({ kind: 'equation', prompt: 'Solve x^2 - 5x + 6 = 0' })
+    giveKeyboard(keyboard, layout)
+    expect(keyboard.currentLayer).toBe('jemma-letters')
+    expect(keyboard.layouts).toEqual([layout])
+  })
+
+  it('whatever tab the last question was left on, every kind and strand opens on its opening tab, a tab its layout has', () => {
+    for (const left of everyTab) {
+      for (const { kind, strand, layout } of all) {
+        const keyboard = keyboardLeftOn(left)
+        giveKeyboard(keyboard, layout)
+        expect(keyboard.currentLayer, `${left} then ${kind} ${strand}`).toBe(layerId(openingTab(kind, strand)))
+        expect(keyboard.currentLayer).toBe(openingLayerId(layout))
+        expect(keyboard.currentLayer).toBe(layout.layers[0]!.id)
+        expect(layout.layers.map((l) => l.id)).toContain(keyboard.currentLayer)
+        expect(keyboard.layouts).toEqual([layout])
+      }
+    }
+  })
+
+  it('it never shows or hides the keyboard, and never runs a command (a command to switch the layer would show it)', () => {
+    const keyboard = keyboardLeftOn('jemma-compare')
+    giveKeyboard(keyboard, algebra('equation'))
+    expect(keyboard.show).not.toHaveBeenCalled()
+    expect(keyboard.executeCommand).not.toHaveBeenCalled()
+    expect(keyboard.visible).toBe(false)
+  })
+
+  it('while the keyboard is up (a second box of the same question starting) the tab the learner chose stays', () => {
+    const keyboard = keyboardLeftOn('jemma-compare', true)
+    const layout = algebra('equation')
+    giveKeyboard(keyboard, layout)
+    expect(keyboard.currentLayer).toBe('jemma-compare')
+    expect(keyboard.layouts).toEqual([layout])
+  })
+
+  it('a keyboard that was never used has no remembered layer, and is given the opening tab', () => {
+    const keyboard: KeyboardHandle = { visible: false, layouts: [] }
+    giveKeyboard(keyboard, keyboardLayout({ kind: 'expression', prompt: prompts.calculus }))
+    expect(keyboard.currentLayer).toBe('jemma-calculus')
+  })
+
+  it('openingLayerId is the first layer of the layout', () => {
+    for (const { layout } of all) expect(openingLayerId(layout)).toBe(layout.layers[0]!.id)
   })
 })
 

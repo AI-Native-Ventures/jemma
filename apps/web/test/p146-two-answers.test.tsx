@@ -265,6 +265,59 @@ describe('the question screen of an equation with two answers', () => {
   })
 })
 
+describe('P146b: the keyboard opens on the tab that fits the question', () => {
+  // MathLive remembers the layer the learner last used and the layer ids are the same for every question, so a question after one left on Calculus opened on
+  // Calculus. The stand-in keyboard keeps no memory of its own: `currentLayer` is set by hand to what the last question left, and what the box does with it is
+  // what is checked. The real editor is not run here (see the report).
+  const keyboard = () => theKeyboard() as unknown as { currentLayer?: string; show: ReturnType<typeof vi.fn> }
+  const CALCULUS = ask({ prompt: 'Differentiate y = 3x^2', answerKind: 'expression' })
+
+  it('the reported case: Calculus on question 1, then the equation with two answers opens on Letters', async () => {
+    const first = show(CALCULUS)
+    await waitFor(() => expect(fields()[0]!.getAttribute('data-ready')).toBe('true'))
+    expect(keyboard().currentLayer).toBe('jemma-calculus')
+    first.unmount()
+    // the learner left the keyboard on Calculus, and the next question is a new field (the screen is keyed by the question)
+    keyboard().currentLayer = 'jemma-calculus'
+    show(TWO)
+    await ready(2)
+    expect(keyboard().currentLayer).toBe('jemma-letters')
+  })
+
+  it('a question on another tab than the last one is set to its own tab, in both directions', async () => {
+    keyboard().currentLayer = 'jemma-letters'
+    const calculus = show(CALCULUS)
+    await waitFor(() => expect(fields()[0]!.getAttribute('data-ready')).toBe('true'))
+    expect(keyboard().currentLayer).toBe('jemma-calculus')
+    calculus.unmount()
+    keyboard().currentLayer = 'jemma-compare'
+    show(ask({ prompt: 'Work out sin 30', answerKind: 'expression' }))
+    await waitFor(() => expect(fields()[0]!.getAttribute('data-ready')).toBe('true'))
+    expect(keyboard().currentLayer).toBe('jemma-trig')
+  })
+
+  it('the tab the learner picks stays while they are on the question: typing, and a tap on either box, do not reset it', async () => {
+    keyboard().currentLayer = 'jemma-calculus'
+    show(TWO)
+    await ready(2)
+    expect(keyboard().currentLayer).toBe('jemma-letters')
+    keyboard().currentLayer = 'jemma-compare'
+    write(1, '3')
+    act(() => fields()[0]!.dispatchEvent(new Event('focusin')))
+    act(() => fields()[1]!.dispatchEvent(new Event('focusin')))
+    write(2, '2')
+    act(() => fields()[0]!.dispatchEvent(new Event('focusout')))
+    expect(keyboard().currentLayer).toBe('jemma-compare')
+  })
+
+  it('both boxes of a question start on the same tab, and neither undoes the other', async () => {
+    keyboard().currentLayer = 'jemma-trig'
+    show(ask({ answerCount: 3, answerLetter: 'x' }))
+    await ready(3)
+    expect(keyboard().currentLayer).toBe('jemma-letters')
+  })
+})
+
 describe('an equation with one answer, an inequality, or too many answers keeps one field', () => {
   it('one answer: one box, "Type the answer, like x = 4." and no mention of two answers', async () => {
     show(ask({ answerCount: 1, answerLetter: 'x' }))

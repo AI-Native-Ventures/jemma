@@ -6,7 +6,7 @@ import { ANSWER_MAX_LENGTH } from '../[sessionId]/logic'
 import { FractionText } from './Frac'
 import { latexToNotation } from './latex-to-notation'
 import { loadMathlive } from './load-mathlive'
-import { keyboardLayout } from './math-keyboard'
+import { giveKeyboard, keyboardLayout } from './math-keyboard'
 import { MathPreview } from './MathPreview'
 import type { TypedKind } from './maths-keys'
 
@@ -107,7 +107,8 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id
         MathfieldElement.soundsDirectory = null
         MathfieldElement.decimalSeparator = ','
         const keyboard = window.mathVirtualKeyboard
-        keyboard.layouts = [layout]
+        // This question's keys, opening on the tab that fits it (not on the tab the last question was left on, P146b). Every question is a new field (the screen is keyed by the question).
+        giveKeyboard(keyboard, layout)
         // The keyboard covers the bottom of the page: while it is up the page has room under its last button, so Next can be scrolled into reach.
         const room = () => {
           const padding = keyboard.visible ? `${Math.round(keyboard.boundingRect.height)}px` : ''
