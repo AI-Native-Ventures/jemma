@@ -7,6 +7,7 @@ import { MathAnswerField } from '../MathAnswerField'
 // P146: an equation that has two answers or more ("Solve x^2 - 5x + 6 = 0": x = 2 or x = 3) has one box for each answer, "Answer 1", "Answer 2" (up to
 // four). Each box is the same maths editor as every senior answer, with "x =" written in front of it, so the learner types only the value. What goes up to
 // the screen is "x = 3 or x = 2" once every box holds a value, and '' until then, so Next waits. Marking already takes the answers in any order.
+// The "x =" takes room from each box, so the numbered boxes say "Tap to write" in the empty box: the longer "Tap here to write" was cut off at 390 px wide, and no word may be cut off.
 
 /** The hint under the boxes. */
 export const MULTI_HINT = 'Type each answer in its own box.'
@@ -77,7 +78,7 @@ export function MultiAnswer({ count, letter, topic, prompt, onChange }: MultiAns
               </span>
             ) : null}
             <div className="min-w-0 flex-1">
-              <MathAnswerField id={`answer-${i + 1}`} label={`Answer ${i + 1}`} kind="equation" topic={topic} prompt={prompt} value={value} onChange={(v) => set(i, v)} />
+              <MathAnswerField id={`answer-${i + 1}`} label={`Answer ${i + 1}`} kind="equation" topic={topic} prompt={prompt} value={value} onChange={(v) => set(i, v)} placeholder="Tap to write" />
             </div>
           </div>
         </div>

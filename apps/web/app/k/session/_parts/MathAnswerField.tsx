@@ -6,7 +6,7 @@ import { ANSWER_MAX_LENGTH } from '../[sessionId]/logic'
 import { FractionText } from './Frac'
 import { latexToNotation } from './latex-to-notation'
 import { loadMathlive } from './load-mathlive'
-import { keyboardLayout } from './math-keyboard'
+import { giveKeyboard, keyboardLayout } from './math-keyboard'
 import { MathPreview } from './MathPreview'
 import type { TypedKind } from './maths-keys'
 
@@ -26,6 +26,8 @@ export type MathAnswerFieldProps = {
   /** The id of the box and its label for a screen reader. A question with several boxes gives each its own ("answer-1", "Answer 1"). */
   id?: string
   label?: string
+  /** The words in the empty box, in plain words (no LaTeX). A box that is narrow on a phone, like the numbered boxes with "x =" in front of them, gives a shorter line so no word is cut off. Default "Tap here to write". */
+  placeholder?: string
 }
 
 const FONTS = '/mathlive/fonts'
@@ -83,7 +85,7 @@ function Hint({ children }: { children: string }) {
   )
 }
 
-export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id = 'answer', label = 'Your answer' }: MathAnswerFieldProps) {
+export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id = 'answer', label = 'Your answer', placeholder = 'Tap here to write' }: MathAnswerFieldProps) {
   const field = useRef<MathfieldElement | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading')
   const [problem, setProblem] = useState<'empty-box' | 'sign' | 'long' | null>(null)
@@ -105,7 +107,8 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id
         MathfieldElement.soundsDirectory = null
         MathfieldElement.decimalSeparator = ','
         const keyboard = window.mathVirtualKeyboard
-        keyboard.layouts = [layout]
+        // This question's keys, opening on the tab that fits it (not on the tab the last question was left on, P146b). Every question is a new field (the screen is keyed by the question).
+        giveKeyboard(keyboard, layout)
         // The keyboard covers the bottom of the page: while it is up the page has room under its last button, so Next can be scrolled into reach.
         const room = () => {
           const padding = keyboard.visible ? `${Math.round(keyboard.boundingRect.height)}px` : ''
@@ -238,7 +241,7 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id
         aria-label={label}
         className="jemma-answer"
         default-mode="math"
-        placeholder="\text{Tap here to write}"
+        placeholder={`\\text{${placeholder}}`}
       />
       {problem ? (
         <p role="status" data-problem={problem} className="m-0 text-center text-[16px] leading-[1.4] font-semibold text-ink">

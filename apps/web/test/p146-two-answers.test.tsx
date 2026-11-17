@@ -253,6 +253,69 @@ describe('the question screen of an equation with two answers', () => {
     expect(out).toContain('min-w-0 flex-1')
     expect(out).not.toMatch(/data-answers="2"[^>]*style=/)
   })
+
+  it('P146b: each numbered box says the short "Tap to write", so the words are not cut off beside "x =" on a phone', async () => {
+    show(TWO)
+    await ready(2)
+    expect(fields().map((f) => f.getAttribute('placeholder'))).toEqual(['\\text{Tap to write}', '\\text{Tap to write}'])
+    // and on the server, in the markup, for every box of three
+    const out = html(ask({ answerCount: 3, answerLetter: 'x' }))
+    expect(out.match(/placeholder="\\text\{Tap to write\}"/g)).toHaveLength(3)
+    expect(out).not.toContain('Tap here to write')
+  })
+})
+
+describe('P146b: the keyboard opens on the tab that fits the question', () => {
+  // MathLive remembers the layer the learner last used and the layer ids are the same for every question, so a question after one left on Calculus opened on
+  // Calculus. The stand-in keyboard keeps no memory of its own: `currentLayer` is set by hand to what the last question left, and what the box does with it is
+  // what is checked. The real editor is not run here (see the report).
+  const keyboard = () => theKeyboard() as unknown as { currentLayer?: string; show: ReturnType<typeof vi.fn> }
+  const CALCULUS = ask({ prompt: 'Differentiate y = 3x^2', answerKind: 'expression' })
+
+  it('the reported case: Calculus on question 1, then the equation with two answers opens on Letters', async () => {
+    const first = show(CALCULUS)
+    await waitFor(() => expect(fields()[0]!.getAttribute('data-ready')).toBe('true'))
+    expect(keyboard().currentLayer).toBe('jemma-calculus')
+    first.unmount()
+    // the learner left the keyboard on Calculus, and the next question is a new field (the screen is keyed by the question)
+    keyboard().currentLayer = 'jemma-calculus'
+    show(TWO)
+    await ready(2)
+    expect(keyboard().currentLayer).toBe('jemma-letters')
+  })
+
+  it('a question on another tab than the last one is set to its own tab, in both directions', async () => {
+    keyboard().currentLayer = 'jemma-letters'
+    const calculus = show(CALCULUS)
+    await waitFor(() => expect(fields()[0]!.getAttribute('data-ready')).toBe('true'))
+    expect(keyboard().currentLayer).toBe('jemma-calculus')
+    calculus.unmount()
+    keyboard().currentLayer = 'jemma-compare'
+    show(ask({ prompt: 'Work out sin 30', answerKind: 'expression' }))
+    await waitFor(() => expect(fields()[0]!.getAttribute('data-ready')).toBe('true'))
+    expect(keyboard().currentLayer).toBe('jemma-trig')
+  })
+
+  it('the tab the learner picks stays while they are on the question: typing, and a tap on either box, do not reset it', async () => {
+    keyboard().currentLayer = 'jemma-calculus'
+    show(TWO)
+    await ready(2)
+    expect(keyboard().currentLayer).toBe('jemma-letters')
+    keyboard().currentLayer = 'jemma-compare'
+    write(1, '3')
+    act(() => fields()[0]!.dispatchEvent(new Event('focusin')))
+    act(() => fields()[1]!.dispatchEvent(new Event('focusin')))
+    write(2, '2')
+    act(() => fields()[0]!.dispatchEvent(new Event('focusout')))
+    expect(keyboard().currentLayer).toBe('jemma-compare')
+  })
+
+  it('both boxes of a question start on the same tab, and neither undoes the other', async () => {
+    keyboard().currentLayer = 'jemma-trig'
+    show(ask({ answerCount: 3, answerLetter: 'x' }))
+    await ready(3)
+    expect(keyboard().currentLayer).toBe('jemma-letters')
+  })
 })
 
 describe('an equation with one answer, an inequality, or too many answers keeps one field', () => {
@@ -263,6 +326,15 @@ describe('an equation with one answer, an inequality, or too many answers keeps 
     expect(screen.getByText('Type the answer, like x = 4.')).toBeTruthy()
     expect(document.body.textContent).not.toContain('Two answers')
     expect(document.body.textContent).not.toContain('Answer 1')
+  })
+
+  it('P146b: the one box keeps "Tap here to write" (it has the room), on the screen and in the markup', async () => {
+    show(ask({ answerCount: 1, answerLetter: 'x' }))
+    await waitFor(() => expect(fields()).toHaveLength(1))
+    expect(fields()[0]!.getAttribute('placeholder')).toBe('\\text{Tap here to write}')
+    const out = html(ask({}))
+    expect(out).toContain('placeholder="\\text{Tap here to write}"')
+    expect(out).not.toContain('Tap to write')
   })
 
   it('a screen that was not told (an older session) is the one box too', () => {

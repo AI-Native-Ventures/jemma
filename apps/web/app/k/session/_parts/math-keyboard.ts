@@ -245,6 +245,26 @@ export function keyboardLayout(input: { kind: TypedKind; topic?: string; prompt?
   }
 }
 
+/**
+ * What `giveKeyboard` needs of the editor's keyboard (window.mathVirtualKeyboard). `currentLayer` is MathLive's own and is not in its typings: while the keyboard
+ * is hidden it is the layer the keyboard will open on, and the editor remembers it from one question to the next (the layer ids are the same for every question).
+ */
+export type KeyboardHandle = { visible: boolean; layouts: unknown; currentLayer?: string }
+
+/** The id of the layer a layout opens on: its first. */
+export const openingLayerId = (layout: KeyboardLayout): string => layout.layers[0]!.id
+
+/**
+ * P146b: gives the keyboard the layout of a question AND makes it open on the tab that fits the question. The editor keeps the layer the learner last used
+ * (the ids are `jemma-letters`, `jemma-calculus` and so on for every question), so a question after one that was left on Calculus opened on Calculus, not on the
+ * first layer of its own layout. The layer is set while the keyboard is hidden, which is when it is the one the keyboard opens on (setting it never shows the
+ * keyboard). While the keyboard is up (a second box of the same question starting after the learner touched the first) the tab they chose stays.
+ */
+export function giveKeyboard(keyboard: KeyboardHandle, layout: KeyboardLayout): void {
+  if (!keyboard.visible) keyboard.currentLayer = openingLayerId(layout)
+  keyboard.layouts = [layout]
+}
+
 /** The name of a key for a screen reader and for a test: its tooltip, a digit, or its label. */
 export function keyName(key: string | Keycap): string {
   if (typeof key === 'string') return key
