@@ -3,19 +3,24 @@
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { FractionText } from '../k/session/_parts/Frac'
-import { LearnDiagram } from '../k/session/_parts/LearnDiagram'
 import { QuestionScreen } from '../k/session/_parts/QuestionScreen'
 import { Results } from '../k/session/_parts/Results'
 import { answerText } from '../k/session/[sessionId]/logic'
-import { TOUR_QUESTIONS, TOUR_TOPIC_NAME, tourLessonForChild, tourQuestionsForChild } from './data/lesson'
+import { TOUR_QUESTIONS, TOUR_TOPIC_NAME, tourQuestionsForChild } from './data/lesson'
 import { TOUR_LEARNER } from './data/topics'
 import { reviewTour, saveTourResult, type Typed } from './outcome'
+import { clearReteach } from './reteach'
+import { TourLearn } from './TourLearn'
 import { TourStepHeader } from './TourStepHeader'
+import { TourTeach } from './TourTeach'
 
 /** How long the right answer stays on the screen after Skip, before the next question. */
 export const SKIP_MS = 1500
 
-type Phase = 'learn' | 'try' | 'results'
+type Phase = 'learn' | 'try' | 'results' | 'teach'
+
+/** Where each screen stands on the step bar: Learn, Try, Results, Teach again. */
+const STEP: Record<Phase, number> = { learn: 0, try: 1, results: 2, teach: 3 }
 
 /** The column of every screen of the session: as wide as a phone, in the middle of a laptop screen, with the step bar inside it. */
 const column = 'mx-auto flex w-full max-w-[560px] flex-1 flex-col'
@@ -36,12 +41,12 @@ function Reveal({ answer }: { answer: string }) {
 }
 
 /**
- * The learner's way through the saved lesson: read it, answer Question 1, skip the others (each skip shows the right answer for a moment and counts as
- * wrong), then the results with every question explained, and a button to the teacher's view. The screens are the app's own (the lesson pictures, the
- * question screen with its maths editor, the results); only the data is saved, and nothing is sent anywhere.
+ * The learner's way through the saved lessons: learn (the eight lessons of the library for the topic, each in Read, Pictures or Listen), answer Question 1, skip
+ * the others (each skip shows the right answer for a moment and counts as wrong), then the results with every question explained, and then Jemma teaches
+ * again what was missed, in the way the learner picks. A button goes to the teacher's view. The screens are the app's own (the lessons, the question screen
+ * with its maths editor, the results); only the data is saved, and nothing is sent anywhere.
  */
 export function TourSession() {
-  const lesson = useMemo(tourLessonForChild, [])
   const questions = useMemo(tourQuestionsForChild, [])
   const [phase, setPhase] = useState<Phase>('learn')
   const [at, setAt] = useState(0)
@@ -55,6 +60,7 @@ export function TourSession() {
   }, [phase, at])
 
   const review = useMemo(() => reviewTour(TOUR_QUESTIONS, typed), [typed])
+  const correct = useMemo(() => review.map((m) => m.correct ?? false), [review])
 
   /** Keeps what the learner did on this question (null for a skip) and moves on: to the next question, or to the results after the last. */
   const record = (value: string | null) => {
@@ -64,6 +70,8 @@ export function TourSession() {
     setTyped(next)
     if (at + 1 < questions.length) return void setAt(at + 1)
     saveTourResult(sessionStorage, reviewTour(TOUR_QUESTIONS, next).map((m) => m.correct ?? false))
+    // What Jemma found the last time the lesson was taught again was about the last result: it is old now.
+    clearReteach(sessionStorage)
     setPhase('results')
   }
 
@@ -90,8 +98,8 @@ export function TourSession() {
   return (
     <div className="flex flex-1 flex-col bg-ground font-sans leading-[normal]">
       <div className={column}>
-        <TourStepHeader current={phase === 'learn' ? 1 : phase === 'try' ? 2 : 3} closeLabel={phase === 'results' ? 'Close' : 'Stop for now'} />
-        {phase === 'learn' ? <LearnDiagram lesson={lesson} onReady={() => setPhase('try')} /> : null}
+        <TourStepHeader current={STEP[phase]} closeLabel={phase === 'results' || phase === 'teach' ? 'Close' : 'Stop for now'} />
+        {phase === 'learn' ? <TourLearn onReady={() => setPhase('try')} /> : null}
         {phase === 'try' ? (
           <>
             <QuestionScreen key={q.position} q={q} topic={TOUR_TOPIC_NAME} busy={false} onAnswer={record} />
@@ -111,7 +119,12 @@ export function TourSession() {
           <>
             <Results firstName={TOUR_LEARNER} missed={review} />
             <div className="flex flex-col gap-3 px-5 pb-[26px]">
-              <Link href="/tour/teacher" className={`${bigButton} border-0 bg-ink text-white`}>
+              {correct.includes(false) ? (
+                <button type="button" onClick={() => setPhase('teach')} className={`${bigButton} border-0 bg-ink text-white`}>
+                  Let Jemma teach what you missed
+                </button>
+              ) : null}
+              <Link href="/tour/teacher" className={`${bigButton} border-2 border-edge bg-card text-ink`}>
                 Switch to the teacher&apos;s view
               </Link>
               <button type="button" onClick={again} className={`${bigButton} border-2 border-edge bg-card text-ink`}>
@@ -120,6 +133,7 @@ export function TourSession() {
             </div>
           </>
         ) : null}
+        {phase === 'teach' ? <TourTeach correct={correct} onAgain={again} /> : null}
       </div>
       {reveal !== null ? <Reveal answer={reveal} /> : null}
     </div>

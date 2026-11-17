@@ -1,10 +1,10 @@
 import Link from 'next/link'
 
-const STEPS = ['Warm-up', 'Learn', 'Try', 'Results'] as const
+const STEPS = ['Learn', 'Try', 'Results', 'Teach again'] as const
 
 /**
- * The bar of a session screen, drawn as the learner's own session bar is (a close button and the four steps), with one difference: the close button goes
- * back to the part in the tour and never into the signed-in app. `current` is 0 to 3.
+ * The bar of a session screen, drawn as the learner's own session bar is (a close button and four steps: Learn, Try, Results and Teach again), with one
+ * difference: the close button goes back to the part in the tour and never into the signed-in app. `current` is 0 to 3.
  */
 export function TourStepHeader({ current, closeLabel = 'Stop for now', href = '/tour/algebra' }: { current: number; closeLabel?: string; href?: string }) {
   return (

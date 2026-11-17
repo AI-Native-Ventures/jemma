@@ -10,6 +10,7 @@ import { TEACHER_WIDTH, TourHeader } from '../../../TourHeader'
 import { AverageBar, Back, classLevel, helpLine } from '../../Bits'
 import { AnalysisCard, TokensCard } from '../../Cards'
 import { LearnerRow, MARK_COLUMN, MARK_GAP, SCORE_COLUMN } from '../../LearnerRow'
+import { ReteachCard } from '../../ReteachCard'
 import { YouRow } from '../../YouRow'
 
 export const metadata: Metadata = { title: 'Equations and inequalities' }
@@ -83,6 +84,8 @@ export default async function TourTeacherTopicPage({ params }: { params: Promise
                 </div>
               </div>
             </section>
+
+            <ReteachCard name={TOUR_LEARNER} />
 
             <section aria-labelledby="questions" className={card}>
               <h2 id="questions" className="m-0 text-[20px] leading-[1.2] font-bold">The five questions</h2>
