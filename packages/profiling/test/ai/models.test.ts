@@ -1,5 +1,7 @@
+import { APICallError, wrapLanguageModel } from 'ai'
+import { MockLanguageModelV4 } from 'ai/test'
 import { describe, expect, test, vi } from 'vitest'
-import { getModel, getSpeechModel, MemoryStore, type AiEnv } from '../../src/ai'
+import { getModel, getSpeechModel, isModelGoneError, isRefusalError, MemoryStore, withModelRetry, type AiEnv } from '../../src/ai'
 
 const env = (over: Partial<AiEnv> = {}): AiEnv => ({
   AI_MODE: 'live',
@@ -346,5 +348,63 @@ describe('a model call that never answers', () => {
       vi.useRealTimers()
       vi.unstubAllGlobals()
     }
+  })
+})
+
+// P121i: a Cloudflare model id that does not exist is skipped at once. The real Workers AI binding throws, for an id it does not have (captured
+// 17 November 2026 from a local wrangler dev, no model ran): an Error (class InferenceUpstreamError) with name "AiError", the message
+// "5007: No such model @cf/deepseek-ai/not-a-model or task", and no code, status, statusCode or cause. Doubles only: no network, no database.
+describe('a model that does not exist ("5007: No such model") is a gone model', () => {
+  const NO_SUCH_MODEL = '5007: No such model @cf/deepseek-ai/not-a-model or task'
+  /** The error as the real binding throws it. */
+  const bindingError = () => Object.assign(new Error(NO_SUCH_MODEL), { name: 'AiError' })
+  const apiCallError = (message: string, statusCode: number, cause?: unknown) => new APICallError({ message, url: 'https://workers-ai.binding/v1/chat/completions', requestBodyValues: {}, statusCode, cause })
+
+  test('isModelGoneError is true for the error the real binding throws, and for the words alone, whatever their case', () => {
+    expect(isModelGoneError(bindingError())).toBe(true)
+    expect(isModelGoneError(new Error(NO_SUCH_MODEL))).toBe(true)
+    expect(isModelGoneError(new Error('No such model'))).toBe(true)
+    expect(isModelGoneError(new Error('no such model @cf/zai-org/not-a-model'))).toBe(true)
+    expect(isModelGoneError(new Error('NO SUCH MODEL'))).toBe(true)
+  })
+
+  test('it is true when an APICallError (a 500) carries the words in its message, or when they are in its cause', () => {
+    expect(isModelGoneError(apiCallError(NO_SUCH_MODEL, 500))).toBe(true)
+    expect(isModelGoneError(apiCallError('Cannot connect', 500, bindingError()))).toBe(true)
+    expect(isModelGoneError({ message: 'wrapped', cause: bindingError() })).toBe(true)
+    expect(isModelGoneError({ message: 'wrapped twice', cause: { message: 'inner', cause: new Error(NO_SUCH_MODEL) } })).toBe(true)
+  })
+
+  test('a plain 500, a capacity error and the other old words keep their meaning: not gone, or gone as before', () => {
+    expect(isModelGoneError(apiCallError('Internal error', 500))).toBe(false)
+    expect(isModelGoneError(new Error('Internal error'))).toBe(false)
+    expect(isModelGoneError(apiCallError('Capacity temporarily exceeded', 429))).toBe(false)
+    expect(isModelGoneError(new Error('AiError: something broke'))).toBe(false)
+    expect(isModelGoneError(new Error('No endpoints found for nvidia/foo:free.'))).toBe(true)
+    // "such" and "model" apart are not the words.
+    expect(isModelGoneError(new Error('No such file'))).toBe(false)
+    expect(isModelGoneError(new Error('the model answered with such a long text'))).toBe(false)
+  })
+
+  test('isRefusalError follows (the dynamic list leaves out a model that does not exist)', () => {
+    expect(isRefusalError(bindingError())).toBe(true)
+    expect(isRefusalError(apiCallError('Internal error', 500))).toBe(false)
+  })
+
+  test('the retry layer throws it at once: one try and no wait', async () => {
+    const waits: number[] = []
+    const sleep = async (ms: number) => void waits.push(ms)
+    // What the provider throws for it: a 500 whose message holds the binding's words (the message alone must be enough to skip the model).
+    const gone = new MockLanguageModelV4({ doGenerate: async () => { throw apiCallError(NO_SUCH_MODEL, 500) } })
+    const params = { prompt: [{ role: 'user', content: [{ type: 'text', text: 'q' }] }] } as never
+    await expect(wrapLanguageModel({ model: gone, middleware: withModelRetry(sleep, [1, 2, 3, 4]) }).doGenerate(params)).rejects.toThrow('No such model')
+    expect(gone.doGenerateCalls.length).toBe(1)
+    expect(waits).toEqual([])
+    // An ordinary 500 is still retried with the waits, as before.
+    const waits500: number[] = []
+    const broken = new MockLanguageModelV4({ doGenerate: async () => { throw apiCallError('Internal error', 500) } })
+    await expect(wrapLanguageModel({ model: broken, middleware: withModelRetry(async (ms) => void waits500.push(ms), [1, 2, 3]) }).doGenerate(params)).rejects.toThrow('Internal error')
+    expect(broken.doGenerateCalls.length).toBe(4)
+    expect(waits500).toEqual([1, 2, 3])
   })
 })

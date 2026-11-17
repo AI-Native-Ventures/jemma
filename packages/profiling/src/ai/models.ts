@@ -89,10 +89,11 @@ function modelRefs(rawIds: string[], defaultProvider: string): ModelRef[] {
 
 /**
  * Words in an error that say the model is gone, not served to this account, not paid for, or refused to this kind of caller (OpenRouter says
- * "... is only available on agentic harnesses" for the free listing of some models when an API key calls it).
+ * "... is only available on agentic harnesses" for the free listing of some models when an API key calls it; Cloudflare Workers AI says
+ * "5007: No such model <id> or task" for an id it does not have).
  */
 const MODEL_GONE_MESSAGE =
-  /no endpoints|not a valid model|model.*not found|no allowed providers|not available|deprecated|insufficient credit|requires more credits|payment required|only available on|agentic harness/i
+  /no endpoints|not a valid model|no such model|model.*not found|no allowed providers|not available|deprecated|insufficient credit|requires more credits|payment required|only available on|agentic harness/i
 
 /**
  * An error that says this model cannot answer at all, now: it was removed (404, "no endpoints", "not a valid model"), is not served
@@ -295,8 +296,10 @@ function untilAborted<T>(call: Promise<T>, signal: AbortSignal | undefined): Pro
  * A `fetch` backed by the Workers AI binding, for the OpenAI provider. For DeepSeek V4.1 Flash and GLM 5.3 Flash the binding takes the OpenAI
  * chat-completions body (without `model`, which is the first argument of `run`) and returns the OpenAI chat-completion object, so nothing is
  * translated: the body goes in, the object comes out, with no API token. Errors become the status the retry layer knows: a thrown error that
- * says capacity, rate or too many is a 429, any other is a 500, both with an OpenAI-shaped error body that holds the message; an output with no
- * `choices` is a 502 that names the model; a streaming request is a 400 (nothing in Jemma streams). A cancelled call ends the fetch at once.
+ * says "no such model" or carries the code 5007 (Cloudflare's "5007: No such model <id> or task", for an id the binding does not have) is a 404, a
+ * missing model and not a server fault, so the model is skipped at once and never retried; one that says capacity, rate or too many is a 429; any
+ * other is a 500; all with an OpenAI-shaped error body that holds the message. An output with no `choices` is a 502 that names the model; a
+ * streaming request is a 400 (nothing in Jemma streams). A cancelled call ends the fetch at once.
  */
 export function bindingFetch(binding: AiBinding): (input: string | URL | Request, init?: RequestInit) => Promise<Response> {
   return async (input, init) => {
@@ -319,6 +322,8 @@ export function bindingFetch(binding: AiBinding): (input: string | URL | Request
     } catch (err) {
       if (signal?.aborted) throw err
       const message = err instanceof Error && err.message ? err.message : String(err)
+      // The missing-model words come first: an id such as `@cf/some-org/generate-text` holds "rate", and a missing model is no rate limit.
+      if (/no such model|\b5007\b/i.test(message)) return errorResponse(404, message)
       return errorResponse(/capacity|rate|too many/i.test(message) ? 429 : 500, message)
     }
     if (!isObject(output) || !Array.isArray(output.choices)) return errorResponse(502, `Workers AI returned no choices for ${model}`)

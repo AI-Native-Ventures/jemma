@@ -710,3 +710,162 @@ describe('the workers-ai provider through the binding (no token)', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 })
+
+// P121i: a Cloudflare model id that does not exist is skipped at once. The real Workers AI binding throws, for an id it does not have (captured
+// 17 November 2026 from a local wrangler dev, no model ran): an Error (class InferenceUpstreamError) with name "AiError", the message
+// "5007: No such model <id> or task", and no code, status, statusCode or cause. It used to become a retryable 500 (about 41 s of waits for each such id).
+describe('a Workers AI model that does not exist is skipped at once (P121i)', () => {
+  const BOGUS = '@cf/deepseek-ai/not-a-model'
+  const BOGUS_GLM = '@cf/zai-org/not-a-model'
+  /** The error as the real binding throws it. */
+  const noSuchModel = (id = BOGUS) => Object.assign(new Error(`5007: No such model ${id} or task`), { name: 'AiError' })
+  const body = { model: BOGUS, messages: [{ role: 'user', content: 'hi' }] }
+
+  test.each([
+    [`5007: No such model ${BOGUS} or task`],
+    ['5007: No such model @cf/zai-org/not-a-model or task'],
+    ['no such model'],
+    ['NO SUCH MODEL'],
+    ['AiError: 5007: something else about the task'],
+    ['code 5007'],
+    // The words come before the rate check: a model id with "rate" in it (generate, moderate) is still a missing model, not a rate limit.
+    ['5007: No such model @cf/some-org/generate-text or task'],
+    ['5007: No such model @cf/some-org/moderate-1 or task'],
+  ])('a binding error "%s" becomes a 404 with the message in the OpenAI error body', async (message) => {
+    const { binding } = fakeBinding(() => {
+      throw Object.assign(new Error(message), { name: 'AiError' })
+    })
+    const res = await bindingFetch(binding)(BINDING_URL, post(body))
+    expect(res.status).toBe(404)
+    expect(res.headers.get('content-type')).toBe('application/json')
+    expect(((await res.json()) as { error: { message: string } }).error.message).toBe(message)
+  })
+
+  test.each([
+    ['Capacity temporarily exceeded', 429],
+    ['3040: Capacity exceeded', 429],
+    ['Rate limit exceeded', 429],
+    ['Too many requests', 429],
+    ['Internal server error', 500],
+    ['AiError: something broke', 500],
+    // 5007 inside a longer number is not the code.
+    ['error 15007 happened', 500],
+    ['error 50070', 500],
+    ['', 500],
+  ])('every other binding error keeps its status: "%s" is %s', async (message, status) => {
+    const { binding } = fakeBinding(() => {
+      throw new Error(message)
+    })
+    expect((await bindingFetch(binding)(BINDING_URL, post(body))).status).toBe(status)
+  })
+
+  test('a rejected promise, and a thrown text that is not an Error, with the words are a 404 too', async () => {
+    const rejected = { run: vi.fn(() => Promise.reject(noSuchModel())) }
+    expect((await bindingFetch(rejected)(BINDING_URL, post(body))).status).toBe(404)
+    const text = { run: vi.fn(() => { throw '5007: No such model x or task' }) }
+    expect((await bindingFetch(text as never)(BINDING_URL, post(body))).status).toBe(404)
+  })
+
+  test('the provider asks a model that does not exist ONCE and no timer is waited for', async () => {
+    network()
+    const { binding, runs } = fakeBinding(() => {
+      throw noSuchModel()
+    })
+    fakeClock()
+    // The fake clock is never advanced: a retry wait (2 s) would leave the call hanging.
+    const outcome = await Promise.race([
+      Promise.resolve(getModel('text', bindingEnv(binding, { LLM_MODEL: BOGUS, LLM_MODEL_FALLBACKS: '' })).doGenerate(params)).catch((e: unknown) => e),
+      new Promise<string>((r) => realSetTimeout(() => r('hung'), 1000)),
+    ])
+    expect(outcome).not.toBe('hung')
+    expect((outcome as { statusCode?: number }).statusCode).toBe(404)
+    expect((outcome as Error).message).toContain('No such model')
+    expect(runs.map((r) => r.model)).toEqual([BOGUS])
+  })
+
+  test('generateText with a model that does not exist asks the binding once too (its own retries do not start)', async () => {
+    network()
+    const { binding, runs } = fakeBinding(() => {
+      throw noSuchModel()
+    })
+    fakeClock()
+    const outcome = await Promise.race([
+      generateText({ model: getModel('text', bindingEnv(binding, { LLM_MODEL: BOGUS, LLM_MODEL_FALLBACKS: '' })), prompt: 'hi' }).catch((e: unknown) => e),
+      new Promise<string>((r) => realSetTimeout(() => r('hung'), 1000)),
+    ])
+    expect(outcome).not.toBe('hung')
+    expect(runs.map((r) => r.model)).toEqual([BOGUS])
+  })
+
+  test('in the chain [missing, DeepSeek-style good id] the good model answers after exactly one call to the missing one', async () => {
+    network()
+    const { binding, runs } = fakeBinding((m) => {
+      if (m === BOGUS) throw noSuchModel()
+      return openaiOutput(m, `from ${m}`)
+    })
+    fakeClock()
+    const outcome = await Promise.race([
+      Promise.resolve(getModel('text', bindingEnv(binding, { LLM_MODEL: BOGUS, LLM_MODEL_FALLBACKS: GLM })).doGenerate(params)).catch((e: unknown) => e),
+      new Promise<string>((r) => realSetTimeout(() => r('hung'), 1000)),
+    ])
+    expect(outcome).not.toBe('hung')
+    expect(textOf(outcome as { content: unknown })).toBe(`from ${GLM}`)
+    expect(runs.map((r) => r.model)).toEqual([BOGUS, GLM])
+  })
+
+  test('two missing models in front: each is asked once, then the third answers', async () => {
+    network()
+    const { binding, runs } = fakeBinding((m) => {
+      if (m === BOGUS || m === BOGUS_GLM) throw noSuchModel(m)
+      return openaiOutput(m, `from ${m}`)
+    })
+    fakeClock()
+    const outcome = await Promise.race([
+      Promise.resolve(getModel('text', bindingEnv(binding, { LLM_MODEL: BOGUS, LLM_MODEL_FALLBACKS: `${BOGUS_GLM},${GLM}` })).doGenerate(params)).catch((e: unknown) => e),
+      new Promise<string>((r) => realSetTimeout(() => r('hung'), 1000)),
+    ])
+    expect(textOf(outcome as { content: unknown })).toBe(`from ${GLM}`)
+    expect(runs.map((r) => r.model)).toEqual([BOGUS, BOGUS_GLM, GLM])
+  })
+
+  test('every model missing sends the first error up, each asked once', async () => {
+    network()
+    const { binding, runs } = fakeBinding((m) => {
+      throw noSuchModel(m)
+    })
+    fakeClock()
+    const outcome = await Promise.race([
+      Promise.resolve(getModel('text', bindingEnv(binding, { LLM_MODEL: BOGUS, LLM_MODEL_FALLBACKS: BOGUS_GLM })).doGenerate(params)).catch((e: unknown) => e),
+      new Promise<string>((r) => realSetTimeout(() => r('hung'), 1000)),
+    ])
+    expect(outcome).not.toBe('hung')
+    expect((outcome as Error).message).toContain(BOGUS)
+    expect((outcome as { statusCode?: number }).statusCode).toBe(404)
+    expect(runs.map((r) => r.model)).toEqual([BOGUS, BOGUS_GLM])
+  })
+
+  test('a capacity error is still a 429 and still retried on the same model (2, 5, 10, 20 s), and an ordinary 500 too', async () => {
+    network()
+    let calls = 0
+    const { binding, runs } = fakeBinding(() => {
+      if (++calls < 3) throw new Error('Capacity exceeded')
+      return openaiOutput(DEEPSEEK, `from ${DEEPSEEK}`)
+    })
+    fakeClock()
+    const out = (await settle(Promise.resolve(getModel('text', bindingEnv(binding)).doGenerate(params)))) as { content: unknown }
+    expect(textOf(out)).toBe(`from ${DEEPSEEK}`)
+    // Two failures were waited out on the same model; the backup was never asked.
+    expect(runs.map((r) => r.model)).toEqual([DEEPSEEK, DEEPSEEK, DEEPSEEK])
+
+    vi.useRealTimers()
+    const serverFault = fakeBinding((m) => {
+      if (m === DEEPSEEK) throw new Error('Internal server error')
+      return openaiOutput(m, `from ${m}`)
+    })
+    fakeClock()
+    const out500 = (await settle(Promise.resolve(getModel('text', bindingEnv(serverFault.binding)).doGenerate(params)))) as { content: unknown }
+    expect(textOf(out500)).toBe(`from ${GLM}`)
+    expect(serverFault.runs.map((r) => r.model)).toEqual([DEEPSEEK, DEEPSEEK, DEEPSEEK, DEEPSEEK, DEEPSEEK, GLM])
+  })
+})
+
