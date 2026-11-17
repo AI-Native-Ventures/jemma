@@ -11,8 +11,8 @@ const FUNCTIONS = new Set(['sin', 'cos', 'tan', 'sec', 'csc', 'cot', 'sqrt', 'cb
 
 /** Short words of the language that can stand next to a sign in a line of a lesson ("one + two", "the + rest"): never a product of letters. */
 const WORDS = new Set([
-  'a', 'an', 'and', 'any', 'are', 'as', 'at', 'be', 'big', 'but', 'by', 'can', 'did', 'do', 'few', 'for', 'get', 'has', 'her', 'him', 'his', 'how', 'if', 'in', 'is', 'it', 'its', 'let', 'may', 'me', 'my',
-  'new', 'no', 'not', 'now', 'of', 'old', 'on', 'one', 'or', 'our', 'out', 'own', 'per', 'say', 'see', 'set', 'she', 'six', 'so', 'sum', 'ten', 'the', 'to', 'too', 'two', 'up', 'us', 'use', 'was', 'we',
+  'a', 'an', 'and', 'any', 'are', 'as', 'at', 'be', 'big', 'but', 'by', 'can', 'did', 'do', 'few', 'for', 'get', 'has', 'how', 'if', 'in', 'is', 'it', 'its', 'let', 'may', 'me', 'my',
+  'new', 'no', 'not', 'now', 'of', 'old', 'on', 'one', 'or', 'our', 'out', 'own', 'per', 'say', 'see', 'set', 'six', 'so', 'sum', 'ten', 'the', 'to', 'too', 'two', 'up', 'us', 'use', 'was', 'we',
   'who', 'why', 'yes', 'you', 'add', 'all', 'ask', 'end', 'got', 'put', 'run', 'try', 'way', 'win', 'zero',
 ])
 
