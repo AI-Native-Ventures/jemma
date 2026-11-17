@@ -11,7 +11,7 @@ import { inLibrary } from '@/lib/teaching'
 import { PracticeRow, PractiseButton } from '../../Practise'
 import { AppHeader } from '../../session/_parts/AppHeader'
 import { Diamond } from '../../session/_parts/Gems'
-import { levelOfScore, lockOf, rowScore, strandScreen, topicLine } from '../format'
+import { levelOfScore, lockOf, rowScore, strandScreen, topicLine, waitingOf } from '../format'
 import { ProgressLegend, TopicDot } from '../ProgressDots'
 
 export const metadata: Metadata = { title: 'My maths' }
@@ -26,6 +26,8 @@ const list = 'm-0 flex list-none flex-col rounded-20 border border-line bg-card 
  * A class on the CAPS map (P115) lists its topics under "Term 1", "Term 2" and so on, with the names as CAPS has them (a topic CAPS teaches twice
  * in a year is the same name under two terms), and says under the heading where the topics come from. Any other map keeps its flat list.
  * Each topic row starts with its progress circle (P122), filled by the topic's score as on My maths, with the same one-line key above the list.
+ * P155: tonight's lesson waiting never hides a button: Learn and Practise stay (one quiet line says the lesson is on My maths). Only a practice
+ * that is being written holds Practise back, and Learn stays then too.
  */
 export default async function MyMathsPartPage({ params, searchParams }: { params: Promise<{ family: string }>; searchParams?: Promise<{ class?: string | string[]; grade?: string | string[] }> }) {
   const { family } = await params
@@ -39,6 +41,7 @@ export default async function MyMathsPartPage({ params, searchParams }: { params
   const screen = strandScreen(strand, own && grade !== null ? noTopicsLine(grade) : undefined)
   const back = own?.picked ? `/k/maths?class=${own.picked.classId}` : '/k/maths'
   const lock = lockOf(status)
+  const waiting = waitingOf(status)
   const byTerm = screen.kind === 'topics' ? groupByTerm(screen.topics, source) : null
   const from = screen.kind === 'topics' ? capsLine(source) : null
   // P144: the topics of this grade that have lessons in the teaching library get a Learn button (one read for the whole part). No grade, no lessons.
@@ -75,6 +78,12 @@ export default async function MyMathsPartPage({ params, searchParams }: { params
           <p className="m-0 rounded-20 border border-[#FFC9BB] bg-coral-wash p-4 text-[16px] leading-[1.45]">
             {lock.text}{' '}
             <Link href={lock.href} className="font-semibold text-ink underline underline-offset-[3px]">{lock.link}</Link>
+          </p>
+        ) : waiting ? (
+          // P155: tonight's lesson waiting holds nothing back. One quiet line, every Learn and Practise button stays.
+          <p className="m-0 text-[15px] leading-[1.4] text-body">
+            {waiting.text}{' '}
+            <Link href={waiting.href} className="font-semibold text-ink underline underline-offset-[3px]">{waiting.link}</Link>.
           </p>
         ) : null}
 

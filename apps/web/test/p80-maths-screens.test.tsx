@@ -120,11 +120,15 @@ describe('/k/maths', () => {
     expect(text).not.toMatch(/%|percent|grade|rank|classmate|class average|strand|subtopic|out of/i)
   })
 
-  it('while tonight\'s lesson waits there is no Practise button and one line (the lesson is the first card of this page, so the line has no link)', async () => {
+  it('while tonight\'s lesson waits every Practise button stays and no line holds anything back (P155: the lesson is the first card of this page, it is not a gate)', async () => {
     state.view = view({ status: 'due' })
     await page()
-    expect(screen.queryAllByRole('button', { name: /^Practise/ })).toHaveLength(0)
-    expect(screen.getByText(/Finish tonight's lesson first\./)).toBeTruthy()
+    expect(within(screen.getByRole('region', { name: 'Suggested for you' })).getAllByRole('button', { name: /^Practise / })).toHaveLength(2)
+    expect(within(screen.getByRole('region', { name: 'Your gaps' })).getAllByRole('button', { name: /^Practise / })).toHaveLength(2)
+    // suggestions (2) and gaps (2): all four buttons are there
+    expect(screen.getAllByRole('button', { name: /^Practise/ })).toHaveLength(4)
+    expect(screen.queryByText(/Finish tonight's lesson first/)).toBeNull()
+    expect(screen.queryByText(/first/i)).toBeNull()
     expect(screen.queryByRole('link', { name: /Go to/ })).toBeNull()
     // the circles and the way into each part stay
     expect(screen.getByText('1 of 3 secure \u00b7 1 started')).toBeTruthy()
@@ -176,15 +180,35 @@ describe('/k/maths/[family]', () => {
     await expect(part('astrology')).rejects.toThrow('NEXT_NOT_FOUND')
   })
 
-  it('while tonight\'s lesson waits there is no Practise button, with topics or without', async () => {
+  it('while tonight\'s lesson waits every Practise button stays, with topics or without, and one quiet line says the lesson is on My maths (P155)', async () => {
     state.view = view({ status: 'due' })
     await part('fractions')
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Practise', 'Practise', 'Practise'])
+    expect(screen.queryByText(/Finish tonight's lesson first/)).toBeNull()
+    expect(screen.getByText(/Tonight's lesson is waiting on/)).toBeTruthy()
+    // the line is a pointer, not a gate: its link goes to My maths and nothing is held back
+    expect(screen.getAllByRole('link', { name: 'My maths' }).map((a) => a.getAttribute('href'))).toContain('/k')
+    document.body.innerHTML = ''
+    await part('decimals')
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Practise Decimals'])
+    expect(screen.getByText("Your teacher has not set up this year's topics yet.")).toBeTruthy()
+    expect(screen.getByText(/Tonight's lesson is waiting on/)).toBeTruthy()
+  })
+
+  it('with nothing waiting there is no pointer line at all', async () => {
+    await part('fractions')
+    expect(screen.queryByText(/Tonight's lesson is waiting/)).toBeNull()
+  })
+
+  it('while a practice is being written the Practise buttons are held back with one line, with topics or without', async () => {
+    state.view = view({ status: 'writing' })
+    await part('fractions')
     expect(screen.queryAllByRole('button')).toHaveLength(0)
-    expect(screen.getByText(/Finish tonight's lesson first\./)).toBeTruthy()
+    expect(screen.getByText(/Jemma is writing your practice\./)).toBeTruthy()
+    expect(screen.queryByText(/Tonight's lesson is waiting/)).toBeNull()
     document.body.innerHTML = ''
     await part('decimals')
     expect(screen.queryAllByRole('button')).toHaveLength(0)
-    expect(screen.getByText("Your teacher has not set up this year's topics yet.")).toBeTruthy()
   })
 
   it('never says a percent, a grade, a rank or a classmate, and never says strand or subtopic', async () => {

@@ -187,17 +187,20 @@ export async function myMathsOf(childId: string, now: Date = new Date(), classId
   return buildMyMaths(await (classId ? loadMyMathsInput(createSupabaseAdmin(), childId, now, { classId }) : loadMyMathsInput(createSupabaseAdmin(), childId, now)))
 }
 
-type SessionRow = { id: string; status: string; planned_for: string; lesson_id: string | null; topic_name: string | null; format: Lesson['format'] | null; planned_minutes: number | null }
+type SessionRow = { id: string; status: string; planned_for: string; lesson_id: string | null; topic_name: string | null; format: Lesson['format'] | null; planned_minutes: number | null; created_at?: string | null }
 
-/** The learner's sessions that are planned or begun, in day order. */
+/**
+ * The learner's sessions that are planned or begun, in day order. Sessions of the same day go in the order they were made (P155: a practice the
+ * learner chose is a new session next to tonight's lesson, planned for today as well, and it is the later one), so "the latest" is never a toss-up.
+ */
 export async function loadLearnerSessions(supabase: Awaited<ReturnType<typeof createSupabaseServer>>, childId: string): Promise<SessionRow[]> {
   const { data } = await supabase
     .from('sessions')
-    .select('id, status, planned_for, lesson_id, topic_name, format, planned_minutes')
+    .select('id, status, planned_for, lesson_id, topic_name, format, planned_minutes, created_at')
     .eq('child_id', childId)
     .in('status', ['planned', 'in_progress'])
     .order('planned_for')
-  return (data ?? []) as SessionRow[]
+  return ((data ?? []) as SessionRow[]).sort((a, b) => a.planned_for.localeCompare(b.planned_for) || (a.created_at ?? '').localeCompare(b.created_at ?? ''))
 }
 
 /**

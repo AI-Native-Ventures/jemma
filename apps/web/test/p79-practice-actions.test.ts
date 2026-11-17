@@ -207,10 +207,31 @@ describe('startPractice with the learner\'s choice', () => {
     expect(sendEvent).not.toHaveBeenCalled()
   })
 
-  it('does nothing while a session is due tonight: one thing at a time', async () => {
+  // P155: tonight's lesson is never a gate for a practice the learner chose.
+  it('a session due tonight does not stop a practice the learner chose: the event is sent, and the home is refreshed', async () => {
     state.tonight = { sessionId: 's1' }
     expect(await startPractice({ topicName: 'Adding decimals' })).toEqual({ ok: true })
+    expect(sendEvent).toHaveBeenCalledTimes(1)
+    expect(sendEvent).toHaveBeenCalledWith('practice.requested', { childId: 'child-1', topicName: 'Adding decimals', topicId: 't-dec' })
+    expect(revalidatePath).toHaveBeenCalledWith('/k')
+  })
+
+  it('a choice that is not the learner\'s to make is still refused while a session is due tonight', async () => {
+    state.tonight = { sessionId: 's1' }
+    expect(await startPractice({ topicName: 'Quadratic equations' })).toEqual({ ok: false, message: 'Jemma cannot practise that. Pick one from your list.' })
+    expect(sendEvent).not.toHaveBeenCalled()
+  })
+
+  it('a practice asked for with no choice still counts the session that is due tonight as the practice: nothing is sent', async () => {
+    state.tonight = { sessionId: 's1' }
     expect(await startPractice()).toEqual({ ok: true })
+    expect(sendEvent).not.toHaveBeenCalled()
+  })
+
+  it('a session due tonight and a practice being written: the practice being written is in the way, whatever the choice', async () => {
+    state.tonight = { sessionId: 's1' }
+    state.events = [{ id: 'ev-1', status: 'running' }]
+    expect(await startPractice({ topicName: 'Adding decimals' })).toEqual({ ok: true })
     expect(sendEvent).not.toHaveBeenCalled()
   })
 

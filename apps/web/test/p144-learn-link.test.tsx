@@ -86,6 +86,14 @@ describe('PracticeRow', () => {
     expect(screen.getByRole('link', { name: 'Learn Trigonometry' })).toBeTruthy()
     expect(screen.queryByRole('button', { name: /^Practise/ })).toBeNull()
   })
+
+  it('P155: Learn is there whether or not Practise is held back, and with the topic\'s own link', () => {
+    for (const locked of [false, true]) {
+      const { unmount } = render(<ul><PracticeRow choice={{ topicId: 't1', topicName: 'Trigonometry' }} name="Trigonometry" lines={[]} locked={locked} hasLessons /></ul>)
+      expect(screen.getByRole('link', { name: 'Learn Trigonometry' }).getAttribute('href')).toBe('/k/learn/t1')
+      unmount()
+    }
+  })
 })
 
 describe('a part of "My maths" for a Grade 6 class on the CAPS map', () => {
@@ -119,5 +127,27 @@ describe('a part of "My maths" for a Grade 6 class on the CAPS map', () => {
     await part()
     expect(state.asked).toEqual([])
     expect(screen.queryAllByRole('link', { name: /^Learn / })).toEqual([])
+  })
+})
+
+// P155: tonight's lesson is never a gate. A part page keeps Learn and Practise on every row while tonight's lesson waits, and keeps Learn (not Practise) while
+// a practice is being written.
+describe('a part page while tonight\'s lesson waits, or a practice is being written (P155)', () => {
+  const linksAndButtons = () => ({
+    learn: screen.queryAllByRole('link', { name: /^Learn / }).map((l) => l.getAttribute('aria-label')),
+    practise: screen.queryAllByRole('button', { name: /^Practise / }).length,
+  })
+
+  it('tonight\'s lesson waits: the Learn button and all three Practise buttons stay, and the old "Finish tonight\'s lesson first" line is gone', async () => {
+    state.view = { ...(viewOf(GRADE_6, { caps: true, grade: 6 }) as MyMathsView), status: 'due' }
+    await part()
+    expect(linksAndButtons()).toEqual({ learn: ['Learn Common fractions', 'Learn Common fractions (Term 4)'], practise: 3 })
+    expect(screen.queryByText(/Finish tonight's lesson first/)).toBeNull()
+  })
+
+  it('a practice is being written: Learn stays on every topic that has lessons, Practise is held back', async () => {
+    state.view = { ...(viewOf(GRADE_6, { caps: true, grade: 6 }) as MyMathsView), status: 'writing' }
+    await part()
+    expect(linksAndButtons()).toEqual({ learn: ['Learn Common fractions', 'Learn Common fractions (Term 4)'], practise: 0 })
   })
 })

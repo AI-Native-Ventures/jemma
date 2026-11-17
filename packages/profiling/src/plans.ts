@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { JemmaDb } from './db'
 import type { JemmaEvent } from './schemas/events'
-import { PAPER_QUESTION_COUNT, pickPractice } from './logic'
+import { PAPER_QUESTION_COUNT, isSessionOfChoice, pickPractice } from './logic'
 import { maybe, ok } from './tools/context'
 import { loadPracticeInput } from './tools/read/practice-input'
 
@@ -96,18 +96,27 @@ async function isHeld(db: JemmaDb, testId: string): Promise<boolean> {
 }
 
 /**
- * The learner's planned session for today or earlier, the one the home starts (the latest that is due), and whether its lesson has
- * questions yet. Null when there is none. The plan and the postcondition of `practice.requested` both ask it.
+ * The learner's planned session for today or earlier, the one the home starts (the latest that is due: by day, and the one made last among
+ * sessions of the same day), and whether its lesson has questions yet. Null when there is none. The plan and the postcondition of
+ * `practice.requested` both ask it.
+ * With a `choice` (the topic the learner chose to practise) only a session of that topic counts: a lesson that waits for tonight on another topic is not
+ * the practice they asked for, so a new session is planned next to it and tonight's lesson stays as it is (P155: tonight's lesson never blocks a practice).
  */
-async function dueSession(db: JemmaDb, childId: string, now: Date): Promise<{ id: string; written: boolean } | null> {
+async function dueSession(db: JemmaDb, childId: string, now: Date, choice?: { topicId?: string | null; topicName: string }): Promise<{ id: string; written: boolean } | null> {
   const today = now.toISOString().slice(0, 10)
-  const due = await ok(db.from('sessions').select('id, lesson_id, planned_for').eq('child_id', childId).eq('status', 'planned').lte('planned_for', today).order('planned_for'))
+  const rows = await ok(db.from('sessions').select('id, lesson_id, planned_for, created_at, topic_id, topic_name').eq('child_id', childId).eq('status', 'planned').lte('planned_for', today).order('planned_for'))
+  const due = (choice ? rows.filter((r) => isSessionOfChoice(r, choice)) : rows).sort(
+    (a, b) => a.planned_for.localeCompare(b.planned_for) || String(a.created_at ?? '').localeCompare(String(b.created_at ?? '')),
+  )
   const latest = due[due.length - 1]
   if (!latest) return null
   const lesson = latest.lesson_id ? await maybe(db.from('lessons').select('content').eq('id', latest.lesson_id).maybeSingle()) : null
   const questions = (lesson?.content as { questions?: unknown } | null)?.questions
   return { id: latest.id, written: Array.isArray(questions) && questions.length > 0 }
 }
+
+/** The topic a `practice.requested` event carries: a name (and its id when it has one). A topic id with no name is no choice. */
+const choiceOf = (event: { topicId?: string; topicName?: string }) => (event.topicName ? { topicId: event.topicId ?? null, topicName: event.topicName } : undefined)
 
 /**
  * True when the learner already started (or finished) a practice that was written after `since` (the moment the practice was asked for): a session for
@@ -207,7 +216,7 @@ export async function jobPlan(event: JemmaEvent, db: JemmaDb, now: Date = new Da
     case 'practice.requested': {
       // The learner asked to practise now. A session for today whose lesson has questions: nothing to do. One whose lesson is still empty:
       // write it. None: plan one for today (code picks the topic), then write its lesson.
-      const due = await dueSession(db, event.childId, now)
+      const due = await dueSession(db, event.childId, now, choiceOf(event))
       if (due?.written) return []
       // The lesson is written for THIS session: the learner may have another one planned for a later day, and write_lesson takes the latest.
       const write: JobStep = { job: 'write_lesson', ids: due ? { childId: event.childId, sessionId: due.id } : { childId: event.childId } }
@@ -326,7 +335,7 @@ export async function postconditions(event: JemmaEvent, db: JemmaDb, now: Date =
     case 'practice.requested': {
       // A session for today or earlier whose lesson has questions, unless there was nothing to practise: no open gap and nothing for
       // `pickPractice` to pick (the same loader the planner uses).
-      const due = await dueSession(db, event.childId, now)
+      const due = await dueSession(db, event.childId, now, choiceOf(event))
       if (due?.written) break
       if (!due) {
         const open = await ok(db.from('gaps').select('id').eq('child_id', event.childId).neq('stage', 'fixed').limit(1))

@@ -59,9 +59,10 @@ export function LearnLink({ topicId, name, hasLessons }: { topicId: string | nul
 
 /**
  * One row of a list on "My maths" or on the home: a name, a line or two under it (a reason, a stage, the learner's own count), and a Practise
- * button. `locked` hides the button (tonight's lesson waits, or a practice is being written). `lead` is something that starts the row (a part page
- * puts the topic's progress circle there). `hasLessons` (P144): the topic has lessons in the teaching library, so a Learn button comes with the Practise
- * button (a practice that is being written does not hide it: lessons do not wait for a practice). A row without it is exactly as it was.
+ * button. `locked` hides the Practise button only while a practice is being written (P155: tonight's lesson waiting is never a reason to hide it). `lead` is
+ * something that starts the row (a part page puts the topic's progress circle there). `hasLessons` (P144): the topic has lessons in the teaching library, so a
+ * Learn button comes with the Practise button, and `locked` never hides it: lessons do not wait for a practice or for tonight's lesson. A row without it is
+ * exactly as it was.
  */
 export function PracticeRow({ choice, name, lines, locked, lead, hasLessons = false }: { choice: Choice; name: string; lines: string[]; locked: boolean; lead?: ReactNode; hasLessons?: boolean }) {
   const [message, setMessage] = useState<string | null>(null)

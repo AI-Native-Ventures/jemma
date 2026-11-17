@@ -170,20 +170,20 @@ test.describe('My maths', () => {
     expect(events[0]).toMatchObject({ status: 'queued', payload: { childId: sb.childId, topicName: 'Decimals' } })
   })
 
-  test('while tonight\'s lesson waits there is no Practise button, on My maths or on a part', async ({ page }) => {
+  test('while tonight\'s lesson waits every Practise button stays, on My maths and on a part (P155: tonight\'s lesson is never a gate)', async ({ page }) => {
     await sandbox(page, 'marked')
     await page.goto('/k/maths')
-    await check(page.getByText(/Finish tonight's lesson first\./)).toBeVisible()
-    // the lesson is the first card of this page, with Start
-    await expect(page.getByRole('link', { name: 'Start', exact: true })).toBeVisible()
-    await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(0)
+    await check(page.getByRole('link', { name: 'Start', exact: true })).toBeVisible()
+    await expect(page.getByText(/Finish tonight's lesson first\./)).toHaveCount(0)
+    // the lesson is the first card of this page, with Start (the lists under it keep their Practise buttons: the unit test of the page holds that)
     // the counts and the way into each part stay
     await expect(page.getByRole('region', { name: 'All of Mathematics' }).getByRole('link')).toHaveCount(6)
     await proof(page, 'my-maths-tonight-waits')
 
     await page.goto('/k/maths/fractions')
-    await check(page.getByText(/Finish tonight's lesson first\./)).toBeVisible()
-    await expect(page.getByRole('button', { name: /^Practise / })).toHaveCount(0)
+    await check(page.getByText(/Tonight's lesson is waiting on/)).toBeVisible()
+    await expect(page.getByText(/Finish tonight's lesson first\./)).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /^Practise / }).first()).toBeVisible()
     await noSidewaysScroll(page)
   })
 

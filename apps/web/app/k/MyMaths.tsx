@@ -110,6 +110,7 @@ export async function MyMaths({ searchParams }: { searchParams?: Promise<MathsQu
   const own = shape.workspace === 'own' ? shape : null
   const [today, { maths, status }, past] = await Promise.all([getLearnerToday(), getMyMaths(own?.picked?.classId), getPastPractice()])
   const { firstName, tonight, next } = today
+  // P155: tonight's lesson is never a gate, so `lock` is only there while a practice is being written (Practise is held back, nothing else).
   const lock = lockOf(status)
   const locked = lock !== null
   const grade = own?.picked?.grade ?? null
@@ -123,7 +124,7 @@ export async function MyMaths({ searchParams }: { searchParams?: Promise<MathsQu
   const keyOf = (c: { topicId?: string | null; topicName: string }) => `${c.topicId ?? ''}|${c.topicName}`
   const featured = !tonight && today.practice === 'ready' ? today.suggestion : null
   const suggestions = maths.suggestions.filter((s) => featured === null || keyOf(s) !== keyOf(featured))
-  // The card of a practice that is being written already says so: the note says it once. The note for tonight's lesson stays (the buttons are held).
+  // The card of a practice that is being written already says so: the note says it once (it is only a fallback when the two reads disagree for a moment).
   const note = lock && !empty && today.practice !== 'writing' ? lock.text : null
   const pickLine = !tonight && today.workspace !== 'own' && today.practice === 'ready' && today.suggestion !== null
   const gapsCard = <GapsCard today={today} tone={tonight ? 'today' : 'rest'} />
