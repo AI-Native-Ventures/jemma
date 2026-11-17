@@ -180,7 +180,9 @@ export function LessonReader({ topicId, topicName, grade, entry, count, lesson, 
               <dl className="m-0 flex flex-col gap-2.5">
                 {lesson.keyWords.map((k) => (
                   <div key={k.word} className="flex flex-col gap-0.5">
-                    <dt className="text-[17px] font-semibold">{k.word}</dt>
+                    <dt className="text-[17px] font-semibold">
+                      <LessonInline text={k.word} typeset={typeset} size={20} />
+                    </dt>
                     <dd className="m-0 text-[16px] text-body">
                       <LessonText text={k.meaning} typeset={typeset} size={20} />
                     </dd>
