@@ -549,9 +549,9 @@ describe('the teacher pages', () => {
   it('the topic page has the learners, the analysis and the tokens', async () => {
     render(await TourTeacherTopicPage({ params: Promise.resolve({ part: 'algebra', topic: 'equations' }) }))
     const rows = Array.from(document.querySelectorAll('[data-learner]')).map((r) => r.getAttribute('data-learner'))
-    expect(rows).toEqual(['Lwazi', ...TOUR_CLASS.learners.map((l) => l.name)])
+    expect(rows).toEqual(['Sarah', ...TOUR_CLASS.learners.map((l) => l.name)])
     // the tour learner's row, before the lesson was done in this tab: 1 of 5, marked "You"
-    const you = document.querySelector('[data-learner="Lwazi"]')!
+    const you = document.querySelector('[data-learner="Sarah"]')!
     expect(you.textContent).toContain('1 of 5')
     expect(you.textContent).toContain('You')
     // learners right on each question, from the class file
@@ -590,13 +590,13 @@ describe('the teacher pages', () => {
 
   it('keeps the name of the tour learner whole on a phone: "You" sits under the name, and the name and the pill never share a line', async () => {
     render(await TourTeacherTopicPage({ params: Promise.resolve({ part: 'algebra', topic: 'equations' }) }))
-    const you = document.querySelector('[data-learner="Lwazi"]')!
+    const you = document.querySelector('[data-learner="Sarah"]')!
     const name = you.querySelector('[data-learner-name]') as HTMLElement
-    expect(name.textContent).toBe('Lwazi')
+    expect(name.textContent).toBe('Sarah')
     // the name and the pill are in one column: the pill is the second line, so the name has the whole width of the column
     const column = name.parentElement as HTMLElement
     expect(column.className).toContain('flex-col')
-    expect(Array.from(column.children).map((c) => c.textContent)).toEqual(['Lwazi', 'You'])
+    expect(Array.from(column.children).map((c) => c.textContent)).toEqual(['Sarah', 'You'])
     // the other eight have a name and no pill
     for (const l of TOUR_CLASS.learners) {
       const row = document.querySelector(`[data-learner="${l.name}"]`)!
@@ -636,7 +636,7 @@ describe('the teacher pages', () => {
     sessionStorage.setItem(TOUR_RESULT_KEY, JSON.stringify([true, true, true, false, false]))
     render(await TourTeacherTopicPage({ params: Promise.resolve({ part: 'algebra', topic: 'equations' }) }))
     await act(async () => {})
-    expect(document.querySelector('[data-learner="Lwazi"]')?.textContent).toContain('3 of 5')
+    expect(document.querySelector('[data-learner="Sarah"]')?.textContent).toContain('3 of 5')
   })
 
   it('draws whatever token rows the class file holds, and adds them up', async () => {

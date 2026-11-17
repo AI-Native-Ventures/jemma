@@ -585,7 +585,7 @@ describe('step 4, Teach again', () => {
     press('Next')
     press('See what Jemma found')
     cleanup()
-    render(<ReteachCard name="Lwazi" />)
+    render(<ReteachCard name="Sarah" />)
     await act(async () => {})
     expect(document.querySelector('[data-learns-best]')?.textContent).toBe('Learns best by: Listening')
     expect(Array.from(document.querySelectorAll('[data-reteach-part]')).map((e) => e.getAttribute('data-reteach-part'))).toEqual(['5', '6'])
@@ -594,17 +594,17 @@ describe('step 4, Teach again', () => {
 
 describe('the teacher\'s view of how the learner learns', () => {
   it('shows the default when nothing is stored: two parts, both worked by Listening, "Learns best by: Listening"', async () => {
-    render(<ReteachCard name="Lwazi" />)
+    render(<ReteachCard name="Sarah" />)
     await act(async () => {})
     const rows = Array.from(document.querySelectorAll('[data-reteach-part]'))
     expect(rows.map((r) => r.textContent)).toEqual(['Simultaneous equationsWorked: Listening', 'Quadratic inequalitiesWorked: Listening'])
     expect(document.querySelector('[data-learns-best]')?.textContent).toBe('Learns best by: Listening')
-    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('Taught again: Lwazi')
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('Taught again: Sarah')
   })
 
   it('shows what was found in this tab, a way that did not work included', async () => {
     saveReteach(sessionStorage, { parts: [part(5, 'Simultaneous equations', 'pictures', ['read', 'pictures']), part(6, 'Quadratic inequalities', null, ['listen', 'read'])] })
-    render(<ReteachCard name="Lwazi" />)
+    render(<ReteachCard name="Sarah" />)
     await act(async () => {})
     const rows = Array.from(document.querySelectorAll('[data-reteach-part]'))
     expect(rows.map((r) => r.textContent)).toEqual(['Simultaneous equationsWorked: PicturesTried: Reading, Pictures', 'Quadratic inequalitiesNot yetTried: Listening, Reading'])
@@ -613,9 +613,9 @@ describe('the teacher\'s view of how the learner learns', () => {
 
   it('says so when the lesson was done in this tab and the missed parts were not taught again', async () => {
     saveTourResult(sessionStorage, [false, false, false, false, false])
-    render(<ReteachCard name="Lwazi" />)
+    render(<ReteachCard name="Sarah" />)
     await act(async () => {})
-    expect(document.querySelector('[data-reteach="none"]')?.textContent).toBe('Lwazi has not been taught the missed parts again yet.')
+    expect(document.querySelector('[data-reteach="none"]')?.textContent).toBe('Sarah has not been taught the missed parts again yet.')
     expect(document.querySelector('[data-learns-best]')).toBeNull()
   })
 
