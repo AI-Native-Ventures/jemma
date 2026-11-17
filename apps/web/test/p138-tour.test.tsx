@@ -187,8 +187,11 @@ describe('the way the learner goes through the tour', () => {
 
   it('reads the lesson, answers Question 1, skips the other four and ends on 1 of 5 with every skipped question explained', async () => {
     render(<TourSession />)
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Equations and inequalities')
-    fireEvent.click(screen.getByRole('button', { name: /ready/i }))
+    // P153: the Learn step lists the eight lessons of the library for the topic ("Learn it first")
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Learn it first')
+    expect(screen.getByText('Equations and inequalities')).toBeTruthy()
+    expect(within(screen.getByRole('list', { name: 'Lessons' })).getAllByRole('listitem')).toHaveLength(8)
+    fireEvent.click(screen.getByRole('button', { name: /go to the questions/i }))
     await flush()
 
     expect(screen.getByText('Question 1 of 5')).toBeTruthy()
@@ -221,7 +224,7 @@ describe('the way the learner goes through the tour', () => {
 
   it('P146: Question 1 shows two boxes, Answer 1 and Answer 2, each with "x =" in front, and the line under them says one box for each', async () => {
     render(<TourSession />)
-    fireEvent.click(screen.getByRole('button', { name: /ready/i }))
+    fireEvent.click(screen.getByRole('button', { name: /go to the questions/i }))
     await flush()
     expect(screen.getByText('Question 1 of 5')).toBeTruthy()
     expect(screen.getAllByRole('textbox').map((b) => b.getAttribute('id'))).toEqual(['answer-1', 'answer-2'])
@@ -243,7 +246,7 @@ describe('the way the learner goes through the tour', () => {
 
   it('shows the right answer for a moment on Skip, then the next question, and skipping the first question counts as wrong', async () => {
     render(<TourSession />)
-    fireEvent.click(screen.getByRole('button', { name: /ready/i }))
+    fireEvent.click(screen.getByRole('button', { name: /go to the questions/i }))
     await flush()
     fireEvent.click(screen.getByRole('button', { name: 'Skip' }))
     const status = screen.getByRole('status')
@@ -296,7 +299,7 @@ describe('the learner pages', () => {
 
   it('the lesson page is the session', () => {
     render(<TourLessonPage />)
-    expect(screen.getByRole('button', { name: /ready/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /go to the questions/i })).toBeTruthy()
   })
 
   it('the whole session keeps its links inside the tour, from the lesson to the results', async () => {
@@ -304,7 +307,7 @@ describe('the learner pages', () => {
     try {
       render(<TourSession />)
       stayInTour()
-      fireEvent.click(screen.getByRole('button', { name: /ready/i }))
+      fireEvent.click(screen.getByRole('button', { name: /go to the questions/i }))
       await act(async () => {
         await vi.advanceTimersByTimeAsync(0)
       })
@@ -377,7 +380,7 @@ describe('the learner pages show the score of a finished lesson', () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
     try {
       render(<TourSession />)
-      fireEvent.click(screen.getByRole('button', { name: /ready/i }))
+      fireEvent.click(screen.getByRole('button', { name: /go to the questions/i }))
       await act(async () => {
         await vi.advanceTimersByTimeAsync(0)
       })
