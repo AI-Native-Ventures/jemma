@@ -4,9 +4,8 @@ import { landingRedirectUrl, signedInDestination } from './_landing/destination'
 import { LandingPage } from './_landing/LandingPage'
 
 export const metadata: Metadata = {
-  title: 'Jemma: follows one learner across years',
-  description:
-    'Jemma reads class tests from a photo, finds what each learner is missing, and gives them a short lesson to practise at home. For learners, parents and teachers.',
+  title: 'Jemma: learn maths until you understand it',
+  description: 'Jemma teaches you a short lesson, marks your answers, and teaches again what you got wrong. Every lesson is free.',
 }
 
 /**

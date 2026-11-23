@@ -224,7 +224,8 @@ describe('the guard reads the right files', () => {
   })
 
   it('finds the landing page at the root address (P98): its buttons and links are held to the same rule', () => {
-    for (const f of ['app/page.tsx', 'app/_landing/Hero.tsx', 'app/_landing/Footer.tsx', 'app/_landing/Audiences.tsx']) {
+    // 23 Nov 2026: the page was rewritten. Its two buttons live in Bits.tsx now (used by Hero.tsx and Closing.tsx), and Header.tsx has a link.
+    for (const f of ['app/page.tsx', 'app/_landing/Hero.tsx', 'app/_landing/Footer.tsx', 'app/_landing/Audiences.tsx', 'app/_landing/Bits.tsx', 'app/_landing/Closing.tsx', 'app/_landing/Header.tsx']) {
       expect(files, f).toContain(f)
       expect(scan(f), f).toEqual([])
     }
