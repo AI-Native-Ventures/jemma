@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import type { DiagramSpec } from '@jemma/profiling/schemas'
 import { RichHtml } from './math-label'
-import { BODY, CORAL, CORAL_TEXT, INK, SOFT, Svg, T } from './shared'
+import { BODY, GREEN, RED_TEXT, INK, SOFT, Svg, T } from './shared'
 
 export type Shape2DProps = Extract<DiagramSpec, { kind: 'shape_2d' }>
 
@@ -24,7 +24,7 @@ const HEIGHT = 190
 type Slot = { x: number; y: number; size: number; anchor: 'start' | 'middle' | 'end'; weight?: number; fill?: string }
 const UPRIGHT: Slot = { x: 85, y: 102, size: 12, anchor: 'end' }
 const BASE: Slot = { x: 152, y: 160, size: 12, anchor: 'middle' }
-const SLANTED: Slot = { x: 162, y: 92, size: 12, anchor: 'start', weight: 600, fill: CORAL_TEXT }
+const SLANTED: Slot = { x: 162, y: 92, size: 12, anchor: 'start', weight: 600, fill: RED_TEXT }
 const ANGLE: Slot = { x: 107, y: 89, size: 14, anchor: 'middle', weight: 600 }
 const RIGHT_ANGLE: Slot = { x: 106, y: 131, size: 11, anchor: 'start', fill: BODY }
 const BY_POSITION = [UPRIGHT, BASE, SLANTED]
@@ -125,7 +125,7 @@ export function Shape2D(props: Shape2DProps) {
       {shape === 'triangle' && (
         <>
           <path d="M92 138 L92 58 L212 138 Z" {...fill} />
-          <line x1={92} y1={58} x2={212} y2={138} stroke={CORAL} strokeWidth={3.5} strokeLinecap="round" />
+          <line x1={92} y1={58} x2={212} y2={138} stroke={GREEN} strokeWidth={3.5} strokeLinecap="round" />
           <path d="M92 129 L101 129 L101 138" fill="none" stroke={INK} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round" />
           {tri?.angleMark && <path d="M92 74 A16 16 0 0 0 105.3 66.9" fill="none" stroke={INK} strokeWidth={1.2} strokeLinecap="round" />}
           {tri?.onDrawing}
@@ -134,9 +134,9 @@ export function Shape2D(props: Shape2DProps) {
       {shape === 'circle' && (
         <>
           <circle cx={142.5} cy={92} r={56} {...fill} />
-          <line x1={142.5} y1={92} x2={198.5} y2={92} stroke={CORAL} strokeWidth={3.5} strokeLinecap="round" />
+          <line x1={142.5} y1={92} x2={198.5} y2={92} stroke={GREEN} strokeWidth={3.5} strokeLinecap="round" />
           <circle cx={142.5} cy={92} r={3} fill={INK} />
-          {l[0] && <T x={170.5} y={82} size={12} weight={600} fill={CORAL_TEXT}>{l[0]}</T>}
+          {l[0] && <T x={170.5} y={82} size={12} weight={600} fill={RED_TEXT}>{l[0]}</T>}
           {l[1] && <T x={142.5} y={174} size={12} fill={BODY}>{l[1]}</T>}
         </>
       )}

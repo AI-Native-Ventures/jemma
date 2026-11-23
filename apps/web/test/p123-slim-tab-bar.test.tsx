@@ -192,11 +192,17 @@ describe('the bar is slimmer', () => {
     }
   })
 
-  it('the marked tab has the soft pill and the others have none', () => {
+  // South African colours (23 Nov 2026): a picked tab is green. The pill of the marked tab was the soft grey one (bg-soft-4); it is now the green tint
+  // with a green icon (bg-green-tint text-green), and the other tabs still have no pill.
+  it('the marked tab has the green pill with a green icon and the others have none', () => {
     state.pathname = '/k/me'
     const nav = draw(learner)
-    const pills = links(nav).map((a) => (a.querySelector('span') as HTMLElement).className.includes('bg-soft-4'))
-    expect(pills).toEqual([false, true])
+    const pills = links(nav).map((a) => (a.querySelector('span') as HTMLElement).className.split(/\s+/))
+    expect(pills.map((c) => c.includes('bg-green-tint'))).toEqual([false, true])
+    expect(pills.map((c) => c.includes('text-green'))).toEqual([false, true])
+    // the old grey pill is on no tab, and a tab that is not marked has no fill at all
+    expect(pills.map((c) => c.some((name) => name.startsWith('bg-')))).toEqual([false, true])
+    expect(pills.flat()).not.toContain('bg-soft-4')
   })
 
   it('the Snap button is about 48 px and only a little raised', () => {

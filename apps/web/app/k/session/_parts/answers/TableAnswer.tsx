@@ -55,7 +55,7 @@ export function TableAnswer({ shape, onChange }: { shape: TableShape; onChange: 
                         value={values[n] ?? ''}
                         onChange={(v) => set(n, v)}
                         plain={plain}
-                        className={`mx-auto h-11 border-[3px] border-coral px-0 text-[18px] ${plain ? 'w-[64px]' : 'w-[76px]'}`}
+                        className={`mx-auto h-11 border-[3px] border-green px-0 text-[18px] ${plain ? 'w-[64px]' : 'w-[76px]'}`}
                       />
                     </td>
                   ) : (

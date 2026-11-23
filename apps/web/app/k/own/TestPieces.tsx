@@ -14,7 +14,7 @@ export function Poll({ active }: { active: boolean }) {
 }
 
 const bigButton =
-  'flex min-h-[68px] w-full cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[22px] disabled:opacity-60'
+  'flex min-h-[68px] w-full cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-gold px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[22px] disabled:opacity-60'
 
 /** "Take the photos again" on a test Jemma could not read: the same photos are read again. A refusal is said in plain words under the button. */
 export function RetryTest({ paperId }: { paperId: string }) {
@@ -46,7 +46,7 @@ export function RetryTest({ paperId }: { paperId: string }) {
           Take the photos again
         </IconLabel>
       </PendingButton>
-      {error ? <p role="alert" className="m-0 text-center text-[14px] text-coral-text">{error}</p> : null}
+      {error ? <p role="alert" className="m-0 text-center text-[14px] text-red-text">{error}</p> : null}
     </>
   )
 }

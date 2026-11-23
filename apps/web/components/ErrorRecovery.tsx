@@ -87,14 +87,14 @@ export function useErrorRecovery({ error, reset, retry }: ErrorScreenProps): Rec
   return { phase, busy, tryAgain }
 }
 
-const card = 'flex w-full max-w-[460px] flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(31,29,54,0.06)]'
+const card = 'flex w-full max-w-[460px] flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(22,22,22,0.06)]'
 
-/** The same coral ring the lesson-loading screen turns while Jemma works. */
+/** The same green ring the lesson-loading screen turns while Jemma works. */
 function Ring() {
   return (
     <svg aria-hidden="true" width="36" height="36" viewBox="0 0 28 28" className="motion-safe:animate-spin">
-      <circle cx="14" cy="14" r="11" fill="none" stroke="#EEEDF5" strokeWidth="3.5" />
-      <path d="M14 3a11 11 0 0 1 11 11" fill="none" stroke="#FF6A4D" strokeWidth="3.5" strokeLinecap="round" />
+      <circle cx="14" cy="14" r="11" fill="none" stroke="#EFECE6" strokeWidth="3.5" />
+      <path d="M14 3a11 11 0 0 1 11 11" fill="none" stroke="#007749" strokeWidth="3.5" strokeLinecap="round" />
     </svg>
   )
 }
@@ -120,7 +120,7 @@ export function ErrorRecovery({ home, ...props }: ErrorScreenProps & { home?: st
         <section role="alert" aria-labelledby="recovery-title" className={`${card} gap-4`}>
           <h2 id="recovery-title" className="m-0 text-[24px] leading-[1.2] font-bold tracking-[-0.01em] text-pretty">{RECOVERY_TITLE}</h2>
           <p className="m-0 text-[17px] leading-[1.45] text-body">{RECOVERY_HELP}</p>
-          <Button variant="coral" size="lg" pending={busy} onClick={tryAgain} className="!h-auto min-h-14 !px-5 py-3 text-center">
+          <Button variant="gold" size="lg" pending={busy} onClick={tryAgain} className="!h-auto min-h-14 !px-5 py-3 text-center">
             Try again
           </Button>
           <a

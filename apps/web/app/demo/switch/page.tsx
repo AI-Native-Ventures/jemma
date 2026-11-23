@@ -15,8 +15,8 @@ export const dynamic = 'force-dynamic'
 
 const PEOPLE: { role: DemoRole; initials: string; avatar: string; name: string; detail: string }[] = [
   { role: 'teacher', initials: 'MB', avatar: 'bg-soft-3', name: 'Ms Banda', detail: 'Teacher · 6B and 5A' },
-  { role: 'parent', initials: 'TM', avatar: 'bg-coral-tint', name: 'Thandi M', detail: "Parent · Amina's mother" },
-  { role: 'learner', initials: 'A', avatar: 'bg-coral-soft', name: 'Amina', detail: 'Learner · Grade 6' },
+  { role: 'parent', initials: 'TM', avatar: 'bg-gold-tint', name: 'Thandi M', detail: "Parent · Amina's mother" },
+  { role: 'learner', initials: 'A', avatar: 'bg-gold-soft', name: 'Amina', detail: 'Learner · Grade 6' },
 ]
 
 const NEXT: Record<number, string> = {
@@ -46,8 +46,8 @@ export default async function DemoSwitchPage() {
   // The three people the demo page puts first are listed first here too, then everyone else.
   const more: { person: string; initials: string; name: string; detail: string; avatar: string }[] = [
     ...people.teachers.filter((t) => t.key !== 'banda').map((t) => ({ person: `teacher:${t.key}`, initials: t.displayName.split(' ').map((w) => w.charAt(0)).join(''), name: t.displayName, detail: `Teacher · ${t.classes.join(', ')}`, avatar: 'bg-soft-3' })),
-    ...people.parents.filter((p) => p.key !== 'thandi').map((p) => ({ person: `parent:${p.key}`, initials: p.displayName.split(' ').map((w) => w.charAt(0)).join(''), name: p.displayName, detail: `Parent · ${p.children.map((c) => (c.alone ? `${c.name} (on their own)` : c.name)).join(' and ')}`, avatar: 'bg-coral-tint' })),
-    ...people.learners.flatMap((g) => g.names.filter((n) => n !== 'Amina').map((n) => ({ person: `learner:${n}`, initials: n.charAt(0), name: n, detail: `Learner · ${g.className.split(' ')[0]}`, avatar: 'bg-coral-soft' }))),
+    ...people.parents.filter((p) => p.key !== 'thandi').map((p) => ({ person: `parent:${p.key}`, initials: p.displayName.split(' ').map((w) => w.charAt(0)).join(''), name: p.displayName, detail: `Parent · ${p.children.map((c) => (c.alone ? `${c.name} (on their own)` : c.name)).join(' and ')}`, avatar: 'bg-gold-tint' })),
+    ...people.learners.flatMap((g) => g.names.filter((n) => n !== 'Amina').map((n) => ({ person: `learner:${n}`, initials: n.charAt(0), name: n, detail: `Learner · ${g.className.split(' ')[0]}`, avatar: 'bg-gold-soft' }))),
   ]
 
   return (
@@ -56,11 +56,11 @@ export default async function DemoSwitchPage() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="switch"
-        className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[92dvh] max-w-[390px] flex-col gap-4 overflow-y-auto rounded-t-[28px] bg-ground px-5 pt-2.5 pb-[30px] shadow-[0_-10px_30px_rgba(31,29,54,0.18)]"
+        className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[92dvh] max-w-[390px] flex-col gap-4 overflow-y-auto rounded-t-[28px] bg-ground px-5 pt-2.5 pb-[30px] shadow-[0_-10px_30px_rgba(22,22,22,0.18)]"
       >
         <span aria-hidden="true" className="h-[5px] w-11 self-center rounded-pill bg-edge" />
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 rounded-pill bg-coral-tint py-[5px] pr-3 pl-[9px] text-[13px] font-bold">
+          <span className="inline-flex items-center gap-1.5 rounded-pill bg-gold-tint py-[5px] pr-3 pl-[9px] text-[13px] font-bold">
             <GemIcon size={11} />
             Demo · your own copy
           </span>
@@ -86,7 +86,7 @@ export default async function DemoSwitchPage() {
                 </span>
                 {current ? (
                   <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="m5 12.5 4.5 4.5L19 7.5" />
                     </svg>
                     You&apos;re here
@@ -154,7 +154,7 @@ export default async function DemoSwitchPage() {
           </div>
           <span aria-hidden="true" className="grid grid-cols-5 gap-1">
             {[1, 2, 3, 4, 5].map((n) => (
-              <span key={n} className={`h-1.5 rounded-pill ${n < demo.step ? 'bg-ink' : n === demo.step ? 'bg-coral' : 'bg-soft-3'}`} />
+              <span key={n} className={`h-1.5 rounded-pill ${n < demo.step ? 'bg-green' : n === demo.step ? 'bg-gold' : 'bg-soft-3'}`} />
             ))}
           </span>
           <p className="m-0 text-[15px] leading-[1.45]">{NEXT[demo.step]}</p>

@@ -202,7 +202,7 @@ function SubjectBar({ v, path }: { v: LongView; path: string }) {
               href={subjectLinkOf(path, s.name)}
               scroll={false}
               aria-current={s.selected ? 'page' : undefined}
-              className={`inline-flex min-h-11 items-center rounded-pill px-4 text-[15px] font-semibold no-underline ${s.selected ? 'bg-ink text-white' : 'bg-soft-2 text-ink'}`}
+              className={`inline-flex min-h-11 items-center rounded-pill px-4 text-[15px] font-semibold no-underline ${s.selected ? 'bg-green text-white' : 'bg-soft-2 text-ink'}`}
             >
               {s.name}
             </Link>

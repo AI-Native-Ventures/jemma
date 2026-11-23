@@ -1,5 +1,6 @@
 'use client'
 
+import { GemRow } from '@/components/sa'
 import { Frac, FractionText, hasMath, isFraction, MathText, withFractions } from './Frac'
 import { hasTypeset, type TypesetMode } from './typeset'
 import { Bar, type Fill } from './Bars'
@@ -107,13 +108,13 @@ function Stacked({ value, size, rule, gap, side }: { value: string; size: number
   )
 }
 
-/** The right answer drawn as bars: the first amount converted in coral, the second added in ink. */
+/** The right answer drawn as bars: the first amount converted in gold, the second added in black. */
 function RightBar({ m }: { m: MissedQuestion }) {
   if (!m.terms || m.terms.length !== 2 || !isFraction(m.right)) return null
   const [rn, rd] = m.right.split('/').map(Number) as [number, number]
   const [n1, d1] = m.terms[0]!.split('/').map(Number) as [number, number]
-  const coral = Math.min(rn, (n1 * rd) / d1)
-  const fills = Array.from({ length: rd }, (_, i): Fill => (i < coral ? 'coral' : i < rn ? 'ink' : 'none'))
+  const gold = Math.min(rn, (n1 * rd) / d1)
+  const fills = Array.from({ length: rd }, (_, i): Fill => (i < gold ? 'gold' : i < rn ? 'ink' : 'none'))
   return (
     <span className="flex">
       <Bar fills={fills} height={26} radius={6} white />
@@ -187,7 +188,7 @@ function RightCard({ m }: { m: MissedQuestion }) {
     <article data-verdict="right" aria-labelledby={`r${m.n}`} className="flex flex-col gap-3.5 rounded-[24px] border border-line bg-card p-[18px]">
       <CardHead m={m} />
       <p data-verdict-line="true" className="m-0 flex items-center gap-2 text-[17px] leading-[1.3] font-bold">
-        <span aria-hidden="true" className="flex size-6 flex-none items-center justify-center rounded-pill bg-[#1E7B4B]">
+        <span aria-hidden="true" className="flex size-6 flex-none items-center justify-center rounded-pill bg-green">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
         </span>
         Yes, you&apos;re right.
@@ -195,7 +196,7 @@ function RightCard({ m }: { m: MissedQuestion }) {
       {m.cells ? (
         <CellResults m={m} showRight={false} />
       ) : (
-        <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-[#1E7B4B] bg-[#EAF6EF] px-3.5 py-2.5 ${isLong(m.wrote) ? 'gap-3' : ''}`}>
+        <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-green bg-green-tint px-3.5 py-2.5 ${isLong(m.wrote) ? 'gap-3' : ''}`}>
           <span className={isLong(m.wrote) ? 'flex-none text-[14px] font-semibold' : 'text-[14px] font-semibold'}>You wrote</span>
           <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
         </span>
@@ -212,7 +213,7 @@ function MissedCard({ m }: { m: MissedQuestion }) {
     <article data-verdict="missed" aria-labelledby={`r${m.n}`} className="flex flex-col gap-3.5 rounded-[24px] border border-line bg-card p-[18px]">
       <CardHead m={m} />
       <p data-verdict-line="true" className="m-0">
-        <span className="inline-flex rounded-pill bg-coral-wash px-3 py-1 text-[14px] leading-[1.3] font-bold text-coral-text">Not yet.</span>
+        <span className="inline-flex rounded-pill bg-soft-4 px-3 py-1 text-[14px] leading-[1.3] font-bold text-red-text">Not yet.</span>
       </p>
       {m.cells ? (
         <CellResults m={m} showRight />
@@ -227,7 +228,7 @@ function MissedCard({ m }: { m: MissedQuestion }) {
               <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
             )}
           </span>
-          <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-coral bg-[#FFF1ED] px-3.5 py-2.5 ${m.unread ? 'col-span-2' : stack(m) ? 'gap-3' : ''}`}>
+          <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-green bg-green-tint px-3.5 py-2.5 ${m.unread ? 'col-span-2' : stack(m) ? 'gap-3' : ''}`}>
             <span className={stack(m) ? 'flex-none text-[14px] font-semibold' : 'text-[14px] font-semibold'}>Right answer</span>
             <Stacked value={m.right} size={20} rule={2} gap={2} side={3} />
           </span>
@@ -235,7 +236,7 @@ function MissedCard({ m }: { m: MissedQuestion }) {
       )}
       <p className="m-0 text-[16px] leading-[1.5]"><strong className="font-bold">Why:</strong> <FractionText text={m.why} size={22} rule={2} gap={3} side={3} typeset={modeOf(m)} /></p>
       <Steps steps={m.steps} />
-      <div className="flex flex-col gap-2 rounded-[16px] bg-[#F7F6FB] p-3.5">
+      <div className="flex flex-col gap-2 rounded-[16px] bg-[#F8F6F1] p-3.5">
         <span className="text-[15px] font-bold">The right way</span>
         <span className="text-[16px] leading-[1.5]"><FractionText text={m.rightWay} size={22} rule={2} gap={3} side={3} typeset={modeOf(m)} /></span>
         <RightBar m={m} />
@@ -260,11 +261,7 @@ export function Results({ firstName, missed, heading, note }: { firstName: strin
   return (
     <main className="flex flex-1 flex-col gap-[18px] px-5 pt-5 pb-[26px]">
       <div className="flex flex-col gap-2.5">
-        <span aria-hidden="true" className="flex gap-1.5">
-          <Gem kind="full" size={18} />
-          <svg width="18" height="18" viewBox="0 0 16 16"><polygon points="8,1 15,8 8,15 1,8" fill="#1F1D36" /></svg>
-          <Gem kind="full" size={18} />
-        </span>
+        <GemRow size={18} />
         <h1 className="m-0 text-[32px] leading-[1.1] font-bold tracking-[-0.02em]">{heading ?? `You finished, ${firstName}!`}</h1>
         {note ? <p data-note="true" className="m-0 text-[16px] leading-[1.45] font-semibold text-body">{note}</p> : null}
         {lines ? (

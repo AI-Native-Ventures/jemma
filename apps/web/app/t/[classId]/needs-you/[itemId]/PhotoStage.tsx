@@ -22,7 +22,7 @@ export function PhotoStage({ children, zoom }: { children: ReactNode; zoom: Reac
           type="button"
           aria-label="Rotate"
           onClick={() => setTurns((t) => (t + 1) % 4)}
-          className="hidden size-11 cursor-pointer items-center justify-center rounded-pill border-none bg-[rgba(18,16,34,0.72)] p-0 text-white lg:flex"
+          className="hidden size-11 cursor-pointer items-center justify-center rounded-pill border-none bg-[rgba(14,14,14,0.72)] p-0 text-white lg:flex"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={ROTATE_PATH} /><path d="M20 4v4.5h-4.5" /></svg>
         </button>

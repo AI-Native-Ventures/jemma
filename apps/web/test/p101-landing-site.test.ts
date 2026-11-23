@@ -50,15 +50,15 @@ describe('the page head', () => {
   })
 
   it('has the title, the description from the hero sentence, the canonical address and the theme colour', () => {
-    expect(html).toContain('<title>Jemma: follows one learner across years</title>')
-    const hero = 'Jemma reads class tests from a photo, finds what each learner is missing, and gives them a short lesson to practise at home.'
+    expect(html).toContain('<title>Jemma: learn maths until you understand it</title>')
+    const hero = 'Jemma teaches you a short lesson, marks your answers, and teaches again what you got wrong. Every lesson is free.'
     expect(html).toContain(`<meta name="description" content="${hero}">`)
     expect(html).toContain(`<link rel="canonical" href="${LANDING}/">`)
-    expect(html).toContain('<meta name="theme-color" content="#F7F7FA">')
+    expect(html).toContain('<meta name="theme-color" content="#F8F6F1">')
   })
 
   it('has Open Graph title and description, and a favicon that is in the folder', () => {
-    expect(html).toContain('<meta property="og:title" content="Jemma: follows one learner across years">')
+    expect(html).toContain('<meta property="og:title" content="Jemma: learn maths until you understand it">')
     expect(html).toMatch(/<meta property="og:description" content="[^"]{40,}">/)
     const icon = /<link rel="icon" href="([^"]+)"/.exec(html)
     expect(icon).not.toBeNull()
@@ -70,22 +70,33 @@ describe('the page body', () => {
   it('has the section headings in the designed order', () => {
     const headings = [...html.matchAll(/<h([123])\b[^>]*>([\s\S]*?)<\/h\1>/g)].map((m) => `h${m[1]} ${textOf(m[2]!)}`)
     expect(headings).toEqual([
-      'h1 Follows one learner across years, not one term.',
+      'h1 Learn maths until you understand it.',
       'h2 How it works',
-      'h2 See what held for three terms or more.',
-      "h2 Who it's for",
-      'h3 For learners',
-      'h3 For parents',
-      'h3 For teachers',
+      'h3 Learn',
+      'h3 Try',
+      'h3 Jemma marks it',
+      'h3 Learn it again',
+      'h2 Miss one step, and the next is hard.',
+      'h3 Fractions',
+      'h3 Algebra',
+      'h3 Trigonometry and calculus',
       'h2 Maths for Grade 1 to Grade 12.',
+      'h2 Add a parent. Join your class.',
+      'h3 For parents',
+      'h3 For schools',
+      'h2 Free to learn. Plans to practise.',
+      'h3 Free',
+      'h3 Light',
+      'h3 Regular',
+      'h3 Heavy',
       'h2 The rules it keeps',
-      'h2 See it with a made-up class.',
+      'h2 Try a lesson now.',
     ])
   })
 
-  it('says "MIT licence" beside the scope line in the footer', () => {
+  it('says "MIT licence" beside the scope line in the footer, and that every learner shown is made up', () => {
     const footer = /<footer\b[\s\S]*<\/footer>/.exec(html)![0]
-    expect(textOf(footer)).toContain('Mathematics, CAPS Grades 1 to 12. MIT licence')
+    expect(textOf(footer)).toContain('Mathematics, CAPS Grades 1 to 12. MIT licence. Every learner shown here is made up.')
   })
 
   it('has no script, no template tag and nothing from the design tool', () => {
@@ -96,7 +107,7 @@ describe('the page body', () => {
   it('asks no third party for anything: no font service and no outside address except the links', () => {
     for (const banned of ['fonts.googleapis', 'fonts.gstatic', '@import']) expect(html.includes(banned), banned).toBe(false)
     const outside = [...html.matchAll(/(?:src|href|content)="(https?:\/\/[^"]+)"/g)].map((m) => m[1]!)
-    const allowed = new Set([`${LANDING}/`, `${APP}/demo`, `${APP}/sign-in`, `${APP}/sign-up`, `${APP}/privacy`, `${APP}/help`, GITHUB])
+    const allowed = new Set([`${LANDING}/`, `${APP}/tour`, `${APP}/sign-in`, `${APP}/sign-up`, `${APP}/privacy`, `${APP}/help`, GITHUB])
     expect(outside.filter((u) => !allowed.has(u))).toEqual([])
   })
 
@@ -105,41 +116,58 @@ describe('the page body', () => {
   })
 })
 
-describe("the taped card in the hero (Amina's Fractions row of the real Long view)", () => {
-  // The legend of the Long view: full = 80 percent or more, half = 50 to 79, empty = below 50, dashed outline = no results that term.
-  // The real row, Grade 4 to Grade 6: two terms with no results then two half, two half then two empty, and two empty so far in Grade 6.
-  type Level = 'full' | 'half' | 'empty' | 'dashed'
+describe("the words are a learner's own (23 Nov 2026)", () => {
+  const text = textOf(html)
 
-  /** The dots of each "Gr N" row, read from the drawing: a dash pattern is dashed, a solid disc is full, a ring with a half disc is half, a plain ring is empty. */
-  function rows(): Record<string, Level[]> {
-    const found: Record<string, Level[]> = {}
-    for (const row of html.matchAll(/<span[^>]*>(Gr \d+)<\/span>(<svg[\s\S]*?<\/svg>)/g)) {
-      found[row[1]!] = [...row[2]!.matchAll(/<circle\b([^>]*)\/>(<path d="[^"]*" fill="#1F1D36"\/>)?/g)].map((dot): Level => {
-        const attrs = dot[1]!
-        if (/stroke-dasharray=/.test(attrs)) return 'dashed'
-        if (/\br="6"/.test(attrs) && /fill="#1F1D36"/.test(attrs)) return 'full'
-        return dot[2] ? 'half' : 'empty'
-      })
-    }
-    return found
-  }
-
-  it('names the learner, the topic and the grades', () => {
-    expect(textOf(html)).toContain('Amina · Fractions Grade 4 to Grade 6')
+  it('never says "gap", "gaps", "Long view" or "demo": those are our words, not a learner\'s', () => {
+    for (const ours of [/\bgaps?\b/i, /long view/i, /\bdemo\b/i, /across years/i]) expect(text).not.toMatch(ours)
+    // Not in the address of a picture either.
+    expect(html).not.toMatch(/\/img\/[^"]*gap/i)
   })
 
-  it('draws the real dots: Grade 4 and Grade 5 four terms, Grade 6 the two terms it has so far', () => {
-    expect(rows()).toEqual({
-      'Gr 4': ['dashed', 'dashed', 'half', 'half'],
-      'Gr 5': ['half', 'half', 'empty', 'empty'],
-      'Gr 6': ['empty', 'empty'],
-    })
+  it('calls no one "she" or "he", in the words and in the words that stand for the pictures (the rule of the app, P99b)', () => {
+    const alts = [...html.matchAll(/\balt="([^"]*)"/g)].map((m) => m[1]!)
+    for (const words of [text, ...alts]) expect(words).not.toMatch(/\b(she|her|hers|herself|he|him|his|himself)\b/i)
   })
 
-  it('draws a dashed dot as a ring with a dash pattern, in the muted colour of the app legend', () => {
-    const dashed = [...html.matchAll(/<circle\b[^>]*stroke-dasharray="[^"]*"[^>]*\/>/g)].map((m) => m[0])
-    expect(dashed.length).toBe(2)
-    for (const dot of dashed) expect(dot).toMatch(/r="5\.3"[^>]*fill="#FFFFFF"[^>]*stroke="#8C89A3"|fill="#FFFFFF"[^>]*stroke="#8C89A3"[^>]*r="5\.3"/)
+  it('pins a card to the hero: what Amina is working on, and the three states of the app', () => {
+    expect(text).toContain('Amina is working on Adding fractions New Practising Fixed')
+  })
+
+  it('tells how it works in four steps, in order, in plain words', () => {
+    const steps = [...html.matchAll(/<span aria-hidden="true"[^>]*>(\d)<\/span>\s*<div[^>]*>\s*<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/g)].map(
+      (m) => `${m[1]} ${textOf(m[2]!)}: ${textOf(m[3]!)}`,
+    )
+    expect(steps).toEqual([
+      '1 Learn: A short lesson. Read it, see it in pictures, or listen.',
+      '2 Try: Answer the questions. Type them, or snap your paper.',
+      '3 Jemma marks it: You see what you got wrong, and why.',
+      '4 Learn it again: Jemma teaches that part again. Practise until you get it right.',
+    ])
+    expect(text).toContain('Got a test back from school? Snap it. Jemma finds what to practise.')
+  })
+
+  it('says why maths gets hard without a label: a missed step, never a learner who is bad at maths', () => {
+    expect(text).toContain('Why maths gets hard Miss one step, and the next is hard. You are not bad at maths. Jemma teaches again the step you missed.')
+    expect(text).toContain('Grade 4 to 6 missed Fractions You miss adding fractions.')
+  })
+
+  it('shows the four plans by the year in dollars, and says that paid plans are not open yet', () => {
+    const plans = [...html.matchAll(/<li\b[^>]*>\s*<span[^>]*>\s*<span[^>]*>(\$\d+)<\/span>\s*<span[^>]*>([^<]*)<\/span>\s*<\/span>\s*<h3[^>]*>([^<]*)<\/h3>\s*<p[^>]*>([^<]*)<\/p>\s*<p[^>]*>([^<]*)<\/p>/g)].map(
+      (m) => m.slice(1, 6).join(' | '),
+    )
+    expect(plans).toEqual([
+      '$0 | always | Free | 2 practices a day | every lesson, always',
+      '$48 | a year | Light | 150 practices a month | about 5 a day',
+      '$96 | a year | Regular | 300 practices a month | about 10 a day',
+      '$192 | a year | Heavy | 600 practices a month | about 20 a day',
+    ])
+    expect(text).toContain('Family: 20% off for two or more learners.')
+    expect(text).toContain('Paid plans are not open yet. For now, practice is free.')
+  })
+
+  it('keeps three rules', () => {
+    expect(text).toContain('The rules it keeps Jemma never calls you slow or weak. You are never ranked against your class. Your own practice never goes to your school.')
   })
 })
 
@@ -148,7 +176,7 @@ describe('the links', () => {
     const attrs = m[1]!
     return { href: /\bhref="([^"]*)"/.exec(attrs)?.[1], label: /\baria-label="([^"]*)"/.exec(attrs)?.[1] ?? textOf(m[2]!) }
   })
-  const ALLOWED = ['/', `${APP}/demo`, `${APP}/sign-in`, `${APP}/sign-up`, `${APP}/privacy`, `${APP}/help`, GITHUB]
+  const ALLOWED = ['/', `${APP}/tour`, `${APP}/sign-in`, `${APP}/sign-up`, `${APP}/privacy`, `${APP}/help`, GITHUB]
 
   it('every link has an address from the allowed set and none is "#"', () => {
     expect(links.length).toBeGreaterThan(0)
@@ -162,7 +190,7 @@ describe('the links', () => {
   it('each label goes where the packet says', () => {
     const want: Record<string, string> = {
       'jemma home': '/',
-      'Try the demo': `${APP}/demo`,
+      'Try a lesson': `${APP}/tour`,
       'Sign in': `${APP}/sign-in`,
       Start: `${APP}/sign-up`,
       Privacy: `${APP}/privacy`,
@@ -172,7 +200,7 @@ describe('the links', () => {
     for (const l of links) expect(want[l.label], `unknown link "${l.label}"`).toBe(l.href)
     const count = (label: string) => links.filter((l) => l.label === label).length
     expect(count('jemma home')).toBe(2)
-    expect(count('Try the demo')).toBe(2)
+    expect(count('Try a lesson')).toBe(2)
     expect(count('Sign in')).toBe(3)
     for (const once of ['Start', 'Privacy', 'Help', 'Source on GitHub']) expect(count(once), once).toBe(1)
   })
@@ -184,19 +212,26 @@ describe('the pictures', () => {
     return { src: attr('src'), alt: attr('alt'), width: attr('width'), height: attr('height'), loading: attr('loading'), decoding: attr('decoding') }
   })
 
-  it('are the ten screenshots, in the order of the page, at the designed sizes', () => {
+  it('are the eleven screenshots, in the order of the page, at the designed sizes (the results screen is shown twice: the hero and step 3)', () => {
     expect(imgs.map((i) => `${i.src} ${i.width}x${i.height}`)).toEqual([
-      '/img/hero-lesson.png 390x844',
-      '/img/longview-laptop.png 1440x900',
-      '/img/longview-phone.png 390x844',
-      '/img/learner-my-own.png 390x844',
-      '/img/parent-tests.png 390x844',
-      '/img/teacher-class.png 390x844',
-      '/img/tile-fractions.png 374x406',
-      '/img/tile-graphs.png 374x406',
-      '/img/tile-trigonometry.png 374x406',
-      '/img/tile-algebra.png 374x406',
+      '/img/results.png 390x844',
+      '/img/step-learn.png 390x844',
+      '/img/step-try.png 390x844',
+      '/img/results.png 390x844',
+      '/img/step-learn-again.png 390x844',
+      '/img/maths-fractions.png 374x406',
+      '/img/maths-graphs.png 374x406',
+      '/img/maths-trigonometry.png 374x406',
+      '/img/maths-algebra.png 374x406',
+      '/img/parent-marks.png 390x844',
+      '/img/class-topics.png 390x860',
     ])
+    // Pictures are cached for a week, so no picture of the page before this one keeps its name: an old one under the new page would show the old colours.
+    for (const old of ['hero-lesson', 'longview-laptop', 'longview-phone', 'learner-my-own', 'parent-tests', 'teacher-class', 'tile-fractions', 'tile-graphs', 'tile-trigonometry', 'tile-algebra']) {
+      expect(html.includes(`/img/${old}.png`), old).toBe(false)
+    }
+    // Nothing is left in the folder that the page does not show.
+    expect(readdirSync(join(publicDir, 'img')).sort()).toEqual([...new Set(imgs.map((i) => i.src!.replace('/img/', '')))].sort())
   })
 
   it('are files in the folder, and real PNG files, with the shape the page gives them', () => {

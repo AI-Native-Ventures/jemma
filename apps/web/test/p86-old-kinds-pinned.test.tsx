@@ -20,7 +20,12 @@ const ask = (over: Partial<QuestionForChild>): QuestionForChild => ({
   ...over,
 })
 const sha = (html: string) => createHash('sha256').update(html).digest('hex')
-const screen = (q: QuestionForChild) => renderToStaticMarkup(<QuestionScreen q={q} busy={false} onAnswer={() => {}} />)
+/**
+ * P160 changed one sentence of a warm-up question and nothing else: learners never read the word gap, so "A quick one from a gap you already
+ * fixed." says "topic". With that sentence put back the HTML is byte for byte what it was: the pins did not move.
+ */
+const withoutP160 = (markup: string) => markup.replace('A quick one from a topic you already fixed.', 'A quick one from a gap you already fixed.')
+const screen = (q: QuestionForChild) => withoutP160(renderToStaticMarkup(<QuestionScreen q={q} busy={false} onAnswer={() => {}} />))
 
 const CASES: Record<string, QuestionForChild> = {
   fraction: ask({ prompt: 'What is 3/4 + 1/8?', answerKind: 'fraction' }),
@@ -60,25 +65,30 @@ const RESULTS: Record<string, MissedQuestion[]> = {
  * sha256 of the HTML of each screen on develop b11ae36. The question screens were re-pinned once by P90 (14 Nov 2026), which gave the Next button
  * and the answer tiles of a choice question room at their sides (`min-h-` instead of `h-`, `px-5 py-3 text-center text-balance`): the HTML of
  * each screen with those classes put back is byte for byte the old one, and the Results screens were not touched.
+ * All of them were re-pinned by P110 (16 Nov 2026, South African colours). With the colour table of the change applied to the old HTML
+ * (coral to gold, coral-text to red-text, ink #1F1D36 to #161616 and so on) and the progress dots and the three gems over the results
+ * put aside (they became beads: BeadRow and GemRow in components/sa), the new HTML of every screen differs from the old one only where a
+ * colour now has a different role: Next and Got it are green (bg-ink to bg-green), the answer boxes have a green edge (border-coral to
+ * border-green) and the right answer box is green (border-green bg-green-tint).
  */
 const PINNED: Record<string, string> = {
-  'question:choice': '0b8419be3300d71f3b74f31f0293b40531a73d6baee314e5c17e69ca4404fc2e',
-  'question:choiceWarm': 'ab48a81d1b514385f5f5cc710ea45c2ef7c868758d5a24bfbdbd9f68b92af45d',
-  'question:decimal': '551bb7bbce0722e11bea70df82b966501ea446f690aece80d4fd9f35cfc8dada',
-  'question:fraction': '9177c77e918aab33560bb016985be2070834b96fae089cad564a0cba7e8edb30',
-  'question:fractionSum': 'c77fcd1ffb3627a42cfa3f3aeb69d833b5ec4c6eb4518700f1f2b0f1c180fe9d',
-  'question:fractionWarm': '7055e95315ffdf80e79b59426756e88dbbd67a519c50e4276ca20fd8d23f9bae',
-  'question:missing': 'f017a246079b01df404c357e633ad3e6126ba7cb5fd4c50eb4977fb3ac8227bb',
-  'question:missingWarm': '71cacff057106ea94752412ed93eaa8511ab64ac5732268476a29f1081117290',
-  'question:mixed': '8394270180af5ed55ca5ca385f371bff376a0b26cf79afe2c4a78f23ceb003b6',
-  'question:money': '98b336f86d4ef9a2e8275f5d0a099cfe5660d74097fca8161c02ef81dcb190a5',
-  'question:plain': '14e6521822ffc49b7315c80c11e242c62585f8398dc322ece9cddddedb1096cb',
-  'question:whole': '35e0ca559a828a16705d0c5a83a1a0cb30c4e549423114a8778bbef668e84edb',
-  'results:mixed': 'ba5b2182437cef66e05f5d45d7ac7041b22a331cb01eb682189af19939948c86',
-  'results:none': '2735fcbe081ee46a5be28c93e39012b4551e47937171a4e51966ce805246f63f',
-  'results:one': '2110d5061169fdce48cbeabfc8dfb7cf9c4b2f61c26c167d082d0b7110b79a42',
-  'results:sum': '9ea18211b5d5e163f4c8b42c82f9eb313c8728891844a2efcd4d825246c627a5',
-  'results:unread': 'd89488b11dcd290b47b12dded858a71f5c677363cd0b34dd19ae42161b6ce433',
+  'question:choice': 'e8c0f093aafee471e5171cc5d32c8f58a39087de56ccbda80e8062909f0b198d',
+  'question:choiceWarm': '15f998bed318f253c617777c545623d23f4d372013200da85ea7d60d7e0d826d',
+  'question:decimal': '24ee09248e0e753ac61570c7f670cdd43e081ece098d9388ae4149c2d63d8e2f',
+  'question:fraction': 'd344a89314553f9f738c7f0e6f499c6422c53d7d3bee03bb6af8a24df2f6712d',
+  'question:fractionSum': '72438c42d5a3895d15a63e68d5dc790384490931eecac0319b5809dd60e01332',
+  'question:fractionWarm': '941d182d0451da56ea4b7605ca7353cbd3b5eb94d1563b93b27ef602c7303ec7',
+  'question:missing': '911723bdc8909eb7b548356c2e1b3a6bf35ac58761b8116569c821179e299862',
+  'question:missingWarm': '9c7f9449bca1b94c92e7e0a487a40b8e9e82c897a0186d72fa3660d13507bae4',
+  'question:mixed': 'e92277525a9d00f65e2d0206333ef72bd6aee46b79e3ae75e45dd40922b16430',
+  'question:money': 'f664a30b61c520f8d095709f3da407dbbbe535bf97b31b99c00c1d9dffc20ef8',
+  'question:plain': '2a7778e359b5dfcd79678bd45aaeace5e9071781603ebf5f499cca1fa08b41b2',
+  'question:whole': 'b0635d52cc4d5cc0059b33768dc00c11c9208d5756e7ec5f3806ca1669647fdf',
+  'results:mixed': '3c9b7c1d6fe18b87e4742c5cf717b8ecb4632237cb4c51daa7e562e04469490c',
+  'results:none': '343820df98b62af4b9b0a56ca396ca969e948c6a9ee2812f18f85092fc4620b6',
+  'results:one': 'cfd71b1b43c486a2ab18cf0510f6e0d9e81aedead98ece409e3d85e29ca4625d',
+  'results:sum': 'a9356c7ca1ba70ffc0849e8dd00dfb82a72767ef38daea49fe4c7f6d7cdc9ed9',
+  'results:unread': 'a04f7e1fb74d0b0293cccca2bb5268f55c6af5bea0ee1e89b7714a5c85cdeb92',
 }
 
 /**

@@ -15,8 +15,8 @@ const OTHER = { title: "I couldn't read this photo.", body: 'Another photo usual
 
 const tip = (icon: React.ReactNode, text: string) => (
   <li key={text} className="flex min-h-12 items-center gap-3">
-    <span aria-hidden="true" className="flex size-9 flex-none items-center justify-center rounded-12 bg-[#EEEDF5]">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <span aria-hidden="true" className="flex size-9 flex-none items-center justify-center rounded-12 bg-[#EFECE6]">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
         {icon}
       </svg>
     </span>
@@ -70,7 +70,7 @@ export function ErrorScreen({ problem, photoUrl, retakeHref }: { problem: string
       </section>
 
       <div className="flex flex-col gap-2">
-        <Link href={retakeHref} className="flex min-h-14 items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white no-underline">
+        <Link href={retakeHref} className="flex min-h-14 items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white no-underline">
           <IconLabel gap={8} icon={<CameraGlyph color="#FFFFFF" />}>
             Retake photo
           </IconLabel>

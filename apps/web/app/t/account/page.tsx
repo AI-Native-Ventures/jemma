@@ -3,7 +3,7 @@ import { ChevronRightIcon } from '@/components/ui/icons'
 import { requireRole } from '@/lib/auth'
 import { getAccount } from '@/lib/data/p21'
 import { BackHeader, Column } from '../_p21'
-import { ComingRow, DeleteAccount, EditDetails, SignOutButton } from './AccountClient'
+import { DeleteAccount, EditDetails, SignOutButton } from './AccountClient'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,8 +40,6 @@ export default async function TeacherAccountPage() {
               </span>
               <ChevronRightIcon className="flex-none" />
             </Link>
-            <ComingRow title="School plan" sub={`Free · ${a.people} of 10 people`} />
-            <ComingRow title="Messages from parents" />
             <Link href="/privacy" className={link}>
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span className="text-[16px] font-medium">Privacy and your data</span>

@@ -1,3 +1,4 @@
+import { GemBurst } from '@/components/sa'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getHandbackNext } from '@/lib/data/p120'
@@ -18,15 +19,7 @@ export default async function HandbackPage() {
       <AppHeader firstName={h.firstName} />
       <div className="flex flex-1 flex-col gap-[22px] px-5 py-[30px]">
         <div className="flex flex-col items-center gap-4 text-center">
-          <span aria-hidden="true" className="relative block h-[110px] w-[150px]">
-            <svg width="70" height="70" viewBox="0 0 16 16" className="absolute top-2.5 left-10"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" /></svg>
-            <svg width="34" height="34" viewBox="0 0 16 16" className="absolute top-14 left-1"><polygon points="8,1.5 14.5,8 8,14.5 1.5,8" fill="none" stroke="#1F1D36" strokeWidth="1.6" /></svg>
-            <svg width="28" height="28" viewBox="0 0 16 16" className="absolute top-0 right-1.5">
-              <polygon points="1,8 15,8 8,15" fill="#FF6A4D" />
-              <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#1F1D36" strokeWidth="1.6" />
-            </svg>
-            <svg width="16" height="16" viewBox="0 0 16 16" className="absolute right-6 bottom-1.5"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#1F1D36" /></svg>
-          </span>
+          <GemBurst width={172} />
           <h1 className="m-0 text-[34px] leading-[1.12] font-bold tracking-[-0.02em]">All done, {h.firstName}!</h1>
           {target.kind === 'home' ? (
             <p className="m-0 text-[19px] leading-[1.45] text-body text-pretty">{h.minutes ? `You worked for ${h.minutes} ${h.minutes === 1 ? 'minute' : 'minutes'} tonight. ` : ''}Well done.</p>
@@ -48,7 +41,7 @@ export default async function HandbackPage() {
           // A learner with nobody to hand the phone to (on their own, or in with a code login: P111, P120) goes back to their own home.
           <Link
             href={target.href}
-            className="flex min-h-14 w-full cursor-pointer items-center justify-center rounded-14 border-0 bg-ink px-5 py-3 text-center text-[17px] leading-[1.25] font-semibold text-balance text-white no-underline"
+            className="flex min-h-14 w-full cursor-pointer items-center justify-center rounded-14 border-0 bg-green px-5 py-3 text-center text-[17px] leading-[1.25] font-semibold text-balance text-white no-underline"
           >
             Back to my Jemma
           </Link>

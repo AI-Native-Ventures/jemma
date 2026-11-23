@@ -90,7 +90,7 @@ test.describe('My maths', () => {
     await check(page.getByRole('heading', { level: 1, name: 'My maths' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'My maths' }).first()).toHaveAttribute('href', '/k')
     await expect(page.getByText('Suggested next')).toBeVisible()
-    await expect(page.getByRole('heading', { level: 2, name: 'Your gaps' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 2, name: 'What to practise' })).toBeVisible()
     await expect(page.getByRole('heading', { level: 2, name: 'All of Mathematics' })).toBeVisible()
 
     // each part is a circle for each topic with one line under them ("2 of 10 secure \u00b7 3 started", or "Not started yet"); a part the map has no topic of keeps "No score yet"
@@ -197,7 +197,7 @@ test.describe('My maths', () => {
     await expect(page.getByRole('link', { name: 'Choose something else' })).toHaveCount(0)
     await proof(page, 'home-suggestion')
     // the line "You've fixed N gaps so far" sits with Your gaps and is not a link
-    await expect(page.getByRole('region', { name: 'Your gaps' }).getByText(/You've fixed \d+ gaps? so far/)).toBeVisible()
+    await expect(page.getByRole('region', { name: 'What to practise' }).getByText(/You've fixed \d+ topics? so far/)).toBeVisible()
     await page.goto('/k/maths')
     await check(page.getByRole('heading', { level: 1, name: 'My maths' })).toBeVisible()
     await expect(page.getByText('Suggested next')).toBeVisible()

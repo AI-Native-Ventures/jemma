@@ -9,9 +9,9 @@ import { startPractice } from './actions'
 
 export type Choice = { topicId?: string | null; topicName: string }
 
-const small = 'flex h-11 flex-none cursor-pointer items-center justify-center rounded-14 border-0 bg-ink px-4 text-[15px] font-semibold text-white disabled:opacity-60'
+const small = 'flex h-11 flex-none cursor-pointer items-center justify-center rounded-14 border-0 bg-green px-4 text-[15px] font-semibold text-white disabled:opacity-60'
 const learn = 'flex h-11 flex-none items-center justify-center rounded-14 border-[1.5px] border-ink bg-card px-4 text-[15px] font-semibold text-ink no-underline'
-const big = 'flex min-h-[68px] w-full cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[24px] disabled:opacity-60'
+const big = 'flex min-h-[68px] w-full cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-gold px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[24px] disabled:opacity-60'
 
 /**
  * A Practise button: asks for a practice on what the learner chose (`startPractice` checks it on the server) and sends the learner to today,
@@ -37,9 +37,9 @@ export function PractiseButton({ choice, label = 'Practise', size = 'small', onM
   return (
     <>
       <PendingButton type="button" pending={pending} onClick={run} aria-label={label === 'Practise' ? `Practise ${choice.topicName}` : undefined} className={size === 'big' ? big : small}>
-        {size === 'big' ? <IconLabel icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="#1F1D36" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" /></svg>}>{label}</IconLabel> : label}
+        {size === 'big' ? <IconLabel icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="#161616" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" /></svg>}>{label}</IconLabel> : label}
       </PendingButton>
-      {message ? <p role="alert" className="m-0 w-full text-center text-[14px] text-coral-text">{message}</p> : null}
+      {message ? <p role="alert" className="m-0 w-full text-center text-[14px] text-red-text">{message}</p> : null}
     </>
   )
 }
@@ -85,7 +85,7 @@ export function PracticeRow({ choice, name, lines, locked, lead, hasLessons = fa
           <PractiseButton choice={choice} onMessage={setMessage} />
         )}
       </div>
-      {message ? <p role="alert" className="m-0 text-[14px] text-coral-text">{message}</p> : null}
+      {message ? <p role="alert" className="m-0 text-[14px] text-red-text">{message}</p> : null}
     </li>
   )
 }

@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import type { JemmaDb } from '@jemma/profiling/db'
 import { createSandbox, resetSandbox, type Logins, type SandboxKind } from '../../../supabase/seed/demo'
 import { isSandboxClass } from '../../../supabase/seed/demo-learners'
@@ -8,6 +8,7 @@ import { loadSheet } from './sample-sheets'
 import { childEmail, childPassword, createChildLogin } from './child-login'
 import { createSupabaseAdmin } from './supabase/admin'
 import { createSupabaseServer } from './supabase/server'
+import { demoOn } from './demo-switch'
 
 export type DemoRole = 'teacher' | 'parent' | 'learner'
 
@@ -44,7 +45,9 @@ export type DemoState = {
   step: 1 | 2 | 3 | 4 | 5
 }
 
+/** The sandbox id of the demo cookie. Always null where the demo is off (the live app): an old cookie there means nothing. */
 export async function demoCookie(): Promise<string | null> {
+  if (!demoOn()) return null
   const value = (await cookies()).get(DEMO_COOKIE)?.value
   return value && UUID.test(value) ? value : null
 }
@@ -160,6 +163,7 @@ export async function getDemoState(): Promise<DemoState | null> {
 
 /** True when the class is in a demo sandbox school (never true for a real school). */
 export async function isDemoClass(classId: string): Promise<boolean> {
+  if (!demoOn()) return false
   return isSandboxClass(createSupabaseAdmin(), classId)
 }
 
@@ -185,6 +189,7 @@ async function signInWith(login: { email: string; password: string }): Promise<v
 
 /** Signs the browser in as `role` in sandbox `sandboxId` and returns where they should land. */
 export async function signInAs(sandboxId: string, role: DemoRole): Promise<string> {
+  if (!demoOn()) notFound()
   if (!isDemoRole(role)) throw new Error('demo: unknown role')
   const db = createSupabaseAdmin()
   const box = await readBox(db, sandboxId)
@@ -220,6 +225,7 @@ async function learnerLogin(db: JemmaDb, sandboxId: string, box: Box, firstName:
 
 /** Signs in as any made-up person of the school (a teacher, a parent or a learner) and returns where they land. */
 export async function signInAsPerson(sandboxId: string, person: DemoPerson): Promise<string> {
+  if (!demoOn()) notFound()
   const db = createSupabaseAdmin()
   const box = await readBox(db, sandboxId)
   if (!box) return startOver()
@@ -248,6 +254,7 @@ export async function signInAsPerson(sandboxId: string, person: DemoPerson): Pro
 
 /** "Try the demo": makes a fresh sandbox unless the judge already has one of this kind, then signs in as `role` (or as `opts.person`). */
 export async function tryDemo(role: DemoRole = 'teacher', opts: { kind?: SandboxKind; person?: DemoPerson | null } = {}): Promise<never> {
+  if (!demoOn()) notFound()
   const kind = opts.kind ?? 'hillview'
   const existing = await getDemoState()
   let sandboxId = existing && existing.kind === kind ? existing.sandboxId : null
@@ -264,6 +271,7 @@ export async function switchRole(role: DemoRole, person?: DemoPerson | null): Pr
 
 /** Throws the judge's copy away and builds it again, then leaves them on /demo signed out (their old users are gone). */
 export async function resetDemo(): Promise<never> {
+  if (!demoOn()) notFound()
   const sandboxId = await demoCookie()
   if (!sandboxId) redirect('/demo')
   const admin = createSupabaseAdmin()

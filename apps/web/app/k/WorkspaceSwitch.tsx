@@ -7,7 +7,7 @@ import { setWorkspace } from './own-actions'
 
 // Two equal buttons with room around their words (the P90 rule): the cell sets the width, the words may take a second line.
 const base = 'flex min-h-11 w-full cursor-pointer items-center justify-center rounded-14 px-5 py-3 text-center text-[17px] leading-[1.25] font-semibold text-balance'
-const filled = `${base} border-[1.5px] border-ink bg-ink text-white`
+const filled = `${base} border-[1.5px] border-green bg-green text-white`
 const outline = `${base} border-[1.5px] border-ink bg-card text-ink`
 
 const CHOICES: { workspace: Workspace; label: string }[] = [
@@ -22,7 +22,7 @@ const CHOICES: { workspace: Workspace; label: string }[] = [
  * A tap shows the new state at once: the tapped button is the filled one and the line appears or goes before the server has said anything (the
  * server's draw of the page takes seconds on a phone). Then `setWorkspace` is called, and nothing else: it sets a cookie, and setting a cookie in a
  * server action makes Next draw the page again in the same answer, so the switch asks the router for no refresh of its own. While that draw is on
- * its way a thin coral line under the buttons says so (and a hidden line says it to a screen reader), and no button is blocked. The page that
+ * its way a thin gold line under the buttons says so (and a hidden line says it to a screen reader), and no button is blocked. The page that
  * arrives is the truth: its `current` is what is shown from then on. A refusal puts the old state back and says why in the action's own words.
  * A tap on the one that is shown does nothing.
  */
@@ -61,7 +61,7 @@ function Switch({ current }: { current: Workspace }) {
         </div>
         {pending ? (
           <>
-            <span aria-hidden="true" className="pointer-events-none absolute inset-x-5 -bottom-[7px] h-[3px] rounded-pill bg-coral motion-safe:animate-pulse" />
+            <span aria-hidden="true" className="pointer-events-none absolute inset-x-5 -bottom-[7px] h-[3px] rounded-pill bg-gold motion-safe:animate-pulse" />
             <span role="status" className="sr-only">
               Opening {shown === 'own' ? 'My own' : 'My school'}
             </span>
@@ -69,7 +69,7 @@ function Switch({ current }: { current: Workspace }) {
         ) : null}
       </div>
       {shown === 'own' ? <p className="m-0 px-1 text-[15px] leading-[1.4] text-body">{OWN_NOTE}</p> : null}
-      {message ? <p role="alert" className="m-0 px-1 text-[14px] text-coral-text">{message}</p> : null}
+      {message ? <p role="alert" className="m-0 px-1 text-[14px] text-red-text">{message}</p> : null}
     </div>
   )
 }

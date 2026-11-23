@@ -76,7 +76,7 @@ export function KeyList({
         onChange={(e) => setDraft(e.target.value)}
         className="h-11 min-w-0 flex-1 rounded-12 border border-muted-2 bg-card px-3 text-[16px] outline-none focus-visible:border-2 focus-visible:border-ink"
       />
-      <PendingButton pending={pending} type="button" disabled={pending} onClick={() => save(n, draft)} className="h-11 cursor-pointer rounded-12 border-none bg-ink px-4 text-[15px] font-semibold text-white">Save</PendingButton>
+      <PendingButton pending={pending} type="button" disabled={pending} onClick={() => save(n, draft)} className="h-11 cursor-pointer rounded-12 border-none bg-green px-4 text-[15px] font-semibold text-white">Save</PendingButton>
     </span>
   )
 
@@ -123,9 +123,9 @@ export function KeyList({
             const isUnsure = item.confidence < SURE || !!item.note
             if (isUnsure) {
               return (
-                <li key={item.n} className="my-1 -ml-3 flex flex-col gap-2.5 rounded-14 border border-[#FFC9BB] bg-coral-wash py-3 pr-2 pl-3">
+                <li key={item.n} className="my-1 -ml-3 flex flex-col gap-2.5 rounded-14 border border-[#FFDC93] bg-gold-wash py-3 pr-2 pl-3">
                   <span className="flex items-center gap-2.5">
-                    <span className="w-[30px] flex-none text-[14px] font-semibold text-coral-text">Q{item.n}</span>
+                    <span className="w-[30px] flex-none text-[14px] font-semibold text-red-text">Q{item.n}</span>
                     <span className="flex min-w-0 flex-1 flex-col gap-px">
                       <span className="text-[15px]"><Maths text={item.prompt} grade={grade} size={16} /></span>
                       <span className="text-[12px] text-body">{item.topicName}</span>
@@ -141,7 +141,7 @@ export function KeyList({
                     editor(item.n)
                   ) : (
                     <span className="grid grid-cols-2 gap-2">
-                      <button type="button" disabled={pending} onClick={() => save(item.n, item.answer)} className="min-h-11 cursor-pointer rounded-12 border-none bg-ink px-4 py-2 text-center text-[15px] font-semibold text-balance text-white">Yes, <Maths text={item.answer} grade={grade} size={16} /></button>
+                      <button type="button" disabled={pending} onClick={() => save(item.n, item.answer)} className="min-h-11 cursor-pointer rounded-12 border-none bg-green px-4 py-2 text-center text-[15px] font-semibold text-balance text-white">Yes, <Maths text={item.answer} grade={grade} size={16} /></button>
                       <button type="button" onClick={() => edit(item.n, item.answer)} className="min-h-11 cursor-pointer rounded-12 border-[1.5px] border-ink bg-card px-4 py-2 text-center text-[15px] font-semibold text-balance text-ink">Change it</button>
                     </span>
                   )}
@@ -167,9 +167,9 @@ export function KeyList({
       </section>
 
       <div className="flex-1" />
-      {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
+      {error ? <p role="alert" className="m-0 text-[14px] text-red-text">{error}</p> : null}
       <div className="flex flex-col gap-2">
-        <PendingButton pending={pending} type="button" onClick={approve} disabled={pending} className="flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-60">
+        <PendingButton pending={pending} type="button" onClick={approve} disabled={pending} className="flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-60">
           <IconLabel gap={8} icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>}>
             Approve key, snap papers
           </IconLabel>

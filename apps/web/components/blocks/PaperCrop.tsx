@@ -13,7 +13,7 @@ export function PaperCrop({ children, caption }: PaperCropProps) {
   return (
     <figure className="m-0 flex flex-col gap-2.5 leading-[normal]">
       <div className="rounded-20 bg-soft-3 p-3">
-        <div className="rounded-md bg-[#FBFAF5] px-3.5 pt-4 pb-2.5 font-[Arial,Helvetica,sans-serif] text-[#2A2A2A] shadow-[0_4px_14px_rgba(31,29,54,0.12)]">
+        <div className="rounded-md bg-[#FBFAF5] px-3.5 pt-4 pb-2.5 font-[Arial,Helvetica,sans-serif] text-[#2A2A2A] shadow-[0_4px_14px_rgba(22,22,22,0.12)]">
           {children}
         </div>
       </div>

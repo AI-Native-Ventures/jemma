@@ -1,24 +1,31 @@
 @import 'tailwindcss';
 
 @theme static {
-  --color-ink: #1f1d36;
-  --color-body: #5d5a73;
-  --color-muted: #6a6782;
-  --color-muted-2: #8c89a3;
-  --color-coral: #ff6a4d;
-  --color-coral-text: #b8381f;
-  --color-coral-tint: #ffe3da;
-  --color-coral-soft: #ffd3c7;
-  --color-coral-wash: #fff4f1;
-  --color-ground: #f7f7fa;
+  /* South African colours. Green is go, gold is the gem, black is the words, red is the red pen, blue is the pen you write with. */
+  --color-ink: #161616;
+  --color-body: #5c5a55;
+  --color-muted: #5f5d58;
+  --color-muted-2: #8f8d88;
+  --color-green: #007749;
+  --color-green-deep: #005c38;
+  --color-green-tint: #ddefe6;
+  --color-gold: #ffb81c;
+  --color-gold-deep: #e3a008;
+  --color-gold-tint: #ffedc6;
+  --color-gold-soft: #ffe3a8;
+  --color-gold-wash: #fff8e8;
+  --color-red: #e03c31;
+  --color-red-text: #b8281e;
+  --color-blue: #001489;
+  --color-ground: #f8f6f1;
   --color-card: #ffffff;
-  --color-line: #e7e6ef;
-  --color-soft: #efeef4;
-  --color-soft-2: #f4f3f8;
-  --color-soft-3: #e9e7f3;
-  --color-soft-4: #eeedf5;
-  --color-navy: #2f3a56;
-  --color-edge: #cfcddc;
+  --color-line: #e8e5de;
+  --color-soft: #f0eee8;
+  --color-soft-2: #f4f2ee;
+  --color-soft-3: #ece9e2;
+  --color-soft-4: #efece6;
+  --color-navy: #12308c;
+  --color-edge: #d2cfc7;
 
   --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
   --font-hand: var(--font-kalam), cursive;
@@ -64,10 +71,23 @@ math-field.jemma-answer {
   font-size: 28px;
   color: var(--color-ink);
   background: var(--color-card);
-  border: 3px solid var(--color-coral);
+  border: 3px solid var(--color-green);
   border-radius: 18px;
   outline: none;
-  --hue: 15;
+  /* The editor's own accent. 157 is the hue of the green (#007749): the editor makes its pale marks from it. Its caret and its selection are set by
+     name as well, so they are the same on every phone: the caret is the green itself (the editor's own pick from the hue is too pale on white), and
+     selected maths is black on pale green (on a phone in dark mode the editor would make it white on mint). */
+  --hue: 157;
+  --caret-color: var(--color-green);
+  --selection-background-color: hsl(157, 70%, 85%);
+  --selection-color: var(--color-ink);
+  /* The marks round the caret are set by name too. On a phone in dark mode the editor draws them for a dark page, and this box is always white: a dark
+     grey box behind the part that holds the caret (a root, a fraction, brackets) with the black maths on it, a pale sign and brackets, and a white
+     bracket to come. These are the editor's own values for a light page, so nothing moves on a phone in light mode. */
+  --contains-highlight-color: var(--color-green);
+  --contains-highlight-background-color: hsl(157, 40%, 95%);
+  --smart-fence-color: currentColor;
+  --smart-fence-opacity: 0.5;
 }
 math-field.jemma-answer:focus-within {
   outline: 2px solid var(--color-ink);
@@ -84,4 +104,18 @@ math-field.jemma-answer::part(menu-toggle) {
   --keycap-gap: 4px;
   --keycap-height: 48px;
   --keycap-font-size: 20px;
+}
+
+/* A space that shows its drawing only when it has room for it (size containment: the drawing never makes the page longer). */
+.sa-room {
+  container-type: size;
+  min-height: 0;
+}
+.sa-room > * {
+  display: none;
+}
+@container (min-height: 112px) {
+  .sa-room > * {
+    display: block;
+  }
 }

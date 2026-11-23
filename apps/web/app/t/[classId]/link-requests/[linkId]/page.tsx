@@ -23,7 +23,7 @@ export default async function TeacherLinkRequestPage({ params }: { params: Promi
 
         <section aria-label="Who is asking" className="flex flex-col gap-3 rounded-20 border border-line bg-card p-4">
           <div className="flex items-center gap-3">
-            <span aria-hidden="true" className="flex size-12 flex-none items-center justify-center rounded-pill bg-coral-tint text-[16px] font-bold">
+            <span aria-hidden="true" className="flex size-12 flex-none items-center justify-center rounded-pill bg-gold-tint text-[16px] font-bold">
               {v.parentInitials}
             </span>
             <span className="flex flex-col gap-px leading-[1.35]">
@@ -33,7 +33,7 @@ export default async function TeacherLinkRequestPage({ params }: { params: Promi
           </div>
           <ul className="m-0 flex list-none flex-col gap-[9px] border-t border-soft p-0 pt-3">
             <li className={item}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5D5A73" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5C5A55" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" />
                 <path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" />
               </svg>

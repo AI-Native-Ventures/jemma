@@ -11,7 +11,7 @@ const label = 'text-[15px] font-medium'
 const outline =
   'flex min-h-14 w-full cursor-pointer items-center justify-center rounded-14 border-[1.5px] border-ink bg-card px-5 py-3 text-center text-[17px] leading-[1.25] font-semibold text-balance text-ink'
 const filled =
-  'flex min-h-14 w-full cursor-pointer items-center justify-center rounded-14 border-0 bg-ink px-5 py-3 text-center text-[17px] leading-[1.25] font-semibold text-balance text-white disabled:opacity-60'
+  'flex min-h-14 w-full cursor-pointer items-center justify-center rounded-14 border-0 bg-green px-5 py-3 text-center text-[17px] leading-[1.25] font-semibold text-balance text-white disabled:opacity-60'
 
 const NO_NAME = 'Type your child’s first name.'
 const NO_GRADE = 'Pick a grade from 1 to 12.'
@@ -89,7 +89,7 @@ export function AloneForm({ defaultName = '', defaultOpen = false }: { defaultNa
             </SelectBox>
           </div>
           {error ? (
-            <p role="alert" className="m-0 text-[15px] leading-[1.4] font-semibold text-coral-text">
+            <p role="alert" className="m-0 text-[15px] leading-[1.4] font-semibold text-red-text">
               {error}
             </p>
           ) : null}

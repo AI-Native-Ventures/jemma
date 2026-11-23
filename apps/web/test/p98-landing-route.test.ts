@@ -1,4 +1,6 @@
 // @vitest-environment node
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // P98: what `/` does. A visitor who is not signed in sees the landing page. A signed-in person is sent where sign-in sends them
@@ -116,9 +118,18 @@ describe('signedInDestination and the page', () => {
 })
 
 describe('the page head', () => {
+  const DESCRIPTION = 'Jemma teaches you a short lesson, marks your answers, and teaches again what you got wrong. Every lesson is free.'
+
   it('has the title and a description, and nothing else', () => {
-    expect(metadata.title).toBe('Jemma: follows one learner across years')
+    expect(metadata.title).toBe('Jemma: learn maths until you understand it')
+    expect(metadata.description).toBe(DESCRIPTION)
     expect(String(metadata.description).length).toBeGreaterThan(40)
     expect(Object.keys(metadata).sort()).toEqual(['description', 'title'])
+  })
+
+  it('every other page of the app has the same description, from the layout', () => {
+    const layout = readFileSync(resolve(import.meta.dirname, '../app/layout.tsx'), 'utf8')
+    expect(layout).toContain(`  description: '${DESCRIPTION}',`)
+    expect(layout.match(/\bdescription:/g)).toHaveLength(1)
   })
 })

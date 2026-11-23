@@ -3,10 +3,9 @@ import { IconLabel } from '@/components/ui/IconLabel'
 import { notFound } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
 import { getBeyond } from '@/lib/data/p23'
-import { ComingButton } from './_coming'
 import { css, Diamond, Icon, SubHeader } from './_parts'
 
-const CARD = 'display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px;padding:16px'
+const CARD = 'display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E8E5DE;border-radius:20px;padding:16px'
 const SR = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap'
 
 export default async function ParentBeyondPage({ params }: { params: Promise<{ childId: string }> }) {
@@ -30,26 +29,22 @@ export default async function ParentBeyondPage({ params }: { params: Promise<{ c
           <h2 id="notes" style={css('margin:0;font-size:17px;font-weight:600')}>{`Notes from ${data.teacher}`}</h2>
           <ul style={css('list-style:none;margin:0;padding:0')}>
             {data.notes.map((n) => (
-              <li key={n.id} style={css('display:flex;flex-direction:column;gap:4px;padding:12px 0;border-top:1px solid #EFEEF4')}>
-                <span style={css('display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#5D5A73')}>
+              <li key={n.id} style={css('display:flex;flex-direction:column;gap:4px;padding:12px 0;border-top:1px solid #F0EEE8')}>
+                <span style={css('display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#5C5A55')}>
                   {n.label}
-                  {n.fresh ? <span style={css('padding:2px 8px;border-radius:999px;background:#FFE3DA;font-size:12px;font-weight:700;color:#1F1D36')}>New</span> : null}
+                  {n.fresh ? <span style={css('padding:2px 8px;border-radius:999px;background:#FFEDC6;font-size:12px;font-weight:700;color:#161616')}>New</span> : null}
                 </span>
                 <span style={css('font-size:16px;line-height:1.45')}>{n.text}</span>
               </li>
             ))}
           </ul>
-          <ComingButton style={css('display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border-radius:12px;border:1.5px solid #1F1D36;background:transparent;color:#1F1D36;font-size:15px;font-weight:600')}>
-            <Icon name="chat" size={18} />
-            {`Message ${data.teacher}`}
-          </ComingButton>
         </section>
 
         <section aria-labelledby="att" style={css(`${CARD};gap:10px`)}>
           <h2 id="att" style={css('margin:0;font-size:17px;font-weight:600')}>Attendance</h2>
-          <p style={css('margin:0;font-size:15px;color:#5D5A73')}>
+          <p style={css('margin:0;font-size:15px;color:#5C5A55')}>
             {`Term ${data.term} so far: `}
-            <strong style={css('color:#1F1D36;font-weight:600')}>{`${data.present} of ${data.total} days`}</strong>.{awayText}
+            <strong style={css('color:#161616;font-weight:600')}>{`${data.present} of ${data.total} days`}</strong>.{awayText}
           </p>
           {data.weeks.map((w) => (
             <ol key={w.label} aria-label={w.label} style={css('list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5, minmax(0, 1fr));gap:6px')}>
@@ -57,19 +52,19 @@ export default async function ParentBeyondPage({ params }: { params: Promise<{ c
                 <li
                   key={d.iso}
                   style={{
-                    ...css(`display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 9px;border-radius:12px;${d.status === 'away' ? 'background:#FFEDE8;border:1px solid #FFC9BB' : 'background:#F4F3F8'}`),
+                    ...css(`display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 9px;border-radius:12px;${d.status === 'away' ? 'background:#FFF3DA;border:1px solid #FFDC93' : 'background:#F4F2EE'}`),
                     gridColumnStart: d.dow + 1,
                   }}
                 >
-                  <span style={css('font-size:12px;color:#5D5A73')}>{d.weekday}</span>
+                  <span style={css('font-size:12px;color:#5C5A55')}>{d.weekday}</span>
                   <span style={css('font-size:15px;font-weight:600')}>{d.dom}</span>
                   {d.status === 'away' ? (
-                    <span style={css('font-size:11px;font-weight:700;color:#B8381F;line-height:16px')}>Away</span>
+                    <span style={css('font-size:11px;font-weight:700;color:#B8281E;line-height:16px')}>Away</span>
                   ) : d.status === 'late' ? (
-                    <span style={css('font-size:11px;font-weight:700;color:#5D5A73;line-height:16px')}>Late</span>
+                    <span style={css('font-size:11px;font-weight:700;color:#5C5A55;line-height:16px')}>Late</span>
                   ) : (
                     <>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="m5 12.5 4.5 4.5L19 7.5" />
                       </svg>
                       <span style={css(SR)}>here</span>
@@ -85,25 +80,25 @@ export default async function ParentBeyondPage({ params }: { params: Promise<{ c
           <h2 id="act" style={css('margin:0;font-size:17px;font-weight:600')}>Activities</h2>
           <ul style={css('list-style:none;margin:0;padding:0')}>
             {data.activities.map((a) => (
-              <li key={a.id} style={css('display:flex;align-items:center;gap:12px;min-height:56px;border-top:1px solid #EFEEF4')}>
-                <span aria-hidden="true" style={css('width:38px;height:38px;flex:none;border-radius:12px;background:#EEEDF5;display:flex;align-items:center;justify-content:center;color:#1F1D36')}>
+              <li key={a.id} style={css('display:flex;align-items:center;gap:12px;min-height:56px;border-top:1px solid #F0EEE8')}>
+                <span aria-hidden="true" style={css('width:38px;height:38px;flex:none;border-radius:12px;background:#EFECE6;display:flex;align-items:center;justify-content:center;color:#161616')}>
                   <Icon name={a.kind === 'sport' ? 'sport' : a.kind === 'music' ? 'music' : 'club'} size={20} />
                 </span>
                 <span style={css('flex:1;display:flex;flex-direction:column;line-height:1.3')}>
                   <span style={css('font-size:16px;font-weight:600')}>{a.name}</span>
-                  <span style={css('font-size:14px;color:#5D5A73')}>{a.line}</span>
+                  <span style={css('font-size:14px;color:#5C5A55')}>{a.line}</span>
                 </span>
               </li>
             ))}
           </ul>
-          <Link href={`/p/${childId}/activities/new`} style={css('display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border-radius:12px;border:1.5px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:15px;font-weight:600;text-decoration:none')}>
+          <Link href={`/p/${childId}/activities/new`} style={css('display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border-radius:12px;border:1.5px solid #161616;background:#FFFFFF;color:#161616;font-size:15px;font-weight:600;text-decoration:none')}>
             <IconLabel gap={6} icon={<Icon name="plus" size={18} width={2} />}>
               Add an activity
             </IconLabel>
           </Link>
         </section>
 
-        <section aria-labelledby="how" style={css('display:flex;flex-direction:column;gap:10px;padding:16px;background:#F4F3F8;border-radius:20px')}>
+        <section aria-labelledby="how" style={css('display:flex;flex-direction:column;gap:10px;padding:16px;background:#F4F2EE;border-radius:20px')}>
           <h2 id="how" style={css('margin:0;font-size:16px;font-weight:600')}>How Jemma uses this</h2>
           <ul style={css('list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px')}>
             {[

@@ -9,12 +9,12 @@ const svg = { fill: 'none', stroke: 'currentColor', strokeLinecap: 'round', stro
 
 const diamond = (size: number, mt: string) => (
   <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" className={`flex-none ${mt}`}>
-    <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+    <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
   </svg>
 )
 
 const chevron = (
-  <svg width="18" height="18" viewBox="0 0 24 24" strokeWidth="2" {...svg} stroke="#1F1D36" className="flex-none">
+  <svg width="18" height="18" viewBox="0 0 24 24" strokeWidth="2" {...svg} stroke="#161616" className="flex-none">
     <path d="m9 6 6 6-6 6" />
   </svg>
 )
@@ -32,7 +32,7 @@ function Change({ change }: { change: number | null }) {
   if (change === 0) return <span className={`${base} bg-soft-2 text-body`}>same</span>
   const down = change < 0
   return (
-    <span className={`${base} gap-0.5 ${down ? 'bg-[#FFEDE8] text-coral-text' : 'bg-soft-4 text-ink'}`}>
+    <span className={`${base} gap-0.5 ${down ? 'bg-[#FFF3DA] text-red-text' : 'bg-soft-4 text-ink'}`}>
       <svg width="12" height="12" viewBox="0 0 24 24" strokeWidth="3" {...svg} aria-hidden={undefined} role="img" aria-label={down ? 'down' : 'up'}>
         <path d={down ? 'M12 5v14M6 13l6 6 6-6' : 'M12 19V5M6 11l6-6 6 6'} />
       </svg>
@@ -63,11 +63,11 @@ function StageGlyph({ stage }: { stage: string }) {
     <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true">
       {stage === 'practising' ? (
         <>
-          <polygon points="1,8 15,8 8,15" fill="#FF6A4D" />
-          <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#1F1D36" strokeWidth="1.6" />
+          <polygon points="1,8 15,8 8,15" fill="#FFB81C" />
+          <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#161616" strokeWidth="1.6" />
         </>
       ) : (
-        <polygon points="8,1.5 14.5,8 8,14.5 1.5,8" fill="none" stroke="#1F1D36" strokeWidth="1.6" />
+        <polygon points="8,1.5 14.5,8 8,14.5 1.5,8" fill="none" stroke="#161616" strokeWidth="1.6" />
       )}
     </svg>
   )
@@ -87,7 +87,7 @@ function Detail({ view, profile, extras, base, hasOwn }: { view: LearnerView; pr
     <section aria-labelledby="child" className="flex min-w-0 flex-[1_1_560px] flex-col gap-[18px] rounded-20 border border-line bg-card px-6 py-[22px]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span aria-hidden="true" className="flex size-12 flex-none items-center justify-center rounded-pill bg-coral-soft text-[18px] font-bold">
+          <span aria-hidden="true" className="flex size-12 flex-none items-center justify-center rounded-pill bg-gold-soft text-[18px] font-bold">
             {view.name.charAt(0)}
           </span>
           <div className="flex flex-col leading-[1.25]">
@@ -109,7 +109,7 @@ function Detail({ view, profile, extras, base, hasOwn }: { view: LearnerView; pr
               {view.name}&apos;s own practice
             </Link>
           ) : null}
-          <Link href={paperHref} className="flex h-[46px] flex-none items-center justify-center gap-2 rounded-14 bg-ink px-[18px] text-[15px] font-semibold text-white no-underline">
+          <Link href={paperHref} className="flex h-[46px] flex-none items-center justify-center gap-2 rounded-14 bg-green px-[18px] text-[15px] font-semibold text-white no-underline">
             <svg width="15" height="15" viewBox="0 0 24 24" strokeWidth="1.9" {...svg} stroke="#FFFFFF">
               <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
               <path d="M14 3v5h5M9 13h6M9 17h4" />
@@ -120,7 +120,7 @@ function Detail({ view, profile, extras, base, hasOwn }: { view: LearnerView; pr
       </div>
       {view.linkedTo ? (
         <p className="m-0 inline-flex items-center gap-2 gap-y-0 self-start rounded-pill bg-soft-2 px-3 py-1.5 text-[14px] font-medium">
-          <svg width="16" height="16" viewBox="0 0 24 24" strokeWidth="1.9" {...svg} stroke="#1F1D36">
+          <svg width="16" height="16" viewBox="0 0 24 24" strokeWidth="1.9" {...svg} stroke="#161616">
             <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" />
             <circle cx="12" cy="12" r="3" />
           </svg>
@@ -204,14 +204,14 @@ function Detail({ view, profile, extras, base, hasOwn }: { view: LearnerView; pr
           <ol aria-label={extras.daysLabel} className="m-0 grid list-none grid-cols-5 gap-[5px] p-0">
             {extras.days.map((d, i) =>
               d.status === 'away' ? (
-                <li key={i} className="flex flex-col items-center gap-0.5 rounded-[10px] border border-[#FFC9BB] bg-[#FFEDE8] py-1.5">
+                <li key={i} className="flex flex-col items-center gap-0.5 rounded-[10px] border border-[#FFDC93] bg-[#FFF3DA] py-1.5">
                   <span className="text-[12px] text-body">{d.day}</span>
-                  <span className="text-[11px] leading-[14px] font-bold text-coral-text">Away</span>
+                  <span className="text-[11px] leading-[14px] font-bold text-red-text">Away</span>
                 </li>
               ) : (
                 <li key={i} className="flex flex-col items-center gap-0.5 rounded-[10px] bg-soft-2 py-1.5">
                   <span className="text-[12px] text-body">{d.day}</span>
-                  <svg width="14" height="14" viewBox="0 0 24 24" strokeWidth="2.4" {...svg} stroke="#1F1D36">
+                  <svg width="14" height="14" viewBox="0 0 24 24" strokeWidth="2.4" {...svg} stroke="#161616">
                     <path d="m5 12.5 4.5 4.5L19 7.5" />
                   </svg>
                   <span className="sr-only">{d.status === 'late' ? 'late' : 'here'}</span>
@@ -307,7 +307,7 @@ export function LaptopLearners({
                       aria-current={on ? 'true' : undefined}
                       className={`my-0.5 flex min-h-16 items-center gap-3 rounded-14 px-2.5 py-2 text-ink no-underline ${on ? 'bg-soft-4' : ''}`}
                     >
-                      <span aria-hidden="true" className={`flex size-9 flex-none items-center justify-center rounded-pill text-[14px] font-bold ${on ? 'bg-coral-soft' : 'bg-soft-3'}`}>
+                      <span aria-hidden="true" className={`flex size-9 flex-none items-center justify-center rounded-pill text-[14px] font-bold ${on ? 'bg-gold-soft' : 'bg-soft-3'}`}>
                         {l.name.charAt(0)}
                       </span>
                       <span className="flex min-w-0 flex-1 flex-col leading-[1.3]">

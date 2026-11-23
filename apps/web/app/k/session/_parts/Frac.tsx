@@ -44,7 +44,7 @@ function Blank({ size, color }: { size: number; color: string }) {
 }
 
 /** A stacked fraction drawn the way the child boards draw it: number, line, number. */
-export function Frac({ top, bottom, size, rule, gap, side, color = '#1F1D36', width, className }: FracProps) {
+export function Frac({ top, bottom, size, rule, gap, side, color = '#161616', width, className }: FracProps) {
   const style: CSSProperties = { fontSize: size, width }
   const part = (p: ReactNode) => (p === null ? <Blank size={size} color={color} /> : p)
   // A box in one part can be wider than the number in the other: the line then runs under the wider one.

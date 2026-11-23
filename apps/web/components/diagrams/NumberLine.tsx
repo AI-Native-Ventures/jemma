@@ -1,5 +1,5 @@
 import type { DiagramSpec } from '@jemma/profiling/schemas'
-import { BODY, CORAL, CORAL_TEXT, INK, Line, Svg, T, WHITE, fmt } from './shared'
+import { BODY, GOLD, GREEN, RED_TEXT, INK, Line, Svg, T, WHITE, fmt } from './shared'
 import { boxOf, hits, hitsAny, type Box } from './label-clear'
 import { bareNumberValue, isBareNumber, isSolutionLabel, readCaption, readInequality, type Inequality } from './inequality'
 import { labelWidth, raisedLabel } from './math-label'
@@ -25,7 +25,10 @@ const ROW = 17
 const ROWS = 4
 const EDGE = 4
 const r1 = (n: number) => Math.round(n * 10) / 10
-/** P141: an inequality is a circle on its number and a thick ray with an arrow head (or a thick segment between two circles), drawn in the colour of a mark. */
+/**
+ * P141: an inequality is a circle on its number and a thick ray with an arrow head (or a thick segment between two circles). The ray, its arrow head and a
+ * filled circle are one shape in one colour, green (the line to look at); an open circle is white. A mark that is only a point stays a gold dot.
+ */
 const RAY_W = 6
 const CIRCLE_R = 7
 const ARROW_LEN = 12
@@ -184,14 +187,14 @@ export function NumberLine(props: NumberLineProps) {
       })}
       {shapes.map((sh, i) => {
         if (sh.kind === 'open') return null
-        if (sh.kind === 'segment') return <line key={`shape${i}`} data-segment="" x1={r1(px(sh.lo))} y1={Y} x2={r1(px(sh.hi))} y2={Y} stroke={CORAL} strokeWidth={RAY_W} />
+        if (sh.kind === 'segment') return <line key={`shape${i}`} data-segment="" x1={r1(px(sh.lo))} y1={Y} x2={r1(px(sh.hi))} y2={Y} stroke={GREEN} strokeWidth={RAY_W} />
         // The ray runs from its circle to the end of the line, and an arrow head (a little past the end) says that it goes on.
         const end = sh.dir === 'left' ? X0 - 1 : X1 + 1
         const tip = sh.dir === 'left' ? X0 - ARROW_LEN : X1 + ARROW_LEN
         return (
           <g key={`shape${i}`}>
-            <line data-ray={sh.dir} x1={r1(px(sh.at))} y1={Y} x2={end} y2={Y} stroke={CORAL} strokeWidth={RAY_W} />
-            <polygon data-arrow={sh.dir} points={`${end},${Y - ARROW_HALF} ${tip},${Y} ${end},${Y + ARROW_HALF}`} fill={CORAL} />
+            <line data-ray={sh.dir} x1={r1(px(sh.at))} y1={Y} x2={end} y2={Y} stroke={GREEN} strokeWidth={RAY_W} />
+            <polygon data-arrow={sh.dir} points={`${end},${Y - ARROW_HALF} ${tip},${Y} ${end},${Y + ARROW_HALF}`} fill={GREEN} />
           </g>
         )
       })}
@@ -206,7 +209,7 @@ export function NumberLine(props: NumberLineProps) {
                 {moved.has(v) ? tickLabel(v) : (marked.get(v) ?? tickLabel(v))}
               </T>
             ) : (
-              <T x={x} y={TICK_Y} size={SIZE} weight={600} fill={CORAL_TEXT}>
+              <T x={x} y={TICK_Y} size={SIZE} weight={600} fill={RED_TEXT}>
                 {marked.get(v)!}
               </T>
             )}
@@ -214,17 +217,17 @@ export function NumberLine(props: NumberLineProps) {
         )
       })}
       {[...marked.keys()].map((v) => (
-        <circle key={v} cx={Math.round(px(v) * 10) / 10} cy={Y} r={CIRCLE_R} fill={CORAL} stroke={INK} strokeWidth={1.5} />
+        <circle key={v} cx={Math.round(px(v) * 10) / 10} cy={Y} r={CIRCLE_R} fill={GOLD} stroke={INK} strokeWidth={1.5} />
       ))}
       {shapes.flatMap((sh, i) =>
         (sh.kind === 'ray' ? [{ v: sh.at, closed: sh.closed }] : sh.kind === 'open' ? [{ v: sh.at, closed: false }] : [{ v: sh.lo, closed: sh.loClosed }, { v: sh.hi, closed: sh.hiClosed }]).map((c) => (
-          <circle key={`end${i}-${c.v}`} data-circle={c.closed ? 'filled' : 'open'} cx={r1(px(c.v))} cy={Y} r={CIRCLE_R} fill={c.closed ? CORAL : WHITE} stroke={INK} strokeWidth={1.5} />
+          <circle key={`end${i}-${c.v}`} data-circle={c.closed ? 'filled' : 'open'} cx={r1(px(c.v))} cy={Y} r={CIRCLE_R} fill={c.closed ? GREEN : WHITE} stroke={INK} strokeWidth={1.5} />
         )),
       )}
       {above.map((at) => (
         <g key={`above${at.key}`}>
           {at.leader && <line x1={r1(at.at)} y1={at.y + 7} x2={r1(at.at)} y2={Y - 9} stroke={BODY} strokeWidth={1.2} strokeDasharray="2 3" strokeLinecap="round" />}
-          <T x={r1(at.x)} y={at.y} size={SIZE} weight={600} fill={CORAL_TEXT} attrs={{ 'data-mark-label': 'above' }}>
+          <T x={r1(at.x)} y={at.y} size={SIZE} weight={600} fill={RED_TEXT} attrs={{ 'data-mark-label': 'above' }}>
             {at.text}
           </T>
         </g>

@@ -9,16 +9,16 @@ export const MARK = 'size-5 lg:size-6'
 export const MARK_COLUMN = 'w-5 lg:w-6'
 export const SCORE_COLUMN = 'w-12 lg:w-14'
 
-/** The five results of one learner: a dark circle with a tick for a right answer, a coral one with a cross for a wrong one. */
+/** The five results of one learner: a green circle with a tick for a right answer, a red ring with a cross for a wrong one. */
 export function Marks({ results, label }: { results: boolean[]; label: string }) {
   return (
     <span role="img" aria-label={label} className={`flex flex-none ${MARK_GAP}`}>
       {results.map((right, i) => (
-        <span key={i} className={`flex ${MARK} items-center justify-center rounded-pill ${right ? 'bg-ink' : 'border-[1.5px] border-coral bg-coral-wash'}`}>
+        <span key={i} className={`flex ${MARK} items-center justify-center rounded-pill ${right ? 'bg-green' : 'border-[1.5px] border-red bg-card'}`}>
           {right ? (
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
           ) : (
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#B8381F" strokeWidth="3.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#B8281E" strokeWidth="3.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
           )}
         </span>
       ))}
@@ -39,7 +39,7 @@ export function LearnerRow({ name, results, you = false }: { name: string; resul
         {/* The pill is the second line under the name, so the name has the whole width of the column and is never cut to make room for it. */}
         <span className="flex min-w-0 flex-col items-start gap-0.5">
           <span data-learner-name="true" className="max-w-full truncate text-[17px] leading-[1.25] font-semibold">{name}</span>
-          {you ? <span className="rounded-pill bg-coral-tint px-2 py-0.5 text-[12px] leading-[1.2] font-bold">You</span> : null}
+          {you ? <span className="rounded-pill bg-gold-tint px-2 py-0.5 text-[12px] leading-[1.2] font-bold">You</span> : null}
         </span>
       </span>
       <Marks results={results} label={`${name}: ${words(results)}`} />

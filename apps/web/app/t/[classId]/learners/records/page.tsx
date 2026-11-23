@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
 import { getRecentFiles, personName } from '@/lib/data/p66'
 import { createSupabaseServer } from '@/lib/supabase/server'
+import { demoOn } from '@/lib/demo-switch'
 import { BackHeader } from '../../tests/back-header'
 import { RecordsClient } from './RecordsClient'
 import { SAMPLE_RECORDS, type SampleName } from './samples'
@@ -25,7 +26,7 @@ export default async function AddPastRecordsPage({ params }: { params: Promise<{
     .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id))
     .map((k) => ({ id: k.id, name: personName(k) }))
   const [families, recent] = await Promise.all([allowedFamilies(db, classId, cls.subject), getRecentFiles(classId)])
-  const demo = Boolean(cls.schools?.sandbox_id)
+  const demo = demoOn() && Boolean(cls.schools?.sandbox_id)
   const samples = demo ? (Object.keys(SAMPLE_RECORDS) as SampleName[]).map((name) => ({ name, button: SAMPLE_RECORDS[name].button, about: SAMPLE_RECORDS[name].about })) : []
 
   return (

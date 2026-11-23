@@ -75,7 +75,7 @@ export default async function MyMathsPartPage({ params, searchParams }: { params
         </div>
 
         {lock ? (
-          <p className="m-0 rounded-20 border border-[#FFC9BB] bg-coral-wash p-4 text-[16px] leading-[1.45]">
+          <p className="m-0 rounded-20 border border-[#FFDC93] bg-gold-wash p-4 text-[16px] leading-[1.45]">
             {lock.text}{' '}
             <Link href={lock.href} className="font-semibold text-ink underline underline-offset-[3px]">{lock.link}</Link>
           </p>

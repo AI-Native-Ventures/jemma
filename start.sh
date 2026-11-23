@@ -465,7 +465,7 @@ trap cleanup INT TERM
 set -m
 (exec "${PNPM[@]}" --filter agent dev:local >"$LOGS/agent.log" 2>&1 </dev/null) &
 AGENT_PID=$!
-(export_env_file; exec "${PNPM[@]}" --filter web dev >"$LOGS/web.log" 2>&1 </dev/null) &
+(export_env_file; JEMMA_DEMO=1 JEMMA_EMAIL_CODES=1 exec "${PNPM[@]}" --filter web dev >"$LOGS/web.log" 2>&1 </dev/null) &
 WEB_PID=$!
 printf 'agent=%s\nweb=%s\n' "$AGENT_PID" "$WEB_PID" >"$PIDFILE"
 

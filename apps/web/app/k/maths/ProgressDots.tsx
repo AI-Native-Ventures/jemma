@@ -4,8 +4,8 @@ import { LEGEND, levelWords, type Level } from './format'
 // half-filled one (left half) is 50 to 79, a white one with an outline is below 50, and a dashed one is a topic not tried yet. The same drawing as
 // the landing page's Long view card (a 14 by 14 box, the circle 5.3 in radius, a 1.4 stroke), shown here at 16 px by default.
 
-const INK = '#1F1D36'
-const DASHED = '#8C89A3'
+const INK = '#161616'
+const DASHED = '#8F8D88'
 
 /** One circle. Decorative on its own: the caller labels the group (`ProgressDots`) or the row (`ProgressDot` with `label`). */
 export function ProgressDot({ level, size = 16, label }: { level: Level; size?: number; label?: string }) {

@@ -19,7 +19,7 @@ const Squares = ({ dots }: { dots: boolean[] }) => (
     {dots.map((right, i) => (
       <span
         key={i}
-        className={right ? 'size-3 rounded-[3px] bg-ink' : 'size-3 rounded-[3px] border border-[#E8553A] bg-coral-soft'}
+        className={right ? 'size-3 rounded-[3px] bg-ink' : 'size-3 rounded-[3px] border border-[#E3A008] bg-gold-soft'}
       />
     ))}
   </span>
@@ -61,7 +61,7 @@ export default async function TeacherTestPage({ params }: { params: Promise<{ cl
                 right
               </span>
               <span className="inline-flex items-center gap-1">
-                <span aria-hidden="true" className="size-2.5 rounded-[3px] border border-[#E8553A] bg-coral-soft" />
+                <span aria-hidden="true" className="size-2.5 rounded-[3px] border border-[#E3A008] bg-gold-soft" />
                 missed
               </span>
             </span>

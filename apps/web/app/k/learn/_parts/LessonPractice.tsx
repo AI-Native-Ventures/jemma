@@ -79,7 +79,7 @@ export function LessonPractice({ topicLessonId, questions, topic, typeset, onPro
     const at = answered.length + 1
     return (
       <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col">
-        {error ? <p role="alert" className="mx-5 mt-3 mb-0 text-[15px] text-coral-text">{error}</p> : null}
+        {error ? <p role="alert" className="mx-5 mt-3 mb-0 text-[15px] text-red-text">{error}</p> : null}
         <QuestionScreen key={at} q={forScreen(questions[at - 1]!, at, total)} topic={topic} busy={busy} onAnswer={(value) => void submit(value)} />
       </div>
     )
@@ -96,7 +96,7 @@ export function LessonPractice({ topicLessonId, questions, topic, typeset, onPro
         <p className="m-0 text-[17px] text-body">{cheer}</p>
       </div>
       {saved === 'failed' ? (
-        <div className="flex flex-col gap-2.5 rounded-18 border border-[#FFC9BB] bg-coral-wash p-4">
+        <div className="flex flex-col gap-2.5 rounded-18 border border-red bg-card p-4">
           <p className="m-0 text-[16px] leading-[1.45]">We could not save your score, so the lesson is not ticked yet.</p>
           <button type="button" onClick={() => void save(answered)} className={retry}>Try saving again</button>
         </div>

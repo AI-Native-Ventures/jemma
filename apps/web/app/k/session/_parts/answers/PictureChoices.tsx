@@ -40,7 +40,7 @@ function Face({ choice, index, on }: { choice: Choice; index: number; on: boolea
   return (
     <>
       <span className="sr-only">Choice {letter}.</span>
-      <span aria-hidden="true" className={`absolute top-2 left-2 flex size-7 items-center justify-center rounded-pill text-[15px] font-bold ${on ? 'bg-ink text-white' : 'bg-soft-2 text-ink'}`}>
+      <span aria-hidden="true" className={`absolute top-2 left-2 flex size-7 items-center justify-center rounded-pill text-[15px] font-bold ${on ? 'bg-green text-white' : 'bg-soft-2 text-ink'}`}>
         {letter}
       </span>
       {diagram ? (

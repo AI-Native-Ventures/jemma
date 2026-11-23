@@ -45,8 +45,8 @@ const Corner = ({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) => {
     <span
       style={{
         position: 'absolute', [h]: 0, [v]: 0, width: 34, height: 34,
-        [`border${h === 'left' ? 'Left' : 'Right'}`]: '4px solid #FF6A4D',
-        [`border${v === 'top' ? 'Top' : 'Bottom'}`]: '4px solid #FF6A4D',
+        [`border${h === 'left' ? 'Left' : 'Right'}`]: '4px solid #007749',
+        [`border${v === 'top' ? 'Top' : 'Bottom'}`]: '4px solid #007749',
         [`border${name}Radius`]: 10,
       }}
     />
@@ -90,7 +90,7 @@ export function PhotoScreen({ childId, kind, kindLabel, childName }: { childId: 
 
   return (
     <div
-      className="fixed inset-0 z-50 mx-auto flex max-w-[390px] flex-col bg-[#121022] leading-[normal] text-white"
+      className="fixed inset-0 z-50 mx-auto flex max-w-[390px] flex-col bg-[#0E0E0E] leading-[normal] text-white"
       style={{ fontFamily: 'var(--font-outfit), system-ui, sans-serif' }}
     >
       <div style={{ position: 'relative', flex: 1, minHeight: 0, background: '#7A6F63', boxShadow: 'inset 0 0 90px rgba(0,0,0,0.55)', overflow: 'hidden' }}>
@@ -104,14 +104,14 @@ export function PhotoScreen({ childId, kind, kindLabel, childName }: { childId: 
         >
           <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
             <span style={{ fontSize: 11, fontWeight: 700 }}>Homework: Adding decimals</span>
-            <span style={{ fontFamily: hand, fontSize: 13, color: '#2F3A56' }}>Amina 23/10</span>
+            <span style={{ fontFamily: hand, fontSize: 13, color: '#12308C' }}>Amina 23/10</span>
           </span>
           <span style={{ height: 1, background: '#D8D6CE' }} />
           {[
-            ['1.', '0,4 + 0,3 =', '0,7', true, '#2F3A56'],
-            ['2.', '0,6 + 0,25 =', '0,31', false, '#2F3A56'],
-            ['3.', '1,2 + 0,4 =', '1,6', true, '#2F3A56'],
-            ['4.', '0,75 + 0,5 =', '0,80', false, '#2F3A56'],
+            ['1.', '0,4 + 0,3 =', '0,7', true, '#12308C'],
+            ['2.', '0,6 + 0,25 =', '0,31', false, '#12308C'],
+            ['3.', '1,2 + 0,4 =', '1,6', true, '#12308C'],
+            ['4.', '0,75 + 0,5 =', '0,80', false, '#12308C'],
             ['5.', '2,1 + 0,8 =', '2,9', true, '#8A93A8'],
           ].map(([n, q, a, right, color]) => (
             <span key={String(n)} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
@@ -130,7 +130,7 @@ export function PhotoScreen({ childId, kind, kindLabel, childName }: { childId: 
         <span
           style={{
             position: 'absolute', left: '50%', top: 540, transform: 'translateX(-50%)', padding: '7px 14px', borderRadius: 999,
-            background: 'rgba(18,16,34,0.78)', fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap',
+            background: 'rgba(14,14,14,0.78)', fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap',
           }}
         >
           Page found. Hold still.
@@ -140,29 +140,29 @@ export function PhotoScreen({ childId, kind, kindLabel, childName }: { childId: 
           <Link
             href={`/p/${childId}/snap`}
             aria-label="Close"
-            style={{ width: 44, height: 44, borderRadius: 999, background: 'rgba(18,16,34,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF' }}
+            style={{ width: 44, height: 44, borderRadius: 999, background: 'rgba(14,14,14,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF' }}
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
               <path d="M6 6l12 12M18 6 6 18" />
             </svg>
           </Link>
-          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6px 14px', borderRadius: 14, background: 'rgba(18,16,34,0.6)', lineHeight: 1.2 }}>
+          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6px 14px', borderRadius: 14, background: 'rgba(14,14,14,0.6)', lineHeight: 1.2 }}>
             <span style={{ fontSize: 15, fontWeight: 600 }}>{kindLabel} · page {next}</span>
-            <span style={{ fontSize: 12, color: '#D6D4E2' }}>{childName} · {SUBJECT}</span>
+            <span style={{ fontSize: 12, color: '#D9D6CE' }}>{childName} · {SUBJECT}</span>
           </span>
           <span style={{ width: 44 }} />
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '16px 16px 30px', background: '#121022' }}>
-        <p style={{ margin: 0, textAlign: 'center', fontSize: 14, color: '#D6D4E2' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '16px 16px 30px', background: '#0E0E0E' }}>
+        <p style={{ margin: 0, textAlign: 'center', fontSize: 14, color: '#D9D6CE' }}>
           {message ?? 'More pages? Snap them one after another.'}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)', alignItems: 'center', gap: 12 }}>
           <span
             style={{
               justifySelf: 'start', width: 48, height: 62, borderRadius: 6, border: '1.5px dashed rgba(255,255,255,0.45)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#D6D4E2',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#D9D6CE',
             }}
           >
             {next}
@@ -175,7 +175,7 @@ export function PhotoScreen({ childId, kind, kindLabel, childName }: { childId: 
             onClick={() => input.current?.click()}
             style={{ width: 78, height: 78, borderRadius: 999, border: '4px solid #FFFFFF', background: 'transparent', padding: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            <span style={{ width: '100%', height: '100%', borderRadius: 999, background: '#FF6A4D' }} />
+            <span style={{ width: '100%', height: '100%', borderRadius: 999, background: '#FFB81C' }} />
           </button>
           <button
             type="button"
@@ -183,7 +183,7 @@ export function PhotoScreen({ childId, kind, kindLabel, childName }: { childId: 
             onClick={() => void done()}
             style={{
               justifySelf: 'end', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, padding: '0 18px', borderRadius: 12,
-              background: '#FFFFFF', color: '#1F1D36', fontSize: 15, fontWeight: 600, border: 'none', opacity: busy ? 0.5 : 1,
+              background: '#FFFFFF', color: '#161616', fontSize: 15, fontWeight: 600, border: 'none', opacity: busy ? 0.5 : 1,
             }}
           >
             Done

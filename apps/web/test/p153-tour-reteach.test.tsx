@@ -332,7 +332,8 @@ describe('step 1, Learn: the lessons of the library', () => {
     press('Start lesson 1')
     fireEvent.click(radio('Listen'))
     expect(radio('Listen').getAttribute('aria-checked')).toBe('true')
-    fireEvent.click(screen.getByRole('button', { name: 'Play all' }))
+    // P159: Listen has a player; its big button reads the lesson from the first part, as Play all did.
+    fireEvent.click(within(document.querySelector('[data-player]') as HTMLElement).getByRole('button', { name: 'Play' }))
     expect(synth.speak).toHaveBeenCalled()
     const first = TOUR_LIBRARY[0]!.content.blocks[0]!
     expect(said.join(' ')).toContain((first as { speech: string }).speech.split(/(?<=[.!?])\s+/)[0]!)

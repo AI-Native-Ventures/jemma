@@ -18,7 +18,7 @@ export function AloneChildPage({ summary }: { summary: AloneSummary }) {
         <p className="m-0 text-[14px] font-semibold text-body">Practising on their own</p>
         <div className="flex items-start gap-2.5">
           <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" className="mt-3 flex-none">
-            <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+            <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
           </svg>
           <h1 className="m-0 text-[28px] leading-[1.18] font-semibold tracking-[-0.015em] text-pretty">{name}</h1>
         </div>

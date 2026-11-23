@@ -1,3 +1,4 @@
+import { ChalkboardDrawing } from '@/components/sa'
 import Link from 'next/link'
 import { CheckIcon, ChevronRightIcon } from '@/components/ui/icons'
 import { getEmptyClass, numberWord, shortName } from '@/lib/data/p21'
@@ -14,7 +15,7 @@ function Step({ n, href, title, sub, done }: { n: number; href: string; title: s
     <li>
       <Link href={href} className={`${rowCls} min-h-[76px]`}>
         {done ? (
-          <span className="flex size-[30px] flex-none items-center justify-center rounded-pill bg-ink">
+          <span className="flex size-[30px] flex-none items-center justify-center rounded-pill bg-green">
             <CheckIcon size={16} className="text-white" />
           </span>
         ) : (
@@ -42,6 +43,11 @@ export default async function EmptyClassPage({ params }: { params: Promise<{ cla
         <Title size={28} gemTop={11}>
           {short} is set up. {numberWord(left).charAt(0).toUpperCase() + numberWord(left).slice(1)} more {left === 1 ? 'step' : 'steps'} and I can start marking for you.
         </Title>
+        <div aria-hidden="true" className="flex justify-center">
+          <div className="w-[216px]">
+            <ChalkboardDrawing label={short} />
+          </div>
+        </div>
 
         <section aria-labelledby="needs" className="flex items-center gap-3 rounded-18 border border-line bg-card px-4 py-3.5">
           <span aria-hidden="true" className="flex size-9 flex-none items-center justify-center rounded-pill bg-soft-4">

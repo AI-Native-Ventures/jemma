@@ -98,7 +98,7 @@ export function CurriculumUpload({ defaultGrade, alone = false }: { defaultGrade
             Take photos
           </IconLabel>
         </PendingButton>
-        {error ? <p role="alert" className="m-0 text-center text-[15px] leading-[1.4] text-coral-text">{error}</p> : null}
+        {error ? <p role="alert" className="m-0 text-center text-[15px] leading-[1.4] text-red-text">{error}</p> : null}
       </div>
     </>
   )

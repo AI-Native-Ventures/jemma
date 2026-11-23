@@ -11,10 +11,10 @@ import { NamePicker } from './NamePicker'
 import { PhotoStage } from './PhotoStage'
 
 const X = (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#B8381F" strokeWidth="3.4" strokeLinecap="round" role="img" aria-label="Wrong, 0 marks"><path d="M6 6l12 12M18 6 6 18" /></svg>
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#B8281E" strokeWidth="3.4" strokeLinecap="round" role="img" aria-label="Wrong, 0 marks"><path d="M6 6l12 12M18 6 6 18" /></svg>
 )
 const TICK = (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Right, 1 mark"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Right, 1 mark"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
 )
 
 /** Boards `teacher-review` (check an answer) and `teacher-review-name` (whose paper is this). */
@@ -117,7 +117,7 @@ export default async function NeedsYouItemPage({
         <figure className="m-0 flex min-w-0 flex-col gap-2 lg:flex-[1_1_440px] lg:gap-2.5">
           <PhotoStage
             zoom={
-              <Link href={`/t/${classId}/papers/${view.paper.id}${focus ? `?q=${focus.n}` : ''}`} aria-label="Zoom" className="flex size-11 items-center justify-center rounded-pill bg-[rgba(18,16,34,0.72)] text-white">
+              <Link href={`/t/${classId}/papers/${view.paper.id}${focus ? `?q=${focus.n}` : ''}`} aria-label="Zoom" className="flex size-11 items-center justify-center rounded-pill bg-[rgba(14,14,14,0.72)] text-white">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.4-4.4M11 8.5v5M8.5 11h5" /></svg>
               </Link>
             }
@@ -128,8 +128,8 @@ export default async function NeedsYouItemPage({
                 <img src={page.url} alt={`Paper ${position}, page 1`} className="block h-auto w-full" />
                 {crop ? (
                   <>
-                    <span aria-hidden="true" className="absolute rounded-12 border-[3px] border-coral shadow-[0_0_0_999px_rgba(18,16,34,0.28)] lg:shadow-[0_0_0_999px_rgba(18,16,34,0.22)]" style={{ left: `${crop.x * 100}%`, top: `${crop.y * 100}%`, width: `${crop.w * 100}%`, height: `${crop.h * 100}%` }} />
-                    <span className="absolute rounded-pill bg-coral px-2.5 py-1 text-[13px] font-bold text-ink" style={{ left: `${crop.x * 100}%`, top: `${(crop.y + crop.h) * 100}%`, marginTop: 6 }}>
+                    <span aria-hidden="true" className="absolute rounded-12 border-[3px] border-gold shadow-[0_0_0_999px_rgba(14,14,14,0.28)] lg:shadow-[0_0_0_999px_rgba(14,14,14,0.22)]" style={{ left: `${crop.x * 100}%`, top: `${crop.y * 100}%`, width: `${crop.w * 100}%`, height: `${crop.h * 100}%` }} />
+                    <span className="absolute rounded-pill bg-gold px-2.5 py-1 text-[13px] font-bold text-ink" style={{ left: `${crop.x * 100}%`, top: `${(crop.y + crop.h) * 100}%`, marginTop: 6 }}>
                       Q{focus!.n}{focus!.unsure ? ' · not sure' : ''}
                     </span>
                   </>
@@ -172,9 +172,9 @@ export default async function NeedsYouItemPage({
           {view.results.map((r) => {
             const on = focus?.n === r.n
             return (
-              <li key={r.n} className={on ? 'my-0.5 -ml-2 rounded-12 bg-coral-wash' : 'border-t border-soft'}>
+              <li key={r.n} className={on ? 'my-0.5 -ml-2 rounded-12 bg-gold-wash' : 'border-t border-soft'}>
                 <Link href={`?q=${r.n}`} replace scroll={false} className={`flex items-center gap-2.5 text-ink no-underline ${on ? 'min-h-[52px] px-2' : 'min-h-11 pr-2'}`}>
-                  <span className={`w-[30px] text-[13px] font-semibold ${on ? 'text-coral-text' : 'text-body'}`}>Q{r.n}</span>
+                  <span className={`w-[30px] text-[13px] font-semibold ${on ? 'text-red-text' : 'text-body'}`}>Q{r.n}</span>
                   {r.changed || r.unsure ? (
                     <span className="flex flex-1 flex-col leading-tight">
                       <span className="text-[15px]"><Maths text={r.prompt} grade={grade} size={16} /></span>
@@ -184,7 +184,7 @@ export default async function NeedsYouItemPage({
                     <span className="min-w-0 flex-1 text-[15px]"><Maths text={r.prompt} grade={grade} size={16} /></span>
                   )}
                   <span className="max-w-[40%] min-w-[52px] text-right text-[16px] font-semibold"><Maths text={r.answer} grade={grade} size={16} /></span>
-                  <span className={`flex size-7 items-center justify-center rounded-pill ${r.mark ? (on ? 'bg-card' : 'bg-soft-4') : 'bg-[#FFEDE8]'}`}>{r.mark ? TICK : X}</span>
+                  <span className={`flex size-7 items-center justify-center rounded-pill ${r.mark ? (on ? 'bg-card' : 'bg-soft-4') : 'bg-[#FFF3DA]'}`}>{r.mark ? TICK : X}</span>
                 </Link>
               </li>
             )
@@ -194,15 +194,15 @@ export default async function NeedsYouItemPage({
           {view.results.map((r) => {
             const on = focus?.n === r.n
             return (
-              <li key={r.n} className={on ? 'my-0.5 -mx-1.5 rounded-12 bg-coral-wash' : 'border-t border-soft'}>
+              <li key={r.n} className={on ? 'my-0.5 -mx-1.5 rounded-12 bg-gold-wash' : 'border-t border-soft'}>
                 <Link href={`?q=${r.n}`} replace scroll={false} className={`flex items-center gap-2.5 text-ink no-underline ${on ? 'min-h-[46px] px-1.5' : 'min-h-10'}`}>
-                  <span className={`w-[30px] text-[13px] font-semibold ${on ? 'text-coral-text' : 'text-body'}`}>Q{r.n}</span>
+                  <span className={`w-[30px] text-[13px] font-semibold ${on ? 'text-red-text' : 'text-body'}`}>Q{r.n}</span>
                   <span className="flex flex-1 flex-col leading-[1.2]">
                     <span className="text-[15px] font-semibold"><Maths text={r.answer} grade={grade} size={16} /></span>
                     {r.changed || r.unsure ? <span className="text-[12px] text-body">{r.changed ? <>You changed it from <Maths text={r.previous ?? ''} grade={grade} size={14} /></> : 'Not sure'}</span> : null}
                   </span>
-                  <span className={`flex size-[26px] items-center justify-center rounded-pill ${r.mark ? (on ? 'bg-card' : 'bg-soft-4') : 'bg-[#FFEDE8]'}`}>{r.mark ? TICK : X}</span>
-                  <span className={`w-11 text-right text-[13px] ${on ? 'font-bold text-coral-text' : 'text-body'}`}>{Math.round(r.confidence * 100)}%</span>
+                  <span className={`flex size-[26px] items-center justify-center rounded-pill ${r.mark ? (on ? 'bg-card' : 'bg-soft-4') : 'bg-[#FFF3DA]'}`}>{r.mark ? TICK : X}</span>
+                  <span className={`w-11 text-right text-[13px] ${on ? 'font-bold text-red-text' : 'text-body'}`}>{Math.round(r.confidence * 100)}%</span>
                 </Link>
               </li>
             )
@@ -227,8 +227,8 @@ export default async function NeedsYouItemPage({
   )
 }
 
-const avatarCls = (coral: boolean) =>
-  `flex size-[30px] flex-none items-center justify-center rounded-pill text-[12px] font-bold ${coral ? 'bg-coral-soft' : 'bg-soft-3'}`
+const avatarCls = (gold: boolean) =>
+  `flex size-[30px] flex-none items-center justify-center rounded-pill text-[12px] font-bold ${gold ? 'bg-gold-soft' : 'bg-soft-3'}`
 
 /** Laptop only: the papers of this test, still to check then marked (board `laptop-teacher-review`). */
 function PileNav({ classId, current, outOf, toCheck, marked }: { classId: string; current: string; outOf: number; toCheck: ReviewPileRow[]; marked: ReviewPileRow[] }) {
@@ -248,7 +248,7 @@ function PileNav({ classId, current, outOf, toCheck, marked }: { classId: string
           {first ? (
             <span className="flex flex-1 flex-col leading-tight">
               <span className="text-[15px] font-semibold">{name}</span>
-              <span className="text-[12px] font-semibold text-coral-text">{Math.max(p.unsure, 1) === 1 ? '1 answer to check' : `${p.unsure} answers to check`}</span>
+              <span className="text-[12px] font-semibold text-red-text">{Math.max(p.unsure, 1) === 1 ? '1 answer to check' : `${p.unsure} answers to check`}</span>
             </span>
           ) : (
             <>

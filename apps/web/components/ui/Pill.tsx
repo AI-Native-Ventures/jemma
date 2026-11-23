@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react'
 
-export type PillTone = 'soft' | 'coral' | 'ink' | 'danger' | 'quiet'
+export type PillTone = 'soft' | 'gold' | 'ink' | 'danger' | 'quiet'
 
 const tones: Record<PillTone, string> = {
   soft: 'bg-soft-4 text-ink',
-  coral: 'bg-coral-tint text-ink',
+  gold: 'bg-gold-tint text-ink',
   ink: 'bg-ink text-white',
-  danger: 'bg-[#FFEDE8] text-coral-text',
+  danger: 'bg-[#FFF3DA] text-red-text',
   quiet: 'bg-soft-2 text-body',
 }
 

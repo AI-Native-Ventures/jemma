@@ -27,11 +27,11 @@ export function Heading({ title, line }: { title: string; line?: string | null }
   )
 }
 
-/** A small bar for a percent: ink, and coral when the class is below half. */
+/** A small bar for a percent: black, and gold when the class is below half. */
 export function Bar({ percent, className = 'h-2 w-full' }: { percent: number | null; className?: string }) {
   return (
     <span aria-hidden="true" className={`flex overflow-hidden rounded-pill bg-soft-4 ${className}`}>
-      {percent === null ? null : <span className={percent < 50 ? 'bg-coral' : 'bg-ink'} style={{ width: `${Math.max(percent, 3)}%` }} />}
+      {percent === null ? null : <span className={percent < 50 ? 'bg-gold' : 'bg-ink'} style={{ width: `${Math.max(percent, 3)}%` }} />}
     </span>
   )
 }
@@ -133,7 +133,7 @@ const maths = (text: string, grade: number) => <FractionText text={text} size={1
 function Missed({ q, grade }: { q: MissedQuestion; grade: number }) {
   return (
     <li className="flex flex-col gap-2 rounded-14 bg-ground p-3.5">
-      <span className="text-[13px] font-semibold text-coral-text">
+      <span className="text-[13px] font-semibold text-red-text">
         Missed by {q.missedBy} of {q.triedBy} learner{q.triedBy === 1 ? '' : 's'} who tried it
       </span>
       <span className="text-[16px] leading-[1.45] font-semibold [overflow-wrap:anywhere]">{maths(q.prompt, grade)}</span>

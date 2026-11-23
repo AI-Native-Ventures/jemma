@@ -29,9 +29,9 @@ export type SidebarProps = {
 function Wordmark() {
   return (
     <svg width="92" height="36" viewBox="4 12 236 92" role="img" aria-label="jemma" className="ml-1.5 block">
-      <path d="M32 46 V80 C32 91 24 95 13 93" fill="none" stroke="#1F1D36" strokeWidth="9.5" strokeLinecap="round" />
-      <polygon points="32,19 40,27 32,35 24,27" fill="#FF6A4D" />
-      <text x="43" y="80" fill="#1F1D36" fontFamily="var(--font-outfit), Outfit, system-ui, sans-serif" fontSize="66" fontWeight="700">
+      <path d="M32 46 V80 C32 91 24 95 13 93" fill="none" stroke="#161616" strokeWidth="9.5" strokeLinecap="round" />
+      <polygon points="32,19 40,27 32,35 24,27" fill="#FFB81C" />
+      <text x="43" y="80" fill="#161616" fontFamily="var(--font-outfit), Outfit, system-ui, sans-serif" fontSize="66" fontWeight="700">
         emma
       </text>
     </svg>
@@ -81,10 +81,10 @@ export function Sidebar({
               aria-current={on ? 'page' : undefined}
               className={`flex min-h-11 items-center gap-3 rounded-12 text-[15px] no-underline ${
                 snap ? 'pr-3 pl-2 font-semibold text-ink' : 'px-3'
-              } ${on ? 'bg-soft-4 font-semibold text-ink' : snap ? '' : 'font-medium text-[#4A4762]'}`}
+              } ${on ? 'bg-green-tint font-semibold text-ink' : snap ? '' : 'font-medium text-[#3F3E3B]'}`}
             >
               {snap ? (
-                <span className="flex size-[30px] items-center justify-center rounded-pill bg-coral">
+                <span className="flex size-[30px] items-center justify-center rounded-pill bg-gold">
                   <CameraIcon size={18} />
                 </span>
               ) : (
@@ -113,7 +113,7 @@ export function Sidebar({
         >
           <BellIcon />
           {unread > 0 ? (
-            <span aria-hidden="true" className="absolute top-[9px] right-2.5 size-2.5 rounded-pill border-2 border-card bg-coral" />
+            <span aria-hidden="true" className="absolute top-[9px] right-2.5 size-2.5 rounded-pill border-2 border-card bg-gold" />
           ) : null}
         </Link>
         ) : null}

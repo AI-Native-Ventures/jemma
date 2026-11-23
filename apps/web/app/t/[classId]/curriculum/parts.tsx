@@ -5,7 +5,7 @@ import { IconLabel } from '@/components/ui/IconLabel'
 import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition } from 'react'
 import { ErrorRetry } from '@/components/blocks'
-import { Button, Sheet } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { shrinkPhoto } from '@/lib/shrink-photo'
 import { postFiles } from '@/lib/upload-client'
 import { useRefreshPoll } from '@/lib/use-refresh-poll'
@@ -14,7 +14,7 @@ import { notAllowedMessage, sizeProblem, sniffKind } from './upload-checks'
 
 const outlined = {
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 46, padding: '10px 16px', textAlign: 'center', textWrap: 'balance', borderRadius: 12,
-  border: '1.5px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36', fontSize: 15, fontWeight: 600,
+  border: '1.5px solid #161616', background: '#FFFFFF', color: '#161616', fontSize: 15, fontWeight: 600,
 } as const
 
 /** Reloads the page's data a few seconds after the last answer came back, while the agent drafts the map. */
@@ -69,7 +69,7 @@ export function UploadButtons({ classId }: { classId: string }) {
           </IconLabel>
         </PendingButton>
       </div>
-      {error ? <p role="alert" style={{ margin: 0, fontSize: 14, color: '#B8381F' }}>{error}</p> : null}
+      {error ? <p role="alert" style={{ margin: 0, fontSize: 14, color: '#B8281E' }}>{error}</p> : null}
     </>
   )
 }
@@ -83,7 +83,7 @@ export function CapsButton({ classId, grade }: { classId: string; grade: number 
   const [pending, start] = useTransition()
   const [error, setError] = useState<string | null>(null)
   return (
-    <section aria-label="Start from the CAPS map" style={{ display: 'flex', flexDirection: 'column', gap: 10, background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 20, padding: 16 }}>
+    <section aria-label="Start from the CAPS map" style={{ display: 'flex', flexDirection: 'column', gap: 10, background: '#FFFFFF', border: '1px solid #E8E5DE', borderRadius: 20, padding: 16 }}>
       <Button
         variant="primary"
         className="!h-auto min-h-[52px] !px-5 py-3"
@@ -99,8 +99,8 @@ export function CapsButton({ classId, grade }: { classId: string; grade: number 
       >
         Start from the CAPS map
       </Button>
-      <p style={{ margin: 0, fontSize: 15, lineHeight: 1.45, color: '#5D5A73' }}>The official South African topics for Grade {grade}, term by term. You check it and approve it.</p>
-      {error ? <p role="alert" style={{ margin: 0, fontSize: 14, color: '#B8381F' }}>{error}</p> : null}
+      <p style={{ margin: 0, fontSize: 15, lineHeight: 1.45, color: '#5C5A55' }}>The official South African topics for Grade {grade}, term by term. You check it and approve it.</p>
+      {error ? <p role="alert" style={{ margin: 0, fontSize: 14, color: '#B8281E' }}>{error}</p> : null}
     </section>
   )
 }
@@ -123,27 +123,6 @@ export function SampleButton({ classId }: { classId: string }) {
     >
       Use the sample curriculum
     </Button>
-  )
-}
-
-/** "Or start from a map another teacher approved": drawn on the board, after the challenge. */
-export function ComingLink({ children }: { children: string }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, color: '#1F1D36', fontSize: 15, fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3, background: 'none', border: 'none' }}
-      >
-        {children}
-      </button>
-      <Sheet open={open} onClose={() => setOpen(false)} title="Coming after the challenge" description="This part of Jemma is not in this version yet.">
-        <Button variant="primary" className="!h-auto min-h-[52px] !px-5 py-3" onClick={() => setOpen(false)}>
-          Got it
-        </Button>
-      </Sheet>
-    </>
   )
 }
 

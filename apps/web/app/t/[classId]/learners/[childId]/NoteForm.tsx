@@ -32,7 +32,7 @@ export function NoteForm({ childId, initialKind, linkedTo, name }: { childId: st
   }
 
   return (
-    <section aria-labelledby="note" style={{ fontFamily: font, display: 'flex', flexDirection: 'column', gap: 12, padding: 16, background: '#FFFFFF', border: '2px solid #1F1D36', borderRadius: 20 }}>
+    <section aria-labelledby="note" style={{ fontFamily: font, display: 'flex', flexDirection: 'column', gap: 12, padding: 16, background: '#FFFFFF', border: '2px solid #161616', borderRadius: 20 }}>
       <h2 id="note" style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Add a quick note</h2>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {KINDS.map(([id, label]) => {
@@ -43,7 +43,7 @@ export function NoteForm({ childId, initialKind, linkedTo, name }: { childId: st
               type="button"
               aria-pressed={on}
               onClick={() => setKind(id)}
-              style={{ minHeight: 44, padding: '0 16px', borderRadius: 999, border: on ? 'none' : '1px solid #8C89A3', background: on ? '#1F1D36' : '#FFFFFF', color: on ? '#FFFFFF' : '#1F1D36', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
+              style={{ minHeight: 44, padding: '0 16px', borderRadius: 999, border: on ? 'none' : '1px solid #8F8D88', background: on ? '#161616' : '#FFFFFF', color: on ? '#FFFFFF' : '#161616', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
             >
               {label}
             </button>
@@ -56,18 +56,18 @@ export function NoteForm({ childId, initialKind, linkedTo, name }: { childId: st
         rows={3}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        style={{ width: '100%', minHeight: 96, padding: '12px 14px', borderRadius: 14, border: '1px solid #8C89A3', background: '#FFFFFF', color: '#1F1D36', fontSize: 16, lineHeight: 1.45, resize: 'none', font: 'inherit' }}
+        style={{ width: '100%', minHeight: 96, padding: '12px 14px', borderRadius: 14, border: '1px solid #8F8D88', background: '#FFFFFF', color: '#161616', fontSize: 16, lineHeight: 1.45, resize: 'none', font: 'inherit' }}
       />
-      <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, lineHeight: 1.4, color: '#5D5A73' }}>
+      <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, lineHeight: 1.4, color: '#5C5A55' }}>
         <EyeIcon />
         {linkedTo ? `${linkedTo} sees this on ${name}'s profile. Jemma uses it in the guidance.` : `Jemma uses this in the guidance for ${name}.`}
       </p>
-      {error ? <p role="alert" style={{ margin: 0, fontSize: 14, color: '#B8381F' }}>{error}</p> : null}
+      {error ? <p role="alert" style={{ margin: 0, fontSize: 14, color: '#B8281E' }}>{error}</p> : null}
       <PendingButton pending={pending}
         type="button"
         onClick={submit}
         disabled={pending || !text.trim()}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 48, padding: '10px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: 'none', background: '#1F1D36', color: '#FFFFFF', fontSize: 16, fontWeight: 600, opacity: pending || !text.trim() ? 0.6 : 1, cursor: 'pointer' }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 48, padding: '10px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: 'none', background: '#007749', color: '#FFFFFF', fontSize: 16, fontWeight: 600, opacity: pending || !text.trim() ? 0.6 : 1, cursor: 'pointer' }}
       >
         Save note
       </PendingButton>

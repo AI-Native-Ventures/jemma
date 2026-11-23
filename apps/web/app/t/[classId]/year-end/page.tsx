@@ -12,8 +12,8 @@ export default async function TeacherYearEndPage({ params }: { params: Promise<{
     <Column bare>
       <BackHeader href={`/t/${classId}/settings`} label="Back to class settings" sub={cls.name} title="End of the year" />
       <main className="flex flex-1 flex-col gap-4 px-5 pt-3 pb-7">
-        <Title>The year ends after Term 4. What should happen to {short}?</Title>
-        <YearEnd short={short} grade={cls.grade} nextGrade={cls.grade + 1} csvHref={`/t/${classId}/year-end/marks.csv`} />
+        <Title>Keep a copy of {short}&apos;s marks before the year ends.</Title>
+        <YearEnd short={short} csvHref={`/t/${classId}/year-end/marks.csv`} />
         <div className="flex-1" />
       </main>
     </Column>

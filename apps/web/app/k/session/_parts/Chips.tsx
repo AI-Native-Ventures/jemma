@@ -49,7 +49,7 @@ export function FormatChip({ format }: { format: keyof typeof FORMAT_CHIP }) {
 
 export function ChevronRight() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
       <path d="m9 6 6 6-6 6" />
     </svg>
   )

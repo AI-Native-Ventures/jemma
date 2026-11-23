@@ -1,6 +1,6 @@
 import type { DiagramSpec } from '@jemma/profiling/schemas'
 import { useId } from 'react'
-import { CORAL, INK, Svg, T, type Variant, WHITE } from './shared'
+import { GOLD, INK, Svg, T, type Variant, WHITE } from './shared'
 
 export type FractionBarProps = Extract<DiagramSpec, { kind: 'fraction_bar' }> & {
   /** card: the diagram-kit drawing. learn: the stacked-fraction bars of the child's learn screen. */
@@ -39,7 +39,7 @@ function LearnBars(props: FractionBarProps) {
         const parts = Math.max(1, Math.round(r.parts))
         const inner = BAR_W - 4
         const cw = inner / parts
-        const shade = i === firstShaded ? CORAL : INK
+        const shade = i === firstShaded ? GOLD : INK
         const den = String(parts)
         const lw = den.length * 10 + 6
         const num = String(r.shaded > 0 ? r.shaded : 1)
@@ -86,8 +86,8 @@ export function FractionBar(props: FractionBarProps) {
         const y = 26 + i * 50
         const parts = Math.max(1, Math.round(r.parts))
         const w = W / parts
-        // The first row with shading is the coral one; later shaded rows are ink so the two read apart.
-        const shade = i === firstShaded ? CORAL : INK
+        // The first row with shading is the gold one; later shaded rows are black so the two read apart.
+        const shade = i === firstShaded ? GOLD : INK
         return (
           <g key={i}>
             {Array.from({ length: parts }, (_, k) => (

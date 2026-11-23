@@ -34,7 +34,7 @@ function useRun() {
 
 function Problem({ text }: { text: string }) {
   return (
-    <p role="alert" className="m-0 rounded-14 bg-[#FFEDE8] px-3.5 py-2.5 text-[15px] leading-[1.4] text-coral-text">
+    <p role="alert" className="m-0 rounded-14 bg-[#FFF3DA] px-3.5 py-2.5 text-[15px] leading-[1.4] text-red-text">
       {text}
     </p>
   )
@@ -115,7 +115,7 @@ function Added({ view }: { view: ReviewView }) {
       <Lead>
         {none ? `You said yes to ${view.fileName}, but nothing was added yet.` : `Added ${written.records} past ${plural(written.records, 'record')} from ${view.fileName}.`}
       </Lead>
-      <Card as="section" radius={20} aria-labelledby="added" className="gap-3 lg:max-w-[720px]" tone="coral">
+      <Card as="section" radius={20} aria-labelledby="added" className="gap-3 lg:max-w-[720px]" tone="gold">
         <h2 id="added" className="m-0 text-[17px] font-semibold">
           {none ? 'Add them now' : `${written.learners.length} ${plural(written.learners.length, 'learner')} got new records`}
         </h2>
@@ -180,7 +180,7 @@ function Ready({ view }: { view: ReviewView }) {
             </div>
           ) : null}
           {view.warnings.map((w) => (
-            <p key={w} className="m-0 rounded-14 bg-[#FFEDE8] px-3 py-2 text-[14px] leading-[1.4] text-coral-text">
+            <p key={w} className="m-0 rounded-14 bg-[#FFF3DA] px-3 py-2 text-[14px] leading-[1.4] text-red-text">
               {w}
             </p>
           ))}
@@ -248,7 +248,7 @@ function Ready({ view }: { view: ReviewView }) {
         </Card>
       ) : null}
 
-      <Card as="section" radius={20} aria-labelledby="gate" tone="coral" className="gap-3 lg:max-w-[720px]">
+      <Card as="section" radius={20} aria-labelledby="gate" tone="gold" className="gap-3 lg:max-w-[720px]">
         <h2 id="gate" className="m-0 text-[17px] font-semibold">
           Add to the learners' records
         </h2>

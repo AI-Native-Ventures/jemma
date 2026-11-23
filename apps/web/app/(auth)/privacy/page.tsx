@@ -1,12 +1,11 @@
 import Link from 'next/link'
 import { BackLink, ChevronRight, Gem, Section, colors } from '../_parts'
-import { ComingButton } from '../_coming'
 
 export const metadata = { title: 'Privacy · Jemma' }
 
 const KEEPS = ['Paper photos and marks', 'Lessons and the answers to them', 'Teacher notes and attendance', 'Activities you add']
 
-const stroke = { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: '#1F1D36', strokeWidth: 1.9, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
+const stroke = { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: '#161616', strokeWidth: 1.9, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
 
 const SEES = [
   {
@@ -80,7 +79,7 @@ export default function PrivacyPage() {
             {KEEPS.map((k) => (
               <li key={k} style={{ display: 'flex', gap: 10, fontSize: 15, lineHeight: 1.45 }}>
                 <svg width="11" height="11" viewBox="0 0 16 16" aria-hidden="true" style={{ flex: 'none', marginTop: 5 }}>
-                  <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+                  <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
                 </svg>
                 <span>{k}</span>
               </li>
@@ -91,8 +90,8 @@ export default function PrivacyPage() {
         <Section id="sees" title="Who sees what" gap={4}>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {SEES.map((s, i) => (
-              <li key={s.who} style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, padding: '6px 0', borderTop: i ? '1px solid #EFEEF4' : undefined }}>
-                <span aria-hidden="true" style={{ width: 36, height: 36, flex: 'none', borderRadius: 12, background: '#EEEDF5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <li key={s.who} style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, padding: '6px 0', borderTop: i ? '1px solid #F0EEE8' : undefined }}>
+                <span aria-hidden="true" style={{ width: 36, height: 36, flex: 'none', borderRadius: 12, background: '#EFECE6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {s.icon}
                 </span>
                 <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1, lineHeight: 1.35 }}>
@@ -105,7 +104,7 @@ export default function PrivacyPage() {
         </Section>
 
         <Section id="ai" title="AI services" gap={10}>
-          <p style={para}>Jemma sends paper photos to an AI service to read them. That service doesn&apos;t keep them or learn from them.</p>
+          <p style={para}>Jemma sends photos and questions to AI models to read and write them. The main ones run on Cloudflare, which says it does not keep them or train on them. When those fail, a backup service, OpenRouter, is used.</p>
         </Section>
 
         <Section id="kids" title="Children" gap={10}>
@@ -117,7 +116,7 @@ export default function PrivacyPage() {
 
         <Section id="rights" title="Your rights" gap={6}>
           <p style={para}>You can see, fix, download or delete what Jemma keeps.</p>
-          <Link href="/p/data" style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, padding: '6px 0', borderTop: '1px solid #EFEEF4', textDecoration: 'none', color: colors.ink }}>
+          <Link href="/p/data" style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, padding: '6px 0', borderTop: '1px solid #F0EEE8', textDecoration: 'none', color: colors.ink }}>
             <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <span style={{ fontSize: 16, fontWeight: 500 }}>Privacy and your data</span>
               <span style={{ fontSize: 13, lineHeight: 1.35, color: colors.body }}>Download or delete, any time</span>
@@ -127,8 +126,12 @@ export default function PrivacyPage() {
         </Section>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-          <ComingButton style={pill}>Full privacy policy</ComingButton>
-          <ComingButton style={pill}>Terms of use</ComingButton>
+          <Link href="/privacy/policy" style={{ ...pill, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', textDecoration: 'none' }}>
+            Full privacy policy
+          </Link>
+          <Link href="/terms" style={{ ...pill, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', textDecoration: 'none' }}>
+            Terms of use
+          </Link>
         </div>
         <div style={{ flex: 1 }} />
       </main>

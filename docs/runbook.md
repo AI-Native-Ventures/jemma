@@ -42,6 +42,8 @@ Copy `.env.example` to `.env.local` at the repo root. `apps/web` reads it, and `
 | `AI_ROUTE_TAG` | Routing tag of this stack, default `default`. A hand-off carries it and only an operator runner with the same `OPERATOR_TAG` takes the event, so two stacks that share one database never take each other's events. |
 | `DEMO_SANDBOX_DAYS` | Agent only. An unused demo copy older than this many days is removed by the agent's hourly cron. Default 7, `0` switches the sweep off. |
 | `LANDING_URL` | Web app only (the live app sets it in `apps/web/wrangler.jsonc`). The address of the landing site: when it is set, a visitor who is not signed in at `/` is sent there. Not set on a run of your own, so `/` shows the built-in landing page. |
+| `JEMMA_DEMO` | Web app only. `1` turns on the demo copy of a made-up school (`/demo`, the design kit at `/kit`, the sample papers and files, made-up learners). `./start.sh` sets it for local runs and CI; the live app leaves it unset, so all of that is off there. The unit tests run with it on. |
+| `JEMMA_EMAIL_CODES` | Web app only. `1` shows "Email me a code instead" on the sign-in page. A code needs an email sender: `./start.sh` sets it (the local stack catches the emails). The live app leaves it unset until an email sender of its own is set up in Supabase (the built-in one only reaches the project team). |
 | `OPENROUTER_API_KEY` | Key for the free models. |
 | `AGENT_URL` | Where the web app posts events, `http://localhost:8787` locally. |
 | `EVENTS_SECRET` | Shared secret between web and agent for `POST /events`. |

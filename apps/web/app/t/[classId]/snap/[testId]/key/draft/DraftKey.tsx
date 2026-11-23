@@ -64,9 +64,9 @@ export function DraftKey({ classId, testId, items, unsure, approved, grade = nul
             const isUnsure = item.confidence < SURE || !!item.note
             if (isUnsure) {
               return (
-                <li key={item.n} className="mx-[-6px] mt-1.5 mb-2 flex flex-col gap-2.5 rounded-16 border border-[#FFC9BB] bg-coral-wash p-3.5">
+                <li key={item.n} className="mx-[-6px] mt-1.5 mb-2 flex flex-col gap-2.5 rounded-16 border border-[#FFDC93] bg-gold-wash p-3.5">
                   <span className="flex items-center gap-3">
-                    <span className="w-[34px] flex-none text-[14px] font-bold text-coral-text">Q{item.n}</span>
+                    <span className="w-[34px] flex-none text-[14px] font-bold text-red-text">Q{item.n}</span>
                     <span className="min-w-0 flex-1 text-[15px]"><Maths text={item.prompt} grade={grade} size={16} /></span>
                     <span className="text-[16px] font-bold"><Maths text={item.answer} grade={grade} size={17} /></span>
                   </span>
@@ -74,7 +74,7 @@ export function DraftKey({ classId, testId, items, unsure, approved, grade = nul
                   {editing === item.n ? (
                     <span className="flex gap-2">
                       <input aria-label={`Answer to question ${item.n}`} value={draft} onChange={(e) => setDraft(e.target.value)} className="h-[46px] min-w-0 flex-1 rounded-12 border border-muted-2 bg-card px-3 text-[16px] outline-none" />
-                      <PendingButton pending={pending} type="button" disabled={pending} onClick={() => save(item.n, draft)} className="h-[46px] cursor-pointer rounded-12 border-none bg-ink px-4 text-[15px] font-semibold text-white">Save</PendingButton>
+                      <PendingButton pending={pending} type="button" disabled={pending} onClick={() => save(item.n, draft)} className="h-[46px] cursor-pointer rounded-12 border-none bg-green px-4 text-[15px] font-semibold text-white">Save</PendingButton>
                     </span>
                   ) : (
                     <span className="grid grid-cols-2 gap-2">
@@ -97,8 +97,8 @@ export function DraftKey({ classId, testId, items, unsure, approved, grade = nul
       </section>
       {children}
       <div className="flex flex-col gap-2">
-        {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
-        <PendingButton pending={pending} type="button" onClick={approve} disabled={pending || approved} className="flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-60">Approve key and snap papers</PendingButton>
+        {error ? <p role="alert" className="m-0 text-[14px] text-red-text">{error}</p> : null}
+        <PendingButton pending={pending} type="button" onClick={approve} disabled={pending || approved} className="flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-60">Approve key and snap papers</PendingButton>
         <label className="flex min-h-11 cursor-pointer items-center justify-center text-[15px] font-semibold text-ink underline underline-offset-[3px] focus-within:outline-2 focus-within:outline-ink">
           A memo is safer: snap the memo instead
           <input type="file" accept="image/*" capture="environment" className="sr-only" disabled={pending} onChange={(e) => { memo(e.target.files?.[0]); e.target.value = '' }} />

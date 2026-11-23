@@ -66,6 +66,7 @@ export function RetakeButton({ classId, paperId, position }: { classId: string; 
 export function Queue({
   classId,
   testId,
+  samples = false,
   next,
   lastPaper,
   count,
@@ -73,6 +74,8 @@ export function Queue({
 }: {
   classId: string
   testId: string
+  /** The five made-up sample papers ("No papers with you?"): local runs and the tests only (`demoOn`), never the live app. */
+  samples?: boolean
   next: number
   lastPaper: { id: string; position: number } | null
   count: number
@@ -109,8 +112,8 @@ export function Queue({
 
   return (
     <>
-      <label className={`relative flex min-h-[68px] cursor-pointer items-center justify-center gap-3 rounded-20 bg-coral px-5 py-3 text-center text-[21px] font-bold text-balance text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink ${pending ? 'opacity-60' : ''}`}>
-        <IconLabel gap={12} icon={<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" /><circle cx="12" cy="12.5" r="3.5" /></svg>}>
+      <label className={`relative flex min-h-[68px] cursor-pointer items-center justify-center gap-3 rounded-20 bg-gold px-5 py-3 text-center text-[21px] font-bold text-balance text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink ${pending ? 'opacity-60' : ''}`}>
+        <IconLabel gap={12} icon={<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" /><circle cx="12" cy="12.5" r="3.5" /></svg>}>
           Snap paper {next}
         </IconLabel>
         {pending ? <Spinner /> : null}
@@ -127,12 +130,14 @@ export function Queue({
 
       {children}
 
-      {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
-      <p className="m-0 flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] text-body">
-        No papers with you?
-        <button type="button" onClick={sample} disabled={pending} className="inline-flex min-h-11 cursor-pointer items-center border-none bg-transparent p-0 text-[15px] font-semibold text-ink underline underline-offset-[3px]">Use the sample papers</button>
-      </p>
-      <Link href={`/t/${classId}/snap/${testId}/progress`} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white no-underline">
+      {error ? <p role="alert" className="m-0 text-[14px] text-red-text">{error}</p> : null}
+      {samples ? (
+        <p className="m-0 flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] text-body">
+          No papers with you?
+          <button type="button" onClick={sample} disabled={pending} className="inline-flex min-h-11 cursor-pointer items-center border-none bg-transparent p-0 text-[15px] font-semibold text-ink underline underline-offset-[3px]">Use the sample papers</button>
+        </p>
+      ) : null}
+      <Link href={`/t/${classId}/snap/${testId}/progress`} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white no-underline">
         Done snapping · {count} paper{count === 1 ? '' : 's'}
       </Link>
     </>

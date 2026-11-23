@@ -6,7 +6,7 @@ import { BackHeader } from '../tests/back-header'
 type Entry<K extends LogEntry['kind']> = Extract<LogEntry, { kind: K }>
 
 const WrenchIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="m8 8-4 4 4 4M16 8l4 4-4 4M13.5 5.5l-3 13" />
   </svg>
 )
@@ -24,7 +24,7 @@ function ToolRow({ e }: { e: Entry<'tool'> }) {
         <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="text-[16px] leading-[1.3] font-semibold [overflow-wrap:anywhere]">{e.label}</span>
-            {e.failed ? <span className="rounded-pill bg-[#FFEDE8] px-2 py-0.5 text-[12px] font-bold text-coral-text">Failed</span> : null}
+            {e.failed ? <span className="rounded-pill bg-[#FFF3DA] px-2 py-0.5 text-[12px] font-bold text-red-text">Failed</span> : null}
           </span>
           <span className="text-[14px] leading-[1.4] text-body">
             {e.at} · {e.who}
@@ -53,8 +53,8 @@ function ToolRow({ e }: { e: Entry<'tool'> }) {
 
 function ApprovalRow({ e }: { e: Entry<'approval'> }) {
   return (
-    <li className="flex items-start gap-3 rounded-18 border border-[#FFC9BB] bg-coral-wash py-3.5 pr-4 pl-3.5">
-      <span aria-hidden="true" className="flex size-[38px] flex-none items-center justify-center rounded-pill bg-coral-soft text-[14px] font-bold">
+    <li className="flex items-start gap-3 rounded-18 border border-[#FFDC93] bg-gold-wash py-3.5 pr-4 pl-3.5">
+      <span aria-hidden="true" className="flex size-[38px] flex-none items-center justify-center rounded-pill bg-gold-soft text-[14px] font-bold">
         {e.name.slice(0, 1).toUpperCase()}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-[3px]">

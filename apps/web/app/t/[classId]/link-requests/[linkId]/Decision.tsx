@@ -4,12 +4,10 @@ import { PendingButton } from '@/components/ui/Button'
 import { IconLabel } from '@/components/ui/IconLabel'
 import { useState, useTransition } from 'react'
 import { CheckIcon } from '@/components/ui/icons'
-import { ComingSheet } from '../../../_p21-client'
 import { decideLink } from '../actions'
 
 export function Decision({ classId, linkId, parentName }: { classId: string; linkId: string; parentName: string }) {
   const [pending, start] = useTransition()
-  const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const decide = (d: 'approved' | 'declined') =>
     start(async () => {
@@ -19,8 +17,8 @@ export function Decision({ classId, linkId, parentName }: { classId: string; lin
     })
   return (
     <div className="flex flex-col gap-2">
-      {error ? <p role="alert" className="m-0 text-center text-[14px] text-coral-text">{error}</p> : null}
-      <button type="button" disabled={pending} onClick={() => decide('approved')} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
+      {error ? <p role="alert" className="m-0 text-center text-[14px] text-red-text">{error}</p> : null}
+      <button type="button" disabled={pending} onClick={() => decide('approved')} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
         <IconLabel gap={8} icon={<CheckIcon size={20} className="text-white" />}>
           Yes, approve
         </IconLabel>
@@ -28,10 +26,6 @@ export function Decision({ classId, linkId, parentName }: { classId: string; lin
       <PendingButton pending={pending} type="button" disabled={pending} onClick={() => decide('declined')} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-5 py-3 text-center text-[17px] font-semibold text-balance text-ink disabled:opacity-50">
         No, decline
       </PendingButton>
-      <button type="button" onClick={() => setOpen(true)} className="flex min-h-11 items-center self-center border-0 bg-transparent px-2 text-[15px] font-semibold text-ink underline underline-offset-[3px]">
-        Not sure? Message {parentName} first
-      </button>
-      <ComingSheet open={open} onClose={() => setOpen(false)} />
     </div>
   )
 }

@@ -93,7 +93,7 @@ test.describe('child-gaps (now on My maths)', () => {
       await page.goto('/k/gaps')
       await expect(page).toHaveURL(/\/k\/maths$/)
       await expect(page.getByRole('heading', { level: 1, name: 'My maths' })).toBeVisible()
-      const gaps = page.getByRole('region', { name: 'Your gaps' })
+      const gaps = page.getByRole('region', { name: 'What to practise' })
       await expect(gaps.getByText('Practising ·', { exact: false })).toHaveCount(1)
       await expect(gaps.getByText('Fixed ·', { exact: false })).toHaveCount(3)
       await expect(gaps.getByText('New ·', { exact: false })).toHaveCount(1)
@@ -114,7 +114,7 @@ test.describe('child-gaps (now on My maths)', () => {
     const sb = await openSandbox(page, { stage: 'marked', role: 'learner' })
     try {
       await page.goto('/k/maths')
-      const gaps = page.getByRole('region', { name: 'Your gaps' })
+      const gaps = page.getByRole('region', { name: 'What to practise' })
       await expect(gaps.getByText('Practising ·', { exact: false })).toHaveCount(0)
       await expect(gaps.getByText('New ·', { exact: false }).first()).toBeVisible()
     } finally {

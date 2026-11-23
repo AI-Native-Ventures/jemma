@@ -6,16 +6,16 @@ import { requireRole } from '@/lib/auth'
 import { getTopicDetail } from '@/lib/data/p24'
 import { BackHeader, ChevronRight, Diamond, HideSpaceChrome, QuestionCrop } from '../../papers/_parts'
 
-const card = { display: 'flex', flexDirection: 'column', background: '#FFFFFF', border: '1px solid #E7E6EF' } as const
+const card = { display: 'flex', flexDirection: 'column', background: '#FFFFFF', border: '1px solid #E8E5DE' } as const
 
 const STAGE_LABEL = { new: 'New gap', practising: 'Practising', fixed: 'Fixed' } as const
 
 function StageGlyph({ stage }: { stage: 'new' | 'practising' | 'fixed' }) {
   return (
     <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">
-      {stage === 'practising' ? <polygon points="1,8 15,8 8,15" fill="#FF6A4D" /> : null}
-      {stage === 'fixed' ? <polygon points="8,1 15,8 8,15 1,8" fill="#FF6A4D" /> : null}
-      <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#1F1D36" strokeWidth="1.8" />
+      {stage === 'practising' ? <polygon points="1,8 15,8 8,15" fill="#FFB81C" /> : null}
+      {stage === 'fixed' ? <polygon points="8,1 15,8 8,15 1,8" fill="#FFB81C" /> : null}
+      <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#161616" strokeWidth="1.8" />
     </svg>
   )
 }
@@ -36,7 +36,7 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '8px 20px 20px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <span
-            style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px 5px 9px', borderRadius: 999, background: '#FFFFFF', border: '1px solid #CFCDDC', fontSize: 13, fontWeight: 600 }}
+            style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 11px 5px 9px', borderRadius: 999, background: '#FFFFFF', border: '1px solid #D2CFC7', fontSize: 13, fontWeight: 600 }}
           >
             <StageGlyph stage={topic.stage} />
             {STAGE_LABEL[topic.stage]}
@@ -56,7 +56,7 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
               <h2 id="missed" style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>
                 The questions {name} missed
               </h2>
-              {topic.missedSource ? <span style={{ fontSize: 13, color: '#5D5A73' }}>{topic.missedSource}</span> : null}
+              {topic.missedSource ? <span style={{ fontSize: 13, color: '#5C5A55' }}>{topic.missedSource}</span> : null}
             </div>
             {topic.missed.map((q) => (
               <figure key={q.id} style={{ ...card, margin: 0, gap: 10, padding: 12, borderRadius: 18 }}>
@@ -81,7 +81,7 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
             {topic.firstPaperId ? (
               <Link
                 href={`/p/${childId}/papers/${topic.firstPaperId}`}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 12, border: '1.5px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 12, border: '1.5px solid #161616', background: '#FFFFFF', color: '#161616', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}
               >
                 <IconLabel gap={8} icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
                   <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
@@ -98,16 +98,16 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
           <h2 id="lessons" style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>
             Lessons
           </h2>
-          <p style={{ margin: 0, fontSize: 15, color: '#5D5A73' }}>
+          <p style={{ margin: 0, fontSize: 15, color: '#5C5A55' }}>
             {doneCount > 0 ? `${doneCount} done.${first && !first.done ? ' The next one is ready.' : ''}` : first ? 'None done yet. The first one is ready.' : `None yet. Jemma plans one when ${name} has the time.`}
           </p>
           {first ? (
             <Link
               href={`/p/${childId}/learn`}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 14, background: '#F4F3F8', textDecoration: 'none', color: '#1F1D36' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 14, background: '#F4F2EE', textDecoration: 'none', color: '#161616' }}
             >
               <span aria-hidden="true" style={{ width: 40, height: 40, flex: 'none', borderRadius: 12, background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3.5" y="5" width="17" height="5" rx="1" />
                   <rect x="3.5" y="14" width="17" height="5" rx="1" />
                   <path d="M12 5v5M8 14v5M12 14v5M16 14v5" />
@@ -115,7 +115,7 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
               </span>
               <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <span style={{ fontSize: 15, fontWeight: 600 }}>{first.label}</span>
-                <span style={{ fontSize: 13, color: '#5D5A73' }}>{first.detail}</span>
+                <span style={{ fontSize: 13, color: '#5C5A55' }}>{first.detail}</span>
               </span>
               <ChevronRight />
             </Link>
@@ -127,11 +127,11 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
             <h2 id="helped" style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>
               Which format helped
             </h2>
-            <span style={{ fontSize: 13, fontWeight: 600, padding: '4px 10px', borderRadius: 999, background: '#EEEDF5' }}>
+            <span style={{ fontSize: 13, fontWeight: 600, padding: '4px 10px', borderRadius: 999, background: '#EFECE6' }}>
               {topic.tooEarly ? 'Too early to tell' : `${topic.bestFormat} helped most`}
             </span>
           </div>
-          <p style={{ margin: 0, fontSize: 15, lineHeight: 1.45, color: '#5D5A73' }}>{`Jemma tries each format 3 times on this topic before saying what helps ${name}.`}</p>
+          <p style={{ margin: 0, fontSize: 15, lineHeight: 1.45, color: '#5C5A55' }}>{`Jemma tries each format 3 times on this topic before saying what helps ${name}.`}</p>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
             {topic.helps.map((h) => (
               <li key={h.format} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 15 }}>
@@ -143,13 +143,13 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
                         key={i}
                         style={
                           i < h.done
-                            ? { width: 12, height: 12, borderRadius: 999, background: '#FF6A4D', border: '1.5px solid #FF6A4D' }
-                            : { width: 12, height: 12, borderRadius: 999, border: '1.5px solid #8C89A3' }
+                            ? { width: 12, height: 12, borderRadius: 999, background: '#007749', border: '1.5px solid #007749' }
+                            : { width: 12, height: 12, borderRadius: 999, border: '1.5px solid #8F8D88' }
                         }
                       />
                     ))}
                   </span>
-                  <span style={{ width: 76, textAlign: 'right', fontSize: 13, color: '#5D5A73' }}>{`${Math.min(h.done, h.need)} of ${h.need} done`}</span>
+                  <span style={{ width: 76, textAlign: 'right', fontSize: 13, color: '#5C5A55' }}>{`${Math.min(h.done, h.need)} of ${h.need} done`}</span>
                 </span>
               </li>
             ))}
@@ -158,7 +158,7 @@ export default async function ParentTopicPage({ params }: { params: Promise<{ ch
 
         <Link
           href={`/p/${childId}/learn`}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, background: '#007749', color: '#FFFFFF', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}
         >
           Practise it now
         </Link>

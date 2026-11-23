@@ -48,8 +48,8 @@ describe('the switch in My school', () => {
 
   it('the filled button is the pressed one and the other one is an outline', () => {
     render(<WorkspaceSwitch current="school" />)
-    expect(screen.getByRole('button', { name: 'My school' }).className).toContain('bg-ink')
-    expect(screen.getByRole('button', { name: 'My own' }).className).not.toContain('bg-ink')
+    expect(screen.getByRole('button', { name: 'My school' }).className).toContain('bg-green')
+    expect(screen.getByRole('button', { name: 'My own' }).className).not.toContain('bg-green')
   })
 })
 
@@ -87,7 +87,7 @@ describe('a tap shows the new state at once', () => {
     fireEvent.click(screen.getByRole('button', { name: 'My own' }))
     expect(pressed('My own')).toBe('true')
     expect(pressed('My school')).toBe('false')
-    expect(screen.getByRole('button', { name: 'My own' }).className).toContain('bg-ink')
+    expect(screen.getByRole('button', { name: 'My own' }).className).toContain('bg-green')
     expect(note()).toBeTruthy()
   })
 

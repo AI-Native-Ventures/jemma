@@ -107,11 +107,11 @@ test.describe('parent-beyond', () => {
     await shot(page, testInfo, 'parent-beyond')
   })
 
-  test('Message Ms Banda stays visible and opens the coming-later sheet', async ({ page }) => {
+  // P160: messages to the teacher are not in Jemma, so there is no button that opens a sheet saying so.
+  test('there is no Message Ms Banda button that leads nowhere', async ({ page }) => {
     const s = await open(page, 'marked')
     await page.goto(`/p/${s.childId}/beyond`)
-    await page.getByRole('button', { name: 'Message Ms Banda' }).click()
-    await expect(page.getByRole('dialog', { name: 'Coming after the challenge' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Message Ms Banda' })).toHaveCount(0)
   })
 })
 

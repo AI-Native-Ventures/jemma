@@ -50,7 +50,7 @@ describe('BarGraphQuestion (q-amina-bar-graph)', () => {
       <BarGraphQuestion prompt="How many more learners walk than come by taxi?" spec={spec} highlight={['Walk', 'Taxi']} value="" onChange={() => {}} />,
     )
     const bars = Array.from(container.querySelectorAll('rect[rx="4"]'))
-    expect(bars.map((b) => b.getAttribute('fill'))).toEqual(['#FF6A4D', '#FF6A4D', '#1F1D36', '#1F1D36'])
+    expect(bars.map((b) => b.getAttribute('fill'))).toEqual(['#FFB81C', '#FFB81C', '#161616', '#161616'])
     expect(screen.getByText('more')).toBeTruthy()
     expect(screen.getByLabelText('How many more learners walk')).toBeTruthy()
   })

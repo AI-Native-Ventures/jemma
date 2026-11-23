@@ -19,21 +19,21 @@ import { Diamond, Gem } from './session/_parts/Gems'
 import { PreviewBars } from './session/_parts/PreviewBars'
 import { WorkspaceSwitch } from './WorkspaceSwitch'
 
-const card = 'flex flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(31,29,54,0.06)]'
+const card = 'flex flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(22,22,22,0.06)]'
 const list = 'm-0 flex list-none flex-col rounded-20 border border-line bg-card px-4 py-1 p-0'
 
 /** What the address may carry: `?class=<id>` (a class of the learner's own workspace), or the old `?grade=7` (the CAPS class of that grade). */
 export type MathsQuery = { class?: string | string[]; grade?: string | string[] }
 
-/** "You've fixed N gaps so far": there from one fixed gap on. At none it says nothing (a line that reads "fixed 0" is a dead line). It sits with "Your gaps". */
+/** "You've fixed N topics so far": there from one fixed topic on. At none it says nothing (a line that reads "fixed 0" is a dead line). It sits with "What to practise". Learners never read the word gap (P160). */
 function GapsCard({ today, tone }: { today: LearnerToday; tone: 'today' | 'rest' }) {
   if (today.fixed < 1) return null
-  const stroke = tone === 'today' ? '#8C89A3' : '#1F1D36'
+  const stroke = tone === 'today' ? '#8F8D88' : '#161616'
   return (
     <div className="flex items-center gap-3.5 rounded-20 border border-line bg-card px-[18px] py-4 text-ink">
       <span className="flex flex-1 flex-col gap-2">
         <span className="text-[17px] font-semibold">
-          You&apos;ve fixed {today.fixed} {today.fixed === 1 ? 'gap' : 'gaps'} so far
+          You&apos;ve fixed {today.fixed} {today.fixed === 1 ? 'topic' : 'topics'} so far
         </span>
         <span aria-hidden="true" className="flex items-center gap-1.5">
           {today.gems.map((kind, i) => (
@@ -60,7 +60,7 @@ function TonightCard({ tonight }: { tonight: NonNullable<LearnerToday['tonight']
   return (
     <section aria-labelledby="tonight" className={`${card} gap-[18px]`}>
       <div className="flex flex-col gap-2">
-        <span className="text-[14px] font-semibold text-coral-text">Tonight</span>
+        <span className="text-[14px] font-semibold text-red-text">Tonight</span>
         <h2 id="tonight" className="m-0 text-[25px] leading-[1.2] font-bold tracking-[-0.01em]">{tonight.topic}</h2>
       </div>
       {tonight.preview ? <PreviewBars spec={tonight.preview} /> : null}
@@ -70,9 +70,9 @@ function TonightCard({ tonight }: { tonight: NonNullable<LearnerToday['tonight']
       </div>
       <Link
         href={`/k/session/${tonight.sessionId}`}
-        className="flex min-h-[68px] items-center justify-center gap-3 rounded-20 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink no-underline sm:text-[24px]"
+        className="flex min-h-[68px] items-center justify-center gap-3 rounded-20 bg-gold px-5 py-3 text-center text-[20px] font-bold text-balance text-ink no-underline sm:text-[24px]"
       >
-        <IconLabel icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="#1F1D36" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" /></svg>}>Start</IconLabel>
+        <IconLabel icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="#161616" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" /></svg>}>Start</IconLabel>
       </Link>
     </section>
   )
@@ -82,7 +82,7 @@ function TonightCard({ tonight }: { tonight: NonNullable<LearnerToday['tonight']
 function NextCard({ next }: { next: NonNullable<LearnerToday['next']> }) {
   return (
     <section aria-labelledby="wed" className={`${card} gap-3.5`}>
-      <span className="text-[14px] font-semibold text-coral-text">{next.day}</span>
+      <span className="text-[14px] font-semibold text-red-text">{next.day}</span>
       <h2 id="wed" className="m-0 text-[25px] leading-[1.2] font-bold">{next.topic}</h2>
       <span className="flex flex-wrap gap-2">
         {next.minutes ? <MinutesChip minutes={next.minutes} /> : null}
@@ -152,7 +152,7 @@ export async function MyMaths({ searchParams }: { searchParams?: Promise<MathsQu
           </>
         )}
 
-        {note ? <p className="m-0 rounded-20 border border-[#FFC9BB] bg-coral-wash p-4 text-[16px] leading-[1.45]">{note}</p> : null}
+        {note ? <p className="m-0 rounded-20 border border-[#FFDC93] bg-gold-wash p-4 text-[16px] leading-[1.45]">{note}</p> : null}
 
         {own ? <GradeChips grades={own.grades} current={own.picked?.classId ?? null} /> : null}
         {own && grade === null ? <p className="m-0 text-[16px] leading-[1.45] text-body">{ADD_A_GRADE}</p> : null}
@@ -172,7 +172,7 @@ export async function MyMaths({ searchParams }: { searchParams?: Promise<MathsQu
 
         {(maths.gaps.length > 0 || today.fixed > 0) && !empty ? (
           <section aria-labelledby="gaps" className="flex flex-col gap-2.5">
-            <h2 id="gaps" className="m-0 text-[17px] font-bold">Your gaps</h2>
+            <h2 id="gaps" className="m-0 text-[17px] font-bold">What to practise</h2>
             {gapsCard}
             {maths.gaps.length > 0 ? (
               <ul className={list}>

@@ -131,7 +131,7 @@ function ensureWindow(): BrowserWindow {
     minWidth: 900,
     minHeight: 600,
     title: 'Jemma Desktop',
-    backgroundColor: '#F7F7FA',
+    backgroundColor: '#F8F6F1',
     titleBarStyle: 'hidden',
     trafficLightPosition: { x: 14, y: 13 },
     webPreferences: { preload: join(__dirname, 'preload.cjs'), contextIsolation: true, sandbox: true },

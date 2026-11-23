@@ -44,7 +44,7 @@ async function Start({ first, initials }: { first: string; initials: string }) {
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Got a class code from a teacher?</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <label htmlFor="code" style={{ fontSize: 15, fontWeight: 500 }}>Class code</label>
-            <input id="code" name="code" type="text" placeholder="6 letters and numbers" autoComplete="off" maxLength={12} style={{ height: 56, padding: '0 16px', borderRadius: 14, border: '1px solid #8C89A3', background: '#FFFFFF', color: ink, fontSize: 20, fontWeight: 600, letterSpacing: '0.12em', fontFamily: 'inherit' }} />
+            <input id="code" name="code" type="text" placeholder="6 letters and numbers" autoComplete="off" maxLength={12} style={{ height: 56, padding: '0 16px', borderRadius: 14, border: '1px solid #8F8D88', background: '#FFFFFF', color: ink, fontSize: 20, fontWeight: 600, letterSpacing: '0.12em', fontFamily: 'inherit' }} />
           </div>
           {demo ? (
             <p style={{ margin: 0, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, fontSize: 14 }}>
@@ -54,7 +54,7 @@ async function Start({ first, initials }: { first: string; initials: string }) {
               </span>
             </p>
           ) : null}
-          <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, background: ink, color: '#FFFFFF', fontSize: 17, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+          <button type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, background: '#007749', color: '#FFFFFF', fontSize: 17, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
             Find the class
           </button>
         </form>
@@ -98,7 +98,7 @@ function Children({ kids, first, initials }: { kids: ChildCard[]; first: string;
               <path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z" />
               <path d="M10 20.5a2 2 0 0 0 4 0" />
             </svg>
-            {needy ? <span aria-hidden="true" style={{ position: 'absolute', top: 9, right: 10, width: 10, height: 10, borderRadius: 999, background: '#FF6A4D', border: '2px solid #F7F7FA' }} /> : null}
+            {needy ? <span aria-hidden="true" style={{ position: 'absolute', top: 9, right: 10, width: 10, height: 10, borderRadius: 999, background: '#FFB81C', border: '2px solid #F8F6F1' }} /> : null}
           </Link>
           <AccountLink initials={initials} />
         </span>
@@ -117,7 +117,7 @@ function Children({ kids, first, initials }: { kids: ChildCard[]; first: string;
           {kids.map((k) => (
             <Link key={k.id} href={`/p/${k.id}`} style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 18, background: '#FFFFFF', border: `1px solid ${line}`, borderRadius: 22, textDecoration: 'none', color: ink }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <span aria-hidden="true" style={{ width: 64, height: 64, flex: 'none', borderRadius: 999, background: '#FFD3C7', fontSize: 26, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span aria-hidden="true" style={{ width: 64, height: 64, flex: 'none', borderRadius: 999, background: '#FFE3A8', fontSize: 26, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {k.firstName.slice(0, 1).toUpperCase()}
                 </span>
                 <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -125,13 +125,13 @@ function Children({ kids, first, initials }: { kids: ChildCard[]; first: string;
                   <span style={{ fontSize: 15, color: body }}>Grade {k.grade} · {k.alone ? 'On their own' : k.schoolName}</span>
                 </span>
                 {k.needs > 0 ? (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px 6px 8px', borderRadius: 999, background: '#FF6A4D', color: ink, fontSize: 13, fontWeight: 600, flex: 'none' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px 6px 8px', borderRadius: 999, background: '#FFB81C', color: ink, fontSize: 13, fontWeight: 600, flex: 'none' }}>
                     <span style={{ minWidth: 20, height: 20, padding: '0 6px', borderRadius: 999, background: ink, color: '#FFFFFF', fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{k.needs}</span>
                     Needs you
                   </span>
                 ) : null}
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingTop: 14, borderTop: '1px solid #EFEEF4' }}>
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingTop: 14, borderTop: '1px solid #F0EEE8' }}>
                 <span style={{ fontSize: 15, lineHeight: 1.4 }}>
                   {k.tonight
                     ? `Doing well. Tonight: ${k.tonight.minutes ? `${k.tonight.minutes} minutes on ` : ''}${lowerFirst(k.tonight.topic)}.`
@@ -145,8 +145,8 @@ function Children({ kids, first, initials }: { kids: ChildCard[]; first: string;
           ))}
         </section>
 
-        <Link href="/p/add" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: 16, borderRadius: 20, border: '1.5px dashed #8C89A3', textDecoration: 'none', color: ink }}>
-          <span aria-hidden="true" style={{ width: 44, height: 44, flex: 'none', borderRadius: 999, background: '#EEEDF5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Link href="/p/add" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: 16, borderRadius: 20, border: '1.5px dashed #8F8D88', textDecoration: 'none', color: ink }}>
+          <span aria-hidden="true" style={{ width: 44, height: 44, flex: 'none', borderRadius: 999, background: '#EFECE6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={ink} strokeWidth="2" strokeLinecap="round">
               <path d="M12 5v14M5 12h14" />
             </svg>

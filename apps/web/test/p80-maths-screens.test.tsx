@@ -78,7 +78,7 @@ describe('/k/maths', () => {
   it('says My maths, then Suggested for you, Your gaps and All of Mathematics', async () => {
     await page()
     expect(screen.getByRole('heading', { level: 1, name: 'My maths' })).toBeTruthy()
-    expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual(['Suggested for you', 'Your gaps', 'All of Mathematics'])
+    expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual(['Suggested for you', 'What to practise', 'All of Mathematics'])
   })
 
   it('a suggestion has its name, its reason and the learner\'s own count, and a Practise button', async () => {
@@ -95,7 +95,7 @@ describe('/k/maths', () => {
 
   it('a gap has its stage in the words of the gaps screen, its count and a Practise button', async () => {
     await page()
-    const gaps = within(screen.getByRole('region', { name: 'Your gaps' }))
+    const gaps = within(screen.getByRole('region', { name: 'What to practise' }))
     expect(gaps.getByText('Practising · 2 of 6 right')).toBeTruthy()
     expect(gaps.getByText('Fixed · 5 of 5 right')).toBeTruthy()
     expect(gaps.getAllByRole('button')).toHaveLength(2)
@@ -124,7 +124,7 @@ describe('/k/maths', () => {
     state.view = view({ status: 'due' })
     await page()
     expect(within(screen.getByRole('region', { name: 'Suggested for you' })).getAllByRole('button', { name: /^Practise / })).toHaveLength(2)
-    expect(within(screen.getByRole('region', { name: 'Your gaps' })).getAllByRole('button', { name: /^Practise / })).toHaveLength(2)
+    expect(within(screen.getByRole('region', { name: 'What to practise' })).getAllByRole('button', { name: /^Practise / })).toHaveLength(2)
     // suggestions (2) and gaps (2): all four buttons are there
     expect(screen.getAllByRole('button', { name: /^Practise/ })).toHaveLength(4)
     expect(screen.queryByText(/Finish tonight's lesson first/)).toBeNull()
@@ -146,7 +146,7 @@ describe('/k/maths', () => {
     state.view = view({ maths: { subject: 'Mathematics', strands: strands({ score: score(0, 0), topics: [] }).map((s) => ({ ...s, score: score(0, 0) })), gaps: [], suggestions: [] } as never })
     await page()
     expect(screen.queryByRole('region', { name: 'Suggested for you' })).toBeNull()
-    expect(screen.queryByRole('region', { name: 'Your gaps' })).toBeNull()
+    expect(screen.queryByRole('region', { name: 'What to practise' })).toBeNull()
     expect(screen.getAllByText('No score yet')).toHaveLength(3)
   })
 })

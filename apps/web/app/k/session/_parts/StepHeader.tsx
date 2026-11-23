@@ -28,7 +28,7 @@ export function StepHeader({ current, closeLabel = 'Stop for now' }: { current: 
             >
               <span
                 aria-hidden="true"
-                className={`h-1.5 rounded-pill ${state === 'now' ? 'bg-coral' : state === 'past' ? 'bg-ink' : 'bg-[#E3E1EE]'}`}
+                className={`h-1.5 rounded-pill ${state === 'now' ? 'bg-gold' : state === 'past' ? 'bg-green' : 'bg-[#E6E3DC]'}`}
               />
               {label}
             </li>

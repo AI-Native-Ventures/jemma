@@ -90,7 +90,7 @@ function Bar() {
       data-state={state}
       role="progressbar"
       aria-hidden={state === 'idle'}
-      className="pointer-events-none fixed left-0 top-0 z-[9999] h-[2px] w-full origin-left bg-coral"
+      className="pointer-events-none fixed left-0 top-0 z-[9999] h-[2px] w-full origin-left bg-green"
       style={{
         transform: state === 'idle' ? 'scaleX(0)' : state === 'loading' ? 'scaleX(0.85)' : 'scaleX(1)',
         opacity: state === 'done' ? 0 : state === 'idle' ? 0 : 1,
@@ -105,7 +105,7 @@ function Bar() {
   )
 }
 
-/** A 2 px coral bar fixed at the top of the screen. Starts on any in-app link tap, router push or server action and ends when the new page renders. */
+/** A 2 px green bar (green is what moves while the app works) fixed at the top of the screen. Starts on any in-app link tap, router push or server action and ends when the new page renders. */
 export function NavProgress() {
   return (
     <Suspense fallback={null}>

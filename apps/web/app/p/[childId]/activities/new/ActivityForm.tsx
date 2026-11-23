@@ -16,8 +16,8 @@ const KINDS: { id: NonNullable<ActivityInput['kind']>; label: string }[] = [
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const SINCE = ['This term', 'Last term', 'This year', 'Longer']
 
-const OFF = 'border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36'
-const ON = 'border:none;background:#1F1D36;color:#FFFFFF'
+const OFF = 'border:1px solid #8F8D88;background:#FFFFFF;color:#161616'
+const ON = 'border:none;background:#007749;color:#FFFFFF'
 
 export function ActivityForm({ childId, name }: { childId: string; name: string }) {
   const router = useRouter()
@@ -84,20 +84,20 @@ export function ActivityForm({ childId, name }: { childId: string; name: string 
             onChange={(e) => setTitle(e.target.value)}
             onFocus={() => setFocus(true)}
             onBlur={() => setFocus(false)}
-            style={css(`height:52px;padding:0 16px;border-radius:14px;border:${focus ? '2px solid #1F1D36' : '1px solid #8C89A3'};background:#FFFFFF;color:#1F1D36;font-size:17px;outline:none`)}
+            style={css(`height:52px;padding:0 16px;border-radius:14px;border:${focus ? '2px solid #161616' : '1px solid #8F8D88'};background:#FFFFFF;color:#161616;font-size:17px;outline:none`)}
           />
         </div>
 
         <div style={css('display:flex;flex-direction:column;gap:6px')}>
           <label htmlFor="awhere" style={css('font-size:15px;font-weight:500')}>
-            Where <span style={css('color:#5D5A73;font-weight:400')}>(optional)</span>
+            Where <span style={css('color:#5C5A55;font-weight:400')}>(optional)</span>
           </label>
           <input
             id="awhere"
             type="text"
             value={place}
             onChange={(e) => setPlace(e.target.value)}
-            style={css('height:52px;padding:0 16px;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:17px')}
+            style={css('height:52px;padding:0 16px;border-radius:14px;border:1px solid #8F8D88;background:#FFFFFF;color:#161616;font-size:17px')}
           />
         </div>
 
@@ -127,7 +127,7 @@ export function ActivityForm({ childId, name }: { childId: string; name: string 
             id="asince"
             value={since}
             onChange={(e) => setSince(e.target.value)}
-            style={css('height:52px;padding:0 14px;border-radius:14px;border:1px solid #8C89A3;background:#FFFFFF;color:#1F1D36;font-size:17px')}
+            style={css('height:52px;padding:0 14px;border-radius:14px;border:1px solid #8F8D88;background:#FFFFFF;color:#161616;font-size:17px')}
           >
             {SINCE.map((s) => (
               <option key={s}>{s}</option>
@@ -136,15 +136,15 @@ export function ActivityForm({ childId, name }: { childId: string; name: string 
         </div>
       </form>
 
-      <p style={css('margin:0;display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:#EEEDF5;font-size:14px;line-height:1.45')}>
+      <p style={css('margin:0;display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:#EFECE6;font-size:14px;line-height:1.45')}>
         <span style={css('flex:none;margin-top:1px;display:flex')}>
-          <Icon name="eye" size={18} width={1.8} color="#1F1D36" />
+          <Icon name="eye" size={18} width={1.8} color="#161616" />
         </span>
         {`Ms Banda sees activities on ${name}'s profile. Jemma uses them in the guidance card, never to mark ${name}.`}
       </p>
 
       {error ? (
-        <p role="alert" style={css('margin:0;font-size:14px;font-weight:600;color:#B8381F')}>{error}</p>
+        <p role="alert" style={css('margin:0;font-size:14px;font-weight:600;color:#B8281E')}>{error}</p>
       ) : null}
 
       <div style={css('flex:1')} />
@@ -152,7 +152,7 @@ export function ActivityForm({ childId, name }: { childId: string; name: string 
         type="button"
         onClick={save}
         disabled={pending}
-        style={css('display:flex;align-items:center;justify-content:center;min-height:56px;padding:12px 20px;text-align:center;text-wrap:balance;border-radius:14px;border:none;background:#1F1D36;color:#FFFFFF;font-size:17px;font-weight:600;opacity:' + (pending ? '0.6' : '1'))}
+        style={css('display:flex;align-items:center;justify-content:center;min-height:56px;padding:12px 20px;text-align:center;text-wrap:balance;border-radius:14px;border:none;background:#007749;color:#FFFFFF;font-size:17px;font-weight:600;opacity:' + (pending ? '0.6' : '1'))}
       >
         Save activity
       </PendingButton>

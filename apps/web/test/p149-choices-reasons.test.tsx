@@ -155,7 +155,7 @@ describe('true or false', () => {
     const group = screen.getByRole('group', { name: 'True or false' })
     const [yes, no] = within(group).getAllByRole('button')
     expect([yes!.textContent, no!.textContent]).toEqual(['True', 'False'])
-    expect(yes!.className).toBe(no!.className.replace('border-[3px] border-ink bg-ink text-white', 'border-2 border-edge bg-card text-ink'))
+    expect(yes!.className).toBe(no!.className.replace('border-[3px] border-green bg-green text-white', 'border-2 border-edge bg-card text-ink'))
     expect([...yes!.classList].some((c) => c.startsWith('min-h-'))).toBe(true)
     expect(screen.queryAllByRole('textbox')).toHaveLength(0)
     expect(screen.getByText('Tap True or False.')).toBeTruthy()

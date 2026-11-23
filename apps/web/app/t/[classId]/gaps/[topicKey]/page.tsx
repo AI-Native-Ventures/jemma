@@ -66,7 +66,7 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
                   href={`${base}/learners/${l.childId}`}
                   className="flex min-h-[58px] items-center gap-3 border-t border-soft text-ink no-underline"
                 >
-                  <span aria-hidden="true" className={`${avatar} ${i === 0 ? 'bg-coral-soft' : 'bg-soft-3'}`}>
+                  <span aria-hidden="true" className={`${avatar} ${i === 0 ? 'bg-gold-soft' : 'bg-soft-3'}`}>
                     {l.name.slice(0, 1)}
                   </span>
                   <span className="flex min-w-0 flex-1 flex-col leading-[1.3]">
@@ -147,11 +147,11 @@ export default async function TeacherGap({ params }: { params: Promise<{ classId
               ))}
             </ol>
             <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-              <ReteachDoneForm reteachId={reteach.id} errorClassName="col-span-full m-0 text-[14px] font-semibold text-coral-text">
+              <ReteachDoneForm reteachId={reteach.id} errorClassName="col-span-full m-0 text-[14px] font-semibold text-red-text">
                 <PendingButton
                   type="submit"
                   disabled={done}
-                  className="flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink px-5 py-2.5 text-center text-[16px] font-semibold text-balance text-white disabled:opacity-60"
+                  className="flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-green px-5 py-2.5 text-center text-[16px] font-semibold text-balance text-white disabled:opacity-60"
                 >
                   <IconLabel
                     gap={8}

@@ -9,7 +9,7 @@ import { TOUR_TOPIC_NAME } from './data/lesson'
 import { TourLessonReader } from './TourLessonReader'
 
 const startButton =
-  'flex min-h-[60px] w-full cursor-pointer items-center justify-center rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white'
+  'flex min-h-[60px] w-full cursor-pointer items-center justify-center rounded-18 border-0 bg-green px-5 py-3 text-center text-[19px] font-bold text-balance text-white'
 const skipButton =
   'flex min-h-[56px] w-full cursor-pointer items-center justify-center rounded-18 border-[1.5px] border-ink bg-card px-5 py-3 text-center text-[17px] font-semibold text-balance text-ink'
 

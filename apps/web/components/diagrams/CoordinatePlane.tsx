@@ -2,7 +2,7 @@ import { useId } from 'react'
 import type { CoordinatePlaneSpec } from '@jemma/profiling/schemas'
 import { Rich, fracLabel, labelWidth, raisedLabel } from './math-label'
 import { boxOf, hits, hitsAny, within, type Anchor, type Box } from './label-clear'
-import { BODY, CORAL, CORAL_TEXT, INK, Line, Svg, WHITE, fmt, type Variant } from './shared'
+import { BODY, GREEN, RED_TEXT, INK, Line, Svg, WHITE, fmt, type Variant } from './shared'
 import { defaultStep, graphEquation, sampleGraph, ticksOf, type Pt } from './plane-math'
 
 export type CoordinatePlaneProps = CoordinatePlaneSpec & { variant?: Variant }
@@ -15,10 +15,13 @@ const TOP = 24
 const BOTTOM = 34
 const PLOT_W = W - LEFT - RIGHT
 const PLOT_H = H - TOP - BOTTOM
-const GRID = '#D7D5E4'
-/** One colour for each of up to three graphs: coral, ink, and a grey one that is also dashed. */
+const GRID = '#D9D6CE'
+/**
+ * One colour for each of up to three graphs: green (the line to look at, with its label in the red of a label: gold is too pale for a thin line
+ * or for words on white), black, and a grey one that is also dashed.
+ */
 const GRAPH = [
-  { stroke: CORAL, text: CORAL_TEXT, dash: undefined },
+  { stroke: GREEN, text: RED_TEXT, dash: undefined },
   { stroke: INK, text: INK, dash: undefined },
   { stroke: BODY, text: BODY, dash: '7 5' },
 ] as const

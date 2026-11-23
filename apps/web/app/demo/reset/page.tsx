@@ -27,9 +27,9 @@ export default async function DemoResetPage() {
         aria-modal="true"
         aria-labelledby="reset"
         aria-describedby="reset-what"
-        className="absolute inset-x-5 top-[200px] mx-auto flex max-w-[350px] flex-col gap-3.5 rounded-[26px] bg-card px-5 pt-6 pb-5 shadow-[0_18px_40px_rgba(31,29,54,0.25)]"
+        className="absolute inset-x-5 top-[200px] mx-auto flex max-w-[350px] flex-col gap-3.5 rounded-[26px] bg-card px-5 pt-6 pb-5 shadow-[0_18px_40px_rgba(22,22,22,0.25)]"
       >
-        <span aria-hidden="true" className="flex size-12 items-center justify-center rounded-14 bg-[#FFEDE8] text-ink">
+        <span aria-hidden="true" className="flex size-12 items-center justify-center rounded-14 bg-[#FFF3DA] text-ink">
           <ResetIcon size={24} />
         </span>
         <h2 id="reset" className="m-0 text-[25px] leading-[1.2] font-semibold tracking-[-0.01em]">Reset your demo?</h2>
@@ -41,7 +41,7 @@ export default async function DemoResetPage() {
             {(empty ? WHAT_EMPTY : WHAT).map((line) => (
               <li key={line} className="flex gap-2.5">
                 <svg width="10" height="10" viewBox="0 0 16 16" aria-hidden="true" className="mt-[5px] flex-none">
-                  <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+                  <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
                 </svg>
                 {line}
               </li>
@@ -50,7 +50,7 @@ export default async function DemoResetPage() {
         </div>
         <div className="mt-1.5 flex flex-col gap-2">
           <form action={resetDemoAction} className="contents">
-            <PendingButton type="submit" className="flex min-h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center font-[inherit] text-[17px] font-semibold text-balance text-white">Reset demo</PendingButton>
+            <PendingButton type="submit" className="flex min-h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center font-[inherit] text-[17px] font-semibold text-balance text-white">Reset demo</PendingButton>
           </form>
           <a href="/demo/switch" className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-5 py-3 text-center text-[17px] font-semibold text-balance text-ink no-underline">Keep my demo</a>
         </div>

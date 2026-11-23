@@ -10,7 +10,7 @@ const kalam = Kalam({ subsets: ['latin'], weight: ['400'], variable: '--font-kal
 
 export const metadata: Metadata = {
   title: 'Jemma',
-  description: 'Jemma learns how each child learns and helps teachers and parents act on it.',
+  description: 'Jemma teaches you a short lesson, marks your answers, and teaches again what you got wrong. Every lesson is free.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

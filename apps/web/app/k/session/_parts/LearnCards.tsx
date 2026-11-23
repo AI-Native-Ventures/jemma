@@ -40,7 +40,7 @@ function sameAmountCaption(spec: Extract<DiagramSpec, { kind: 'fraction_bar' }>)
 function CardPicture({ spec }: { spec: SeniorDiagramSpec }) {
   if (spec.kind !== 'fraction_bar') return <DiagramView spec={spec} variant="learn" />
   return (
-    <div aria-hidden="true" className="flex flex-col gap-2.5 bg-[#F7F6FB] p-4 [border-radius:18px]">
+    <div aria-hidden="true" className="flex flex-col gap-2.5 bg-[#F8F6F1] p-4 [border-radius:18px]">
       <BarRows
         rows={spec.rows}
         fills={rowFills(spec.rows)}
@@ -90,7 +90,7 @@ export function LearnCards({ lesson, card, onBack, onNext }: LearnCardsProps) {
         <p className="m-0 text-[15px] font-semibold text-body">Learn · card {card + 1} of {cards.length}</p>
         <LearnBadge icon={CARDS_ICON}>Reading cards</LearnBadge>
       </div>
-      <article className="flex flex-1 flex-col gap-[18px] rounded-[28px] border border-line bg-card px-[22px] py-6 shadow-[0_10px_30px_rgba(31,29,54,0.07)]">
+      <article className="flex flex-1 flex-col gap-[18px] rounded-[28px] border border-line bg-card px-[22px] py-6 shadow-[0_10px_30px_rgba(22,22,22,0.07)]">
         <h1 className="m-0 text-[28px] leading-[1.15] font-bold tracking-[-0.015em]">
           <FractionText text={current.heading} size={34} rule={3} gap={4} side={4} />
         </h1>
@@ -99,14 +99,14 @@ export function LearnCards({ lesson, card, onBack, onNext }: LearnCardsProps) {
       </article>
       <div aria-hidden="true" className="flex justify-center gap-2">
         {cards.map((_, i) => (
-          <span key={i} className={`h-2 rounded-pill ${i === card ? 'w-6 bg-coral' : i < card ? 'w-2 bg-ink' : 'w-2 bg-edge'}`} />
+          <span key={i} className={`h-2 rounded-pill ${i === card ? 'w-6 bg-gold' : i < card ? 'w-2 bg-green' : 'w-2 bg-edge'}`} />
         ))}
       </div>
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2.5">
         <button type="button" onClick={onBack} disabled={card === 0} className="min-h-[60px] cursor-pointer rounded-18 border-2 border-ink bg-card px-5 py-3 text-center text-[18px] font-semibold text-balance text-ink disabled:opacity-40">
           Back
         </button>
-        <button type="button" onClick={onNext} className="min-h-[60px] cursor-pointer rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
+        <button type="button" onClick={onNext} className="min-h-[60px] cursor-pointer rounded-18 border-0 bg-green px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
           {last ? "I'm ready" : 'Next card'}
         </button>
       </div>

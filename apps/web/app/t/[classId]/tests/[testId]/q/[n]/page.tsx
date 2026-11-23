@@ -29,14 +29,14 @@ function Term({ text }: { text: string }) {
 
 /** The board's handwriting chip: tilt and ink vary a little from learner to learner. */
 const HAND = [
-  { rotate: -3, color: '#2F3A56', size: 21, bold: false },
+  { rotate: -3, color: '#12308C', size: 21, bold: false },
   { rotate: 2, color: '#3B3B3B', size: 21, bold: false },
-  { rotate: -1, color: '#2F3A56', size: 21, bold: false },
+  { rotate: -1, color: '#12308C', size: 21, bold: false },
   { rotate: -5, color: '#3B3B3B', size: 22, bold: true },
 ]
 
 function AnswerChip({ answer, i, tilt, grade }: { answer: string; i: number; tilt: boolean; grade: number | null }) {
-  const h = tilt ? HAND[i % HAND.length]! : { rotate: 0, color: '#2F3A56', size: 21, bold: false }
+  const h = tilt ? HAND[i % HAND.length]! : { rotate: 0, color: '#12308C', size: 21, bold: false }
   return (
     <span className="flex h-12 min-w-[92px] max-w-[58%] items-center justify-center gap-[5px] rounded-lg border border-[#D9D5CC] bg-[#FBFAF5] font-[Arial,Helvetica,sans-serif] text-[11px] text-[#555555]">
       <span>=</span>
@@ -51,12 +51,12 @@ function AnswerChip({ answer, i, tilt, grade }: { answer: string; i: number; til
   )
 }
 
-function LearnerRow({ href, learner, i, coral, tilt, grade }: { href: string; learner: Learner; i: number; coral: boolean; tilt: boolean; grade: number | null }) {
+function LearnerRow({ href, learner, i, gold, tilt, grade }: { href: string; learner: Learner; i: number; gold: boolean; tilt: boolean; grade: number | null }) {
   return (
     <Link href={href} className="flex min-h-[68px] items-center gap-3 border-t border-soft text-ink no-underline">
       <span
         aria-hidden="true"
-        className={`flex size-[34px] flex-none items-center justify-center rounded-pill text-[13px] font-bold ${coral ? 'bg-coral-soft' : 'bg-soft-3'}`}
+        className={`flex size-[34px] flex-none items-center justify-center rounded-pill text-[13px] font-bold ${gold ? 'bg-gold-soft' : 'bg-soft-3'}`}
       >
         {learner.name.slice(0, 1)}
       </span>
@@ -128,7 +128,7 @@ export default async function TeacherQuestionPage({
             <ul className="m-0 flex list-none flex-col p-0">
               {q.missed.map((l, i) => (
                 <li key={l.childId}>
-                  <LearnerRow href={profile(l.childId)} learner={l} i={i} coral={i === 0} tilt grade={grade} />
+                  <LearnerRow href={profile(l.childId)} learner={l} i={i} gold={i === 0} tilt grade={grade} />
                 </li>
               ))}
             </ul>
@@ -141,7 +141,7 @@ export default async function TeacherQuestionPage({
               Got it right
             </h2>
             {q.right.map((l, i) => (
-              <LearnerRow key={l.childId} href={profile(l.childId)} learner={l} i={i} coral={false} tilt={false} grade={grade} />
+              <LearnerRow key={l.childId} href={profile(l.childId)} learner={l} i={i} gold={false} tilt={false} grade={grade} />
             ))}
           </section>
         ) : null}
@@ -149,7 +149,7 @@ export default async function TeacherQuestionPage({
         {q.gap ? (
           <Link
             href={`${base}/gaps/${q.gap.topicId}`}
-            className="flex items-center gap-3 rounded-18 border border-[#FFC9BB] bg-coral-wash py-3.5 pr-3 pl-4 text-ink no-underline"
+            className="flex items-center gap-3 rounded-18 border border-[#FFDC93] bg-gold-wash py-3.5 pr-3 pl-4 text-ink no-underline"
           >
             <span className="flex flex-1 flex-col gap-0.5">
               <span className="text-[13px] text-body">Class gap</span>

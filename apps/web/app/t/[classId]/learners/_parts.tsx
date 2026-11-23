@@ -14,11 +14,11 @@ export function BackHeader({ href, kicker, title, pad = '10px 16px 6px 8px' }: {
     <>
       <style>{`div:has(> main [data-own-header]) > header:not([data-own-header]){display:none}`}</style>
       <header data-own-header style={{ display: 'flex', alignItems: 'center', gap: 4, padding: pad }}>
-        <Link href={href} aria-label="Back to learners" style={{ width: 44, height: 44, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12, color: '#1F1D36' }}>
+        <Link href={href} aria-label="Back to learners" style={{ width: 44, height: 44, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12, color: '#161616' }}>
           <svg width="24" height="24" viewBox="0 0 24 24" strokeWidth="2" {...svg}><path d="m15 6-6 6 6 6" /></svg>
         </Link>
-        <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2, flex: 1, minWidth: 0, color: '#1F1D36' }}>
-          <span style={{ fontSize: 13, color: '#5D5A73' }}>{kicker}</span>
+        <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2, flex: 1, minWidth: 0, color: '#161616' }}>
+          <span style={{ fontSize: 13, color: '#5C5A55' }}>{kicker}</span>
           <span style={{ fontSize: 17, fontWeight: 700 }}>{title}</span>
         </span>
       </header>
@@ -27,13 +27,13 @@ export function BackHeader({ href, kicker, title, pad = '10px 16px 6px 8px' }: {
 }
 
 export function Page({ children }: { children: ReactNode }) {
-  return <div style={{ fontFamily: font, color: '#1F1D36' }} className="mx-auto flex w-full max-w-[640px] flex-col">{children}</div>
+  return <div style={{ fontFamily: font, color: '#161616' }} className="mx-auto flex w-full max-w-[640px] flex-col">{children}</div>
 }
 
 export function Diamond({ size = 14, top = 10 }: { size?: number; top?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" style={{ flex: 'none', marginTop: top }}>
-      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
     </svg>
   )
 }
@@ -49,13 +49,13 @@ export function EyeIcon({ size = 16, stroke = 1.8 }: { size?: number; stroke?: n
 
 export function Chevron() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" strokeWidth="2" {...svg} stroke="#1F1D36" style={{ flex: 'none' }}>
+    <svg width="20" height="20" viewBox="0 0 24 24" strokeWidth="2" {...svg} stroke="#161616" style={{ flex: 'none' }}>
       <path d="m9 6 6 6-6 6" />
     </svg>
   )
 }
 
-export const avatarBg = (first: boolean): CSSProperties['background'] => (first ? '#FFD3C7' : '#E9E7F3')
+export const avatarBg = (first: boolean): CSSProperties['background'] => (first ? '#FFE3A8' : '#ECE9E2')
 
 export function Avatar({ name, size = 34, first = false, fontSize = 13 }: { name: string; size?: number; first?: boolean; fontSize?: number }) {
   return (
@@ -65,4 +65,4 @@ export function Avatar({ name, size = 34, first = false, fontSize = 13 }: { name
   )
 }
 
-export const card = (radius = 20): CSSProperties => ({ display: 'flex', flexDirection: 'column', background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: radius })
+export const card = (radius = 20): CSSProperties => ({ display: 'flex', flexDirection: 'column', background: '#FFFFFF', border: '1px solid #E8E5DE', borderRadius: radius })

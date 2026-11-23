@@ -14,7 +14,7 @@ export type AnswerBoxProps = {
   disabled?: boolean
 }
 
-/** The big coral number box and its unit, shared by the two Grade 6 question styles. */
+/** The big number box with its green edge (the box a learner types in) and its unit, shared by the two Grade 6 question styles. */
 export function AnswerBox({ id, label, value, onChange, unit, unitStyle, disabled }: AnswerBoxProps) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -33,9 +33,9 @@ export function AnswerBox({ id, label, value, onChange, unit, unitStyle, disable
           width: 96,
           height: 76,
           borderRadius: 18,
-          border: '3px solid #FF6A4D',
+          border: '3px solid #007749',
           background: '#FFFFFF',
-          color: '#1F1D36',
+          color: '#161616',
           fontSize: 40,
           fontWeight: 700,
           textAlign: 'center',

@@ -13,7 +13,7 @@ import { Poll, RetryTest } from './TestPieces'
 // they render the same on the server and in a test. The parts that need a browser (the poll, the retry, the camera) are in the client files beside.
 
 const list = 'm-0 flex list-none flex-col rounded-20 border border-line bg-card px-4 py-1 p-0'
-const card = 'flex flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(31,29,54,0.06)]'
+const card = 'flex flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(22,22,22,0.06)]'
 const linkButton = 'flex min-h-11 items-center justify-center text-[16px] font-semibold text-ink underline underline-offset-[3px]'
 const choiceCard = 'flex min-h-[112px] w-full cursor-pointer flex-col justify-center gap-1 rounded-20 border-2 border-ink bg-card px-5 py-4 text-left text-ink no-underline'
 
@@ -46,12 +46,12 @@ export function Back({ href, children }: { href: string; children: ReactNode }) 
   )
 }
 
-/** The same coral ring the lesson-loading screen and the practice card turn while Jemma works. */
+/** The same green ring the lesson-loading screen and the practice card turn while Jemma works. */
 export function Ring() {
   return (
     <svg aria-hidden="true" width="44" height="44" viewBox="0 0 28 28" className="motion-safe:animate-spin">
-      <circle cx="14" cy="14" r="11" fill="none" stroke="#EEEDF5" strokeWidth="3.5" />
-      <path d="M14 3a11 11 0 0 1 11 11" fill="none" stroke="#FF6A4D" strokeWidth="3.5" strokeLinecap="round" />
+      <circle cx="14" cy="14" r="11" fill="none" stroke="#EFECE6" strokeWidth="3.5" />
+      <path d="M14 3a11 11 0 0 1 11 11" fill="none" stroke="#007749" strokeWidth="3.5" strokeLinecap="round" />
     </svg>
   )
 }
@@ -119,7 +119,7 @@ function Row({ href, title, note }: { href: string; title: string; note: string 
 
 function Mark({ right }: { right: boolean }) {
   return (
-    <span role="img" aria-label={right ? 'Right' : 'Not right'} className={`flex size-8 flex-none items-center justify-center rounded-pill ${right ? 'bg-soft-4 text-ink' : 'bg-coral-tint text-coral-text'}`}>
+    <span role="img" aria-label={right ? 'Right' : 'Not right'} className={`flex size-8 flex-none items-center justify-center rounded-pill ${right ? 'bg-green-tint text-green' : 'bg-soft-4 text-red-text'}`}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         {right ? <path d="m5 12.5 4.5 4.5L19 7.5" /> : <path d="M6 6l12 12M18 6 6 18" />}
       </svg>

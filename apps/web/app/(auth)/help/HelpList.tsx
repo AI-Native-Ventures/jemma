@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Section, colors } from '../_parts'
-import { ComingButton } from '../_coming'
+import { MessageButton } from './MessageForm'
 
 const QUESTIONS = [
   {
@@ -21,14 +21,10 @@ const QUESTIONS = [
     q: 'How do I fix a mark? (teachers)',
     a: 'Open the paper, tap the question, and change the mark. Jemma redoes the gaps for that learner straight away.',
   },
-  {
-    q: 'How do I reset the demo?',
-    a: 'Open the demo page and choose Reset. Your sandbox goes back to the start.',
-  },
 ]
 
 const chevron = (up: boolean) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
     <path d={up ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'} />
   </svg>
 )
@@ -68,7 +64,7 @@ export function HelpList() {
           {shown.map((item, n) => {
             const expanded = open === item.i
             return (
-              <li key={item.i} style={{ borderTop: n ? '1px solid #EFEEF4' : undefined }}>
+              <li key={item.i} style={{ borderTop: n ? '1px solid #F0EEE8' : undefined }}>
                 <button
                   type="button"
                   aria-expanded={expanded}
@@ -80,7 +76,7 @@ export function HelpList() {
                   {chevron(expanded)}
                 </button>
                 {expanded ? (
-                  <p id={`a${item.i}`} style={{ margin: '0 0 14px', padding: '12px 14px', borderRadius: 14, background: '#F4F3F8', fontSize: 15, lineHeight: 1.5 }}>
+                  <p id={`a${item.i}`} style={{ margin: '0 0 14px', padding: '12px 14px', borderRadius: 14, background: '#F4F2EE', fontSize: 15, lineHeight: 1.5 }}>
                     {item.a}
                   </p>
                 ) : null}
@@ -92,10 +88,10 @@ export function HelpList() {
 
       <Section id="stuck" title="Still stuck?" gap={12}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <ComingButton style={stuckButton}>Report a problem</ComingButton>
-          <ComingButton style={stuckButton}>Message the Jemma team</ComingButton>
+          <MessageButton kind="problem" style={stuckButton} />
+          <MessageButton kind="message" style={stuckButton} />
         </div>
-        <p style={{ margin: 0, fontSize: 14, color: colors.body }}>We answer within one school day.</p>
+        <p style={{ margin: 0, fontSize: 14, color: colors.body }}>The Jemma team reads every message.</p>
       </Section>
     </>
   )

@@ -19,9 +19,9 @@ function DotChart({ marks, average }: { marks: number[]; average: number }) {
     <span className="flex flex-col gap-1.5">
       <span className="text-[13px] font-semibold text-body">Each dot is a learner</span>
       <span aria-hidden="true" className="relative block h-[46px]">
-        <span className="absolute inset-x-0 top-[27px] h-0.5 bg-[#E3E1EE]" />
-        <span className="absolute top-1.5 bottom-1 w-0.5 bg-coral" style={{ left: `${average}%` }} />
-        <span className="absolute top-0 text-[11px] font-semibold text-coral-text" style={{ left: `calc(${average}% + 6px)` }}>
+        <span className="absolute inset-x-0 top-[27px] h-0.5 bg-[#E6E3DC]" />
+        <span className="absolute top-1.5 bottom-1 w-0.5 bg-gold" style={{ left: `${average}%` }} />
+        <span className="absolute top-0 text-[11px] font-semibold text-red-text" style={{ left: `calc(${average}% + 6px)` }}>
           avg
         </span>
         {[...groups.entries()].flatMap(([mark, count]) =>

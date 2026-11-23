@@ -29,13 +29,13 @@ export type MapView = {
 
 const GEM = (size: number, mt: number) => (
   <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" style={{ flex: 'none', marginTop: mt }}>
-    <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+    <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
   </svg>
 )
-const dark = { height: 44, borderRadius: 12, border: 'none', background: '#1F1D36', color: '#FFFFFF', fontSize: 15, fontWeight: 600 } as const
-const light = { height: 44, borderRadius: 12, border: '1.5px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36', fontSize: 15, fontWeight: 600 } as const
-const checkPill = <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 9px', borderRadius: 999, background: '#FF6A4D', color: '#1F1D36', flex: 'none' }}>Check</span>
-const input = { height: 48, borderRadius: 12, border: '1.5px solid #CFCDDC', background: '#FFFFFF', padding: '0 14px', fontSize: 16, color: '#1F1D36', fontFamily: 'inherit' } as const
+const dark = { height: 44, borderRadius: 12, border: 'none', background: '#007749', color: '#FFFFFF', fontSize: 15, fontWeight: 600 } as const
+const light = { height: 44, borderRadius: 12, border: '1.5px solid #161616', background: '#FFFFFF', color: '#161616', fontSize: 15, fontWeight: 600 } as const
+const checkPill = <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 9px', borderRadius: 999, background: '#FFB81C', color: '#161616', flex: 'none' }}>Check</span>
+const input = { height: 48, borderRadius: 12, border: '1.5px solid #D2CFC7', background: '#FFFFFF', padding: '0 14px', fontSize: 16, color: '#161616', fontFamily: 'inherit' } as const
 
 const LAPTOP = '(min-width: 1024px)'
 const subscribe = (cb: () => void) => {
@@ -95,17 +95,17 @@ function MapPhone({ view }: { view: MapView }) {
     <div style={{ lineHeight: 'normal', display: 'flex', flexDirection: 'column', gap: 18, padding: '12px 20px 16px', maxWidth: 720, opacity: pending ? 0.7 : 1 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#5D5A73' }}>Curriculum</p>
-          {view.draft ? <span style={{ fontSize: 12, fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: '#EEEDF5' }}>Draft</span> : null}
+          <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#5C5A55' }}>Curriculum</p>
+          {view.draft ? <span style={{ fontSize: 12, fontWeight: 600, padding: '3px 9px', borderRadius: 999, background: '#EFECE6' }}>Draft</span> : null}
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
           {GEM(14, 10)}
           <h1 style={{ margin: 0, fontSize: 26, lineHeight: 1.2, fontWeight: 600, letterSpacing: '-0.01em', textWrap: 'pretty' }}>{view.headline}</h1>
         </div>
-        <p style={{ margin: '0 0 0 24px', fontSize: 14, lineHeight: 1.45, color: '#5D5A73' }}>Drag to reorder. Tap a topic to rename it, change its term or what it needs.</p>
+        <p style={{ margin: '0 0 0 24px', fontSize: 14, lineHeight: 1.45, color: '#5C5A55' }}>Drag to reorder. Tap a topic to rename it, change its term or what it needs.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${view.terms.length}, minmax(0, 1fr))`, gap: 4, padding: 4, background: '#EEEDF5', borderRadius: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${view.terms.length}, minmax(0, 1fr))`, gap: 4, padding: 4, background: '#EFECE6', borderRadius: 14 }}>
         {view.terms.map((t) => {
           const on = t.term === term
           return (
@@ -115,13 +115,13 @@ function MapPhone({ view }: { view: MapView }) {
               aria-pressed={on}
               onClick={() => setTerm(t.term)}
               style={{
-                height: 44, border: 'none', borderRadius: 10, background: on ? '#FFFFFF' : 'transparent', fontSize: 15, fontWeight: on ? 600 : 500, color: '#1F1D36',
-                ...(on ? { boxShadow: '0 1px 3px rgba(31,29,54,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 } : {}),
+                height: 44, border: 'none', borderRadius: 10, background: on ? '#FFFFFF' : 'transparent', fontSize: 15, fontWeight: on ? 600 : 500, color: '#161616',
+                ...(on ? { boxShadow: '0 1px 3px rgba(22,22,22,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 } : {}),
               }}
             >
               Term {t.term}{' '}
               {t.badge > 0 ? (
-                <span style={{ minWidth: 18, height: 18, padding: '0 5px', borderRadius: 999, background: '#FF6A4D', color: '#1F1D36', fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{t.badge}</span>
+                <span style={{ minWidth: 18, height: 18, padding: '0 5px', borderRadius: 999, background: '#FFB81C', color: '#161616', fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{t.badge}</span>
               ) : null}
             </button>
           )
@@ -130,18 +130,18 @@ function MapPhone({ view }: { view: MapView }) {
 
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
         <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>{view.months ? `Term ${term} · ${TERM_RANGE[term]}` : `Term ${term}`}</h2>
-        <span style={{ fontSize: 14, color: '#5D5A73' }}>{plural(current.topics.length, 'topic')}</span>
+        <span style={{ fontSize: 14, color: '#5C5A55' }}>{plural(current.topics.length, 'topic')}</span>
       </div>
 
       <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
         {current.topics.map((t, i) =>
           t.check ? (
-            <li key={t.name} style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '12px 14px 14px 12px', background: '#FFF4F1', border: '1px solid #FFC9BB', borderRadius: 16 }}>
+            <li key={t.name} style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '12px 14px 14px 12px', background: '#FFF8E8', border: '1px solid #FFDC93', borderRadius: 16 }}>
               <span style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                 <span style={{ width: 24, height: 24, flex: 'none', borderRadius: 999, background: '#FFFFFF', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</span>
                 <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
                   <span className="topic-name" style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.3 }}>{t.name}</span>
-                  {t.needs ? <span style={{ fontSize: 13, color: '#5D5A73', lineHeight: 1.35 }}>{t.needs}</span> : null}
+                  {t.needs ? <span style={{ fontSize: 13, color: '#5C5A55', lineHeight: 1.35 }}>{t.needs}</span> : null}
                 </span>
                 {checkPill}
               </span>
@@ -167,17 +167,17 @@ function MapPhone({ view }: { view: MapView }) {
                 if (dragging && dragging !== t.name) move(dragging, term, i)
                 setDragging(null)
               }}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 4px 10px 2px', background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 16 }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 4px 10px 2px', background: '#FFFFFF', border: '1px solid #E8E5DE', borderRadius: 16 }}
             >
               <button type="button" aria-label={`Move ${t.name}`} onClick={() => move(t.name, term, i === 0 ? 1 : i - 1)} style={{ width: 44, height: 44, flex: 'none', border: 'none', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
-                <svg width="12" height="18" viewBox="0 0 12 18" fill="#8C89A3" aria-hidden="true"><circle cx="3" cy="3" r="1.5" /><circle cx="9" cy="3" r="1.5" /><circle cx="3" cy="9" r="1.5" /><circle cx="9" cy="9" r="1.5" /><circle cx="3" cy="15" r="1.5" /><circle cx="9" cy="15" r="1.5" /></svg>
+                <svg width="12" height="18" viewBox="0 0 12 18" fill="#8F8D88" aria-hidden="true"><circle cx="3" cy="3" r="1.5" /><circle cx="9" cy="3" r="1.5" /><circle cx="3" cy="9" r="1.5" /><circle cx="9" cy="9" r="1.5" /><circle cx="3" cy="15" r="1.5" /><circle cx="9" cy="15" r="1.5" /></svg>
               </button>
-              <span style={{ width: 24, height: 24, flex: 'none', borderRadius: 999, background: '#EEEDF5', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</span>
+              <span style={{ width: 24, height: 24, flex: 'none', borderRadius: 999, background: '#EFECE6', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{i + 1}</span>
               <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <span className="topic-name" style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.3 }}>{t.name}</span>
-                {t.needs ? <span style={{ fontSize: 13, color: '#5D5A73', lineHeight: 1.35 }}>{t.needs}</span> : null}
+                {t.needs ? <span style={{ fontSize: 13, color: '#5C5A55', lineHeight: 1.35 }}>{t.needs}</span> : null}
               </span>
-              <button type="button" aria-label={`Edit ${t.name}`} onClick={() => openEdit(t.name)} style={{ width: 44, height: 44, flex: 'none', border: 'none', background: 'transparent', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1F1D36', padding: 0 }}>
+              <button type="button" aria-label={`Edit ${t.name}`} onClick={() => openEdit(t.name)} style={{ width: 44, height: 44, flex: 'none', border: 'none', background: 'transparent', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#161616', padding: 0 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z" /></svg>
               </button>
             </li>
@@ -186,10 +186,10 @@ function MapPhone({ view }: { view: MapView }) {
       </ol>
 
       {leftOut.map((l) => (
-        <section key={l.name} aria-labelledby="leftout" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 14, background: '#FFF4F1', border: '1px solid #FFC9BB', borderRadius: 16 }}>
+        <section key={l.name} aria-labelledby="leftout" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 14, background: '#FFF8E8', border: '1px solid #FFDC93', borderRadius: 16 }}>
           <span style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
             <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#B8381F' }}>Left out</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#B8281E' }}>Left out</span>
               <span id="leftout" style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.3 }}>{l.name}</span>
             </span>
             {checkPill}
@@ -205,7 +205,7 @@ function MapPhone({ view }: { view: MapView }) {
         </section>
       ))}
 
-      <button type="button" onClick={openAdd} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 48, padding: '10px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: '1.5px dashed #8C89A3', background: 'transparent', color: '#1F1D36', fontSize: 15, fontWeight: 600 }}>
+      <button type="button" onClick={openAdd} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 48, padding: '10px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: '1.5px dashed #8F8D88', background: 'transparent', color: '#161616', fontSize: 15, fontWeight: 600 }}>
         <IconLabel gap={8} icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>}>
           {`Add a topic to Term ${term}`}
         </IconLabel>
@@ -216,14 +216,14 @@ function MapPhone({ view }: { view: MapView }) {
           type="button"
           disabled={pending}
           onClick={approve}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: 'none', background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600 }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: 'none', background: '#007749', color: '#FFFFFF', fontSize: 17, fontWeight: 600 }}
         >
           <IconLabel gap={8} icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>}>
             Approve map
           </IconLabel>
         </PendingButton>
-        {approveError ? <p role="alert" style={{ margin: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: '#B8381F' }}>{approveError}</p> : null}
-        <p style={{ margin: 0, textAlign: 'center', fontSize: 13, color: '#5D5A73' }}>You can edit the map any time. Jemma re-tags past results.</p>
+        {approveError ? <p role="alert" style={{ margin: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: '#B8281E' }}>{approveError}</p> : null}
+        <p style={{ margin: 0, textAlign: 'center', fontSize: 13, color: '#5C5A55' }}>You can edit the map any time. Jemma re-tags past results.</p>
       </div>
 
       <Sheet open={sheet !== null} onClose={closeSheet} title={sheet?.kind === 'add' ? `Add a topic to Term ${term}` : 'Edit topic'}>

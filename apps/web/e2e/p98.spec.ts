@@ -30,8 +30,8 @@ async function scrollThrough(page: Page) {
 async function allImagesLoaded(page: Page) {
   await scrollThrough(page)
   const images = page.locator('main img')
-  expect(await images.count()).toBe(4)
-  for (let i = 0; i < 4; i++) {
+  expect(await images.count()).toBe(11)
+  for (let i = 0; i < 11; i++) {
     await images.nth(i).scrollIntoViewIfNeeded()
     await expect.poll(() => images.nth(i).evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth), { timeout: 30_000 }).toBeGreaterThan(0)
   }
@@ -53,43 +53,52 @@ async function noSidewaysScroll(page: Page) {
   expect(wide, 'the page scrolls sideways').toBeLessThanOrEqual(0)
   const past = await page.evaluate(() => {
     const edge = document.documentElement.clientWidth
-    return [...document.querySelectorAll('main *, footer *')].filter((el) => el.getBoundingClientRect().right > edge + 1).map((el) => `${el.tagName.toLowerCase()}.${String(el.getAttribute('class')).slice(0, 40)}`)
+    return [...document.querySelectorAll('header *, main *, footer *')].filter((el) => el.getBoundingClientRect().right > edge + 1).map((el) => `${el.tagName.toLowerCase()}.${String(el.getAttribute('class')).slice(0, 40)}`)
   })
   expect(past, 'something is drawn past the right edge').toEqual([])
 }
 
 test.describe('the landing page', () => {
-  test('shows the hero and "Try the demo", which opens /demo', async ({ page }) => {
+  test('shows the hero and "Try a lesson", which opens /tour', async ({ page }) => {
     await page.goto('/')
-    await expect(page).toHaveTitle('Jemma: follows one learner across years')
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Follows one learner across years, not one term.')
-    await expect(page.getByText('Every learner in the demo is made up.')).toBeVisible()
+    await expect(page).toHaveTitle('Jemma: learn maths until you understand it')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Learn maths until you understand it.')
+    // the hero is the first section of the page: the green band at the end has the same two buttons and the same line
+    const hero = page.locator('section[aria-labelledby="hero-title"]')
+    await expect(hero.getByText('No sign-up needed.')).toBeVisible()
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/sign-in')
 
     // the first screen holds both buttons, with room: at least 48 px high
-    const demo = page.getByRole('main').getByRole('link', { name: 'Try the demo' })
-    const signIn = page.getByRole('main').getByRole('link', { name: 'Sign in' })
-    await expect(demo).toBeInViewport()
+    const lesson = hero.getByRole('link', { name: 'Try a lesson' })
+    const signIn = hero.getByRole('link', { name: 'Sign in' })
+    await expect(lesson).toBeInViewport()
     await expect(signIn).toBeInViewport()
-    for (const button of [demo, signIn]) expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(48)
+    for (const button of [lesson, signIn]) expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(48)
     await expect(signIn).toHaveAttribute('href', '/sign-in')
+    await expect(lesson).toHaveAttribute('href', '/tour')
 
-    await demo.click()
-    await expect(page).toHaveURL(/\/demo$/, { timeout: 45_000 })
-    await expect(page.getByRole('heading', { level: 1, name: 'Try the demo' })).toBeVisible({ timeout: 45_000 })
+    await lesson.click()
+    await expect(page).toHaveURL(/\/tour$/, { timeout: 45_000 })
+    await expect(page.getByRole('heading', { level: 1, name: 'My maths' })).toBeVisible({ timeout: 45_000 })
   })
 
-  test('has its sections, the three cards and the footer links', async ({ page }) => {
+  test('has its sections, the two cards, the four plans and the footer links', async ({ page }) => {
     await page.goto('/')
-    for (const heading of ['How it works', 'Who it is for', 'The rules it keeps']) await expect(page.getByRole('heading', { level: 2, name: heading })).toBeVisible()
-    for (const card of ['For learners', 'For parents', 'For teachers']) await expect(page.getByRole('heading', { level: 3, name: card })).toBeVisible()
-    await expect(page.getByRole('listitem').filter({ hasText: 'Jemma reads it, code marks it, and finds the gaps.' })).toHaveCount(1)
+    const headings = ['How it works', 'Miss one step, and the next is hard.', 'Maths for Grade 1 to Grade 12.', 'Add a parent. Join your class.', 'Free to learn. Plans to practise.', 'The rules it keeps', 'Try a lesson now.']
+    for (const heading of headings) await expect(page.getByRole('heading', { level: 2, name: heading })).toBeVisible()
+    for (const card of ['For parents', 'For schools']) await expect(page.getByRole('heading', { level: 3, name: card })).toBeVisible()
+    for (const plan of ['Free', 'Light', 'Regular', 'Heavy']) await expect(page.getByRole('heading', { level: 3, name: plan, exact: true })).toBeVisible()
+    await expect(page.getByRole('listitem').filter({ hasText: 'Jemma teaches that part again. Practise until you get it right.' })).toHaveCount(1)
+
+    // the green band at the end has the two buttons again
+    const closing = page.locator('section[aria-labelledby="closing-title"]')
+    await expect(closing.getByRole('link', { name: 'Try a lesson' })).toHaveAttribute('href', '/tour')
+    await expect(closing.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/sign-in')
 
     const footer = page.getByRole('contentinfo')
-    await expect(footer).toContainText('Built for the African Agentic AI Design Challenge, Education track.')
+    await expect(footer).toContainText('Mathematics, CAPS Grades 1 to 12. MIT licence. Every learner shown here is made up.')
     const hrefs = await footer.getByRole('link').evaluateAll((links) => links.map((a) => [a.textContent, a.getAttribute('href')]))
     expect(hrefs).toEqual([
-      ['Try the demo', '/demo'],
-      ['Sign in', '/sign-in'],
       ['Start', '/sign-up'],
       ['Privacy', '/privacy'],
       ['Help', '/help'],

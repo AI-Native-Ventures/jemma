@@ -10,9 +10,9 @@ const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'] as const
 const keyStyle: CSSProperties = {
   height: 60,
   borderRadius: 18,
-  border: '1px solid #E7E6EF',
+  border: '1px solid #E8E5DE',
   background: '#FFFFFF',
-  color: '#1F1D36',
+  color: '#161616',
   fontSize: 26,
   fontWeight: 600,
   fontFamily: 'inherit',
@@ -24,7 +24,7 @@ const keyStyle: CSSProperties = {
 
 const hidden: CSSProperties = { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }
 /** The line shown in place of the digit count until the form is ready: seen, not only heard. */
-const gettingReady: CSSProperties = { fontSize: 16, fontWeight: 600, lineHeight: 1.3, color: '#5D5A73' }
+const gettingReady: CSSProperties = { fontSize: 16, fontWeight: 600, lineHeight: 1.3, color: '#5C5A55' }
 /** The kit's disabled look (the same class the kit's Button uses): the keypad and Sign in are dimmed until the form is ready. */
 const DIM = 'disabled:opacity-50'
 
@@ -86,7 +86,7 @@ export function SignInForm() {
           autoCapitalize="characters"
           autoCorrect="off"
           spellCheck={false}
-          style={{ height: 60, padding: '0 16px', borderRadius: 16, border: '1px solid #8C89A3', background: '#FFFFFF', color: '#1F1D36', fontSize: 26, fontWeight: 700, letterSpacing: '0.16em', fontFamily: 'inherit' }}
+          style={{ height: 60, padding: '0 16px', borderRadius: 16, border: '1px solid #8F8D88', background: '#FFFFFF', color: '#161616', fontSize: 26, fontWeight: 700, letterSpacing: '0.16em', fontFamily: 'inherit' }}
         />
       </div>
       <fieldset style={{ border: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -96,7 +96,7 @@ export function SignInForm() {
             {[0, 1, 2, 3].map((i) => (
               <span
                 key={i}
-                style={{ width: 18, height: 18, borderRadius: 999, ...(i < pin.length ? { background: '#1F1D36' } : { border: '2px solid #8C89A3' }) }}
+                style={{ width: 18, height: 18, borderRadius: 999, ...(i < pin.length ? { background: '#161616' } : { border: '2px solid #8F8D88' }) }}
               />
             ))}
           </span>
@@ -123,7 +123,7 @@ export function SignInForm() {
         </span>
       </fieldset>
       {error && (
-        <p role="alert" style={{ margin: 0, fontSize: 16, lineHeight: 1.4, fontWeight: 600, color: '#B8381F' }}>
+        <p role="alert" style={{ margin: 0, fontSize: 16, lineHeight: 1.4, fontWeight: 600, color: '#B8281E' }}>
           {MESSAGES[error]}
         </p>
       )}
@@ -131,7 +131,7 @@ export function SignInForm() {
         type="submit"
         disabled={pending || !ready}
         className={DIM}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 64, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 20, border: 'none', background: '#FF6A4D', color: '#1F1D36', fontSize: 20, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', opacity: pending ? 0.6 : undefined }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 64, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 20, border: 'none', background: '#FFB81C', color: '#161616', fontSize: 20, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', opacity: pending ? 0.6 : undefined }}
       >
         Sign in
       </PendingButton>

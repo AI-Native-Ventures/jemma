@@ -37,7 +37,7 @@ export default async function ParentPaperPage({
         <BackHeader href={`/p/${childId}/tests`} label="Back to tests" line={`${name} · ${paper.child.subject}`} title={paper.shortTitle} />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 18, padding: '12px 20px 20px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#5D5A73' }}>{`${paper.dayLabel} · marked by Jemma at ${paper.markedAt}`}</p>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#5C5A55' }}>{`${paper.dayLabel} · marked by Jemma at ${paper.markedAt}`}</p>
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
               <Diamond size={14} mt={10} />
               <h1 style={{ margin: 0, fontSize: 27, lineHeight: 1.18, fontWeight: 600, letterSpacing: '-0.015em', textWrap: 'pretty' }}>
@@ -48,14 +48,14 @@ export default async function ParentPaperPage({
 
           <figure style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <PaperSheet paper={paper} highlightN={highlightN} />
-            <figcaption style={{ fontSize: 14, lineHeight: 1.45, color: '#5D5A73' }}>
-              {`${paper.child.teacherName} snapped ${name}'s paper at ${paper.snappedAt}. Jemma marked it against the memo. Coral marks are the ones ${name} missed.`}
+            <figcaption style={{ fontSize: 14, lineHeight: 1.45, color: '#5C5A55' }}>
+              {`${paper.child.teacherName} snapped ${name}'s paper at ${paper.snappedAt}. Jemma marked it against the memo. Red marks are the ones ${name} missed.`}
             </figcaption>
           </figure>
 
           <Link
             href={flagHref(highlightN ? paper.missed.find((r) => r.n === highlightN)?.id : undefined)}
-            style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 52, padding: '0 14px', borderRadius: 14, background: '#FFFFFF', border: '1px solid #E7E6EF', textDecoration: 'none', color: '#1F1D36', fontSize: 15, fontWeight: 600 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 52, padding: '0 14px', borderRadius: 14, background: '#FFFFFF', border: '1px solid #E8E5DE', textDecoration: 'none', color: '#161616', fontSize: 15, fontWeight: 600 }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M5 21V4h11l-1.5 4L16 12H5" />
@@ -64,16 +64,16 @@ export default async function ParentPaperPage({
           </Link>
 
           {paper.missed.length ? (
-            <section aria-labelledby="missed" style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: 16, background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 20 }}>
+            <section aria-labelledby="missed" style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: 16, background: '#FFFFFF', border: '1px solid #E8E5DE', borderRadius: 20 }}>
               <h2 id="missed" style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>{`The ${paper.missed.length} ${name} missed`}</h2>
               <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                 {paper.missed.map((r) => (
-                  <li key={r.id} style={{ borderTop: '1px solid #EFEEF4' }}>
+                  <li key={r.id} style={{ borderTop: '1px solid #F0EEE8' }}>
                     <Link href={flagHref(r.id)} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 0', color: 'inherit', textDecoration: 'none' }}>
-                      <span style={{ width: 34, height: 34, flex: 'none', borderRadius: 10, background: '#FFE3DA', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{`Q${r.n}`}</span>
+                      <span style={{ width: 34, height: 34, flex: 'none', borderRadius: 10, background: '#FFEDC6', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{`Q${r.n}`}</span>
                       <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2, lineHeight: 1.35 }}>
                         <span style={{ fontSize: 16, fontWeight: 600 }}><Maths text={r.prompt} grade={paper.child.grade} size={17} /></span>
-                        <span style={{ fontSize: 14, color: '#5D5A73' }}>
+                        <span style={{ fontSize: 14, color: '#5C5A55' }}>
                           {'Wrote '}
                           <Maths text={r.answer} grade={paper.child.grade} size={15} />
                           {r.rightAnswer ? (
@@ -83,14 +83,14 @@ export default async function ParentPaperPage({
                             </>
                           ) : null}
                         </span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#5D5A73' }}>{r.topicName}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#5C5A55' }}>{r.topicName}</span>
                       </span>
                     </Link>
                   </li>
                 ))}
               </ul>
               {paper.slipLine ? (
-                <p style={{ margin: 0, display: 'flex', gap: 10, padding: '12px 14px', borderRadius: 14, background: '#F4F3F8', fontSize: 15, lineHeight: 1.45 }}>
+                <p style={{ margin: 0, display: 'flex', gap: 10, padding: '12px 14px', borderRadius: 14, background: '#F4F2EE', fontSize: 15, lineHeight: 1.45 }}>
                   <Diamond size={12} mt={5} />
                   {paper.slipLine}
                 </p>
@@ -101,11 +101,11 @@ export default async function ParentPaperPage({
           {paper.topGap ? (
             <Link
               href={`/p/${childId}/topics/${paper.topGap.id}`}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 12px 16px 16px', background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 18, textDecoration: 'none', color: '#1F1D36' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 12px 16px 16px', background: '#FFFFFF', border: '1px solid #E8E5DE', borderRadius: 18, textDecoration: 'none', color: '#161616' }}
             >
               <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <span style={{ fontSize: 16, fontWeight: 600 }}>{`${paper.topGap.topicName.split(' with ')[0]}: how to help`}</span>
-                <span style={{ fontSize: 14, color: '#5D5A73' }}>{`${name}'s biggest gap, and tonight's lesson`}</span>
+                <span style={{ fontSize: 14, color: '#5C5A55' }}>{`${name}'s biggest gap, and tonight's lesson`}</span>
               </span>
               <ChevronRight />
             </Link>

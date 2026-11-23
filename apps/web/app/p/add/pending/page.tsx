@@ -6,6 +6,7 @@ import { getDemoState } from '@/lib/demo'
 import { getPendingLink, initialsOf } from '@/lib/data/p22'
 import { AccountLink, BrandHeader, DemoTag, Gem, Main, Page, body, ink, line } from '../_parts'
 import { switchToTeacher } from './actions'
+import { LinkDrawing } from '@/components/sa'
 
 export const metadata = { title: 'Waiting for the teacher · Jemma' }
 
@@ -31,10 +32,15 @@ export default async function LinkPendingPage() {
             </h1>
           </div>
         </div>
+        <div aria-hidden="true" style={{ display: 'flex', justifyContent: 'center' }}>
+          <div style={{ width: 232 }}>
+            <LinkDrawing />
+          </div>
+        </div>
 
         <section aria-label="Your request" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 18, background: '#FFFFFF', border: `1px solid ${line}`, borderRadius: 22 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span aria-hidden="true" style={{ width: 44, height: 44, flex: 'none', borderRadius: 12, background: '#EEEDF5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span aria-hidden="true" style={{ width: 44, height: 44, flex: 'none', borderRadius: 12, background: '#EFECE6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={ink} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="8.5" />
                 <path d="M12 7.5V12l3 2" />
@@ -61,13 +67,13 @@ export default async function LinkPendingPage() {
         </a>
 
         {demo ? (
-          <section aria-labelledby="demo" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 16, background: '#FFF4F1', border: '1px solid #FFC9BB', borderRadius: 20 }}>
+          <section aria-labelledby="demo" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 16, background: '#FFF8E8', border: '1px solid #FFDC93', borderRadius: 20 }}>
             <p style={{ margin: 0, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
               <DemoTag />
               <span id="demo" style={{ fontSize: 15, fontWeight: 600 }}>In the demo you are {teacherName} too.</span>
             </p>
             <form action={switchToTeacher}>
-              <PendingButton type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', width: '100%', borderRadius: 14, background: ink, color: '#FFFFFF', fontSize: 17, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <PendingButton type="submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 56, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', width: '100%', borderRadius: 14, background: '#007749', color: '#FFFFFF', fontSize: 17, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
                 Switch to {teacherName} to approve
               </PendingButton>
             </form>

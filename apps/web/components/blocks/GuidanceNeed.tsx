@@ -54,7 +54,7 @@ export function GuidanceNeedItem({ guidance, wide = false }: { guidance: Guidanc
   return (
     <section aria-labelledby={titleId} className={`rounded-14 bg-card p-3 text-ink [overflow-wrap:anywhere] ${wide ? 'flex-[1_1_100%]' : ''}`}>
       <div className="flex items-start gap-3">
-        <span aria-hidden="true" className="flex size-10 flex-none items-center justify-center rounded-12 bg-coral-tint">
+        <span aria-hidden="true" className="flex size-10 flex-none items-center justify-center rounded-12 bg-gold-tint">
           <ReviewDocIcon />
         </span>
         <div className="min-w-0 flex-1">

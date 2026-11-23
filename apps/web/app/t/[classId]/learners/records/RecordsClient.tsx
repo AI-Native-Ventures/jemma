@@ -39,7 +39,7 @@ function Row({ id, text, hint, children }: { id: string; text: string; hint?: st
 
 function Problem({ text }: { text: string }) {
   return (
-    <p role="alert" className="m-0 rounded-14 bg-[#FFEDE8] px-3.5 py-2.5 text-[15px] leading-[1.4] text-coral-text">
+    <p role="alert" className="m-0 rounded-14 bg-[#FFF3DA] px-3.5 py-2.5 text-[15px] leading-[1.4] text-red-text">
       {text}
     </p>
   )
@@ -96,7 +96,7 @@ export function RecordsClient({
         setWay(key)
         setError('')
       }}
-      className={`min-h-11 flex-1 cursor-pointer rounded-pill border-0 px-2 text-[14px] font-semibold whitespace-nowrap sm:text-[15px] ${way === key ? 'bg-ink text-white' : 'bg-soft-2 text-ink'}`}
+      className={`min-h-11 flex-1 cursor-pointer rounded-pill border-0 px-2 text-[14px] font-semibold whitespace-nowrap sm:text-[15px] ${way === key ? 'bg-green text-white' : 'bg-soft-2 text-ink'}`}
     >
       {text}
     </button>
@@ -151,7 +151,7 @@ export function RecordsClient({
                       {f.label} · {f.when}
                     </span>
                   </span>
-                  <Pill tone={f.status === 'ready' ? 'coral' : f.status === 'failed' ? 'danger' : 'quiet'} className="!py-1 !text-[13px]">
+                  <Pill tone={f.status === 'ready' ? 'gold' : f.status === 'failed' ? 'danger' : 'quiet'} className="!py-1 !text-[13px]">
                     {f.status === 'ready' ? 'Check it' : f.status === 'approved' ? 'Added' : f.status === 'failed' ? 'Try again' : 'Reading'}
                   </Pill>
                 </Link>
@@ -274,7 +274,7 @@ function OneResult({ classId, subject, grade, year, learners, families }: { clas
 
   if (saved) {
     return (
-      <Card as="section" radius={20} aria-labelledby="one-done" className="gap-3" tone="coral">
+      <Card as="section" radius={20} aria-labelledby="one-done" className="gap-3" tone="gold">
         <h2 id="one-done" className="m-0 text-[17px] font-semibold">
           Saved
         </h2>

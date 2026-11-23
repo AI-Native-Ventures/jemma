@@ -180,7 +180,7 @@ describe('the parent paper and the missed-question crop', () => {
     expect(typeset(out)).toBe(true)
     expect(visible(out)).not.toContain('^2')
     expect(out).toContain('mfrac')
-    // The right answer in the coral pill is drawn too, with its word kept.
+    // The right answer in the gold pill is drawn too, with its word kept.
     expect(visible(out)).toContain(' or ')
   })
 

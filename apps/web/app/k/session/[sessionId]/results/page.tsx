@@ -6,7 +6,7 @@ import { Results } from '../../_parts/Results'
 export const metadata: Metadata = { title: 'Your answers' }
 export const dynamic = 'force-dynamic'
 
-const back = 'flex min-h-[60px] w-full cursor-pointer items-center justify-center rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] leading-[1.25] font-bold text-balance text-white no-underline'
+const back = 'flex min-h-[60px] w-full cursor-pointer items-center justify-center rounded-18 border-0 bg-green px-5 py-3 text-center text-[19px] leading-[1.25] font-bold text-balance text-white no-underline'
 
 /**
  * A finished practice, read again (P120): the same results screen as straight after the practice, read-only, for a learner to come back to. It is the

@@ -4,7 +4,7 @@ import Link, { useLinkStatus } from 'next/link'
 import { useFormStatus } from 'react-dom'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'coral' | 'link'
+export type ButtonVariant = 'primary' | 'secondary' | 'gold' | 'link'
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'xl'
 
 type Common = {
@@ -24,9 +24,9 @@ export type ButtonProps = Common &
   )
 
 const variants: Record<ButtonVariant, string> = {
-  primary: 'bg-ink text-white font-semibold',
+  primary: 'bg-green text-white font-semibold',
   secondary: 'border-[1.5px] border-ink bg-card text-ink font-semibold',
-  coral: 'bg-coral text-ink font-bold',
+  gold: 'bg-gold text-ink font-bold',
   link: 'min-h-11 text-ink font-semibold underline underline-offset-[3px]',
 }
 
@@ -39,7 +39,7 @@ const sizes: Record<ButtonSize, string> = {
   xl: 'h-[68px] rounded-20 px-4 text-[24px]',
 }
 
-/** Small coral spinner pinned to the right edge, so the label and the button width do not move. */
+/** Small spinner in the colour of the button's words, pinned to the right edge, so the label and the button width do not move. */
 export function Spinner() {
   return (
     <span role="status" aria-label="Working" className="pointer-events-none absolute right-3 top-1/2 -mt-[9px] flex">

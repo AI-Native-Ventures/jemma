@@ -33,7 +33,7 @@ export function RunnerChoice({ runner, desktopLine }: { runner: 'cloud' | 'deskt
           <span className="text-[13px] leading-[1.35] text-body">Uses the plan you already pay for. Nothing extra.</span>
           {runner === 'desktop' && desktopLine ? (
             <span className="mt-1.5 flex items-start gap-1.5 text-[13px] leading-[1.35] font-semibold">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mt-px flex-none">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mt-px flex-none">
                 <circle cx="12" cy="12" r="9" />
                 <path d="m8 12.5 2.8 2.8L16.5 9.5" />
               </svg>
@@ -86,7 +86,7 @@ export function PairDesktopRow() {
           <span className="text-[16px] font-medium">Pair a desktop</span>
           <span className="text-[13px] leading-[1.35] text-body">Shows a code to type in Jemma Desktop</span>
         </span>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
           <path d="m9 6 6 6-6 6" />
         </svg>
       </button>
@@ -94,7 +94,7 @@ export function PairDesktopRow() {
         <span data-testid="pair-code" className="flex h-[64px] items-center justify-center rounded-14 bg-soft-2 text-[28px] font-bold tracking-[0.3em]">
           {failed ? 'No code' : (code ?? '......')}
         </span>
-        <button type="button" onClick={() => setOpen(false)} className="flex min-h-[52px] items-center justify-center rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white">
+        <button type="button" onClick={() => setOpen(false)} className="flex min-h-[52px] items-center justify-center rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white">
           Done
         </button>
       </Sheet>

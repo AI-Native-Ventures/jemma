@@ -90,7 +90,7 @@ export function NamePicker({
                 <span className="text-[14px] text-body">{k.hasPaper ? 'Has a paper' : 'No paper yet'}</span>
               </span>
               {on ? (
-                <span className="flex size-[26px] items-center justify-center rounded-pill bg-ink">
+                <span className="flex size-[26px] items-center justify-center rounded-pill bg-green">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
                 </span>
               ) : (
@@ -112,8 +112,8 @@ export function NamePicker({
           Paper {otherPos} goes to {other.name}. You can swap them later on the test page.
         </p>
       ) : null}
-      {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
-      <PendingButton pending={pending} type="button" disabled={!pick || pending} onClick={submit} className="flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
+      {error ? <p role="alert" className="m-0 text-[14px] text-red-text">{error}</p> : null}
+      <PendingButton pending={pending} type="button" disabled={!pick || pending} onClick={submit} className="flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
         Paper {position} is {pick?.name ?? '...'}&apos;s
       </PendingButton>
     </div>

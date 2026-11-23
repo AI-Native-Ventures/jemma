@@ -1,8 +1,8 @@
 import Link from 'next/link'
+import { Wordmark } from '@/components/install/Wordmark'
+import { Together, WRAP } from './Bits'
 
 const LINKS = [
-  { label: 'Try the demo', href: '/demo' },
-  { label: 'Sign in', href: '/sign-in' },
   { label: 'Start', href: '/sign-up' },
   { label: 'Privacy', href: '/privacy' },
   { label: 'Help', href: '/help' },
@@ -11,16 +11,18 @@ const LINKS = [
 const GITHUB = 'https://github.com/AI-Native-Ventures/jemma'
 
 /** Each link is at least 44 px high, so a thumb finds it. */
-const LINK = 'flex min-h-11 items-center py-1 text-[16px] font-semibold text-ink underline underline-offset-[3px]'
+const LINK = 'flex min-h-11 items-center text-[16px] font-medium text-ink no-underline hover:underline hover:underline-offset-[3px] lg:text-[17px]'
 
-/** The challenge it was built for, the links, and the licence. */
+/** The end of the page: the wordmark, the links, what Jemma teaches, the licence, and that every learner shown is made up. */
 export function Footer() {
   return (
-    <footer className="border-t border-line bg-card">
-      <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-5 px-5 py-8 lg:px-10 lg:py-10">
-        <p className="m-0 text-[15px] leading-[1.45] text-body text-pretty">Built for the African Agentic AI Design Challenge, Education track.</p>
+    <footer className="pb-10">
+      <div className={`${WRAP} flex flex-wrap items-center justify-between gap-x-10 gap-y-4 pt-9`}>
+        <span className="flex min-h-12 items-center">
+          <Wordmark width={96} height={37} />
+        </span>
         <nav aria-label="More from Jemma">
-          <ul className="m-0 grid list-none grid-cols-2 gap-x-4 gap-y-1 p-0 sm:flex sm:flex-wrap sm:gap-x-8">
+          <ul className="m-0 flex list-none flex-wrap gap-x-8 p-0">
             {LINKS.map((link) => (
               <li key={link.href}>
                 <Link href={link.href} className={LINK}>
@@ -35,8 +37,10 @@ export function Footer() {
             </li>
           </ul>
         </nav>
-        <p className="m-0 text-[14px] leading-[1.4] text-body">Open source under the MIT licence.</p>
       </div>
+      <p className={`${WRAP} m-0 mt-3 text-[14px] leading-[1.5] text-body`}>
+        Mathematics, CAPS Grades 1 to 12. MIT licence. <Together>Every learner shown here is made up.</Together>
+      </p>
     </footer>
   )
 }

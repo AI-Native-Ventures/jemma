@@ -1,7 +1,7 @@
 @import url('../assets/outfit.css');
-body{margin:0;background:#F7F7FA;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#1F1D36;overflow:hidden}
+body{margin:0;background:#F8F6F1;font-family:Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif;color:#161616;overflow:hidden}
 *{box-sizing:border-box}
-a{color:#1F1D36}a:hover{color:#B8381F}
+a{color:#161616}a:hover{color:#B8281E}
 button{font:inherit;cursor:pointer}
 input{font:inherit}
 @keyframes jemmaPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.82);opacity:0.65}}

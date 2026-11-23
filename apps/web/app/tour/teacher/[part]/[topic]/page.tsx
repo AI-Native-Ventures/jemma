@@ -38,14 +38,14 @@ export default async function TourTeacherTopicPage({ params }: { params: Promise
       <main className={`mx-auto flex w-full flex-1 flex-col gap-5 px-5 pt-[18px] pb-8 ${TEACHER_WIDTH}`}>
         <Back href={`/tour/teacher/${part.slug}`}>{part.label}</Back>
         <div className="flex flex-col gap-2">
-          <p className="m-0 text-[14px] font-semibold text-coral-text">{TOUR_CLASS.name} · {part.label}</p>
+          <p className="m-0 text-[14px] font-semibold text-red-text">{TOUR_CLASS.name} · {part.label}</p>
           <h1 className="m-0 text-[30px] leading-[1.14] font-bold tracking-[-0.02em] text-pretty">{topic.name}</h1>
           {stat.avg !== null ? (
             <div className="flex max-w-[420px] flex-col gap-1.5">
               <span className="flex items-center gap-2.5 text-[17px] text-body">
                 <ProgressDot level={classLevel(stat.avg)} label={levelWords(classLevel(stat.avg))} />
                 Class average {stat.avg}%
-                {help ? <span className="font-semibold text-coral-text">{help}</span> : null}
+                {help ? <span className="font-semibold text-red-text">{help}</span> : null}
               </span>
               <AverageBar avg={stat.avg} />
             </div>

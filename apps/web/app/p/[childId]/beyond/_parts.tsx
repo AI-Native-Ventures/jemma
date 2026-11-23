@@ -122,7 +122,7 @@ export function Icon({ name, size = 18, width = 1.9, color }: { name: IconName; 
 export function Diamond({ size, style }: { size: number; style?: CSSProperties }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" style={style}>
-      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
     </svg>
   )
 }
@@ -130,7 +130,7 @@ export function Diamond({ size, style }: { size: number; style?: CSSProperties }
 export function Chevron() {
   return (
     <span style={css('flex:none;display:flex')}>
-      <Icon name="chevron" size={20} width={2} color="#1F1D36" />
+      <Icon name="chevron" size={20} width={2} color="#161616" />
     </span>
   )
 }
@@ -144,11 +144,11 @@ export function SubHeader({ back, eyebrow, title, backLabel, hideTabs }: { back:
     <>
       <style>{`@media (max-width: 1023px){body header:not([data-sub])${hideTabs ? ',body nav.sticky' : ''}{display:none !important}}`}</style>
       <header data-sub="" style={css('display:flex;align-items:center;gap:4px;padding:10px 12px 6px 8px')}>
-        <Link href={back} aria-label={backLabel} style={css('width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#1F1D36')}>
+        <Link href={back} aria-label={backLabel} style={css('width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#161616')}>
           <Icon name="back" size={24} width={2} />
         </Link>
-        <span style={css('display:flex;flex-direction:column;line-height:1.2;flex:1;min-width:0;color:#1F1D36')}>
-          <span style={css('font-size:13px;color:#5D5A73')}>{eyebrow}</span>
+        <span style={css('display:flex;flex-direction:column;line-height:1.2;flex:1;min-width:0;color:#161616')}>
+          <span style={css('font-size:13px;color:#5C5A55')}>{eyebrow}</span>
           <span style={css('font-size:17px;font-weight:700')}>{title}</span>
         </span>
       </header>

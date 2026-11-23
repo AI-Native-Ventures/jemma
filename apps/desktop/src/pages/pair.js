@@ -1,6 +1,6 @@
 const { titleBar, wordmark, gem } = window.jd
 const step = (n, title, text) =>
-  `<li style="display:flex;align-items:flex-start;gap:12px"><span aria-hidden="true" style="width:28px;height:28px;flex:none;border-radius:999px;background:#EEEDF5;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center">${n}</span><span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font-size:16px;font-weight:600;line-height:1.3">${title}</span><span style="font-size:14px;line-height:1.45;color:#5D5A73">${text}</span></span></li>`
+  `<li style="display:flex;align-items:flex-start;gap:12px"><span aria-hidden="true" style="width:28px;height:28px;flex:none;border-radius:999px;background:#EFECE6;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center">${n}</span><span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font-size:16px;font-weight:600;line-height:1.3">${title}</span><span style="font-size:14px;line-height:1.45;color:#5C5A55">${text}</span></span></li>`
 const cells = [1, 2, 3, 4, 5, 6].map((n) => `<input class="cell" type="text" maxlength="1" autocapitalize="characters" autocomplete="off" aria-label="Character ${n} of 6">`).join('')
 
 document.getElementById('app').innerHTML = `${titleBar()}
@@ -12,20 +12,20 @@ document.getElementById('app').innerHTML = `${titleBar()}
         ${gem(16, 'margin-top:13px')}
         <h1 id="pair" style="margin:0;font-size:34px;line-height:1.15;font-weight:600;letter-spacing:-0.02em">Sign in to Jemma Desktop</h1>
       </div>
-      <p style="margin:0 0 0 28px;font-size:16px;line-height:1.45;color:#5D5A73;text-wrap:pretty">Enter the 6-character code shown in Jemma on your phone or browser.</p>
+      <p style="margin:0 0 0 28px;font-size:16px;line-height:1.45;color:#5C5A55;text-wrap:pretty">Enter the 6-character code shown in Jemma on your phone or browser.</p>
     </div>
     <form id="form" style="display:flex;flex-direction:column;gap:16px">
       <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
         <legend style="padding:0;margin-bottom:10px;font-size:15px;font-weight:500">Code from Jemma</legend>
         <span style="display:grid;grid-template-columns:repeat(6, minmax(0, 1fr));gap:8px">${cells}</span>
-        <span id="help" style="font-size:14px;line-height:1.45;color:#5D5A73">Find it in Jemma: Where Jemma's AI runs, then Pair a desktop.</span>
+        <span id="help" style="font-size:14px;line-height:1.45;color:#5C5A55">Find it in Jemma: Where Jemma's AI runs, then Pair a desktop.</span>
       </fieldset>
-      <button id="go" type="submit" style="display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:14px;border:none;background:#1F1D36;color:#FFFFFF;font-size:17px;font-weight:600">Sign in</button>
+      <button id="go" type="submit" style="display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:14px;border:none;background:#007749;color:#FFFFFF;font-size:17px;font-weight:600">Sign in</button>
     </form>
-    <div style="display:flex;align-items:center;gap:12px;font-size:14px;color:#5D5A73"><span aria-hidden="true" style="flex:1;height:1px;background:#E7E6EF"></span>or<span aria-hidden="true" style="flex:1;height:1px;background:#E7E6EF"></span></div>
-    <button id="email" type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:14px;border:1.5px solid #1F1D36;background:#FFFFFF;color:#1F1D36;font-size:17px;font-weight:600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4 7 8 6 8-6"/></svg>Sign in with email</button>
+    <div style="display:flex;align-items:center;gap:12px;font-size:14px;color:#5C5A55"><span aria-hidden="true" style="flex:1;height:1px;background:#E8E5DE"></span>or<span aria-hidden="true" style="flex:1;height:1px;background:#E8E5DE"></span></div>
+    <button id="email" type="button" style="display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:14px;border:1.5px solid #161616;background:#FFFFFF;color:#161616;font-size:17px;font-weight:600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4 7 8 6 8-6"/></svg>Sign in with email</button>
   </section>
-  <section aria-labelledby="what" style="width:400px;flex:none;display:flex;flex-direction:column;gap:18px;padding:24px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:22px">
+  <section aria-labelledby="what" style="width:400px;flex:none;display:flex;flex-direction:column;gap:18px;padding:24px;background:#FFFFFF;border:1px solid #E8E5DE;border-radius:22px">
     <h2 id="what" style="margin:0;font-size:18px;font-weight:600">What Jemma Desktop does</h2>
     <ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px">
       ${step(1, 'Phones still snap tests', 'Snap papers in Jemma the way you do now.')}
@@ -71,8 +71,8 @@ document.getElementById('form').addEventListener('submit', async (e) => {
   const res = await window.jemma.pairWithCode(typed)
   if (!res.ok) {
     help.textContent = reasons[res.reason] || 'Pairing failed.'
-    help.style.color = '#B8381F'
+    help.style.color = '#B8281E'
   }
 })
-inputs.forEach((el) => el.addEventListener('input', () => { help.textContent = helpText; help.style.color = '#5D5A73' }))
+inputs.forEach((el) => el.addEventListener('input', () => { help.textContent = helpText; help.style.color = '#5C5A55' }))
 document.getElementById('email').addEventListener('click', () => window.jemma.signInWithEmail())

@@ -51,7 +51,7 @@ export function FixCard({
     })
 
   const chip = (on: boolean, big: boolean) =>
-    `flex h-[52px] cursor-pointer items-center justify-center gap-1.5 rounded-14 font-semibold lg:h-12 lg:rounded-12 ${big ? 'text-[19px] lg:text-[18px]' : 'text-[16px] lg:text-[15px]'} ${on ? 'border-2 border-ink bg-ink text-white' : 'border border-muted-2 bg-card text-ink'}`
+    `flex h-[52px] cursor-pointer items-center justify-center gap-1.5 rounded-14 font-semibold lg:h-12 lg:rounded-12 ${big ? 'text-[19px] lg:text-[18px]' : 'text-[16px] lg:text-[15px]'} ${on ? 'border-2 border-green bg-green text-white' : 'border border-muted-2 bg-card text-ink'}`
 
   return (
     <section aria-labelledby="fix" className="flex flex-col gap-3 rounded-20 border border-line bg-card p-4 lg:border-2 lg:border-ink">
@@ -68,10 +68,10 @@ export function FixCard({
       {typing ? (
         <span className="flex gap-2">
           <input aria-label={`What question ${n} says`} value={text} onChange={(e) => setText(e.target.value)} className="h-11 min-w-0 flex-1 rounded-12 border border-muted-2 bg-card px-3 text-[16px] outline-none focus-visible:border-2 focus-visible:border-ink" />
-          <PendingButton pending={pending} type="button" disabled={pending || !text.trim()} onClick={() => choose(text)} className="h-11 cursor-pointer rounded-12 border-none bg-ink px-4 text-[15px] font-semibold text-white">Use this</PendingButton>
+          <PendingButton pending={pending} type="button" disabled={pending || !text.trim()} onClick={() => choose(text)} className="h-11 cursor-pointer rounded-12 border-none bg-green px-4 text-[15px] font-semibold text-white">Use this</PendingButton>
         </span>
       ) : null}
-      {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
+      {error ? <p role="alert" className="m-0 text-[14px] text-red-text">{error}</p> : null}
       {selected && verdict ? (
         <>
         <p className="m-0 flex items-center gap-2 text-[15px] lg:hidden">
@@ -97,7 +97,7 @@ export function ConfirmButton({ classId, paperId, name, disabled }: { classId: s
   const [pending, start] = useTransition()
   return (
     <>
-      {error ? <p role="alert" className="m-0 text-center text-[14px] text-coral-text">{error}</p> : null}
+      {error ? <p role="alert" className="m-0 text-center text-[14px] text-red-text">{error}</p> : null}
       <PendingButton pending={pending}
         type="button"
         disabled={pending || disabled}
@@ -108,7 +108,7 @@ export function ConfirmButton({ classId, paperId, name, disabled }: { classId: s
             router.push(`/t/${classId}`)
           })
         }
-        className="flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50 lg:text-[16px]"
+        className="flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 border-none bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50 lg:text-[16px]"
       >
         <IconLabel gap={8} icon={tick(20, 2.2)}>
           Confirm {name}&apos;s paper

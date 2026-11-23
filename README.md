@@ -2,9 +2,11 @@
 
 [![CI](https://github.com/AI-Native-Ventures/jemma/actions/workflows/ci.yml/badge.svg)](https://github.com/AI-Native-Ventures/jemma/actions/workflows/ci.yml)
 
-Jemma follows one learner across years, not one term. It marks each class test, keeps a sourced record for every child, and shows the teacher what held for three terms or more, so the teacher can raise it with the family. It builds a profile, never a label. A parent sees nothing about a child until the teacher has said yes to the link. A class test, its marks and its gaps reach a parent only after the teacher taps Share with parents, and a Long view pattern only after the teacher has talked to the family. The short guidance card reaches the family only after the teacher taps Send to family: Jemma saves it as a draft that only the teacher reads, and never writes one while one of the learner's tests is held.
+Jemma helps a learner learn maths until they understand it. It teaches a short lesson, marks the answers, and teaches again what the learner got wrong. Every lesson is free. Mathematics only, CAPS Grades 1 to 12. A parent can add their own child or link to a child in a teacher's class, and a teacher can snap a class test and let Jemma mark it.
 
-Built for the African Agentic AI Design Challenge, Education track (The Long View), sub-theme Longitudinal strength tracking. Licence: MIT. Live demo: https://jemma.ainative.ventures/demo (the app itself is at https://jemma.ainative.ventures, and its older workers.dev address still answers). Landing page: https://getjemma.ainative.ventures.
+The app: https://jemma.ainative.ventures. Landing page: https://getjemma.ainative.ventures. Licence: MIT. Jemma started as an entry to the Agentic AI for Africa Innovation Challenge (Qhala, Nairobi, November 2026); the demo copy of a made-up school that the judges used is now for local runs and the automatic tests only (`JEMMA_DEMO=1`, set by `./start.sh`), and is off on the live app.
+
+A parent sees nothing about a child until the teacher has said yes to the link. A class test, its marks and its gaps reach a parent only after the teacher taps Share with parents, and a Long view pattern only after the teacher has talked to the family. The short guidance card reaches the family only after the teacher taps Send to family: Jemma saves it as a draft that only the teacher reads, and never writes one while one of the learner's tests is held.
 
 ## The rules it keeps
 
@@ -259,7 +261,7 @@ More detail is in [docs/architecture.md](docs/architecture.md) (what is not buil
 | `supabase/migrations` | Database schema, row-level security, functions. |
 | `supabase/seed` | The made-up school, the demo sandboxes and the sample papers. |
 | `fixtures` | Synthetic papers, the sample curriculum, the CAPS topics of Grades 1 to 12 and the recorded AI answers. |
-| `design` | The v1 design boards (`v1-screens`), reference and actual screenshots (`design/proof`). |
+| `design` | The v1 design boards (`v1-screens`), reference and actual screenshots (`design/proof`), and the South African colours and touches (`sa`). |
 | `docs` | Documentation, the spec, the plan and the runbook. |
 
 ## Documentation

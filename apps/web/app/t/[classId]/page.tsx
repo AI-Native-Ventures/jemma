@@ -39,11 +39,11 @@ function Glyph({ stage, size }: { stage: GapStage | null; size: number }) {
     <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true">
       {stage === 'practising' ? (
         <>
-          <polygon points="1,8 15,8 8,15" fill="#FF6A4D" />
-          <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#1F1D36" strokeWidth={size === 12 ? 1.6 : 1.4} />
+          <polygon points="1,8 15,8 8,15" fill="#FFB81C" />
+          <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#161616" strokeWidth={size === 12 ? 1.6 : 1.4} />
         </>
       ) : (
-        <polygon points="8,1.5 14.5,8 8,14.5 1.5,8" fill="none" stroke="#1F1D36" strokeWidth="1.6" />
+        <polygon points="8,1.5 14.5,8 8,14.5 1.5,8" fill="none" stroke="#161616" strokeWidth="1.6" />
       )}
     </svg>
   )
@@ -116,7 +116,7 @@ function NextGap({ gap, index, base }: { gap: ClassGapView; index: number; base:
           <span
             key={l.childId}
             className={`inline-flex items-center gap-[5px] rounded-pill py-[5px] pr-2.5 pl-2 text-[13px] font-semibold ${
-              l.stage === 'practising' ? 'border border-[#FFC9BB] bg-[#FFF1ED]' : 'bg-soft-2'
+              l.stage === 'practising' ? 'border border-[#FFDC93] bg-[#FFF6E2]' : 'bg-soft-2'
             }`}
           >
             <Glyph stage={l.stage} size={12} />
@@ -188,15 +188,15 @@ function NextCards({ home, base }: { home: ClassHome; base: string }) {
       )}
       {r && !r.doneAt ? (
         <Link href={`${base}/gaps/${home.topGapKey}`} className="flex items-center gap-3.5 rounded-18 border border-line bg-card py-4 pr-3 pl-4 text-ink no-underline">
-          <span aria-hidden="true" className="flex size-11 flex-none items-center justify-center rounded-14 bg-coral-tint">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <span aria-hidden="true" className="flex size-11 flex-none items-center justify-center rounded-14 bg-gold-tint">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3.5" y="5" width="17" height="5" rx="1" />
               <rect x="3.5" y="14" width="17" height="5" rx="1" />
               <path d="M12 5v5M8 14v5M12 14v5M16 14v5" />
             </svg>
           </span>
           <span className="flex flex-1 flex-col gap-0.5">
-            <span className="text-[13px] font-semibold text-coral-text">Today</span>
+            <span className="text-[13px] font-semibold text-red-text">Today</span>
             <span className="text-[17px] font-semibold">Reteach {r.topicName.split(' with ')[0]!.toLowerCase()}</span>
             <span className="text-[14px] text-body">
               {r.content.title} · {r.content.minutes} minutes · plan ready
@@ -215,11 +215,11 @@ function NextCards({ home, base }: { home: ClassHome; base: string }) {
             href={`${base}/learners/${s.childId}`}
             className="flex min-h-16 items-center gap-3 rounded-14 bg-ground py-2 pr-1.5 pl-2.5 text-ink no-underline"
           >
-            <span aria-hidden="true" className="relative flex size-[38px] flex-none items-center justify-center rounded-pill bg-coral-soft text-[14px] font-bold">
+            <span aria-hidden="true" className="relative flex size-[38px] flex-none items-center justify-center rounded-pill bg-gold-soft text-[14px] font-bold">
               {s.name.slice(0, 1)}
               <svg width="18" height="18" viewBox="0 0 16 16" className="absolute -right-1 -bottom-1 rounded-pill bg-card p-px">
-                <polygon points="1,8 15,8 8,15" fill="#FF6A4D" />
-                <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#1F1D36" strokeWidth="1.4" />
+                <polygon points="1,8 15,8 8,15" fill="#FFB81C" />
+                <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#161616" strokeWidth="1.4" />
               </svg>
             </span>
             <span className="flex flex-1 flex-col gap-0.5 leading-[1.3]">

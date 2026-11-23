@@ -224,14 +224,15 @@ describe('the guard reads the right files', () => {
   })
 
   it('finds the landing page at the root address (P98): its buttons and links are held to the same rule', () => {
-    for (const f of ['app/page.tsx', 'app/_landing/Hero.tsx', 'app/_landing/Footer.tsx', 'app/_landing/Audiences.tsx']) {
+    // 23 Nov 2026: the page was rewritten. Its two buttons live in Bits.tsx now (used by Hero.tsx and Closing.tsx), and Header.tsx has a link.
+    for (const f of ['app/page.tsx', 'app/_landing/Hero.tsx', 'app/_landing/Footer.tsx', 'app/_landing/Audiences.tsx', 'app/_landing/Bits.tsx', 'app/_landing/Closing.tsx', 'app/_landing/Header.tsx']) {
       expect(files, f).toContain(f)
       expect(scan(f), f).toEqual([])
     }
   })
 
   it('catches the fault it is looking for, and lets a button with room through', () => {
-    const bad = `const big = 'flex h-[68px] w-full items-center justify-center rounded-20 bg-coral text-[22px] font-bold'\nexport const A = () => <label className={big}>Take a photo</label>`
+    const bad = `const big = 'flex h-[68px] w-full items-center justify-center rounded-20 bg-gold text-[22px] font-bold'\nexport const A = () => <label className={big}>Take a photo</label>`
     expect(scanSource('x.tsx', bad)).toHaveLength(1)
     const grid = `export const B = () => <button type="button" onClick={() => go()} className="h-[60px] rounded-18 bg-ink">Next</button>`
     expect(scanSource('x.tsx', grid)).toHaveLength(1)
@@ -239,7 +240,7 @@ describe('the guard reads the right files', () => {
     expect(scanSource('x.tsx', inline)).toHaveLength(1)
     const inlineCss = `export const D = () => <button type="submit" style={css('display:flex;height:52px;border-radius:14px')}>Save</button>`
     expect(scanSource('x.tsx', inlineCss)).toHaveLength(1)
-    const roomy = `const big = 'flex min-h-[68px] w-full rounded-20 bg-coral px-5 py-3 text-[20px]'\nexport const E = () => <label className={big}>Take a photo</label>`
+    const roomy = `const big = 'flex min-h-[68px] w-full rounded-20 bg-gold px-5 py-3 text-[20px]'\nexport const E = () => <label className={big}>Take a photo</label>`
     expect(scanSource('x.tsx', roomy)).toEqual([])
     const minOnly = `export const F = () => <a style={css('display:flex;min-height:48px;gap:10px')}>Row</a>`
     expect(scanSource('x.tsx', minOnly)).toEqual([])

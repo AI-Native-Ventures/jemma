@@ -4,7 +4,7 @@ import { PendingButton } from '@/components/ui/Button'
 import { useState, useTransition } from 'react'
 import { Sheet } from '@/components/ui'
 import { ChevronRightIcon } from '@/components/ui/icons'
-import { ComingSheet } from '../_p21-client'
+import { sendHelpMessage } from '../../(auth)/help/actions'
 import { saveName, signOut } from './actions'
 
 export function EditDetails({ name }: { name: string }) {
@@ -21,7 +21,7 @@ export function EditDetails({ name }: { name: string }) {
           Your name
         </label>
         <input id="your-name" value={value} onChange={(e) => setValue(e.target.value)} className="h-[52px] rounded-14 border border-muted-2 bg-card px-3.5 text-[17px] text-ink" />
-        <PendingButton pending={pending} type="button" disabled={pending || !value.trim()} onClick={() => start(async () => { await saveName(value); setOpen(false) })} className="flex min-h-[52px] items-center justify-center rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
+        <PendingButton pending={pending} type="button" disabled={pending || !value.trim()} onClick={() => start(async () => { await saveName(value); setOpen(false) })} className="flex min-h-[52px] items-center justify-center rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
           Save
         </PendingButton>
       </Sheet>
@@ -29,31 +29,54 @@ export function EditDetails({ name }: { name: string }) {
   )
 }
 
-/** A settings row that opens the "Coming after the challenge" sheet. */
-export function ComingRow({ title, sub, first }: { title: string; sub?: string; first?: boolean }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <>
-      <button type="button" onClick={() => setOpen(true)} className={`flex min-h-14 w-full items-center gap-3 bg-transparent py-1.5 text-left text-ink ${first ? 'border-0' : 'border-0 border-t border-soft'}`}>
-        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="text-[16px] font-medium">{title}</span>
-          {sub ? <span className="text-[13px] leading-[1.35] text-body">{sub}</span> : null}
-        </span>
-        <ChevronRightIcon className="flex-none" />
-      </button>
-      <ComingSheet open={open} onClose={() => setOpen(false)} />
-    </>
-  )
-}
-
+/**
+ * "Delete my account". A teacher's classes hold the learners' marks and the parents' links, so the Jemma team deletes a teacher account by hand,
+ * with the teacher: this sends the request (it reaches the team as a help message with the teacher's account on it).
+ */
 export function DeleteAccount() {
   const [open, setOpen] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [pending, start] = useTransition()
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="min-h-11 border-0 bg-transparent p-0 text-[15px] font-semibold text-coral-text underline underline-offset-[3px]">
+      <button type="button" onClick={() => setOpen(true)} className="min-h-11 border-0 bg-transparent p-0 text-[15px] font-semibold text-red-text underline underline-offset-[3px]">
         Delete my account
       </button>
-      <ComingSheet open={open} onClose={() => setOpen(false)} />
+      <Sheet
+        open={open}
+        onClose={() => setOpen(false)}
+        title={sent ? 'Request sent' : 'Delete your account?'}
+        description={
+          sent
+            ? 'The Jemma team writes to you before anything is deleted.'
+            : "Your classes hold your learners' marks and their parents' links, so the Jemma team deletes a teacher account with you, by hand. Send the request and the team writes to you."
+        }
+      >
+        {error ? <p role="alert" className="m-0 text-[14px] text-red-text">{error}</p> : null}
+        {sent ? (
+          <button type="button" onClick={() => setOpen(false)} className="min-h-14 cursor-pointer rounded-14 border-0 bg-green px-5 py-3 text-center text-[17px] font-semibold text-white">
+            Close
+          </button>
+        ) : (
+          <PendingButton
+            pending={pending}
+            type="button"
+            disabled={pending}
+            onClick={() =>
+              start(async () => {
+                setError(null)
+                const res = await sendHelpMessage({ kind: 'problem', text: 'Please delete my teacher account.', email: '', website: '' })
+                if (res.ok) setSent(true)
+                else setError(res.message)
+              })
+            }
+            className="min-h-14 cursor-pointer rounded-14 border-0 bg-red-text px-5 py-3 text-center text-[17px] font-semibold text-white"
+          >
+            Send the request
+          </PendingButton>
+        )}
+      </Sheet>
     </>
   )
 }

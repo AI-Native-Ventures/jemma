@@ -11,6 +11,7 @@ import { requestLongView } from '@/lib/long-view'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import { SAMPLE_RECORDS, type SampleName } from './samples'
+import { demoOn } from '@/lib/demo-switch'
 
 // What the teacher does on the "Add past records" screens. Every action checks, with the teacher's own session (row level
 // security), that they teach the class before anything is written with the service client.
@@ -74,6 +75,7 @@ export async function pasteRecords(classId: string, text: string): Promise<Done<
 export async function startSampleRecords(classId: string, which: SampleName): Promise<Done<{ importId: string }>> {
   const own = await teachingClass(classId)
   if (own.refused !== undefined) return fail(own.refused)
+  if (!demoOn()) return fail('The sample files are only for the demo.')
   const sample = SAMPLE_RECORDS[which]
   if (!sample) return fail('That sample file was not found.')
   const school = await createSupabaseAdmin().from('schools').select('sandbox_id').eq('id', own.cls.school_id).maybeSingle()

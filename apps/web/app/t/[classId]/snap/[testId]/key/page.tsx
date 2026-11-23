@@ -26,9 +26,9 @@ export default async function SnapKeyPage({ params }: { params: Promise<{ classI
   return (
     <Flow href={`/t/${classId}/snap`} label="Back" title="Answer key" subtitle={key.test.title} right="Step 2 of 3">
       <div aria-hidden="true" className="grid grid-cols-3 gap-1.5 px-5 pt-1">
-        <span className="h-1 rounded-pill bg-ink" />
-        <span className="h-1 rounded-pill bg-coral" />
-        <span className="h-1 rounded-pill bg-[#E3E1EE]" />
+        <span className="h-1 rounded-pill bg-green" />
+        <span className="h-1 rounded-pill bg-gold" />
+        <span className="h-1 rounded-pill bg-[#E6E3DC]" />
       </div>
       <div className="flex flex-col gap-[18px] px-5 pt-[18px] pb-4 leading-[normal]">
         {failed ? (

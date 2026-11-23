@@ -10,7 +10,7 @@ import { GRADES } from '@/lib/subjects'
 import { addLearner, enrolSchoolLearner, findSchoolLearners, makeLearnerCode, newClassCode, removeParent, renameClass, setClassGrade } from './actions'
 
 const editBtn = 'min-h-11 flex-none rounded-12 border border-muted-2 bg-card px-3.5 text-[14px] font-semibold text-ink'
-const save = 'flex min-h-[52px] items-center justify-center rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50'
+const save = 'flex min-h-[52px] items-center justify-center rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50'
 
 function SettingRow({ label, value, editLabel, first, children }: { label: string; value: string; editLabel: string; first?: boolean; children: (close: () => void) => React.ReactNode }) {
   const [open, setOpen] = useState(false)
@@ -51,7 +51,7 @@ export function GradeSheet({ classId, grade, onClose }: { classId: string; grade
     <Sheet open onClose={onClose} title="Grade">
       <span className="grid grid-cols-4 gap-1.5">
         {GRADES.map((g) => (
-          <button key={g} type="button" aria-pressed={value === g} onClick={() => setValue(g)} className={`h-11 rounded-12 text-[15px] ${value === g ? 'bg-ink font-semibold text-white' : 'border border-edge bg-card font-medium text-ink'}`}>
+          <button key={g} type="button" aria-pressed={value === g} onClick={() => setValue(g)} className={`h-11 rounded-12 text-[15px] ${value === g ? 'bg-green font-semibold text-white' : 'border border-edge bg-card font-medium text-ink'}`}>
             Grade {g}
           </button>
         ))}
@@ -92,7 +92,7 @@ export function ParentToggle() {
           <span className="text-[16px] font-medium">New parents need your OK</span>
           <span className="text-[13px] leading-[1.35] text-body">You approve each parent before they see anything</span>
         </span>
-        <span aria-hidden="true" className="relative h-[30px] w-[50px] flex-none rounded-pill bg-ink">
+        <span aria-hidden="true" className="relative h-[30px] w-[50px] flex-none rounded-pill bg-green">
           <span className="absolute top-1 left-6 size-[22px] rounded-pill bg-white" />
         </span>
       </button>
@@ -190,7 +190,7 @@ export function AddLearnerRow({ classId }: { classId: string }) {
           </section>
         ) : null}
         {error ? (
-          <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-coral-text">
+          <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-red-text">
             {error}
           </p>
         ) : null}
@@ -259,7 +259,7 @@ export function LearnerCodeRow({ classId, childId, name }: { classId: string; ch
               className="h-[52px] rounded-14 border border-muted-2 bg-card px-3.5 text-[22px] tracking-[0.3em] text-ink"
             />
             {error ? (
-              <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-coral-text">
+              <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-red-text">
                 {error}
               </p>
             ) : null}

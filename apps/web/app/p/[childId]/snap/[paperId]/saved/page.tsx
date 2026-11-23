@@ -27,7 +27,7 @@ export default async function SnapSavedPage({ params }: { params: Promise<{ chil
     <FlowShell href={`/p/${childId}`} icon="close" label={`${paper.childFirstName} · ${KIND_LABEL[paper.kind]}`} title="Saved">
     <main className="flex flex-col gap-[18px] px-5 pb-7 pt-4 leading-[normal] lg:mx-auto lg:max-w-[560px]">
       <div className="flex flex-col gap-3">
-        <span aria-hidden="true" className="flex size-14 items-center justify-center rounded-18 bg-ink">
+        <span aria-hidden="true" className="flex size-14 items-center justify-center rounded-18 bg-green">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="m5 12.5 4.5 4.5L19 7.5" />
           </svg>
@@ -59,14 +59,14 @@ export default async function SnapSavedPage({ params }: { params: Promise<{ chil
 
       {lesson ? (
         <div className="flex items-center gap-3 rounded-18 border border-line bg-card p-3.5">
-          <span aria-hidden="true" className="flex size-[38px] flex-none items-center justify-center rounded-12 bg-[#FFE3DA]">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+          <span aria-hidden="true" className="flex size-[38px] flex-none items-center justify-center rounded-12 bg-[#FFEDC6]">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
               <rect x="4" y="5" width="16" height="15" rx="2" />
               <path d="M8 3v4M16 3v4M4 10h16" />
             </svg>
           </span>
           <span className="flex flex-1 flex-col gap-0.5 leading-[1.3]">
-            <span className="text-[13px] font-bold text-[#B8381F]">Next lesson · {shortPlanned(lesson.plannedFor)}</span>
+            <span className="text-[13px] font-bold text-[#B8281E]">Next lesson · {shortPlanned(lesson.plannedFor)}</span>
             <span className="text-[16px] font-semibold">{lesson.topicName}</span>
             <span className="text-[14px] text-body">
               {lesson.minutes ? `About ${lesson.minutes} minutes.` : ''}
@@ -77,7 +77,7 @@ export default async function SnapSavedPage({ params }: { params: Promise<{ chil
       ) : null}
 
       <div className="mt-1 flex flex-col gap-2">
-        <a href={`/p/${childId}`} className="flex min-h-14 items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white no-underline">
+        <a href={`/p/${childId}`} className="flex min-h-14 items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white no-underline">
           Back to {paper.childFirstName}&apos;s profile
         </a>
         <a href={`/p/${childId}/snap`} className="flex min-h-14 items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-5 py-3 text-center text-[17px] font-semibold text-balance text-ink no-underline">

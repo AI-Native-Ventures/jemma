@@ -1,8 +1,8 @@
 import { Frac } from './Frac'
 
-export type Fill = 'coral' | 'ink' | 'grey' | 'none'
+export type Fill = 'gold' | 'ink' | 'grey' | 'none'
 
-const COLOURS: Record<Fill, string | undefined> = { coral: '#FF6A4D', ink: '#1F1D36', grey: '#8C89A3', none: undefined }
+const COLOURS: Record<Fill, string | undefined> = { gold: '#FFB81C', ink: '#161616', grey: '#8F8D88', none: undefined }
 
 export type BarProps = {
   fills: Fill[]
@@ -13,7 +13,7 @@ export type BarProps = {
   white?: boolean
 }
 
-/** One fraction bar from the boards: a grid of equal cells with an ink frame. */
+/** One fraction bar from the boards: a grid of equal cells with a black frame. */
 export function Bar({ fills, height, radius, dashed = [], white }: BarProps) {
   return (
     <span
@@ -32,7 +32,7 @@ export function Bar({ fills, height, radius, dashed = [], white }: BarProps) {
           key={i}
           style={{
             background: COLOURS[fill],
-            borderRight: i === fills.length - 1 ? undefined : dashed.includes(i) ? '1.5px dashed #1F1D36' : '2px solid #1F1D36',
+            borderRight: i === fills.length - 1 ? undefined : dashed.includes(i) ? '1.5px dashed #161616' : '2px solid #161616',
           }}
         />
       ))}
@@ -48,10 +48,10 @@ const parse = (label?: string): [string, string] | null => {
 }
 
 /**
- * Coral for the first shaded row and for rows that show the same amount again, ink for a new amount added.
- * `carry` is the previous step's last row: in a one-row step the cells past its coral ones are the added amount.
+ * Gold for the first shaded row and for rows that show the same amount again, black for a new amount added.
+ * `carry` is the previous step's last row: in a one-row step the cells past its gold ones are the added amount.
  */
-export function rowFills(rows: RowSpec[], carry?: { parts: number; coral: number }): Fill[][] {
+export function rowFills(rows: RowSpec[], carry?: { parts: number; gold: number }): Fill[][] {
   let base: number | null = null
   return rows.map((row) => {
     const value = row.parts ? row.shaded / row.parts : 0
@@ -60,8 +60,8 @@ export function rowFills(rows: RowSpec[], carry?: { parts: number; coral: number
     return Array.from({ length: row.parts }, (_, i): Fill => {
       if (i >= row.shaded) return 'none'
       if (added) return 'ink'
-      if (carry && rows.length === 1 && carry.parts === row.parts && i >= carry.coral) return 'ink'
-      return 'coral'
+      if (carry && rows.length === 1 && carry.parts === row.parts && i >= carry.gold) return 'ink'
+      return 'gold'
     })
   })
 }

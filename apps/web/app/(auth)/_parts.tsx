@@ -1,12 +1,12 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-export const colors = { ink: '#1F1D36', body: '#5D5A73', line: '#E7E6EF', grey: '#8C89A3', coral: '#FF6A4D', coralText: '#B8381F' }
+export const colors = { ink: '#161616', body: '#5C5A55', line: '#E8E5DE', grey: '#8F8D88', gold: '#FFB81C', redText: '#B8281E', green: '#007749' }
 
 export function Gem({ size = 14, marginTop = 11 }: { size?: number; marginTop?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" style={{ flex: 'none', marginTop }}>
-      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
     </svg>
   )
 }
@@ -23,7 +23,7 @@ export function BackLink({ href, label }: { href: string; label: string }) {
 
 export function ChevronRight() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
       <path d="m9 6 6 6-6 6" />
     </svg>
   )
@@ -56,7 +56,7 @@ export const primaryButton = {
   textWrap: 'balance',
   borderRadius: 14,
   border: 'none',
-  background: colors.ink,
+  background: colors.green,
   color: '#FFFFFF',
   fontSize: 17,
   fontWeight: 600,
@@ -73,4 +73,4 @@ export const textInput = {
   fontSize: 17,
 } as const
 
-export const errorText = { margin: 0, fontSize: 14, color: colors.coralText } as const
+export const errorText = { margin: 0, fontSize: 14, color: colors.redText } as const

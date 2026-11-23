@@ -84,7 +84,7 @@ test.describe('a learner can always practise', () => {
     // the card's Practise button is the first one on the page (the lists under it have theirs)
     await expect(page.getByRole('button', { name: /^Practise / }).first()).toBeVisible()
     await expect(page.getByRole('link', { name: 'Choose something else' })).toHaveCount(0)
-    await expect(page.getByText("You've fixed 3 gaps so far")).toBeVisible()
+    await expect(page.getByText("You've fixed 3 topics so far")).toBeVisible()
     await proof(page, 'practise-now')
 
     // the tap: one event with the learner's choice, queued (the stand-in answers 202), and the home says Jemma is writing

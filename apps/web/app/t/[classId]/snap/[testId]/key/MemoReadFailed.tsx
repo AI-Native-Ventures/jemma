@@ -38,16 +38,16 @@ export function MemoReadFailed({ classId, testId }: { classId: string; testId: s
 
   return (
     <section role="alert" className="flex flex-col gap-3.5 leading-[normal] rounded-[22px] border border-line bg-card px-5 py-[22px]">
-      <span aria-hidden="true" className="flex size-12 items-center justify-center rounded-14 bg-[#FFEDE8] text-coral-text">
+      <span aria-hidden="true" className="flex size-12 items-center justify-center rounded-14 bg-[#FFF3DA] text-red-text">
         <WarningIcon />
       </span>
       <h1 className="m-0 text-[27px] leading-[1.15] font-semibold tracking-[-0.015em] text-pretty">Jemma could not read the memo.</h1>
       <p className="m-0 text-[16px] leading-[1.5] text-body text-pretty">Take the photo again, closer and in good light. Or try the same photo once more.</p>
-      {error ? <p className="m-0 text-[14px] text-coral-text">{error}</p> : null}
+      {error ? <p className="m-0 text-[14px] text-red-text">{error}</p> : null}
       <div className="mt-1 flex flex-col gap-2">
         <label
           aria-busy={(pending && which === 'photo') || undefined}
-          className={`relative flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink ${pending ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
+          className={`relative flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink ${pending ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
         >
           <IconLabel gap={8} icon={<CameraIcon size={20} />}>
             Take the photo again

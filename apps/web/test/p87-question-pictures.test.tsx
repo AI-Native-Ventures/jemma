@@ -65,7 +65,7 @@ describe('the question screen', () => {
 
   it('uses the plain description: the equation of the line is not in it', () => {
     const page = dom(screen(ask({ diagram: LINE })))
-    expect(page.querySelector('svg')!.getAttribute('aria-label')).not.toMatch(/y =|2x/)
+    expect(page.querySelector('[data-picture] svg')!.getAttribute('aria-label')).not.toMatch(/y =|2x/)
   })
 
   it('a picture that makes no sense is "Picture missing", and the question can still be answered', () => {
@@ -187,7 +187,7 @@ describe('the small picture on the Today card', () => {
 
   it('the other kinds keep the classes they had', () => {
     const html = preview({ kind: 'area_model', rows: 3, cols: 4, shaded: 12 })
-    expect(html).toContain('class="rounded-[16px] bg-[#F7F6FB] p-3.5 [border-radius:16px]"')
+    expect(html).toContain('class="rounded-[16px] bg-[#F8F6F1] p-3.5 [border-radius:16px]"')
     expect(html).not.toContain('max-h-')
   })
 })

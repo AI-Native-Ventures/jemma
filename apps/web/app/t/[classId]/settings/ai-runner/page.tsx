@@ -49,7 +49,7 @@ export default async function AiRunnerPage({ params }: { params: Promise<{ class
 
         <p className="m-0 flex gap-2.5 text-[14px] leading-[1.45] text-body">
           <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" className="mt-1 flex-none">
-            <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+            <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
           </svg>
           If your MacBook is off, Jemma asks you in Needs you before it uses the cloud.
         </p>
@@ -61,7 +61,7 @@ export default async function AiRunnerPage({ params }: { params: Promise<{ class
           {(desktops ?? []).map((d) => (
             <div key={d.runner_id} className="flex min-h-16 items-center gap-3 py-1.5">
               <span aria-hidden="true" className="flex size-[38px] flex-none items-center justify-center rounded-12 bg-soft-2">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="5" y="5" width="14" height="10" rx="1.5" />
                   <path d="M3 18.5h18" />
                 </svg>
@@ -77,7 +77,7 @@ export default async function AiRunnerPage({ params }: { params: Promise<{ class
         </section>
 
         <p className="m-0 flex gap-2.5 text-[13px] leading-[1.45] text-body">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5D5A73" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mt-px flex-none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5C5A55" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mt-px flex-none">
             <path d="M12 3.5 5 6v5.5c0 4.2 2.9 7.6 7 9 4.1-1.4 7-4.8 7-9V6z" />
           </svg>
           Your Claude or ChatGPT plan may use what it sees to improve its models unless you turn that off in its settings. Jemma only sends schoolwork.

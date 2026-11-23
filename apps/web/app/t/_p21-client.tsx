@@ -2,31 +2,6 @@
 
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Sheet } from '@/components/ui'
-
-/** The small sheet behind links to features that come after the challenge. */
-export function ComingSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
-  return (
-    <Sheet open={open} onClose={onClose} title="Coming after the challenge" description="This part of Jemma is not in this version yet.">
-      <button type="button" onClick={onClose} className="flex min-h-[52px] items-center justify-center rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white">
-        Got it
-      </button>
-    </Sheet>
-  )
-}
-
-/** Any control that opens the "Coming after the challenge" sheet. */
-export function ComingButton({ className, style, children, ...rest }: { className?: string; style?: React.CSSProperties; children: ReactNode; 'aria-label'?: string; 'aria-pressed'?: boolean }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <>
-      <button type="button" className={className} style={style} onClick={() => setOpen(true)} {...rest}>
-        {children}
-      </button>
-      <ComingSheet open={open} onClose={() => setOpen(false)} />
-    </>
-  )
-}
 
 /** Shares the class code with the phone's share sheet, or copies it. */
 export function ShareButton({ code, className, children }: { code: string; className: string; children: ReactNode }) {

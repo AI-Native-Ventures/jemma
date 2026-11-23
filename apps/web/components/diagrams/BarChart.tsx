@@ -1,9 +1,9 @@
 import type { DiagramSpec } from '@jemma/profiling/schemas'
-import { BODY, CORAL, INK, Line, SOFT_3, Svg, T, type Variant, fmt } from './shared'
+import { BODY, GOLD, INK, Line, SOFT_3, Svg, T, type Variant, fmt } from './shared'
 
 export type BarChartProps = Extract<DiagramSpec, { kind: 'bar_chart' }> & {
   variant?: Variant
-  /** Bar labels drawn in coral (question variant). Card variant highlights the tallest bar by default. */
+  /** Bars drawn in gold (question variant). Card variant highlights the tallest bar by default. */
   highlight?: string[]
 }
 
@@ -42,7 +42,7 @@ export function BarChart(props: BarChartProps) {
       {q &&
         yMax <= 24 &&
         Array.from({ length: Math.floor(yMax) + 1 }, (_, v) => (
-          <Line key={`m${v}`} x1={g.x0} y1={g.base - v * k} x2={g.x1} y2={g.base - v * k} stroke={v % 2 === 0 ? '#D7D5E4' : SOFT_3} />
+          <Line key={`m${v}`} x1={g.x0} y1={g.base - v * k} x2={g.x1} y2={g.base - v * k} stroke={v % 2 === 0 ? '#D9D6CE' : SOFT_3} />
         ))}
       {!q && ticks.map((v) => <Line key={`g${v}`} x1={g.x0} y1={g.base - v * k} x2={g.x1} y2={g.base - v * k} stroke={SOFT_3} />)}
       {(q ? ticks.filter((v) => v % step === 0) : [0, ...ticks]).map((v) => (
@@ -54,7 +54,7 @@ export function BarChart(props: BarChartProps) {
         const h = Math.max(0, Math.min(yMax, b.value)) * k
         const x = bx(i)
         const on = lit(b)
-        const fill = q ? (on ? CORAL : INK) : on ? CORAL : SOFT_3
+        const fill = q ? (on ? GOLD : INK) : on ? GOLD : SOFT_3
         return (
           <g key={i}>
             <rect x={x} y={g.base - h} width={barW} height={h} rx={q ? 4 : 0} fill={fill} stroke={q ? undefined : INK} strokeWidth={q ? undefined : 1.2} />

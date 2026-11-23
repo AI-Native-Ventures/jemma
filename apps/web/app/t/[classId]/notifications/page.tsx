@@ -6,7 +6,7 @@ import { BackHeader } from '../tests/back-header'
 import { markAllRead } from './actions'
 
 const Svg = ({ children }: { children: React.ReactNode }) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
     {children}
   </svg>
 )
@@ -49,17 +49,17 @@ function Item({ n }: { n: NotificationRow }) {
     <li>
       <Link
         href={n.href}
-        className={`flex items-start gap-3 rounded-18 py-3.5 pr-3 pl-3.5 text-ink no-underline ${n.unread ? 'border border-[#FFC9BB] bg-coral-wash' : 'border border-line bg-card'}`}
+        className={`flex items-start gap-3 rounded-18 py-3.5 pr-3 pl-3.5 text-ink no-underline ${n.unread ? 'border border-[#FFDC93] bg-gold-wash' : 'border border-line bg-card'}`}
       >
         {n.unread ? (
           <span
             aria-hidden="true"
-            className="relative flex size-[38px] flex-none items-center justify-center rounded-pill bg-coral-soft text-[14px] font-bold"
+            className="relative flex size-[38px] flex-none items-center justify-center rounded-pill bg-gold-soft text-[14px] font-bold"
           >
             {n.title.slice(0, 1)}
             <svg width="18" height="18" viewBox="0 0 16 16" className="absolute -right-1 -bottom-1 rounded-pill bg-card p-px">
-              <polygon points="1,8 15,8 8,15" fill="#FF6A4D" />
-              <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#1F1D36" strokeWidth="1.4" />
+              <polygon points="1,8 15,8 8,15" fill="#FFB81C" />
+              <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#161616" strokeWidth="1.4" />
             </svg>
           </span>
         ) : (
@@ -74,8 +74,8 @@ function Item({ n }: { n: NotificationRow }) {
         <span className="flex flex-none flex-col items-end gap-1.5 pt-0.5">
           <span className="text-[13px] text-body tabular-nums">{n.time}</span>
           {n.unread ? (
-            <span className="inline-flex items-center gap-[5px] text-[12px] font-bold text-coral-text">
-              <span aria-hidden="true" className="size-2 rounded-pill bg-coral" />
+            <span className="inline-flex items-center gap-[5px] text-[12px] font-bold text-red-text">
+              <span aria-hidden="true" className="size-2 rounded-pill bg-gold" />
               New
             </span>
           ) : null}
@@ -127,7 +127,7 @@ export default async function TeacherNotificationsPage({ params }: { params: Pro
 
         <p className="m-0 flex gap-2.5 text-[14px] leading-[1.45] text-body">
           <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" className="mt-1 flex-none">
-            <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+            <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
           </svg>
           Jemma only sends a push when something needs you. Everything else waits here.
         </p>

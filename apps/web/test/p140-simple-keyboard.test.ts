@@ -235,7 +235,7 @@ describe('the strip of tabs, the last row', () => {
     }
   })
 
-  it('each tab key switches to its own layer, and only the tab you are on is dark', () => {
+  it('each tab key switches to its own layer, and only the tab you are on is green', () => {
     for (const { kind, strand, layout } of all) {
       for (const layer of layout.layers) {
         const keys = tabKeys(layer)
@@ -416,14 +416,22 @@ describe('the keyboard is responsive: the CSS of a layer', () => {
     }
   })
 
-  it('the word of a tab is 11 to 15 px, one line, no padding, nothing cut off with dots, and the current tab is dark', () => {
+  it('the word of a tab is 11 to 15 px, one line, no padding, nothing cut off with dots, and the current tab is green with white words', () => {
     expect(style).toMatch(/\.tab \{[^}]*padding: 0 !important/)
     expect(style).toMatch(/\.tab \{[^}]*font-size: clamp\(11px, 3\.3vw, 15px\) !important/)
     expect(style).toMatch(/\.tab \{[^}]*white-space: nowrap/)
     expect(style).toMatch(/\.tab \{[^}]*overflow: hidden/)
     expect(style).toMatch(/\.tab \{[^}]*text-overflow: clip/)
     expect(style).toMatch(/\.tab \.tab-face \{[^}]*white-space: nowrap/)
-    expect(style).toMatch(/\.tab\.is-current-tab \{[^}]*background: #1f1d36 !important/)
+    // South African colours: a picked tab is green (it was the old dark ink, #1f1d36), its words white, its edge the same green
+    expect(style).toMatch(/\.tab\.is-current-tab \{[^}]*background: #007749 !important/)
+    expect(style).toMatch(/\.tab\.is-current-tab \{[^}]*color: #ffffff !important/)
+    expect(style).toMatch(/\.tab\.is-current-tab \{[^}]*border-color: #007749 !important/)
+    expect(style).not.toMatch(/#1f1d36|#161616/i)
+  })
+
+  it('a key that is pressed is green too: the accent colour of the keyboard is Jemma\'s green, not the editor\'s own blue', () => {
+    expect(style).toMatch(/\.ML__keyboard \{[^}]*--keyboard-accent-color: #007749/)
   })
 
   it('there is no fixed 16 px or 22 px size left from the old tab faces, and no em dash', () => {

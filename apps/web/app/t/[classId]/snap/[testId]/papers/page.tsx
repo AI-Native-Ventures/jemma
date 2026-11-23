@@ -2,6 +2,7 @@ import { headers } from 'next/headers'
 import { getClassTests, getPile, getRoster } from '@/lib/data/p31'
 import { getSnapView } from '@/lib/data/p34'
 import { notFound } from 'next/navigation'
+import { demoOn } from '@/lib/demo-switch'
 import { Flow, PageTitle } from '../../_parts'
 import { Poller } from '../../Poller'
 import { LaptopSnap } from './LaptopSnap'
@@ -33,7 +34,7 @@ export default async function SnapQueuePage({ params }: { params: Promise<{ clas
         <PageTitle size={26}>{pile.length === 0 ? 'Snap the first paper.' : `${plural(pile.length, 'paper')} in. Snap the next one, or add a page.`}</PageTitle>
         <p className="m-0 ml-6 text-[15px] leading-[1.45] text-body text-pretty">Each photo opens your phone&apos;s own camera. Jemma reads while you snap.</p>
       </div>
-      <Queue classId={classId} testId={testId} next={pile.length + 1} lastPaper={last ? { id: last.id, position: last.position } : null} count={pile.length}>
+      <Queue classId={classId} testId={testId} samples={demoOn()} next={pile.length + 1} lastPaper={last ? { id: last.id, position: last.position } : null} count={pile.length}>
         {pile.length > 0 ? (
           <section aria-labelledby="pile" className="flex flex-col gap-1 rounded-20 border border-line bg-card p-4">
             <div className="flex flex-col gap-0.5">

@@ -18,16 +18,16 @@ function Glyph({ id, size, current }: { id: Stage; size: number; current: boolea
     <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true">
       {id === 'practising' ? (
         <>
-          <polygon points="1,8 15,8 8,15" fill="#FF6A4D" />
-          <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#1F1D36" strokeWidth="1.3" />
+          <polygon points="1,8 15,8 8,15" fill="#FFB81C" />
+          <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#161616" strokeWidth="1.3" />
         </>
       ) : id === 'fixed' && current ? (
-        <polygon points="8,1 15,8 8,15 1,8" fill="#FF6A4D" />
+        <polygon points="8,1 15,8 8,15 1,8" fill="#FFB81C" />
       ) : (
         <polygon
           points="8,1.8 14.2,8 8,14.2 1.8,8"
           fill="none"
-          stroke={id === 'new' ? '#8C89A3' : '#CFCDDC'}
+          stroke={id === 'new' ? '#8F8D88' : '#D2CFC7'}
           strokeWidth="1.4"
         />
       )}
@@ -47,9 +47,9 @@ export function StageTrack({ stage, variant = 'cards' }: StageTrackProps) {
               {i > 0 ? (
                 <svg width="40" height="16" viewBox="0 0 40 16" aria-hidden="true" className="flex-none">
                   {i <= at ? (
-                    <path d="M2 8h34M30 3l6 5-6 5" fill="none" stroke="#1F1D36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M2 8h34M30 3l6 5-6 5" fill="none" stroke="#161616" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   ) : (
-                    <path d="M2 8h34" fill="none" stroke="#CFCDDC" strokeWidth="2" strokeDasharray="3 4" strokeLinecap="round" />
+                    <path d="M2 8h34" fill="none" stroke="#D2CFC7" strokeWidth="2" strokeDasharray="3 4" strokeLinecap="round" />
                   )}
                 </svg>
               ) : null}

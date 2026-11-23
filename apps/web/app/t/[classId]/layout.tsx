@@ -5,6 +5,7 @@ import { requireRole } from '@/lib/auth'
 import { initialsOf } from '@/lib/initials'
 import { activeTab } from '@/lib/space'
 import { createSupabaseServer } from '@/lib/supabase/server'
+import { demoOn } from '@/lib/demo-switch'
 
 /** Teacher class space: header and tab bar on the phone, sidebar on the laptop. */
 export default async function TeacherClassLayout({
@@ -54,7 +55,7 @@ export default async function TeacherClassLayout({
           subtitle={subtitle}
           switchHref="/t"
           settingsHref={settingsHref}
-          demo={Boolean(cls.schools?.sandbox_id)}
+          demo={demoOn() && Boolean(cls.schools?.sandbox_id)}
           notificationsHref={`${base}/notifications`}
           unread={unread ?? 0}
         />
