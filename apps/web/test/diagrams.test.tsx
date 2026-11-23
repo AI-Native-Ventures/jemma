@@ -2,23 +2,23 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
 import { DiagramView, FractionBar, GridArea, NumberLine, PlaceValue, AreaModel, BarChart, Shape2D } from '@/components/diagrams'
 
-const CORAL = '#FF6A4D'
+const GOLD = '#FFB81C'
 const rects = (c: HTMLElement) => Array.from(c.querySelectorAll('rect'))
 
 describe('FractionBar', () => {
   test('draws parts and shading', () => {
     const { container } = render(<FractionBar kind="fraction_bar" rows={[{ parts: 4, shaded: 3 }]} />)
     expect(rects(container)).toHaveLength(4)
-    expect(rects(container).filter((r) => r.getAttribute('fill') === CORAL)).toHaveLength(3)
+    expect(rects(container).filter((r) => r.getAttribute('fill') === GOLD)).toHaveLength(3)
     expect(screen.getByRole('img').getAttribute('aria-label')).toMatch(/3 of 4/)
   })
-  test('first shaded row is coral, later shaded rows ink, label defaults', () => {
+  test('first shaded row is gold, later shaded rows black, label defaults', () => {
     const { container } = render(
       <FractionBar kind="fraction_bar" rows={[{ parts: 1, shaded: 0 }, { parts: 2, shaded: 1 }, { parts: 4, shaded: 1 }]} />,
     )
     const fills = rects(container).map((r) => r.getAttribute('fill'))
-    expect(fills.filter((f) => f === CORAL)).toHaveLength(1)
-    expect(fills.filter((f) => f === '#1F1D36')).toHaveLength(1)
+    expect(fills.filter((f) => f === GOLD)).toHaveLength(1)
+    expect(fills.filter((f) => f === '#161616')).toHaveLength(1)
     expect(container.textContent).toContain('1/2')
     expect(container.textContent).toContain('1/4')
   })
@@ -40,7 +40,7 @@ describe('other kinds', () => {
     const { container } = render(<AreaModel kind="area_model" rows={3} cols={4} shaded={12} />)
     expect(container.textContent).toContain('3 × 4 = 12')
     const { container: c2 } = render(<AreaModel kind="area_model" rows={2} cols={3} shaded={4} />)
-    expect(Array.from(c2.querySelectorAll('rect')).filter((r) => r.getAttribute('fill') === '#FFE3DA')).toHaveLength(4)
+    expect(Array.from(c2.querySelectorAll('rect')).filter((r) => r.getAttribute('fill') === '#FFEDC6')).toHaveLength(4)
   })
   test('PlaceValue shows columns and digits with a decimal comma', () => {
     const { container } = render(

@@ -141,7 +141,7 @@ function usePlayer(script: string, url: string | null): Player {
 }
 
 const ghostButton = 'flex size-12 cursor-pointer items-center justify-center rounded-pill border-0 bg-transparent p-0 text-white'
-const pill = 'flex h-11 w-[52px] cursor-pointer items-center justify-center rounded-12 border-[1.5px] border-[#6B6888] bg-transparent text-[15px] font-semibold text-white'
+const pill = 'flex h-11 w-[52px] cursor-pointer items-center justify-center rounded-12 border-[1.5px] border-[#66645F] bg-transparent text-[15px] font-semibold text-white'
 
 export function LearnAudio({ lesson, firstName, onReady }: { lesson: LessonForChild; firstName: string; onReady: () => void }) {
   const script = lesson.audio?.script ?? ''
@@ -165,15 +165,15 @@ export function LearnAudio({ lesson, firstName, onReady }: { lesson: LessonForCh
             <h1 id="memo" className="m-0 text-[21px] leading-[1.2] font-bold">
               <FractionText text={lesson.title} size={26} rule={2.5} gap={3} side={3} color="#FFFFFF" />
             </h1>
-            <span className="text-[14px] text-[#D6D4E2]">Jemma, for {firstName}</span>
+            <span className="text-[14px] text-[#D9D6CE]">Jemma, for {firstName}</span>
           </span>
         </div>
         <div aria-hidden="true" className="flex h-11 items-center gap-[3px]">
           {BARS.map((h, i) => (
-            <span key={i} className="flex-1 rounded-[2px]" style={{ height: h, background: i < playedBars ? '#FF6A4D' : '#4A4766' }} />
+            <span key={i} className="flex-1 rounded-[2px]" style={{ height: h, background: i < playedBars ? '#FFB81C' : '#3F3E3B' }} />
           ))}
         </div>
-        <div className="flex justify-between text-[14px] text-[#D6D4E2] tabular-nums">
+        <div className="flex justify-between text-[14px] text-[#D9D6CE] tabular-nums">
           <span>{clock(player.position)}</span>
           <span>{clock(player.duration)}</span>
         </div>
@@ -191,12 +191,12 @@ export function LearnAudio({ lesson, firstName, onReady }: { lesson: LessonForCh
               type="button"
               aria-label={player.playing ? 'Pause' : 'Play'}
               onClick={player.toggle}
-              className="flex size-[72px] cursor-pointer items-center justify-center rounded-pill border-0 bg-coral p-0 text-ink"
+              className="flex size-[72px] cursor-pointer items-center justify-center rounded-pill border-0 bg-gold p-0 text-ink"
             >
               {player.playing ? (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="#1F1D36" aria-hidden="true"><rect x="6" y="5" width="4.2" height="14" rx="1" /><rect x="13.8" y="5" width="4.2" height="14" rx="1" /></svg>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="#161616" aria-hidden="true"><rect x="6" y="5" width="4.2" height="14" rx="1" /><rect x="13.8" y="5" width="4.2" height="14" rx="1" /></svg>
               ) : (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="#1F1D36" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" /></svg>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="#161616" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" /></svg>
               )}
             </button>
             <button type="button" aria-label="Forward 10 seconds" onClick={() => player.skip(10)} className={ghostButton}>
@@ -219,7 +219,7 @@ export function LearnAudio({ lesson, firstName, onReady }: { lesson: LessonForCh
           return (
             <p
               key={i}
-              className={`m-0 text-[17px] leading-[1.55] ${now ? '-mx-2 rounded-12 bg-[#FFF1ED] p-2 font-medium text-ink' : 'text-body'}`}
+              className={`m-0 text-[17px] leading-[1.55] ${now ? '-mx-2 rounded-12 bg-[#FFF6E2] p-2 font-medium text-ink' : 'text-body'}`}
             >
               <FractionText text={sentences.join(' ')} size={22} rule={2} gap={3} side={3} />
             </p>
@@ -227,11 +227,11 @@ export function LearnAudio({ lesson, firstName, onReady }: { lesson: LessonForCh
         })}
       </section>
       <div className="flex-1" />
-      <button type="button" onClick={onReady} className="min-h-[60px] cursor-pointer rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
+      <button type="button" onClick={onReady} className="min-h-[60px] cursor-pointer rounded-18 border-0 bg-green px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
         I&apos;m ready
       </button>
       <Sheet open={lang} onClose={() => setLang(false)} title="Coming after the challenge" description="This part of Jemma is not in this version yet.">
-        <button type="button" onClick={() => setLang(false)} className="min-h-14 cursor-pointer rounded-14 border-0 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white">
+        <button type="button" onClick={() => setLang(false)} className="min-h-14 cursor-pointer rounded-14 border-0 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white">
           Got it
         </button>
       </Sheet>

@@ -10,11 +10,11 @@ export function LongViewCard({ base, teacherNames, subjects, count }: { base: st
   return (
     <Link
       href={`${base}/long-view`}
-      style={css('display:flex;flex-direction:row;align-items:center;gap:14px;padding:16px 12px 16px 16px;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px;text-decoration:none;color:#1F1D36')}
+      style={css('display:flex;flex-direction:row;align-items:center;gap:14px;padding:16px 12px 16px 16px;background:#FFFFFF;border:1px solid #E8E5DE;border-radius:20px;text-decoration:none;color:#161616')}
     >
       <span style={css('flex:1;min-width:0;display:flex;flex-direction:column;gap:4px')}>
         <span style={css('font-size:17px;font-weight:600')}>{`From your ${teacherNames.length > 1 ? 'talks' : 'talk'} with ${namesList(teacherNames)}`}</span>
-        <span style={css('font-size:14px;line-height:1.4;color:#5D5A73')}>{subjects.length > 0 ? `${things} · ${namesList(subjects)}` : things}</span>
+        <span style={css('font-size:14px;line-height:1.4;color:#5C5A55')}>{subjects.length > 0 ? `${things} · ${namesList(subjects)}` : things}</span>
       </span>
       <Chevron />
     </Link>

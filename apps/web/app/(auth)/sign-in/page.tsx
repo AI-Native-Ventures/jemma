@@ -1,3 +1,4 @@
+import { WelcomeDrawing } from '@/components/sa'
 import Link from 'next/link'
 import { IconLabel } from '@/components/ui/IconLabel'
 import { Wordmark } from '@/components/install'
@@ -33,10 +34,14 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
         Create an account
       </Link>
 
-      <div style={{ flex: 1 }} />
+      <div className="sa-room" style={{ flex: '1 1 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div aria-hidden="true" style={{ width: 176 }}>
+          <WelcomeDrawing />
+        </div>
+      </div>
       <Link href="/demo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 44, padding: '10px 20px', textAlign: 'center', fontSize: 15, fontWeight: 600, color: colors.ink, textDecoration: 'none' }}>
         <IconLabel gap={8} icon={<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
-          <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+          <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
         </svg>}>
           Judging the challenge? Try the demo
         </IconLabel>

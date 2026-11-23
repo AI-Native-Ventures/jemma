@@ -231,7 +231,7 @@ describe('the guard reads the right files', () => {
   })
 
   it('catches the fault it is looking for, and lets a button with room through', () => {
-    const bad = `const big = 'flex h-[68px] w-full items-center justify-center rounded-20 bg-coral text-[22px] font-bold'\nexport const A = () => <label className={big}>Take a photo</label>`
+    const bad = `const big = 'flex h-[68px] w-full items-center justify-center rounded-20 bg-gold text-[22px] font-bold'\nexport const A = () => <label className={big}>Take a photo</label>`
     expect(scanSource('x.tsx', bad)).toHaveLength(1)
     const grid = `export const B = () => <button type="button" onClick={() => go()} className="h-[60px] rounded-18 bg-ink">Next</button>`
     expect(scanSource('x.tsx', grid)).toHaveLength(1)
@@ -239,7 +239,7 @@ describe('the guard reads the right files', () => {
     expect(scanSource('x.tsx', inline)).toHaveLength(1)
     const inlineCss = `export const D = () => <button type="submit" style={css('display:flex;height:52px;border-radius:14px')}>Save</button>`
     expect(scanSource('x.tsx', inlineCss)).toHaveLength(1)
-    const roomy = `const big = 'flex min-h-[68px] w-full rounded-20 bg-coral px-5 py-3 text-[20px]'\nexport const E = () => <label className={big}>Take a photo</label>`
+    const roomy = `const big = 'flex min-h-[68px] w-full rounded-20 bg-gold px-5 py-3 text-[20px]'\nexport const E = () => <label className={big}>Take a photo</label>`
     expect(scanSource('x.tsx', roomy)).toEqual([])
     const minOnly = `export const F = () => <a style={css('display:flex;min-height:48px;gap:10px')}>Row</a>`
     expect(scanSource('x.tsx', minOnly)).toEqual([])

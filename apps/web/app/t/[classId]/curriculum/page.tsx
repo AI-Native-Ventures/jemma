@@ -6,10 +6,10 @@ import { AutoRefresh, CapsButton, ComingLink, DraftFailed, SampleButton, UploadB
 
 const GEM = (
   <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" style={{ flex: 'none', marginTop: 10 }}>
-    <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+    <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
   </svg>
 )
-const card = { display: 'flex', flexDirection: 'column', background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 20, padding: 16 } as const
+const card = { display: 'flex', flexDirection: 'column', background: '#FFFFFF', border: '1px solid #E8E5DE', borderRadius: 20, padding: 16 } as const
 const h1 = { margin: 0, fontSize: 26, lineHeight: 1.2, fontWeight: 600, letterSpacing: '-0.01em', textWrap: 'pretty' } as const
 const wrap = { lineHeight: 'normal', display: 'flex', flexDirection: 'column', gap: 20, padding: '14px 20px 16px', maxWidth: 720 } as const
 
@@ -32,12 +32,12 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
     return (
       <div style={wrap}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#5D5A73' }}>Curriculum</p>
+          <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#5C5A55' }}>Curriculum</p>
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
             {GEM}
             <h1 style={h1}>Add your curriculum and Jemma will draft your topic map.</h1>
           </div>
-          <p style={{ margin: '0 0 0 24px', fontSize: 15, lineHeight: 1.45, color: '#5D5A73' }}>Nothing reaches a learner until you approve the map.</p>
+          <p style={{ margin: '0 0 0 24px', fontSize: 15, lineHeight: 1.45, color: '#5C5A55' }}>Nothing reaches a learner until you approve the map.</p>
         </div>
         {caps ? <CapsButton classId={classId} grade={data.grade} /> : null}
         <section aria-labelledby="docs" style={{ ...card, gap: 10 }}>
@@ -59,12 +59,12 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
           <>
             <AutoRefresh />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#5D5A73' }}>Curriculum</p>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#5C5A55' }}>Curriculum</p>
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 {GEM}
                 <h1 style={h1}>Jemma is reading your curriculum.</h1>
               </div>
-              <p style={{ margin: '0 0 0 24px', fontSize: 15, lineHeight: 1.45, color: '#5D5A73' }}>
+              <p style={{ margin: '0 0 0 24px', fontSize: 15, lineHeight: 1.45, color: '#5C5A55' }}>
                 This takes a minute or two. You can leave this page, your documents are saved.
               </p>
             </div>
@@ -80,14 +80,14 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
   return (
     <div style={wrap}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#5D5A73' }}>Curriculum</p>
+        <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#5C5A55' }}>Curriculum</p>
         <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
           {GEM}
           <h1 style={h1}>
             {open > 0 ? `Your draft topic map is ready. ${plural(open, 'thing')} for you to check.` : 'Your draft topic map is ready.'}
           </h1>
         </div>
-        <p style={{ margin: '0 0 0 24px', fontSize: 15, lineHeight: 1.45, color: '#5D5A73' }}>Nothing reaches a learner until you approve the map.</p>
+        <p style={{ margin: '0 0 0 24px', fontSize: 15, lineHeight: 1.45, color: '#5C5A55' }}>Nothing reaches a learner until you approve the map.</p>
       </div>
 
       {read.source ? (
@@ -106,7 +106,7 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
           <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
             {log.map((e, i) => (
               <li key={i} style={{ display: 'flex', gap: 12, fontSize: 14, lineHeight: 1.4 }}>
-                <span style={{ width: 40, flex: 'none', color: '#5D5A73', fontVariantNumeric: 'tabular-nums' }}>{e.at}</span>
+                <span style={{ width: 40, flex: 'none', color: '#5C5A55', fontVariantNumeric: 'tabular-nums' }}>{e.at}</span>
                 <span>{e.text}</span>
               </li>
             ))}
@@ -114,7 +114,7 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
         </section>
       ) : null}
 
-      <Link href={`/t/${classId}/curriculum/map`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, marginTop: 37, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, background: '#1F1D36', color: '#FFFFFF', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
+      <Link href={`/t/${classId}/curriculum/map`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, marginTop: 37, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, background: '#007749', color: '#FFFFFF', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
         Check the draft map
       </Link>
       <ComingLink>Or start from a map another teacher approved</ComingLink>
@@ -126,9 +126,9 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
 function SourceLine({ source }: { source: DraftSource }) {
   const host = new URL(source.address).hostname.replace(/^www\./, '')
   return (
-    <p style={{ margin: 0, fontSize: 14, lineHeight: 1.45, color: '#5D5A73' }}>
+    <p style={{ margin: 0, fontSize: 14, lineHeight: 1.45, color: '#5C5A55' }}>
       From {source.title}, {source.publisher}.{' '}
-      <a href={source.address} target="_blank" rel="noreferrer" style={{ color: '#1F1D36', fontWeight: 600, textUnderlineOffset: 3 }}>
+      <a href={source.address} target="_blank" rel="noreferrer" style={{ color: '#161616', fontWeight: 600, textUnderlineOffset: 3 }}>
         {host}
       </a>
     </p>
@@ -152,14 +152,14 @@ function DocsCard({ docs, read, children }: { docs: { id: string; title: string;
       <h2 id="docs" style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Your documents</h2>
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column' }}>
         {docs.map((d, i) => (
-          <li key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderTop: i ? '1px solid #EFEEF4' : undefined }}>
-            <span aria-hidden="true" style={{ width: 40, height: 48, flex: 'none', borderRadius: 8, background: '#EEEDF5', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 6, fontSize: 10, fontWeight: 700, color: '#1F1D36' }}>PDF</span>
+          <li key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderTop: i ? '1px solid #F0EEE8' : undefined }}>
+            <span aria-hidden="true" style={{ width: 40, height: 48, flex: 'none', borderRadius: 8, background: '#EFECE6', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 6, fontSize: 10, fontWeight: 700, color: '#161616' }}>PDF</span>
             <span style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, minWidth: 0 }}>
               <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.3 }}>{d.title}</span>
-              <span style={{ fontSize: 13, color: '#5D5A73' }}>{docNote(d.title, d.pages)}</span>
+              <span style={{ fontSize: 13, color: '#5C5A55' }}>{docNote(d.title, d.pages)}</span>
             </span>
             {read ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Read" style={{ flex: 'none' }}><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Read" style={{ flex: 'none' }}><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
             ) : null}
           </li>
         ))}
@@ -171,13 +171,13 @@ function DocsCard({ docs, read, children }: { docs: { id: string; title: string;
 
 // ---- teacher-curriculum-approved ------------------------------------------------------------
 
-const rowCard = { display: 'flex', flexDirection: 'column', gap: 2, padding: 16, background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 20 } as const
+const rowCard = { display: 'flex', flexDirection: 'column', gap: 2, padding: 16, background: '#FFFFFF', border: '1px solid #E8E5DE', borderRadius: 20 } as const
 
 function Bar({ pct }: { pct: number | null }) {
-  if (pct === null) return <span aria-hidden="true" style={{ display: 'block', height: 8, borderRadius: 999, border: '1.5px dashed #CFCDDC' }} />
+  if (pct === null) return <span aria-hidden="true" style={{ display: 'block', height: 8, borderRadius: 999, border: '1.5px dashed #D2CFC7' }} />
   return (
-    <span aria-hidden="true" style={{ display: 'block', height: 8, borderRadius: 999, background: '#EEEDF5', overflow: 'hidden' }}>
-      <span style={{ display: 'block', width: `${pct}%`, height: '100%', borderRadius: 999, background: pct < 50 ? '#FF6A4D' : '#1F1D36' }} />
+    <span aria-hidden="true" style={{ display: 'block', height: 8, borderRadius: 999, background: '#EFECE6', overflow: 'hidden' }}>
+      <span style={{ display: 'block', width: `${pct}%`, height: '100%', borderRadius: 999, background: pct < 50 ? '#FFB81C' : '#161616' }} />
     </span>
   )
 }
@@ -188,10 +188,10 @@ function TopicRow({ t, sub, href }: { t: ApprovedTopic; sub?: string; href?: str
       <span style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
         <span style={{ display: 'flex', flexDirection: 'column', gap: 1, lineHeight: 1.3 }}>
           <span style={{ fontSize: 15, fontWeight: 500 }}>{t.name}</span>
-          {sub ? <span style={{ fontSize: 13, color: '#5D5A73' }}>{sub}</span> : null}
+          {sub ? <span style={{ fontSize: 13, color: '#5C5A55' }}>{sub}</span> : null}
         </span>
         {t.pct === null ? (
-          <span style={{ fontSize: 14, color: '#5D5A73' }}>Not tested yet</span>
+          <span style={{ fontSize: 14, color: '#5C5A55' }}>Not tested yet</span>
         ) : (
           <span style={{ fontSize: 15, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{t.pct}%</span>
         )}
@@ -201,14 +201,14 @@ function TopicRow({ t, sub, href }: { t: ApprovedTopic; sub?: string; href?: str
   )
   if (href)
     return (
-      <li style={{ borderTop: '1px solid #EFEEF4' }}>
-        <Link href={href} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 0', textDecoration: 'none', color: '#1F1D36' }}>
+      <li style={{ borderTop: '1px solid #F0EEE8' }}>
+        <Link href={href} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 0', textDecoration: 'none', color: '#161616' }}>
           <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 7 }}>{inner}</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8C89A3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}><path d="m9 6 6 6-6 6" /></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8F8D88" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}><path d="m9 6 6 6-6 6" /></svg>
         </Link>
       </li>
     )
-  return <li style={{ display: 'flex', flexDirection: 'column', gap: 7, padding: '12px 30px 12px 0', borderTop: '1px solid #EFEEF4' }}>{inner}</li>
+  return <li style={{ display: 'flex', flexDirection: 'column', gap: 7, padding: '12px 30px 12px 0', borderTop: '1px solid #F0EEE8' }}>{inner}</li>
 }
 
 async function Approved({ classId, state }: { classId: string; state: Awaited<ReturnType<typeof getCurriculum>> }) {
@@ -217,17 +217,17 @@ async function Approved({ classId, state }: { classId: string; state: Awaited<Re
     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <h2 id={id} style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>{title}</h2>
-        {sub ? <p style={{ margin: 0, fontSize: 14, color: '#5D5A73' }}>{sub}</p> : null}
+        {sub ? <p style={{ margin: 0, fontSize: 14, color: '#5C5A55' }}>{sub}</p> : null}
       </div>
     </div>
   )
   return (
     <div style={{ ...wrap, gap: 18, padding: '14px 20px 20px' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, fontWeight: 600, color: '#5D5A73' }}>
+        <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, fontWeight: 600, color: '#5C5A55' }}>
           Curriculum
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 999, background: '#EEEDF5', fontSize: 13, fontWeight: 600, color: '#1F1D36' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 7px', borderRadius: 999, background: '#EFECE6', fontSize: 13, fontWeight: 600, color: '#161616' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
             Approved {v.approvedOn}
           </span>
         </p>
@@ -257,9 +257,9 @@ async function Approved({ classId, state }: { classId: string; state: Awaited<Re
       ) : null}
 
       {v.testName ? (
-        <p style={{ margin: 0, display: 'flex', gap: 10, fontSize: 14, lineHeight: 1.45, color: '#5D5A73' }}>
-          <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style={{ flex: 'none', marginTop: 4 }}><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" /></svg>
-          Each % is the share of answers the class got right on that topic in {v.testName}. Coral bars are under half.
+        <p style={{ margin: 0, display: 'flex', gap: 10, fontSize: 14, lineHeight: 1.45, color: '#5C5A55' }}>
+          <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style={{ flex: 'none', marginTop: 4 }}><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" /></svg>
+          Each % is the share of answers the class got right on that topic in {v.testName}. Gold bars are under half.
         </p>
       ) : null}
 
@@ -268,14 +268,14 @@ async function Approved({ classId, state }: { classId: string; state: Awaited<Re
         <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 9 }}>
           {v.log.map((e, i) => (
             <li key={i} style={{ display: 'flex', gap: 12, fontSize: 14, lineHeight: 1.4 }}>
-              <span style={{ width: 40, flex: 'none', color: '#5D5A73', fontVariantNumeric: 'tabular-nums' }}>{e.at}</span>
+              <span style={{ width: 40, flex: 'none', color: '#5C5A55', fontVariantNumeric: 'tabular-nums' }}>{e.at}</span>
               <span>{e.text}</span>
             </li>
           ))}
         </ol>
       </section>
 
-      <Link href={`/t/${classId}/curriculum/map`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 50, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: '1.5px solid #1F1D36', background: '#FFFFFF', color: '#1F1D36', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
+      <Link href={`/t/${classId}/curriculum/map`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 50, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, border: '1.5px solid #161616', background: '#FFFFFF', color: '#161616', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
         See or edit the whole map
       </Link>
     </div>

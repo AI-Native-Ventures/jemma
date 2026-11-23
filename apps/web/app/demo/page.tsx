@@ -13,8 +13,8 @@ export const dynamic = 'force-dynamic'
 
 const PEOPLE = [
   { role: 'teacher', initials: 'MB', avatar: 'bg-soft-3', name: 'Ms Banda', detail: 'Teacher · Grade 6 Mathematics', start: true },
-  { role: 'parent', initials: 'TM', avatar: 'bg-coral-tint', name: 'Thandi M', detail: "Parent · Amina's mother", start: false },
-  { role: 'learner', initials: 'A', avatar: 'bg-coral-soft', name: 'Amina', detail: 'Learner · Grade 6', start: false },
+  { role: 'parent', initials: 'TM', avatar: 'bg-gold-tint', name: 'Thandi M', detail: "Parent · Amina's mother", start: false },
+  { role: 'learner', initials: 'A', avatar: 'bg-gold-soft', name: 'Amina', detail: 'Learner · Grade 6', start: false },
 ] as const
 
 /** The three people above the fold are not listed again. Amina is one of the five learners of 6B. */
@@ -90,9 +90,9 @@ const STEPS = [
 function Wordmark() {
   return (
     <svg viewBox="4 12 236 92" width="100" height="39" role="img" aria-label="jemma" className="block">
-      <path d="M32 46 V80 C32 91 24 95 13 93" fill="none" stroke="#1F1D36" strokeWidth="9.5" strokeLinecap="round" />
-      <polygon points="32,19 40,27 32,35 24,27" fill="#FF6A4D" />
-      <text x="43" y="80" fill="#1F1D36" fontFamily="inherit" fontSize="66" fontWeight="700">emma</text>
+      <path d="M32 46 V80 C32 91 24 95 13 93" fill="none" stroke="#161616" strokeWidth="9.5" strokeLinecap="round" />
+      <polygon points="32,19 40,27 32,35 24,27" fill="#FFB81C" />
+      <text x="43" y="80" fill="#161616" fontFamily="inherit" fontSize="66" fontWeight="700">emma</text>
     </svg>
   )
 }
@@ -125,7 +125,7 @@ export default async function DemoPage() {
                   <span className="text-[14px] text-body group-aria-busy:hidden">{p.detail}</span>
                   <span role="status" className="hidden text-[14px] text-body group-aria-busy:block">Opening your copy of Hillview Primary</span>
                 </span>
-                {p.start ? <span className="flex-none rounded-pill bg-coral px-2.5 py-[5px] text-[12px] font-semibold text-ink group-aria-busy:hidden">Start here</span> : null}
+                {p.start ? <span className="flex-none rounded-pill bg-gold px-2.5 py-[5px] text-[12px] font-semibold text-ink group-aria-busy:hidden">Start here</span> : null}
               </PersonButton>
             </form>
           ))}
@@ -162,7 +162,7 @@ export default async function DemoPage() {
                     <>
                       {demo ? (
                         <>
-                          class code <span className="inline-block rounded-md bg-coral-tint px-1.5 font-bold tracking-[0.08em]">{demo.joinCode}</span>
+                          class code <span className="inline-block rounded-md bg-gold-tint px-1.5 font-bold tracking-[0.08em]">{demo.joinCode}</span>
                         </>
                       ) : (
                         "Ms Banda's class code"
@@ -193,7 +193,7 @@ export default async function DemoPage() {
 
         <p className="m-0 flex items-center gap-2 text-[14px] text-body">
           <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" className="flex-none">
-            <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+            <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
           </svg>
           Every person and paper here is made up.
         </p>

@@ -4,22 +4,11 @@ import Link from 'next/link'
 import { IconLabel } from '@/components/ui/IconLabel'
 import type { StageMove } from '../[sessionId]/logic'
 import type { FinishedSession } from '../[sessionId]/types'
+import { BeadRing } from '@/components/sa'
 import { Diamond } from './Gems'
 
 const spin = 'motion-safe:animate-spin'
 
-function Ring({ size, r, sw, path, mark }: { size: number; r: number; sw: number; path: string; mark: number }) {
-  const c = size / 2
-  return (
-    <span aria-hidden="true" className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className={spin}>
-        <circle cx={c} cy={c} r={r} fill="none" stroke="#EEEDF5" strokeWidth={sw} />
-        <path d={path} fill="none" stroke="#FF6A4D" strokeWidth={sw} strokeLinecap="round" />
-      </svg>
-      <Diamond size={mark} className="absolute" />
-    </span>
-  )
-}
 
 type Row = { title: string; sub: string; state: 'done' | 'now' | 'next'; tag: string }
 
@@ -32,7 +21,7 @@ export function Loading({ warmup, tries, learnNote }: { warmup: number; tries: n
   return (
     <div className="flex flex-1 flex-col gap-[22px] px-5 pt-[26px] pb-6">
       <section role="status" aria-live="polite" className="flex flex-col items-center gap-3.5 text-center">
-        <Ring size={120} r={52} sw={9} path="M60 8a52 52 0 0 1 49.5 36" mark={44} />
+        <BeadRing lit={7} size={120} />
         <h1 className="m-0 text-center text-[30px] leading-[1.14] font-bold tracking-[-0.02em] text-pretty">Getting your lesson ready.</h1>
         <p className="m-0 text-[18px] leading-[1.45] text-body">About 10 seconds. Grab a pencil and some paper!</p>
       </section>
@@ -42,13 +31,13 @@ export function Loading({ warmup, tries, learnNote }: { warmup: number; tries: n
             <li key={row.title} className="flex min-h-14 items-center gap-3.5">
               <span aria-hidden="true" className="flex size-8 flex-none items-center justify-center">
                 {row.state === 'done' ? (
-                  <span className="flex size-8 items-center justify-center rounded-pill bg-ink">
+                  <span className="flex size-8 items-center justify-center rounded-pill bg-green">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
                   </span>
                 ) : row.state === 'now' ? (
                   <svg width="32" height="32" viewBox="0 0 28 28" className={spin}>
-                    <circle cx="14" cy="14" r="11" fill="none" stroke="#EEEDF5" strokeWidth="3.5" />
-                    <path d="M14 3a11 11 0 0 1 11 11" fill="none" stroke="#FF6A4D" strokeWidth="3.5" strokeLinecap="round" />
+                    <circle cx="14" cy="14" r="11" fill="none" stroke="#EFECE6" strokeWidth="3.5" />
+                    <path d="M14 3a11 11 0 0 1 11 11" fill="none" stroke="#007749" strokeWidth="3.5" strokeLinecap="round" />
                   </svg>
                 ) : (
                   <span className="size-8 rounded-pill border-2 border-edge" />
@@ -58,7 +47,7 @@ export function Loading({ warmup, tries, learnNote }: { warmup: number; tries: n
                 <span className="text-[17px] font-semibold">{row.title}</span>
                 <span className="text-[15px] text-body">{row.sub}</span>
               </span>
-              <span className={`text-[14px] font-semibold ${row.state === 'now' ? 'text-coral-text' : 'text-body'}`}>{row.tag}</span>
+              <span className={`text-[14px] font-semibold ${row.state === 'now' ? 'text-red-text' : 'text-body'}`}>{row.tag}</span>
             </li>
           ))}
         </ol>
@@ -72,12 +61,12 @@ export function LoadError({ onRetry, warmupHref }: { onRetry: () => void; warmup
   return (
     <div className="flex flex-1 flex-col gap-[22px] px-5 pt-[26px] pb-7">
       <section role="alert" className="flex flex-col items-center gap-3.5 rounded-[26px] border border-line bg-card px-[22px] pt-7 pb-6 text-center">
-        <Ring size={84} r={38} sw={7} path="M42 4a38 38 0 0 1 36.1 26.2" mark={30} />
+        <BeadRing lit={3} size={100} paused />
         <h1 className="m-0 text-[30px] leading-[1.15] font-bold tracking-[-0.02em] text-pretty">Your lesson is taking a little longer</h1>
         <p className="m-0 text-[18px] leading-[1.45] text-body text-pretty">It&apos;s not you. The internet is slow right now. Nothing you did is lost.</p>
       </section>
       <div className="flex flex-col gap-2.5">
-        <button type="button" onClick={onRetry} className="flex min-h-[68px] cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[23px]">
+        <button type="button" onClick={onRetry} className="flex min-h-[68px] cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-gold px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[23px]">
           <IconLabel
             icon={
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -110,14 +99,14 @@ function StageGem({ stage, on }: { stage: StageMove['to']; on: boolean }) {
   if (!on) {
     return (
       <svg width="24" height="24" viewBox="0 0 16 16" aria-hidden="true">
-        <polygon points="8,1.8 14.2,8 8,14.2 1.8,8" fill="none" stroke={stage === 'new' ? '#8C89A3' : '#CFCDDC'} strokeWidth="1.4" />
+        <polygon points="8,1.8 14.2,8 8,14.2 1.8,8" fill="none" stroke={stage === 'new' ? '#8F8D88' : '#D2CFC7'} strokeWidth="1.4" />
       </svg>
     )
   }
   return (
     <svg width="24" height="24" viewBox="0 0 16 16" aria-hidden="true">
-      {stage === 'fixed' ? <polygon points="8,1 15,8 8,15 1,8" fill="#FF6A4D" /> : <polygon points="1,8 15,8 8,15" fill="#FF6A4D" />}
-      <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#1F1D36" strokeWidth="1.3" />
+      {stage === 'fixed' ? <polygon points="8,1 15,8 8,15 1,8" fill="#FFB81C" /> : <polygon points="1,8 15,8 8,15" fill="#FFB81C" />}
+      <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#161616" strokeWidth="1.3" />
     </svg>
   )
 }
@@ -137,14 +126,14 @@ export function Progress({ done, onDone }: { done: FinishedSession; onDone: () =
   return (
     <main className="flex flex-1 flex-col items-center gap-[22px] px-6 pt-3 pb-7 text-center">
       <style>{`@keyframes jemmaPop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}`}</style>
-      <div aria-hidden="true" className="mt-2 flex size-[196px] items-center justify-center rounded-pill bg-[#FFF1ED]">
+      <div aria-hidden="true" className="mt-2 flex size-[196px] items-center justify-center rounded-pill bg-[#FFF6E2]">
         <svg width="132" height="132" viewBox="0 0 16 16" style={{ animation: 'jemmaPop 700ms ease-out both' }}>
-          <polygon points="1,8 15,8 8,15" fill="#FF6A4D" />
-          <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#1F1D36" strokeWidth="0.7" strokeLinejoin="round" />
+          <polygon points="1,8 15,8 8,15" fill="#FFB81C" />
+          <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#161616" strokeWidth="0.7" strokeLinejoin="round" />
         </svg>
       </div>
       <div className="flex flex-col gap-2.5">
-        <p className="m-0 text-[15px] font-semibold text-coral-text">{stage?.topicName ?? done.topicName}</p>
+        <p className="m-0 text-[15px] font-semibold text-red-text">{stage?.topicName ?? done.topicName}</p>
         <h1 className="m-0 text-[32px] leading-[1.12] font-bold tracking-[-0.02em]">{title}</h1>
       </div>
       {stage ? (
@@ -170,7 +159,7 @@ export function Progress({ done, onDone }: { done: FinishedSession; onDone: () =
       {done.next ? (
         <div className="flex w-full items-center gap-3 rounded-18 border border-line bg-card px-4 py-3.5 text-left">
           <span aria-hidden="true" className="flex size-10 flex-none items-center justify-center rounded-12 bg-soft-4">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <rect x="4" y="5" width="16" height="15" rx="2" /><path d="M4 9.5h16M8.5 3v4M15.5 3v4" />
             </svg>
           </span>
@@ -182,7 +171,7 @@ export function Progress({ done, onDone }: { done: FinishedSession; onDone: () =
       ) : null}
       <div className="flex-1" />
       <div className="flex w-full flex-col gap-1.5">
-        <button type="button" onClick={onDone} className="flex min-h-[60px] cursor-pointer items-center justify-center rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
+        <button type="button" onClick={onDone} className="flex min-h-[60px] cursor-pointer items-center justify-center rounded-18 border-0 bg-green px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
           Done
         </button>
         <Link href="/k/maths" className="flex min-h-11 items-center justify-center text-[16px] font-semibold text-ink underline underline-offset-[3px]">

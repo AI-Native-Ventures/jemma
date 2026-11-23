@@ -4,11 +4,26 @@ import { getShareState } from '@/lib/data/p50b'
 import { ShareCard } from '../../../ShareCard'
 import { Poller } from '../../Poller'
 import { Flow } from '../../_parts'
+import { BeadDot, ReadingDrawing } from '@/components/sa'
 
 const CSS = '@keyframes jemmaPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.85)}}@keyframes jemmaSpin{to{transform:rotate(360deg)}}'
 const check = (aria: string) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label={aria}><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label={aria}><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
 )
+
+/** A bead for each paper (or twelve beads for a big pile): green is read, gold is being read, empty is waiting. */
+function PileBeads({ done, total, busy }: { done: number; total: number; busy: boolean }) {
+  const n = total <= 12 ? total : 12
+  const green = total <= 12 ? done : Math.floor((done / total) * 12)
+  const size = n <= 8 ? 24 : 20
+  return (
+    <span aria-hidden="true" className="flex flex-wrap items-center gap-2" data-sa="bead-progress">
+      {Array.from({ length: n }, (_, i) => (
+        <BeadDot key={i} size={size} state={i < green ? 'done' : busy && i === green ? 'now' : 'next'} />
+      ))}
+    </span>
+  )
+}
 
 /** Board `teacher-reading`: Jemma reads the pile. Refreshes every 2 s while anything is queued or reading. */
 export default async function ReadingPage({ params }: { params: Promise<{ classId: string; testId: string }> }) {
@@ -26,15 +41,13 @@ export default async function ReadingPage({ params }: { params: Promise<{ classI
       <style>{CSS}</style>
       <Poller active={busy > 0} />
       <section aria-live="polite" className="flex flex-col gap-3.5 rounded-[22px] border border-line bg-card px-5 py-[22px]">
-        <span aria-hidden="true" className="flex size-11 items-center justify-center rounded-14 bg-[#FFF1ED]">
-          <svg width="20" height="20" viewBox="0 0 16 16" style={{ animation: busy ? 'jemmaPulse 1.6s ease-in-out infinite' : undefined }}><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" /></svg>
-        </span>
+        <div aria-hidden="true" className="w-[184px]">
+          <ReadingDrawing />
+        </div>
         <h1 className="m-0 text-[30px] leading-[1.12] font-semibold tracking-[-0.015em]">
           {pile.length === 0 ? 'No papers yet' : busy ? `Reading ${done} of ${pile.length} papers` : `Read ${done} of ${pile.length} papers`}
         </h1>
-        <div aria-hidden="true" className="flex h-2.5 overflow-hidden rounded-pill bg-soft-4">
-          <span className="rounded-pill bg-ink" style={{ width: `${pile.length ? (done / pile.length) * 100 : 0}%` }} />
-        </div>
+        <PileBeads done={done} total={pile.length} busy={busy > 0} />
         <p className="m-0 text-[16px] leading-[1.45] text-body text-pretty">
           {busy ? "About a minute left. You can leave this screen. Anything I'm unsure about goes to Needs you." : "All read. Anything I'm unsure about is in Needs you."}
         </p>
@@ -51,7 +64,7 @@ export default async function ReadingPage({ params }: { params: Promise<{ classI
             if (finished && name) {
               return (
                 <li key={p.id} className="flex min-h-14 items-center gap-3 border-t border-soft">
-                  <span aria-hidden="true" className={`flex size-8 flex-none items-center justify-center rounded-pill text-[13px] font-bold ${p.hasUser ? 'bg-coral-soft' : 'bg-soft-3'}`}>{name[0]}</span>
+                  <span aria-hidden="true" className={`flex size-8 flex-none items-center justify-center rounded-pill text-[13px] font-bold ${p.hasUser ? 'bg-gold-soft' : 'bg-soft-3'}`}>{name[0]}</span>
                   <span className="flex-1 text-[16px] font-medium">{name}</span>
                   {p.status === 'marked' && p.total !== null ? <span className="text-[15px] font-semibold tabular-nums">{p.total}/{outOf}</span> : <span className="text-[14px] text-body">Needs you</span>}
                   {p.status === 'marked' ? check('Marked') : null}
@@ -67,7 +80,7 @@ export default async function ReadingPage({ params }: { params: Promise<{ classI
                     <span className="text-[16px] font-medium">Paper {p.position}</span>
                     <span className="text-[13px] text-body">Reading the name and {outOf} answers</span>
                   </span>
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" role="img" aria-label="Reading" style={{ animation: 'jemmaSpin 0.9s linear infinite' }}><circle cx="12" cy="12" r="9" stroke="#E3E1EE" strokeWidth="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="#1F1D36" strokeWidth="3" strokeLinecap="round" /></svg>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" role="img" aria-label="Reading" style={{ animation: 'jemmaSpin 0.9s linear infinite' }}><circle cx="12" cy="12" r="9" stroke="#E6E3DC" strokeWidth="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="#161616" strokeWidth="3" strokeLinecap="round" /></svg>
                 </li>
               )
             }

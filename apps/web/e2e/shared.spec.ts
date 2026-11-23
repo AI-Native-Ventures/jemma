@@ -53,7 +53,7 @@ test('manifest names the app and asks to be standalone', async ({ request }) => 
   expect(res.ok()).toBe(true)
   const manifest = await res.json()
   expect(manifest.name).toBe('Jemma')
-  expect(manifest.theme_color).toBe('#FF6A4D')
+  expect(manifest.theme_color).toBe('#007749')
   expect(manifest.display).toBe('standalone')
   expect(manifest.icons.length).toBeGreaterThan(1)
   expect((await request.get(manifest.icons[0].src)).ok()).toBe(true)

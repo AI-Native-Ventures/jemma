@@ -21,7 +21,7 @@ function Card({ c }: { c: ClassCard }) {
           </span>
         </span>
         {c.needs > 0 ? (
-          <span className="inline-flex flex-none items-center gap-1.5 rounded-pill bg-coral py-1.5 pr-2.5 pl-2 text-[13px] font-semibold text-ink">
+          <span className="inline-flex flex-none items-center gap-1.5 rounded-pill bg-gold py-1.5 pr-2.5 pl-2 text-[13px] font-semibold text-ink">
             <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-pill bg-ink px-1.5 text-[12px] font-bold text-white">{c.needs}</span>
             Needs you
           </span>
@@ -69,7 +69,7 @@ export default async function TeacherClassesPage() {
               className="relative flex size-11 items-center justify-center rounded-12 text-ink"
             >
               <BellIcon />
-              {view.unread > 0 ? <span aria-hidden="true" className="absolute top-[9px] right-2.5 size-2.5 rounded-pill border-2 border-ground bg-coral" /> : null}
+              {view.unread > 0 ? <span aria-hidden="true" className="absolute top-[9px] right-2.5 size-2.5 rounded-pill border-2 border-ground bg-gold" /> : null}
             </Link>
             <Link href="/t/account" aria-label="Your account" className="flex size-11 items-center justify-center rounded-pill text-ink no-underline">
               <span className="flex size-9 items-center justify-center rounded-pill bg-soft-3 text-[13px] font-bold text-ink">{view.initials}</span>

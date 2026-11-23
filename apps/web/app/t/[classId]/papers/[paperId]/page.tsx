@@ -25,21 +25,21 @@ export default async function PaperPage({
   const page = view.pages[0]
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#121022] leading-[normal] text-white">
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#0E0E0E] leading-[normal] text-white">
       <header className="flex items-center gap-1 pt-2.5 pr-3 pb-1.5 pl-2">
         <Link href={back} aria-label={backLabel} className="flex size-11 flex-none items-center justify-center rounded-12 text-white">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
         </Link>
         <span className="flex min-w-0 flex-1 flex-col leading-tight">
-          <span className="text-[13px] text-[#C9C6DA]">{short} · page 1 of {view.pages.length || 1}</span>
+          <span className="text-[13px] text-[#CBC8C1]">{short} · page 1 of {view.pages.length || 1}</span>
           <span className="text-[17px] font-bold">{view.child ? `${name}'s paper` : 'Paper'}</span>
         </span>
       </header>
       <PhotoViewer url={page?.url ?? null} crop={focus?.crop ?? null} label={focus ? `Q${focus.n}` : null} />
       <div className="flex flex-col gap-3 px-5 pt-3.5 pb-7">
-        <p className="m-0 text-[14px] leading-[1.45] text-[#C9C6DA]">
+        <p className="m-0 text-[14px] leading-[1.45] text-[#CBC8C1]">
           {name}&apos;s paper as you snapped it at {hhmm(view.paper.createdAt)}.
-          {focus?.crop ? ` The coral box is question ${focus.n}${focus.unsure ? ", the answer Jemma wasn't sure about" : ''}.` : ''}
+          {focus?.crop ? ` The gold box is question ${focus.n}${focus.unsure ? ", the answer Jemma wasn't sure about" : ''}.` : ''}
         </p>
         <Link href={back} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-card px-5 py-3 text-center text-[17px] font-semibold text-balance text-ink no-underline">
           <IconLabel gap={8} icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>}>

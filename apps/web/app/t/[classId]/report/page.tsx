@@ -13,11 +13,11 @@ function Glyph({ stage }: { stage: ReportLearner['stage'] }) {
     <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true">
       {stage === 'practising' ? (
         <>
-          <polygon points="1,8 15,8 8,15" fill="#FF6A4D" />
-          <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#1F1D36" strokeWidth="1.6" />
+          <polygon points="1,8 15,8 8,15" fill="#FFB81C" />
+          <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#161616" strokeWidth="1.6" />
         </>
       ) : (
-        <polygon points="8,1.5 14.5,8 8,14.5 1.5,8" fill="none" stroke="#1F1D36" strokeWidth="1.6" />
+        <polygon points="8,1.5 14.5,8 8,14.5 1.5,8" fill="none" stroke="#161616" strokeWidth="1.6" />
       )}
     </svg>
   )
@@ -47,7 +47,7 @@ export default async function ClassReportPage({ params }: { params: Promise<{ cl
             </p>
             <div className="flex items-start gap-3">
               <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" className="mt-3.5 flex-none">
-                <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+                <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
               </svg>
               <h1 className="m-0 text-[36px] leading-[1.15] font-semibold tracking-[-0.02em] text-pretty">{r.headline}</h1>
             </div>
@@ -124,13 +124,13 @@ export default async function ClassReportPage({ params }: { params: Promise<{ cl
                       <>
                         <td className="w-[140px] px-2">
                           <span aria-hidden="true" className="block h-2 w-[120px] overflow-hidden rounded-pill bg-soft-4">
-                            <span className={`block h-full rounded-pill ${t.status === 'reteach' ? 'bg-coral' : 'bg-ink'}`} style={{ width: `${t.pct}%` }} />
+                            <span className={`block h-full rounded-pill ${t.status === 'reteach' ? 'bg-gold' : 'bg-ink'}`} style={{ width: `${t.pct}%` }} />
                           </span>
                         </td>
                         <td className="px-2 text-[15px] font-semibold tabular-nums">{t.pct}%</td>
                         <td className="pr-3 pl-2">
                           {t.status === 'reteach' ? (
-                            <span className="inline-flex items-center rounded-pill bg-coral-tint px-2.5 py-0.5 text-[13px] font-semibold">Reteach</span>
+                            <span className="inline-flex items-center rounded-pill bg-gold-tint px-2.5 py-0.5 text-[13px] font-semibold">Reteach</span>
                           ) : (
                             <span className="text-[13px] text-body">On track</span>
                           )}
@@ -175,7 +175,7 @@ export default async function ClassReportPage({ params }: { params: Promise<{ cl
                   <tr key={l.id} className="border-t border-soft">
                     <th scope="row" className="py-0 pr-2 pl-3 text-left">
                       <Link href={`${base}/learners?child=${l.id}`} className="flex min-h-[52px] items-center gap-2.5 text-[15px] font-semibold text-ink no-underline">
-                        <span aria-hidden="true" className={`flex size-[30px] flex-none items-center justify-center rounded-pill text-[12px] font-bold ${i === 0 ? 'bg-coral-soft' : 'bg-soft-3'}`}>
+                        <span aria-hidden="true" className={`flex size-[30px] flex-none items-center justify-center rounded-pill text-[12px] font-bold ${i === 0 ? 'bg-gold-soft' : 'bg-soft-3'}`}>
                           {l.name.charAt(0)}
                         </span>
                         {l.name}
@@ -205,7 +205,7 @@ export default async function ClassReportPage({ params }: { params: Promise<{ cl
 
         <p className="m-0 flex gap-2.5 text-[14px] leading-[1.45] text-body">
           <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" className="mt-1 flex-none">
-            <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+            <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
           </svg>
           Made by Jemma from {testShort}, the register and your notes. Every number links to its source.
         </p>

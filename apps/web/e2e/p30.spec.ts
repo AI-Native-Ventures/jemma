@@ -155,7 +155,7 @@ test.describe('curriculum upload, map and approval', () => {
       await check(page.getByText('Not tested yet')).toHaveCount(2)
       await check(page.getByRole('heading', { name: 'Earlier topics in Class Test 1' })).toBeVisible()
       await check(page.getByText('Term 3 · reteach plan ready')).toBeVisible()
-      await check(page.getByText('Each % is the share of answers the class got right on that topic in Class Test 1. Coral bars are under half.')).toBeVisible()
+      await check(page.getByText('Each % is the share of answers the class got right on that topic in Class Test 1. Gold bars are under half.')).toBeVisible()
       await check(page.getByText("Tagged Class Test 1's 10 questions to 7 topics on your map")).toBeVisible()
       await check(page.getByText('Drafted the map from your 2 documents')).toBeVisible()
       await noHorizontalScroll(page)

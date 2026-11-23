@@ -7,7 +7,7 @@ import { BackHeader, Bullet, Gem, Main, Page, body, ink, line, list, primaryButt
 export const metadata = { title: 'Before you link · Jemma' }
 
 const label = { display: 'flex', alignItems: 'flex-start', gap: 12, minHeight: 48, padding: '13px 14px', borderRadius: 14, background: '#FFFFFF', border: `1px solid ${line}`, cursor: 'pointer' } as const
-const box = { width: 22, height: 22, margin: '1px 0 0', flex: 'none', accentColor: ink } as const
+const box = { width: 22, height: 22, margin: '1px 0 0', flex: 'none', accentColor: '#007749' } as const
 
 function Tick({ name, title, note, checked, required }: { name: string; title: string; note: string; checked: boolean; required?: boolean }) {
   return (
@@ -81,11 +81,11 @@ export default async function ConsentPage({ searchParams }: { searchParams: Prom
           </fieldset>
         </form>
 
-        {q.error ? <p role="alert" style={{ margin: 0, fontSize: 15, color: '#B8381F' }}>{q.error}</p> : null}
+        {q.error ? <p role="alert" style={{ margin: 0, fontSize: 15, color: '#B8281E' }}>{q.error}</p> : null}
 
         <p style={{ margin: 0, display: 'flex', gap: 10, fontSize: 14, lineHeight: 1.45, color: body }}>
           <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style={{ flex: 'none', marginTop: 4 }}>
-            <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+            <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
           </svg>
           <span>South Africa&apos;s POPIA law treats under-18s as children, so we need your OK. Change this any time in {name}&apos;s settings.</span>
         </p>

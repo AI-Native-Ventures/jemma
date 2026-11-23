@@ -141,7 +141,7 @@ export default function KitPage() {
           <ProgressDots filled={3} total={5} shape="gem" label="3 gaps fixed of 5" />
           <span className="flex flex-wrap gap-2">
             <Pill icon={<ClockIcon />}>12 minutes</Pill>
-            <Pill tone="coral">Demo</Pill>
+            <Pill tone="gold">Demo</Pill>
             <Pill tone="ink">6/10</Pill>
             <Pill tone="danger">Down 30</Pill>
             <Pill tone="quiet">same</Pill>
@@ -163,7 +163,7 @@ export default function KitPage() {
         <div className="flex flex-col gap-3 px-5 py-3.5">
           <Button>Link Amina</Button>
           <Button variant="secondary">Retake the photo</Button>
-          <Button variant="coral" size="xl">
+          <Button variant="gold" size="xl">
             Start
           </Button>
           <Button size="lg">Done</Button>

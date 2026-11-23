@@ -44,7 +44,7 @@ export function BackHeader({ href, label, sub, title, close }: { href: string; l
   )
 }
 
-/** The page's h1 with the coral gem, at the size each board uses. */
+/** The page's h1 with the gold gem, at the size each board uses. */
 export function Title({ children, size = 26, tracking = '-0.015em', gemTop = 10, gem = 14 }: { children: ReactNode; size?: number; tracking?: string; gemTop?: number; gem?: number }) {
   return (
     <div className="flex items-start gap-2.5">

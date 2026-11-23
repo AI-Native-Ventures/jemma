@@ -1,5 +1,5 @@
 import type { DiagramSpec } from '@jemma/profiling/schemas'
-import { CORAL_TINT, INK, Line, Svg, T, WHITE } from './shared'
+import { GOLD_TINT, INK, Line, Svg, T, WHITE } from './shared'
 
 export type AreaModelProps = Extract<DiagramSpec, { kind: 'area_model' }>
 
@@ -22,10 +22,10 @@ export function AreaModel(props: AreaModelProps) {
   const full = shaded === total
   return (
     <Svg width={285} height={Math.max(190, y + h + 60)} label={describeAreaModel(props)}>
-      <rect x={x} y={y} width={w} height={h} rx={0} fill={full ? CORAL_TINT : WHITE} stroke={INK} strokeWidth={1.8} />
+      <rect x={x} y={y} width={w} height={h} rx={0} fill={full ? GOLD_TINT : WHITE} stroke={INK} strokeWidth={1.8} />
       {!full &&
         Array.from({ length: shaded }, (_, i) => (
-          <rect key={i} x={x + (i % cols) * cell} y={y + Math.floor(i / cols) * cell} width={cell} height={cell} fill={CORAL_TINT} />
+          <rect key={i} x={x + (i % cols) * cell} y={y + Math.floor(i / cols) * cell} width={cell} height={cell} fill={GOLD_TINT} />
         ))}
       {Array.from({ length: cols - 1 }, (_, i) => (
         <Line key={`c${i}`} x1={x + (i + 1) * cell} y1={y} x2={x + (i + 1) * cell} y2={y + h} />

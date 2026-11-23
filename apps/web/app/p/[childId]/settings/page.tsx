@@ -5,7 +5,7 @@ import { BoardHeader, BoardHeadline, Chevron, ComingButton, Section, Segmented, 
 
 export const metadata = { title: 'Settings · Jemma' }
 
-const small = { fontSize: 13, color: '#5D5A73' } as const
+const small = { fontSize: 13, color: '#5C5A55' } as const
 
 export default async function ParentChildSettingsPage({ params }: { params: Promise<{ childId: string }> }) {
   const { childId } = await params
@@ -28,17 +28,17 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
                 Grade {child.grade} · {child.schoolName}
               </span>
             </span>
-            <ComingButton ariaLabel={`Edit ${name}'s details`} style={{ minHeight: 44, padding: '0 14px', borderRadius: 12, border: '1px solid #8C89A3', background: '#FFFFFF', color: '#1F1D36', fontSize: 14, fontWeight: 600, flex: 'none' }}>
+            <ComingButton ariaLabel={`Edit ${name}'s details`} style={{ minHeight: 44, padding: '0 14px', borderRadius: 12, border: '1px solid #8F8D88', background: '#FFFFFF', color: '#161616', fontSize: 14, fontWeight: 600, flex: 'none' }}>
               Edit
             </ComingButton>
           </div>
         </Section>
 
         <Section id="signin" title={`${name}'s sign-in`} gap={2}>
-          <Link href={`/p/${childId}/settings/login`} style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, padding: '6px 0', textDecoration: 'none', color: '#1F1D36' }}>
+          <Link href={`/p/${childId}/settings/login`} style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, padding: '6px 0', textDecoration: 'none', color: '#161616' }}>
             <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <span style={{ fontSize: 16, fontWeight: 500 }}>{loginTitle}</span>
-              <span style={{ fontSize: 13, lineHeight: 1.35, color: '#5D5A73' }}>{name} signs in without an email</span>
+              <span style={{ fontSize: 13, lineHeight: 1.35, color: '#5C5A55' }}>{name} signs in without an email</span>
             </span>
             <Chevron />
           </Link>
@@ -47,7 +47,7 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
         <Section id="teachers" title="Teachers" gap={8}>
           {child.teachers.map((t) => (
             <div key={`${t.name}-${t.className}`} style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 60 }}>
-              <span aria-hidden="true" style={{ position: 'relative', width: 38, height: 38, flex: 'none', borderRadius: 999, background: '#E9E7F3', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span aria-hidden="true" style={{ position: 'relative', width: 38, height: 38, flex: 'none', borderRadius: 999, background: '#ECE9E2', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {t.initials}
               </span>
               <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1, lineHeight: 1.35 }}>
@@ -58,7 +58,7 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
               </span>
             </div>
           ))}
-          <ComingButton style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 44, borderRadius: 12, border: '1px solid #8C89A3', background: '#FFFFFF', color: '#1F1D36', fontSize: 15, fontWeight: 600 }}>
+          <ComingButton style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 44, borderRadius: 12, border: '1px solid #8F8D88', background: '#FFFFFF', color: '#161616', fontSize: 15, fontWeight: 600 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M12 5v14M5 12h14" />
             </svg>
@@ -69,7 +69,7 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
         <Section id="lessons" title="During lessons" gap={14}>
           <Segmented legend="Right or wrong shows" options={['At the end', 'After each question']} initial={0} />
           <Segmented legend={`${name} sees the score`} options={['Hidden', 'Shown']} initial={0} />
-          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.45, color: '#5D5A73' }}>
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.45, color: '#5C5A55' }}>
             {child.teachers[0]?.name ?? 'The teacher'}&apos;s class tests follow {name}&apos;s settings.
           </p>
         </Section>
@@ -79,7 +79,7 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
           <ToggleRow title={`${name} finished a lesson`} initial divider />
         </Section>
 
-        <Link href="/p/data" style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', minHeight: 44, fontSize: 15, fontWeight: 600, color: '#B8381F', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+        <Link href="/p/data" style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', minHeight: 44, fontSize: 15, fontWeight: 600, color: '#B8281E', textDecoration: 'underline', textUnderlineOffset: 3 }}>
           Remove {name} from Jemma
         </Link>
         <div style={{ flex: 1 }} />

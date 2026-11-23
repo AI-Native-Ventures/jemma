@@ -6,16 +6,16 @@ import { getQuestionDetail, type Learner, type TestSummary } from '@/lib/data/p2
 import { getReteachCard, getSlips, laptopSummary } from '@/lib/data/p34'
 import { Diamond } from '../snap/_parts'
 
-const avatar = (name: string, coral: boolean, size: number) => (
-  <span aria-hidden="true" style={{ width: size, height: size }} className={`flex flex-none items-center justify-center rounded-pill text-[13px] font-bold ${coral ? 'bg-coral-soft' : 'bg-soft-3'}`}>
+const avatar = (name: string, gold: boolean, size: number) => (
+  <span aria-hidden="true" style={{ width: size, height: size }} className={`flex flex-none items-center justify-center rounded-pill text-[13px] font-bold ${gold ? 'bg-gold-soft' : 'bg-soft-3'}`}>
     {name.slice(0, 1)}
   </span>
 )
 
-function LearnerLink({ href, learner, coral, grade }: { href: string; learner: Learner; coral: boolean; grade: number | null }) {
+function LearnerLink({ href, learner, gold, grade }: { href: string; learner: Learner; gold: boolean; grade: number | null }) {
   return (
     <Link href={href} className="flex min-h-[52px] items-center gap-2.5 rounded-14 bg-ground px-2.5 py-1.5 text-ink no-underline">
-      {avatar(learner.name, coral, 32)}
+      {avatar(learner.name, gold, 32)}
       <span className="flex-1 text-[15px] font-semibold">{learner.name}</span>
       <span className="max-w-[55%] font-hand text-[20px] leading-none text-navy"><Maths text={learner.answer} grade={grade} size={18} /></span>
       <ChevronRightIcon size={18} className="flex-none" />
@@ -103,7 +103,7 @@ export async function LaptopTests({
         <section aria-labelledby="perq" className="flex min-w-0 flex-[1.6_1_520px] flex-col gap-2.5 rounded-20 border border-line bg-card px-3.5 py-[18px]">
           <div className="flex items-baseline justify-between px-1.5">
             <h2 id="perq" className="m-0 text-[18px] font-semibold">Each question</h2>
-            <span className="text-[13px] text-body">Coral bars: under half right</span>
+            <span className="text-[13px] text-body">Gold bars: under half right</span>
           </div>
           <table className="w-full border-collapse text-[14px]">
             <thead>
@@ -131,7 +131,7 @@ export async function LaptopTests({
                       <span className="flex items-center gap-2">
                         <span className="w-[30px] text-right text-[14px] font-semibold tabular-nums">{q.right}/{q.of}</span>
                         <span aria-hidden="true" className="block h-2 w-[70px] overflow-hidden rounded-pill bg-soft-4">
-                          <span className={`block h-full rounded-pill ${share < 50 ? 'bg-coral' : 'bg-ink'}`} style={{ width: `${share}%` }} />
+                          <span className={`block h-full rounded-pill ${share < 50 ? 'bg-gold' : 'bg-ink'}`} style={{ width: `${share}%` }} />
                         </span>
                       </span>
                     </td>
@@ -161,7 +161,7 @@ export async function LaptopTests({
                 <h3 className="m-0 text-[15px] font-semibold">Missed it</h3>
                 <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
                   {detail.missed.map((l, i) => (
-                    <li key={l.childId}><LearnerLink href={`${base}/learners/${l.childId}/profile`} learner={l} coral={i === 0} grade={grade} /></li>
+                    <li key={l.childId}><LearnerLink href={`${base}/learners/${l.childId}/profile`} learner={l} gold={i === 0} grade={grade} /></li>
                   ))}
                 </ul>
               </>
@@ -171,13 +171,13 @@ export async function LaptopTests({
                 <h3 className="m-0 text-[15px] font-semibold">Got it right</h3>
                 <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
                   {detail.right.map((l) => (
-                    <li key={l.childId}><LearnerLink href={`${base}/learners/${l.childId}/profile`} learner={l} coral={false} grade={grade} /></li>
+                    <li key={l.childId}><LearnerLink href={`${base}/learners/${l.childId}/profile`} learner={l} gold={false} grade={grade} /></li>
                   ))}
                 </ul>
               </>
             ) : null}
             {detail.gap ? (
-              <Link href={`${base}/gaps/${detail.gap.topicId}`} className="flex min-h-14 items-center gap-3 rounded-14 border border-[#FFC9BB] bg-coral-wash px-3 py-2.5 text-ink no-underline">
+              <Link href={`${base}/gaps/${detail.gap.topicId}`} className="flex min-h-14 items-center gap-3 rounded-14 border border-[#FFDC93] bg-gold-wash px-3 py-2.5 text-ink no-underline">
                 <span className="flex flex-1 flex-col leading-[1.3]">
                   <span className="text-[15px] font-semibold">Reteach plan ready</span>
                   <span className="text-[13px] text-body">{reteach ?? detail.gap.topicName}</span>

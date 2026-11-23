@@ -232,7 +232,7 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id
           maxLength={ANSWER_MAX_LENGTH}
           value={value}
           onChange={(e) => onChange(e.target.value.slice(0, ANSWER_MAX_LENGTH))}
-          className="mx-auto block h-[64px] w-full max-w-[360px] rounded-18 border-[3px] border-coral bg-card px-3 text-center text-[28px] font-bold text-ink outline-none"
+          className="mx-auto block h-[64px] w-full max-w-[360px] rounded-18 border-[3px] border-green bg-card px-3 text-center text-[28px] font-bold text-ink outline-none"
         />
         {value.trim() ? (
           <p data-reads="true" className="m-0 text-center text-[16px] leading-[1.4] text-body">

@@ -1,8 +1,8 @@
-/** The small coral diamond of the brand, used as a bullet. Only a picture: it has no words. */
+/** The small gold diamond of the brand, used as a bullet. Only a picture: it has no words. */
 export function Gem({ size = 12, className = '' }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" className={`flex-none ${className}`}>
-      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
     </svg>
   )
 }
@@ -31,7 +31,7 @@ export function Shot({ src, alt, width, height, priority = false, className = ''
       height={height}
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"
-      className={`block h-auto w-full rounded-[18px] border border-line bg-ground shadow-[0_8px_24px_rgba(31,29,54,0.08)] ${className}`}
+      className={`block h-auto w-full rounded-[18px] border border-line bg-ground shadow-[0_8px_24px_rgba(22,22,22,0.08)] ${className}`}
     />
   )
 }

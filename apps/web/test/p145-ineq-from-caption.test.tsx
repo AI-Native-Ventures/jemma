@@ -204,6 +204,8 @@ describe('a single mark that is a solution is a dot with its label, in a senior 
   })
 })
 
+// The pins are those of P141 (fixtures/p141-before.json). They were re-pinned by the South African colours (23 Nov 2026): only the colours moved, and
+// the note above the pinned pictures in p141-diagram-fixes.test.tsx says how that was proved.
 describe('what is not senior does not move', () => {
   const was = before as Record<string, string>
   for (const [name, spec] of Object.entries(NUMBER_LINES)) {

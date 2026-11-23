@@ -25,7 +25,7 @@ const card = {
   cursor: 'pointer',
 } as const
 
-const stroke = { fill: 'none', stroke: '#1F1D36', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
+const stroke = { fill: 'none', stroke: '#161616', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
 
 function Tile({ bg, children }: { bg: string; children: React.ReactNode }) {
   return (
@@ -67,7 +67,7 @@ export default async function RolePage() {
         <nav aria-label="Roles" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <form action={chooseRole.bind(null, 'teacher')}>
             <PendingButton type="submit" style={card}>
-              <Tile bg="#E9E7F3">
+              <Tile bg="#ECE9E2">
                 <svg width="26" height="26" viewBox="0 0 24 24" {...stroke}>
                   <rect x="3.5" y="4" width="17" height="11.5" rx="1.5" />
                   <path d="M8 20.5l4-5 4 5" />
@@ -80,7 +80,7 @@ export default async function RolePage() {
           </form>
           <form action={chooseRole.bind(null, 'parent')}>
             <PendingButton type="submit" style={card}>
-              <Tile bg="#FFE3DA">
+              <Tile bg="#FFEDC6">
                 <svg width="26" height="26" viewBox="0 0 24 24" {...stroke}>
                   <circle cx="9" cy="7" r="3" />
                   <path d="M3.5 19.5c.5-3.5 2.6-5.5 5.5-5.5s5 2 5.5 5.5" />
@@ -94,8 +94,8 @@ export default async function RolePage() {
           </form>
           <form action="/role/learner">
             <PendingButton type="submit" style={card}>
-              <Tile bg="#FFD3C7">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.8" strokeLinejoin="round">
+              <Tile bg="#FFE3A8">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="1.8" strokeLinejoin="round">
                   <path d="M12 3 21 12 12 21 3 12z" />
                   <path d="M7.5 7.5 12 12l4.5-4.5" />
                 </svg>

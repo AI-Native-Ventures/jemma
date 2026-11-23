@@ -13,11 +13,11 @@ import { LessonInline, LessonText, typesetFor } from './LessonText'
 import { canSpeak, speakText, stopSpeaking } from './voice'
 
 const primaryLink =
-  'flex min-h-[60px] w-full items-center justify-center rounded-18 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white no-underline'
+  'flex min-h-[60px] w-full items-center justify-center rounded-18 bg-green px-5 py-3 text-center text-[19px] font-bold text-balance text-white no-underline'
 const secondaryLink =
   'flex min-h-[52px] w-full items-center justify-center rounded-14 border-[1.5px] border-ink bg-card px-4 py-2 text-center text-[17px] font-semibold text-balance text-ink no-underline'
 const startButton =
-  'flex min-h-[60px] w-full cursor-pointer items-center justify-center rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white'
+  'flex min-h-[60px] w-full cursor-pointer items-center justify-center rounded-18 border-0 bg-green px-5 py-3 text-center text-[19px] font-bold text-balance text-white'
 const playAllButton = 'flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-4 text-[16px] font-semibold text-ink'
 
 export type LessonReaderProps = {
@@ -41,7 +41,7 @@ function Bar({ value, label }: { value: number; label: string }) {
   const pct = Math.round(Math.max(0, Math.min(1, value)) * 100)
   return (
     <div role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} className="h-1.5 w-full overflow-hidden rounded-pill bg-soft-3">
-      <div className="h-full rounded-pill bg-coral" style={{ width: `${pct}%` }} />
+      <div className="h-full rounded-pill bg-green" style={{ width: `${pct}%` }} />
     </div>
   )
 }
@@ -166,7 +166,7 @@ export function LessonReader({ topicId, topicName, grade, entry, count, lesson, 
               {lesson.objectives.map((o, i) => (
                 <li key={i} className="flex items-start gap-2.5">
                   <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" className="mt-[7px] flex-none">
-                    <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+                    <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
                   </svg>
                   <LessonText text={o} typeset={typeset} size={20} className="text-[17px]" />
                 </li>
@@ -223,7 +223,7 @@ export function LessonReader({ topicId, topicName, grade, entry, count, lesson, 
               {lesson.summary.map((s, i) => (
                 <li key={i} className="flex items-start gap-2.5">
                   <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" className="mt-[7px] flex-none">
-                    <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+                    <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
                   </svg>
                   <LessonText text={s} typeset={typeset} size={20} className="text-[17px]" />
                 </li>

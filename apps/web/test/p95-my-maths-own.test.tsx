@@ -110,9 +110,9 @@ describe('the grade chips', () => {
     await page('7')
     const nav = within(screen.getByRole('navigation', { name: 'Grades' }))
     expect(nav.getByRole('link', { name: 'Grade 7' }).getAttribute('aria-current')).toBe('page')
-    expect(nav.getByRole('link', { name: 'Grade 7' }).className).toContain('bg-ink')
+    expect(nav.getByRole('link', { name: 'Grade 7' }).className).toContain('bg-green')
     expect(nav.getByRole('link', { name: 'Grade 6' }).getAttribute('aria-current')).toBeNull()
-    expect(nav.getByRole('link', { name: 'Grade 6' }).className).not.toContain('bg-ink')
+    expect(nav.getByRole('link', { name: 'Grade 6' }).className).not.toContain('bg-green')
     expect(nav.getByRole('link', { name: '+ Another grade' }).getAttribute('aria-current')).toBeNull()
   })
 
@@ -183,8 +183,8 @@ describe('the chips of a learner who has their own curriculum of a grade (P95c)'
     const nav = within(screen.getByRole('navigation', { name: 'Grades' }))
     const current = nav.getAllByRole('link').filter((a) => a.getAttribute('aria-current') === 'page')
     expect(current.map((a) => a.getAttribute('href'))).toEqual(['/k/maths?class=own6'])
-    expect(current[0]!.className).toContain('bg-ink')
-    expect(nav.getByRole('link', { name: 'Grade 6' }).className).not.toContain('bg-ink')
+    expect(current[0]!.className).toContain('bg-green')
+    expect(nav.getByRole('link', { name: 'Grade 6' }).className).not.toContain('bg-green')
   })
 
   it('opens the own curriculum: the map asked for is the own class\'s, and its parts keep ?class= of it', async () => {

@@ -50,7 +50,7 @@ export function GradePicker({ schoolGrade, added }: { schoolGrade: number; added
               aria-busy={here || undefined}
               disabled={pending}
               onClick={() => pick(grade)}
-              className={`${chip} ${here ? 'bg-coral text-ink' : 'bg-card text-ink'}`}
+              className={`${chip} ${here ? 'bg-gold text-ink' : 'bg-card text-ink'}`}
             >
               <span className="text-[19px] leading-[1.2] font-bold">Grade {grade}</span>
               {marks.length > 0 ? (
@@ -67,7 +67,7 @@ export function GradePicker({ schoolGrade, added }: { schoolGrade: number; added
       {loading !== null && pending ? (
         <p role="status" aria-live="polite" className="m-0 text-center text-[17px] leading-[1.4] font-semibold">Loading Grade {loading}...</p>
       ) : null}
-      {message ? <p role="alert" className="m-0 text-center text-[15px] leading-[1.4] text-coral-text">{message}</p> : null}
+      {message ? <p role="alert" className="m-0 text-center text-[15px] leading-[1.4] text-red-text">{message}</p> : null}
     </div>
   )
 }

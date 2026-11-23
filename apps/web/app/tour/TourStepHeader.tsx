@@ -23,7 +23,7 @@ export function TourStepHeader({ current, closeLabel = 'Stop for now', href = '/
               aria-current={state === 'now' ? 'step' : undefined}
               className={`flex flex-col gap-[5px] text-[12px] ${state === 'now' ? 'font-bold text-ink' : state === 'past' ? 'font-medium text-body' : 'font-medium text-muted'}`}
             >
-              <span aria-hidden="true" className={`h-1.5 rounded-pill ${state === 'now' ? 'bg-coral' : state === 'past' ? 'bg-ink' : 'bg-[#E3E1EE]'}`} />
+              <span aria-hidden="true" className={`h-1.5 rounded-pill ${state === 'now' ? 'bg-gold' : state === 'past' ? 'bg-green' : 'bg-[#E6E3DC]'}`} />
               {label}
             </li>
           )

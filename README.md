@@ -259,7 +259,7 @@ More detail is in [docs/architecture.md](docs/architecture.md) (what is not buil
 | `supabase/migrations` | Database schema, row-level security, functions. |
 | `supabase/seed` | The made-up school, the demo sandboxes and the sample papers. |
 | `fixtures` | Synthetic papers, the sample curriculum, the CAPS topics of Grades 1 to 12 and the recorded AI answers. |
-| `design` | The v1 design boards (`v1-screens`), reference and actual screenshots (`design/proof`). |
+| `design` | The v1 design boards (`v1-screens`), reference and actual screenshots (`design/proof`), and the South African colours and touches (`sa`). |
 | `docs` | Documentation, the spec, the plan and the runbook. |
 
 ## Documentation

@@ -16,7 +16,7 @@ export function PersonButton({ className, children, chevron }: { className: stri
       {pending ? (
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" className="flex-none animate-spin">
           <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="3" />
-          <path d="M21 12a9 9 0 0 0-9-9" fill="none" stroke="#FF6A4D" strokeWidth="3" strokeLinecap="round" />
+          <path d="M21 12a9 9 0 0 0-9-9" fill="none" stroke="#007749" strokeWidth="3" strokeLinecap="round" />
         </svg>
       ) : (
         chevron

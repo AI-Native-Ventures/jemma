@@ -15,11 +15,11 @@ function CellBox({ cell, showRight }: { cell: Cell; showRight: boolean }) {
     <span
       data-cell={cell.ok ? 'right' : 'wrong'}
       className={`flex min-h-[52px] min-w-[46px] flex-col items-center justify-center gap-0.5 rounded-12 px-2 py-1.5 text-center ${
-        cell.ok ? 'border-[1.5px] border-[#1E7B4B] bg-[#EAF6EF]' : 'border-[1.5px] border-coral bg-[#FFF1ED]'
+        cell.ok ? 'border-[1.5px] border-green bg-green-tint' : 'border-[1.5px] border-red bg-card'
       }`}
     >
       <span className="text-[18px] leading-[1.2] font-bold">{cell.wrote ? maths(cell.wrote, 20) : ' '}</span>
-      <span aria-hidden="true" className={`text-[12px] leading-none font-bold ${cell.ok ? 'text-[#1E7B4B]' : 'text-coral-text'}`}>{cell.ok ? '✓' : '✗'}</span>
+      <span aria-hidden="true" className={`text-[12px] leading-none font-bold ${cell.ok ? 'text-green' : 'text-red-text'}`}>{cell.ok ? '✓' : '✗'}</span>
       <span className="sr-only">{cell.ok ? 'Right.' : cell.wrote ? 'Not right.' : 'Nothing written.'}</span>
       {!cell.ok && showRight && cell.right ? <span data-right-value="true" className="text-[12px] leading-[1.2] text-body">Right: {maths(cell.right, 14)}</span> : null}
     </span>

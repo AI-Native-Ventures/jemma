@@ -3,12 +3,12 @@ import type { ReactNode } from 'react'
 export function Diamond({ size = 14, className = '' }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" className={`flex-none ${className}`}>
-      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
     </svg>
   )
 }
 
-/** Page title: coral diamond then the sentence. Sizes differ a little board to board. */
+/** Page title: gold diamond then the sentence. Sizes differ a little board to board. */
 export function PageTitle({ children, size = 26, leading = 1.18, tracking = '-0.015em' }: { children: ReactNode; size?: number; leading?: number; tracking?: string }) {
   return (
     <div className="flex items-start gap-2.5">

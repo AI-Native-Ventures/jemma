@@ -33,7 +33,7 @@ const bigButton = 'flex min-h-[60px] w-full cursor-pointer items-center justify-
 function Reveal({ answer }: { answer: string }) {
   return (
     <div role="status" className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/40 px-5">
-      <div className="flex w-full max-w-[420px] flex-col items-center gap-3 rounded-[26px] border border-line bg-card px-6 py-8 text-center shadow-[0_8px_24px_rgba(31,29,54,0.12)]">
+      <div className="flex w-full max-w-[420px] flex-col items-center gap-3 rounded-[26px] border border-line bg-card px-6 py-8 text-center shadow-[0_8px_24px_rgba(22,22,22,0.12)]">
         <span className="text-[17px] font-semibold text-body">Answer:</span>
         <span className="text-[34px] leading-[1.2] font-bold [overflow-wrap:anywhere]">
           <FractionText text={answer} size={38} rule={3} gap={4} side={5} typeset="all" />
@@ -139,7 +139,7 @@ export function TourSession() {
             <Results firstName={TOUR_LEARNER} missed={review} />
             <div className="flex flex-col gap-3 px-5 pb-[26px]">
               {correct.includes(false) ? (
-                <button type="button" onClick={() => setPhase('teach')} className={`${bigButton} border-0 bg-ink text-white`}>
+                <button type="button" onClick={() => setPhase('teach')} className={`${bigButton} border-0 bg-green text-white`}>
                   Let Jemma teach what you missed
                 </button>
               ) : null}

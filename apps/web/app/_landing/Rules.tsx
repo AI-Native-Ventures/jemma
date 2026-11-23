@@ -25,7 +25,7 @@ export function Rules() {
   return (
     <section aria-labelledby="rules-title">
       <div className="mx-auto w-full max-w-[1120px] px-5 py-10 lg:px-10 lg:py-14">
-        <div className="rounded-[26px] border border-[#FFC9BB] bg-coral-wash p-6 lg:p-10">
+        <div className="rounded-[26px] border border-[#FFDC93] bg-gold-wash p-6 lg:p-10">
           <h2 id="rules-title" className="m-0 text-[28px] leading-[1.15] font-bold tracking-[-0.01em] lg:text-[36px]">
             The rules it keeps
           </h2>

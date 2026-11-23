@@ -47,7 +47,7 @@ export function UpdateBar({ childId, state, lastUpdated }: { childId: string; st
       </Button>
       {running ? <p className="m-0 text-[14px] leading-[1.4] text-body">Jemma is looking at the records again. This can take a minute or two.</p> : null}
       {error ? (
-        <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-coral-text">
+        <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-red-text">
           {error}
         </p>
       ) : null}

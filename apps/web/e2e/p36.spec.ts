@@ -162,7 +162,7 @@ test('laptop-parent-tests: list, marked paper and missed questions side by side'
   const paper = page.getByRole('region', { name: "Amina's marked paper" })
   await expect(paper.getByText('Section A: Fractions')).toBeVisible()
   await expect(paper.getByText('Section B: Decimals')).toBeVisible()
-  await expect(paper.getByText(/Ms Banda snapped Amina's paper at \d\d:\d\d\. Jemma marked it against the memo at \d\d:\d\d\. Coral marks are the ones Amina missed\./)).toBeVisible()
+  await expect(paper.getByText(/Ms Banda snapped Amina's paper at \d\d:\d\d\. Jemma marked it against the memo at \d\d:\d\d\. Red marks are the ones Amina missed\./)).toBeVisible()
   const missed = page.getByRole('region', { name: 'The 4 Amina missed' })
   await expect(missed.getByText('Wrote 0,30, right is 0,75')).toBeVisible()
   await expect(missed.getByText('One slip behind all 4: Amina adds the tops and the bottoms, and lines up the last digits in decimals.')).toBeVisible()

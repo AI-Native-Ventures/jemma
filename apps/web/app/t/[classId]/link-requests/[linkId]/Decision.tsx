@@ -19,8 +19,8 @@ export function Decision({ classId, linkId, parentName }: { classId: string; lin
     })
   return (
     <div className="flex flex-col gap-2">
-      {error ? <p role="alert" className="m-0 text-center text-[14px] text-coral-text">{error}</p> : null}
-      <button type="button" disabled={pending} onClick={() => decide('approved')} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
+      {error ? <p role="alert" className="m-0 text-center text-[14px] text-red-text">{error}</p> : null}
+      <button type="button" disabled={pending} onClick={() => decide('approved')} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
         <IconLabel gap={8} icon={<CheckIcon size={20} className="text-white" />}>
           Yes, approve
         </IconLabel>

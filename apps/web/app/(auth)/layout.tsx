@@ -7,8 +7,8 @@ const outfit = Outfit({ subsets: ['latin'], weight: ['400', '500', '600', '700']
 /** Shared screens: one centred phone-width column on every screen size. */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`auth-shell ${outfit.className}`} style={{ minHeight: '100dvh', background: '#F7F7FA', lineHeight: 'normal' }}>
-      <style>{`.auth-shell a:hover{color:#B8381F}`}</style>
+    <div className={`auth-shell ${outfit.className}`} style={{ minHeight: '100dvh', background: '#F8F6F1', lineHeight: 'normal' }}>
+      <style>{`.auth-shell a:hover{color:#B8281E}`}</style>
       <RegisterServiceWorker />
       <div style={{ minHeight: '100dvh', maxWidth: 440, margin: '0 auto', display: 'flex', flexDirection: 'column', position: 'relative' }}>
         {children}

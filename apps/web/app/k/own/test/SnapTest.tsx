@@ -33,8 +33,8 @@ function Thumb({ file }: { file: File }) {
 
 const take =
   'relative flex min-h-[68px] w-full items-center justify-center gap-3 rounded-20 border-2 border-ink bg-card px-5 py-3 text-center text-[20px] font-bold text-balance text-ink focus-within:ring-4 focus-within:ring-ink sm:text-[22px]'
-const send = 'flex min-h-[68px] w-full cursor-pointer items-center justify-center rounded-20 border-0 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[22px] disabled:opacity-60'
-const takeOut = 'flex min-h-11 flex-none cursor-pointer items-center justify-center rounded-14 border-0 bg-transparent px-3 text-[15px] font-semibold text-coral-text'
+const send = 'flex min-h-[68px] w-full cursor-pointer items-center justify-center rounded-20 border-0 bg-gold px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[22px] disabled:opacity-60'
+const takeOut = 'flex min-h-11 flex-none cursor-pointer items-center justify-center rounded-14 border-0 bg-transparent px-3 text-[15px] font-semibold text-red-text'
 
 /**
  * The camera screen of a marked test: a photo of each page (up to 4). On a phone `capture="environment"` opens the back camera for one page at a
@@ -113,7 +113,7 @@ export function SnapTest() {
             {pending ? 'Sending your photos...' : `Send ${pages.length} ${pages.length === 1 ? 'page' : 'pages'} to Jemma`}
           </PendingButton>
         ) : null}
-        {error ? <p role="alert" className="m-0 text-center text-[15px] leading-[1.4] text-coral-text">{error}</p> : null}
+        {error ? <p role="alert" className="m-0 text-center text-[15px] leading-[1.4] text-red-text">{error}</p> : null}
       </div>
     </>
   )

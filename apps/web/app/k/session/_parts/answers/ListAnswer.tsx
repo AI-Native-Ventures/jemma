@@ -37,7 +37,7 @@ export function ListAnswer({ shape, onChange }: { shape: ListShape; onChange: (t
                 value={value}
                 onChange={(v) => set(i, v)}
                 plain={shape.plain}
-                className={`h-12 border-[3px] border-coral px-0 ${width}`}
+                className={`h-12 border-[3px] border-green px-0 ${width}`}
               />
               {caption ? <span aria-hidden="true" className="max-w-[68px] text-center text-[13px] leading-[1.2] font-semibold text-body">{caption}</span> : null}
             </div>

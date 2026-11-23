@@ -19,7 +19,7 @@ export function TrueFalse({ picked, onPick, warm = false }: { picked: string | n
               aria-pressed={on}
               onClick={() => onPick(word)}
               className={`flex min-h-[96px] cursor-pointer items-center justify-center rounded-[22px] px-5 py-3 text-center text-balance ${warm ? 'text-[30px]' : 'text-[28px]'} font-bold ${
-                on ? 'border-[3px] border-ink bg-ink text-white' : 'border-2 border-edge bg-card text-ink'
+                on ? 'border-[3px] border-green bg-green text-white' : 'border-2 border-edge bg-card text-ink'
               }`}
             >
               {word}

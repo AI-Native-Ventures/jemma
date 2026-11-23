@@ -29,17 +29,17 @@ export default async function ParentHandoverPage({ params }: { params: Promise<{
       <main className="mx-auto flex w-full max-w-[430px] flex-1 flex-col gap-[18px] px-6 pt-2.5 pb-7">
         <div className="flex flex-col items-center gap-3.5 text-center">
           <svg width="200" height="190" viewBox="0 0 200 190" aria-hidden="true">
-            <rect x="58" y="10" width="84" height="160" rx="16" fill="#FFFFFF" stroke="#1F1D36" strokeWidth="3" />
-            <rect x="86" y="20" width="28" height="5" rx="2.5" fill="#E9E7F3" />
-            <polygon points="100,62 128,90 100,118 72,90" fill="#FF6A4D" />
-            <rect x="76" y="136" width="48" height="16" rx="8" fill="#1F1D36" />
-            <path d="M22 96c10-26 22-36 34-38" fill="none" stroke="#8C89A3" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="2 7" />
-            <path d="M178 96c-10 26-22 36-34 38" fill="none" stroke="#8C89A3" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="2 7" />
-            <path d="M150 128l-7 6 9 3" fill="none" stroke="#8C89A3" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="22" cy="104" r="11" fill="#FFE3DA" />
-            <text x="22" y="109" textAnchor="middle" fontFamily="Outfit, sans-serif" fontSize="12" fontWeight="700" fill="#1F1D36">{parentInitials}</text>
-            <circle cx="178" cy="86" r="11" fill="#FFD3C7" />
-            <text x="178" y="91" textAnchor="middle" fontFamily="Outfit, sans-serif" fontSize="12" fontWeight="700" fill="#1F1D36">{name.slice(0, 1).toUpperCase()}</text>
+            <rect x="58" y="10" width="84" height="160" rx="16" fill="#FFFFFF" stroke="#161616" strokeWidth="3" />
+            <rect x="86" y="20" width="28" height="5" rx="2.5" fill="#ECE9E2" />
+            <polygon points="100,62 128,90 100,118 72,90" fill="#FFB81C" />
+            <rect x="76" y="136" width="48" height="16" rx="8" fill="#161616" />
+            <path d="M22 96c10-26 22-36 34-38" fill="none" stroke="#8F8D88" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="2 7" />
+            <path d="M178 96c-10 26-22 36-34 38" fill="none" stroke="#8F8D88" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="2 7" />
+            <path d="M150 128l-7 6 9 3" fill="none" stroke="#8F8D88" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="22" cy="104" r="11" fill="#FFEDC6" />
+            <text x="22" y="109" textAnchor="middle" fontFamily="Outfit, sans-serif" fontSize="12" fontWeight="700" fill="#161616">{parentInitials}</text>
+            <circle cx="178" cy="86" r="11" fill="#FFE3A8" />
+            <text x="178" y="91" textAnchor="middle" fontFamily="Outfit, sans-serif" fontSize="12" fontWeight="700" fill="#161616">{name.slice(0, 1).toUpperCase()}</text>
           </svg>
           <h1 className="m-0 text-[32px] leading-[1.15] font-semibold tracking-[-0.02em]">Pass the phone to {name}.</h1>
           <p className="m-0 text-pretty text-[17px] leading-[1.5] text-body">
@@ -48,11 +48,11 @@ export default async function ParentHandoverPage({ params }: { params: Promise<{
         </div>
 
         <section aria-label="Tonight" className="flex items-center gap-3 rounded-18 border border-line bg-card px-4 py-3.5">
-          <span aria-hidden="true" className="flex size-11 flex-none items-center justify-center rounded-12 bg-coral-tint">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3.5" y="5" width="17" height="5" rx="1" /><rect x="3.5" y="14" width="17" height="5" rx="1" /><path d="M12 5v5M8 14v5M12 14v5M16 14v5" /></svg>
+          <span aria-hidden="true" className="flex size-11 flex-none items-center justify-center rounded-12 bg-gold-tint">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3.5" y="5" width="17" height="5" rx="1" /><rect x="3.5" y="14" width="17" height="5" rx="1" /><path d="M12 5v5M8 14v5M12 14v5M16 14v5" /></svg>
           </span>
           <span className="flex flex-col gap-0.5 leading-[1.3]">
-            <span className="text-[13px] font-bold text-coral-text">Tonight</span>
+            <span className="text-[13px] font-bold text-red-text">Tonight</span>
             <span className="text-[16px] font-semibold">
               {tonight.shortName} with {tonight.withPhrase}
             </span>
@@ -62,13 +62,13 @@ export default async function ParentHandoverPage({ params }: { params: Promise<{
           </span>
         </section>
         <p className="m-0 flex gap-2.5 text-[14px] leading-[1.45] text-body">
-          <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" className="mt-1 flex-none"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" /></svg>
+          <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" className="mt-1 flex-none"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" /></svg>
           <span>When {name} is done, the phone comes back to you and you see how it went.</span>
         </p>
         <form action={start} className="contents">
           <PendingButton
             type="submit"
-            className="flex min-h-14 items-center justify-center gap-2 rounded-14 border-0 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white"
+            className="flex min-h-14 items-center justify-center gap-2 rounded-14 border-0 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white"
           >
             {name} has the phone
           </PendingButton>

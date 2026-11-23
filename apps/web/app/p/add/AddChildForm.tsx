@@ -36,7 +36,7 @@ export function AddChildForm({ code, child, surname, needsSurname, found, error,
         </div>
         {found ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 14, background: '#FFFFFF', border: `1px solid ${line}` }}>
-            <span aria-hidden="true" style={{ width: 36, height: 36, flex: 'none', borderRadius: 999, background: '#EEEDF5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span aria-hidden="true" style={{ width: 36, height: 36, flex: 'none', borderRadius: 999, background: '#EFECE6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={ink} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m5 12.5 4.5 4.5L19 7.5" />
               </svg>
@@ -47,14 +47,14 @@ export function AddChildForm({ code, child, surname, needsSurname, found, error,
             </span>
           </div>
         ) : code ? (
-          <p role="alert" style={{ margin: 0, fontSize: 15, color: '#B8381F' }}>No class has that code. Check it with the teacher.</p>
+          <p role="alert" style={{ margin: 0, fontSize: 15, color: '#B8281E' }}>No class has that code. Check it with the teacher.</p>
         ) : null}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label htmlFor="kid" style={{ fontSize: 15, fontWeight: 500 }}>Your child&apos;s name, as the school has it</label>
           <input
             id="kid" name="child" type="text" autoComplete="off" value={name} required
             onChange={(e) => setName(e.target.value)}
-            style={{ ...input, height: 52, border: '1px solid #8C89A3', fontSize: 17 }}
+            style={{ ...input, height: 52, border: '1px solid #8F8D88', fontSize: 17 }}
           />
         </div>
         {needsSurname || surname ? (
@@ -63,12 +63,12 @@ export function AddChildForm({ code, child, surname, needsSurname, found, error,
             <input
               id="surname" name="surname" type="text" autoComplete="off" value={last} required={needsSurname}
               onChange={(e) => setLast(e.target.value)}
-              style={{ ...input, height: 52, border: '1px solid #8C89A3', fontSize: 17 }}
+              style={{ ...input, height: 52, border: '1px solid #8F8D88', fontSize: 17 }}
             />
             <span style={{ fontSize: 13, color: body }}>More than one child in this class has this first name, so the school needs the surname too.</span>
           </div>
         ) : null}
-        {error ? <p role="alert" style={{ margin: 0, fontSize: 15, color: '#B8381F' }}>{error}</p> : null}
+        {error ? <p role="alert" style={{ margin: 0, fontSize: 15, color: '#B8281E' }}>{error}</p> : null}
       </form>
 
       <section aria-labelledby="see" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16, background: '#FFFFFF', border: `1px solid ${line}`, borderRadius: 18 }}>

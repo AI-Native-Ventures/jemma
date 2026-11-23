@@ -46,7 +46,7 @@ export default async function TeacherClassSettingsPage({ params }: { params: Pro
           <ParentToggle />
           {parents.map((p) => (
             <div key={`${p.parentId}-${p.childId}`} className="flex min-h-16 items-center gap-3 border-t border-soft py-1.5">
-              <span aria-hidden="true" className="flex size-[38px] flex-none items-center justify-center rounded-pill bg-coral-tint text-[13px] font-bold">
+              <span aria-hidden="true" className="flex size-[38px] flex-none items-center justify-center rounded-pill bg-gold-tint text-[13px] font-bold">
                 {p.initials}
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-px leading-[1.35]">

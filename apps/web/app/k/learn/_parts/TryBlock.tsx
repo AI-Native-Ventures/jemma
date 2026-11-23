@@ -16,7 +16,7 @@ import { answerLessonQuestion } from '../actions'
 import { LessonText } from './LessonText'
 
 const primary =
-  'flex min-h-[60px] w-full cursor-pointer items-center justify-center rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white disabled:cursor-default disabled:opacity-40'
+  'flex min-h-[60px] w-full cursor-pointer items-center justify-center rounded-18 border-0 bg-green px-5 py-3 text-center text-[19px] font-bold text-balance text-white disabled:cursor-default disabled:opacity-40'
 const secondary =
   'flex min-h-[52px] w-full cursor-pointer items-center justify-center rounded-14 border-[1.5px] border-ink bg-card px-4 py-2 text-center text-[17px] font-semibold text-balance text-ink'
 const textButton = 'flex min-h-11 cursor-pointer items-center self-start border-0 bg-transparent px-1 text-[15px] font-semibold text-ink underline underline-offset-[3px]'
@@ -101,7 +101,7 @@ export function TryBlock({ index, question, hint, topicLessonId, topic, typeset,
       {pictureFirst ? null : picture}
 
       {result ? (
-        <div role="status" data-result={result.correct ? 'right' : 'wrong'} className={`flex flex-col gap-2.5 rounded-18 border p-4 ${result.correct ? 'border-line bg-soft-2' : 'border-[#FFC9BB] bg-coral-wash'}`}>
+        <div role="status" data-result={result.correct ? 'right' : 'wrong'} className={`flex flex-col gap-2.5 rounded-18 border p-4 ${result.correct ? 'border-green bg-green-tint' : 'border-red bg-card'}`}>
           <p className="m-0 text-[18px] font-bold">{result.correct ? 'Yes, that is right.' : 'Not quite.'}</p>
           {result.correct ? null : (
             <>
@@ -148,7 +148,7 @@ export function TryBlock({ index, question, hint, topicLessonId, topic, typeset,
               Need a hint?
             </button>
           )}
-          {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
+          {error ? <p role="alert" className="m-0 text-[14px] text-red-text">{error}</p> : null}
           <PendingButton type="button" pending={busy} disabled={!value || busy} onClick={check} className={primary}>
             Check
           </PendingButton>

@@ -41,7 +41,7 @@ export function OrderAnswer({ shape, onChange }: { shape: OrderShape; onChange: 
                   type="button"
                   aria-label={`Place ${place + 1}: ${text}. Tap to take it back.`}
                   onClick={() => update(placed.filter((_, k) => k !== place))}
-                  className={`${chip} min-h-14 w-full border-[3px] border-ink bg-ink text-white`}
+                  className={`${chip} min-h-14 w-full border-[3px] border-green bg-green text-white`}
                 >
                   <Item text={text} color="#FFFFFF" />
                 </button>
@@ -60,7 +60,7 @@ export function OrderAnswer({ shape, onChange }: { shape: OrderShape; onChange: 
             onClick={() => update([...placed, i])}
             className={`${chip} border-2 border-edge bg-card text-ink`}
           >
-            <Item text={text} color="#1F1D36" />
+            <Item text={text} color="#161616" />
           </button>
         ))}
       </div>

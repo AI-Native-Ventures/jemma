@@ -24,12 +24,12 @@ export function Field({ label, hint, error, id, className = '', ...input }: Fiel
         aria-describedby={note ? noteId : undefined}
         autoComplete="off"
         className={`h-[52px] rounded-14 border bg-card px-4 text-[17px] text-ink outline-none placeholder:text-muted-2 focus-visible:border-2 focus-visible:border-ink ${
-          error ? 'border-coral-text' : 'border-muted-2'
+          error ? 'border-red-text' : 'border-muted-2'
         }`}
         {...input}
       />
       {note ? (
-        <p id={noteId} className={`m-0 text-[14px] ${error ? 'text-coral-text' : 'text-body'}`}>
+        <p id={noteId} className={`m-0 text-[14px] ${error ? 'text-red-text' : 'text-body'}`}>
           {note}
         </p>
       ) : null}

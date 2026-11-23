@@ -49,7 +49,7 @@ export function TabBar({ role, active: first, label, base = HOMES[role], only }:
             >
               <span
                 data-raised="true"
-                className="-mt-2.5 flex size-12 items-center justify-center rounded-pill border-[3px] border-white bg-coral"
+                className="-mt-2.5 flex size-12 items-center justify-center rounded-pill border-[3px] border-white bg-gold"
               >
                 <CameraIcon size={22} />
               </span>
@@ -66,7 +66,7 @@ export function TabBar({ role, active: first, label, base = HOMES[role], only }:
               on ? 'text-ink' : 'text-muted'
             }`}
           >
-            <span className={`flex h-7 w-12 items-center justify-center rounded-pill ${on ? 'bg-soft-4' : ''}`}>
+            <span className={`flex h-7 w-12 items-center justify-center rounded-pill ${on ? 'bg-green-tint text-green' : ''}`}>
               {tab.icon(20)}
             </span>
             {tab.label}

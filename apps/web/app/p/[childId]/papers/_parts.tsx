@@ -42,14 +42,14 @@ export function BackHeader({
       <Link
         href={href}
         aria-label={label}
-        style={{ width: 44, height: 44, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12, color: '#1F1D36' }}
+        style={{ width: 44, height: 44, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 12, color: '#161616' }}
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="m15 6-6 6 6 6" />
         </svg>
       </Link>
-      <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2, flex: 1, minWidth: 0, color: '#1F1D36' }}>
-        <span style={{ fontSize: 13, color: '#5D5A73' }}>{line}</span>
+      <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2, flex: 1, minWidth: 0, color: '#161616' }}>
+        <span style={{ fontSize: 13, color: '#5C5A55' }}>{line}</span>
         <span style={{ fontSize: 17, fontWeight: 700 }}>{title}</span>
       </span>
       {right}
@@ -57,17 +57,17 @@ export function BackHeader({
   )
 }
 
-/** Coral diamond used as a bullet. */
+/** Gold diamond used as a bullet. */
 export function Diamond({ size, mt }: { size: number; mt: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" style={{ flex: 'none', marginTop: mt }}>
-      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
     </svg>
   )
 }
 
 export const ChevronRight = ({ size = 20 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
     <path d="m9 6 6 6-6 6" />
   </svg>
 )
@@ -81,7 +81,7 @@ const circled = (r: ResultRow) => /^[A-D]$/.test(r.answer) || / or /.test(r.prom
 
 function CheckIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="m5 12.5 4.5 4.5L19 7.5" />
     </svg>
   )
@@ -91,8 +91,8 @@ function PaperRow({ row, highlight, grade }: { row: ResultRow; highlight: boolea
   const miss = !row.correct
   const box: CSSProperties = {
     minWidth: 58, maxWidth: '40%', padding: '0 4px', height: 32, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontFamily: HAND, color: '#2F3A56', fontSize: 18, lineHeight: 1, borderRadius: 3,
-    border: miss ? '2px solid #FF6A4D' : '1px solid #8F8F8F',
+    fontFamily: HAND, color: '#12308C', fontSize: 18, lineHeight: 1, borderRadius: 3,
+    border: miss ? '2px solid #E03C31' : '1px solid #8F8F8F',
   }
   return (
     <li
@@ -101,21 +101,21 @@ function PaperRow({ row, highlight, grade }: { row: ResultRow; highlight: boolea
       data-highlight={highlight ? 'true' : undefined}
       style={{
         display: 'flex', alignItems: 'center', gap: 8, minHeight: 40, borderTop: '1px solid #ECEAE2',
-        ...(highlight ? { background: '#FFF4F1', outline: '2px solid #FF6A4D', outlineOffset: -2 } : null),
+        ...(highlight ? { background: '#FFF8E8', outline: '2px solid #FFB81C', outlineOffset: -2 } : null),
       }}
     >
       <span style={{ flex: 1, minWidth: 0, fontSize: 13, lineHeight: 1.3 }}>{`${row.n}.  `}<Maths text={displayPrompt(row.prompt)} grade={grade} size={15} /></span>
       {circled(row) ? (
         <span style={{ minWidth: 58, maxWidth: '40%', height: 32, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontFamily: HAND, color: '#2F3A56', fontSize: 17, lineHeight: 1, border: '1.5px solid #2F3A56', borderRadius: '50%', padding: '3px 7px' }}><Maths text={row.answer} grade={grade} size={16} /></span>
+          <span style={{ fontFamily: HAND, color: '#12308C', fontSize: 17, lineHeight: 1, border: '1.5px solid #12308C', borderRadius: '50%', padding: '3px 7px' }}><Maths text={row.answer} grade={grade} size={16} /></span>
         </span>
       ) : (
         <span style={box}><Maths text={row.answer} grade={grade} size={16} /></span>
       )}
       {miss ? (
         <span style={{ width: 68, flex: 'none', display: 'flex' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 6px', borderRadius: 999, background: '#FFE3DA', fontFamily: OUTFIT, fontSize: 13, fontWeight: 700, color: '#1F1D36', whiteSpace: 'nowrap' }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="3.2" strokeLinecap="round" aria-hidden="true">
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px 3px 6px', borderRadius: 999, background: '#FFEDC6', fontFamily: OUTFIT, fontSize: 13, fontWeight: 700, color: '#161616', whiteSpace: 'nowrap' }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="3.2" strokeLinecap="round" aria-hidden="true">
               <path d="M6 6l12 12M18 6 6 18" />
             </svg>
             <span style={srOnly}>Missed. Right answer </span>
@@ -132,19 +132,19 @@ function PaperRow({ row, highlight, grade }: { row: ResultRow; highlight: boolea
   )
 }
 
-/** The marked paper as a photographed sheet: lavender mat, cream paper, handwriting in navy, missed answers boxed in coral. */
+/** The marked paper as a photographed sheet: warm grey mat, cream paper, handwriting in navy, missed answers boxed in red. */
 export function PaperSheet({ paper, highlightN }: { paper: PaperDetail; highlightN?: number }) {
   return (
-    <div style={{ padding: 12, borderRadius: 20, background: '#E9E7F3' }}>
-      <div style={{ background: '#FBFAF5', borderRadius: 6, boxShadow: '0 4px 14px rgba(31,29,54,0.12)', padding: '16px 14px 10px', color: '#2A2A2A', fontFamily: ARIAL }}>
+    <div style={{ padding: 12, borderRadius: 20, background: '#ECE9E2' }}>
+      <div style={{ background: '#FBFAF5', borderRadius: 6, boxShadow: '0 4px 14px rgba(22,22,22,0.12)', padding: '16px 14px 10px', color: '#2A2A2A', fontFamily: ARIAL }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
           <span style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <span style={{ fontSize: 13, fontWeight: 700 }}>{paper.child.schoolName}</span>
             <span style={{ fontSize: 11, color: '#444444' }}>{`Grade ${paper.child.grade} ${paper.child.subject} · ${paper.shortTitle}`}</span>
           </span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 8px', borderRadius: 999, background: '#1F1D36', color: '#FFFFFF', fontFamily: OUTFIT, fontSize: 14, fontWeight: 700 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 8px', borderRadius: 999, background: '#161616', color: '#FFFFFF', fontFamily: OUTFIT, fontSize: 14, fontWeight: 700 }}>
             <svg width="10" height="10" viewBox="0 0 16 16" aria-hidden="true" style={{ flex: 'none', marginTop: 0 }}>
-              <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+              <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
             </svg>
             {`${paper.total}/${paper.outOf}`}
           </span>
@@ -152,7 +152,7 @@ export function PaperSheet({ paper, highlightN }: { paper: PaperDetail; highligh
         <span style={{ display: 'flex', alignItems: 'flex-end', gap: 8, margin: '10px 0 6px', fontSize: 11 }}>
           Name{' '}
           <span style={{ flex: 1, borderBottom: '1px solid #777777', paddingLeft: 6 }}>
-            <span style={{ fontFamily: HAND, color: '#2F3A56', fontSize: 20, lineHeight: 1 }}>{paper.child.firstName}</span>
+            <span style={{ fontFamily: HAND, color: '#12308C', fontSize: 20, lineHeight: 1 }}>{paper.child.firstName}</span>
           </span>
         </span>
         <ol style={{ listStyle: 'none', margin: 0, padding: 0 }}>
@@ -216,7 +216,7 @@ export function QuestionCrop({ row, grade = null }: { row: ResultRow; grade?: nu
         <span
           style={{
             minWidth: row.answer.length > 4 ? 76 : 66, padding: '0 4px', height: 44, border: '1.5px solid #888888', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', fontFamily: HAND, fontSize: 24, color: '#2F3A56',
+            justifyContent: 'center', fontFamily: HAND, fontSize: 24, color: '#12308C',
           }}
         >
           <Maths text={row.answer} grade={grade} size={22} />

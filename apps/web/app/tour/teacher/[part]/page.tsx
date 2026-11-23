@@ -21,7 +21,7 @@ export default async function TourTeacherPartPage({ params }: { params: Promise<
       <main className={`mx-auto flex w-full flex-1 flex-col gap-5 px-5 pt-[18px] pb-8 ${TEACHER_WIDTH}`}>
         <Back href="/tour/teacher">{TOUR_SUBJECT}</Back>
         <div className="flex flex-col gap-1.5">
-          <p className="m-0 text-[14px] font-semibold text-coral-text">{TOUR_CLASS.name}</p>
+          <p className="m-0 text-[14px] font-semibold text-red-text">{TOUR_CLASS.name}</p>
           <h1 className="m-0 text-[30px] leading-[1.14] font-bold tracking-[-0.02em] text-pretty">{part.label}</h1>
           <p className="m-0 text-[17px] text-body">{stat.avg === null ? 'Not taught yet.' : `Class average ${stat.avg}%.`}</p>
         </div>

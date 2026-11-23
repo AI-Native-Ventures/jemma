@@ -19,7 +19,7 @@ const sizes = {
   laptop: { h: 'text-[36px] leading-[1.15] font-semibold tracking-[-0.02em]', gem: 16, mt: 'mt-3.5' },
 }
 
-/** The page's one h1: coral gem, then a sentence that says what is true now. */
+/** The page's one h1: gold gem, then a sentence that says what is true now. */
 export function Headline({ children, size = 'phone', action, note, className = '' }: HeadlineProps) {
   const s = sizes[size]
   const heading = (

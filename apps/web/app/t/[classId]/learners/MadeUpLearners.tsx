@@ -35,7 +35,7 @@ export function MadeUpLearners({ classId }: { classId: string }) {
         {pending ? 'Adding made-up learners' : 'Add made-up learners'}
       </button>
       {note ? <p role="status" className="m-0 text-[14px] text-ink">{note}</p> : null}
-      {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
+      {error ? <p role="alert" className="m-0 text-[14px] text-red-text">{error}</p> : null}
     </section>
   )
 }

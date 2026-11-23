@@ -29,7 +29,7 @@ function stepRows(step: Step, previous?: Step) {
   }
   const prevRows = previous ? rowsOf(previous.diagram) : null
   const prevLast = prevRows ? prevRows[prevRows.length - 1] : undefined
-  const carry = prevLast && rows.length === 1 ? { parts: prevLast.parts, coral: prevLast.shaded } : undefined
+  const carry = prevLast && rows.length === 1 ? { parts: prevLast.parts, gold: prevLast.shaded } : undefined
   return { rows, fills: rowFills(rows, carry), dashed: undefined }
 }
 
@@ -100,7 +100,7 @@ export function LearnDiagram({ lesson, onReady }: LearnDiagramProps) {
       {d.contrast ? (
         <aside
           aria-label={contrastName ? `Why not ${contrastName}` : 'Why not'}
-          className="flex flex-col gap-2.5 rounded-20 border border-[#FFC9BB] bg-coral-wash p-4"
+          className="flex flex-col gap-2.5 rounded-20 border border-[#FFDC93] bg-gold-wash p-4"
         >
           <span className="text-[16px] font-bold">{contrastName ? `Why not ${contrastName}?` : 'Why not?'}</span>
           {contrastLast ? (
@@ -144,7 +144,7 @@ export function LearnDiagram({ lesson, onReady }: LearnDiagramProps) {
             Again
           </IconLabel>
         </button>
-        <button type="button" onClick={onReady} className="min-h-[60px] cursor-pointer rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
+        <button type="button" onClick={onReady} className="min-h-[60px] cursor-pointer rounded-18 border-0 bg-green px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
           I&apos;m ready
         </button>
       </div>

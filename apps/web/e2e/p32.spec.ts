@@ -132,7 +132,7 @@ test('a good photo: reading, then the check screen, then saved', async ({ page }
   expect(event?.type).toBe('homework.snapped')
 
   await expect(page.getByRole('heading', { level: 1, name: /^Reading Amina's homework\./ })).toBeVisible()
-  await expect(page.getByText('The photo you just took. The coral box is the line Jemma is reading.')).toBeVisible()
+  await expect(page.getByText('The photo you just took. The green box is the line Jemma is reading.')).toBeVisible()
   await expect(page.getByText("You can leave this screen. It lands in Needs you when it's ready.")).toBeVisible()
   await shoot(page, 'parent-snap-reading')
 

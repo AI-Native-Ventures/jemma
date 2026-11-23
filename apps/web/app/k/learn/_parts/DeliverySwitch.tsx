@@ -18,7 +18,7 @@ export function DeliverySwitch({ value, onChange }: { value: Delivery; onChange:
             role="radio"
             aria-checked={on}
             onClick={() => onChange(d)}
-            className={`flex min-h-11 min-w-0 flex-1 cursor-pointer items-center justify-center rounded-12 border-0 px-3 text-[15px] font-semibold ${on ? 'bg-ink text-white' : 'bg-transparent text-ink'}`}
+            className={`flex min-h-11 min-w-0 flex-1 cursor-pointer items-center justify-center rounded-12 border-0 px-3 text-[15px] font-semibold ${on ? 'bg-green text-white' : 'bg-transparent text-ink'}`}
           >
             {DELIVERY_LABEL[d]}
           </button>

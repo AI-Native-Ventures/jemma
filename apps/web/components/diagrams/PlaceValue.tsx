@@ -1,5 +1,5 @@
 import type { DiagramSpec } from '@jemma/profiling/schemas'
-import { CORAL_TINT, INK, SOFT, Svg, T, WHITE } from './shared'
+import { GOLD_TINT, INK, SOFT, Svg, T, WHITE } from './shared'
 
 export type PlaceValueProps = Extract<DiagramSpec, { kind: 'place_value' }>
 
@@ -51,7 +51,7 @@ export function PlaceValue(props: PlaceValueProps) {
         return (
           <g key={i}>
             {!c.sep && <rect x={cx} y={HEAD_Y} width={c.w} height={HEAD_H} rx={0} fill={SOFT} stroke={INK} strokeWidth={1} />}
-            <rect x={cx} y={HEAD_Y + HEAD_H} width={c.w} height={BODY_H} rx={0} fill={i === hot ? CORAL_TINT : WHITE} stroke={INK} strokeWidth={1} />
+            <rect x={cx} y={HEAD_Y + HEAD_H} width={c.w} height={BODY_H} rx={0} fill={i === hot ? GOLD_TINT : WHITE} stroke={INK} strokeWidth={1} />
             {!c.sep && (
               <T x={cx + c.w / 2} y={58} size={13} weight={600}>
                 {c.head}

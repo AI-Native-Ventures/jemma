@@ -83,17 +83,18 @@ describe('/k/maths: the circles of a part', () => {
 
   it('draws each level like the Long view: solid, left half filled, white with an outline, dashed', async () => {
     await page()
+    // South African colours: the circles are data, so they are black (#161616, it was the old ink #1F1D36), and the dashed one a warm grey (it was #8C89A3)
     const dots = [...row(/Algebra/).querySelectorAll('svg[data-dot]')]
     const byLevel = (l: string) => dots.find((d) => d.getAttribute('data-dot') === l)!
-    expect(byLevel('full').querySelector('circle')?.getAttribute('fill')).toBe('#1F1D36')
+    expect(byLevel('full').querySelector('circle')?.getAttribute('fill')).toBe('#161616')
     expect(byLevel('half').querySelector('circle')?.getAttribute('fill')).toBe('#FFFFFF')
     expect(byLevel('half').querySelector('path')?.getAttribute('d')).toBe('M7 1.7a5.3 5.3 0 0 0 0 10.6z')
-    expect(byLevel('half').querySelector('path')?.getAttribute('fill')).toBe('#1F1D36')
+    expect(byLevel('half').querySelector('path')?.getAttribute('fill')).toBe('#161616')
     expect(byLevel('empty').querySelector('circle')?.getAttribute('fill')).toBe('#FFFFFF')
-    expect(byLevel('empty').querySelector('circle')?.getAttribute('stroke')).toBe('#1F1D36')
+    expect(byLevel('empty').querySelector('circle')?.getAttribute('stroke')).toBe('#161616')
     expect(byLevel('empty').querySelector('path')).toBeNull()
     expect(byLevel('none').querySelector('circle')?.getAttribute('stroke-dasharray')).toBeTruthy()
-    expect(byLevel('none').querySelector('circle')?.getAttribute('stroke')).toBe('#8C89A3')
+    expect(byLevel('none').querySelector('circle')?.getAttribute('stroke')).toBe('#8F8D88')
   })
 
   it('says one short line under the circles: "2 of 10 secure · 3 started"', async () => {

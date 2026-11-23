@@ -67,7 +67,7 @@ export function QuantityBox({ id, label, value, onChange, unit, signed = false, 
         autoComplete="off"
         value={value}
         onChange={(e) => onChange(quantityText(e.target.value, 10, signed))}
-        className={`block h-[76px] rounded-18 border-[3px] border-coral bg-card text-center text-[40px] font-bold text-ink outline-none ${unit || signed ? 'w-32' : 'w-48'}`}
+        className={`block h-[76px] rounded-18 border-[3px] border-green bg-card text-center text-[40px] font-bold text-ink outline-none ${unit || signed ? 'w-32' : 'w-48'}`}
       />
       {unit && !before ? <span data-unit="true" className="text-[28px] leading-none font-bold text-ink">{unit}</span> : null}
     </div>

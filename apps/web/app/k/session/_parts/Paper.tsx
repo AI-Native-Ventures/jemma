@@ -17,12 +17,12 @@ import { paperValuesLine } from './answers/values-hints'
 // Jemma reads the photo, and the card for a photo that could not be read. All of them are drawn from their props alone (the state lives in
 // SessionFlow), so they render the same on the server and in a test.
 
-/** The same coral ring the lesson-loading screen and the practice card turn while Jemma works. */
+/** The same green ring the lesson-loading screen and the practice card turn while Jemma works. */
 function Ring() {
   return (
     <svg aria-hidden="true" width="44" height="44" viewBox="0 0 28 28" className="motion-safe:animate-spin">
-      <circle cx="14" cy="14" r="11" fill="none" stroke="#EEEDF5" strokeWidth="3.5" />
-      <path d="M14 3a11 11 0 0 1 11 11" fill="none" stroke="#FF6A4D" strokeWidth="3.5" strokeLinecap="round" />
+      <circle cx="14" cy="14" r="11" fill="none" stroke="#EFECE6" strokeWidth="3.5" />
+      <path d="M14 3a11 11 0 0 1 11 11" fill="none" stroke="#007749" strokeWidth="3.5" strokeLinecap="round" />
     </svg>
   )
 }
@@ -49,7 +49,7 @@ function PhoneIcon() {
 const choiceButton =
   'flex min-h-[76px] w-full cursor-pointer items-center justify-center gap-3.5 rounded-20 border-2 border-ink bg-card px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[22px]'
 const linkButton = 'flex min-h-11 cursor-pointer items-center justify-center border-0 bg-transparent text-[16px] font-semibold text-ink underline underline-offset-[3px]'
-const card = 'flex flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(31,29,54,0.06)]'
+const card = 'flex flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(22,22,22,0.06)]'
 
 /** After Learn and before the first Try question: how does the child want to answer? */
 export function PaperChoice({ onPaper, onScreen }: { onPaper: () => void; onScreen: () => void }) {
@@ -198,7 +198,7 @@ export type PhotoButtonProps = {
 export function PhotoButton({ label, busy, onPhoto }: PhotoButtonProps) {
   return (
     <label
-      className={`relative flex min-h-[68px] w-full items-center justify-center gap-3 rounded-20 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink focus-within:ring-4 focus-within:ring-ink sm:text-[22px] ${
+      className={`relative flex min-h-[68px] w-full items-center justify-center gap-3 rounded-20 bg-gold px-5 py-3 text-center text-[20px] font-bold text-balance text-ink focus-within:ring-4 focus-within:ring-ink sm:text-[22px] ${
         busy ? 'cursor-default opacity-60' : 'cursor-pointer'
       }`}
     >
@@ -245,7 +245,7 @@ export function PaperSheet({ questions, busy, error, onPhoto, onScreen }: PaperS
       <div className="flex flex-col gap-1.5">
         <PhotoButton label="Take a photo of your answers" busy={busy} onPhoto={onPhoto} />
         {error ? (
-          <p role="alert" className="m-0 text-center text-[15px] leading-[1.4] text-coral-text">
+          <p role="alert" className="m-0 text-center text-[15px] leading-[1.4] text-red-text">
             {error}
           </p>
         ) : null}
@@ -295,7 +295,7 @@ export function PaperFailed({ busy, error, onPhoto, onScreen }: PaperFailedProps
       <div className="flex flex-col gap-2.5">
         <PhotoButton label="Take the photo again" busy={busy} onPhoto={onPhoto} />
         {error ? (
-          <p role="alert" className="m-0 text-center text-[15px] leading-[1.4] text-coral-text">
+          <p role="alert" className="m-0 text-center text-[15px] leading-[1.4] text-red-text">
             {error}
           </p>
         ) : null}

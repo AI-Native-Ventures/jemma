@@ -5,12 +5,12 @@ import { useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { Button, Sheet } from '@/components/ui'
 
-export const colors = { ink: '#1F1D36', body: '#5D5A73', line: '#E7E6EF', grey: '#8C89A3', coral: '#FF6A4D', coralText: '#B8381F' }
+export const colors = { ink: '#161616', body: '#5C5A55', line: '#E8E5DE', grey: '#8F8D88', gold: '#FFB81C', redText: '#B8281E', green: '#007749' }
 
 export function Gem({ size = 14, marginTop = 10 }: { size?: number; marginTop?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" style={{ flex: 'none', marginTop }}>
-      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
     </svg>
   )
 }
@@ -27,7 +27,7 @@ export function BackLink({ href, label }: { href: string; label: string }) {
 
 export function Chevron() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
       <path d="m9 6 6 6-6 6" />
     </svg>
   )
@@ -92,12 +92,12 @@ export function ComingButton({ style, children, ariaLabel }: { style: CSSPropert
 
 export function Switch({ on }: { on: boolean }) {
   return on ? (
-    <span aria-hidden="true" style={{ position: 'relative', width: 50, height: 30, flex: 'none', borderRadius: 999, background: '#1F1D36' }}>
+    <span aria-hidden="true" style={{ position: 'relative', width: 50, height: 30, flex: 'none', borderRadius: 999, background: '#007749' }}>
       <span style={{ position: 'absolute', top: 4, left: 24, width: 22, height: 22, borderRadius: 999, background: '#FFFFFF' }} />
     </span>
   ) : (
-    <span aria-hidden="true" style={{ position: 'relative', width: 50, height: 30, flex: 'none', borderRadius: 999, background: '#FFFFFF', border: '2px solid #8C89A3' }}>
-      <span style={{ position: 'absolute', top: 2, left: 2, width: 22, height: 22, borderRadius: 999, background: '#8C89A3' }} />
+    <span aria-hidden="true" style={{ position: 'relative', width: 50, height: 30, flex: 'none', borderRadius: 999, background: '#FFFFFF', border: '2px solid #8F8D88' }}>
+      <span style={{ position: 'absolute', top: 2, left: 2, width: 22, height: 22, borderRadius: 999, background: '#8F8D88' }} />
     </span>
   )
 }
@@ -126,7 +126,7 @@ export function ToggleRow({
         setOn(next)
         void onToggle?.(next)
       }}
-      style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, padding: '6px 0', border: 'none', borderTop: divider ? '1px solid #EFEEF4' : 'none', background: 'transparent', color: colors.ink, textAlign: 'left' }}
+      style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', minHeight: 56, padding: '6px 0', border: 'none', borderTop: divider ? '1px solid #F0EEE8' : 'none', background: 'transparent', color: colors.ink, textAlign: 'left' }}
     >
       <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <span style={{ fontSize: 16, fontWeight: 500 }}>{title}</span>
@@ -143,7 +143,7 @@ export function Segmented({ legend, options, initial }: { legend: string; option
   return (
     <fieldset style={{ border: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
       <legend style={{ padding: 0, marginBottom: 8, fontSize: 15, fontWeight: 500 }}>{legend}</legend>
-      <span style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4, padding: 4, borderRadius: 14, background: '#EEEDF5' }}>
+      <span style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 4, padding: 4, borderRadius: 14, background: '#EFECE6' }}>
         {options.map((label, i) => {
           const active = pick === i
           return (
@@ -152,7 +152,7 @@ export function Segmented({ legend, options, initial }: { legend: string; option
               type="button"
               aria-pressed={active}
               onClick={() => setPick(i as 0 | 1)}
-              style={{ height: 44, border: 'none', borderRadius: 10, background: active ? '#FFFFFF' : 'transparent', boxShadow: active ? '0 1px 3px rgba(31,29,54,0.14)' : undefined, fontSize: 15, fontWeight: active ? 600 : 500, color: colors.ink }}
+              style={{ height: 44, border: 'none', borderRadius: 10, background: active ? '#FFFFFF' : 'transparent', boxShadow: active ? '0 1px 3px rgba(22,22,22,0.14)' : undefined, fontSize: 15, fontWeight: active ? 600 : 500, color: colors.ink }}
             >
               {label}
             </button>

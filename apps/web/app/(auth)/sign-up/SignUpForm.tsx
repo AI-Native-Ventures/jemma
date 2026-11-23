@@ -27,11 +27,11 @@ export function SignUpForm() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
         <style>{`
 .cb{position:absolute;top:0;left:0;width:44px;height:44px;margin:0;opacity:0;cursor:pointer}
-.cbx{width:24px;height:24px;border-radius:7px;border:2px solid #8C89A3;background:#FFFFFF;display:flex;align-items:center;justify-content:center}
+.cbx{width:24px;height:24px;border-radius:7px;border:2px solid #8F8D88;background:#FFFFFF;display:flex;align-items:center;justify-content:center}
 .cbx svg{opacity:0}
-.cb:checked + .cbx{background:#1F1D36;border-color:#1F1D36}
+.cb:checked + .cbx{background:#007749;border-color:#007749}
 .cb:checked + .cbx svg{opacity:1}
-.cb:focus-visible + .cbx{outline:3px solid #FF6A4D;outline-offset:2px}`}</style>
+.cb:focus-visible + .cbx{outline:3px solid #007749;outline-offset:2px}`}</style>
         <label htmlFor="agree" style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 48, cursor: 'pointer' }}>
           <span style={{ position: 'relative', width: 44, height: 44, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <input id="agree" name="agree" className="cb" type="checkbox" defaultChecked={state?.agree} />

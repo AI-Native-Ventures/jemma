@@ -44,14 +44,14 @@ export function ReasonPicker({ reason, onReason, withValue, value, onValue }: Re
             autoComplete="off"
             value={value}
             onChange={(e) => onValue(reasonValueText(e.target.value))}
-            className="block h-[64px] w-40 rounded-18 border-[3px] border-coral bg-card text-center text-[30px] font-bold text-ink outline-none"
+            className="block h-[64px] w-40 rounded-18 border-[3px] border-green bg-card text-center text-[30px] font-bold text-ink outline-none"
           />
         </div>
       ) : null}
       <div className="flex flex-col gap-2.5">
         <p className="m-0 text-[16px] font-semibold text-ink">{withValue ? '2. The reason' : 'The reason'}</p>
         {reason ? (
-          <div className="flex items-center justify-between gap-3 rounded-18 border-[3px] border-ink bg-soft-2 px-4 py-3" data-reason-chip="true">
+          <div className="flex items-center justify-between gap-3 rounded-18 border-[3px] border-green bg-green-tint px-4 py-3" data-reason-chip="true">
             <span className="min-w-0 text-[18px] leading-[1.3] font-bold text-ink"><SignText text={reason} /></span>
             <button
               type="button"

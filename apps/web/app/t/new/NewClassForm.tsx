@@ -73,9 +73,9 @@ export function NewClassForm({ code, initialGrade, copyOptions }: { code: string
             onChange={(e) => setName(e.target.value)}
             aria-describedby="cname-hint"
             aria-invalid={nameError ? true : undefined}
-            className={`h-[52px] rounded-14 border bg-card px-3.5 text-[17px] text-ink ${nameError ? 'border-coral-text' : 'border-muted-2'}`}
+            className={`h-[52px] rounded-14 border bg-card px-3.5 text-[17px] text-ink ${nameError ? 'border-red-text' : 'border-muted-2'}`}
           />
-          <span id="cname-hint" className={`text-[13px] ${nameError ? 'text-coral-text' : 'text-body'}`}>
+          <span id="cname-hint" className={`text-[13px] ${nameError ? 'text-red-text' : 'text-body'}`}>
             {nameError || 'What you and parents see'}
           </span>
         </div>
@@ -176,13 +176,13 @@ export function NewClassForm({ code, initialGrade, copyOptions }: { code: string
             aria-describedby="addsurname-hint"
             className="h-12 min-w-0 rounded-12 border border-muted-2 bg-card px-3.5 text-[16px] text-ink"
           />
-          <span id="addsurname-hint" className={`text-[13px] ${learnerError ? 'text-coral-text' : 'text-body'}`} role={learnerError ? 'alert' : undefined}>
+          <span id="addsurname-hint" className={`text-[13px] ${learnerError ? 'text-red-text' : 'text-body'}`} role={learnerError ? 'alert' : undefined}>
             {learnerError || 'Needed when two learners share a first name'}
           </span>
         </div>
         <ComingButton className="flex min-h-[60px] items-center gap-3 rounded-14 border border-line bg-soft-2 px-3.5 py-2 text-left text-ink">
-          <span aria-hidden="true" className="flex size-9 flex-none items-center justify-center rounded-12 bg-coral-tint">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+          <span aria-hidden="true" className="flex size-9 flex-none items-center justify-center rounded-12 bg-gold-tint">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" />
               <circle cx="12" cy="12.5" r="3.5" />
             </svg>
@@ -210,11 +210,11 @@ export function NewClassForm({ code, initialGrade, copyOptions }: { code: string
       </section>
 
       {formError ? (
-        <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-coral-text">
+        <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-red-text">
           {formError}
         </p>
       ) : null}
-      <PendingButton pending={pending} type="button" onClick={submit} disabled={pending} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
+      <PendingButton pending={pending} type="button" onClick={submit} disabled={pending} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
         Create class
       </PendingButton>
       <div className="flex-1" />

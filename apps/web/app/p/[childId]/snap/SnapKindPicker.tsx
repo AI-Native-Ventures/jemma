@@ -80,9 +80,9 @@ export function SnapKindPicker({ childId }: { childId: string }) {
               className={`relative flex min-h-[132px] flex-col items-start gap-2.5 rounded-18 bg-card p-4 text-left text-ink ${on ? 'border-2 border-ink' : 'border border-line'}`}
             >
               {on ? (
-                <span className="absolute right-3 top-3 flex size-6 items-center justify-center rounded-full bg-ink">{tick(14, 3, '#FFFFFF')}</span>
+                <span className="absolute right-3 top-3 flex size-6 items-center justify-center rounded-full bg-green">{tick(14, 3, '#FFFFFF')}</span>
               ) : null}
-              <svg width="28" height="28" viewBox="0 0 24 24" stroke="#1F1D36" strokeWidth="1.7" {...stroke} aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" stroke="#161616" strokeWidth="1.7" {...stroke} aria-hidden="true">
                 {k.icon}
               </svg>
               <span className="flex flex-col gap-0.5">
@@ -100,7 +100,7 @@ export function SnapKindPicker({ childId }: { childId: string }) {
           <button
             type="button"
             aria-pressed="true"
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-full border-none bg-ink px-3.5 text-[15px] font-medium text-white"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-full border-none bg-green px-3.5 text-[15px] font-medium text-white"
           >
             {tick(14, 2.6)}
             Mathematics
@@ -109,8 +109,8 @@ export function SnapKindPicker({ childId }: { childId: string }) {
         </div>
       </fieldset>
 
-      <p className="m-0 flex items-start gap-2.5 rounded-14 bg-[#EEEDF5] px-3.5 py-3 text-[14px] leading-[1.45]">
-        <svg width="18" height="18" viewBox="0 0 24 24" stroke="#1F1D36" strokeWidth="1.8" {...stroke} aria-hidden="true" className="mt-px flex-none">
+      <p className="m-0 flex items-start gap-2.5 rounded-14 bg-[#EFECE6] px-3.5 py-3 text-[14px] leading-[1.45]">
+        <svg width="18" height="18" viewBox="0 0 24 24" stroke="#161616" strokeWidth="1.8" {...stroke} aria-hidden="true" className="mt-px flex-none">
           <circle cx="12" cy="12" r="4" />
           <path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4" />
         </svg>
@@ -120,7 +120,7 @@ export function SnapKindPicker({ childId }: { childId: string }) {
       <div className="flex-1" />
       <Link
         href={`/p/${childId}/snap/photo?kind=${picked}`}
-        className="flex min-h-14 items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white no-underline"
+        className="flex min-h-14 items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white no-underline"
       >
         <IconLabel gap={8} icon={<svg width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" {...stroke} aria-hidden="true">
           <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" />

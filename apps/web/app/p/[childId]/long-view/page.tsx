@@ -5,7 +5,7 @@ import { getSharedLongView } from '@/lib/data/p52'
 import { css, Diamond, SubHeader } from '../beyond/_parts'
 import { namesList } from './_card'
 
-const CARD = 'display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E7E6EF;border-radius:20px;padding:16px'
+const CARD = 'display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E8E5DE;border-radius:20px;padding:16px'
 
 /**
  * What the teacher has talked through with this parent, and nothing else: the title, the words, where it comes from as plain
@@ -32,22 +32,22 @@ export default async function ParentLongViewPage({ params }: { params: Promise<{
           {data.patterns.map((p) => (
             <li key={p.id}>
               <article aria-labelledby={`shared-${p.id}`} style={css(`${CARD};gap:10px`)}>
-                <p style={css('margin:0;font-size:13px;line-height:1.3;color:#5D5A73')}>{p.subject}</p>
+                <p style={css('margin:0;font-size:13px;line-height:1.3;color:#5C5A55')}>{p.subject}</p>
                 <h2 id={`shared-${p.id}`} style={css('margin:0;font-size:18px;line-height:1.3;font-weight:600')}>
                   {p.title}
                 </h2>
                 <p style={css('margin:0;font-size:16px;line-height:1.5')}><Maths text={p.statement} size={16} /></p>
                 {p.labels.length > 0 ? (
                   <section aria-label={`Where this comes from, ${p.title}`} style={css('display:flex;flex-direction:column;gap:6px')}>
-                    <h3 style={css('margin:0;font-size:13px;font-weight:600;color:#5D5A73')}>Where this comes from</h3>
-                    <ul style={css('margin:0;padding:0 0 0 18px;display:flex;flex-direction:column;gap:3px;font-size:14px;line-height:1.4;color:#5D5A73')}>
+                    <h3 style={css('margin:0;font-size:13px;font-weight:600;color:#5C5A55')}>Where this comes from</h3>
+                    <ul style={css('margin:0;padding:0 0 0 18px;display:flex;flex-direction:column;gap:3px;font-size:14px;line-height:1.4;color:#5C5A55')}>
                       {p.labels.map((label, i) => (
                         <li key={`${i}-${label}`}>{label}</li>
                       ))}
                     </ul>
                   </section>
                 ) : null}
-                {p.sharedOn ? <p style={css('margin:0;font-size:14px;color:#5D5A73')}>{`Shared on ${p.sharedOn}`}</p> : null}
+                {p.sharedOn ? <p style={css('margin:0;font-size:14px;color:#5C5A55')}>{`Shared on ${p.sharedOn}`}</p> : null}
               </article>
             </li>
           ))}

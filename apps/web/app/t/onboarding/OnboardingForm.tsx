@@ -11,7 +11,7 @@ import { createSchool, saveOnboarding, searchSchools, type SchoolHit } from './a
 
 const sectionCls = 'flex flex-col rounded-20 border border-line bg-card p-4'
 const field = 'h-[52px] rounded-14 border bg-card px-3.5 text-[17px] text-ink'
-const save = 'flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50'
+const save = 'flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50'
 
 type Choice = { grade: number | null; subject: string }
 
@@ -68,7 +68,7 @@ function SchoolSheet({ pick, onClose }: { pick: Choice; onClose: () => void }) {
         <input id="school-region" type="text" value={region} onChange={(e) => { setRegion(e.target.value); setError('') }} autoComplete="off" className={`${field} border-muted-2`} />
       </div>
       {error ? (
-        <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-coral-text">
+        <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-red-text">
           {error}
         </p>
       ) : null}
@@ -148,7 +148,7 @@ export function OnboardingForm({ initial }: { initial: SchoolHit | null }) {
               className={`flex min-h-[68px] items-center gap-3 rounded-[16px] bg-card py-2.5 pr-3.5 pl-3 text-left text-ink ${on ? 'border-2 border-ink' : 'border border-muted-2'}`}
             >
               <span aria-hidden="true" className="flex size-10 flex-none items-center justify-center rounded-12 bg-soft-4">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3.5 9.5 12 5l8.5 4.5L12 14z" />
                   <path d="M7 11.5v4.5c1.5 1.5 3.2 2 5 2s3.5-.5 5-2v-4.5" />
                 </svg>
@@ -158,7 +158,7 @@ export function OnboardingForm({ initial }: { initial: SchoolHit | null }) {
                 {s.blurb ? <span className="text-[14px] text-body">{s.blurb}</span> : null}
               </span>
               {on ? (
-                <span className="flex size-[26px] items-center justify-center rounded-pill bg-ink">
+                <span className="flex size-[26px] items-center justify-center rounded-pill bg-green">
                   <CheckIcon size={16} stroke="#FFFFFF" />
                 </span>
               ) : null}
@@ -192,7 +192,7 @@ export function OnboardingForm({ initial }: { initial: SchoolHit | null }) {
       </section>
 
       {error ? (
-        <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-coral-text">
+        <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-red-text">
           {error}
         </p>
       ) : null}
@@ -200,7 +200,7 @@ export function OnboardingForm({ initial }: { initial: SchoolHit | null }) {
         type="button"
         disabled={!school || pending}
         onClick={() => school && start(async () => { setError(''); const res = await saveOnboarding(school.id, pick.grade, pick.subject); if (res?.error) setError(res.error) })}
-        className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50"
+        className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50"
       >
         Next: set up your class
       </PendingButton>

@@ -41,12 +41,12 @@ export function BackHeader({
   )
 }
 
-/** The coral diamond that opens a sentence, 12 px, as on the test and question boards. */
+/** The gold diamond that opens a sentence, 12 px, as on the test and question boards. */
 export function Lead({ children }: { children: ReactNode }) {
   return (
     <p className="m-0 flex gap-2.5 text-[17px] leading-[1.45]">
       <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" className="mt-[7px] flex-none">
-        <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+        <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
       </svg>
       <span>{children}</span>
     </p>

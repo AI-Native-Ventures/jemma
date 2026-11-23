@@ -11,15 +11,15 @@ import { useState, useTransition } from 'react'
 import { retryPractice, type ActionResult } from './actions'
 import { PractiseButton } from './Practise'
 
-const card = 'flex flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(31,29,54,0.06)]'
-const bigButton = 'flex min-h-[68px] w-full cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[24px] disabled:opacity-60'
+const card = 'flex flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(22,22,22,0.06)]'
+const bigButton = 'flex min-h-[68px] w-full cursor-pointer items-center justify-center gap-3 rounded-20 border-0 bg-gold px-5 py-3 text-center text-[20px] font-bold text-balance text-ink sm:text-[24px] disabled:opacity-60'
 
-/** The same coral ring the lesson-loading screen turns while Jemma works. */
+/** The same green ring the lesson-loading screen turns while Jemma works. */
 function Ring() {
   return (
     <svg aria-hidden="true" width="44" height="44" viewBox="0 0 28 28" className="motion-safe:animate-spin">
-      <circle cx="14" cy="14" r="11" fill="none" stroke="#EEEDF5" strokeWidth="3.5" />
-      <path d="M14 3a11 11 0 0 1 11 11" fill="none" stroke="#FF6A4D" strokeWidth="3.5" strokeLinecap="round" />
+      <circle cx="14" cy="14" r="11" fill="none" stroke="#EFECE6" strokeWidth="3.5" />
+      <path d="M14 3a11 11 0 0 1 11 11" fill="none" stroke="#007749" strokeWidth="3.5" strokeLinecap="round" />
     </svg>
   )
 }
@@ -71,7 +71,7 @@ export function PracticeCard({ state, suggestion, workspace = 'school' }: { stat
   if (state === 'ready' && suggestion) {
     return (
       <section aria-labelledby="practice-suggested" className={`${card} gap-3.5`}>
-        <span id="practice-suggested" className="text-[14px] font-semibold text-coral-text">Suggested next</span>
+        <span id="practice-suggested" className="text-[14px] font-semibold text-red-text">Suggested next</span>
         <h2 className="m-0 text-[25px] leading-[1.2] font-bold tracking-[-0.01em] text-pretty">{suggestion.topicName}</h2>
         <p className="m-0 text-[16px] leading-[1.45] text-body">{suggestion.reason} &middot; {scoreText(suggestion.score)}</p>
         <PractiseButton choice={{ topicId: suggestion.topicId, topicName: suggestion.topicName }} size="big" />
@@ -94,7 +94,7 @@ export function PracticeCard({ state, suggestion, workspace = 'school' }: { stat
           Try again
         </IconLabel>
       </PendingButton>
-      {error ? <p role="alert" className="m-0 text-center text-[14px] text-coral-text">{error}</p> : null}
+      {error ? <p role="alert" className="m-0 text-center text-[14px] text-red-text">{error}</p> : null}
     </section>
   )
 }

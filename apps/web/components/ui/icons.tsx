@@ -200,11 +200,11 @@ export const BulbIcon = ({ size = 15, strokeWidth = 1.9, ...p }: IconProps) => (
   </Stroke>
 )
 
-/** Jemma's gem: the coral diamond used as the headline mark and as the dot of the j. */
+/** Jemma's gem: the gold diamond used as the headline mark and as the dot of the j. */
 export function GemIcon({ size = 14, className, ...rest }: { size?: number; className?: string } & Omit<SVGProps<SVGSVGElement>, 'width' | 'height'>) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" className={className} {...rest}>
-      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+      <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
     </svg>
   )
 }

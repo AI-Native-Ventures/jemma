@@ -1,5 +1,6 @@
 'use client'
 
+import { BeadRow } from '@/components/sa'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CHOICE_LETTERS, choiceText, composeReasonAnswer, hasPictureChoices } from '@jemma/profiling/logic'
 import { answerShape, answerValue, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
@@ -28,7 +29,7 @@ function Note({ children }: { children: string }) {
   return (
     <p className={noteClass}>
       <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" className="mt-[5px] flex-none">
-        <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+        <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
       </svg>
       {children}
     </p>
@@ -36,7 +37,7 @@ function Note({ children }: { children: string }) {
 }
 
 const nextClass =
-  'flex min-h-[60px] cursor-pointer items-center justify-center rounded-18 border-0 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white disabled:cursor-default disabled:opacity-40'
+  'flex min-h-[60px] cursor-pointer items-center justify-center rounded-18 border-0 bg-green px-5 py-3 text-center text-[19px] font-bold text-balance text-white disabled:cursor-default disabled:opacity-40'
 
 /** One short line under the boxes that says what goes in them. It never says whether an answer was right. */
 function Hint({ children }: { children: string }) {
@@ -79,7 +80,7 @@ function FractionBoxes({ top, bottom, onTop, onBottom }: { top: string; bottom: 
       <div className="flex flex-col items-center gap-2.5">
         <Box id="top" label="Top number" value={top} onChange={(v) => onTop(digits(v, 3))} className="h-[76px] w-24 border-2 border-ink text-[40px]" />
         <span aria-hidden="true" className="h-1 w-28 rounded-pill bg-ink" />
-        <Box id="bottom" label="Bottom number" value={bottom} onChange={(v) => onBottom(digits(v, 3))} className="h-[76px] w-24 border-[3px] border-coral text-[40px]" />
+        <Box id="bottom" label="Bottom number" value={bottom} onChange={(v) => onBottom(digits(v, 3))} className="h-[76px] w-24 border-[3px] border-green text-[40px]" />
       </div>
       <div aria-hidden="true" className="flex flex-col gap-[70px] text-[14px] font-semibold text-body">
         <span>top</span>
@@ -126,7 +127,7 @@ function Coordinate({ axis, value, onChange }: { axis: 'x' | 'y'; value: string;
           value={value}
           onChange={(v) => onChange(signedNumber(v, 10))}
           mode="decimal"
-          className="h-14 w-[80px] border-[3px] border-coral text-[26px]"
+          className="h-14 w-[80px] border-[3px] border-green text-[26px]"
         />
       </div>
       <span aria-hidden="true" className="text-[14px] font-semibold text-body">{axis}</span>
@@ -179,7 +180,7 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
         <div className="flex flex-col items-center gap-3.5">
           <div className="flex items-center gap-2.5">
             <span data-currency="true" aria-hidden="true" className="text-[40px] font-bold text-ink">R</span>
-            <Box id="answer" label="Your answer" value={b.text} onChange={(v) => b.set.text(numberText(v))} mode="decimal" className="h-[76px] w-40 border-[3px] border-coral text-[40px]" />
+            <Box id="answer" label="Your answer" value={b.text} onChange={(v) => b.set.text(numberText(v))} mode="decimal" className="h-[76px] w-40 border-[3px] border-green text-[40px]" />
           </div>
           <Hint>Type the amount, like 12,50.</Hint>
         </div>
@@ -189,7 +190,7 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
       if (shape.unit || shape.signed || shape.round !== undefined) return <QuantityAnswer kind="decimal" extras={shape} value={b.text} onChange={b.set.text} />
       return (
         <div className="flex flex-col items-center gap-3.5">
-          <Box id="answer" label="Your answer" value={b.text} onChange={(v) => b.set.text(numberText(v))} mode="decimal" className="h-[76px] w-48 border-[3px] border-coral text-[40px]" />
+          <Box id="answer" label="Your answer" value={b.text} onChange={(v) => b.set.text(numberText(v))} mode="decimal" className="h-[76px] w-48 border-[3px] border-green text-[40px]" />
           <Hint>Type a number with a comma, like 0,5.</Hint>
         </div>
       )
@@ -197,7 +198,7 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
       if (shape.unit || shape.signed || shape.round !== undefined) return <QuantityAnswer kind="whole" extras={shape} value={b.text} onChange={b.set.text} />
       return (
         <div className="flex flex-col items-center gap-3.5">
-          <Box id="answer" label="Your answer" value={b.text} onChange={(v) => b.set.text(numberText(v))} className="h-[76px] w-48 border-[3px] border-coral text-[40px]" />
+          <Box id="answer" label="Your answer" value={b.text} onChange={(v) => b.set.text(numberText(v))} className="h-[76px] w-48 border-[3px] border-green text-[40px]" />
           <Hint>Type a whole number.</Hint>
         </div>
       )
@@ -255,7 +256,7 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
       // The lesson gave no kind we know: one plain box.
       return (
         <div className="flex flex-col items-center gap-3.5">
-          <Box id="answer" label="Your answer" value={b.text} onChange={(v) => b.set.text(v.slice(0, 20))} mode="decimal" className="h-[76px] w-48 border-[3px] border-coral text-[40px]" />
+          <Box id="answer" label="Your answer" value={b.text} onChange={(v) => b.set.text(v.slice(0, 20))} mode="decimal" className="h-[76px] w-48 border-[3px] border-green text-[40px]" />
           <Hint>Type your answer.</Hint>
         </div>
       )
@@ -276,7 +277,7 @@ export function MissingQuestion({ q, shape, value, onChange }: { q: QuestionForC
         value={value}
         onChange={(v) => onChange(digits(v, 4))}
         style={{ height: 64, width: 76 }}
-        className="border-[3px] border-coral text-[34px]"
+        className="border-[3px] border-green text-[34px]"
       />
     )
     return (
@@ -321,9 +322,9 @@ export function Choices({ q, picked, onPick, warm }: { q: QuestionForChild; pick
             onClick={() => onPick(letter)}
             className={`flex cursor-pointer items-center justify-center rounded-[22px] px-5 py-3 text-center text-balance ${warm ? 'min-h-[124px]' : 'min-h-20'} font-bold ${
               warm ? 'text-[30px]' : 'text-[26px]'
-            } ${on ? 'border-[3px] border-ink bg-ink text-white' : 'border-2 border-edge bg-card text-ink'}`}
+            } ${on ? 'border-[3px] border-green bg-green text-white' : 'border-2 border-edge bg-card text-ink'}`}
           >
-            <FractionText text={choiceText(choice) ?? ''} size={warm ? 38 : 28} rule={3} gap={warm ? 5 : 4} side={6} color={on ? '#FFFFFF' : '#1F1D36'} className="" />
+            <FractionText text={choiceText(choice) ?? ''} size={warm ? 38 : 28} rule={3} gap={warm ? 5 : 4} side={6} color={on ? '#FFFFFF' : '#161616'} className="" />
           </button>
         )
       })}
@@ -422,16 +423,7 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
     <main className="flex flex-1 flex-col gap-[26px] px-5 pt-[22px] pb-7">
       <div className="flex items-center justify-between">
         <p className="m-0 text-[16px] font-semibold">Question {q.index} of {q.of}</p>
-        <span aria-hidden="true" className="flex gap-1.5">
-          {Array.from({ length: q.of }, (_, i) => (
-            <span
-              key={i}
-              className={`size-3 rounded-pill ${
-                i + 1 < q.index ? 'bg-ink' : i + 1 === q.index ? 'border-[3px] border-coral' : 'border-[1.5px] border-muted-2'
-              }`}
-            />
-          ))}
-        </span>
+        <BeadRow total={q.of} now={q.index} size={15} />
       </div>
       <section aria-label="Question" className="flex flex-col items-center gap-[30px] rounded-[28px] border border-line bg-card px-[18px] py-[30px]">
         {shape.kind === 'missing' ? (

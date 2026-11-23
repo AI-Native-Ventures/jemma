@@ -13,14 +13,14 @@ export type CheckAnswer = { n: number; prompt: string; answer: string; right: bo
 
 const rightPill = (bg: string) => (
   <span className="flex size-7 flex-none items-center justify-center rounded-full" style={{ background: bg }}>
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Marked right">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Marked right">
       <path d="m5 12.5 4.5 4.5L19 7.5" />
     </svg>
   </span>
 )
 const wrongPill = (
-  <span className="flex size-7 flex-none items-center justify-center rounded-full bg-[#FFEDE8]">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#B8381F" strokeWidth="3.4" strokeLinecap="round" role="img" aria-label="Marked wrong">
+  <span className="flex size-7 flex-none items-center justify-center rounded-full bg-[#FFF3DA]">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#B8281E" strokeWidth="3.4" strokeLinecap="round" role="img" aria-label="Marked wrong">
       <path d="M6 6l12 12M18 6 6 18" />
     </svg>
   </span>
@@ -90,11 +90,11 @@ export function CheckScreen({
           <span className="text-[14px] text-body">{written}</span>
         </span>
         {photoUrl ? (
-          <a href={photoUrl} target="_blank" rel="noreferrer" className="flex h-11 flex-none items-center rounded-[10px] border border-[#8C89A3] bg-card px-3.5 text-[14px] font-semibold text-ink no-underline">
+          <a href={photoUrl} target="_blank" rel="noreferrer" className="flex h-11 flex-none items-center rounded-[10px] border border-[#8F8D88] bg-card px-3.5 text-[14px] font-semibold text-ink no-underline">
             View
           </a>
         ) : (
-          <button type="button" className="h-11 flex-none rounded-[10px] border border-[#8C89A3] bg-card px-3.5 text-[14px] font-semibold text-ink">View</button>
+          <button type="button" className="h-11 flex-none rounded-[10px] border border-[#8F8D88] bg-card px-3.5 text-[14px] font-semibold text-ink">View</button>
         )}
       </section>
 
@@ -109,18 +109,18 @@ export function CheckScreen({
             const value = edits[a.n] ?? a.answer
             if (!open) {
               return (
-                <li key={a.n} className="flex min-h-[52px] items-center gap-2.5 border-t border-[#EFEEF4] pr-1.5">
+                <li key={a.n} className="flex min-h-[52px] items-center gap-2.5 border-t border-[#F0EEE8] pr-1.5">
                   <span className="w-[22px] text-[13px] font-semibold text-body">{a.n}</span>
                   <span className="min-w-0 flex-1 text-[15px]"><Maths text={a.prompt} grade={grade} size={16} /></span>
-                  <span className="min-w-14 max-w-[40%] text-right text-[20px] text-[#2F3A56]" style={{ fontFamily: hand }}><Maths text={value} grade={grade} size={18} /></span>
-                  {a.right ? rightPill('#EEEDF5') : wrongPill}
+                  <span className="min-w-14 max-w-[40%] text-right text-[20px] text-[#12308C]" style={{ fontFamily: hand }}><Maths text={value} grade={grade} size={18} /></span>
+                  {a.right ? rightPill('#EFECE6') : wrongPill}
                 </li>
               )
             }
             return (
-              <li key={a.n} className="-ml-2.5 my-1 flex flex-col gap-2.5 rounded-14 border border-[#FFC9BB] bg-[#FFF4F1] p-2.5">
+              <li key={a.n} className="-ml-2.5 my-1 flex flex-col gap-2.5 rounded-14 border border-[#FFDC93] bg-[#FFF8E8] p-2.5">
                 <span className="flex items-center gap-2.5">
-                  <span className="w-[22px] text-[13px] font-semibold text-[#B8381F]">{a.n}</span>
+                  <span className="w-[22px] text-[13px] font-semibold text-[#B8281E]">{a.n}</span>
                   <span className="min-w-0 flex-1 text-[15px]"><Maths text={a.prompt} grade={grade} size={16} /></span>
                   <span className="min-w-14 max-w-[40%] text-right text-[20px] text-[#5A6378]" style={{ fontFamily: hand }}><Maths text={value} grade={grade} size={18} /></span>
                   {a.right ? rightPill('#FFFFFF') : wrongPill}
@@ -138,7 +138,7 @@ export function CheckScreen({
                   />
                 ) : (
                   <span className="grid grid-cols-2 gap-2">
-                    <button type="button" onClick={() => setSure((cur) => [...cur, a.n])} className="min-h-11 rounded-12 border-none bg-ink px-5 py-2 text-center text-[15px] font-semibold text-balance text-white">
+                    <button type="button" onClick={() => setSure((cur) => [...cur, a.n])} className="min-h-11 rounded-12 border-none bg-green px-5 py-2 text-center text-[15px] font-semibold text-balance text-white">
                       Yes, <Maths text={a.answer} grade={grade} size={16} />
                     </button>
                     <button type="button" onClick={() => setFixing((cur) => [...cur, a.n])} className="min-h-11 rounded-12 border-[1.5px] border-ink bg-card px-5 py-2 text-center text-[15px] font-semibold text-balance text-ink">
@@ -161,12 +161,12 @@ export function CheckScreen({
 
       <div className="flex-1" />
       <div className="flex flex-col gap-1.5">
-        {message ? <p role="alert" className="m-0 text-[14px] text-[#B8381F]">{message}</p> : null}
+        {message ? <p role="alert" className="m-0 text-[14px] text-[#B8281E]">{message}</p> : null}
         <button
           type="button"
           disabled={busy}
           onClick={() => void save()}
-          className="flex min-h-14 items-center justify-center gap-2 rounded-14 border-none bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50"
+          className="flex min-h-14 items-center justify-center gap-2 rounded-14 border-none bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50"
         >
           <IconLabel gap={8} icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="m5 12.5 4.5 4.5L19 7.5" />

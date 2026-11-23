@@ -2,6 +2,7 @@ import type { CoordinatePlaneSpec, DiagramSpec } from '@jemma/profiling/schemas'
 
 // P141: pictures that must draw exactly as they did before the thinning of axis numbers and the inequality rays (their markup was taken from the
 // code before the change, p141-before.json). None of them is crowded and none has an inequality as a label.
+// The hashes were re-pinned by the South African colours (23 Nov 2026): the same markup in the new colours (see p141-diagram-fixes.test.tsx).
 type NumberLineSpec = Extract<DiagramSpec, { kind: 'number_line' }>
 
 export const NUMBER_LINES: Record<string, NumberLineSpec> = {

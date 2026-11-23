@@ -28,7 +28,7 @@ const QUESTIONS = [
 ]
 
 const chevron = (up: boolean) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none' }}>
     <path d={up ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'} />
   </svg>
 )
@@ -68,7 +68,7 @@ export function HelpList() {
           {shown.map((item, n) => {
             const expanded = open === item.i
             return (
-              <li key={item.i} style={{ borderTop: n ? '1px solid #EFEEF4' : undefined }}>
+              <li key={item.i} style={{ borderTop: n ? '1px solid #F0EEE8' : undefined }}>
                 <button
                   type="button"
                   aria-expanded={expanded}
@@ -80,7 +80,7 @@ export function HelpList() {
                   {chevron(expanded)}
                 </button>
                 {expanded ? (
-                  <p id={`a${item.i}`} style={{ margin: '0 0 14px', padding: '12px 14px', borderRadius: 14, background: '#F4F3F8', fontSize: 15, lineHeight: 1.5 }}>
+                  <p id={`a${item.i}`} style={{ margin: '0 0 14px', padding: '12px 14px', borderRadius: 14, background: '#F4F2EE', fontSize: 15, lineHeight: 1.5 }}>
                     {item.a}
                   </p>
                 ) : null}

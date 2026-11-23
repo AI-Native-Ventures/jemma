@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
 
 // P90b: an icon and the words of a button are one centred group. When a long label wraps to two lines the icon stays beside the first line, with
-// the words, and does not sit alone at the far edge of the button. The coral "Try again" of the practice card has the same room as every big
+// the words, and does not sit alone at the far edge of the button. The gold "Try again" of the practice card has the same room as every big
 // button. react-dom/server only: no server, no browser, no database.
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: () => undefined, refresh: () => undefined }), usePathname: () => '/k', useSearchParams: () => new URLSearchParams() }))

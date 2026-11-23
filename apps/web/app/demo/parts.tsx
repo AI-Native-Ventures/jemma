@@ -3,7 +3,7 @@ import { DemoBadge } from '@/components/blocks'
 
 export function Chevron() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
       <path d="m9 6 6 6-6 6" />
     </svg>
   )
@@ -41,15 +41,15 @@ export function DimmedClass({ className, grade, schoolName, children }: { classN
         </header>
         <div aria-hidden="true" className="flex flex-col gap-4 px-5 py-4">
           <span className="block h-3.5 w-[120px] rounded-pill bg-soft-3" />
-          <span className="block h-[26px] w-[300px] rounded-pill bg-[#DCDAE8]" />
-          <span className="block h-[26px] w-[220px] rounded-pill bg-[#DCDAE8]" />
+          <span className="block h-[26px] w-[300px] rounded-pill bg-[#DEDBD3]" />
+          <span className="block h-[26px] w-[220px] rounded-pill bg-[#DEDBD3]" />
           <span className="block h-[120px] rounded-18 border border-line bg-card" />
           <span className="block h-[88px] rounded-18 border border-line bg-card" />
           <span className="block h-[160px] rounded-18 border border-line bg-card" />
           <span className="block h-[88px] rounded-18 border border-line bg-card" />
         </div>
       </div>
-      <span aria-hidden="true" className="absolute inset-0 bg-[rgba(31,29,54,0.5)]" />
+      <span aria-hidden="true" className="absolute inset-0 bg-[rgba(22,22,22,0.5)]" />
       {children}
     </div>
   )

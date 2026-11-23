@@ -21,7 +21,7 @@ export function EditDetails({ name }: { name: string }) {
           Your name
         </label>
         <input id="your-name" value={value} onChange={(e) => setValue(e.target.value)} className="h-[52px] rounded-14 border border-muted-2 bg-card px-3.5 text-[17px] text-ink" />
-        <PendingButton pending={pending} type="button" disabled={pending || !value.trim()} onClick={() => start(async () => { await saveName(value); setOpen(false) })} className="flex min-h-[52px] items-center justify-center rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
+        <PendingButton pending={pending} type="button" disabled={pending || !value.trim()} onClick={() => start(async () => { await saveName(value); setOpen(false) })} className="flex min-h-[52px] items-center justify-center rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
           Save
         </PendingButton>
       </Sheet>
@@ -50,7 +50,7 @@ export function DeleteAccount() {
   const [open, setOpen] = useState(false)
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="min-h-11 border-0 bg-transparent p-0 text-[15px] font-semibold text-coral-text underline underline-offset-[3px]">
+      <button type="button" onClick={() => setOpen(true)} className="min-h-11 border-0 bg-transparent p-0 text-[15px] font-semibold text-red-text underline underline-offset-[3px]">
         Delete my account
       </button>
       <ComingSheet open={open} onClose={() => setOpen(false)} />

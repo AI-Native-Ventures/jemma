@@ -44,7 +44,7 @@ export function ParentCodeCard({ initial }: { initial: string | null }) {
         </div>
       ) : null}
       {error ? (
-        <p role="alert" className="m-0 text-[15px] leading-[1.4] font-semibold text-coral-text">
+        <p role="alert" className="m-0 text-[15px] leading-[1.4] font-semibold text-red-text">
           {error}
         </p>
       ) : null}

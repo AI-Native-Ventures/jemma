@@ -1,6 +1,6 @@
 import type { TriangleSpec } from '@jemma/profiling/schemas'
 import { Rich, fracLabel } from './math-label'
-import { CORAL_TEXT, INK, SOFT, Svg } from './shared'
+import { RED_TEXT, INK, SOFT, Svg } from './shared'
 import { layoutTriangle, rightCorner, triangleAngles } from './triangle-math'
 
 export type TriangleProps = TriangleSpec
@@ -47,7 +47,7 @@ export function Triangle(props: TriangleProps) {
         const arc = l.arcs[i]
         return (
           <g key={i}>
-            {arc && text(props.angleLabels, i) && <path data-mark="arc" d={arc} fill="none" stroke={CORAL_TEXT} strokeWidth={1.4} strokeLinecap="round" />}
+            {arc && text(props.angleLabels, i) && <path data-mark="arc" d={arc} fill="none" stroke={RED_TEXT} strokeWidth={1.4} strokeLinecap="round" />}
             <text data-vertex={i} x={r1(l.names[i]!.x)} y={r1(l.names[i]!.y + 5)} fontSize={16} fontWeight={700} fill={INK} textAnchor="middle">
               {props.vertices[i] ?? ''}
             </text>
@@ -58,8 +58,8 @@ export function Triangle(props: TriangleProps) {
                 </text>
               ))}
             {text(props.angleLabels, i) &&
-              (fracLabel({ text: text(props.angleLabels, i), x: r1(l.angles[i]!.at.x), y: r1(l.angles[i]!.at.y + 4), size: 13, weight: 700, fill: CORAL_TEXT, anchor: 'middle', attrs: { 'data-angle': String(i) } }) ?? (
-                <text data-angle={i} x={r1(l.angles[i]!.at.x)} y={r1(l.angles[i]!.at.y + 4)} fontSize={13} fontWeight={700} fill={CORAL_TEXT} textAnchor="middle">
+              (fracLabel({ text: text(props.angleLabels, i), x: r1(l.angles[i]!.at.x), y: r1(l.angles[i]!.at.y + 4), size: 13, weight: 700, fill: RED_TEXT, anchor: 'middle', attrs: { 'data-angle': String(i) } }) ?? (
+                <text data-angle={i} x={r1(l.angles[i]!.at.x)} y={r1(l.angles[i]!.at.y + 4)} fontSize={13} fontWeight={700} fill={RED_TEXT} textAnchor="middle">
                   <Rich text={text(props.angleLabels, i)} size={13} />
                 </text>
               ))}

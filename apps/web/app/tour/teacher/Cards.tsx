@@ -31,7 +31,7 @@ export function AnalysisCard({ analysis }: { analysis: TourClass['analysis'] }) 
         <h3 className="m-0 text-[16px] font-bold">Who needs help</h3>
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
           {analysis.needHelp.map((n) => (
-            <li key={n.name} className="flex flex-col gap-0.5 rounded-14 border border-[#FFC9BB] bg-coral-wash px-3.5 py-3">
+            <li key={n.name} className="flex flex-col gap-0.5 rounded-14 border border-[#FFDC93] bg-gold-wash px-3.5 py-3">
               <span className="text-[16px] font-bold">{n.name}</span>
               <span className="text-[15px] leading-[1.5]"><Words text={n.why} /></span>
             </li>

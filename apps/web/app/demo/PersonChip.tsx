@@ -33,7 +33,7 @@ export function PersonChip({ name, detail, variant, busy = 'Opening your copy of
         <span className="text-[16px] font-semibold">{name}</span>
         <span className="text-[14px] text-body">{pending ? busy : detail}</span>
       </span>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={`flex-none ${pending ? 'animate-spin' : ''}`}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={`flex-none ${pending ? 'animate-spin' : ''}`}>
         {pending ? <path d="M21 12a9 9 0 0 0-9-9" /> : <path d="m9 6 6 6-6 6" />}
       </svg>
     </button>

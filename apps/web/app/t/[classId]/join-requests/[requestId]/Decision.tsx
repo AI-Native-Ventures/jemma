@@ -7,7 +7,7 @@ import { CheckIcon } from '@/components/ui/icons'
 import { decideJoinRequest } from '../actions'
 
 const NEW = 'new'
-const choiceBase = 'flex min-h-[52px] w-full cursor-pointer items-center rounded-14 border-[1.5px] border-ink px-5 py-3 text-left text-[17px] leading-[1.25] font-semibold text-balance'
+const choiceBase = 'flex min-h-[52px] w-full cursor-pointer items-center rounded-14 border-[1.5px] px-5 py-3 text-left text-[17px] leading-[1.25] font-semibold text-balance'
 
 /**
  * Who the learner is, then yes or no. "This is {name}" for each learner of the class who has no login yet, and "Add as a new learner"; the one that
@@ -36,15 +36,15 @@ export function Decision({ classId, requestId, name, candidates, match }: { clas
         </h2>
         <div role="group" aria-labelledby="who" className="flex flex-col gap-2">
           {options.map((o) => (
-            <button key={o.id} type="button" aria-pressed={choice === o.id} onClick={() => setChoice(o.id)} className={`${choiceBase} ${choice === o.id ? 'bg-ink text-white' : 'bg-card text-ink'}`}>
+            <button key={o.id} type="button" aria-pressed={choice === o.id} onClick={() => setChoice(o.id)} className={`${choiceBase} ${choice === o.id ? 'border-green bg-green text-white' : 'border-ink bg-card text-ink'}`}>
               {o.label}
             </button>
           ))}
         </div>
       </section>
       <div className="flex flex-col gap-2">
-        {error ? <p role="alert" className="m-0 text-center text-[14px] text-coral-text">{error}</p> : null}
-        <button type="button" disabled={pending || choice === null} onClick={() => decide('approved')} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
+        {error ? <p role="alert" className="m-0 text-center text-[14px] text-red-text">{error}</p> : null}
+        <button type="button" disabled={pending || choice === null} onClick={() => decide('approved')} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50">
           <IconLabel gap={8} icon={<CheckIcon size={20} className="text-white" />}>
             Yes, approve
           </IconLabel>

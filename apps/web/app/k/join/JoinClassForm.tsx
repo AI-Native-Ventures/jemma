@@ -47,12 +47,12 @@ export function JoinClassForm({ declined, label, declinedNote }: { declined: boo
         onChange={(e) => setCode(e.target.value)}
         className="h-14 w-full rounded-14 border-2 border-ink bg-card px-4 text-[22px] font-semibold tracking-[0.14em] text-ink uppercase"
       />
-      {message ? <p role="alert" className="m-0 text-[14px] leading-[1.4] text-coral-text">{message}</p> : null}
+      {message ? <p role="alert" className="m-0 text-[14px] leading-[1.4] text-red-text">{message}</p> : null}
       <PendingButton
         pending={pending}
         type="submit"
         disabled={pending || !code.trim()}
-        className="flex min-h-[52px] w-full items-center justify-center rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50"
+        className="flex min-h-[52px] w-full items-center justify-center rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white disabled:opacity-50"
       >
         Send
       </PendingButton>

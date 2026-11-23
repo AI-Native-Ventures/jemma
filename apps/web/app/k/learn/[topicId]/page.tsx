@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: 'Lessons' }
 export const dynamic = 'force-dynamic'
 
 const bigLink =
-  'flex min-h-[60px] w-full items-center justify-center rounded-18 bg-ink px-5 py-3 text-center text-[19px] font-bold text-balance text-white no-underline'
+  'flex min-h-[60px] w-full items-center justify-center rounded-18 bg-green px-5 py-3 text-center text-[19px] font-bold text-balance text-white no-underline'
 
 /**
  * The lessons of one topic: the topic's name, one button to start (or go on with) the first lesson that is not finished, and every lesson in teaching
@@ -64,7 +64,7 @@ export default async function LessonListPage({ params, searchParams }: { params:
                 <Link href={href(e.position)} className="flex min-h-[64px] items-center gap-3 py-3 text-ink no-underline">
                   <span
                     aria-hidden="true"
-                    className={`flex size-9 flex-none items-center justify-center rounded-pill text-[16px] font-bold ${e.done ? 'bg-ink text-white' : 'border-2 border-edge text-ink'}`}
+                    className={`flex size-9 flex-none items-center justify-center rounded-pill text-[16px] font-bold ${e.done ? 'bg-green text-white' : 'border-2 border-edge text-ink'}`}
                   >
                     {e.done ? (
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>

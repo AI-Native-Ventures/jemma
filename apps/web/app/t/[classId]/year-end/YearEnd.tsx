@@ -20,7 +20,7 @@ export function YearEnd({ short, nextGrade, grade, csvHref }: { short: string; n
             <span className="text-[15px] leading-[1.45] text-body">Learners keep their gaps, fixed topics and what helps. Their Grade {nextGrade} teacher sees them. Parents stay linked.</span>
           </span>
           {choice === 'up' ? (
-            <span className="flex size-[26px] flex-none items-center justify-center rounded-pill bg-ink">
+            <span className="flex size-[26px] flex-none items-center justify-center rounded-pill bg-green">
               <CheckIcon size={16} className="text-white" />
             </span>
           ) : (
@@ -33,7 +33,7 @@ export function YearEnd({ short, nextGrade, grade, csvHref }: { short: string; n
             <span className="text-[15px] leading-[1.45] text-body">Read only. Nothing is deleted.</span>
           </span>
           {choice === 'archive' ? (
-            <span className="flex size-[26px] flex-none items-center justify-center rounded-pill bg-ink">
+            <span className="flex size-[26px] flex-none items-center justify-center rounded-pill bg-green">
               <CheckIcon size={16} className="text-white" />
             </span>
           ) : (
@@ -43,7 +43,7 @@ export function YearEnd({ short, nextGrade, grade, csvHref }: { short: string; n
       </fieldset>
 
       <p className="m-0 flex gap-2.5 rounded-14 bg-soft-2 px-3.5 py-3 text-[15px] leading-[1.45]">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5D5A73" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5C5A55" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="flex-none">
           <rect x="5" y="10.5" width="14" height="10" rx="2" />
           <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
         </svg>
@@ -51,7 +51,7 @@ export function YearEnd({ short, nextGrade, grade, csvHref }: { short: string; n
       </p>
 
       <div className="flex flex-col gap-2">
-        <button type="button" onClick={() => setOpen(true)} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white">
+        <button type="button" onClick={() => setOpen(true)} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white">
           {choice === 'up' ? `Move ${short} up after the last day of term` : `Archive ${short} after the last day of term`}
         </button>
         <a href={csvHref} download className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-5 py-3 text-center text-[16px] font-semibold text-balance text-ink no-underline">

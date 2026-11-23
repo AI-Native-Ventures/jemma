@@ -38,15 +38,15 @@ const LABEL: Record<BlockForChild['kind'], string> = {
 const smallButton = 'flex min-h-11 flex-none cursor-pointer items-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-4 text-[15px] font-semibold text-ink'
 const textButton = 'flex min-h-11 cursor-pointer items-center self-start border-0 bg-transparent px-1 text-[15px] font-semibold text-ink underline underline-offset-[3px]'
 const stepButton =
-  'flex min-h-[52px] w-full cursor-pointer items-center justify-center rounded-14 border-0 bg-ink px-4 py-2 text-center text-[17px] font-semibold text-balance text-white'
+  'flex min-h-[52px] w-full cursor-pointer items-center justify-center rounded-14 border-0 bg-green px-4 py-2 text-center text-[17px] font-semibold text-balance text-white'
 
 function PlayButton({ playing, onToggle }: { playing: boolean; onToggle: () => void }) {
   return (
     <button type="button" aria-pressed={playing} aria-label={playing ? 'Stop reading this part' : 'Read this part aloud'} onClick={onToggle} className={smallButton}>
       {playing ? (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="#1F1D36" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2" /></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#161616" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2" /></svg>
       ) : (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="#1F1D36" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" /></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#161616" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" /></svg>
       )}
       {playing ? 'Stop' : 'Listen'}
     </button>
@@ -121,7 +121,7 @@ function WorkedBlock({ block, view, voice, typeset }: { block: Extract<BlockForC
       {view.diagramFirst ? null : picture}
       <ol aria-label="Steps" aria-live="polite" className="m-0 flex list-none flex-col gap-3 p-0">
         {block.steps.slice(0, shown).map((s, i) => (
-          <li key={i} className="flex flex-col gap-1 border-l-[3px] border-coral pl-3">
+          <li key={i} className="flex flex-col gap-1 border-l-[3px] border-gold pl-3">
             <LessonText text={s.line} typeset="all" size={24} className="font-semibold" />
             <LessonText text={s.reason} typeset={typeset} size={19} className="text-[16px] text-body" />
           </li>
@@ -148,11 +148,11 @@ function MistakeBlock({ block, view, typeset }: { block: Extract<BlockForChild, 
     <>
       {view.diagramFirst ? picture : null}
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="flex flex-col gap-1 rounded-18 border border-[#FFC9BB] bg-coral-wash p-3.5">
-          <p className="m-0 text-[15px] font-semibold text-coral-text">Not this way</p>
+        <div className="flex flex-col gap-1 rounded-18 border border-red bg-card p-3.5">
+          <p className="m-0 text-[15px] font-semibold text-red-text">Not this way</p>
           <LessonText text={block.wrong} typeset="all" size={22} className="font-semibold" />
         </div>
-        <div className="flex flex-col gap-1 rounded-18 border border-line bg-soft-2 p-3.5">
+        <div className="flex flex-col gap-1 rounded-18 border border-green bg-green-tint p-3.5">
           <p className="m-0 text-[15px] font-semibold text-body">This way</p>
           <LessonText text={block.right} typeset="all" size={22} className="font-semibold" />
         </div>

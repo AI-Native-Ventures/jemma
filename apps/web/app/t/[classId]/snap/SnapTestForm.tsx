@@ -108,7 +108,7 @@ export function SnapTestForm({
       type="button"
       aria-pressed={mode === id}
       onClick={() => setMode(id)}
-      className={`min-h-11 cursor-pointer rounded-[10px] border-none px-3 py-2 text-center text-[15px] text-balance text-ink ${mode === id ? 'bg-card font-semibold shadow-[0_1px_3px_rgba(31,29,54,0.10)]' : 'bg-transparent font-medium'}`}
+      className={`min-h-11 cursor-pointer rounded-[10px] border-none px-3 py-2 text-center text-[15px] text-balance text-ink ${mode === id ? 'bg-card font-semibold shadow-[0_1px_3px_rgba(22,22,22,0.10)]' : 'bg-transparent font-medium'}`}
     >
       {label}
     </button>
@@ -170,7 +170,7 @@ export function SnapTestForm({
                       type="button"
                       aria-pressed={on}
                       onClick={() => toggle(t.id)}
-                      className={`inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-pill px-3.5 text-[14px] font-medium ${on ? 'border-none bg-ink text-white' : 'border border-muted-2 bg-card text-ink'}`}
+                      className={`inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-pill px-3.5 text-[14px] font-medium ${on ? 'border-none bg-green text-white' : 'border border-muted-2 bg-card text-ink'}`}
                     >
                       {on ? (
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
@@ -198,9 +198,9 @@ export function SnapTestForm({
           </section>
 
           <div className="flex-1" />
-          {error ? <p role="alert" className="m-0 text-[14px] text-coral-text">{error}</p> : null}
+          {error ? <p role="alert" className="m-0 text-[14px] text-red-text">{error}</p> : null}
           <div className="flex flex-col gap-1">
-            <label className={`relative flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink ${pending ? 'opacity-60' : ''}`}>
+            <label className={`relative flex min-h-[52px] cursor-pointer items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink ${pending ? 'opacity-60' : ''}`}>
               <IconLabel gap={8} icon={<CameraIcon size={20} />}>
                 Snap the memo
               </IconLabel>

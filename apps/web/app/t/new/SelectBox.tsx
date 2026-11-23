@@ -11,7 +11,7 @@ export function SelectBox({ id, value, onChange, children, invalid }: { id: stri
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-invalid={invalid ? true : undefined}
-        className={`h-[52px] w-full appearance-none rounded-14 border bg-card pr-11 pl-3.5 text-[17px] text-ink ${invalid ? 'border-coral-text' : 'border-muted-2'}`}
+        className={`h-[52px] w-full appearance-none rounded-14 border bg-card pr-11 pl-3.5 text-[17px] text-ink ${invalid ? 'border-red-text' : 'border-muted-2'}`}
       >
         {children}
       </select>

@@ -14,7 +14,7 @@ export default function TourTeacherHome() {
       <TourHeader view="teacher" className={TEACHER_WIDTH} />
       <main className={`mx-auto flex w-full flex-1 flex-col gap-5 px-5 pt-[18px] pb-8 ${TEACHER_WIDTH}`}>
         <div className="flex flex-col gap-1.5">
-          <p className="m-0 text-[14px] font-semibold text-coral-text">{TOUR_CLASS.name}</p>
+          <p className="m-0 text-[14px] font-semibold text-red-text">{TOUR_CLASS.name}</p>
           <h1 className="m-0 text-[30px] leading-[1.14] font-bold tracking-[-0.02em] text-pretty">{TOUR_SUBJECT}</h1>
           <p className="m-0 text-[17px] leading-[1.4] text-body">How the class is doing in each part. Pick a part to see its topics.</p>
         </div>

@@ -15,7 +15,7 @@ const card = 'flex flex-col gap-2 rounded-[22px] border border-line bg-card p-4 
 /** A diamond bullet, as the lesson of the app has it. */
 const Bullet = () => (
   <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" className="mt-[7px] flex-none">
-    <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+    <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
   </svg>
 )
 

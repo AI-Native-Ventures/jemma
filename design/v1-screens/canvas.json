@@ -182,7 +182,7 @@
       "x": 5170,
       "y": 1752,
       "w": 390,
-      "h": 1004,
+      "h": 1092,
       "title": "State · Jemma working",
       "is_interactive": true
     },
@@ -374,7 +374,7 @@
       "x": 1880,
       "y": 7748,
       "w": 390,
-      "h": 844,
+      "h": 896,
       "title": "Parent · Waiting for the teacher",
       "is_interactive": true
     },
@@ -662,7 +662,7 @@
       "x": 0,
       "y": 15844,
       "w": 390,
-      "h": 892,
+      "h": 956,
       "title": "State · Error with retry",
       "is_interactive": true
     },
@@ -670,7 +670,7 @@
       "x": 470,
       "y": 15844,
       "w": 390,
-      "h": 864,
+      "h": 1020,
       "title": "State · Empty new class",
       "is_interactive": true
     },
@@ -1009,7 +1009,7 @@
       "x": 470,
       "y": 27166,
       "w": 390,
-      "h": 920,
+      "h": 1084,
       "title": "After the challenge · New child, nothing yet",
       "is_interactive": true
     },
@@ -1123,6 +1123,14 @@
       "w": 390,
       "h": 1220,
       "title": "After the challenge · Neo's Today",
+      "is_interactive": true
+    },
+    "sa-kit.dc.html": {
+      "x": 0,
+      "y": 31640,
+      "w": 1440,
+      "h": 1228,
+      "title": "South African touches · the kit",
       "is_interactive": true
     },
     "desktop-pair.dc.html": {
@@ -1317,6 +1325,7 @@
     "parent-empty-profile.dc.html",
     "parent-library.dc.html",
     "parent-level-result.dc.html",
+    "sa-kit.dc.html",
     "parent-chat.dc.html",
     "parent-teen-invite.dc.html",
     "parent-teachers.dc.html",

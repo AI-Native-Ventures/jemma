@@ -37,7 +37,7 @@ export function Sheet({ open, onClose, title, description, children }: SheetProp
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative flex leading-[normal] w-full max-w-[560px] flex-col gap-3.5 rounded-t-[28px] bg-ground px-5 pt-2.5 pb-[30px] shadow-[0_-10px_30px_rgba(31,29,54,0.18)]"
+        className="relative flex leading-[normal] w-full max-w-[560px] flex-col gap-3.5 rounded-t-[28px] bg-ground px-5 pt-2.5 pb-[30px] shadow-[0_-10px_30px_rgba(22,22,22,0.18)]"
       >
         <span aria-hidden="true" className="h-[5px] w-11 self-center rounded-pill bg-edge" />
         <div className="flex flex-col gap-1">

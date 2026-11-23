@@ -12,9 +12,9 @@ export type SpaceHeaderProps = {
   demoHref?: string
   /** Where the bell goes. `null` shows no bell. */
   notificationsHref?: string | null
-  /** Unread count; the coral dot shows when above 0. */
+  /** Unread count; the gold dot shows when above 0. */
   unread?: number
-  /** First letter in a coral circle, as on the parent header. */
+  /** First letter in a soft gold circle, as on the parent header. */
   avatar?: string
   /** Accessible name of the settings link. */
   settingsLabel?: string
@@ -43,7 +43,7 @@ export function SpaceHeader({
         {avatar ? (
           <span
             aria-hidden="true"
-            className="flex size-[38px] flex-none items-center justify-center rounded-pill bg-coral-soft text-[16px] font-bold"
+            className="flex size-[38px] flex-none items-center justify-center rounded-pill bg-gold-soft text-[16px] font-bold"
           >
             {avatar}
           </span>
@@ -74,7 +74,7 @@ export function SpaceHeader({
           {unread > 0 ? (
             <span
               aria-hidden="true"
-              className="absolute top-[9px] right-2.5 size-2.5 rounded-pill border-2 border-ground bg-coral"
+              className="absolute top-[9px] right-2.5 size-2.5 rounded-pill border-2 border-ground bg-gold"
             />
           ) : null}
         </Link>

@@ -1,5 +1,5 @@
 import type { DiagramSpec } from '@jemma/profiling/schemas'
-import { BODY, CORAL_SOFT, CORAL_TINT, EDGE, INK, Line, Svg, T, type Variant } from './shared'
+import { BODY, GOLD_SOFT, GOLD_TINT, EDGE, INK, Line, Svg, T, type Variant } from './shared'
 
 export type GridAreaProps = Extract<DiagramSpec, { kind: 'grid_area' }> & { variant?: Variant }
 
@@ -39,7 +39,7 @@ export function GridArea(props: GridAreaProps) {
   return (
     <Svg width={width} height={height} label={describeGridArea(props)}>
       {cells.map(([c, r]) => (
-        <rect key={`${c},${r}`} x={px(c)} y={py(r)} width={cell} height={cell} rx={0} fill={q ? CORAL_SOFT : CORAL_TINT} />
+        <rect key={`${c},${r}`} x={px(c)} y={py(r)} width={cell} height={cell} rx={0} fill={q ? GOLD_SOFT : GOLD_TINT} />
       ))}
       {Array.from({ length: cols + 1 }, (_, c) => (
         <Line key={`v${c}`} x1={px(c)} y1={y0} x2={px(c)} y2={y0 + h} stroke={EDGE} />

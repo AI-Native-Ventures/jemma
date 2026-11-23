@@ -110,7 +110,7 @@ export function PatternCard({ p, parentName }: { p: LvPattern; parentName: strin
   return (
     <Card as="article" aria-labelledby={`pattern-${p.id}`} radius={20} className="gap-3">
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-        <Pill tone={p.kind === 'struggle' ? 'coral' : 'soft'}>{p.pill}</Pill>
+        <Pill tone={p.kind === 'struggle' ? 'gold' : 'soft'}>{p.pill}</Pill>
         <span className="text-[13px] leading-[1.3] text-body">{`${p.subject} · ${p.strand}`}</span>
       </div>
       <h3 id={`pattern-${p.id}`} className="m-0 text-[17px] leading-[1.3] font-semibold text-pretty">
@@ -172,7 +172,7 @@ export function PatternCard({ p, parentName }: { p: LvPattern; parentName: strin
       ) : null}
 
       {d.error ? (
-        <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-coral-text">
+        <p role="alert" className="m-0 text-[14px] leading-[1.4] font-semibold text-red-text">
           {d.error}
         </p>
       ) : null}
@@ -217,7 +217,7 @@ export function SetAside({ patterns, parentName, withSubject = false }: { patter
         ))}
       </ul>
       {d.error ? (
-        <p role="alert" className="m-0 px-4 pb-3 text-[14px] font-semibold text-coral-text">
+        <p role="alert" className="m-0 px-4 pb-3 text-[14px] font-semibold text-red-text">
           {d.error}
         </p>
       ) : null}

@@ -23,10 +23,10 @@ export function TourHeader({ view, className }: { view: TourView; className: str
           <span className="truncate text-[19px] font-bold">{view === 'learner' ? `${TOUR_LEARNER}'s Jemma` : 'Jemma'}</span>
         </Link>
         <nav aria-label="View" className="flex flex-none gap-1 rounded-pill bg-soft-4 p-1">
-          <Link href="/tour" aria-current={view === 'learner' ? 'page' : undefined} className={`${tab} ${view === 'learner' ? 'bg-ink text-white' : 'text-ink'}`}>
+          <Link href="/tour" aria-current={view === 'learner' ? 'page' : undefined} className={`${tab} ${view === 'learner' ? 'bg-green text-white' : 'text-ink'}`}>
             Learner
           </Link>
-          <Link href="/tour/teacher" aria-current={view === 'teacher' ? 'page' : undefined} className={`${tab} ${view === 'teacher' ? 'bg-ink text-white' : 'text-ink'}`}>
+          <Link href="/tour/teacher" aria-current={view === 'teacher' ? 'page' : undefined} className={`${tab} ${view === 'teacher' ? 'bg-green text-white' : 'text-ink'}`}>
             Teacher
           </Link>
         </nav>

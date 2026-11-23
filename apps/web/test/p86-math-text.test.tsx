@@ -204,7 +204,7 @@ describe('the results screen draws the answers with the same notation', () => {
     const heading = article.querySelector('[data-question]')!
     // KaTeX (P125b): the question and both answers are typeset, the powers raised.
     expect([...heading.querySelectorAll('.msupsub')].map((s) => s.textContent)).toEqual(['2', '3'])
-    const answers = [...article.querySelectorAll('.bg-soft-2, .bg-\\[\\#FFF1ED\\]')]
+    const answers = [...article.querySelectorAll('.bg-soft-2, .bg-green-tint')]
     expect(answers).toHaveLength(2)
     expect(answers[0]!.querySelector('.msupsub')!.textContent).toBe('5')
     expect(answers[1]!.querySelector('.msupsub')!.textContent).toBe('5')

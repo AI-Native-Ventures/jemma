@@ -7,9 +7,9 @@ import { Poll } from './TestPieces'
 // The screen of one own curriculum of a learner in My own (P97), drawn from its props alone (the server page reads the data, see
 // lib/data/own-uploads.ts), in each of its states: Jemma reading it, a draft to check, done, or not readable.
 
-const card = 'flex flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(31,29,54,0.06)]'
+const card = 'flex flex-col rounded-[26px] border border-line bg-card p-5 shadow-[0_8px_24px_rgba(22,22,22,0.06)]'
 const linkButton = 'flex min-h-11 items-center justify-center text-[16px] font-semibold text-ink underline underline-offset-[3px]'
-const bigLink = 'flex min-h-[68px] w-full items-center justify-center rounded-20 bg-coral px-5 py-3 text-center text-[20px] font-bold text-balance text-ink no-underline sm:text-[22px]'
+const bigLink = 'flex min-h-[68px] w-full items-center justify-center rounded-20 bg-gold px-5 py-3 text-center text-[20px] font-bold text-balance text-ink no-underline sm:text-[22px]'
 
 export function CurriculumScreen({ view, firstName }: { view: OwnCurriculumView; firstName?: string }) {
   if (view.state === 'reading') {

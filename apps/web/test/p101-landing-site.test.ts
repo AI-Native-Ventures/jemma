@@ -54,7 +54,7 @@ describe('the page head', () => {
     const hero = 'Jemma reads class tests from a photo, finds what each learner is missing, and gives them a short lesson to practise at home.'
     expect(html).toContain(`<meta name="description" content="${hero}">`)
     expect(html).toContain(`<link rel="canonical" href="${LANDING}/">`)
-    expect(html).toContain('<meta name="theme-color" content="#F7F7FA">')
+    expect(html).toContain('<meta name="theme-color" content="#F8F6F1">')
   })
 
   it('has Open Graph title and description, and a favicon that is in the folder', () => {
@@ -114,10 +114,10 @@ describe("the taped card in the hero (Amina's Fractions row of the real Long vie
   function rows(): Record<string, Level[]> {
     const found: Record<string, Level[]> = {}
     for (const row of html.matchAll(/<span[^>]*>(Gr \d+)<\/span>(<svg[\s\S]*?<\/svg>)/g)) {
-      found[row[1]!] = [...row[2]!.matchAll(/<circle\b([^>]*)\/>(<path d="[^"]*" fill="#1F1D36"\/>)?/g)].map((dot): Level => {
+      found[row[1]!] = [...row[2]!.matchAll(/<circle\b([^>]*)\/>(<path d="[^"]*" fill="#161616"\/>)?/g)].map((dot): Level => {
         const attrs = dot[1]!
         if (/stroke-dasharray=/.test(attrs)) return 'dashed'
-        if (/\br="6"/.test(attrs) && /fill="#1F1D36"/.test(attrs)) return 'full'
+        if (/\br="6"/.test(attrs) && /fill="#161616"/.test(attrs)) return 'full'
         return dot[2] ? 'half' : 'empty'
       })
     }
@@ -139,7 +139,7 @@ describe("the taped card in the hero (Amina's Fractions row of the real Long vie
   it('draws a dashed dot as a ring with a dash pattern, in the muted colour of the app legend', () => {
     const dashed = [...html.matchAll(/<circle\b[^>]*stroke-dasharray="[^"]*"[^>]*\/>/g)].map((m) => m[0])
     expect(dashed.length).toBe(2)
-    for (const dot of dashed) expect(dot).toMatch(/r="5\.3"[^>]*fill="#FFFFFF"[^>]*stroke="#8C89A3"|fill="#FFFFFF"[^>]*stroke="#8C89A3"[^>]*r="5\.3"/)
+    for (const dot of dashed) expect(dot).toMatch(/r="5\.3"[^>]*fill="#FFFFFF"[^>]*stroke="#8F8D88"|fill="#FFFFFF"[^>]*stroke="#8F8D88"[^>]*r="5\.3"/)
   })
 })
 

@@ -10,11 +10,11 @@ export const outlineButton: CSSProperties = {
   textAlign: 'center',
   textWrap: 'balance',
   borderRadius: 14,
-  border: '1.5px solid #1F1D36',
+  border: '1.5px solid #161616',
   background: '#FFFFFF',
-  color: '#1F1D36',
+  color: '#161616',
   fontSize: 16,
   fontWeight: 600,
 }
 
-export const dangerButton: CSSProperties = { ...outlineButton, gap: 0, border: '1.5px solid #B8381F', color: '#B8381F' }
+export const dangerButton: CSSProperties = { ...outlineButton, gap: 0, border: '1.5px solid #B8281E', color: '#B8281E' }

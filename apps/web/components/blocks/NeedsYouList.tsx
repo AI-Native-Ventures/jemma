@@ -21,7 +21,7 @@ export type NeedsYouListProps = {
   wide?: boolean
 }
 
-/** Everything Jemma is unsure about, in one coral card. Renders nothing when empty. */
+/** Everything Jemma is unsure about, in one gold card. Renders nothing when empty. */
 export function NeedsYouList({ items, wide = false }: NeedsYouListProps) {
   if (items.length === 0) return null
   return (
@@ -29,15 +29,15 @@ export function NeedsYouList({ items, wide = false }: NeedsYouListProps) {
       aria-labelledby="needs"
       className={
         wide
-          ? 'flex flex-wrap items-center leading-[normal] gap-3.5 rounded-20 border border-[#FFC9BB] bg-coral-wash px-4 py-3.5'
-          : `flex flex-col leading-[normal] gap-2 rounded-20 border border-[#FFC9BB] bg-coral-wash px-3.5 pt-3.5 ${items.some((i) => i.desktopOff) ? 'pb-3.5' : 'pb-2'}`
+          ? 'flex flex-wrap items-center leading-[normal] gap-3.5 rounded-20 border border-[#FFDC93] bg-gold-wash px-4 py-3.5'
+          : `flex flex-col leading-[normal] gap-2 rounded-20 border border-[#FFDC93] bg-gold-wash px-3.5 pt-3.5 ${items.some((i) => i.desktopOff) ? 'pb-3.5' : 'pb-2'}`
       }
     >
       <div className={`flex items-center gap-2 ${wide ? '' : 'pl-0.5'}`}>
         <h2 id="needs" className="m-0 text-[16px] font-semibold">
           Needs you
         </h2>
-        <span className="inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-pill bg-coral px-[7px] text-[13px] font-bold text-ink">
+        <span className="inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-pill bg-gold px-[7px] text-[13px] font-bold text-ink">
           {items.length}
         </span>
       </div>
@@ -47,7 +47,7 @@ export function NeedsYouList({ items, wide = false }: NeedsYouListProps) {
           return (
             <div key={item.href + item.title} className="flex flex-col gap-3.5 rounded-14 bg-card p-3 text-ink">
               <div className="flex items-start gap-3">
-                <span aria-hidden="true" className="flex size-10 flex-none items-center justify-center rounded-12 bg-coral-tint">
+                <span aria-hidden="true" className="flex size-10 flex-none items-center justify-center rounded-12 bg-gold-tint">
                   <DesktopOffIcon />
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
@@ -66,7 +66,7 @@ export function NeedsYouList({ items, wide = false }: NeedsYouListProps) {
             href={item.href}
             className="flex min-h-14 flex-[1_1_420px] items-center gap-3 rounded-14 bg-card px-2.5 py-2 text-ink no-underline"
           >
-            <span aria-hidden="true" className="flex size-[38px] flex-none items-center justify-center rounded-12 bg-coral-tint">
+            <span aria-hidden="true" className="flex size-[38px] flex-none items-center justify-center rounded-12 bg-gold-tint">
               <Icon size={20} />
             </span>
             <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -82,7 +82,7 @@ export function NeedsYouList({ items, wide = false }: NeedsYouListProps) {
             href={item.href}
             className="flex min-h-16 items-center gap-3 rounded-14 bg-card py-2.5 pr-1.5 pl-2.5 text-ink no-underline"
           >
-            <span aria-hidden="true" className="flex size-10 flex-none items-center justify-center rounded-12 bg-coral-tint">
+            <span aria-hidden="true" className="flex size-10 flex-none items-center justify-center rounded-12 bg-gold-tint">
               <Icon />
             </span>
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">

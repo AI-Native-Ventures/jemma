@@ -20,7 +20,7 @@ type Last = { wrote: string; res: LessonAnswerResult }
 
 const column = 'mx-auto flex w-full max-w-[560px] flex-1 flex-col gap-5 px-5 pt-6 pb-7'
 const bigButton = 'flex min-h-[60px] w-full cursor-pointer items-center justify-center rounded-18 px-5 py-3 text-center text-[19px] font-bold text-balance no-underline'
-const primary = `${bigButton} border-0 bg-ink text-white`
+const primary = `${bigButton} border-0 bg-green text-white`
 const secondary = `${bigButton} border-2 border-edge bg-card text-ink`
 const card = 'flex flex-col gap-3 rounded-[22px] border border-line bg-card p-4'
 
@@ -265,7 +265,7 @@ export function TourTeach({ correct, onAgain }: { correct: boolean[]; onAgain: (
   const next = lastPart ? 'See what Jemma found' : 'Next part'
   return (
     <main className={column}>
-      <div role="status" data-result={right ? 'right' : 'wrong'} className={`flex flex-col gap-3 rounded-[22px] border p-4 ${right ? 'border-line bg-soft-2' : 'border-[#FFC9BB] bg-coral-wash'}`}>
+      <div role="status" data-result={right ? 'right' : 'wrong'} className={`flex flex-col gap-3 rounded-[22px] border p-4 ${right ? 'border-green bg-green-tint' : 'border-red bg-card'}`}>
         <p className="m-0 text-[15px] font-semibold text-body">{part.label}</p>
         <h1 className="m-0 text-[28px] leading-[1.15] font-bold tracking-[-0.015em]">{right ? `That worked: ${DELIVERY_LABEL[delivery]}` : usedAll ? 'Not yet' : 'Not quite'}</h1>
         {right ? (

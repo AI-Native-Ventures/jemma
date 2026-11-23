@@ -15,7 +15,7 @@ export function GridAreaQuestion({ prompt, spec, value, onChange, disabled }: Gr
   return (
     <section
       aria-label="Question"
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22, padding: '26px 18px', background: '#FFFFFF', border: '1px solid #E7E6EF', borderRadius: 28 }}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22, padding: '26px 18px', background: '#FFFFFF', border: '1px solid #E8E5DE', borderRadius: 28 }}
     >
       <h1 style={{ margin: 0, fontSize: 24, lineHeight: 1.3, fontWeight: 700, textAlign: 'center', textWrap: 'pretty' }}>{prompt}</h1>
       <DiagramView spec={spec} variant="question" />

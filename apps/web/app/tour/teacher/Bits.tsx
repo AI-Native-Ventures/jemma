@@ -10,11 +10,11 @@ export const list = 'm-0 flex list-none flex-col rounded-20 border border-line b
 /** The circle of a class average, drawn like the learner's circles and the teacher's Long view: 80 or more, 50 to 79, below 50, not taught yet. */
 export const classLevel = (avg: number | null) => levelOfScore(avg === null ? { right: 0, asked: 0 } : { right: avg, asked: 100 })
 
-/** The bar of a class average: ink from 50 up, coral below it. */
+/** The bar of a class average: black from 50 up, gold below it (as the teacher's own bars: gold is under half). */
 export function AverageBar({ avg }: { avg: number }) {
   return (
     <span aria-hidden="true" className="block h-2 w-full rounded-pill bg-soft-3">
-      <span className={`block h-full rounded-pill ${avg < 50 ? 'bg-coral' : 'bg-ink'}`} style={{ width: `${Math.max(2, Math.min(100, avg))}%` }} />
+      <span className={`block h-full rounded-pill ${avg < 50 ? 'bg-gold' : 'bg-ink'}`} style={{ width: `${Math.max(2, Math.min(100, avg))}%` }} />
     </span>
   )
 }
@@ -36,7 +36,7 @@ export function ClassRow({ label, note, stat, href }: { label: string; note?: st
         <span className="flex flex-wrap gap-x-2 text-[14px] text-body">
           <span>{stat.avg === null ? 'Not taught yet' : `Class average ${stat.avg}%`}</span>
           {note ? <span>{note}</span> : null}
-          {help ? <span className="font-semibold text-coral-text">{help}</span> : null}
+          {help ? <span className="font-semibold text-red-text">{help}</span> : null}
         </span>
       </span>
       {href ? <ChevronRight /> : null}

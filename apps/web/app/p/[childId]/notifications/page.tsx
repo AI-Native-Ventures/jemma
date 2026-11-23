@@ -16,7 +16,7 @@ const ICONS: Record<string, string[]> = {
 function iconOf(href: string) {
   const kind = /\/learn/.test(href) ? 'learn' : /\/(papers|tests)/.test(href) ? 'paper' : /\/snap/.test(href) ? 'snap' : 'note'
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
       {kind === 'paper' ? <rect x="5" y="3.5" width="14" height="17" rx="2" /> : null}
       {kind === 'snap' ? <circle cx="12" cy="12.5" r="3.5" /> : null}
       {ICONS[kind]!.map((d) => (
@@ -27,30 +27,30 @@ function iconOf(href: string) {
 }
 
 function Item({ n, initial }: { n: NotificationRow; initial: string }) {
-  const base = { display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 12px 14px 14px', borderRadius: 18, textDecoration: 'none', color: '#1F1D36' } as const
+  const base = { display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 12px 14px 14px', borderRadius: 18, textDecoration: 'none', color: '#161616' } as const
   return (
     <li>
-      <Link href={n.href} style={n.unread ? { ...base, background: '#FFF4F1', border: '1px solid #FFC9BB' } : { ...base, background: '#FFFFFF', border: '1px solid #E7E6EF' }}>
+      <Link href={n.href} style={n.unread ? { ...base, background: '#FFF8E8', border: '1px solid #FFDC93' } : { ...base, background: '#FFFFFF', border: '1px solid #E8E5DE' }}>
         {n.unread ? (
-          <span aria-hidden="true" style={{ position: 'relative', width: 38, height: 38, flex: 'none', borderRadius: 999, background: '#FFD3C7', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span aria-hidden="true" style={{ position: 'relative', width: 38, height: 38, flex: 'none', borderRadius: 999, background: '#FFE3A8', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {initial}
             <svg width="18" height="18" viewBox="0 0 16 16" style={{ position: 'absolute', right: -4, bottom: -4, background: '#FFFFFF', borderRadius: 999, padding: 1 }}>
-              <polygon points="1,8 15,8 8,15" fill="#FF6A4D" />
-              <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#1F1D36" strokeWidth="1.4" />
+              <polygon points="1,8 15,8 8,15" fill="#FFB81C" />
+              <polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#161616" strokeWidth="1.4" />
             </svg>
           </span>
         ) : (
-          <span aria-hidden="true" style={{ width: 38, height: 38, flex: 'none', borderRadius: 12, background: '#EEEDF5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{iconOf(n.href)}</span>
+          <span aria-hidden="true" style={{ width: 38, height: 38, flex: 'none', borderRadius: 12, background: '#EFECE6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{iconOf(n.href)}</span>
         )}
         <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
           <span style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.3 }}>{n.title}</span>
-          <span style={{ fontSize: 14, color: '#5D5A73', lineHeight: 1.4 }}>{n.body}</span>
+          <span style={{ fontSize: 14, color: '#5C5A55', lineHeight: 1.4 }}>{n.body}</span>
         </span>
         <span style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, paddingTop: 2 }}>
-          <span style={{ fontSize: 13, color: '#5D5A73', fontVariantNumeric: 'tabular-nums' }}>{n.time}</span>
+          <span style={{ fontSize: 13, color: '#5C5A55', fontVariantNumeric: 'tabular-nums' }}>{n.time}</span>
           {n.unread ? (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: '#B8381F' }}>
-              <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 999, background: '#FF6A4D' }} />
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: '#B8281E' }}>
+              <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 999, background: '#FFB81C' }} />
               New
             </span>
           ) : null}
@@ -78,7 +78,7 @@ export default async function ParentNotificationsPage({ params }: { params: Prom
         title="Notifications"
         right={
           <form action={markAll}>
-            <PendingButton type="submit" style={{ minHeight: 44, padding: '0 8px', border: 'none', background: 'transparent', font: 'inherit', fontSize: 14, fontWeight: 600, color: '#1F1D36', textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer' }}>
+            <PendingButton type="submit" style={{ minHeight: 44, padding: '0 8px', border: 'none', background: 'transparent', font: 'inherit', fontSize: 14, fontWeight: 600, color: '#161616', textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer' }}>
               Mark all read
             </PendingButton>
           </form>
@@ -91,7 +91,7 @@ export default async function ParentNotificationsPage({ params }: { params: Prom
         </div>
         {page.groups.map((g, i) => (
           <section key={g.label} aria-labelledby={`g${i}`} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <h2 id={`g${i}`} style={{ margin: 0, fontSize: 15, fontWeight: 600, color: '#5D5A73' }}>{g.label}</h2>
+            <h2 id={`g${i}`} style={{ margin: 0, fontSize: 15, fontWeight: 600, color: '#5C5A55' }}>{g.label}</h2>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
               {g.items.map((n) => (
                 <Item key={n.id} n={n} initial={name.slice(0, 1).toUpperCase()} />
@@ -99,7 +99,7 @@ export default async function ParentNotificationsPage({ params }: { params: Prom
             </ul>
           </section>
         ))}
-        <p style={{ margin: 0, display: 'flex', gap: 10, fontSize: 14, lineHeight: 1.45, color: '#5D5A73' }}>
+        <p style={{ margin: 0, display: 'flex', gap: 10, fontSize: 14, lineHeight: 1.45, color: '#5C5A55' }}>
           <Diamond size={12} mt={4} />
           {`You hear from Jemma when a lesson is ready and when ${name} finishes one. Change this in ${name}'s settings.`}
         </p>

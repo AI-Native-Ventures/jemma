@@ -14,7 +14,7 @@ export function AppHeader({ firstName }: { firstName: string }) {
         aria-label={`${firstName}'s account`}
         className="flex size-11 items-center justify-center rounded-pill text-ink no-underline"
       >
-        <span className="flex size-9 items-center justify-center rounded-pill bg-[#FFD3C7] text-[15px] font-bold text-ink">
+        <span className="flex size-9 items-center justify-center rounded-pill bg-[#FFE3A8] text-[15px] font-bold text-ink">
           {firstName.slice(0, 1).toUpperCase()}
         </span>
       </Link>

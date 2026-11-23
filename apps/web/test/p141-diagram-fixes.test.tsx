@@ -212,6 +212,11 @@ describe('NumberLine: an inequality is a circle and a shaded ray, not hops', () 
     const box = html(<NumberLine {...lineWith('x <= 4', 4)} />)
     expect(box.querySelectorAll('circle[data-circle="filled"]')).toHaveLength(1)
     expect(first(box, '[data-ray]').getAttribute('data-ray')).toBe('left')
+    // South African colours: the ray, its arrow head and its filled circle are one shape in one colour, the green of a line to look at
+    const green = first(box, '[data-ray]').getAttribute('stroke')
+    expect(green).toBe('#007749')
+    expect(first(box, 'polygon[data-arrow]').getAttribute('fill')).toBe(green)
+    expect(first(box, 'circle[data-circle="filled"]').getAttribute('fill')).toBe(green)
   })
 
   test('any letter: n > 2 and t ≤ 1', () => {
@@ -299,6 +304,14 @@ describe('readInequality', () => {
 
 // ---- Pictures that must not move ---------------------------------------------------------------------------------------------------------
 
+/**
+ * The pins (fixtures/p141-before.json) were the sha256 of the markup of the code before P141. They were re-pinned once, by the South African colours
+ * (23 Nov 2026), and only the colours moved. The proof: each of the eleven pictures was drawn with the new code, the old colours were put back in its
+ * markup (#161616 to #1F1D36, the gold #FFB81C and the green #007749 to the coral #FF6A4D, #B8281E to #B8381F, #5C5A55 to #5D5A73 and the grid
+ * #D9D6CE to #D7D5E4; no other colour but white is in them), and the sha256 of that was the old pin, for every one. So the new markup is byte for byte
+ * the old one but for its colours: black for the old ink, a gold dot for a mark (it was coral), the red of a label (it was the coral of words), warm
+ * greys, and one colour with a new role: the first graph of a plane is green (a line to look at is green; gold is too pale for a thin line on white).
+ */
 describe('pictures that are not crowded and have no inequality draw exactly as before P141', () => {
   const was = before as Record<string, string>
   for (const [name, spec] of Object.entries(NUMBER_LINES)) {

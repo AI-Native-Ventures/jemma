@@ -35,7 +35,7 @@ function WeekRow({ s, tonight }: { s: PlannedSession; tonight: boolean }) {
         <span className="text-[15px] font-semibold">{title}</span>
         <span className="text-[13px] text-body">{sub}</span>
       </span>
-      {tonight ? <span className="rounded-pill bg-coral px-[9px] py-1 text-[12px] font-bold text-ink">Tonight</span> : null}
+      {tonight ? <span className="rounded-pill bg-gold px-[9px] py-1 text-[12px] font-bold text-ink">Tonight</span> : null}
     </li>
   )
 }
@@ -75,7 +75,7 @@ export default async function ParentLearnPage({ params }: { params: Promise<{ ch
 
       <section aria-labelledby="tonight" className="flex flex-col gap-4 rounded-[22px] border-2 border-ink bg-card p-[18px]">
         <div className="flex flex-col gap-1.5">
-          <span className="text-[13px] font-semibold text-coral-text">Tonight</span>
+          <span className="text-[13px] font-semibold text-red-text">Tonight</span>
           <h2 id="tonight" className="m-0 text-[21px] leading-[1.25] font-semibold">
             {tonight.topicName}
           </h2>
@@ -112,9 +112,9 @@ export default async function ParentLearnPage({ params }: { params: Promise<{ ch
         </ol>
         <Link
           href={`/p/${childId}/learn/handover`}
-          className="flex min-h-14 items-center justify-center gap-2.5 rounded-[16px] bg-coral px-5 py-3 text-center text-[17px] font-bold text-balance text-ink no-underline"
+          className="flex min-h-14 items-center justify-center gap-2.5 rounded-[16px] bg-gold px-5 py-3 text-center text-[17px] font-bold text-balance text-ink no-underline"
         >
-          <IconLabel gap={10} icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="#1F1D36" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>}>
+          <IconLabel gap={10} icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="#161616" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>}>
             Start, then hand {name} the phone
           </IconLabel>
         </Link>

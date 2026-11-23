@@ -30,7 +30,7 @@ export function DigitBox({ id, label, value, onChange, max, mode = 'numeric', cl
         autoComplete="off"
         value={value}
         onChange={(e) => onChange((mode === 'decimal' ? decimalOnly : digitsOnly)(e.target.value, max))}
-        className={`block rounded-18 border-[3px] border-coral bg-card text-center font-bold text-ink outline-none ${className}`}
+        className={`block rounded-18 border-[3px] border-green bg-card text-center font-bold text-ink outline-none ${className}`}
       />
     </>
   )

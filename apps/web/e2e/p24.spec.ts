@@ -84,7 +84,7 @@ test('paper: marked sheet, missed list, flag a mark queues a check for the teach
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('6 out of 10. Every mark Amina lost was on adding.')
   await expect(page.getByText('Section A: Fractions')).toBeVisible()
   await expect(page.getByText('Section B: Decimals')).toBeVisible()
-  await expect(page.getByText(/Ms Banda snapped Amina's paper at \d\d:\d\d\. Jemma marked it against the memo\. Coral marks are the ones Amina missed\./)).toBeVisible()
+  await expect(page.getByText(/Ms Banda snapped Amina's paper at \d\d:\d\d\. Jemma marked it against the memo\. Red marks are the ones Amina missed\./)).toBeVisible()
   await expect(page.getByRole('link', { name: 'Think a mark is wrong? Tell Ms Banda' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'The 4 Amina missed' })).toBeVisible()
   await expect(page.getByText('Wrote 0,30, right is 0,75')).toBeVisible()

@@ -13,7 +13,7 @@ import { mistakeTitle } from '@/lib/mistake-words'
 
 const diamond = (size: number, mt: string) => (
   <svg width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" className={`flex-none ${mt}`}>
-    <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FF6A4D" />
+    <polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#FFB81C" />
   </svg>
 )
 
@@ -25,7 +25,7 @@ const camera = (
 )
 
 const chevron = (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F1D36" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="m9 6 6 6-6 6" />
   </svg>
 )
@@ -95,7 +95,7 @@ function Detail({ detail, base }: { detail: GapDetail; base: string }) {
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(200px,100%),1fr))] gap-2">
           {gap.learners.map((l, i) => (
             <Link key={l.childId} href={`${base}/learners/${l.childId}`} className="flex items-center gap-2.5 rounded-14 bg-ground px-3 py-2.5 text-ink no-underline">
-              <span aria-hidden="true" className={`flex size-8 flex-none items-center justify-center rounded-pill text-[13px] font-bold ${i === 0 ? 'bg-coral-soft' : 'bg-soft-3'}`}>
+              <span aria-hidden="true" className={`flex size-8 flex-none items-center justify-center rounded-pill text-[13px] font-bold ${i === 0 ? 'bg-gold-soft' : 'bg-soft-3'}`}>
                 {l.name.slice(0, 1)}
               </span>
               <span className="flex flex-col leading-[1.3]">
@@ -140,11 +140,11 @@ function Detail({ detail, base }: { detail: GapDetail; base: string }) {
             ))}
           </ol>
           <div className="flex flex-wrap gap-2">
-            <ReteachDoneForm reteachId={reteach.id} errorClassName="m-0 w-full text-[14px] font-semibold text-coral-text">
+            <ReteachDoneForm reteachId={reteach.id} errorClassName="m-0 w-full text-[14px] font-semibold text-red-text">
               <PendingButton
                 type="submit"
                 disabled={done}
-                className="flex h-11 cursor-pointer items-center gap-2 rounded-12 border-none bg-ink px-4 text-[15px] font-semibold text-white disabled:opacity-60"
+                className="flex h-11 cursor-pointer items-center gap-2 rounded-12 border-none bg-green px-4 text-[15px] font-semibold text-white disabled:opacity-60"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="m5 12.5 4.5 4.5L19 7.5" />
@@ -177,7 +177,7 @@ export function LaptopHome({ home, detail, base, classId }: { home: ClassHome; d
             <Link href={`${base}/report`} className="flex h-[46px] items-center gap-2 rounded-14 border-[1.5px] border-ink bg-card px-[18px] text-[15px] font-semibold text-ink no-underline">
               Class report
             </Link>
-            <Link href={`${base}/snap`} className="flex h-[46px] items-center gap-2 rounded-14 bg-ink px-[18px] text-[15px] font-semibold text-white no-underline">
+            <Link href={`${base}/snap`} className="flex h-[46px] items-center gap-2 rounded-14 bg-green px-[18px] text-[15px] font-semibold text-white no-underline">
               {camera}
               Snap a test
             </Link>

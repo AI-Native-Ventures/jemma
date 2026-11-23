@@ -15,8 +15,8 @@ const page: CSSProperties = {
   justifyContent: 'center',
   padding: '40px 20px',
   boxSizing: 'border-box',
-  background: '#f7f7fa',
-  color: '#1f1d36',
+  background: '#f8f6f1',
+  color: '#161616',
   fontFamily: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
 }
 const card: CSSProperties = {
@@ -28,13 +28,13 @@ const card: CSSProperties = {
   gap: 16,
   padding: 20,
   background: '#ffffff',
-  border: '1px solid #e7e6ef',
+  border: '1px solid #e8e5de',
   borderRadius: 26,
-  boxShadow: '0 8px 24px rgba(31,29,54,0.06)',
+  boxShadow: '0 8px 24px rgba(22,22,22,0.06)',
   lineHeight: 'normal',
 }
 const title: CSSProperties = { margin: 0, fontSize: 24, lineHeight: 1.2, fontWeight: 700, letterSpacing: '-0.01em', textWrap: 'pretty' }
-const words: CSSProperties = { margin: 0, fontSize: 17, lineHeight: 1.45, color: '#5d5a73' }
+const words: CSSProperties = { margin: 0, fontSize: 17, lineHeight: 1.45, color: '#5c5a55' }
 const action: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
@@ -72,10 +72,10 @@ export default function GlobalError(props: ErrorScreenProps) {
           <section role="alert" aria-labelledby="recovery-title" style={card}>
             <h2 id="recovery-title" style={title}>{RECOVERY_TITLE}</h2>
             <p style={words}>{RECOVERY_HELP}</p>
-            <button type="button" onClick={reloadPage} style={{ ...action, border: 0, background: '#ff6a4d', color: '#1f1d36' }}>
+            <button type="button" onClick={reloadPage} style={{ ...action, border: 0, background: '#ffb81c', color: '#161616' }}>
               Try again
             </button>
-            <a href="/" style={{ ...action, border: '1.5px solid #1f1d36', background: '#ffffff', color: '#1f1d36', fontWeight: 600 }}>
+            <a href="/" style={{ ...action, border: '1.5px solid #161616', background: '#ffffff', color: '#161616', fontWeight: 600 }}>
               Go to home
             </a>
           </section>

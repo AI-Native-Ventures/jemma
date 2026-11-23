@@ -8,7 +8,7 @@ import { Sheet } from '@/components/ui'
 export function ComingSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <Sheet open={open} onClose={onClose} title="Coming after the challenge" description="This part of Jemma is not in this version yet.">
-      <button type="button" onClick={onClose} className="flex min-h-[52px] items-center justify-center rounded-14 bg-ink px-5 py-3 text-center text-[17px] font-semibold text-balance text-white">
+      <button type="button" onClick={onClose} className="flex min-h-[52px] items-center justify-center rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white">
         Got it
       </button>
     </Sheet>
