@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Sheet } from '@/components/ui'
 import type { LessonForChild } from '../[sessionId]/types'
 import { FractionText } from './Frac'
 import { AUDIO_ICON, LearnBadge } from './LearnCards'
@@ -146,7 +145,6 @@ const pill = 'flex h-11 w-[52px] cursor-pointer items-center justify-center roun
 export function LearnAudio({ lesson, firstName, onReady }: { lesson: LessonForChild; firstName: string; onReady: () => void }) {
   const script = lesson.audio?.script ?? ''
   const player = usePlayer(script, lesson.audio?.url ?? null)
-  const [lang, setLang] = useState(false)
   const paragraphs = useMemo(() => paragraphsOf(script), [script])
   const minutes = lesson.audio?.url ? Math.max(1, Math.ceil(player.duration / 60)) : lesson.minutes
   const playedBars = player.duration ? Math.round((player.position / player.duration) * BARS.length) : 0
@@ -205,9 +203,8 @@ export function LearnAudio({ lesson, firstName, onReady }: { lesson: LessonForCh
               </svg>
             </button>
           </span>
-          <button type="button" aria-label="Listening in English. Change language" onClick={() => setLang(true)} className={pill}>
-            EN
-          </button>
+          {/* The same width as the speed button, so the play button stays in the middle. */}
+          <span aria-hidden="true" className="w-[52px] flex-none" />
         </div>
       </section>
       <section aria-labelledby="readalong" className="flex flex-col gap-2.5 rounded-[22px] border border-line bg-card px-[18px] py-4">
@@ -230,11 +227,6 @@ export function LearnAudio({ lesson, firstName, onReady }: { lesson: LessonForCh
       <button type="button" onClick={onReady} className="min-h-[60px] cursor-pointer rounded-18 border-0 bg-green px-5 py-3 text-center text-[19px] font-bold text-balance text-white">
         I&apos;m ready
       </button>
-      <Sheet open={lang} onClose={() => setLang(false)} title="Coming after the challenge" description="This part of Jemma is not in this version yet.">
-        <button type="button" onClick={() => setLang(false)} className="min-h-14 cursor-pointer rounded-14 border-0 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white">
-          Got it
-        </button>
-      </Sheet>
     </main>
   )
 }

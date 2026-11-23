@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { getApprovedView, getCurriculum, getDraftLog, type ApprovedTopic } from '@/lib/data/p30'
 import { createSupabaseServer } from '@/lib/supabase/server'
+import { demoOn } from '@/lib/demo-switch'
 import { capsFits, curriculumStage, docNote, currentTerm, plural, sampleCurriculumFits, TERM_SHORT, unresolved, type DraftSource } from './format'
-import { AutoRefresh, CapsButton, ComingLink, DraftFailed, SampleButton, UploadButtons } from './parts'
+import { AutoRefresh, CapsButton, DraftFailed, SampleButton, UploadButtons } from './parts'
 
 const GEM = (
   <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" style={{ flex: 'none', marginTop: 10 }}>
@@ -28,7 +29,7 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
     // The official South African Mathematics topics (CAPS) are offered to a Mathematics class of a South African school in Grades 1 to 12.
     const caps = !!data && capsFits(data.subject, data.schools?.country ?? '', data.grade)
     // The sample documents are Grade 6 Mathematics pages: the button is for that class in a demo school, and for no other.
-    const sample = Boolean(data?.schools?.sandbox_id) && !!data && sampleCurriculumFits(data.subject, data.grade)
+    const sample = demoOn() && Boolean(data?.schools?.sandbox_id) && !!data && sampleCurriculumFits(data.subject, data.grade)
     return (
       <div style={wrap}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -45,7 +46,6 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
           <UploadButtons classId={classId} />
         </section>
         {sample ? <SampleButton classId={classId} /> : null}
-        <ComingLink>Or start from a map another teacher approved</ComingLink>
       </div>
     )
   }
@@ -117,7 +117,6 @@ export default async function CurriculumPage({ params }: { params: Promise<{ cla
       <Link href={`/t/${classId}/curriculum/map`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, marginTop: 37, padding: '12px 20px', textAlign: 'center', textWrap: 'balance', borderRadius: 14, background: '#007749', color: '#FFFFFF', fontSize: 17, fontWeight: 600, textDecoration: 'none' }}>
         Check the draft map
       </Link>
-      <ComingLink>Or start from a map another teacher approved</ComingLink>
     </div>
   )
 }

@@ -46,3 +46,21 @@ export async function setChildPin(childId: string, pin: string): Promise<PinResu
     return { ok: false, error: 'Could not make a new code. Try again.' }
   }
 }
+
+/** "Edit": the child's first name, the one Jemma uses everywhere (the class list too). A parent with an approved link may change it. */
+export async function saveChildName(childId: string, name: string): Promise<{ ok: true } | { ok: false; message: string }> {
+  const clean = name.replace(/\s+/g, ' ').trim().slice(0, 40)
+  if (!clean) return { ok: false, message: 'Write a first name.' }
+  const supabase = await createSupabaseServer()
+  const { data: auth } = await supabase.auth.getUser()
+  if (!auth.user) return { ok: false, message: 'Sign in again.' }
+  const { data: link } = await supabase.from('parent_links').select('id').eq('child_id', childId).eq('parent_id', auth.user.id).eq('status', 'approved').maybeSingle()
+  if (!link) return { ok: false, message: 'You can only change your own child.' }
+  const admin = createSupabaseAdmin()
+  const { error } = await admin.from('children').update({ first_name: clean }).eq('id', childId)
+  if (error) return { ok: false, message: 'Could not save. Try again.' }
+  // The child's own side ("My own") carries the same first name.
+  await admin.from('children').update({ first_name: clean }).eq('private_of', childId)
+  revalidatePath(`/p/${childId}`, 'layout')
+  return { ok: true }
+}

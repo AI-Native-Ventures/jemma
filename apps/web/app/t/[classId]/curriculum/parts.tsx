@@ -5,7 +5,7 @@ import { IconLabel } from '@/components/ui/IconLabel'
 import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition } from 'react'
 import { ErrorRetry } from '@/components/blocks'
-import { Button, Sheet } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { shrinkPhoto } from '@/lib/shrink-photo'
 import { postFiles } from '@/lib/upload-client'
 import { useRefreshPoll } from '@/lib/use-refresh-poll'
@@ -123,27 +123,6 @@ export function SampleButton({ classId }: { classId: string }) {
     >
       Use the sample curriculum
     </Button>
-  )
-}
-
-/** "Or start from a map another teacher approved": drawn on the board, after the challenge. */
-export function ComingLink({ children }: { children: string }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, color: '#161616', fontSize: 15, fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3, background: 'none', border: 'none' }}
-      >
-        {children}
-      </button>
-      <Sheet open={open} onClose={() => setOpen(false)} title="Coming after the challenge" description="This part of Jemma is not in this version yet.">
-        <Button variant="primary" className="!h-auto min-h-[52px] !px-5 py-3" onClick={() => setOpen(false)}>
-          Got it
-        </Button>
-      </Sheet>
-    </>
   )
 }
 

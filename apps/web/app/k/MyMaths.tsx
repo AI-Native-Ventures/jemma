@@ -25,7 +25,7 @@ const list = 'm-0 flex list-none flex-col rounded-20 border border-line bg-card 
 /** What the address may carry: `?class=<id>` (a class of the learner's own workspace), or the old `?grade=7` (the CAPS class of that grade). */
 export type MathsQuery = { class?: string | string[]; grade?: string | string[] }
 
-/** "You've fixed N gaps so far": there from one fixed gap on. At none it says nothing (a line that reads "fixed 0" is a dead line). It sits with "Your gaps". */
+/** "You've fixed N topics so far": there from one fixed topic on. At none it says nothing (a line that reads "fixed 0" is a dead line). It sits with "What to practise". Learners never read the word gap (P160). */
 function GapsCard({ today, tone }: { today: LearnerToday; tone: 'today' | 'rest' }) {
   if (today.fixed < 1) return null
   const stroke = tone === 'today' ? '#8F8D88' : '#161616'
@@ -33,7 +33,7 @@ function GapsCard({ today, tone }: { today: LearnerToday; tone: 'today' | 'rest'
     <div className="flex items-center gap-3.5 rounded-20 border border-line bg-card px-[18px] py-4 text-ink">
       <span className="flex flex-1 flex-col gap-2">
         <span className="text-[17px] font-semibold">
-          You&apos;ve fixed {today.fixed} {today.fixed === 1 ? 'gap' : 'gaps'} so far
+          You&apos;ve fixed {today.fixed} {today.fixed === 1 ? 'topic' : 'topics'} so far
         </span>
         <span aria-hidden="true" className="flex items-center gap-1.5">
           {today.gems.map((kind, i) => (
@@ -172,7 +172,7 @@ export async function MyMaths({ searchParams }: { searchParams?: Promise<MathsQu
 
         {(maths.gaps.length > 0 || today.fixed > 0) && !empty ? (
           <section aria-labelledby="gaps" className="flex flex-col gap-2.5">
-            <h2 id="gaps" className="m-0 text-[17px] font-bold">Your gaps</h2>
+            <h2 id="gaps" className="m-0 text-[17px] font-bold">What to practise</h2>
             {gapsCard}
             {maths.gaps.length > 0 ? (
               <ul className={list}>

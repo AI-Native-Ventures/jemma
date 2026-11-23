@@ -99,9 +99,12 @@ describe('the teacher’s request from a parent', () => {
     expect(screen.getByText('They see nothing until you say yes.')).toBeTruthy()
   })
 
-  it('"Not sure?" names the parent', async () => {
+  // P160: messages between a teacher and a parent are not in Jemma, so there is no "Not sure? Message ... first" button that opens nothing.
+  it('offers yes and no, and no message button that leads nowhere', async () => {
     await page()
-    expect(screen.getByRole('button', { name: 'Not sure? Message Walk Parent first' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Yes, approve' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'No, decline' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Not sure\?/ })).toBeNull()
   })
 
   it('has no she, her, he or his on the page', async () => {

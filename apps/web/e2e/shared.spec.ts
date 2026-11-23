@@ -62,7 +62,7 @@ test('manifest names the app and asks to be standalone', async ({ request }) => 
 
 test('sign-in matches the board', async ({ page }, testInfo) => {
   await page.goto('/sign-in')
-  await expect(page.getByText("Each child's own tutor. Snap a test, Jemma finds the gaps and teaches them.")).toBeVisible()
+  await expect(page.getByText('Learn maths until you understand it.')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
   await expect(page.getByLabel('Email')).toBeVisible()
   await expect(page.getByLabel('Password')).toBeVisible()
@@ -216,8 +216,10 @@ test('privacy matches the board', async ({ page }, testInfo) => {
   await expect(page.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/sign-up')
   await noHorizontalScroll(page)
   await shot(page, testInfo, 'legal-privacy')
-  await page.getByRole('button', { name: 'Terms of use' }).click()
-  await expect(page.getByRole('dialog', { name: 'Coming after the challenge' })).toBeVisible()
+  // P160: the full privacy policy and the terms of use are pages of their own.
+  await expect(page.getByRole('link', { name: 'Full privacy policy' })).toHaveAttribute('href', '/privacy/policy')
+  await page.getByRole('link', { name: 'Terms of use' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Terms of use' })).toBeVisible()
 })
 
 test('help matches the board and its questions open', async ({ page }, testInfo) => {
@@ -227,14 +229,14 @@ test('help matches the board and its questions open', async ({ page }, testInfo)
   await expect(page.getByText('Tap the mark to see the photo it came from. If Jemma read it wrong, tell the teacher from the paper.')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Who can see my child\'s marks?' })).toHaveAttribute('aria-expanded', 'false')
   await expect(page.getByRole('heading', { name: 'Still stuck?' })).toBeVisible()
-  await expect(page.getByText('We answer within one school day.')).toBeVisible()
+  await expect(page.getByText('The Jemma team reads every message.')).toBeVisible()
   await noHorizontalScroll(page)
   await shot(page, testInfo, 'help')
 
   await page.getByRole('button', { name: "Who can see my child's marks?" }).click()
   await expect(page.getByRole('button', { name: "Who can see my child's marks?" })).toHaveAttribute('aria-expanded', 'true')
-  await page.getByLabel('Search help').fill('demo')
-  await expect(page.getByRole('button', { name: 'How do I reset the demo?' })).toBeVisible()
+  await page.getByLabel('Search help').fill('fix a mark')
+  await expect(page.getByRole('button', { name: 'How do I fix a mark? (teachers)' })).toBeVisible()
   await expect(page.getByRole('button', { name: "Who can see my child's marks?" })).toBeHidden()
 })
 

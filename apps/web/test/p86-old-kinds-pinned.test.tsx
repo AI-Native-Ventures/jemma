@@ -20,7 +20,12 @@ const ask = (over: Partial<QuestionForChild>): QuestionForChild => ({
   ...over,
 })
 const sha = (html: string) => createHash('sha256').update(html).digest('hex')
-const screen = (q: QuestionForChild) => renderToStaticMarkup(<QuestionScreen q={q} busy={false} onAnswer={() => {}} />)
+/**
+ * P160 changed one sentence of a warm-up question and nothing else: learners never read the word gap, so "A quick one from a gap you already
+ * fixed." says "topic". With that sentence put back the HTML is byte for byte what it was: the pins did not move.
+ */
+const withoutP160 = (markup: string) => markup.replace('A quick one from a topic you already fixed.', 'A quick one from a gap you already fixed.')
+const screen = (q: QuestionForChild) => withoutP160(renderToStaticMarkup(<QuestionScreen q={q} busy={false} onAnswer={() => {}} />))
 
 const CASES: Record<string, QuestionForChild> = {
   fraction: ask({ prompt: 'What is 3/4 + 1/8?', answerKind: 'fraction' }),

@@ -86,8 +86,8 @@ export default async function TeacherClassSettingsPage({ params }: { params: Pro
         <Section id="year" title="End of the year" gap={2}>
           <Link href={`/t/${classId}/year-end`} className="flex min-h-14 items-center gap-3 py-1.5 text-ink no-underline">
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="text-[16px] font-medium">Move {short} up or archive it</span>
-              <span className="text-[13px] leading-[1.35] text-body">After the last day of Term 4</span>
+              <span className="text-[16px] font-medium">Download {short}&apos;s marks</span>
+              <span className="text-[13px] leading-[1.35] text-body">A file of the year&apos;s marks</span>
             </span>
             <ChevronRightIcon className="flex-none" />
           </Link>

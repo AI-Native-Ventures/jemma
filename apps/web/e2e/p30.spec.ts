@@ -69,10 +69,8 @@ test.describe('curriculum upload, map and approval', () => {
       await check(page.getByText('Drafted 24 topics in teaching order and linked which topic needs which')).toBeVisible()
       await noHorizontalScroll(page)
 
-      // "Or start from a map another teacher approved" stays visible and opens the sheet.
-      await page.getByRole('button', { name: 'Or start from a map another teacher approved' }).click()
-      await check(page.getByRole('dialog')).toContainText('Coming after the challenge')
-      await page.getByRole('button', { name: 'Got it' }).click()
+      // P160: maps shared between teachers are not in Jemma, so that button is gone.
+      await check(page.getByRole('button', { name: 'Or start from a map another teacher approved' })).toHaveCount(0)
       await shot(page, testInfo, 'teacher-curriculum-upload')
 
       // Nothing is on the map for a learner yet.

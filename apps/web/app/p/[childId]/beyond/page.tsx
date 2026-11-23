@@ -3,7 +3,6 @@ import { IconLabel } from '@/components/ui/IconLabel'
 import { notFound } from 'next/navigation'
 import { requireRole } from '@/lib/auth'
 import { getBeyond } from '@/lib/data/p23'
-import { ComingButton } from './_coming'
 import { css, Diamond, Icon, SubHeader } from './_parts'
 
 const CARD = 'display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E8E5DE;border-radius:20px;padding:16px'
@@ -39,10 +38,6 @@ export default async function ParentBeyondPage({ params }: { params: Promise<{ c
               </li>
             ))}
           </ul>
-          <ComingButton style={css('display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border-radius:12px;border:1.5px solid #161616;background:transparent;color:#161616;font-size:15px;font-weight:600')}>
-            <Icon name="chat" size={18} />
-            {`Message ${data.teacher}`}
-          </ComingButton>
         </section>
 
         <section aria-labelledby="att" style={css(`${CARD};gap:10px`)}>

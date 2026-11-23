@@ -115,7 +115,7 @@ describe('the current thing comes first, in every state', () => {
     expect(within(first()).getByRole('heading', { level: 2, name: 'Fractions of amounts' })).toBeTruthy()
     expect(within(first()).getByRole('link', { name: /Start/ }).getAttribute('href')).toBe('/k/session/s1')
     expect(h2s().slice(0, 2)).toEqual(['Fractions of amounts', 'Suggested for you'])
-    expect(topicOrder('Tonight', 'Your gaps')).toBe(true)
+    expect(topicOrder('Tonight', 'What to practise')).toBe(true)
   })
 
   it('writing: the card "Jemma is writing your practice." is first, and the lock note does not say it twice', async () => {
@@ -156,9 +156,9 @@ describe('the current thing comes first, in every state', () => {
   it('then the grades, the suggestions, the gaps (with the fixed-gaps line), the practice and the key and the parts, in that order', async () => {
     state.today = today({ practice: 'none', suggestion: null })
     await home()
-    expect(h2s()).toEqual(['Suggested for you', 'Your gaps', 'All of Mathematics'])
-    const gaps = screen.getByRole('region', { name: 'Your gaps' })
-    expect(within(gaps).getByText(/You've fixed 1 gap so far/)).toBeTruthy()
+    expect(h2s()).toEqual(['Suggested for you', 'What to practise', 'All of Mathematics'])
+    const gaps = screen.getByRole('region', { name: 'What to practise' })
+    expect(within(gaps).getByText(/You've fixed 1 topic so far/)).toBeTruthy()
   })
 })
 

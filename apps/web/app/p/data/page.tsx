@@ -1,13 +1,14 @@
 import Link from 'next/link'
-import { getPrivacy } from '@/lib/data/p26'
-import { BoardHeader, BoardHeadline, Chevron, ComingButton, Gem, Section} from '../account/_ui'
-import { dangerButton, outlineButton } from '../account/_styles'
+import { getAccount, getPrivacy } from '@/lib/data/p26'
+import { BoardHeader, BoardHeadline, Chevron, Gem, Section } from '../account/_ui'
+import { outlineButton } from '../account/_styles'
+import { DeleteAccountButton, DeleteChildButton } from './DeleteButtons'
 import { ImproveToggle } from './Improve'
 
 export const metadata = { title: 'Privacy and your data · Jemma' }
 
 export default async function ParentDataPage() {
-  const privacy = await getPrivacy()
+  const [privacy, account] = await Promise.all([getPrivacy(), getAccount()])
   const name = privacy?.childName ?? 'your child'
   const rowText = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 } as const
   return (
@@ -17,14 +18,14 @@ export default async function ParentDataPage() {
         <BoardHeadline size={25}>See, fix, download or delete what Jemma keeps about your family.</BoardHeadline>
 
         <Section id="dl" title="Download everything" gap={10}>
-          <p style={{ margin: 0, fontSize: 15, lineHeight: 1.45, color: '#5C5A55' }}>A ZIP file with marks, photos, lessons and notes.</p>
-          <ComingButton style={outlineButton}>
+          <p style={{ margin: 0, fontSize: 15, lineHeight: 1.45, color: '#5C5A55' }}>One file with your family&apos;s marks, practice, lessons and notes, and links to the photos.</p>
+          <a href="/p/data/export" download style={{ ...outlineButton, textDecoration: 'none' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5" />
               <path d="M5 19.5h14" />
             </svg>
             Get a copy
-          </ComingButton>
+          </a>
         </Section>
 
         <Section id="consents" title="Your consents" gap={2}>
@@ -50,9 +51,11 @@ export default async function ParentDataPage() {
 
         <Section id="del" title="Delete" gap={10}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <ComingButton style={dangerButton}>Delete {name}&apos;s data</ComingButton>
-            <p style={{ margin: '0 0 8px', fontSize: 14, lineHeight: 1.45, color: '#5C5A55' }}>{name}&apos;s photos, marks and lessons leave Jemma within 30 days.</p>
-            <ComingButton style={dangerButton}>Delete my account</ComingButton>
+            {account.children.map((c) => (
+              <DeleteChildButton key={c.id} childId={c.id} name={c.firstName} />
+            ))}
+            <p style={{ margin: '0 0 8px', fontSize: 14, lineHeight: 1.45, color: '#5C5A55' }}>Deleted at once. You are asked first.</p>
+            <DeleteAccountButton />
           </div>
         </Section>
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Section, colors } from '../_parts'
-import { ComingButton } from '../_coming'
+import { MessageButton } from './MessageForm'
 
 const QUESTIONS = [
   {
@@ -20,10 +20,6 @@ const QUESTIONS = [
   {
     q: 'How do I fix a mark? (teachers)',
     a: 'Open the paper, tap the question, and change the mark. Jemma redoes the gaps for that learner straight away.',
-  },
-  {
-    q: 'How do I reset the demo?',
-    a: 'Open the demo page and choose Reset. Your sandbox goes back to the start.',
   },
 ]
 
@@ -92,10 +88,10 @@ export function HelpList() {
 
       <Section id="stuck" title="Still stuck?" gap={12}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <ComingButton style={stuckButton}>Report a problem</ComingButton>
-          <ComingButton style={stuckButton}>Message the Jemma team</ComingButton>
+          <MessageButton kind="problem" style={stuckButton} />
+          <MessageButton kind="message" style={stuckButton} />
         </div>
-        <p style={{ margin: 0, fontSize: 14, color: colors.body }}>We answer within one school day.</p>
+        <p style={{ margin: 0, fontSize: 14, color: colors.body }}>The Jemma team reads every message.</p>
       </Section>
     </>
   )

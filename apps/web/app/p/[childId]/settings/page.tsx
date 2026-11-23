@@ -1,7 +1,9 @@
 import Link from 'next/link'
+import { EditName } from '../../account/EditName'
+import { saveChildName } from './actions'
 import { notFound } from 'next/navigation'
 import { getChildSettings } from '@/lib/data/p26'
-import { BoardHeader, BoardHeadline, Chevron, ComingButton, Section, Segmented, ToggleRow } from '../../account/_ui'
+import { BoardHeader, BoardHeadline, Chevron, Section } from '../../account/_ui'
 
 export const metadata = { title: 'Settings · Jemma' }
 
@@ -28,9 +30,7 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
                 Grade {child.grade} · {child.schoolName}
               </span>
             </span>
-            <ComingButton ariaLabel={`Edit ${name}'s details`} style={{ minHeight: 44, padding: '0 14px', borderRadius: 12, border: '1px solid #8F8D88', background: '#FFFFFF', color: '#161616', fontSize: 14, fontWeight: 600, flex: 'none' }}>
-              Edit
-            </ComingButton>
+            <EditName button="Edit" ariaLabel={`Edit ${name}'s name`} buttonStyle={{ minHeight: 44, padding: '0 14px', borderRadius: 12, border: '1px solid #8F8D88', background: '#FFFFFF', color: '#161616', fontSize: 14, fontWeight: 600, flex: 'none' }} title={`${name}'s name`} label="First name" initial={name} onSave={saveChildName.bind(null, childId)} />
           </div>
         </Section>
 
@@ -58,25 +58,6 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
               </span>
             </div>
           ))}
-          <ComingButton style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 44, borderRadius: 12, border: '1px solid #8F8D88', background: '#FFFFFF', color: '#161616', fontSize: 15, fontWeight: 600 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Add another teacher&apos;s code
-          </ComingButton>
-        </Section>
-
-        <Section id="lessons" title="During lessons" gap={14}>
-          <Segmented legend="Right or wrong shows" options={['At the end', 'After each question']} initial={0} />
-          <Segmented legend={`${name} sees the score`} options={['Hidden', 'Shown']} initial={0} />
-          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.45, color: '#5C5A55' }}>
-            {child.teachers[0]?.name ?? 'The teacher'}&apos;s class tests follow {name}&apos;s settings.
-          </p>
-        </Section>
-
-        <Section id="notif" title="Notifications" gap={2}>
-          <ToggleRow title="Tonight's lesson is ready" initial />
-          <ToggleRow title={`${name} finished a lesson`} initial divider />
         </Section>
 
         <Link href="/p/data" style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', minHeight: 44, fontSize: 15, fontWeight: 600, color: '#B8281E', textDecoration: 'underline', textUnderlineOffset: 3 }}>

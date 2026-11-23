@@ -28,6 +28,7 @@ import {
   topicCount,
   type TopicEdit,
 } from './format'
+import { demoOn } from '@/lib/demo-switch'
 
 const SAMPLE_PDF = 'curriculum/grade-6-teaching-plan.pdf'
 
@@ -85,6 +86,7 @@ export async function uploadCurriculum(classId: string, files: File[]): Promise<
 
 /** Demo only, and only for a Grade 6 Mathematics class: the two documents the board shows, copied from the sample files. */
 export async function useSampleCurriculum(classId: string): Promise<void> {
+  if (!demoOn()) throw new Error('The sample curriculum is only for the demo')
   const cls = await ownClass(classId)
   const admin = createSupabaseAdmin()
   const school = await admin.from('schools').select('sandbox_id').eq('id', cls.school_id).single()

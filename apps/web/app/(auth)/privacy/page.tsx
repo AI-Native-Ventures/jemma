@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { BackLink, ChevronRight, Gem, Section, colors } from '../_parts'
-import { ComingButton } from '../_coming'
 
 export const metadata = { title: 'Privacy · Jemma' }
 
@@ -105,7 +104,7 @@ export default function PrivacyPage() {
         </Section>
 
         <Section id="ai" title="AI services" gap={10}>
-          <p style={para}>Jemma sends paper photos to an AI service to read them. That service doesn&apos;t keep them or learn from them.</p>
+          <p style={para}>Jemma sends photos and questions to AI models to read and write them. The main ones run on Cloudflare, which says it does not keep them or train on them. When those fail, a backup service, OpenRouter, is used.</p>
         </Section>
 
         <Section id="kids" title="Children" gap={10}>
@@ -127,8 +126,12 @@ export default function PrivacyPage() {
         </Section>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-          <ComingButton style={pill}>Full privacy policy</ComingButton>
-          <ComingButton style={pill}>Terms of use</ComingButton>
+          <Link href="/privacy/policy" style={{ ...pill, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', textDecoration: 'none' }}>
+            Full privacy policy
+          </Link>
+          <Link href="/terms" style={{ ...pill, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', textDecoration: 'none' }}>
+            Terms of use
+          </Link>
         </div>
         <div style={{ flex: 1 }} />
       </main>

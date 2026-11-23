@@ -138,10 +138,13 @@ describe('the live addresses', () => {
   // address of the app still answers, but the documents name the new ones.
   const oldApp = ['jemma-web', '.horizonsystems', '.workers.dev'].join('')
 
-  test('the README names the live demo and the landing page', () => {
+  // P160: the challenge is over. The README names the app and the landing page, and no longer sends anyone to the demo copy, which is off on the
+  // live app (it runs only locally, with JEMMA_DEMO=1).
+  test('the README names the app and the landing page, and not the demo', () => {
     const text = read('README.md')
-    expect(text).toContain('https://jemma.ainative.ventures/demo')
+    expect(text).toContain('https://jemma.ainative.ventures')
     expect(text).toContain('https://getjemma.ainative.ventures')
+    expect(text).not.toContain('https://jemma.ainative.ventures/demo')
   })
 
   test('the judges page, the text description and the shot list name the live demo', () => {

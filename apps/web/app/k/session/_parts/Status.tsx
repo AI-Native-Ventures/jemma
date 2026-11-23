@@ -154,7 +154,7 @@ export function Progress({ done, onDone }: { done: FinishedSession; onDone: () =
         </ol>
       ) : null}
       <p className="m-0 text-[18px] leading-[1.5] text-pretty">
-        You stuck with it for {done.minutes} {done.minutes === 1 ? 'minute' : 'minutes'} and cracked {lower(done.topicName)}. That&apos;s how gaps get fixed.
+        You stuck with it for {done.minutes} {done.minutes === 1 ? 'minute' : 'minutes'} and cracked {lower(done.topicName)}. That&apos;s how you learn maths.
       </p>
       {done.next ? (
         <div className="flex w-full items-center gap-3 rounded-18 border border-line bg-card px-4 py-3.5 text-left">

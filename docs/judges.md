@@ -1,5 +1,7 @@
 # For judges
 
+> 23 November 2026: the challenge is over. The demo copy of the made-up school at https://jemma.ainative.ventures/demo is off on the live app. It now runs only on your own machine (`./start.sh`, which sets `JEMMA_DEMO=1`; see the README). The app itself is at https://jemma.ainative.ventures.
+
 This page is the shortest path through Jemma on the live link: https://jemma.ainative.ventures/demo. The landing page is https://getjemma.ainative.ventures, and its button "Try the demo" goes to the same place. If you open the app itself, https://jemma.ainative.ventures, while you are signed out, you are sent to the landing page. The app's older workers.dev address still answers. The code is at https://github.com/AI-Native-Ventures/jemma and the licence is MIT. To run it on your own machine instead, see the README ("Run it").
 
 Every person, school and paper in the demo is made up. Please do not type real information about real children.

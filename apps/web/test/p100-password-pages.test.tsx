@@ -156,19 +156,23 @@ describe('the sign-in form', () => {
     expect(password.type).toBe('text')
   })
 
-  it('says what to do about a forgotten password, in words with no link', () => {
+  // P160: a parent or teacher who signed up alone has no "person who set up your school's Jemma": a forgotten password goes to the Jemma team.
+  it('says what to do about a forgotten password: ask the Jemma team, on the help page', () => {
     const { container } = render(<SignInForm />)
-    const line = screen.getByText("Forgot your password? Ask the person who set up your school's Jemma.")
-    expect(line.closest('a')).toBeNull()
-    expect(line.querySelector('a')).toBeNull()
+    expect(container.textContent).toContain('Forgot your password?')
+    expect(screen.getByRole('link', { name: 'Ask the Jemma team' }).getAttribute('href')).toBe('/help')
     // And it offers no reset by email.
     expect(container.textContent).not.toMatch(/reset/i)
   })
 
-  it('has a small link, "Email me a code instead", to the code flow', () => {
-    render(<SignInForm />)
+  it('has a small link, "Email me a code instead", to the code flow, only where a code can arrive', () => {
+    const { unmount } = render(<SignInForm codes />)
     const link = screen.getByRole('link', { name: 'Email me a code instead' })
     expect(link.getAttribute('href')).toBe('/sign-in?method=code')
+    unmount()
+    // P160: with no email sender (the live app today) a code never arrives, so the link is not drawn.
+    render(<SignInForm />)
+    expect(screen.queryByRole('link', { name: 'Email me a code instead' })).toBeNull()
   })
 
   it('no longer says there is no password to remember', () => {
@@ -203,7 +207,8 @@ describe('the sign-in page', () => {
   it('shows the password form first, with the links to create an account and to the demo', async () => {
     const page = await open()
     expect(field(page, 'Password').type).toBe('password')
-    expect(page.textContent).toContain('Forgot your password? Ask the person who set up your school')
+    expect(page.textContent).toContain('Forgot your password?')
+    expect(page.querySelector('a[href="/help"]')!.textContent).toBe('Ask the Jemma team')
     expect(page.querySelector('a[href="/sign-in?method=code"]')!.textContent).toBe('Email me a code instead')
     expect(page.textContent).not.toContain('Send me a sign-in code')
     expect(page.querySelector('a[href="/sign-up"]')!.textContent).toBe('Create an account')

@@ -4,7 +4,7 @@ import { PendingButton } from '@/components/ui/Button'
 import { useState, useTransition } from 'react'
 import type { CopyOption } from '@/lib/data/p21'
 import { GRADES, sameNameProblem, validateClass } from '@/lib/subjects'
-import { ComingButton, ShareButton } from '../_p21-client'
+import { ShareButton } from '../_p21-client'
 import { createClass } from './actions'
 import { SelectBox } from './SelectBox'
 import { CLASS_SUBJECT, SubjectLine } from './SubjectLine'
@@ -180,18 +180,6 @@ export function NewClassForm({ code, initialGrade, copyOptions }: { code: string
             {learnerError || 'Needed when two learners share a first name'}
           </span>
         </div>
-        <ComingButton className="flex min-h-[60px] items-center gap-3 rounded-14 border border-line bg-soft-2 px-3.5 py-2 text-left text-ink">
-          <span aria-hidden="true" className="flex size-9 flex-none items-center justify-center rounded-12 bg-gold-tint">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#161616" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" />
-              <circle cx="12" cy="12.5" r="3.5" />
-            </svg>
-          </span>
-          <span className="flex flex-1 flex-col leading-[1.3]">
-            <span className="text-[15px] font-semibold">Snap the register instead</span>
-            <span className="text-[13px] text-body">Jemma reads the names from your class list</span>
-          </span>
-        </ComingButton>
       </section>
 
       <section aria-labelledby="code" className={`${card} gap-2.5`}>

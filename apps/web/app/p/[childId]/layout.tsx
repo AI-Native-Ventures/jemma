@@ -7,6 +7,7 @@ import { aloneOf } from '@/lib/data/own-parent'
 import { initialsOf } from '@/lib/initials'
 import { activeTab } from '@/lib/space'
 import { createSupabaseServer } from '@/lib/supabase/server'
+import { demoOn } from '@/lib/demo-switch'
 
 /**
  * Parent child space: header and tab bar on the phone, sidebar on the laptop.
@@ -62,7 +63,7 @@ export default async function ParentChildLayout({
           switchHref={switchHref}
           settingsHref={settingsHref}
           avatar={child.first_name.slice(0, 1).toUpperCase()}
-          demo={Boolean(child.schools?.sandbox_id)}
+          demo={demoOn() && Boolean(child.schools?.sandbox_id)}
           notificationsHref={alone ? null : `${base}/notifications`}
           unread={alone ? 0 : (unread ?? 0)}
         />

@@ -1,9 +1,10 @@
 import { PendingButton } from '@/components/ui/Button'
+import { EditName } from './EditName'
 import Link from 'next/link'
 import { getAccount } from '@/lib/data/p26'
-import { BoardHeader, Chevron, ComingButton, ToggleRow} from './_ui'
+import { BoardHeader, Chevron } from './_ui'
 import { outlineButton } from './_styles'
-import { signOut } from './actions'
+import { saveParentName, signOut } from './actions'
 
 export const metadata = { title: 'Your account · Jemma' }
 
@@ -25,9 +26,7 @@ export default async function ParentAccountPage() {
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2, paddingTop: 2 }}>
             <h1 style={{ margin: 0, fontSize: 22, lineHeight: 1.2, fontWeight: 700, letterSpacing: '-0.01em' }}>{account.name}</h1>
             <span style={{ fontSize: 14, color: '#5C5A55', lineHeight: 1.4, overflowWrap: 'anywhere' }}>{account.email}</span>
-            <ComingButton style={{ alignSelf: 'flex-start', minHeight: 44, marginBottom: -8, padding: 0, border: 'none', background: 'transparent', fontSize: 15, fontWeight: 600, color: '#161616', textDecoration: 'underline', textUnderlineOffset: 3 }}>
-              Edit your details
-            </ComingButton>
+            <EditName button="Edit your details" buttonStyle={{ alignSelf: 'flex-start', minHeight: 44, marginBottom: -8, padding: 0, border: 'none', background: 'transparent', fontSize: 15, fontWeight: 600, color: '#161616', textDecoration: 'underline', textUnderlineOffset: 3 }} title="Your details" label="Your name" initial={account.name} onSave={saveParentName} />
           </div>
         </section>
 
@@ -48,16 +47,7 @@ export default async function ParentAccountPage() {
               </span>
               <Chevron />
             </Link>
-          ) : (
-            <ComingButton style={rowButton}>
-              <span style={rowText}>
-                <span style={{ fontSize: 16, fontWeight: 500 }}>Notifications</span>
-                <span style={{ fontSize: 13, lineHeight: 1.35, color: '#5C5A55' }}>In the app · lesson ready and lesson finished</span>
-              </span>
-              <Chevron />
-            </ComingButton>
-          )}
-          <ToggleRow title="Data saver" detail="Download audio lessons on Wi-Fi only" initial={false} divider />
+          ) : null}
           {/* SLOT: "Where Jemma's AI runs" (cloud or desktop runner, AI runners section of the plan) goes here, between Data saver and Privacy. */}
           <Link href="/p/data" style={{ ...rowLink, borderTop: '1px solid #F0EEE8' }}>
             <span style={rowText}>

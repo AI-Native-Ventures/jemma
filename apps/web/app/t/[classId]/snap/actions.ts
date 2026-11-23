@@ -12,6 +12,7 @@ import { UPLOAD_PREFIX } from '@/lib/data/p34'
 import { shareResults } from '@/lib/share-results'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
+import { demoOn } from '@/lib/demo-switch'
 
 export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; message: string }
 
@@ -313,6 +314,7 @@ export async function retakePaper(classId: string, paperId: string, form: FormDa
 
 /** "No papers with you?" Copies the five sample papers into the test and queues them. */
 export async function useSamplePapers(classId: string, testId: string): Promise<ActionResult<{ count: number }>> {
+  if (!demoOn()) return fail('The sample papers are only for the demo.')
   try {
     const { admin, schoolId } = await ownTest(classId, testId)
     const ids: string[] = []

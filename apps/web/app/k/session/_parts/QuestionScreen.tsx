@@ -397,7 +397,7 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
       <main className="flex flex-1 flex-col gap-[22px] px-5 pt-6 pb-7">
         <div className="flex flex-col gap-1.5">
           <p className="m-0 text-[15px] font-semibold text-body">Warm-up · {q.index} of {q.of}</p>
-          <p className="m-0 text-[16px] text-body">A quick one from a gap you already fixed.</p>
+          <p className="m-0 text-[16px] text-body">A quick one from a topic you already fixed.</p>
         </div>
         {shape.kind === 'missing' ? (
           <>

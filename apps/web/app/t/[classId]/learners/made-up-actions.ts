@@ -6,6 +6,7 @@ import { addMadeUpPractice } from '../../../../../../supabase/seed/made-up-pract
 import { requireRole } from '@/lib/auth'
 import { requestLongView } from '@/lib/long-view'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
+import { demoOn } from '@/lib/demo-switch'
 
 export type MadeUpResult = { ok: true; added: number; asked: number } | { ok: false; reason: string }
 
@@ -15,6 +16,7 @@ export type MadeUpResult = { ok: true; added: number; asked: number } | { ok: fa
  * Long view screen asks again when it is opened with no pattern.
  */
 export async function addMadeUpLearnersAction(classId: string): Promise<MadeUpResult> {
+  if (!demoOn()) return { ok: false, reason: 'Made-up learners are only for the demo.' }
   const { userId } = await requireRole('teacher')
   const admin = createSupabaseAdmin()
   const { data: cls } = await admin.from('classes').select('teacher_id').eq('id', classId).maybeSingle()

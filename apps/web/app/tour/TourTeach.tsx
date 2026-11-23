@@ -132,7 +132,7 @@ export function TourTeach({ correct, onAgain }: { correct: boolean[]; onAgain: (
           <p className="m-0 text-[17px] leading-[1.45] text-body">
             {missedCount === 0
               ? 'You got every question right. Nothing to teach again.'
-              : `You missed ${missedCount} of ${correct.length} questions. Here is what Jemma will go over with you, the biggest gap first.`}
+              : `You missed ${missedCount} of ${correct.length} questions. Here is what Jemma will go over with you, starting with what you missed most.`}
           </p>
         </div>
         {parts.length > 0 ? (

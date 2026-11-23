@@ -103,7 +103,8 @@ test('a teacher signs up with an email and a password, signs out, and signs in a
   await page.getByRole('button', { name: 'Sign out' }).click()
   await check(page).toHaveURL(/\/sign-in$/)
   await check(page.getByLabel('Password')).toHaveAttribute('autocomplete', 'current-password')
-  await expect(page.getByText("Forgot your password? Ask the person who set up your school's Jemma.")).toBeVisible()
+  await expect(page.getByText('Forgot your password?')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Ask the Jemma team' })).toHaveAttribute('href', '/help')
   await noSidewaysScroll(page)
   await proof(page, 'sign-in')
 

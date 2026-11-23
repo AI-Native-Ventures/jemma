@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Jemma',
     short_name: 'Jemma',
-    description: 'Each child\'s own tutor. Snap a test, Jemma finds the gaps and teaches them.',
+    description: 'Jemma teaches you a short lesson, marks your answers, and teaches again what you got wrong. Every lesson is free.',
     start_url: '/',
     scope: '/',
     display: 'standalone',

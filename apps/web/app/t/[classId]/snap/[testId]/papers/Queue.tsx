@@ -66,6 +66,7 @@ export function RetakeButton({ classId, paperId, position }: { classId: string; 
 export function Queue({
   classId,
   testId,
+  samples = false,
   next,
   lastPaper,
   count,
@@ -73,6 +74,8 @@ export function Queue({
 }: {
   classId: string
   testId: string
+  /** The five made-up sample papers ("No papers with you?"): local runs and the tests only (`demoOn`), never the live app. */
+  samples?: boolean
   next: number
   lastPaper: { id: string; position: number } | null
   count: number
@@ -128,10 +131,12 @@ export function Queue({
       {children}
 
       {error ? <p role="alert" className="m-0 text-[14px] text-red-text">{error}</p> : null}
-      <p className="m-0 flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] text-body">
-        No papers with you?
-        <button type="button" onClick={sample} disabled={pending} className="inline-flex min-h-11 cursor-pointer items-center border-none bg-transparent p-0 text-[15px] font-semibold text-ink underline underline-offset-[3px]">Use the sample papers</button>
-      </p>
+      {samples ? (
+        <p className="m-0 flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] text-body">
+          No papers with you?
+          <button type="button" onClick={sample} disabled={pending} className="inline-flex min-h-11 cursor-pointer items-center border-none bg-transparent p-0 text-[15px] font-semibold text-ink underline underline-offset-[3px]">Use the sample papers</button>
+        </p>
+      ) : null}
       <Link href={`/t/${classId}/snap/${testId}/progress`} className="flex min-h-[52px] items-center justify-center gap-2 rounded-14 bg-green px-5 py-3 text-center text-[17px] font-semibold text-balance text-white no-underline">
         Done snapping · {count} paper{count === 1 ? '' : 's'}
       </Link>
