@@ -176,30 +176,86 @@ describe('Listen', () => {
     }
   })
 
-  it('Play all reads the blocks from the first, goes on to the next block when one is finished, and the button says Stop', async () => {
+  // P159: Listen has a player in place of "Play all" (the look of the audio memo, for the whole lesson). The same voice, the same order.
+  it('the player reads the parts from the first, goes on to the next part when one is finished, and its big button says Pause', async () => {
     giveVoice()
     reader('listen')
-    fireEvent.click(await screen.findByRole('button', { name: 'Play all' }))
+    const player = await waitFor(() => document.querySelector('[data-player]') as HTMLElement)
+    expect(within(player).getByText('8 parts')).toBeTruthy()
+    fireEvent.click(within(player).getByRole('button', { name: 'Play' }))
     expect(spoken.said).toEqual(['A fraction is part of a whole, said in words.'])
-    expect(screen.getByRole('button', { name: 'Stop reading' }).getAttribute('aria-pressed')).toBe('true')
-    // the first text ends: the voice goes on with the second block, and then the third (a worked example)
+    expect(within(player).getByRole('button', { name: 'Pause' })).toBeTruthy()
+    expect(within(player).getByText('Part 1 of 8')).toBeTruthy()
+    // the first text ends: the voice goes on with the second part, and then the third (a worked example)
     act(() => spoken.utterances[0]!.onend?.())
     expect(spoken.said).toEqual(['A fraction is part of a whole, said in words.', 'One part of four is shaded.'])
+    expect(within(player).getByText('Part 2 of 8')).toBeTruthy()
     act(() => spoken.utterances[1]!.onend?.())
     expect(spoken.said[2]).toBe('Worked speech in words.')
+    // the part being read says so on its card
+    expect(document.querySelector('[data-reading]')?.getAttribute('aria-label')).toBe('Worked example')
   })
 
-  it('a block read on its own stops at its end, and a voice that fails stops Play all', async () => {
+  it('a part read on its own stops at its end, Play then reads on from the next part, and a voice that fails stops the player', async () => {
     giveVoice()
     reader('listen')
     const buttons = await screen.findAllByRole('button', { name: 'Read this part aloud' })
     fireEvent.click(buttons[0]!)
     act(() => spoken.utterances[0]!.onend?.())
     expect(spoken.said).toHaveLength(1)
-    fireEvent.click(screen.getByRole('button', { name: 'Play all' }))
-    expect(spoken.said).toHaveLength(2)
+    const player = document.querySelector('[data-player]') as HTMLElement
+    fireEvent.click(within(player).getByRole('button', { name: 'Play' }))
+    expect(spoken.said).toEqual(['A fraction is part of a whole, said in words.', 'One part of four is shaded.'])
     act(() => spoken.utterances[1]!.onerror?.())
-    expect(screen.getByRole('button', { name: 'Play all' }).getAttribute('aria-pressed')).toBe('false')
+    expect(within(player).getByRole('button', { name: 'Play' })).toBeTruthy()
+    expect(within(player).queryByRole('button', { name: 'Pause' })).toBeNull()
+  })
+
+  it('Next part and Back one part move one part at a time, and Back is off before anything was played', async () => {
+    giveVoice()
+    reader('listen')
+    const player = await waitFor(() => document.querySelector('[data-player]') as HTMLElement)
+    expect(within(player).getByRole('button', { name: 'Back one part' }).hasAttribute('disabled')).toBe(true)
+    fireEvent.click(within(player).getByRole('button', { name: 'Play' }))
+    fireEvent.click(within(player).getByRole('button', { name: 'Next part' }))
+    expect(spoken.said.at(-1)).toBe('One part of four is shaded.')
+    fireEvent.click(within(player).getByRole('button', { name: 'Next part' }))
+    expect(spoken.said.at(-1)).toBe('Worked speech in words.')
+    fireEvent.click(within(player).getByRole('button', { name: 'Back one part' }))
+    expect(spoken.said.at(-1)).toBe('One part of four is shaded.')
+    expect(within(player).getByText('Part 2 of 8')).toBeTruthy()
+  })
+
+  it('the speed button steps through 1, 1.25, 1.5 and 0.75 times, and the voice goes on at the new pace', async () => {
+    giveVoice()
+    reader('listen')
+    const player = await waitFor(() => document.querySelector('[data-player]') as HTMLElement)
+    fireEvent.click(within(player).getByRole('button', { name: 'Play' }))
+    const rateOf = () => (spoken.utterances.at(-1) as unknown as { rate: number }).rate
+    expect(rateOf()).toBeCloseTo(0.95)
+    fireEvent.click(within(player).getByRole('button', { name: 'Speed, 1 times' }))
+    expect(within(player).getByRole('button', { name: 'Speed, 1.25 times' })).toBeTruthy()
+    expect(spoken.said.at(-1)).toBe('A fraction is part of a whole, said in words.')
+    expect(rateOf()).toBeCloseTo(0.95 * 1.25)
+    fireEvent.click(within(player).getByRole('button', { name: 'Speed, 1.25 times' }))
+    fireEvent.click(within(player).getByRole('button', { name: 'Speed, 1.5 times' }))
+    expect(within(player).getByRole('button', { name: 'Speed, 0.75 times' })).toBeTruthy()
+    expect(rateOf()).toBeCloseTo(0.95 * 0.75)
+  })
+
+  it('Words: the words of an explanation show once the voice comes to it and stay; with Words off they stay under Show words', async () => {
+    giveVoice()
+    reader('listen')
+    const player = await waitFor(() => document.querySelector('[data-player]') as HTMLElement)
+    expect(screen.queryByText(/The bottom number says how many equal parts/)).toBeNull()
+    fireEvent.click(within(player).getByRole('button', { name: 'Play' }))
+    expect(screen.getByText(/The bottom number says how many equal parts/)).toBeTruthy()
+    act(() => spoken.utterances[0]!.onend?.())
+    // read already: the words stay, so nothing above the part being read moves
+    expect(screen.getByText(/The bottom number says how many equal parts/)).toBeTruthy()
+    fireEvent.click(within(player).getByRole('button', { name: 'The words show as Jemma reads. Hide them' }))
+    expect(screen.queryByText(/The bottom number says how many equal parts/)).toBeNull()
+    expect(within(player).getByRole('button', { name: 'Show the words as Jemma reads' }).getAttribute('aria-pressed')).toBe('false')
   })
 
   it('on a phone that cannot speak shows all the words and says so, with no voice button', async () => {

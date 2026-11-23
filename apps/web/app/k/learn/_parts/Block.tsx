@@ -8,8 +8,11 @@ import { blockView, firstSentence, type BlockView, type Delivery } from './deliv
 import { LessonText } from './LessonText'
 import { TryBlock } from './TryBlock'
 
-/** What a block needs to speak: whether this browser can, whether this block is being read now, and the tap that starts or stops it. */
-export type Voice = { ok: boolean; playing: boolean; onToggle: () => void }
+/**
+ * What a block needs to speak: whether this browser can, whether this block is being read now, and the tap that starts or stops it. `words` comes from
+ * the "Words" switch of the player: with it on, the words of an explanation show from the moment the voice starts to read it (and stay).
+ */
+export type Voice = { ok: boolean; playing: boolean; onToggle: () => void; words?: boolean }
 
 export type LessonBlockProps = {
   /** The place of the block in the lesson. The server finds the question of a try block by it. */
@@ -27,7 +30,8 @@ export type LessonBlockProps = {
   markTry?: (index: number, value: string) => LessonAnswerResult | Promise<LessonAnswerResult>
 }
 
-const LABEL: Record<BlockForChild['kind'], string> = {
+/** What each kind of part is called on its card, and on the small bar of the player. */
+export const BLOCK_LABEL: Record<BlockForChild['kind'], string> = {
   explain: 'Idea',
   diagram: 'Look',
   worked: 'Worked example',
@@ -64,9 +68,18 @@ function Picture({ spec, large }: { spec: unknown; large: boolean }) {
 
 function Frame({ index, kind, view, voice, children }: { index: number; kind: BlockForChild['kind']; view: BlockView; voice: Voice; children: ReactNode }) {
   return (
-    <section id={`block-${index}`} data-block={kind} aria-label={LABEL[kind]} className="flex scroll-mt-32 flex-col gap-3.5 rounded-[22px] border border-line bg-card p-4 lg:p-5">
+    <section
+      id={`block-${index}`}
+      data-block={kind}
+      data-reading={voice.playing ? 'true' : undefined}
+      aria-label={BLOCK_LABEL[kind]}
+      className={`flex scroll-mt-48 flex-col gap-3.5 rounded-[22px] border bg-card p-4 lg:p-5 ${voice.playing ? 'border-gold shadow-[0_0_0_1.5px_#FFB81C]' : 'border-line'}`}
+    >
       <div className="flex items-center justify-between gap-3">
-        <p className="m-0 text-[15px] font-semibold text-body">{LABEL[kind]}</p>
+        <p className="m-0 flex min-w-0 flex-wrap items-center gap-2 text-[15px] font-semibold text-body">
+          {BLOCK_LABEL[kind]}
+          {voice.playing ? <span className="rounded-pill bg-gold-tint px-2.5 py-0.5 text-[13px] font-bold text-ink">Reading now</span> : null}
+        </p>
         {view.speak && voice.ok ? <PlayButton playing={voice.playing} onToggle={voice.onToggle} /> : null}
       </div>
       {children}
@@ -75,7 +88,8 @@ function Frame({ index, kind, view, voice, children }: { index: number; kind: Bl
 }
 
 /** An explanation: all the words (Read), the first sentence with "More" (Pictures), or the voice with the words under "Show words" (Listen). */
-function ExplainBlock({ text, view, voiceOk, typeset }: { text: string; view: BlockView; voiceOk: boolean; typeset: TypesetMode }) {
+function ExplainBlock({ text, view, voiceOk, reading, typeset }: { text: string; view: BlockView; voiceOk: boolean; reading: boolean; typeset: TypesetMode }) {
+  // `reading`: the player's "Words" is on and the voice has come to this part.
   const [open, setOpen] = useState(false)
   // A browser that cannot speak has no voice to leave the words to: they are all shown.
   const words = view.showText === 'collapsed' && !voiceOk ? 'full' : view.showText
@@ -93,12 +107,15 @@ function ExplainBlock({ text, view, voiceOk, typeset }: { text: string; view: Bl
       </>
     )
   }
+  // Read along: once the voice has come to this part, its words are on the screen (the "Words" switch of the player turns that off).
   return (
     <>
-      {open ? <LessonText text={text} typeset={typeset} /> : null}
-      <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className={textButton}>
-        {open ? 'Hide words' : 'Show words'}
-      </button>
+      {open || reading ? <LessonText text={text} typeset={typeset} /> : null}
+      {reading && !open ? null : (
+        <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className={textButton}>
+          {open ? 'Hide words' : 'Show words'}
+        </button>
+      )}
     </>
   )
 }
@@ -168,7 +185,7 @@ export function LessonBlock({ index, block, delivery, typeset, voice, topicLesso
   const view = blockView(block, delivery)
   return (
     <Frame index={index} kind={block.kind} view={view} voice={voice}>
-      {block.kind === 'explain' ? <ExplainBlock text={block.text} view={view} voiceOk={voice.ok} typeset={typeset} /> : null}
+      {block.kind === 'explain' ? <ExplainBlock text={block.text} view={view} voiceOk={voice.ok} reading={voice.words === true} typeset={typeset} /> : null}
       {block.kind === 'diagram' ? (
         <figure className="m-0 flex flex-col gap-3">
           <Picture spec={block.spec} large={view.diagramLarge} />

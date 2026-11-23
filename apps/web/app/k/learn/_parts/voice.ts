@@ -1,5 +1,6 @@
 // The voice of the Listen delivery (P144): the browser's own speech (`speechSynthesis`), the one `LearnAudio` already falls back to. It says the `speech` of a
-// block, which holds words only. A phone that cannot speak is told so by `canSpeak`, and the lesson then shows the words.
+// block, which holds words only. A phone that cannot speak is told so by `canSpeak`, and the lesson then shows the words. The player of the Listen tab
+// (`ListenPlayer`) drives it through `useListen`: it can start at a sentence and at a speed.
 
 let current = 0
 /** The utterances being said. Chrome drops the end signal of one that nothing refers to any more, so they are kept until they are done or stopped. */
@@ -27,20 +28,39 @@ export const chunksOf = (text: string): string[] =>
     .map((s) => s.trim())
     .filter(Boolean)
 
+/** The pace of the voice at speed 1: a little slower than the browser's own, so maths said aloud can be followed. */
+export const BASE_RATE = 0.95
+
+export type SpeakOptions = {
+  onEnd?: () => void
+  onError?: () => void
+  /** Called as each sentence starts, with its place in the text from 0. The player keeps it, so a pause carries on at that sentence. */
+  onSentence?: (index: number) => void
+  /** The sentence to start at, from 0 (where a pause left off). Past the end, the last sentence is said. */
+  from?: number
+  /** How fast, as a multiple of the usual pace: 1, 1.25, 1.5 or 0.75 in the player. */
+  speed?: number
+}
+
 /**
  * Says a text. `onEnd` is called when the last sentence is finished, `onError` when the browser cannot say it. Starting a new text stops the one before it,
- * and the one stopped never calls back (so "Play all" cannot jump ahead when a learner taps another block).
+ * and the one stopped never calls back (so the player cannot jump ahead when a learner taps another block).
  */
-export function speakText(text: string, on: { onEnd?: () => void; onError?: () => void }): void {
+export function speakText(text: string, on: SpeakOptions): void {
   if (!canSpeak()) return void on.onError?.()
   stopSpeaking()
   const mine = current
   const chunks = chunksOf(text)
   if (chunks.length === 0) return void on.onEnd?.()
+  const from = Math.max(0, Math.min(Math.floor(on.from ?? 0), chunks.length - 1))
   chunks.forEach((chunk, i) => {
+    if (i < from) return
     const utterance = new SpeechSynthesisUtterance(chunk)
     utterance.lang = 'en-ZA'
-    utterance.rate = 0.95
+    utterance.rate = BASE_RATE * (on.speed ?? 1)
+    utterance.onstart = () => {
+      if (mine === current) on.onSentence?.(i)
+    }
     if (i === chunks.length - 1) {
       utterance.onend = () => {
         if (mine !== current) return
