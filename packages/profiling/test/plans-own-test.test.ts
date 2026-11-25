@@ -22,7 +22,7 @@ const tail = [
 describe('read_marked_test is an AI job', () => {
   test('it is in the list of AI jobs', () => {
     expect(AI_JOBS).toContain('read_marked_test')
-    expect(AI_JOBS).toHaveLength(10)
+    expect(AI_JOBS).toHaveLength(11)
   })
 })
 

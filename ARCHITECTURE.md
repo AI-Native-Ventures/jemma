@@ -2,7 +2,7 @@
 
 ## Agent shape
 
-An event starts a job plan. Code builds the plan from the database after every step. Each of the 10 AI jobs is one run. Goose, Claude Code on the owner's laptop and the operator runner call Jemma's tools over MCP. The hosted app's own runner calls the same functions in code, and its model gets no tools. Save tools enforce the rules in code: marks, sources, school scope, and a word check on text about a learner. Code then checks what the event had to produce, retries, falls back to another model, or hands the item to the teacher.
+An event starts a job plan. Code builds the plan from the database after every step. Each of the 11 AI jobs is one run. Goose, Claude Code on the owner's laptop and the operator runner call Jemma's tools over MCP. The hosted app's own runner calls the same functions in code, and its model gets no tools. Save tools enforce the rules in code: marks, sources, school scope, and a word check on text about a learner. Code then checks what the event had to produce, retries, falls back to another model, or hands the item to the teacher.
 
 ```mermaid
 flowchart LR

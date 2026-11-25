@@ -18,6 +18,17 @@ const isGrade = (grade: unknown): grade is number => typeof grade === 'number' &
  * Nothing here touches the school child's record.
  */
 export async function startOwnPractice(childId: string): Promise<never> {
+  await handOverOwn(childId)
+  redirect('/k')
+}
+
+/** P163: "Hand the phone to {name}" for the level check: the same hand-over as "Practise at home", and the child lands on the level check. */
+export async function startLevelCheckFor(childId: string): Promise<never> {
+  await handOverOwn(childId)
+  redirect('/k/level')
+}
+
+async function handOverOwn(childId: string): Promise<void> {
   const supabase = await createSupabaseServer()
   const { data: auth } = await supabase.auth.getUser()
   if (!auth.user) notFound()
@@ -41,5 +52,4 @@ export async function startOwnPractice(childId: string): Promise<never> {
     maxAge: HANDOVER_TTL_SECONDS,
   })
   store.set(WORKSPACE_COOKIE, 'own', workspaceCookieOptions())
-  redirect('/k')
 }

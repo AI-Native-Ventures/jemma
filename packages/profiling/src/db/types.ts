@@ -1119,6 +1119,52 @@ export type Database = {
           },
         ]
       }
+      level_checks: {
+        Row: {
+          answers: Json
+          child_id: string
+          class_id: string | null
+          created_at: string
+          event_id: string | null
+          finished_at: string | null
+          grade: number | null
+          id: string
+          questions: Json
+          started_at: string | null
+          status: string
+          topics: Json
+        }
+        ComputedFields: never
+        Insert: {
+          answers?: Json
+          child_id: string
+          class_id?: string | null
+          created_at?: string
+          event_id?: string | null
+          finished_at?: string | null
+          grade?: number | null
+          id?: string
+          questions?: Json
+          started_at?: string | null
+          status?: string
+          topics?: Json
+        }
+        Update: {
+          answers?: Json
+          child_id?: string
+          class_id?: string | null
+          created_at?: string
+          event_id?: string | null
+          finished_at?: string | null
+          grade?: number | null
+          id?: string
+          questions?: Json
+          started_at?: string | null
+          status?: string
+          topics?: Json
+        }
+        Relationships: []
+      }
       long_view_patterns: {
         Row: {
           active: boolean

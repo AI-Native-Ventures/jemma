@@ -6,7 +6,9 @@ import { getLearnerToday, type LearnerToday } from '@/lib/data/p27'
 import { getMyMaths } from '@/lib/data/p80'
 import { ADD_A_GRADE, higherGradeLine, noTopicsLine } from '@/lib/own-grades'
 import { getMyLimit } from '@/lib/data/p161'
+import { getMyLevelCard } from '@/lib/data/level'
 import { JoinClassCard } from './join/JoinClassCard'
+import { LevelCard } from './LevelCard'
 import { LimitCard } from './LimitCard'
 import { GradeChips } from './maths/GradeChips'
 import { gapLine, levelOfScore, lockOf, progressLabel, rowScore, summaryLine, summaryOf } from './maths/format'
@@ -110,7 +112,7 @@ function NextCard({ next }: { next: NonNullable<LearnerToday['next']> }) {
 export async function MyMaths({ searchParams }: { searchParams?: Promise<MathsQuery> } = {}) {
   const shape = await getScreenShape((await searchParams) ?? {})
   const own = shape.workspace === 'own' ? shape : null
-  const [today, { maths, status }, past, limit] = await Promise.all([getLearnerToday(), getMyMaths(own?.picked?.classId), getPastPractice(), getMyLimit()])
+  const [today, { maths, status }, past, limit, level] = await Promise.all([getLearnerToday(), getMyMaths(own?.picked?.classId), getPastPractice(), getMyLimit(), getMyLevelCard()])
   const { firstName, tonight, next } = today
   // P155: tonight's lesson is never a gate, so `lock` is only there while a practice is being written (Practise is held back, nothing else).
   const lock = lockOf(status)
@@ -149,6 +151,8 @@ export async function MyMaths({ searchParams }: { searchParams?: Promise<MathsQu
           <TonightCard tonight={tonight} />
         ) : (
           <>
+            {/* P163: a learner new to Jemma finds where to start first. */}
+            {level ? <LevelCard started={level.started} of={level.of} /> : null}
             {pickLine ? <p className="m-0 -mb-2 px-1 text-[16px] leading-[1.45] text-body">Pick something to practise.</p> : null}
             {limit && today.practice !== 'writing' ? <LimitCard {...limit} /> : <PracticeCard state={today.practice} suggestion={today.suggestion} workspace={today.workspace} />}
             {next ? <NextCard next={next} /> : null}

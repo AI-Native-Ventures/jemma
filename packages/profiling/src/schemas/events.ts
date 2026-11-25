@@ -20,6 +20,11 @@ export const EventSchema = z.discriminatedUnion('type', [
    */
   z.object({ type: z.literal('practice.requested'), childId: z.string(), topicId: z.string().optional(), topicName: z.string().optional() }),
   /**
+   * P163: a learner new to Jemma started the level check in their own space: Jemma writes its questions (2 on each of the 6 topics the row names) into
+   * the `level_checks` row `levelCheckId`, which belongs to `childId`.
+   */
+  z.object({ type: z.literal('level.requested'), childId: z.string(), levelCheckId: z.string() }),
+  /**
    * A learner answered a practice on paper and sent one photo. `path` is where the photo is stored (the private `papers` bucket) and `questions`
    * are the indexes into the lesson's questions that went on paper, in order, numbered 1 to 5 on the sheet (`paperQuestions` picks them).
    */

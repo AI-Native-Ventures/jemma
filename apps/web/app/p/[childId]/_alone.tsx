@@ -1,6 +1,9 @@
 import { rowScore } from '@/app/k/maths/format'
 import type { AloneSummary } from '@/lib/data/own-parent'
 import { chipLabel } from '@/lib/own-grades'
+import type { LevelCheckSummary } from '@/lib/data/level'
+import { startLevelCheckFor } from './learn/handover/own-actions'
+import { LevelCheckCard } from './learn/LevelCheckCard'
 import { OwnPracticeCard } from './learn/OwnPracticeCard'
 import { SignInCard } from './SignInCard'
 
@@ -10,7 +13,7 @@ import { SignInCard } from './SignInCard'
  * no school, no class, no teacher and no test a teacher shared, so none of the lines of a school child's profile are here. One column on the phone;
  * the same column in the middle of the page on a laptop.
  */
-export function AloneChildPage({ summary }: { summary: AloneSummary }) {
+export function AloneChildPage({ summary, level = null }: { summary: AloneSummary; level?: LevelCheckSummary | null }) {
   const { id, firstName: name, grade, grades, loginCode, ownLogin } = summary
   return (
     <div className="mx-auto flex w-full max-w-[640px] flex-col gap-5 px-5 pt-3.5 pb-8 leading-[normal] lg:px-10 lg:pt-8">
@@ -24,6 +27,9 @@ export function AloneChildPage({ summary }: { summary: AloneSummary }) {
         </div>
         <p className="m-0 ml-6 text-[15px] text-body">Grade {grade}</p>
       </div>
+
+      {/* P163: the level check, until the child has practised (then what it found, once it is done). */}
+      {level ? <LevelCheckCard childId={id} name={name} summary={level} start={startLevelCheckFor.bind(null, id)} /> : null}
 
       <OwnPracticeCard childId={id} name={name} alone />
 

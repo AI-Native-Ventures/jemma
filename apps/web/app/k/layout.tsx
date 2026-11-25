@@ -12,8 +12,8 @@ import { isPublicPath } from '@/lib/public-paths'
 import { activeTab } from '@/lib/space'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
-/** Screens drawn without the tab bar: the session flow and the hand-back screen. */
-const NO_BAR = ['/k/session', '/k/done']
+/** Screens drawn without the tab bar: the session flow, the hand-back screen and the level check (P163). */
+const NO_BAR = ['/k/session', '/k/done', '/k/level']
 /** Screens drawn without the laptop sidebar: those, and Me (boards child-*). Me has the phone's bar, where it is the third tab. */
 const NO_SIDEBAR = [...NO_BAR, '/k/me']
 const under = (list: string[], pathname: string) => list.some((p) => pathname === p || pathname.startsWith(`${p}/`))

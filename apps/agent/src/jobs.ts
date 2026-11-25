@@ -4,8 +4,10 @@ import { runJobDraftMap, runJobReadKey } from '@jemma/profiling/jobs'
 import classReportPrompt from '../../../packages/profiling/src/jobs/class_report.md'
 import diagnosePrompt from '../../../packages/profiling/src/jobs/diagnose.md'
 import writeLessonPrompt from '../../../packages/profiling/src/jobs/write_lesson.md'
+import writeLevelCheckPrompt from '../../../packages/profiling/src/jobs/write_level_check.md'
 import { makeClassReportJob } from '../../../packages/profiling/src/jobs/cloud/class-report'
 import { makeDiagnoseJob } from '../../../packages/profiling/src/jobs/cloud/diagnose'
+import { runJobWriteLevelCheck } from '../../../packages/profiling/src/jobs/cloud/write-level-check'
 import { defaultSpeech } from './speech'
 import { withUsage } from './usage'
 
@@ -26,6 +28,7 @@ export const cloudJobs: CloudJobs = {
   diagnose: withUsage('diagnose', makeDiagnoseJob(diagnosePrompt)),
   class_report: withUsage('class_report', makeClassReportJob(classReportPrompt)),
   write_lesson: withUsage('write_lesson', (ctx, eventId, ids) => runJobWriteLesson(ctx, eventId, ids, { prompt: writeLessonPrompt })),
+  write_level_check: withUsage('write_level_check', (ctx, eventId, ids) => runJobWriteLevelCheck(ctx, eventId, ids, { prompt: writeLevelCheckPrompt })),
   guidance: withUsage('guidance', runJobGuidance),
   long_view: withUsage('long_view', runJobLongView),
   map_records: withUsage('map_records', runJobMapRecords),
