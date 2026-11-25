@@ -33,7 +33,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { Choice, ColumnsSpec, DataGraphSpec, Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
+import type { BlocksSpec, Choice, ColumnsSpec, DataGraphSpec, Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -99,6 +99,8 @@ export type QuestionForChild = {
   graph?: DataGraphSpec
   /** P168: a sum the learner works in columns. Its numbers are in the question anyway; the answer is never sent. */
   columns?: ColumnsSpec
+  /** P169: the place value blocks the learner builds a number with. */
+  blocks?: BlocksSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -149,6 +151,8 @@ export type MissedQuestion = {
   /** P168: the sum worked in columns, and each answer box as the learner wrote it with the right digit (the results mark a wrong digit in red pen). */
   columns?: ColumnsSpec
   columnsPlaces?: { wrote: string; right: string; ok: boolean }[]
+  /** P169: the blocks the learner built a number with; the results draw the mat of the number they built (`wrote`). */
+  blocks?: BlocksSpec
 }
 
 /** The P148 fields of a question for the child. Shape hints only: how many boxes, which clock, which unit. Never the key. */
@@ -199,6 +203,7 @@ export function stripQuestion(
     ...(at.young ? { young: true as const } : {}),
     ...(q.graph ? { graph: q.graph } : {}),
     ...(q.columns ? { columns: q.columns } : {}),
+    ...(q.blocks ? { blocks: q.blocks } : {}),
   }
 }
 
@@ -284,6 +289,8 @@ export type AnswerShape =
   | { kind: 'graph'; graph: DataGraphSpec; typed: AnswerShape; young?: true }
   /** P168: a sum worked in columns: a box for each digit of the answer, written from the ones, and a small box over a column for a carry. */
   | { kind: 'columns'; columns: ColumnsSpec; young?: true }
+  /** P169: a number built with place value blocks on a mat. */
+  | { kind: 'blocks'; blocks: BlocksSpec; young?: true }
 
 /** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
 export type QuantityExtras = { unit?: string; round?: number; signed?: true }
@@ -305,6 +312,7 @@ type ShapeParts = {
   young?: true
   graph?: DataGraphSpec
   columns?: ColumnsSpec
+  blocks?: BlocksSpec
 }
 
 export function answerShape(
@@ -323,6 +331,8 @@ export function answerShape(
   }
   // P168: a sum worked in columns, its answer a whole number written digit by digit.
   if (q.columns && q.answerKind === 'whole') return { kind: 'columns', columns: q.columns, ...(q.young ? { young: true as const } : {}) }
+  // P169: a number built with blocks, its answer the number the blocks make.
+  if (q.blocks && q.answerKind === 'whole') return { kind: 'blocks', blocks: q.blocks, ...(q.young ? { young: true as const } : {}) }
   // P147: an equation whose key is an inequality or an interval, or two letters with a value each, says so in its line under the box.
   if (q.answerKind === 'equation' && q.answerShape === 'inequality') return { kind: 'equation', inequality: true }
   if (q.answerKind === 'equation' && q.answerShape === 'pair') return { kind: 'equation', pair: true }
@@ -394,6 +404,8 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
       return hasDigit(text) ? text : ''
     // P168: the digits of the answer boxes, from the first one written to the ones, or nothing until they are written.
     case 'columns':
+    // P169: the number the blocks on the mat make, or nothing while the mat is empty.
+    case 'blocks':
       return /^\d+$/.test(text) ? text : ''
     default:
       return text
@@ -442,6 +454,7 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       ...cellsOf(item),
       ...graphOf(item),
       ...(item.question.columns ? { columns: item.question.columns, columnsPlaces: columnsPlaces(item.question.columns, item.unread ? '' : item.answer) } : {}),
+      ...(item.question.blocks ? { blocks: item.question.blocks } : {}),
     }))
 }
 

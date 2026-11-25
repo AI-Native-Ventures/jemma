@@ -15,6 +15,7 @@ import { equationShapeHint } from './answers/hints'
 import { isValuesShape, ValuesAnswer } from './answers/ValuesAnswer'
 import { GraphAnswer } from './answers/GraphAnswer'
 import { ColumnsAnswer } from './answers/ColumnsSum'
+import { BlocksAnswer } from './answers/BlocksMat'
 import { YoungSize } from './answers/YoungSize'
 import { MathAnswerField } from './MathAnswerField'
 import { equationCountHint, MULTI_HINT, MultiAnswer } from './answers/MultiAnswer'
@@ -260,6 +261,9 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
     // P168: a sum worked in columns, written digit by digit from the ones with the keypad under it.
     case 'columns':
       return <ColumnsAnswer columns={shape.columns} onChange={b.set.text} />
+    // P169: a number built with place value blocks on a mat.
+    case 'blocks':
+      return <BlocksAnswer blocks={shape.blocks} onChange={b.set.text} />
     default:
       // The lesson gave no kind we know: one plain box.
       return (

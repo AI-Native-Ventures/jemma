@@ -19,12 +19,13 @@ describe('the kinds the primary lessons may use are kinds every reader of a less
     for (const kind of PRIMARY_EXTRA_ANSWER_KINDS) expect(ANSWER_KINDS as readonly string[], kind).toContain(kind)
   })
 
-  // P166: a kit whose topic has a picture also has a `diagram` line, and (P167) the data kit a `graph` line: each names a field of the question, not an answer kind.
+  // P166: a kit whose topic has a picture also has a `diagram` line, (P167) the data kit a `graph` line, (P168) addition and subtraction a `columns` line and
+  // (P169) place value a `blocks` line: each names a field of the question, not an answer kind.
   test('the lines of every kit only name kinds that exist', () => {
     const named = new Set<string>()
-    for (const kit of ['time', 'measure', 'order', 'patterns', 'data', 'money', 'place'] as const)
+    for (const kit of ['time', 'measure', 'order', 'patterns', 'data', 'money', 'place', 'addsub'] as const)
       for (const grade of [1, 4]) for (const m of primaryAnswerBlock(kit, klass(grade)).matchAll(/^- `(\w+)`/gm)) named.add(m[1]!)
-    for (const kind of named) expect([...ANSWER_KINDS, 'unit', 'diagram', 'graph'] as string[], kind).toContain(kind)
+    for (const kind of named) expect([...ANSWER_KINDS, 'unit', 'diagram', 'graph', 'columns', 'blocks'] as string[], kind).toContain(kind)
   })
 })
 

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { parseAnswer } from '../../logic/answers'
 import { choicePictureProblem, isPickQuestion, pickKeyProblem } from '../../logic/answers/pick'
+import { blocksKeyProblem, blocksProblem } from '../../logic/answers/blocks'
 import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
@@ -46,6 +47,12 @@ export function answerProblem(q: Question): string | null {
     if (q.diagram || q.graph || q.choices?.length) return 'columns: a sum in columns has no picture, no graph and no choices'
     const columns = columnsProblem(q.columns) ?? columnsKeyProblem({ ...q, columns: q.columns })
     if (columns) return `columns: ${columns}`
+  }
+  // P169: a number built with blocks needs only the blocks the learner has. The mat is the question's picture.
+  if (q.blocks) {
+    if (q.diagram || q.graph || q.columns || q.choices?.length) return 'blocks: a number built with blocks has no picture, no graph, no sum in columns and no choices'
+    const blocks = blocksProblem(q.blocks) ?? blocksKeyProblem({ ...q, blocks: q.blocks })
+    if (blocks) return `blocks: ${blocks}`
   }
   const picture = questionPictureOf(q)
   if (picture) return `picture: ${picture}`

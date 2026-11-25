@@ -91,6 +91,13 @@ export type DataGraphSpec = z.infer<typeof DataGraphSchema>
 export const ColumnsSchema = z.object({ op: z.enum(['+', '-']), numbers: z.array(z.string()) })
 export type ColumnsSpec = z.infer<typeof ColumnsSchema>
 
+/**
+ * P169: a number the learner builds with place value blocks (Grades 1 to 3): flats of a hundred, rods of ten and single ones. `places` are the blocks the
+ * learner may use. At most 9 of each go on the mat, so a number has one way to be built; the key is the number as a `whole` answer.
+ */
+export const BlocksSchema = z.object({ places: z.array(z.enum(['hundreds', 'tens', 'ones'])) })
+export type BlocksSpec = z.infer<typeof BlocksSchema>
+
 /** The most and the fewest lines of the worked steps of a question (P127). */
 export const MIN_STEPS = 2
 export const MAX_STEPS = 6
@@ -132,10 +139,14 @@ export const SeniorQuestionSchema = seniorQuestion(z.array(z.string()).min(MIN_S
 
 /**
  * The question as every reader sees it: the wide, senior shape, with `steps` optional (an old lesson has none, and a save may leave them out). P167: and a
- * `graph` to draw, and (P168) a sum to work in `columns`, which only a Grade 1 to 6 lesson is asked for (the senior model is handed `SeniorQuestionSchema`,
- * which has neither).
+ * `graph` to draw, (P168) a sum to work in `columns` and (P169) a number to build with `blocks`, which only a Grade 1 to 6 lesson is asked for (the senior
+ * model is handed `SeniorQuestionSchema`, which has none of them).
  */
-export const QuestionSchema = seniorQuestion(z.array(z.string()).optional()).extend({ graph: DataGraphSchema.optional(), columns: ColumnsSchema.optional() })
+export const QuestionSchema = seniorQuestion(z.array(z.string()).optional()).extend({
+  graph: DataGraphSchema.optional(),
+  columns: ColumnsSchema.optional(),
+  blocks: BlocksSchema.optional(),
+})
 export type Question = z.infer<typeof QuestionSchema>
 export type PrimaryQuestion = z.infer<typeof PrimaryQuestionSchema>
 
