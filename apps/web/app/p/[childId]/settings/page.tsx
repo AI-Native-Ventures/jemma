@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { EditName } from '../../account/EditName'
 import { saveChildName } from './actions'
+import { CountryRow } from './CountryRow'
+import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import { getChildSettings } from '@/lib/data/p26'
 import { BoardHeader, BoardHeadline, Chevron, Section } from '../../account/_ui'
@@ -14,6 +16,7 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
   const child = await getChildSettings(childId)
   if (!child) notFound()
   const name = child.firstName
+  const country = await ownCountry(childId)
   const loginTitle = child.loginCode ? `Code ${child.loginCode} and ${name}'s own PIN` : `Set up ${name}'s sign-in`
 
   return (
@@ -33,6 +36,12 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
             <EditName button="Edit" ariaLabel={`Edit ${name}'s name`} buttonStyle={{ minHeight: 44, padding: '0 14px', borderRadius: 12, border: '1px solid #8F8D88', background: '#FFFFFF', color: '#161616', fontSize: 14, fontWeight: 600, flex: 'none' }} title={`${name}'s name`} label="First name" initial={name} onSave={saveChildName.bind(null, childId)} />
           </div>
         </Section>
+
+        {country ? (
+          <Section id="country" title="Country" gap={2}>
+            <CountryRow childId={childId} name={name} initial={country} />
+          </Section>
+        ) : null}
 
         <Section id="signin" title={`${name}'s sign-in`} gap={2}>
           <Link href={`/p/${childId}/settings/login`} style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 56, padding: '6px 0', textDecoration: 'none', color: '#161616' }}>
@@ -67,4 +76,14 @@ export default async function ParentChildSettingsPage({ params }: { params: Prom
       </div>
     </>
   )
+}
+
+/** P161: the country of the child's own space (the personal school, or the "My own" side), or null when the child has none yet. */
+async function ownCountry(childId: string): Promise<string | null> {
+  const admin = createSupabaseAdmin()
+  const { data: child } = await admin.from('children').select('school_id, schools(kind, country)').eq('id', childId).maybeSingle()
+  const school = child?.schools as { kind?: string; country?: string } | null
+  if (school?.kind === 'private') return school.country ?? null
+  const { data: twin } = await admin.from('children').select('schools(country)').eq('private_of', childId).limit(1).maybeSingle()
+  return (twin?.schools as { country?: string } | null)?.country ?? null
 }

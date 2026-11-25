@@ -21,12 +21,12 @@ const NO_GRADE = 'Pick a grade from 1 to 12.'
  * the grade (1 to 12) and the country (South Africa first, then the countries a school can be in). The parent adds the child alone, with no school and no
  * teacher: the child practises in their own space, and the parent lands on the child's page. The words are checked here first and again on the server.
  */
-export function AloneForm({ defaultName = '', defaultOpen = false }: { defaultName?: string; /** Open at once: the parent came from a link to this form. */ defaultOpen?: boolean }) {
+export function AloneForm({ defaultName = '', defaultOpen = false, defaultCountry = 'ZA' }: { defaultName?: string; /** Open at once: the parent came from a link to this form. */ defaultOpen?: boolean; /** P161: the parent's own country (sign-up, else Cloudflare's guess). */ defaultCountry?: string }) {
   const id = useId()
   const [open, setOpen] = useState(defaultOpen)
   const [name, setName] = useState(defaultName)
   const [grade, setGrade] = useState('')
-  const [country, setCountry] = useState('ZA')
+  const [country, setCountry] = useState(defaultCountry)
   const [error, setError] = useState<string | null>(null)
   const [pending, start] = useTransition()
   const kid = name.trim() || 'your child'

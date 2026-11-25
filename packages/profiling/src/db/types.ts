@@ -1319,6 +1319,162 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount_fee_zar_cents: number | null
+          amount_gross_zar_cents: number | null
+          amount_net_zar_cents: number | null
+          created_at: string
+          details: Json
+          id: string
+          kind: string
+          m_payment_id: string | null
+          paid_at: string | null
+          parent_id: string | null
+          pf_payment_id: string | null
+          price_usd: number | null
+          status: string
+          subscription_id: string | null
+        }
+        ComputedFields: never
+        Insert: {
+          amount_fee_zar_cents?: number | null
+          amount_gross_zar_cents?: number | null
+          amount_net_zar_cents?: number | null
+          created_at?: string
+          details?: Json
+          id?: string
+          kind?: string
+          m_payment_id?: string | null
+          paid_at?: string | null
+          parent_id?: string | null
+          pf_payment_id?: string | null
+          price_usd?: number | null
+          status: string
+          subscription_id?: string | null
+        }
+        Update: {
+          amount_fee_zar_cents?: number | null
+          amount_gross_zar_cents?: number | null
+          amount_net_zar_cents?: number | null
+          created_at?: string
+          details?: Json
+          id?: string
+          kind?: string
+          m_payment_id?: string | null
+          paid_at?: string | null
+          parent_id?: string | null
+          pf_payment_id?: string | null
+          price_usd?: number | null
+          status?: string
+          subscription_id?: string | null
+        }
+        Relationships: []
+      }
+      signups: {
+        Row: {
+          over_13: boolean | null
+          campaign: string | null
+          country: string | null
+          created_at: string
+          landing: string | null
+          medium: string | null
+          source: string | null
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          over_13?: boolean | null
+          campaign?: string | null
+          country?: string | null
+          created_at?: string
+          landing?: string | null
+          medium?: string | null
+          source?: string | null
+          user_id: string
+        }
+        Update: {
+          over_13?: boolean | null
+          campaign?: string | null
+          country?: string | null
+          created_at?: string
+          landing?: string | null
+          medium?: string | null
+          source?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          country: string | null
+          upgrade_plan: string | null
+          upgrade_usd: number | null
+          upgrade_zar_cents: number | null
+          amount_zar_cents: number
+          cancelled_at: string | null
+          created_at: string
+          ended_at: string | null
+          follows: string | null
+          grace_until: string | null
+          id: string
+          next_plan: string | null
+          parent_id: string
+          period_end: string | null
+          plan: string
+          price_usd: number
+          provider: string
+          status: string
+          token: string | null
+          updated_at: string
+        }
+        ComputedFields: never
+        Insert: {
+          country?: string | null
+          upgrade_plan?: string | null
+          upgrade_usd?: number | null
+          upgrade_zar_cents?: number | null
+          amount_zar_cents: number
+          cancelled_at?: string | null
+          created_at?: string
+          ended_at?: string | null
+          follows?: string | null
+          grace_until?: string | null
+          id?: string
+          next_plan?: string | null
+          parent_id: string
+          period_end?: string | null
+          plan: string
+          price_usd: number
+          provider?: string
+          status?: string
+          token?: string | null
+          updated_at?: string
+        }
+        Update: {
+          country?: string | null
+          upgrade_plan?: string | null
+          upgrade_usd?: number | null
+          upgrade_zar_cents?: number | null
+          amount_zar_cents?: number
+          cancelled_at?: string | null
+          created_at?: string
+          ended_at?: string | null
+          follows?: string | null
+          grace_until?: string | null
+          id?: string
+          next_plan?: string | null
+          parent_id?: string
+          period_end?: string | null
+          plan?: string
+          price_usd?: number
+          provider?: string
+          status?: string
+          token?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       observations: {
         Row: {
           author_id: string

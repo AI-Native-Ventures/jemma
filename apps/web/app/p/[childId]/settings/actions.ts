@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { createChildLogin } from '@/lib/child-login'
+import { changeChildCountry, OwnWorkspaceError } from '@jemma/profiling/own'
+import { isCountry } from '@/lib/signups'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
@@ -62,5 +64,30 @@ export async function saveChildName(childId: string, name: string): Promise<{ ok
   // The child's own side ("My own") carries the same first name.
   await admin.from('children').update({ first_name: clean }).eq('private_of', childId)
   revalidatePath(`/p/${childId}`, 'layout')
+  return { ok: true }
+}
+
+export type CountryResult = { ok: true } | { ok: false; error: string }
+
+/**
+ * P161: a child's country, set by a parent with an approved link. It sets the child's own curriculum (South Africa's CAPS, the US Common Core),
+ * money, units and number format in the child's own practice. A child in a teacher's class keeps the class's country there.
+ */
+export async function saveChildCountry(childId: string, country: string): Promise<CountryResult> {
+  if (!isCountry(country)) return { ok: false, error: 'Pick the country.' }
+  const supabase = await createSupabaseServer()
+  const { data: auth } = await supabase.auth.getUser()
+  if (!auth.user) return { ok: false, error: 'Sign in again.' }
+  const { data: link } = await supabase.from('parent_links').select('id').eq('child_id', childId).eq('parent_id', auth.user.id).eq('status', 'approved').maybeSingle()
+  if (!link) return { ok: false, error: 'You can only change your own child.' }
+  try {
+    const changed = await changeChildCountry(createSupabaseAdmin(), { childId, country, actorUserId: auth.user.id })
+    if (!changed) return { ok: false, error: "Your child's class sets the country. It changes when your child practises on their own." }
+  } catch (e) {
+    if (e instanceof OwnWorkspaceError) return { ok: false, error: e.message }
+    console.error(`country not changed: ${e instanceof Error ? e.message : String(e)}`)
+    return { ok: false, error: 'Could not change the country. Try again.' }
+  }
+  revalidatePath(`/p/${childId}/settings`)
   return { ok: true }
 }

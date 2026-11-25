@@ -1,0 +1,139 @@
+{
+  "grade": 8,
+  "subject": "Mathematics",
+  "country": "US",
+  "course": null,
+  "source": {
+    "title": "Common Core State Standards for Mathematics",
+    "publisher": "National Governors Association Center for Best Practices and Council of Chief State School Officers",
+    "url": "https://www.thecorestandards.org/Math/",
+    "part": "Kindergarten to Grade 8 standards"
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Rational and irrational numbers",
+          "shortName": "Irrational numbers",
+          "family": "integers_and_exponents",
+          "standard": "8.NS.A",
+          "domain": "The Number System"
+        },
+        {
+          "name": "Integer exponents and scientific notation",
+          "shortName": "Scientific notation",
+          "family": "integers_and_exponents",
+          "standard": "8.EE.A.1",
+          "domain": "Expressions and Equations"
+        },
+        {
+          "name": "Square roots and cube roots",
+          "shortName": "Roots",
+          "family": "integers_and_exponents",
+          "standard": "8.EE.A.2",
+          "domain": "Expressions and Equations"
+        },
+        {
+          "name": "Linear equations in one variable",
+          "shortName": "Linear equations",
+          "family": "algebra",
+          "standard": "8.EE.C.7",
+          "domain": "Expressions and Equations"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Proportional relationships and slope",
+          "shortName": "Slope",
+          "family": "functions",
+          "standard": "8.EE.B",
+          "domain": "Expressions and Equations"
+        },
+        {
+          "name": "Systems of linear equations",
+          "shortName": "Systems of equations",
+          "family": "algebra",
+          "standard": "8.EE.C.8",
+          "domain": "Expressions and Equations"
+        },
+        {
+          "name": "What a function is",
+          "shortName": "Functions",
+          "family": "functions",
+          "standard": "8.F.A",
+          "domain": "Functions"
+        },
+        {
+          "name": "Linear functions and rate of change",
+          "shortName": "Linear functions",
+          "family": "functions",
+          "standard": "8.F.B",
+          "domain": "Functions"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Rotations, reflections and translations",
+          "shortName": "Transformations",
+          "family": "shapes",
+          "standard": "8.G.A.1",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Congruence and similarity",
+          "shortName": "Congruence and similarity",
+          "family": "shapes",
+          "standard": "8.G.A.2",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Angles in triangles and parallel lines",
+          "shortName": "Angles and parallel lines",
+          "family": "shapes",
+          "standard": "8.G.A.5",
+          "domain": "Geometry"
+        },
+        {
+          "name": "The Pythagorean theorem",
+          "shortName": "Pythagorean theorem",
+          "family": "shapes",
+          "standard": "8.G.B",
+          "domain": "Geometry"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Volume of cylinders, cones and spheres",
+          "shortName": "Volume of solids",
+          "family": "measurement",
+          "standard": "8.G.C",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Scatter plots and lines of fit",
+          "shortName": "Scatter plots",
+          "family": "data",
+          "standard": "8.SP.A.1",
+          "domain": "Statistics and Probability"
+        },
+        {
+          "name": "Two-way tables",
+          "shortName": "Two-way tables",
+          "family": "data",
+          "standard": "8.SP.A.4",
+          "domain": "Statistics and Probability"
+        }
+      ]
+    }
+  ]
+}

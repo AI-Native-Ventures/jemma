@@ -29,8 +29,12 @@ const SECTIONS: LegalSection[] = [
     id: 'price',
     title: 'What it costs',
     body: [
-      'Every lesson is free. Paid plans for more practice are not open yet, so practice is free for now.',
-      'Before anything costs money, we tell you the price, and nothing is charged unless you choose a plan.',
+      'Every lesson is free. Without a plan, each child has 2 practices a day.',
+      "A plan gives more practice. It is on a parent's account, and the parent's children share its practices of a month: Light 150, Regular 300, Heavy 600. Prices are shown in US dollars, by the year, and follow your country: a family in the US pays twice the price in South Africa.",
+      'You pay on PayFast, a payment service. Jemma never sees your card. PayFast charges in South African rand, so your bank may change the amount to your money and may add a fee.',
+      'A plan renews each year until you cancel. You can cancel any time in Your account, Plans and payments: nothing more is charged, and the plan works to the end of the year you paid for.',
+      'A bigger plan starts at once: you pay the difference for the rest of the year. A smaller plan starts at your next payment. If a payment fails, the plan works for 7 more days so you can change the card.',
+      'You can ask for your money back within 7 days of a payment, with the help form.',
     ],
   },
   {

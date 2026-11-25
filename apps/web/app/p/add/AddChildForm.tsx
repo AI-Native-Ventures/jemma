@@ -10,7 +10,7 @@ export type FoundCard = { className: string; teacherName: string; grade: number;
 const input = { fontFamily: 'inherit', background: '#FFFFFF', color: ink, borderRadius: 14, padding: '0 16px' } as const
 
 /** Code, class card and the child's name. Leaving the code box looks the class up again. */
-export function AddChildForm({ code, child, surname, needsSurname, found, error, aloneOpen = false }: { code: string; child: string; surname: string; needsSurname: boolean; found: FoundCard | null; error: string | null; /** The parent came from the link to "My child's school doesn't use Jemma": its form is open. */ aloneOpen?: boolean }) {
+export function AddChildForm({ code, child, surname, needsSurname, found, error, aloneOpen = false, country = 'ZA' }: { code: string; child: string; surname: string; needsSurname: boolean; found: FoundCard | null; error: string | null; /** The parent came from the link to "My child's school doesn't use Jemma": its form is open. */ aloneOpen?: boolean; country?: string }) {
   const router = useRouter()
   const [name, setName] = useState(child)
   const [last, setLast] = useState(surname)
@@ -91,7 +91,7 @@ export function AddChildForm({ code, child, surname, needsSurname, found, error,
         <span style={{ fontSize: 13, color: body }}>Or</span>
         <span style={{ flex: 1, height: 1, background: line }} />
       </div>
-      <AloneForm defaultName={child} defaultOpen={aloneOpen} />
+      <AloneForm defaultName={child} defaultOpen={aloneOpen} defaultCountry={country} />
     </>
   )
 }

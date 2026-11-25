@@ -1,7 +1,8 @@
 import { BAND, LEAD, Title, Together, WRAP } from './Bits'
 import { Gem } from './Shot'
 
-// The four plans, by the year in dollars. Every lesson is free on each of them: a plan only adds practice. Paid plans are not open yet.
+// The four plans, by the year in dollars. Every lesson is free on each of them: a plan only adds practice. A plan is on the parent's account and the
+// children share its practices (P161).
 const PLANS = [
   { price: '$0', per: 'always', name: 'Free', practice: '2 practices a day', note: 'every lesson, always', paid: false },
   { price: '$48', per: 'a year', name: 'Light', practice: '150 practices a month', note: 'about 5 a day', paid: true },
@@ -9,7 +10,7 @@ const PLANS = [
   { price: '$192', per: 'a year', name: 'Heavy', practice: '600 practices a month', note: 'about 20 a day', paid: true },
 ] as const
 
-/** Free to learn, plans to practise: four plans (two to a row on a phone, four on a laptop), the family price, and that paid plans are not open yet. */
+/** Free to learn, plans to practise: four plans (two to a row on a phone, four on a laptop), one plan for the whole family, and the free practice. */
 export function Plans() {
   return (
     <section aria-labelledby="plans-title" className="bg-card">
@@ -36,9 +37,9 @@ export function Plans() {
         <div className="mt-[22px] flex flex-wrap items-center gap-x-7 gap-y-3 lg:mt-8">
           <p className="m-0 flex min-h-11 items-center gap-2.5 rounded-18 bg-green-tint px-[18px] py-2 text-[16px] leading-[1.3] font-bold xl:text-[19px]">
             <Gem size={12} fill="#007749" />
-            <span className="text-balance">Family: 20% off for two or more learners.</span>
+            <span className="text-balance">One plan for the whole family. Your children share it.</span>
           </p>
-          <p className="m-0 text-[15px] leading-[1.5] text-body text-balance xl:text-[17px]">Paid plans are not open yet. For now, practice is free.</p>
+          <p className="m-0 text-[15px] leading-[1.5] text-body text-balance xl:text-[17px]">Without a plan: 2 practices a day for each child. Every lesson is free.</p>
         </div>
       </div>
     </section>

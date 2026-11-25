@@ -1,0 +1,139 @@
+{
+  "grade": 10,
+  "subject": "Mathematics",
+  "country": "US",
+  "course": "Geometry",
+  "source": {
+    "title": "Common Core State Standards for Mathematics",
+    "publisher": "National Governors Association Center for Best Practices and Council of Chief State School Officers",
+    "url": "https://www.thecorestandards.org/Math/",
+    "part": "High School standards, in the usual course order"
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Geometric definitions and constructions",
+          "shortName": "Constructions",
+          "family": "shapes",
+          "standard": "G-CO.1",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Rigid transformations",
+          "shortName": "Transformations",
+          "family": "shapes",
+          "standard": "G-CO.2",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Congruent triangles and proofs",
+          "shortName": "Congruence proofs",
+          "family": "shapes",
+          "standard": "G-CO.7",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Lines, angles and parallel lines",
+          "shortName": "Parallel lines",
+          "family": "shapes",
+          "standard": "G-CO.9",
+          "domain": "Geometry"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Similarity and dilations",
+          "shortName": "Similarity",
+          "family": "shapes",
+          "standard": "G-SRT.1",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Similar triangle proofs",
+          "shortName": "Similar triangles",
+          "family": "shapes",
+          "standard": "G-SRT.4",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Right triangle trigonometry",
+          "shortName": "Right triangle trig",
+          "family": "trigonometry",
+          "standard": "G-SRT.6",
+          "domain": "Geometry"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Coordinate geometry: slope and distance",
+          "shortName": "Coordinate geometry",
+          "family": "analytical_geometry",
+          "standard": "G-GPE.4",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Quadrilaterals and their properties",
+          "shortName": "Quadrilaterals",
+          "family": "shapes",
+          "standard": "G-CO.11",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Circles: arcs, angles and chords",
+          "shortName": "Circle theorems",
+          "family": "shapes",
+          "standard": "G-C.2",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Equations of circles",
+          "shortName": "Circle equations",
+          "family": "analytical_geometry",
+          "standard": "G-GPE.1",
+          "domain": "Geometry"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Area and volume formulas",
+          "shortName": "Area and volume",
+          "family": "measurement",
+          "standard": "G-GMD",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Modeling with geometry",
+          "shortName": "Modeling",
+          "family": "measurement",
+          "standard": "G-MG",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Independent and conditional probability",
+          "shortName": "Conditional probability",
+          "family": "probability",
+          "standard": "S-CP.1",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Permutations and combinations",
+          "shortName": "Counting",
+          "family": "probability",
+          "standard": "S-CP.9",
+          "domain": "Geometry"
+        }
+      ]
+    }
+  ]
+}

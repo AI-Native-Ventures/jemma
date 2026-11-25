@@ -80,7 +80,7 @@ export async function createPasswordAccount(input: {
   email: string
   password: string
   name: string
-}): Promise<{ ok: true; next: string } | { ok: false; why: PasswordSignUpFailure }> {
+}): Promise<{ ok: true; next: string; userId: string } | { ok: false; why: PasswordSignUpFailure }> {
   const supabase = await createSupabaseServer()
   const name = input.name.trim()
   const { data, error } = await supabase.auth.signUp({
@@ -92,7 +92,7 @@ export async function createPasswordAccount(input: {
   // A project that wants a confirmed email hides an email already in use as a user with no identities, and gives a new user no session.
   if (data.user && data.user.identities?.length === 0) return { ok: false, why: 'taken' }
   if (!data.user || !data.session) return { ok: false, why: 'confirm' }
-  return { ok: true, next: await nextPathFor(supabase, data.user.id) }
+  return { ok: true, next: await nextPathFor(supabase, data.user.id), userId: data.user.id }
 }
 
 /** Checks an email and a password. `wrong`: the pair does not match (or the email has no password, as an account made with a code). */

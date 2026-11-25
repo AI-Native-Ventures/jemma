@@ -14,6 +14,7 @@ export const GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const
 /** The ISO 3166 code is what `schools.country` holds (the seeded school is `ZA`). `ZZ` is the standard "unknown" code. */
 export const COUNTRIES: readonly { code: string; name: string }[] = [
   { code: 'ZA', name: 'South Africa' },
+  { code: 'US', name: 'United States' },
   { code: 'KE', name: 'Kenya' },
   { code: 'NG', name: 'Nigeria' },
   { code: 'GH', name: 'Ghana' },

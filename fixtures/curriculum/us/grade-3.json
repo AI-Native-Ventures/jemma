@@ -1,0 +1,146 @@
+{
+  "grade": 3,
+  "subject": "Mathematics",
+  "country": "US",
+  "course": null,
+  "source": {
+    "title": "Common Core State Standards for Mathematics",
+    "publisher": "National Governors Association Center for Best Practices and Council of Chief State School Officers",
+    "url": "https://www.thecorestandards.org/Math/",
+    "part": "Kindergarten to Grade 8 standards"
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "What multiplication and division mean",
+          "shortName": "Meaning of multiplication",
+          "family": "whole_numbers",
+          "standard": "3.OA.A",
+          "domain": "Operations and Algebraic Thinking"
+        },
+        {
+          "name": "Properties of multiplication",
+          "shortName": "Properties of multiplication",
+          "family": "patterns",
+          "standard": "3.OA.B",
+          "domain": "Operations and Algebraic Thinking"
+        },
+        {
+          "name": "Multiplying and dividing within 100",
+          "shortName": "Multiply and divide within 100",
+          "family": "whole_numbers",
+          "standard": "3.OA.C",
+          "domain": "Operations and Algebraic Thinking"
+        },
+        {
+          "name": "Rounding to the nearest 10 or 100",
+          "shortName": "Rounding",
+          "family": "whole_numbers",
+          "standard": "3.NBT.A.1",
+          "domain": "Number and Operations in Base Ten"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Adding and subtracting within 1,000",
+          "shortName": "Add and subtract within 1,000",
+          "family": "whole_numbers",
+          "standard": "3.NBT.A.2",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Multiplying by multiples of 10",
+          "shortName": "Multiples of 10",
+          "family": "whole_numbers",
+          "standard": "3.NBT.A.3",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Two-step word problems and patterns",
+          "shortName": "Two-step problems",
+          "family": "patterns",
+          "standard": "3.OA.D",
+          "domain": "Operations and Algebraic Thinking"
+        },
+        {
+          "name": "Area",
+          "shortName": "Area",
+          "family": "measurement",
+          "standard": "3.MD.C",
+          "domain": "Measurement and Data"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Fractions as numbers",
+          "shortName": "Fractions as numbers",
+          "family": "fractions",
+          "standard": "3.NF.A.1",
+          "domain": "Number and Operations: Fractions"
+        },
+        {
+          "name": "Fractions on a number line",
+          "shortName": "Fractions on a number line",
+          "family": "fractions",
+          "standard": "3.NF.A.2",
+          "domain": "Number and Operations: Fractions"
+        },
+        {
+          "name": "Equivalent and comparing fractions",
+          "shortName": "Comparing fractions",
+          "family": "fractions",
+          "standard": "3.NF.A.3",
+          "domain": "Number and Operations: Fractions"
+        },
+        {
+          "name": "Perimeter",
+          "shortName": "Perimeter",
+          "family": "measurement",
+          "standard": "3.MD.D",
+          "domain": "Measurement and Data"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Time and elapsed time",
+          "shortName": "Elapsed time",
+          "family": "measurement",
+          "standard": "3.MD.A.1",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Liquid volume and mass",
+          "shortName": "Volume and mass",
+          "family": "measurement",
+          "standard": "3.MD.A.2",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Scaled graphs and line plots",
+          "shortName": "Graphs and line plots",
+          "family": "data",
+          "standard": "3.MD.B",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Quadrilaterals and equal parts of shapes",
+          "shortName": "Quadrilaterals",
+          "family": "shapes",
+          "standard": "3.G",
+          "domain": "Geometry"
+        }
+      ]
+    }
+  ]
+}

@@ -45,7 +45,7 @@ describe('the lists', () => {
 
   test('the countries have an ISO code each, South Africa first and Other last', () => {
     expect(COUNTRIES.map((c) => c.name)).toEqual([
-      'South Africa', 'Kenya', 'Nigeria', 'Ghana', 'Uganda', 'Tanzania', 'Rwanda', 'Zambia', 'Zimbabwe', 'Botswana', 'Namibia', 'Ethiopia', 'Other',
+      'South Africa', 'United States', 'Kenya', 'Nigeria', 'Ghana', 'Uganda', 'Tanzania', 'Rwanda', 'Zambia', 'Zimbabwe', 'Botswana', 'Namibia', 'Ethiopia', 'Other',
     ])
     expect(COUNTRIES[0]).toEqual({ code: 'ZA', name: 'South Africa' })
     for (const c of COUNTRIES) expect(c.code).toMatch(/^[A-Z]{2}$/)

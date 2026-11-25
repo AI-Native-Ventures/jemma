@@ -1,4 +1,5 @@
 import type { JemmaDb } from '@jemma/profiling/db'
+import { payfastEnv, subscriptionCall } from './payfast'
 
 // A family's data (P160): the copy a parent downloads, and what goes when a parent deletes a child's data or their own account. These are a
 // parent's rights under POPIA. The copy is read with the parent's own session, so the database's rules decide what is in it: exactly what the
@@ -153,6 +154,7 @@ export async function deleteChildData(admin: JemmaDb, childId: string): Promise<
  * class stays there: only the parent's link goes. Then the login goes, and with it the profile, the links and the parent's notes.
  */
 export async function deleteParentAccount(admin: JemmaDb, parentId: string): Promise<{ childrenDeleted: number }> {
+  await stopPlans(admin, parentId)
   const { data: links } = await admin.from('parent_links').select('child_id').eq('parent_id', parentId).eq('status', 'approved')
   let childrenDeleted = 0
   for (const { child_id } of links ?? []) {
@@ -166,4 +168,20 @@ export async function deleteParentAccount(admin: JemmaDb, parentId: string): Pro
   const { error } = await admin.auth.admin.deleteUser(parentId)
   if (error) throw new Error(`could not delete the account: ${error.message}`)
   return { childrenDeleted }
+}
+
+/**
+ * P161: before an account goes, its family plan is stopped on PayFast, so nothing is charged after it. PayFast must say yes (or that it is already
+ * gone): otherwise the account is not deleted and the parent is asked to try again. Nothing to do while plans are not set up.
+ */
+async function stopPlans(admin: JemmaDb, parentId: string): Promise<void> {
+  const env = payfastEnv()
+  if (!env) return
+  const { data: subs } = await admin.from('subscriptions').select('id, token, status').eq('parent_id', parentId).in('status', ['active', 'failed'])
+  for (const sub of subs ?? []) {
+    if (!sub.token) continue
+    const res = await subscriptionCall(env, sub.token, { kind: 'cancel' })
+    if (!res.ok && res.status !== 404) throw new Error(`PayFast did not stop the plan (${res.status})`)
+    await admin.from('subscriptions').update({ status: 'cancelled', cancelled_at: new Date().toISOString() }).eq('id', sub.id)
+  }
 }

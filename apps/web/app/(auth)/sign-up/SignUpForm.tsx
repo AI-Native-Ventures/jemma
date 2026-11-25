@@ -2,15 +2,66 @@
 
 import { PendingButton } from '@/components/ui/Button'
 import Link from 'next/link'
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
+import { SelectBox } from '@/app/t/new/SelectBox'
+import { birthYears } from '@/lib/signups'
+import { COUNTRIES } from '@/lib/subjects'
 import { makeAccount } from '../actions'
 import { colors, errorText, primaryButton, textInput } from '../_parts'
 import { PasswordField } from '../PasswordField'
 
-export function SignUpForm() {
+export type SignUpDefaults = { country: string; tags: Record<string, string> }
+
+/**
+ * The sign-up form: the country first (Cloudflare's guess picked), then, in the US, the year the person was born (P161: a child under 13 needs a
+ * parent to make the account), then name, email, password and the agreement. The tags of the link the person came by go along unseen.
+ */
+export function SignUpForm({ defaults = { country: 'ZA', tags: {} } }: { defaults?: SignUpDefaults }) {
   const [state, action, pending] = useActionState(makeAccount, undefined)
+  const [country, setCountry] = useState(state?.country || defaults.country)
+  const [born, setBorn] = useState(state?.born ?? '')
+  if (state?.parent) {
+    return (
+      <div role="alert" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 18, background: '#FFF8E8', border: '1px solid #FFDC93', borderRadius: 22 }}>
+        <p style={{ margin: 0, fontSize: 18, lineHeight: 1.4, fontWeight: 700 }}>{state.error}</p>
+        <p style={{ margin: 0, fontSize: 15, lineHeight: 1.45 }}>Nothing about you was kept.</p>
+      </div>
+    )
+  }
   return (
     <form action={action} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 18, background: '#FFFFFF', border: `1px solid ${colors.line}`, borderRadius: 22 }}>
+      {Object.entries(defaults.tags).map(([k, v]) => (
+        <input key={k} type="hidden" name={k} value={v} />
+      ))}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <label htmlFor="country" style={{ fontSize: 15, fontWeight: 500 }}>
+          Country
+        </label>
+        <SelectBox id="country" value={country} onChange={setCountry}>
+          {COUNTRIES.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.name}
+            </option>
+          ))}
+        </SelectBox>
+        <input type="hidden" name="country" value={country} />
+      </div>
+      {country === 'US' ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <label htmlFor="born" style={{ fontSize: 15, fontWeight: 500 }}>
+            Year you were born
+          </label>
+          <SelectBox id="born" value={born} onChange={setBorn}>
+            <option value="">Pick a year</option>
+            {birthYears().map((y) => (
+              <option key={y} value={String(y)}>
+                {y}
+              </option>
+            ))}
+          </SelectBox>
+          <input type="hidden" name="born" value={born} />
+        </div>
+      ) : null}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <label htmlFor="name" style={{ fontSize: 15, fontWeight: 500 }}>
           Your name

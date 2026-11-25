@@ -5,7 +5,9 @@ import { getPastPractice } from '@/lib/data/p120'
 import { getLearnerToday, type LearnerToday } from '@/lib/data/p27'
 import { getMyMaths } from '@/lib/data/p80'
 import { ADD_A_GRADE, higherGradeLine, noTopicsLine } from '@/lib/own-grades'
+import { getMyLimit } from '@/lib/data/p161'
 import { JoinClassCard } from './join/JoinClassCard'
+import { LimitCard } from './LimitCard'
 import { GradeChips } from './maths/GradeChips'
 import { gapLine, levelOfScore, lockOf, progressLabel, rowScore, summaryLine, summaryOf } from './maths/format'
 import { ProgressDots, ProgressLegend } from './maths/ProgressDots'
@@ -108,11 +110,12 @@ function NextCard({ next }: { next: NonNullable<LearnerToday['next']> }) {
 export async function MyMaths({ searchParams }: { searchParams?: Promise<MathsQuery> } = {}) {
   const shape = await getScreenShape((await searchParams) ?? {})
   const own = shape.workspace === 'own' ? shape : null
-  const [today, { maths, status }, past] = await Promise.all([getLearnerToday(), getMyMaths(own?.picked?.classId), getPastPractice()])
+  const [today, { maths, status }, past, limit] = await Promise.all([getLearnerToday(), getMyMaths(own?.picked?.classId), getPastPractice(), getMyLimit()])
   const { firstName, tonight, next } = today
   // P155: tonight's lesson is never a gate, so `lock` is only there while a practice is being written (Practise is held back, nothing else).
   const lock = lockOf(status)
-  const locked = lock !== null
+  // P161: with no practice left (today's 2, or the family's month), Practise is held back too; Learn never is.
+  const locked = lock !== null || limit !== null
   const grade = own?.picked?.grade ?? null
   const topicCount = maths.strands.reduce((n, s) => n + s.topics.length, 0)
   // Nothing to list: My own with no grade yet, or a grade with no map (a school outside South Africa has no CAPS map to load).
@@ -126,7 +129,7 @@ export async function MyMaths({ searchParams }: { searchParams?: Promise<MathsQu
   const suggestions = maths.suggestions.filter((s) => featured === null || keyOf(s) !== keyOf(featured))
   // The card of a practice that is being written already says so: the note says it once (it is only a fallback when the two reads disagree for a moment).
   const note = lock && !empty && today.practice !== 'writing' ? lock.text : null
-  const pickLine = !tonight && today.workspace !== 'own' && today.practice === 'ready' && today.suggestion !== null
+  const pickLine = !tonight && today.workspace !== 'own' && today.practice === 'ready' && today.suggestion !== null && limit === null
   const gapsCard = <GapsCard today={today} tone={tonight ? 'today' : 'rest'} />
 
   return (
@@ -147,7 +150,7 @@ export async function MyMaths({ searchParams }: { searchParams?: Promise<MathsQu
         ) : (
           <>
             {pickLine ? <p className="m-0 -mb-2 px-1 text-[16px] leading-[1.45] text-body">Pick something to practise.</p> : null}
-            <PracticeCard state={today.practice} suggestion={today.suggestion} workspace={today.workspace} />
+            {limit && today.practice !== 'writing' ? <LimitCard {...limit} /> : <PracticeCard state={today.practice} suggestion={today.suggestion} workspace={today.workspace} />}
             {next ? <NextCard next={next} /> : null}
           </>
         )}

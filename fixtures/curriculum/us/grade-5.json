@@ -1,0 +1,139 @@
+{
+  "grade": 5,
+  "subject": "Mathematics",
+  "country": "US",
+  "course": null,
+  "source": {
+    "title": "Common Core State Standards for Mathematics",
+    "publisher": "National Governors Association Center for Best Practices and Council of Chief State School Officers",
+    "url": "https://www.thecorestandards.org/Math/",
+    "part": "Kindergarten to Grade 8 standards"
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Place value and powers of 10",
+          "shortName": "Powers of 10",
+          "family": "decimals",
+          "standard": "5.NBT.A",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Multiplying multi-digit whole numbers",
+          "shortName": "Multiplication",
+          "family": "whole_numbers",
+          "standard": "5.NBT.B.5",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Dividing by two-digit numbers",
+          "shortName": "Long division",
+          "family": "whole_numbers",
+          "standard": "5.NBT.B.6",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Writing and reading numerical expressions",
+          "shortName": "Expressions",
+          "family": "patterns",
+          "standard": "5.OA.A",
+          "domain": "Operations and Algebraic Thinking"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Adding and subtracting decimals",
+          "shortName": "Adding decimals",
+          "family": "decimals",
+          "standard": "5.NBT.B.7",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Multiplying and dividing decimals",
+          "shortName": "Multiplying decimals",
+          "family": "decimals",
+          "standard": "5.NBT.B.7",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Adding and subtracting fractions with unlike denominators",
+          "shortName": "Unlike denominators",
+          "family": "fractions",
+          "standard": "5.NF.A",
+          "domain": "Number and Operations: Fractions"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Multiplying fractions",
+          "shortName": "Multiplying fractions",
+          "family": "fractions",
+          "standard": "5.NF.B.4",
+          "domain": "Number and Operations: Fractions"
+        },
+        {
+          "name": "Dividing with unit fractions",
+          "shortName": "Dividing fractions",
+          "family": "fractions",
+          "standard": "5.NF.B.7",
+          "domain": "Number and Operations: Fractions"
+        },
+        {
+          "name": "Converting units of measure",
+          "shortName": "Converting units",
+          "family": "measurement",
+          "standard": "5.MD.A",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Line plots with fractions",
+          "shortName": "Line plots",
+          "family": "data",
+          "standard": "5.MD.B",
+          "domain": "Measurement and Data"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Volume",
+          "shortName": "Volume",
+          "family": "measurement",
+          "standard": "5.MD.C",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Numerical patterns and relationships",
+          "shortName": "Number patterns",
+          "family": "patterns",
+          "standard": "5.OA.B",
+          "domain": "Operations and Algebraic Thinking"
+        },
+        {
+          "name": "The coordinate plane",
+          "shortName": "Coordinate plane",
+          "family": "analytical_geometry",
+          "standard": "5.G.A",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Classifying two-dimensional figures",
+          "shortName": "Classifying shapes",
+          "family": "shapes",
+          "standard": "5.G.B",
+          "domain": "Geometry"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "grade": 9,
+  "subject": "Mathematics",
+  "country": "US",
+  "course": "Algebra I",
+  "source": {
+    "title": "Common Core State Standards for Mathematics",
+    "publisher": "National Governors Association Center for Best Practices and Council of Chief State School Officers",
+    "url": "https://www.thecorestandards.org/Math/",
+    "part": "High School standards, in the usual course order"
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Expressions and their parts",
+          "shortName": "Expressions",
+          "family": "algebra",
+          "standard": "A-SSE.1",
+          "domain": "Algebra I"
+        },
+        {
+          "name": "Linear equations and inequalities",
+          "shortName": "Linear equations",
+          "family": "algebra",
+          "standard": "A-CED.1",
+          "domain": "Algebra I"
+        },
+        {
+          "name": "Rearranging formulas",
+          "shortName": "Rearranging formulas",
+          "family": "algebra",
+          "standard": "A-CED.4",
+          "domain": "Algebra I"
+        },
+        {
+          "name": "Units and quantities",
+          "shortName": "Units",
+          "family": "measurement",
+          "standard": "N-Q",
+          "domain": "Algebra I"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Functions and their graphs",
+          "shortName": "Functions",
+          "family": "functions",
+          "standard": "F-IF.1",
+          "domain": "Algebra I"
+        },
+        {
+          "name": "Linear functions",
+          "shortName": "Linear functions",
+          "family": "functions",
+          "standard": "F-LE.1",
+          "domain": "Algebra I"
+        },
+        {
+          "name": "Systems of equations and inequalities",
+          "shortName": "Systems",
+          "family": "algebra",
+          "standard": "A-REI.C",
+          "domain": "Algebra I"
+        },
+        {
+          "name": "Absolute value and piecewise functions",
+          "shortName": "Piecewise functions",
+          "family": "functions",
+          "standard": "F-IF.7b",
+          "domain": "Algebra I"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Exponent rules and radicals",
+          "shortName": "Exponents and radicals",
+          "family": "integers_and_exponents",
+          "standard": "N-RN",
+          "domain": "Algebra I"
+        },
+        {
+          "name": "Exponential growth and decay",
+          "shortName": "Exponential functions",
+          "family": "functions",
+          "standard": "F-LE.2",
+          "domain": "Algebra I"
+        },
+        {
+          "name": "Adding, subtracting and multiplying polynomials",
+          "shortName": "Polynomials",
+          "family": "algebra",
+          "standard": "A-APR.1",
+          "domain": "Algebra I"
+        },
+        {
+          "name": "Factoring",
+          "shortName": "Factoring",
+          "family": "algebra",
+          "standard": "A-SSE.3",
+          "domain": "Algebra I"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Quadratic functions and their graphs",
+          "shortName": "Quadratic graphs",
+          "family": "functions",
+          "standard": "F-IF.7a",
+          "domain": "Algebra I"
+        },
+        {
+          "name": "Solving quadratic equations",
+          "shortName": "Quadratic equations",
+          "family": "algebra",
+          "standard": "A-REI.4",
+          "domain": "Algebra I"
+        },
+        {
+          "name": "One-variable data",
+          "shortName": "One-variable data",
+          "family": "data",
+          "standard": "S-ID.1",
+          "domain": "Algebra I"
+        },
+        {
+          "name": "Two-variable data and correlation",
+          "shortName": "Correlation",
+          "family": "data",
+          "standard": "S-ID.6",
+          "domain": "Algebra I"
+        }
+      ]
+    }
+  ]
+}

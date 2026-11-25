@@ -25,6 +25,8 @@ const SECTIONS: LegalSection[] = [
       'For a learner: the first name, the grade, the school and class when there is one, and their work. Their work is their answers, marks, lessons, how long they practised and which ways of learning helped them.',
       'Photos of written work: class tests a teacher snaps, and homework a parent or learner snaps. Teachers also upload their curriculum documents and past records, and keep notes and attendance.',
       'Messages you send us with the help form. The cookies that keep you signed in.',
+      'When you sign up: the country you pick, the country your connection comes from, and the tags of the link you came by (for example an advert), so we know which adverts work. Inside Jemma there is no advert network and no tracking by one.',
+      'For a family plan: the plan, its dates and a record of each payment (the amount, the date and PayFast\'s number for it). PayFast takes the card and keeps it. Jemma never sees or keeps card numbers.',
       'Jemma has no adverts and never sells information.',
     ],
   },
@@ -44,6 +46,7 @@ const SECTIONS: LegalSection[] = [
       'A learner sees their own work. A teacher sees the learners in their own classes. A parent sees their own child, once the teacher says yes to the link, or at once for a child the parent added.',
       "The marks of a class test reach a parent only after the teacher shares them. A learner's own practice outside school is never sent to their school.",
       'People who build Jemma look at information only to fix a problem or answer you.',
+      'When you pay for a plan, PayFast sees what you give it to pay: your name, email and card.',
     ],
   },
   {
@@ -53,6 +56,7 @@ const SECTIONS: LegalSection[] = [
       'POPIA treats everyone under 18 as a child, and most Jemma learners are children. Jemma uses a child\'s information with the consent of a parent or guardian.',
       'When a teacher adds a learner, the parent gives consent when they link to the child. When a parent adds their own child, adding the child is the consent. A learner who starts alone and is under 18 should ask a parent to link to them, with the code in Me.',
       'A parent can see, download and delete their child\'s information at any time.',
+      'In the United States, a child under 13 cannot make an account. A parent makes one and adds the child, as the US law COPPA asks. A person in the US is asked the year they were born when they sign up, and Jemma keeps only whether they are 13 or older.',
     ],
   },
   {

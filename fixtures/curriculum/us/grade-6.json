@@ -1,0 +1,146 @@
+{
+  "grade": 6,
+  "subject": "Mathematics",
+  "country": "US",
+  "course": null,
+  "source": {
+    "title": "Common Core State Standards for Mathematics",
+    "publisher": "National Governors Association Center for Best Practices and Council of Chief State School Officers",
+    "url": "https://www.thecorestandards.org/Math/",
+    "part": "Kindergarten to Grade 8 standards"
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Ratios and rates",
+          "shortName": "Ratios",
+          "family": "fractions",
+          "standard": "6.RP.A.1",
+          "domain": "Ratios and Proportional Relationships"
+        },
+        {
+          "name": "Unit rates and percents",
+          "shortName": "Unit rates and percents",
+          "family": "fractions",
+          "standard": "6.RP.A.3",
+          "domain": "Ratios and Proportional Relationships"
+        },
+        {
+          "name": "Dividing fractions by fractions",
+          "shortName": "Dividing fractions",
+          "family": "fractions",
+          "standard": "6.NS.A",
+          "domain": "The Number System"
+        },
+        {
+          "name": "Multi-digit division and decimals",
+          "shortName": "Division and decimals",
+          "family": "decimals",
+          "standard": "6.NS.B.2",
+          "domain": "The Number System"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Factors, multiples, GCF and LCM",
+          "shortName": "GCF and LCM",
+          "family": "whole_numbers",
+          "standard": "6.NS.B.4",
+          "domain": "The Number System"
+        },
+        {
+          "name": "Positive and negative numbers",
+          "shortName": "Negative numbers",
+          "family": "integers_and_exponents",
+          "standard": "6.NS.C.5",
+          "domain": "The Number System"
+        },
+        {
+          "name": "Absolute value and the coordinate plane",
+          "shortName": "Absolute value",
+          "family": "integers_and_exponents",
+          "standard": "6.NS.C.7",
+          "domain": "The Number System"
+        },
+        {
+          "name": "Expressions with exponents",
+          "shortName": "Exponents",
+          "family": "integers_and_exponents",
+          "standard": "6.EE.A.1",
+          "domain": "Expressions and Equations"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Writing and evaluating expressions",
+          "shortName": "Expressions",
+          "family": "algebra",
+          "standard": "6.EE.A.2",
+          "domain": "Expressions and Equations"
+        },
+        {
+          "name": "One-step equations and inequalities",
+          "shortName": "Equations and inequalities",
+          "family": "algebra",
+          "standard": "6.EE.B",
+          "domain": "Expressions and Equations"
+        },
+        {
+          "name": "Dependent and independent variables",
+          "shortName": "Variables",
+          "family": "algebra",
+          "standard": "6.EE.C",
+          "domain": "Expressions and Equations"
+        },
+        {
+          "name": "Area of triangles and polygons",
+          "shortName": "Area of polygons",
+          "family": "measurement",
+          "standard": "6.G.A.1",
+          "domain": "Geometry"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Volume with fraction edges",
+          "shortName": "Volume",
+          "family": "measurement",
+          "standard": "6.G.A.2",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Nets and surface area",
+          "shortName": "Surface area",
+          "family": "measurement",
+          "standard": "6.G.A.4",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Statistical questions and distributions",
+          "shortName": "Distributions",
+          "family": "data",
+          "standard": "6.SP.A",
+          "domain": "Statistics and Probability"
+        },
+        {
+          "name": "Mean, median and spread",
+          "shortName": "Mean and median",
+          "family": "data",
+          "standard": "6.SP.B",
+          "domain": "Statistics and Probability"
+        }
+      ]
+    }
+  ]
+}
