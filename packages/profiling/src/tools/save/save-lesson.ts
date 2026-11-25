@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { parseAnswer } from '../../logic/answers'
 import { choicePictureProblem, isPickQuestion, pickKeyProblem } from '../../logic/answers/pick'
+import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
 import { isSeniorQuestion, quantityProblem, readCents, stripUnit } from '../../logic/answers/quantity'
@@ -39,6 +40,12 @@ export function answerProblem(q: Question): string | null {
     if (q.diagram || q.choices?.length) return 'graph: a question that draws a graph has no other picture and no choices'
     const graph = graphProblem(q.graph) ?? graphKeyProblem({ ...q, graph: q.graph }, readNumber)
     if (graph) return `graph: ${graph}`
+  }
+  // P168: a sum in columns can be shown on a phone, and its key is its true answer. The sum is the question's picture.
+  if (q.columns) {
+    if (q.diagram || q.graph || q.choices?.length) return 'columns: a sum in columns has no picture, no graph and no choices'
+    const columns = columnsProblem(q.columns) ?? columnsKeyProblem({ ...q, columns: q.columns })
+    if (columns) return `columns: ${columns}`
   }
   const picture = questionPictureOf(q)
   if (picture) return `picture: ${picture}`

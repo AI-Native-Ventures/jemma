@@ -14,6 +14,7 @@ import { Frac, FractionText, withFractions } from './Frac'
 import { equationShapeHint } from './answers/hints'
 import { isValuesShape, ValuesAnswer } from './answers/ValuesAnswer'
 import { GraphAnswer } from './answers/GraphAnswer'
+import { ColumnsAnswer } from './answers/ColumnsSum'
 import { YoungSize } from './answers/YoungSize'
 import { MathAnswerField } from './MathAnswerField'
 import { equationCountHint, MULTI_HINT, MultiAnswer } from './answers/MultiAnswer'
@@ -256,6 +257,9 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
     // P167: a graph to draw, or its numbers typed instead in the boxes of the same answer without its graph.
     case 'graph':
       return <GraphAnswer shape={shape} onChange={b.set.text} typed={<AnswerArea shape={shape.typed} b={b} prompt={prompt} topic={topic} />} />
+    // P168: a sum worked in columns, written digit by digit from the ones with the keypad under it.
+    case 'columns':
+      return <ColumnsAnswer columns={shape.columns} onChange={b.set.text} />
     default:
       // The lesson gave no kind we know: one plain box.
       return (
