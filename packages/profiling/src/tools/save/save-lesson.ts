@@ -67,6 +67,9 @@ export const DIAGRAM_WORDS: Record<string, string> = {
   grid_area: 'a grid',
   coordinate_plane: 'graphs on a grid',
   triangle: 'triangles',
+  box_plot: 'a box and whisker plot',
+  tree: 'a probability tree',
+  timeline: 'a time line',
 }
 
 function how(lesson: Lesson): string {

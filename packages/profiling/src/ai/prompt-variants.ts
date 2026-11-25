@@ -129,8 +129,8 @@ const seniorAnswers = (c: ClassContext) => {
 
 /**
  * What a senior class's lesson writer is told about pictures. The sentence of the file stays; the rule adds when a question carries a picture, which of
- * the two new pictures to use for what, how to give a graph (by its constants: code draws it) and a triangle, the limits the save gate holds to, and that
- * a label never holds the answer.
+ * the new pictures to use for what (P165: a box plot, a probability tree and a time line too), how to give a graph (by its constants: code draws it) and a
+ * triangle, the limits the save gate holds to, and that a label never holds the answer.
  */
 const SENIOR_PICTURES =
   'Use only the diagram kinds in the schema. ' +
@@ -140,7 +140,10 @@ const SENIOR_PICTURES =
   'Give a graph by its constants (a `line` by `m` and `c`, a `parabola` by `a`, `p`, `q`): code draws it, so never list the points of a curve. ' +
   'A `trig` graph takes x in degrees. A grid has `xMin` below `xMax` and `yMin` below `yMax`, at most 200 wide (720 across for a `trig` graph), at most 3 graphs and 12 points. ' +
   'A `triangle` has exactly three `vertices` names; give `angles` (they add up to 180) only to draw its shape, and write the angle or side that is asked for as `x` in `angleLabels` or `sides`. ' +
-  'Never put the answer in a label. A lesson card or a diagram step may use these two pictures too.'
+  'Use `box_plot` for a five-number summary on a scale (put the five numbers on whole ticks so they can be read), `tree` for probability (a probability ' +
+  'is a decimal or a fraction; write `?` for each one the learner fills in, and make the question a `list` with one `labels` entry for each blank, in the ' +
+  'order of the tree, then the asked value), and `timeline` for financial maths (the periods, the same payment `every` period, and `marks` such as `F = ?`). ' +
+  'Never put the answer in a label. A lesson card or a diagram step may use these pictures too.'
 
 /**
  * What a senior class's lesson writer is told about the maths of a question (P127): state it as an expression or an equation in plain notation, never in

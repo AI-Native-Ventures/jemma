@@ -85,7 +85,51 @@ const TriangleSchema = z.object({
   rightAngleAt: z.union([z.literal(0), z.literal(1), z.literal(2)]).optional(),
 })
 
-export const SeniorDiagramSpecSchema = z.discriminatedUnion('kind', [...DiagramSpecSchema.options, CoordinatePlaneSchema, TriangleSchema])
+/** P165: a box and whisker plot of one set of data on a scale: its five-number summary, read off the scale (no value is written on the plot). */
+const BoxPlotSchema = z.object({
+  kind: z.literal('box_plot'),
+  min: z.number(),
+  q1: z.number(),
+  median: z.number(),
+  q3: z.number(),
+  max: z.number(),
+  scaleMin: z.number(),
+  scaleMax: z.number(),
+  step: z.number().optional(),
+  title: z.string().optional(),
+})
+
+/** One branch of a probability tree: its event and its probability ("0,4", "2/5"), or "?" for a blank the learner fills in a `list` answer. */
+const TreeBranchSchema = z.object({ label: z.string(), p: z.string() })
+
+/** P165: a probability tree of one or two stages: 2 or 3 first branches, and after each of them 2 or 3 more (`second`, one list for each first branch). */
+const TreeSchema = z.object({
+  kind: z.literal('tree'),
+  first: z.array(TreeBranchSchema),
+  second: z.array(z.array(TreeBranchSchema)).optional(),
+})
+
+/** P165: a time line of financial maths: the periods from `from` to `to`, the same payment at each period of `every`, and labels at some points. */
+const TimelineSchema = z.object({
+  kind: z.literal('timeline'),
+  from: z.number().int(),
+  to: z.number().int(),
+  unit: z.enum(['month', 'year']),
+  every: z.object({ from: z.number().int(), to: z.number().int(), label: z.string() }).optional(),
+  marks: z.array(z.object({ at: z.number().int(), label: z.string() })).optional(),
+})
+
+export const SeniorDiagramSpecSchema = z.discriminatedUnion('kind', [
+  ...DiagramSpecSchema.options,
+  CoordinatePlaneSchema,
+  TriangleSchema,
+  BoxPlotSchema,
+  TreeSchema,
+  TimelineSchema,
+])
 export type SeniorDiagramSpec = z.infer<typeof SeniorDiagramSpecSchema>
 export type CoordinatePlaneSpec = z.infer<typeof CoordinatePlaneSchema>
 export type TriangleSpec = z.infer<typeof TriangleSchema>
+export type BoxPlotSpec = z.infer<typeof BoxPlotSchema>
+export type TreeSpec = z.infer<typeof TreeSchema>
+export type TimelineSpec = z.infer<typeof TimelineSchema>
