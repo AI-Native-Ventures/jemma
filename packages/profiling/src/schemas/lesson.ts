@@ -84,6 +84,13 @@ export const DataGraphSchema = z.object({
 })
 export type DataGraphSpec = z.infer<typeof DataGraphSchema>
 
+/**
+ * P168: a sum the learner works in columns (Grades 2 to 6): two or three whole numbers added (`+`), or the second taken from the first (`-`). The numbers are
+ * written as digits only (`347`). The learner writes the answer digit by digit, from the ones; the key is the answer as a `whole` number (`632`).
+ */
+export const ColumnsSchema = z.object({ op: z.enum(['+', '-']), numbers: z.array(z.string()) })
+export type ColumnsSpec = z.infer<typeof ColumnsSchema>
+
 /** The most and the fewest lines of the worked steps of a question (P127). */
 export const MIN_STEPS = 2
 export const MAX_STEPS = 6
@@ -125,9 +132,10 @@ export const SeniorQuestionSchema = seniorQuestion(z.array(z.string()).min(MIN_S
 
 /**
  * The question as every reader sees it: the wide, senior shape, with `steps` optional (an old lesson has none, and a save may leave them out). P167: and a
- * `graph` to draw, which only a Grade 1 to 6 lesson is asked for (the senior model is handed `SeniorQuestionSchema`, which has none).
+ * `graph` to draw, and (P168) a sum to work in `columns`, which only a Grade 1 to 6 lesson is asked for (the senior model is handed `SeniorQuestionSchema`,
+ * which has neither).
  */
-export const QuestionSchema = seniorQuestion(z.array(z.string()).optional()).extend({ graph: DataGraphSchema.optional() })
+export const QuestionSchema = seniorQuestion(z.array(z.string()).optional()).extend({ graph: DataGraphSchema.optional(), columns: ColumnsSchema.optional() })
 export type Question = z.infer<typeof QuestionSchema>
 export type PrimaryQuestion = z.infer<typeof PrimaryQuestionSchema>
 

@@ -12,6 +12,7 @@ import { PictureChoices } from './answers/PictureChoices'
 import { ReasonList } from './answers/ReasonPicker'
 import { PaperValues } from './answers/PaperValues'
 import { DataGraph } from './answers/DataGraph'
+import { ColumnsSum } from './answers/ColumnsSum'
 import { paperValuesLine } from './answers/values-hints'
 
 // A practice answered on paper: the choice before the first Try question, the sheet of five questions with the photo button, the wait while
@@ -129,6 +130,9 @@ export function writeLine(shape: AnswerShape): string {
     case 'order':
     case 'table':
       return paperValuesLine(shape)
+    // P168: a sum in columns is worked on paper under its line.
+    case 'columns':
+      return 'Work it in columns and write the answer under the line.'
     // P167: a graph to draw is written as its numbers: the one for its empty bar, or one for each, in order.
     case 'graph': {
       const names = blankLabels(shape.graph)
@@ -171,6 +175,7 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
         )}
         <QuestionPicture spec={q.diagram} />
         {shape.kind === 'graph' ? <DataGraph graph={shape.graph} values={[]} mode="paper" /> : null}
+        {shape.kind === 'columns' ? <ColumnsSum columns={shape.columns} mode="paper" /> : null}
         {shape.kind === 'choice' && hasPictureChoices(q.choices) ? (
           <PictureChoices choices={q.choices!} />
         ) : shape.kind === 'choice' ? (

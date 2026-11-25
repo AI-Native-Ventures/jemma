@@ -2,6 +2,7 @@ import {
   answerCountOf,
   blankBars,
   choiceLabel,
+  columnsPlaces,
   completeAnswer,
   fillMissing,
   finishAnswer,
@@ -32,7 +33,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { Choice, DataGraphSpec, Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
+import type { Choice, ColumnsSpec, DataGraphSpec, Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -96,6 +97,8 @@ export type QuestionForChild = {
   young?: true
   /** P167: a graph the learner draws. The bars to draw have no value in it (they are the answer): the given bars are in the question anyway. */
   graph?: DataGraphSpec
+  /** P168: a sum the learner works in columns. Its numbers are in the question anyway; the answer is never sent. */
+  columns?: ColumnsSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -143,6 +146,9 @@ export type MissedQuestion = {
   graph?: DataGraphSpec
   graphWrote?: (number | null)[]
   graphRight?: number[]
+  /** P168: the sum worked in columns, and each answer box as the learner wrote it with the right digit (the results mark a wrong digit in red pen). */
+  columns?: ColumnsSpec
+  columnsPlaces?: { wrote: string; right: string; ok: boolean }[]
 }
 
 /** The P148 fields of a question for the child. Shape hints only: how many boxes, which clock, which unit. Never the key. */
@@ -192,6 +198,7 @@ export function stripQuestion(
     ...(isListKind(q.answerKind) && q.round !== undefined ? { round: q.round } : {}),
     ...(at.young ? { young: true as const } : {}),
     ...(q.graph ? { graph: q.graph } : {}),
+    ...(q.columns ? { columns: q.columns } : {}),
   }
 }
 
@@ -275,6 +282,8 @@ export type AnswerShape =
   | { kind: 'table'; table: NonNullable<ListParts['table']>; round?: number; young?: true }
   /** P167: a graph to draw (drag a bar up, or add pictures). `typed` is the shape of the same answer typed instead: one box, or a box for each bar. */
   | { kind: 'graph'; graph: DataGraphSpec; typed: AnswerShape; young?: true }
+  /** P168: a sum worked in columns: a box for each digit of the answer, written from the ones, and a small box over a column for a carry. */
+  | { kind: 'columns'; columns: ColumnsSpec; young?: true }
 
 /** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
 export type QuantityExtras = { unit?: string; round?: number; signed?: true }
@@ -295,6 +304,7 @@ type ShapeParts = {
   round?: number
   young?: true
   graph?: DataGraphSpec
+  columns?: ColumnsSpec
 }
 
 export function answerShape(
@@ -311,6 +321,8 @@ export function answerShape(
     const { graph, ...rest } = q
     return { kind: 'graph', graph, typed: answerShape(rest), ...(q.young ? { young: true as const } : {}) }
   }
+  // P168: a sum worked in columns, its answer a whole number written digit by digit.
+  if (q.columns && q.answerKind === 'whole') return { kind: 'columns', columns: q.columns, ...(q.young ? { young: true as const } : {}) }
   // P147: an equation whose key is an inequality or an interval, or two letters with a value each, says so in its line under the box.
   if (q.answerKind === 'equation' && q.answerShape === 'inequality') return { kind: 'equation', inequality: true }
   if (q.answerKind === 'equation' && q.answerShape === 'pair') return { kind: 'equation', pair: true }
@@ -380,6 +392,9 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
     // P167: the bars drawn (or the numbers typed instead), sent as the values of the empty bars, or nothing while one is still empty.
     case 'graph':
       return hasDigit(text) ? text : ''
+    // P168: the digits of the answer boxes, from the first one written to the ones, or nothing until they are written.
+    case 'columns':
+      return /^\d+$/.test(text) ? text : ''
     default:
       return text
   }
@@ -426,6 +441,7 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       ...(stepsOf(item.question).length > 0 ? { steps: stepsOf(item.question) } : {}),
       ...cellsOf(item),
       ...graphOf(item),
+      ...(item.question.columns ? { columns: item.question.columns, columnsPlaces: columnsPlaces(item.question.columns, item.unread ? '' : item.answer) } : {}),
     }))
 }
 

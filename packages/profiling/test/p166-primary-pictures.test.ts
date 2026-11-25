@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, test, vi } from 'vitest'
 import { z } from 'zod'
-import { KIT_PICTURES, PICTURE_KITS, pictureBullet, primaryAnswerBlock, primaryKit, withPrimaryAnswers, type PrimaryKit } from '../src/ai/primary-answers'
+import { columnsBullet, KIT_PICTURES, PICTURE_KITS, pictureBullet, primaryAnswerBlock, primaryKit, withPrimaryAnswers, type PrimaryKit } from '../src/ai/primary-answers'
 import { renderPrompt } from '../src/ai/prompt-variants'
 import { makeClassContext } from '../src/ai/subject-profile'
 import { isSeniorQuestion } from '../src/logic/answers/quantity'
@@ -176,7 +176,10 @@ describe('the picture bullet the lesson writer is told', () => {
   })
 
   test('a picture kit adds the bullet alone; an old kit keeps its answer kinds and gains the bullet', () => {
-    for (const kit of PICTURE_KITS) expect(primaryAnswerBlock(kit, klass(3))).toBe(pictureBullet(kit, klass(3)))
+    // P168: addition and subtraction also has its line for sums in columns, after the picture bullet.
+    for (const kit of PICTURE_KITS.filter((k) => k !== 'addsub')) expect(primaryAnswerBlock(kit, klass(3))).toBe(pictureBullet(kit, klass(3)))
+    expect(primaryAnswerBlock('addsub', klass(3))).toBe(`${pictureBullet('addsub', klass(3))}\n${columnsBullet(klass(3))}`)
+    expect(primaryAnswerBlock('addsub', klass(1))).toBe(pictureBullet('addsub', klass(1)))
     const data = primaryAnswerBlock('data', klass(4))
     expect(data).toContain('- `table`')
     expect(data.endsWith(pictureBullet('data', klass(4))!)).toBe(true)

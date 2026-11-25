@@ -24,6 +24,7 @@ const ALLOWED: { file: string; needle: string; why: string }[] = [
   { file: 'app/t/[classId]/settings/SettingsClient.tsx', needle: 'aria-pressed={value === g}', why: 'a grade chip, four to a row: "Grade 10" fills the chip and nothing can wrap, so there is no room to give' },
   { file: 'app/k/sign-in/SignInForm.tsx', needle: 'style={keyStyle}', why: 'a keypad key with one digit in it: the grid sets its width and there are no words to wrap' },
   { file: 'app/p/[childId]/activities/new/ActivityForm.tsx', needle: 'aria-pressed={on}', why: 'a day chip, seven to a row: three letters, no room for 20 px at each side and nothing that can wrap' },
+  { file: 'app/k/session/_parts/answers/ColumnsSum.tsx', needle: 'data-digit={i}', why: 'P168: the box of one digit of a sum in columns: the column sets its width and one digit is all it holds' },
 ]
 
 type Found = { file: string; line: number; tag: string; why: string }

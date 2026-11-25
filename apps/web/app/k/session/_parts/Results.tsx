@@ -11,6 +11,7 @@ import { QuestionPicture } from './QuestionPicture'
 import { scoreLines, type MissedQuestion } from '../[sessionId]/logic'
 import { CellResults } from './answers/CellResults'
 import { DataGraph } from './answers/DataGraph'
+import { ColumnsSum } from './answers/ColumnsSum'
 import { SignText } from './answers/Signs'
 
 /** A sign (or an equals sign) that stands alone between two terms of an answer. */
@@ -158,6 +159,8 @@ function CardHead({ m }: { m: MissedQuestion }) {
       <QuestionPicture spec={m.diagram} variant="card" />
       {/* P167: a graph the learner drew: the right bars in green, and theirs dashed beside them when they were not right. */}
       {m.graph ? <DataGraph graph={m.graph} values={m.graphWrote ?? []} right={m.graphRight ?? []} mode="results" /> : null}
+      {/* P168: a sum worked in columns: the learner's digits, a wrong one circled in red pen with the right digit beside it. */}
+      {m.columns ? <ColumnsSum columns={m.columns} mode="results" places={m.columnsPlaces ?? []} /> : null}
     </>
   )
 }
