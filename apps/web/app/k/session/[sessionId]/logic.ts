@@ -7,6 +7,8 @@ import {
   fillMissing,
   finishAnswer,
   graphValues,
+  groupsOf,
+  groupsText,
   isInequalityKey,
   isListKind,
   isSeniorQuestion,
@@ -33,7 +35,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { BlocksSpec, Choice, ColumnsSpec, DataGraphSpec, Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
+import type { BlocksSpec, Choice, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -101,6 +103,8 @@ export type QuestionForChild = {
   columns?: ColumnsSpec
   /** P169: the place value blocks the learner builds a number with. */
   blocks?: BlocksSpec
+  /** P170: the groups and the things to sort into them, in a mixed-up order. Which thing goes where is the answer, and is never sent. */
+  groups?: GroupsSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -153,6 +157,10 @@ export type MissedQuestion = {
   columnsPlaces?: { wrote: string; right: string; ok: boolean }[]
   /** P169: the blocks the learner built a number with; the results draw the mat of the number they built (`wrote`). */
   blocks?: BlocksSpec
+  /** P170: the groups, and the group the learner put each thing in (null: not read) and its right group, as numbers from 1. */
+  groups?: GroupsSpec
+  groupsWrote?: (number | null)[]
+  groupsRight?: number[]
 }
 
 /** The P148 fields of a question for the child. Shape hints only: how many boxes, which clock, which unit. Never the key. */
@@ -204,6 +212,7 @@ export function stripQuestion(
     ...(q.graph ? { graph: q.graph } : {}),
     ...(q.columns ? { columns: q.columns } : {}),
     ...(q.blocks ? { blocks: q.blocks } : {}),
+    ...(q.groups ? { groups: q.groups } : {}),
   }
 }
 
@@ -291,6 +300,8 @@ export type AnswerShape =
   | { kind: 'columns'; columns: ColumnsSpec; young?: true }
   /** P169: a number built with place value blocks on a mat. */
   | { kind: 'blocks'; blocks: BlocksSpec; young?: true }
+  /** P170: things dragged (or tapped) into groups. */
+  | { kind: 'groups'; groups: GroupsSpec; young?: true }
 
 /** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
 export type QuantityExtras = { unit?: string; round?: number; signed?: true }
@@ -313,6 +324,7 @@ type ShapeParts = {
   graph?: DataGraphSpec
   columns?: ColumnsSpec
   blocks?: BlocksSpec
+  groups?: GroupsSpec
 }
 
 export function answerShape(
@@ -333,6 +345,8 @@ export function answerShape(
   if (q.columns && q.answerKind === 'whole') return { kind: 'columns', columns: q.columns, ...(q.young ? { young: true as const } : {}) }
   // P169: a number built with blocks, its answer the number the blocks make.
   if (q.blocks && q.answerKind === 'whole') return { kind: 'blocks', blocks: q.blocks, ...(q.young ? { young: true as const } : {}) }
+  // P170: things sorted into groups, the answer the group of each.
+  if (q.groups && q.answerKind === 'list') return { kind: 'groups', groups: q.groups, ...(q.young ? { young: true as const } : {}) }
   // P147: an equation whose key is an inequality or an interval, or two letters with a value each, says so in its line under the box.
   if (q.answerKind === 'equation' && q.answerShape === 'inequality') return { kind: 'equation', inequality: true }
   if (q.answerKind === 'equation' && q.answerShape === 'pair') return { kind: 'equation', pair: true }
@@ -407,6 +421,9 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
     // P169: the number the blocks on the mat make, or nothing while the mat is empty.
     case 'blocks':
       return /^\d+$/.test(text) ? text : ''
+    // P170: the group of each thing, or nothing while one is not in a group.
+    case 'groups':
+      return /^\d+(; \d+)*$/.test(text) ? text : ''
     default:
       return text
   }
@@ -455,7 +472,30 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       ...graphOf(item),
       ...(item.question.columns ? { columns: item.question.columns, columnsPlaces: columnsPlaces(item.question.columns, item.unread ? '' : item.answer) } : {}),
       ...(item.question.blocks ? { blocks: item.question.blocks } : {}),
+      ...groupsReview(item),
     }))
+}
+
+/**
+ * P170: the groups of a question to sort, with the group the learner put each thing in and its right group. What was written and the right answer are said in
+ * words ("Odd: 7 and 15. Even: 12, 20 and 4.") in place of the group numbers the answer is kept as, and there are no cells of a list.
+ */
+function groupsReview(item: StoredItem): Partial<MissedQuestion> {
+  const g = item.question.groups
+  if (!g) return {}
+  const right = groupsOf(item.question.answer, g) ?? []
+  const typed = item.unread ? [] : splitValues(item.answer)
+  const wrote = g.items.map((_, i) => (/^\d+$/.test(typed[i] ?? '') ? Number(typed[i]) : null))
+  return {
+    groups: g,
+    groupsRight: right,
+    groupsWrote: wrote,
+    wrote: item.unread ? '' : groupsText(g, wrote),
+    right: groupsText(g, right),
+    cells: undefined,
+    table: undefined,
+    ordered: undefined,
+  }
 }
 
 /** P167: the graph of a question to draw, with what the learner drew in each empty bar and the right values, for the results to draw side by side. */
