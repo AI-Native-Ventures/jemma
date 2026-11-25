@@ -12,6 +12,7 @@ import { scoreLines, type MissedQuestion } from '../[sessionId]/logic'
 import { CellResults } from './answers/CellResults'
 import { DataGraph } from './answers/DataGraph'
 import { ColumnsSum } from './answers/ColumnsSum'
+import { BuiltMat } from './answers/BlocksMat'
 import { SignText } from './answers/Signs'
 
 /** A sign (or an equals sign) that stands alone between two terms of an answer. */
@@ -161,6 +162,8 @@ function CardHead({ m }: { m: MissedQuestion }) {
       {m.graph ? <DataGraph graph={m.graph} values={m.graphWrote ?? []} right={m.graphRight ?? []} mode="results" /> : null}
       {/* P168: a sum worked in columns: the learner's digits, a wrong one circled in red pen with the right digit beside it. */}
       {m.columns ? <ColumnsSum columns={m.columns} mode="results" places={m.columnsPlaces ?? []} /> : null}
+      {/* P169: the blocks the learner built. */}
+      {m.blocks && !m.unread ? <BuiltMat blocks={m.blocks} wrote={m.wrote} /> : null}
     </>
   )
 }

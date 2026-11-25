@@ -25,6 +25,7 @@ const ALLOWED: { file: string; needle: string; why: string }[] = [
   { file: 'app/k/sign-in/SignInForm.tsx', needle: 'style={keyStyle}', why: 'a keypad key with one digit in it: the grid sets its width and there are no words to wrap' },
   { file: 'app/p/[childId]/activities/new/ActivityForm.tsx', needle: 'aria-pressed={on}', why: 'a day chip, seven to a row: three letters, no room for 20 px at each side and nothing that can wrap' },
   { file: 'app/k/session/_parts/answers/ColumnsSum.tsx', needle: 'data-digit={i}', why: 'P168: the box of one digit of a sum in columns: the column sets its width and one digit is all it holds' },
+  { file: 'app/k/session/_parts/answers/BlocksMat.tsx', needle: 'onClick={() => set(place, 1)}', why: 'P169: a block button has its picture over its two words (flex-col), so a wrap can never leave the picture alone at an edge' },
 ]
 
 type Found = { file: string; line: number; tag: string; why: string }

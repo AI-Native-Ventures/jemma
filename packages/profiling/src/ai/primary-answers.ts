@@ -230,6 +230,11 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
       when(
         '- `list`: the parts of a number, for example a number written in expanded form: the `answer` is `300; 40; 5` for 345 (a semicolon between the parts) and `ordered` is `true`.',
       )
+      // P169: Grades 1 to 3 build a number with place value blocks.
+      if (young)
+        when(
+          '- `blocks`: the learner builds a number with place value blocks on a mat: rods of ten and single ones (and flats of a hundred). Give `blocks` with `places`, the blocks the learner may use: `["tens", "ones"]` for a number up to 99, or `["hundreds", "tens", "ones"]` for a number up to 999. The `answerKind` is `whole` and the `answer` is the number to build, which the `prompt` names: "Make 34 with tens and ones." At most 9 of each block go on the mat, so there is one way to build it. A question with blocks has no `diagram` and no `choices`.',
+        )
       when(
         young
           ? '- `order`: the learner puts numbers in order. Give at most 5 whole numbers: the `answer` is the numbers in the right order, separated by `; ` (`18; 45; 72`), and the screen shows them as chips in a mixed-up order for the learner to tap. The `prompt` says which way: "Put the numbers in order. Start with the smallest."'

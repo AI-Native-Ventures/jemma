@@ -130,6 +130,9 @@ export function writeLine(shape: AnswerShape): string {
     case 'order':
     case 'table':
       return paperValuesLine(shape)
+    // P169: blocks cannot be put on paper: the learner draws them and writes the number they make.
+    case 'blocks':
+      return 'Draw the blocks, then write the number they make.'
     // P168: a sum in columns is worked on paper under its line.
     case 'columns':
       return 'Work it in columns and write the answer under the line.'
