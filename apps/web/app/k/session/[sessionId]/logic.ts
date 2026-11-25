@@ -62,7 +62,7 @@ export type QuestionForChild = {
   withValue?: boolean
   /** The form an expression has to be in, when the question asks for one (a senior class only). */
   form?: Form
-  /** The picture the question needs, drawn between its words and the answer box (a senior class only). It never holds the answer. */
+  /** The picture the question needs, drawn between its words and the answer box: a graph or a triangle (a senior class) or, since P166, one of the seven primary pictures (Grades 1 to 6). It never holds the answer. */
   diagram?: SeniorDiagramSpec
   /**
    * An equation question only (P146): how many values its key has (2 for "x = 2 or x = 3", 1 for one value). The screen shows that many boxes. An inequality
@@ -118,7 +118,7 @@ export type MissedQuestion = {
   prompt: string
   render: Question['render']
   terms?: string[]
-  /** The picture of the question, drawn under its heading (a senior class only). */
+  /** The picture of the question, drawn under its heading (a senior class, and since P166 Grades 1 to 6 too). */
   diagram?: SeniorDiagramSpec
   wrote: string
   /** The answer on paper could not be read: the screen says so under "You wrote" instead of showing an empty answer. */

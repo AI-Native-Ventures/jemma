@@ -1,4 +1,4 @@
-import type { ClassContext } from './subject-profile'
+import { isBaselineClass, type ClassContext } from './subject-profile'
 
 /**
  * The topics of Grades 1 to 6 Mathematics that are asked for the new answer kinds (P151), and what their lesson writer is told about them.
@@ -13,7 +13,10 @@ import type { ClassContext } from './subject-profile'
 export const isMathsGrade1To6 = (c: ClassContext | null): c is ClassContext =>
   !!c && c.subjectKey === 'mathematics' && Number.isInteger(c.grade) && c.grade >= 1 && c.grade <= 6
 
-export type PrimaryKit = 'time' | 'measure' | 'order' | 'patterns' | 'data' | 'money' | 'place'
+export type PrimaryKit = 'time' | 'measure' | 'order' | 'patterns' | 'data' | 'money' | 'place' | 'fractions' | 'shapes' | 'multiply' | 'numbers'
+
+/** P166: the kits that only add pictures to a question (a fraction bar, a shape, an area model, a number line), and no new answer kind. */
+export const PICTURE_KITS: readonly PrimaryKit[] = ['fractions', 'shapes', 'multiply', 'numbers']
 
 /** A topic name as it is compared: lower case, words only, "(Term 2)" and an "&" put right. */
 const norm = (name: string) =>
@@ -25,10 +28,10 @@ const norm = (name: string) =>
     .trim()
 
 /**
- * Which topic names belong to which kit. A pattern is anchored at the start of the name, so a name that only mentions one of these words ("Comparing
- * fractions", "Number sentences", "Problems in context: addition and subtraction") is never gated.
+ * Which topic names belong to which kit. A pattern is the whole name, so a name that only mentions one of these words ("Number sentences", "Problems in
+ * context: addition and subtraction") is never gated. A kit marked `baseline: false` (P166) is never given to the baseline class.
  */
-const KIT_TOPICS: { kit: PrimaryKit; names: RegExp }[] = [
+const KIT_TOPICS: { kit: PrimaryKit; names: RegExp; baseline?: false }[] = [
   { kit: 'time', names: /^(time|telling the time|time and the calendar|clocks?|calendars?)$/ },
   {
     kit: 'measure',
@@ -42,6 +45,29 @@ const KIT_TOPICS: { kit: PrimaryKit; names: RegExp }[] = [
   },
   { kit: 'money', names: /^money$/ },
   { kit: 'place', names: /^(place value|counting and place value)$/ },
+  // P166: more topics get a kit, so their questions may carry a picture, and the US names of the old kits are added. The baseline class (Mathematics,
+  // Grade 6, South Africa) gets none of these: the recorded demo answers are found by a hash of its lesson calls, so every one of its topics is asked as
+  // before. A name is compared without its digits, so "2-D shapes" is "d shapes" and "Place value to 1,000" is "place value to".
+  { kit: 'time', names: /^(time to the half hour|time to five minutes|elapsed time)$/, baseline: false },
+  { kit: 'measure', names: /^(measuring length|length problems|area and perimeter|area of polygons|converting units|volume and mass)$/, baseline: false },
+  { kit: 'order', names: /^(comparing numbers|comparing to)$/, baseline: false },
+  { kit: 'patterns', names: /^patterns$/, baseline: false },
+  { kit: 'data', names: /^(reading data|graphs|graphs and line plots|line plots)$/, baseline: false },
+  { kit: 'place', names: /^(tens and ones|place value to|place value to a million|powers of)$/, baseline: false },
+  {
+    kit: 'fractions',
+    names:
+      /^(fractions|common fractions|sharing leading to fractions|decimal fractions|percentages|equivalent fractions|comparing fractions|mixed numbers|adding fractions|adding and subtracting fractions( with different denominators)?|halves and fourths|fractions as numbers|fractions on a number line|fraction times a whole number|tenths and hundredths|unlike denominators|multiplying fractions|dividing fractions|shapes and equal parts)$/,
+    baseline: false,
+  },
+  { kit: 'shapes', names: /^(d shapes|properties of d shapes|shapes|quadrilaterals|classifying shapes)$/, baseline: false },
+  {
+    kit: 'multiply',
+    names:
+      /^(repeated addition leading to multiplication|multiplication|multiplication and division|multiplication and division digit by digit|arrays|meaning of multiplication|properties of multiplication|multiply and divide within|multiples of)$/,
+    baseline: false,
+  },
+  { kit: 'numbers', names: /^(count forwards and backwards|counting to|addition and subtraction|add and subtract within|rounding)$/, baseline: false },
 ]
 
 /**
@@ -51,7 +77,50 @@ const KIT_TOPICS: { kit: PrimaryKit; names: RegExp }[] = [
 export function primaryKit(c: ClassContext | null, topicName: string): PrimaryKit | null {
   if (!isMathsGrade1To6(c)) return null
   const name = norm(topicName ?? '')
-  return KIT_TOPICS.find((k) => k.names.test(name))?.kit ?? null
+  const baseline = isBaselineClass(c)
+  return KIT_TOPICS.find((k) => (k.baseline !== false || !baseline) && k.names.test(name))?.kit ?? null
+}
+
+/**
+ * P166: the pictures a question of a kit may carry, of the seven Jemma draws for every grade (`DiagramSpecSchema`). A clock and coins are not drawn yet,
+ * so time and money have none.
+ */
+export const KIT_PICTURES: Record<PrimaryKit, readonly string[]> = {
+  time: [],
+  money: [],
+  measure: ['grid_area', 'shape_2d'],
+  order: ['number_line'],
+  patterns: ['number_line'],
+  data: ['bar_chart'],
+  place: ['place_value'],
+  fractions: ['fraction_bar', 'number_line', 'area_model'],
+  shapes: ['shape_2d', 'grid_area'],
+  multiply: ['area_model', 'number_line'],
+  numbers: ['number_line'],
+}
+
+/** What each picture is, in the words of the schema, for the lesson writer. */
+const PICTURE_WORDS: Record<string, string> = {
+  fraction_bar: '`fraction_bar` (up to 4 bars, each cut into `parts` with some `shaded`) to show or compare fractions',
+  number_line: '`number_line` (from `min` to `max` in steps of `step`, with `marks` that point at numbers) for counting on, jumps and where a number goes',
+  area_model: '`area_model` (a rectangle of `rows` by `cols` squares with `shaded` squares) for arrays, multiplication and parts of a hundred',
+  place_value: '`place_value` (a chart with `columns` like `H`, `T`, `U` and the `digits` in them)',
+  bar_chart: '`bar_chart` (up to 8 `bars`, each a `label` and a `value`, on a scale up to `yMax`) to read a graph',
+  shape_2d: '`shape_2d` (a square, rectangle, triangle or circle with its side lengths as `labels`)',
+  grid_area: '`grid_area` (a shape on squared paper: `cols` by `rows` squares and the `cells` it covers) to count squares for area and perimeter',
+}
+
+/** P166: the bullet that lets a question of a kit carry a picture, or null for a kit with none. */
+export function pictureBullet(kit: PrimaryKit, c: ClassContext): string | null {
+  const kinds = KIT_PICTURES[kit]
+  if (!kinds.length) return null
+  const young = c.grade <= 3
+  return (
+    `- \`diagram\`: a question may show one picture when it is needed to answer: ${kinds.map((k) => PICTURE_WORDS[k]).join('; ')}. ` +
+    (young ? 'Keep it small and plain. ' : '') +
+    'Say in the `prompt` what to look at ("the shaded part", "the bar for Dogs"). Never write the answer in a label, a mark or a cell: the learner works it out from the picture. ' +
+    'Keep a picture small: at most 12 rows or columns, 24 parts in a bar and 8 bars.'
+  )
 }
 
 /** The answer bullet of the prompt file ends before this one; the lines for a topic go between the two. */
@@ -65,6 +134,9 @@ const ANCHOR = '- `why` says in one sentence'
 export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
   const young = c.grade <= 3
   const rand = c.country === 'ZA'
+  const picture = pictureBullet(kit, c)
+  // P166: a kit that only adds pictures has no new answer kind to tell of.
+  if (PICTURE_KITS.includes(kit)) return picture ?? ''
   const lines: string[] = [
     '- This topic may also use the new answer kinds named below. Use one only when it fits better than a number, and keep most questions as they are. Use them only for the 15 questions, never in the warm-up. Write the `answer` exactly as shown, because the computer reads it. Never put the answer in the `prompt`.',
   ]
@@ -140,6 +212,7 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
       )
       break
   }
+  if (picture) lines.push(picture)
   return lines.join('\n')
 }
 

@@ -3,7 +3,9 @@ import { BODY, GOLD_SOFT, GOLD_TINT, EDGE, INK, Line, Svg, T, type Variant } fro
 
 export type GridAreaProps = Extract<DiagramSpec, { kind: 'grid_area' }> & { variant?: Variant }
 
-export function describeGridArea({ cols, rows, cells }: GridAreaProps) {
+export function describeGridArea({ cols, rows, cells, variant }: GridAreaProps) {
+  // P166: in a question the learner counts the squares, so the words do not.
+  if (variant === 'question') return `Squared paper ${cols} squares wide and ${rows} tall, with a shape drawn on it.`
   return `Squared paper ${cols} squares wide and ${rows} tall. A shape covers ${cells.length} squares, so its area is ${cells.length} cm².`
 }
 

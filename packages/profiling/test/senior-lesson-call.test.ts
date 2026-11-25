@@ -4,6 +4,8 @@ import { z } from 'zod'
 import { renderPrompt } from '../src/ai/prompt-variants'
 import { isSeniorMaths, makeClassContext } from '../src/ai/subject-profile'
 import { PrimaryLessonSchema, SeniorLessonSchema } from '../src/schemas/lesson'
+import { PrimaryExtraLessonSchema } from '../src/schemas/primary-extra'
+import { withPrimaryAnswers } from '../src/ai/primary-answers'
 import { askedFor, CHILD_INFO } from './helpers/write-lesson-world'
 
 // P86, decisions 1 and 6: what the lesson writer asks the model for a senior class (Mathematics, Grades 7 to 12) and for every other class.
@@ -47,13 +49,22 @@ describe('the schema the model is given', () => {
 
   test.each([
     ['a Grade 6 baseline class', { subject: 'Mathematics', grade: 6, country: 'ZA' }],
-    ['a Grade 4 class', { subject: 'Mathematics', grade: 4, country: 'ZA' }],
     ['a Grade 13 class', { subject: 'Mathematics', grade: 13, country: 'ZA' }],
     ['a Grade 10 Natural Sciences class', { subject: 'Natural Sciences', grade: 10, country: 'ZA' }],
-    ['a Grade 6 class in Kenya', { subject: 'Mathematics', grade: 6, country: 'KE' }],
   ])('%s gets the primary schema, the lesson as it was', async (_name, spec) => {
     const seen = await askedFor(spec, PROMPT)
     expect(schemaOf(seen.system)).toBe(schemaText(PrimaryLessonSchema))
+    for (const word of ['"expression"', '"equation"', '"point"', '"form"']) expect(seen.system).not.toContain(word)
+  })
+
+  // P166: the session's topic here is a fraction topic, which a Grade 1 to 6 class other than the baseline one is asked with the gated schema (its
+  // questions may carry a fraction bar or a number line). Still no senior kind.
+  test.each([
+    ['a Grade 4 class', { subject: 'Mathematics', grade: 4, country: 'ZA' }],
+    ['a Grade 6 class in Kenya', { subject: 'Mathematics', grade: 6, country: 'KE' }],
+  ])('%s gets the gated primary schema for a fraction topic (P166), and no senior kind', async (_name, spec) => {
+    const seen = await askedFor(spec, PROMPT)
+    expect(schemaOf(seen.system)).toBe(schemaText(PrimaryExtraLessonSchema))
     for (const word of ['"expression"', '"equation"', '"point"', '"form"']) expect(seen.system).not.toContain(word)
   })
 })
@@ -100,9 +111,10 @@ describe('the system text', () => {
     expect(json.properties.questions.items.properties).not.toHaveProperty('steps')
   })
 
-  test('a Grade 4 class: no senior rule, the primary schema', async () => {
+  test('a Grade 4 class: no senior rule; its fraction topic gets the picture bullet and the gated schema (P166)', async () => {
     const seen = await askedFor({ subject: 'Mathematics', grade: 4, country: 'ZA' }, PROMPT)
-    expect(seen.system).toBe(`${renderPrompt('write_lesson', PROMPT, klass('Mathematics', 4, 'ZA'))}${SCHEMA_INTRO}${schemaText(PrimaryLessonSchema)}`)
+    const k = klass('Mathematics', 4, 'ZA')
+    expect(seen.system).toBe(`${withPrimaryAnswers(renderPrompt('write_lesson', PROMPT, k), 'fractions', k)}${SCHEMA_INTRO}${schemaText(PrimaryExtraLessonSchema)}`)
     expect(seen.system).toContain('for a Grade 4 child')
     expect(seen.system).not.toContain('`expression`')
     expect(seen.system).not.toContain('maths notation')

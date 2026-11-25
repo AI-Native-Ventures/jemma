@@ -5,7 +5,7 @@ import { isListKind, listKeyProblem } from '../../logic/answers/lists'
 import { isSeniorQuestion, quantityProblem, readCents, stripUnit } from '../../logic/answers/quantity'
 import { isMeaningKind, meaningKeyProblem, readNumber } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
-import { pictureProblem } from '../../logic/picture'
+import { pictureProblem, questionPictureProblem } from '../../logic/picture'
 import { cleanSteps } from '../../logic/steps'
 import { FormatSchema, LessonSchema, MIN_QUESTIONS_PER_LEVEL, type Format, type Lesson, type Question } from '../../schemas/lesson'
 import { LabelDropSchema, type LabelDrop } from '../../schemas/no-labels'
@@ -16,14 +16,24 @@ import type { Json } from '../../db'
 const MIN_PER_LEVEL = MIN_QUESTIONS_PER_LEVEL
 
 /**
+ * What is wrong with the picture of a question, or null. A senior question (it has `steps`, a senior kind or a senior picture) is checked by `pictureProblem`,
+ * as it always was. P166: a Grade 1 to 6 question may carry one of the seven primary pictures, and its picture must also be small enough for a young learner
+ * (`questionPictureProblem`).
+ */
+export function questionPictureOf(q: Question): string | null {
+  if (!q.diagram) return null
+  return isSeniorQuestion(q) ? pictureProblem(q.diagram) : questionPictureProblem(q.diagram)
+}
+
+/**
  * Why a question cannot be used, or null when it can: its answer does not fit its `answerKind`, or its picture makes no sense. A key of the four senior
  * kinds (number, expression, equation, point) must be readable by its kind (logic/meaning.ts); the old kinds are checked by `parseAnswer` exactly as
- * they always were. The answer is looked at first. A picture (senior classes only) is checked by `pictureProblem`.
+ * they always were. The answer is looked at first. A picture is checked by `questionPictureOf`.
  */
 export function answerProblem(q: Question): string | null {
   const answer = answerKeyProblem(q)
   if (answer) return answer
-  const picture = q.diagram ? pictureProblem(q.diagram) : null
+  const picture = questionPictureOf(q)
   if (picture) return `picture: ${picture}`
   // P149: the pictures (and words) of the choices of a question that is picked. A true or false or a reason question ignores any choices it carries.
   return q.answerKind === 'truefalse' || q.answerKind === 'reason' ? null : choicePictureProblem(q.choices)

@@ -5,7 +5,7 @@ import type { SeniorDiagramSpec } from '../schemas/diagram'
  *
  * Used by the save gate (a question whose picture makes no sense is a bad question, handled as a bad answer is) and by the screen that draws
  * the picture (a lesson card with a picture that makes no sense shows "Picture missing" and never breaks the page). The seven old kinds are not
- * looked at here: they are drawn as they always were.
+ * looked at here: they are drawn as they always were. A question's picture of those kinds is checked by `primaryPictureProblem` (P166).
  */
 
 const MAX_POINTS = 12
@@ -89,6 +89,98 @@ function treeProblem(s: Tree): string | null {
   if (branches.some((b) => b.p.trim() !== '?' && treeProbability(b.p) === null)) return 'each probability is a decimal or a fraction from 0 to 1, or ? for a blank'
   if (branches.filter((b) => b.p.trim() === '?').length > MAX_BLANKS) return `a tree has at most ${MAX_BLANKS} blanks`
   return null
+}
+
+type FractionBar = Extract<SeniorDiagramSpec, { kind: 'fraction_bar' }>
+type NumberLine = Extract<SeniorDiagramSpec, { kind: 'number_line' }>
+type AreaModel = Extract<SeniorDiagramSpec, { kind: 'area_model' }>
+type PlaceValue = Extract<SeniorDiagramSpec, { kind: 'place_value' }>
+type BarChart = Extract<SeniorDiagramSpec, { kind: 'bar_chart' }>
+type GridArea = Extract<SeniorDiagramSpec, { kind: 'grid_area' }>
+
+/** P166: the most a primary picture of a question may hold, so it stays small and readable on a phone. */
+const MAX_FRACTION_BARS = 4
+const MAX_PARTS = 24
+const MAX_SIDE = 12
+const MAX_LINE_STEPS = 40
+const MAX_COLUMNS = 10
+const MAX_CHART_BARS = 8
+const MAX_SHAPE_LABELS = 4
+
+const whole = (v: number, lo: number, hi: number) => Number.isInteger(v) && v >= lo && v <= hi
+
+function fractionBarProblem(s: FractionBar): string | null {
+  if (s.rows.length < 1 || s.rows.length > MAX_FRACTION_BARS) return `fraction bars come 1 to ${MAX_FRACTION_BARS} at a time`
+  if (s.rows.some((r) => !whole(r.parts, 1, MAX_PARTS))) return `each bar is cut into 1 to ${MAX_PARTS} equal parts`
+  if (s.rows.some((r) => !whole(r.shaded, 0, r.parts))) return 'a bar shades from none to all of its parts'
+  return null
+}
+
+function numberLineProblem(s: NumberLine): string | null {
+  if (!(s.min < s.max)) return 'a number line goes from a smaller number to a bigger one'
+  if (!(s.step > 0) || (s.max - s.min) / s.step > MAX_LINE_STEPS) return `a number line has at most ${MAX_LINE_STEPS} steps`
+  if (s.marks.some((m) => m.value < s.min || m.value > s.max)) return 'each mark is on the number line'
+  return null
+}
+
+function areaModelProblem(s: AreaModel): string | null {
+  if (!whole(s.rows, 1, MAX_SIDE) || !whole(s.cols, 1, MAX_SIDE)) return `an area model has 1 to ${MAX_SIDE} rows and columns`
+  if (!whole(s.shaded, 0, s.rows * s.cols)) return 'an area model shades from none to all of its squares'
+  return null
+}
+
+function placeValueProblem(s: PlaceValue): string | null {
+  if (s.columns.length < 1 || s.columns.length > MAX_COLUMNS) return `a place value chart has 1 to ${MAX_COLUMNS} columns`
+  if (s.digits.length > s.columns.length) return 'a place value chart has at most one digit in each column'
+  if (s.digits.some((d) => !/^(\d|,|\?)?$/.test(d.trim()))) return 'each place holds one digit, or ? for a blank'
+  return null
+}
+
+function barChartProblem(s: BarChart): string | null {
+  if (s.bars.length < 1 || s.bars.length > MAX_CHART_BARS) return `a bar graph has 1 to ${MAX_CHART_BARS} bars`
+  if (!(s.yMax > 0)) return 'a bar graph needs a scale that goes above 0'
+  if (s.bars.some((b) => !b.label.trim())) return 'each bar has a label'
+  if (s.bars.some((b) => b.value < 0 || b.value > s.yMax)) return 'each bar is on the scale, from 0 to yMax'
+  return null
+}
+
+function gridAreaProblem(s: GridArea): string | null {
+  if (!whole(s.cols, 1, MAX_SIDE) || !whole(s.rows, 1, MAX_SIDE)) return `squared paper has 1 to ${MAX_SIDE} squares across and down`
+  if (!s.cells.length) return 'the shape on squared paper covers at least one square'
+  if (s.cells.some(([c, r]) => !Number.isInteger(c) || !Number.isInteger(r) || c < 0 || r < 0 || c >= s.cols || r >= s.rows)) return 'each square of the shape is on the paper'
+  if (new Set(s.cells.map(([c, r]) => `${c},${r}`)).size !== s.cells.length) return 'each square of the shape is given once'
+  return null
+}
+
+/**
+ * P166: does one of the seven primary pictures make sense as the picture of a QUESTION? `null` when it does, else a short plain reason. A lesson card keeps
+ * drawing these as it always did (`pictureProblem` does not look at them); the save gate holds a question's picture to this.
+ */
+export function primaryPictureProblem(spec: SeniorDiagramSpec): string | null {
+  if (!numbersIn(spec).every(Number.isFinite)) return 'every number of the picture must be finite'
+  switch (spec.kind) {
+    case 'fraction_bar':
+      return fractionBarProblem(spec)
+    case 'number_line':
+      return numberLineProblem(spec)
+    case 'area_model':
+      return areaModelProblem(spec)
+    case 'place_value':
+      return placeValueProblem(spec)
+    case 'bar_chart':
+      return barChartProblem(spec)
+    case 'shape_2d':
+      return spec.labels.length > MAX_SHAPE_LABELS ? `a shape has at most ${MAX_SHAPE_LABELS} labels` : null
+    case 'grid_area':
+      return gridAreaProblem(spec)
+    default:
+      return null
+  }
+}
+
+/** The picture of a question: a senior picture as `pictureProblem` checks it, and a primary one as `primaryPictureProblem` does (P166). */
+export function questionPictureProblem(spec: SeniorDiagramSpec): string | null {
+  return pictureProblem(spec) ?? primaryPictureProblem(spec)
 }
 
 function timelineProblem(s: Timeline): string | null {

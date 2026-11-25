@@ -13,8 +13,10 @@ const W = 200
 const rowLabel = (parts: number, shaded: number, label?: string) =>
   label ?? (parts <= 1 ? '1' : `${shaded > 0 ? shaded : 1}/${parts}`)
 
-export function describeFractionBar({ rows }: FractionBarProps) {
-  const bits = rows.map((r) => `a bar split into ${r.parts} ${r.parts === 1 ? 'part' : 'equal parts'} with ${r.shaded} of ${r.parts} shaded`)
+export function describeFractionBar({ rows, variant }: FractionBarProps) {
+  // P166: while a question is answered, the words say what is drawn but not how many parts are shaded, which may be the answer.
+  const q = variant === 'question'
+  const bits = rows.map((r) => `a bar split into ${r.parts} ${r.parts === 1 ? 'part' : 'equal parts'} with ${q ? 'some' : `${r.shaded} of ${r.parts}`} shaded`)
   return `Fraction bars: ${bits.join(', and ') || 'no bars'}.`
 }
 
@@ -78,8 +80,11 @@ function LearnBars(props: FractionBarProps) {
 export function FractionBar(props: FractionBarProps) {
   if (props.variant === 'learn') return <LearnBars {...props} />
   const { rows } = props
+  const q = props.variant === 'question'
   const firstShaded = rows.findIndex((r) => r.shaded > 0)
-  const height = Math.max(190, 26 + rows.length * 50 + 14)
+  // P166: a question's bars take only the room they need, and with no label beside them they sit in the middle.
+  const height = q ? 30 + rows.length * 50 : Math.max(190, 26 + rows.length * 50 + 14)
+  const x0 = q && rows.every((r) => !r.label) ? (285 - W) / 2 : X
   return (
     <Svg width={285} height={height} label={describeFractionBar(props)}>
       {rows.map((r, i) => {
@@ -93,7 +98,7 @@ export function FractionBar(props: FractionBarProps) {
             {Array.from({ length: parts }, (_, k) => (
               <rect
                 key={k}
-                x={X + k * w}
+                x={x0 + k * w}
                 y={y}
                 width={w}
                 height={28}
@@ -103,9 +108,12 @@ export function FractionBar(props: FractionBarProps) {
                 strokeWidth={1.5}
               />
             ))}
-            <T x={50} y={y + 19} size={14} weight={600} anchor="end">
-              {rowLabel(parts, r.shaded, r.label)}
-            </T>
+            {/* P166: a question's bar shows only a label the writer gave: its own fraction may be the answer. */}
+            {q && !r.label ? null : (
+              <T x={50} y={y + 19} size={14} weight={600} anchor="end">
+                {rowLabel(parts, r.shaded, r.label)}
+              </T>
+            )}
           </g>
         )
       })}

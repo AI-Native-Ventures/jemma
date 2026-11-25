@@ -7,7 +7,9 @@ export type BarChartProps = Extract<DiagramSpec, { kind: 'bar_chart' }> & {
   highlight?: string[]
 }
 
-export function describeBarChart({ bars, yMax }: BarChartProps) {
+export function describeBarChart({ bars, yMax, variant }: BarChartProps) {
+  // P166: while a question is answered, the words name the bars but do not read them: their values may be the answer.
+  if (variant === 'question') return `Bar graph, from 0 to ${fmt(yMax)}, with bars for ${bars.map((b) => b.label).join(', ')}.`
   return `Bar graph, from 0 to ${fmt(yMax)}: ${bars.map((b) => `${b.label} ${fmt(b.value)}`).join(', ')}.`
 }
 
@@ -26,8 +28,12 @@ export function BarChart(props: BarChartProps) {
   const g = q
     ? { w: 314, h: 252, x0: 34, x1: 306, base: 214, top: 30, barW: 44, pitch: 68, off: 12, lab: 234, ls: 13, lw: 600, tick: 11 }
     : { w: 285, h: 190, x0: 46, x1: 270, base: 150, top: 24, barW: 34, pitch: 224 / n, off: 0, lab: 168, ls: 12, lw: 400, tick: 12 }
-  const barW = q ? g.barW : Math.min(34, g.pitch - 22)
-  const pitch = q ? Math.min(g.pitch, n > 1 ? (g.x1 - g.x0 - 12 - barW) / (n - 1) : g.pitch) : g.pitch
+  // P166: a question's graph may have up to 8 bars (Grades 1 to 6). Past 5 bars they get narrower and their names smaller, so 8 px stays between two bars.
+  // Up to 5 bars nothing changes.
+  const span = g.x1 - g.x0 - 12
+  const barW = q ? Math.min(g.barW, Math.floor((span - 8 * (n - 1)) / n)) : Math.min(34, g.pitch - 22)
+  const pitch = q ? Math.min(g.pitch, n > 1 ? (span - barW) / (n - 1) : g.pitch) : g.pitch
+  const labelSize = q && n > 5 ? (n > 6 ? 11 : 12) : g.ls
   const k = (g.base - g.top) / yMax
   const step = niceStep(yMax, q ? 8 : 5)
   const ticks: number[] = []
@@ -63,7 +69,7 @@ export function BarChart(props: BarChartProps) {
                 {fmt(b.value)}
               </T>
             )}
-            <T x={x + barW / 2} y={g.lab} size={g.ls} weight={g.lw}>
+            <T x={x + barW / 2} y={g.lab} size={labelSize} weight={g.lw}>
               {b.label}
             </T>
           </g>
