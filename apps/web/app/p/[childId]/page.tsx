@@ -6,6 +6,7 @@ import { getProfile, type MarkRow } from '@/lib/data/p23'
 import { getSharedLongView } from '@/lib/data/p52'
 import { getProfileExtras } from '@/lib/data/p36'
 import { getAloneSummary } from '@/lib/data/own-parent'
+import { levelSummaryFor } from '@/lib/data/level'
 import { AloneChildPage } from './_alone'
 import { Only } from './_only'
 import { ProfileLaptop } from './_profile-laptop'
@@ -56,7 +57,7 @@ export default async function ParentProfilePage({ params }: { params: Promise<{ 
   await requireRole('parent')
   // A child whose school does not use Jemma has a page of their own (P99): no school, no class, no teacher, no test a teacher shared.
   const alone = await getAloneSummary(childId)
-  if (alone) return <AloneChildPage summary={alone} />
+  if (alone) return <AloneChildPage summary={alone} level={await levelSummaryFor(childId, alone.firstName)} />
   const [data, extras, shared] = await Promise.all([getProfile(childId), getProfileExtras(childId), getSharedLongView(childId)])
   if (!data) notFound()
   const longView = shared ? <LongViewCard base={`/p/${childId}`} teacherNames={shared.teacherNames} subjects={shared.subjects} count={shared.patterns.length} /> : null

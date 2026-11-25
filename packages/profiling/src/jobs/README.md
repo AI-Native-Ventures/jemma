@@ -1,6 +1,10 @@
 # Job prompts
 
-Jemma has 10 AI jobs: `draft_map`, `read_key`, `read_paper`, `diagnose`, `class_report`, `write_lesson`, `guidance`, `long_view`, `map_records`, `read_marked_test`.
+Jemma has 11 AI jobs: `draft_map`, `read_key`, `read_paper`, `diagnose`, `class_report`, `write_lesson`, `guidance`, `long_view`, `map_records`, `read_marked_test`, `write_level_check`.
+
+`write_level_check` (P163) writes the 12 questions of a learner's level check into the `level_checks` row the event names. It runs on the cloud
+runner, which saves the questions itself: there is no MCP save tool for it yet, so a laptop runner cannot finish it. A level check is in a learner's
+own space, whose private school uses the cloud runner by default.
 
 ## Naming
 

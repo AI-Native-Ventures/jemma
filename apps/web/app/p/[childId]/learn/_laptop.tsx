@@ -8,7 +8,7 @@ const CHIP = 'display:inline-flex;align-items:center;padding:6px 12px;border-rad
 const CARD = 'display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E8E5DE;border-radius:20px;padding:18px'
 
 /** Board laptop-parent-learn at 1440: tonight's lesson card beside this week and what helps. */
-export function LearnLaptop({ childId, data, tonight }: { childId: string; data: LearnData; tonight: NonNullable<LearnData['tonight']> }) {
+export function LearnLaptop({ childId, data, tonight, levelCard = null }: { childId: string; data: LearnData; tonight: NonNullable<LearnData['tonight']>; levelCard?: React.ReactNode }) {
   const { childFirstName: name, week, helps } = data
   const topic = tonight.shortName
   const steps = ['Warm-up', 'Learn', tonight.questions ? `${tonight.questions} questions` : 'Questions', 'Results']
@@ -69,7 +69,8 @@ export function LearnLaptop({ childId, data, tonight }: { childId: string; data:
         </section>
 
         <div style={css('flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:20px')}>
-          <OwnPracticeCard childId={childId} name={name} />
+          {levelCard}
+        <OwnPracticeCard childId={childId} name={name} />
 
           <section aria-labelledby="ll-week" style={css(`${CARD};gap:6px`)}>
             <h2 id="ll-week" style={css('margin:0 0 4px;font-size:18px;font-weight:600')}>This week</h2>

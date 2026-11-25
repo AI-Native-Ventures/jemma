@@ -349,10 +349,14 @@ export type QuestionScreenProps = {
   busy: boolean
   /** Called with the typed or picked answer and how many seconds it took. */
   onAnswer: (value: string, seconds: number) => void
+  /** P163: the line under the question in place of the practice one (the level check has no marks to look at at the end). */
+  note?: string
+  /** P163: a second button under Next that answers "I don't know yet" (the level check). Called with how many seconds it took. */
+  skip?: { label: string; onSkip: (seconds: number) => void }
 }
 
 /** One warm-up or try question. It never shows whether an answer was right. */
-export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps) {
+export function QuestionScreen({ q, topic, busy, onAnswer, note, skip }: QuestionScreenProps) {
   const [picked, setPicked] = useState<string | null>(null)
   const [whole, setWhole] = useState('')
   const [top, setTop] = useState('')
@@ -423,7 +427,8 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
     <main className="flex flex-1 flex-col gap-[26px] px-5 pt-[22px] pb-7">
       <div className="flex items-center justify-between">
         <p className="m-0 text-[16px] font-semibold">Question {q.index} of {q.of}</p>
-        <BeadRow total={q.of} now={q.index} size={15} />
+        {/* P163: the 12 beads of a level check are drawn a little smaller, so the row stays on one line next to its words. */}
+        <BeadRow total={q.of} now={q.index} size={q.of > 8 ? 13 : 15} gap={q.of > 8 ? 4 : 6} />
       </div>
       <section aria-label="Question" className="flex flex-col items-center gap-[30px] rounded-[28px] border border-line bg-card px-[18px] py-[30px]">
         {shape.kind === 'missing' ? (
@@ -455,9 +460,19 @@ export function QuestionScreen({ q, topic, busy, onAnswer }: QuestionScreenProps
           </>
         )}
       </section>
-      <Note>Take your time. You&apos;ll see how you did at the end.</Note>
+      <Note>{note ?? "Take your time. You'll see how you did at the end."}</Note>
       <div className="flex-1" />
       {nextButton}
+      {skip ? (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => skip.onSkip((Date.now() - shown.current) / 1000)}
+          className="-mt-3 flex min-h-14 w-full cursor-pointer items-center justify-center rounded-18 border-0 bg-transparent px-5 py-3 text-center text-[17px] font-semibold text-ink disabled:opacity-50"
+        >
+          {skip.label}
+        </button>
+      ) : null}
     </main>
   )
 }

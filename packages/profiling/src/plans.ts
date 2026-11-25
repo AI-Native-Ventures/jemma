@@ -6,7 +6,7 @@ import { maybe, ok } from './tools/context'
 import { loadPracticeInput } from './tools/read/practice-input'
 
 /** The AI jobs. Each has a prompt file `jobs/<job>.md` (see jobs/README.md). */
-export const AI_JOBS = ['draft_map', 'read_key', 'read_paper', 'diagnose', 'class_report', 'write_lesson', 'guidance', 'long_view', 'map_records', 'read_marked_test'] as const
+export const AI_JOBS = ['draft_map', 'read_key', 'read_paper', 'diagnose', 'class_report', 'write_lesson', 'guidance', 'long_view', 'map_records', 'read_marked_test', 'write_level_check'] as const
 /** Plain-code steps that sit in the plans next to the AI jobs. */
 export const CODE_JOBS = ['plan_next_session', 'update_learner_profile'] as const
 export const JOB_NAMES = [...AI_JOBS, ...CODE_JOBS] as const
@@ -224,6 +224,13 @@ export async function jobPlan(event: JemmaEvent, db: JemmaDb, now: Date = new Da
       const choice = { ...(event.topicName ? { topicName: event.topicName } : {}), ...(event.topicId && event.topicName ? { topicId: event.topicId } : {}) }
       return due ? [write] : [{ job: 'plan_next_session', ids: { childId: event.childId, practice: '1', ...choice } }, write]
     }
+    case 'level.requested': {
+      // P163: the questions of a level check are written once, while the row waits for them.
+      const check = await maybe(db.from('level_checks').select('status, child_id').eq('id', event.levelCheckId).maybeSingle())
+      return check && check.child_id === event.childId && check.status === 'writing'
+        ? [{ job: 'write_level_check', ids: { childId: event.childId, levelCheckId: event.levelCheckId } }]
+        : []
+    }
     case 'test.shared':
       // The teacher shared the results: now each learner with a marked paper gets the next session, the lesson and the guidance.
       return (await isHeld(db, event.testId)) ? [] : perChildTail(db, await markedChildren(db, event.testId))
@@ -344,6 +351,12 @@ export async function postconditions(event: JemmaEvent, db: JemmaDb, now: Date =
       // The learner may have started (or finished) the practice before this check: a session that is no longer planned is not seen above.
       if (since !== undefined && (await practiceStartedSince(db, event.childId, now, since))) break
       missing.push(`no practice written for child ${event.childId}`)
+      break
+    }
+    case 'level.requested': {
+      // P163: the level check's questions are written (the row is ready), or the learner has already gone on with it (done).
+      const check = await maybe(db.from('level_checks').select('status').eq('id', event.levelCheckId).maybeSingle())
+      if (check && check.status !== 'ready' && check.status !== 'done') missing.push(`no level check written for child ${event.childId}`)
       break
     }
   }
