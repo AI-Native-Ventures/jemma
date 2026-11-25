@@ -264,7 +264,12 @@ describe('pictures, for a senior class', () => {
       'at most 200 wide (720 across for a `trig` graph), at most 3 graphs and 12 points',
       'exactly three `vertices` names',
       'Never put the answer in a label.',
-      'A lesson card or a diagram step may use these two pictures too.',
+      'A lesson card or a diagram step may use these pictures too.',
+      // P165: a box plot, a probability tree and a time line.
+      'Use `box_plot` for a five-number summary on a scale',
+      '`tree` for probability',
+      'make the question a `list` with one `labels` entry for each blank',
+      '`timeline` for financial maths',
     ]) {
       expect(out).toContain(word)
     }

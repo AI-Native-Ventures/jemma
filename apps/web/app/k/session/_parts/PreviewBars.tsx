@@ -6,7 +6,7 @@ import { Bar, rowFills } from './Bars'
 export function PreviewBars({ spec }: { spec: SeniorDiagramSpec }) {
   if (spec.kind !== 'fraction_bar') {
     // A graph on a grid or a triangle (a senior class) is a big picture: on tonight's lesson card it is kept small. The other kinds keep the classes they had.
-    const big = spec.kind === 'coordinate_plane' || spec.kind === 'triangle'
+    const big = spec.kind === 'coordinate_plane' || spec.kind === 'triangle' || spec.kind === 'box_plot' || spec.kind === 'tree' || spec.kind === 'timeline'
     return (
       <div aria-hidden="true" className={`rounded-[16px] bg-[#F8F6F1] p-3.5 [border-radius:16px]${big ? ' [&_svg]:mx-auto [&_svg]:max-h-[180px]' : ''}`}>
         <DiagramView spec={spec} />

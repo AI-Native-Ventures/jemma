@@ -22,10 +22,12 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * kinds. P150 (16 Nov 2026) moved both again, on purpose: three more answer kinds (`list`, `order`, `table`) and four optional question fields (`ordered`, `labels`,
  * `round`, `table`). P148 moved them too: the question has two optional fields, `unit` and `round` (shared with P150), and the answer kinds `time` and `ratio`.
  * Before P148, P149 and P150 they were 95bd01bd191e25f2ee7e8325989c3fde9ccb47893163cffb8a2a4172fc94d41a (senior) and a84500e7bc9893b2cf070f2019ea2e17cb739091f9eb50859981fd8804ae2a3c (wide).
+ * P165 (25 Nov 2026) moved both again, on purpose: three more pictures a senior question may carry (`box_plot`, `tree`, `timeline`). Before P165 they were
+ * 9edb11fef8145a8846474d36e5e8f8312c52bde0882701f73a57c02b77b0ffee (senior) and f1ebf6ca0fb7833dde0016b2c34e1a616293ac870719896b759654366b690a5d (wide).
  * Every packet that changes the senior schema moves these two: recompute them after a merge.
  */
-const SENIOR_SHA = '9edb11fef8145a8846474d36e5e8f8312c52bde0882701f73a57c02b77b0ffee'
-const WIDE_SHA = 'f1ebf6ca0fb7833dde0016b2c34e1a616293ac870719896b759654366b690a5d'
+const SENIOR_SHA = 'cefbe5f5625995071cb58fdf615c104518594a27db3b868f7c60356e7c80d20c'
+const WIDE_SHA = 'ea4209d54339ed5585a485b306a982029b46d88659d4b5f258020617bc336371'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({

@@ -149,7 +149,29 @@ export function toLatexRun(run: string): string | null {
     return key
   })
   const latex = latexOfRun(swapped)
-  return latex === null ? null : subs.reduce((t, sub, i) => t.replace(new RegExp(`(?<![A-Za-z\\\\])${pool[i]!}(?![A-Za-z])`, 'g'), sub), latex)
+  return latex === null ? null : restoreCase(run, subs.reduce((t, sub, i) => t.replace(new RegExp(`(?<![A-Za-z\\\\])${pool[i]!}(?![A-Za-z])`, 'g'), sub), latex))
+}
+
+/** A letter standing alone (not part of a word or of a LaTeX command). */
+const LONE_LETTER = /(?<![A-Za-z\\])[A-Za-z](?![A-Za-z])/g
+
+/**
+ * P165: the reader of the maths does not tell capitals from small letters, so "P(A) = 0,4" came back as p(a). The letters that stand alone in the line are
+ * given back as they were written, in order, but only when every one of them is found in the same order: anything else keeps the LaTeX as it was.
+ */
+function restoreCase(run: string, latex: string): string {
+  if (!/[A-Z]/.test(run)) return latex
+  const want = [...run.matchAll(LONE_LETTER)].map((m) => m[0])
+  let at = 0
+  const out = latex.replace(LONE_LETTER, (found) => {
+    const letter = want[at]
+    if (letter !== undefined && letter.toLowerCase() === found.toLowerCase()) {
+      at++
+      return letter
+    }
+    return found
+  })
+  return at === want.length ? out : latex
 }
 
 const SUBSCRIPT = /(?<![A-Za-z0-9])([a-z])([0-9])(?![A-Za-z0-9])/g

@@ -2,12 +2,15 @@ import { pictureProblem } from '@jemma/profiling/logic'
 import { SeniorDiagramSpecSchema } from '@jemma/profiling/schemas'
 import { AreaModel } from './AreaModel'
 import { BarChart } from './BarChart'
+import { BoxPlot } from './BoxPlot'
 import { CoordinatePlane } from './CoordinatePlane'
 import { FractionBar } from './FractionBar'
 import { GridArea } from './GridArea'
 import { NumberLine } from './NumberLine'
 import { PlaceValue } from './PlaceValue'
+import { ProbabilityTree } from './ProbabilityTree'
 import { Shape2D } from './Shape2D'
+import { Timeline } from './Timeline'
 import { Triangle } from './Triangle'
 import type { Variant } from './shared'
 
@@ -62,6 +65,12 @@ export function DiagramView({ spec, variant, highlight, className, caption, seni
         return <CoordinatePlane {...s} variant={variant === 'question' ? 'question' : 'card'} />
       case 'triangle':
         return <Triangle {...s} />
+      case 'box_plot':
+        return <BoxPlot {...s} />
+      case 'tree':
+        return <ProbabilityTree {...s} />
+      case 'timeline':
+        return <Timeline {...s} />
       default:
         return <PictureMissing className={className} />
     }
