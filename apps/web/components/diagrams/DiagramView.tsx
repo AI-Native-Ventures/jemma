@@ -52,7 +52,7 @@ export function DiagramView({ spec, variant, highlight, className, caption, seni
       case 'number_line':
         return <NumberLine {...s} caption={caption} senior={senior} />
       case 'area_model':
-        return <AreaModel {...s} />
+        return <AreaModel {...s} variant={variant === 'learn' ? undefined : variant} />
       case 'place_value':
         return <PlaceValue {...s} />
       case 'bar_chart':

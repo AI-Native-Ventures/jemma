@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { describe, expect, test, vi } from 'vitest'
 import { z } from 'zod'
-import { primaryAnswerBlock, primaryKit, withPrimaryAnswers, type PrimaryKit } from '../src/ai/primary-answers'
+import { PICTURE_KITS, pictureBullet, primaryAnswerBlock, primaryKit, withPrimaryAnswers, type PrimaryKit } from '../src/ai/primary-answers'
 import { renderPrompt } from '../src/ai/prompt-variants'
 import { makeClassContext } from '../src/ai/subject-profile'
 import { PrimaryLessonSchema } from '../src/schemas/lesson'
@@ -67,6 +67,34 @@ describe('primaryKit: which topics of Grades 1 to 6 get the new answer kinds', (
     [1, 'Money (Term 4)', 'money'],
     [2, 'Place value', 'place'],
     [5, 'Counting and place value', 'place'],
+    // P166: topics whose questions may now carry a picture, and US names of the old kits.
+    [3, 'Fractions', 'fractions'],
+    [2, 'Sharing leading to fractions (Term 3)', 'fractions'],
+    [4, 'Common fractions', 'fractions'],
+    [5, 'Common fractions (Term 3)', 'fractions'],
+    [4, 'Equivalent fractions', 'fractions'],
+    [3, 'Fractions on a number line', 'fractions'],
+    [1, 'Halves and fourths', 'fractions'],
+    [2, '2-D shapes', 'shapes'],
+    [5, 'Properties of 2-D shapes', 'shapes'],
+    [3, 'Quadrilaterals', 'shapes'],
+    [2, 'Repeated addition leading to multiplication', 'multiply'],
+    [4, 'Multiplication', 'multiply'],
+    [2, 'Arrays', 'multiply'],
+    [1, 'Count forwards and backwards', 'numbers'],
+    [3, 'Addition and subtraction (Term 2)', 'numbers'],
+    [1, 'Counting to 120', 'numbers'],
+    [3, 'Rounding', 'numbers'],
+    [1, 'Time to the half hour', 'time'],
+    [3, 'Elapsed time', 'time'],
+    [4, 'Area and perimeter', 'measure'],
+    [2, 'Measuring length', 'measure'],
+    [1, 'Comparing numbers', 'order'],
+    [2, 'Comparing to 1,000', 'order'],
+    [4, 'Patterns', 'patterns'],
+    [2, 'Graphs', 'data'],
+    [1, 'Tens and ones', 'place'],
+    [2, 'Place value to 1,000', 'place'],
   ]
   test.each(GATED)('Grade %i "%s" gets the %s kit', (grade, topic, kit) => {
     expect(primaryKit(klass(grade), topic)).toBe(kit)
@@ -94,9 +122,26 @@ describe('primaryKit: which topics of Grades 1 to 6 get the new answer kinds', (
     'Problems in context: addition and subtraction',
     'History',
     '',
-  ])('"%s" gets nothing', (topic) => {
+  ])('"%s" gets nothing for the baseline class (Grade 6, South Africa)', (topic) => {
     expect(primaryKit(klass(6), topic)).toBeNull()
-    expect(primaryKit(klass(3), topic)).toBeNull()
+  })
+
+  test.each(['Division', 'Geometric patterns', 'Number sentences', 'Symmetry', 'Probability', 'Transformations', 'Count objects', 'Problems in context: addition and subtraction', 'History', ''])(
+    '"%s" gets nothing in Grade 3 either',
+    (topic) => {
+      expect(primaryKit(klass(3), topic)).toBeNull()
+    },
+  )
+
+  test('P166: the baseline class gets no picture kit and none of the US names; Grade 6 in Kenya and in the US get them', () => {
+    for (const topic of ['Common fractions', '2-D shapes', 'Multiplication', 'Addition and subtraction', 'Count forwards and backwards', 'Time to the half hour', 'Graphs'])
+      expect(primaryKit(klass(6), topic), topic).toBeNull()
+    expect(primaryKit(klass(6, 'Mathematics', 'KE'), 'Common fractions')).toBe('fractions')
+    expect(primaryKit(klass(6, 'Mathematics', 'US'), 'Dividing fractions')).toBe('fractions')
+    expect(primaryKit(klass(5, 'Mathematics', 'ZA'), 'Common fractions')).toBe('fractions')
+    // The old kits still reach the baseline class as P151 made them.
+    expect(primaryKit(klass(6), 'Time')).toBe('time')
+    expect(primaryKit(klass(6), 'Data handling')).toBe('data')
   })
 
   test('only a Mathematics class of Grade 1 to 6 (a senior class, another subject and a class that could not be told get nothing)', () => {
@@ -113,7 +158,7 @@ describe('primaryKit: which topics of Grades 1 to 6 get the new answer kinds', (
     expect(primaryKit(klass(4, 'mathematics', 'South Africa'), 'Mass')).toBe('measure')
   })
 
-  test('the CAPS topics of Grades 1 to 6: the fraction topics of the recorded demo are never gated, and a good share of the rest is', () => {
+  test('the CAPS topics of Grades 1 to 6: the fraction topics of the recorded demo (Grade 6, South Africa) are never gated, and a good share of the rest is', () => {
     const root = new URL('../../../fixtures/curriculum/caps/', import.meta.url)
     const all = new Set<string>()
     const gated = new Set<string>()
@@ -127,7 +172,9 @@ describe('primaryKit: which topics of Grades 1 to 6 get the new answer kinds', (
             gated.add(`${grade}|${topic.shortName.replace(/\s*\(Term \d\)$/, '')}`)
             names.add(topic.shortName.replace(/\s*\(Term \d\)$/, ''))
           }
-          if (topic.family === 'fractions') expect(primaryKit(klass(grade), topic.shortName), `${topic.shortName} is a fraction topic`).toBeNull()
+          // P166: a fraction topic of Grades 2 to 5 gets the fractions kit (a fraction bar, a number line); the demo's Grade 6 ones get nothing.
+          if (topic.family === 'fractions')
+            expect(primaryKit(klass(grade), topic.shortName), `${topic.shortName} is a fraction topic`).toBe(grade === 6 ? null : 'fractions')
         }
       }
     }
@@ -202,14 +249,16 @@ describe('the schema of a gated lesson', () => {
     expect(schemaText(PrimaryExtraLessonSchema)).not.toBe(schemaText(PrimaryLessonSchema))
   })
 
-  test('it names the four new kinds and none of the senior ones, and has no steps, no form and no senior picture', () => {
+  test('it names the four new kinds and none of the senior ones, and has no steps, no form and no senior picture (P166: a primary picture)', () => {
     const json = schemaText(PrimaryExtraLessonSchema)
     for (const word of ['"time"', '"list"', '"order"', '"table"', '"fraction"', '"money"', '"choice"']) expect(json).toContain(word)
     for (const word of ['"expression"', '"equation"', '"point"', '"form"', '"coordinate_plane"', '"const":"triangle"', '"factorised"']) expect(json).not.toContain(word)
     // The lesson's diagram has steps of its own: it is the question that has none.
     const items = (JSON.parse(json) as { properties: { questions: { items: { required: string[]; properties: Record<string, unknown> } } } }).properties.questions.items
     expect(items.properties).not.toHaveProperty('steps')
-    expect(items.properties).not.toHaveProperty('diagram')
+    // P166: a question may carry one of the seven primary pictures, and only those.
+    const kinds = ((items.properties.diagram as { oneOf: { properties: { kind: { const: string } } }[] }).oneOf ?? []).map((o) => o.properties.kind.const)
+    expect(kinds.sort()).toEqual(['area_model', 'bar_chart', 'fraction_bar', 'grid_area', 'number_line', 'place_value', 'shape_2d'])
     expect(items.required).not.toContain('steps')
     // A choice is plain text (a picture choice, true or false and a reason are for a senior class).
     const fields = items.properties as Record<string, { items?: { type?: string } }>
@@ -265,7 +314,20 @@ describe('every other Grade 1 to 6 lesson is asked byte for byte as before (hash
   test.each(rows)('%s', async (key, hashes) => {
     const [subject, grade, country, topic] = key.split('|') as [string, string, string, string]
     const seen = await ask(Number(grade), topic, subject, country)
-    expect(sha(seen.system)).toBe(hashes.system)
+    const kit = primaryKit(klass(Number(grade), subject, country), topic)
     expect(sha(seen.user)).toBe(hashes.user)
+    if (kit && PICTURE_KITS.includes(kit)) {
+      // P166 (25 Nov 2026), on purpose: this topic's questions may carry a picture, so its call has the picture bullet and the gated schema.
+      expect(sha(seen.system)).not.toBe(hashes.system)
+      expect(seen.system).toContain(pictureBullet(kit, klass(Number(grade), subject, country))!)
+    } else {
+      expect(sha(seen.system)).toBe(hashes.system)
+    }
+  })
+
+  test('P166 moved no call of the baseline class: its 31 topics are all byte for byte as before', () => {
+    const baseline = rows.filter(([k]) => k.startsWith('Mathematics|6|ZA|'))
+    expect(baseline).toHaveLength(31)
+    for (const [key] of baseline) expect(primaryKit(klass(6), key.split('|')[3]!), key).toBeNull()
   })
 })

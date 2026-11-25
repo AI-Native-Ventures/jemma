@@ -186,9 +186,13 @@ export function markQuantity(q: QuantityQuestion, typed: string, read: NumberRea
 
 /**
  * True when a question was written for a senior class (Grades 7 to 12). Every question the senior writer makes has worked `steps` (P127), a kind that is marked by
- * meaning, or a picture or a form; a primary question has none of them. A unit or a round does NOT make a question senior (a primary whole or decimal question may
- * carry a unit). A whole or a decimal answer of a senior question may be negative (the save gate takes a negative key for it, and the screen gives its box a minus
- * key), and a primary one may not.
+ * meaning, or a senior picture or a form; a primary question has none of them. A unit or a round does NOT make a question senior (a primary whole or decimal question may
+ * carry a unit), and since P166 neither does one of the seven primary pictures (a Grade 1 to 6 question may carry a fraction bar or a bar graph). A whole or a decimal
+ * answer of a senior question may be negative (the save gate takes a negative key for it, and the screen gives its box a minus key), and a primary one may not.
  */
+const SENIOR_PICTURE_KINDS = new Set(['coordinate_plane', 'triangle', 'box_plot', 'tree', 'timeline'])
+const isSeniorPicture = (diagram: unknown): boolean =>
+  !!diagram && typeof diagram === 'object' && SENIOR_PICTURE_KINDS.has(String((diagram as { kind?: unknown }).kind))
+
 export const isSeniorQuestion = (q: { steps?: string[]; answerKind: string; diagram?: unknown; form?: string }): boolean =>
-  (q.steps?.some((s) => s.trim() !== '') ?? false) || (MEANING_ANSWER_KINDS as readonly string[]).includes(q.answerKind) || !!q.diagram || !!q.form
+  (q.steps?.some((s) => s.trim() !== '') ?? false) || (MEANING_ANSWER_KINDS as readonly string[]).includes(q.answerKind) || isSeniorPicture(q.diagram) || !!q.form
