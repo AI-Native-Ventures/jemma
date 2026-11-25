@@ -106,6 +106,13 @@ export const GroupsSchema = z.object({ names: z.array(z.string()), items: z.arra
 export type GroupsSpec = z.infer<typeof GroupsSchema>
 
 /**
+ * P172: a shape the learner shades parts of by tapping them (Grades 1 to 6): a circle or a bar cut into `parts` equal parts, or a grid of `rows` by `cols`
+ * squares (a hundred square is 10 by 10). The key is how many parts to shade, as a `whole` number: which parts are shaded does not matter.
+ */
+export const ShadeSchema = z.object({ shape: z.enum(['circle', 'bar', 'grid']), parts: z.number().optional(), rows: z.number().optional(), cols: z.number().optional() })
+export type ShadeSpec = z.infer<typeof ShadeSchema>
+
+/**
  * P171: points the learner places on a grid by tapping it (Grades 7 to 10): where a shape lands after a reflection or a translation, or points from a table.
  * The grid goes from `xMin` to `xMax` and `yMin` to `yMax` in whole steps; `given` are points already on it (`shape` joins them, as the corners of a shape);
  * `place` are the names of the points to place, in order. The key is an ordered `list` of the x and the y of each of them (`4; 1; 1; 1; 1; 4`).
@@ -172,6 +179,7 @@ export const QuestionSchema = seniorQuestion(z.array(z.string()).optional()).ext
   columns: ColumnsSchema.optional(),
   blocks: BlocksSchema.optional(),
   groups: GroupsSchema.optional(),
+  shade: ShadeSchema.optional(),
 })
 export type Question = z.infer<typeof QuestionSchema>
 export type PrimaryQuestion = z.infer<typeof PrimaryQuestionSchema>

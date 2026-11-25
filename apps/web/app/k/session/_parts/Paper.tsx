@@ -14,6 +14,7 @@ import { PaperValues } from './answers/PaperValues'
 import { DataGraph } from './answers/DataGraph'
 import { ColumnsSum } from './answers/ColumnsSum'
 import { PlotGrid } from './answers/PlotGrid'
+import { ShadedResult } from './answers/ShadeShape'
 import { paperValuesLine } from './answers/values-hints'
 
 // A practice answered on paper: the choice before the first Try question, the sheet of five questions with the photo button, the wait while
@@ -131,6 +132,9 @@ export function writeLine(shape: AnswerShape): string {
     case 'order':
     case 'table':
       return paperValuesLine(shape)
+    // P172: a shape to shade is shaded on paper and the number of parts written.
+    case 'shade':
+      return 'Shade the parts on your paper, then write how many you shaded.'
     // P171: points on a grid are written as the x and the y of each, in order.
     case 'plot':
       return `Write the x and the y of ${shape.plot.place.map((n) => n.trim()).join(', ')}, in order, with a semicolon between them.`
@@ -187,6 +191,7 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
         {shape.kind === 'graph' ? <DataGraph graph={shape.graph} values={[]} mode="paper" /> : null}
         {shape.kind === 'columns' ? <ColumnsSum columns={shape.columns} mode="paper" /> : null}
         {shape.kind === 'plot' ? <PlotGrid plot={shape.plot} mode="paper" /> : null}
+        {shape.kind === 'shade' ? <ShadedResult shade={shape.shade} wrote="0" /> : null}
         {shape.kind === 'groups' ? (
           <ol aria-label="The things to sort" className="m-0 flex list-none flex-wrap gap-2 p-0">
             {shape.groups.items.map((item, i) => (

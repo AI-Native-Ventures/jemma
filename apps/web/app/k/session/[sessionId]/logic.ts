@@ -36,7 +36,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { BlocksSpec, Choice, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, PlotSpec, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
+import type { BlocksSpec, Choice, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, PlotSpec, Question, SeniorDiagramSpec, ShadeSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -108,6 +108,8 @@ export type QuestionForChild = {
   groups?: GroupsSpec
   /** P171: the grid to place points on, with the given points and the names of the points to place. Where they go is the answer, and is never sent. */
   plot?: PlotSpec
+  /** P172: the shape the learner shades parts of. How many is the answer, and is never sent. */
+  shade?: ShadeSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -168,6 +170,8 @@ export type MissedQuestion = {
   plot?: PlotSpec
   plotWrote?: ({ x: number; y: number } | null)[]
   plotRight?: { x: number; y: number }[]
+  /** P172: the shape the learner shaded; the results draw as many parts shaded as they shaded (`wrote`). */
+  shade?: ShadeSpec
 }
 
 /** The P148 fields of a question for the child. Shape hints only: how many boxes, which clock, which unit. Never the key. */
@@ -221,6 +225,7 @@ export function stripQuestion(
     ...(q.blocks ? { blocks: q.blocks } : {}),
     ...(q.groups ? { groups: q.groups } : {}),
     ...(q.plot ? { plot: q.plot } : {}),
+    ...(q.shade ? { shade: q.shade } : {}),
   }
 }
 
@@ -312,6 +317,8 @@ export type AnswerShape =
   | { kind: 'groups'; groups: GroupsSpec; young?: true }
   /** P171: points placed on a grid by tapping it. `typed` is the same answer typed instead: a box for the x and the y of each point. */
   | { kind: 'plot'; plot: PlotSpec; typed: AnswerShape }
+  /** P172: parts of a shape shaded by tapping them. */
+  | { kind: 'shade'; shade: ShadeSpec; young?: true }
 
 /** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
 export type QuantityExtras = { unit?: string; round?: number; signed?: true }
@@ -336,6 +343,7 @@ type ShapeParts = {
   blocks?: BlocksSpec
   groups?: GroupsSpec
   plot?: PlotSpec
+  shade?: ShadeSpec
 }
 
 export function answerShape(
@@ -361,6 +369,8 @@ export function answerShape(
     const { plot, ...rest } = q
     return { kind: 'plot', plot, typed: answerShape(rest) }
   }
+  // P172: parts of a shape shaded, the answer how many.
+  if (q.shade && q.answerKind === 'whole') return { kind: 'shade', shade: q.shade, ...(q.young ? { young: true as const } : {}) }
   // P170: things sorted into groups, the answer the group of each.
   if (q.groups && q.answerKind === 'list') return { kind: 'groups', groups: q.groups, ...(q.young ? { young: true as const } : {}) }
   // P147: an equation whose key is an inequality or an interval, or two letters with a value each, says so in its line under the box.
@@ -436,6 +446,8 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
     case 'columns':
     // P169: the number the blocks on the mat make, or nothing while the mat is empty.
     case 'blocks':
+    // P172: how many parts are shaded, or nothing while none is.
+    case 'shade':
       return /^\d+$/.test(text) ? text : ''
     // P170: the group of each thing, or nothing while one is not in a group.
     case 'groups':
@@ -493,6 +505,7 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       ...(item.question.blocks ? { blocks: item.question.blocks } : {}),
       ...groupsReview(item),
       ...plotReview(item),
+      ...(item.question.shade ? { shade: item.question.shade } : {}),
     }))
 }
 

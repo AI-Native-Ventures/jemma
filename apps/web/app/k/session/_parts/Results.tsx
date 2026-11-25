@@ -15,6 +15,7 @@ import { ColumnsSum } from './answers/ColumnsSum'
 import { BuiltMat } from './answers/BlocksMat'
 import { GroupsResult } from './answers/GroupsAnswer'
 import { PlotGrid } from './answers/PlotGrid'
+import { ShadedResult } from './answers/ShadeShape'
 import { SignText } from './answers/Signs'
 
 /** A sign (or an equals sign) that stands alone between two terms of an answer. */
@@ -170,6 +171,8 @@ function CardHead({ m }: { m: MissedQuestion }) {
       {m.groups && !m.unread ? <GroupsResult groups={m.groups} wrote={m.groupsWrote ?? []} right={m.groupsRight ?? []} /> : null}
       {/* P171: the right points in green, a point the learner placed somewhere else dashed beside it. */}
       {m.plot ? <PlotGrid plot={m.plot} mode="results" points={m.plotWrote ?? []} right={m.plotRight ?? []} /> : null}
+      {/* P172: the shape as the learner shaded it. */}
+      {m.shade && !m.unread ? <ShadedResult shade={m.shade} wrote={m.wrote} /> : null}
     </>
   )
 }

@@ -142,6 +142,10 @@ export function columnsBullet(c: ClassContext): string | null {
   )
 }
 
+/** P172: the bullet that lets a fraction question ask the learner to shade parts of a shape. */
+export const SHADE_BULLET =
+  '- `shade`: the learner shades parts of a shape by tapping them. Give `shade` with `shape` `circle` or `bar` and `parts` (2 to 12 equal parts), or `shape` `grid` with `rows` and `cols` (at most 10 each; a hundred square is 10 by 10, for decimals and percentages). The `answerKind` is `whole` and the `answer` is how many parts to shade: "Shade 3/8 of the circle." with 8 parts has the answer `3`, and "Shade 1/2 of the bar." with 6 parts has the answer `3`. Which parts the learner shades does not matter. A question with `shade` has no `diagram` and no `choices`.'
+
 /** P170: the bullet that lets a question sort things into groups, with an example that fits the kit. */
 export function groupsBullet(kit: PrimaryKit): string {
   const example =
@@ -173,7 +177,8 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
   // P166: a kit that only adds pictures has no new answer kind to tell of. P168: addition and subtraction from Grade 2 also has sums in columns.
   if (PICTURE_KITS.includes(kit)) {
     // P170: counting, shapes and multiplication may also sort things into groups.
-    const extra = kit === 'addsub' ? columnsBullet(c) : kit === 'numbers' || kit === 'shapes' || kit === 'multiply' ? groupsBullet(kit) : null
+    const extra =
+      kit === 'addsub' ? columnsBullet(c) : kit === 'numbers' || kit === 'shapes' || kit === 'multiply' ? groupsBullet(kit) : kit === 'fractions' ? SHADE_BULLET : null
     return [picture, extra].filter((line): line is string => !!line).join('\n')
   }
   const lines: string[] = [

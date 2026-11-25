@@ -4,6 +4,7 @@ import { choicePictureProblem, isPickQuestion, pickKeyProblem } from '../../logi
 import { blocksKeyProblem, blocksProblem } from '../../logic/answers/blocks'
 import { groupsKeyProblem, groupsProblem, tidyGroups } from '../../logic/answers/groups'
 import { plotKeyProblem, plotProblem, tidyPlot } from '../../logic/answers/plot'
+import { shadeKeyProblem, shadeProblem } from '../../logic/answers/shade'
 import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
@@ -67,6 +68,12 @@ export function answerProblem(q: Question): string | null {
     if (q.diagram || q.choices?.length) return 'plot: a grid to place points on is the picture of its question, and it has no choices'
     const plot = plotProblem(q.plot) ?? plotKeyProblem({ ...q, plot: q.plot }, readNumber)
     if (plot) return `plot: ${plot}`
+  }
+  // P172: a shape to shade: a shape a phone can show, and a key that is a number of its parts.
+  if (q.shade) {
+    if (q.diagram || q.graph || q.columns || q.blocks || q.groups || q.choices?.length) return 'shade: a shape to shade is the picture of its question, and it has no choices'
+    const shade = shadeProblem(q.shade) ?? shadeKeyProblem({ ...q, shade: q.shade })
+    if (shade) return `shade: ${shade}`
   }
   const picture = questionPictureOf(q)
   if (picture) return `picture: ${picture}`

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, test, vi } from 'vitest'
 import { z } from 'zod'
-import { columnsBullet, groupsBullet, KIT_PICTURES, PICTURE_KITS, pictureBullet, primaryAnswerBlock, primaryKit, withPrimaryAnswers, type PrimaryKit } from '../src/ai/primary-answers'
+import { columnsBullet, groupsBullet, SHADE_BULLET, KIT_PICTURES, PICTURE_KITS, pictureBullet, primaryAnswerBlock, primaryKit, withPrimaryAnswers, type PrimaryKit } from '../src/ai/primary-answers'
 import { renderPrompt } from '../src/ai/prompt-variants'
 import { makeClassContext } from '../src/ai/subject-profile'
 import { isSeniorQuestion } from '../src/logic/answers/quantity'
@@ -177,8 +177,9 @@ describe('the picture bullet the lesson writer is told', () => {
 
   test('a picture kit adds the bullet alone; an old kit keeps its answer kinds and gains the bullet', () => {
     // P168: addition and subtraction also has its line for sums in columns after the picture bullet, and (P170) counting, shapes and multiplication a line
-    // for sorting into groups. Fractions has the picture bullet alone.
-    expect(primaryAnswerBlock('fractions', klass(3))).toBe(pictureBullet('fractions', klass(3)))
+    // for sorting into groups.
+    // P172: fractions also has its line for shading parts of a shape.
+    expect(primaryAnswerBlock('fractions', klass(3))).toBe(`${pictureBullet('fractions', klass(3))}\n${SHADE_BULLET}`)
     expect(primaryAnswerBlock('addsub', klass(3))).toBe(`${pictureBullet('addsub', klass(3))}\n${columnsBullet(klass(3))}`)
     expect(primaryAnswerBlock('addsub', klass(1))).toBe(pictureBullet('addsub', klass(1)))
     for (const kit of ['numbers', 'shapes', 'multiply'] as const) expect(primaryAnswerBlock(kit, klass(3))).toBe(`${pictureBullet(kit, klass(3))}\n${groupsBullet(kit)}`)
