@@ -17,6 +17,7 @@ import { GraphAnswer } from './answers/GraphAnswer'
 import { ColumnsAnswer } from './answers/ColumnsSum'
 import { BlocksAnswer } from './answers/BlocksMat'
 import { GroupsAnswer } from './answers/GroupsAnswer'
+import { PlotAnswer } from './answers/PlotGrid'
 import { YoungSize } from './answers/YoungSize'
 import { MathAnswerField } from './MathAnswerField'
 import { equationCountHint, MULTI_HINT, MultiAnswer } from './answers/MultiAnswer'
@@ -268,6 +269,9 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
     // P170: things dragged (or tapped) into groups.
     case 'groups':
       return <GroupsAnswer groups={shape.groups} onChange={b.set.text} />
+    // P171: points placed on a grid by tapping it, or their coordinates typed instead.
+    case 'plot':
+      return <PlotAnswer plot={shape.plot} onChange={b.set.text} typed={<AnswerArea shape={shape.typed} b={b} prompt={prompt} topic={topic} />} />
     default:
       // The lesson gave no kind we know: one plain box.
       return (

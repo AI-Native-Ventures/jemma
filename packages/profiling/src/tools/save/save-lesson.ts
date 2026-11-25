@@ -3,6 +3,7 @@ import { parseAnswer } from '../../logic/answers'
 import { choicePictureProblem, isPickQuestion, pickKeyProblem } from '../../logic/answers/pick'
 import { blocksKeyProblem, blocksProblem } from '../../logic/answers/blocks'
 import { groupsKeyProblem, groupsProblem, tidyGroups } from '../../logic/answers/groups'
+import { plotKeyProblem, plotProblem, tidyPlot } from '../../logic/answers/plot'
 import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
@@ -60,6 +61,12 @@ export function answerProblem(q: Question): string | null {
     if (q.diagram || q.graph || q.columns || q.blocks || q.choices?.length) return 'groups: things sorted into groups have no picture, no graph and no choices'
     const groups = groupsProblem(q.groups) ?? groupsKeyProblem({ ...q, groups: q.groups })
     if (groups) return `groups: ${groups}`
+  }
+  // P171: points placed on a grid: a grid a phone can show, and a key that is a point on it for each point to place.
+  if (q.plot) {
+    if (q.diagram || q.choices?.length) return 'plot: a grid to place points on is the picture of its question, and it has no choices'
+    const plot = plotProblem(q.plot) ?? plotKeyProblem({ ...q, plot: q.plot }, readNumber)
+    if (plot) return `plot: ${plot}`
   }
   const picture = questionPictureOf(q)
   if (picture) return `picture: ${picture}`
@@ -136,7 +143,7 @@ const STEPS_LEFT_OUT = 'left out whole: a line of them held a label'
 const tidySteps = (questions: Question[]): Question[] =>
   questions.map(({ steps, ...rest }) => {
     const clean = cleanSteps(steps)
-    return tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest))
+    return tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest)))
   })
 
 /**

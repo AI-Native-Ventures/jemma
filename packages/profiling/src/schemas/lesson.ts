@@ -105,6 +105,22 @@ export type BlocksSpec = z.infer<typeof BlocksSchema>
 export const GroupsSchema = z.object({ names: z.array(z.string()), items: z.array(z.string()) })
 export type GroupsSpec = z.infer<typeof GroupsSchema>
 
+/**
+ * P171: points the learner places on a grid by tapping it (Grades 7 to 10): where a shape lands after a reflection or a translation, or points from a table.
+ * The grid goes from `xMin` to `xMax` and `yMin` to `yMax` in whole steps; `given` are points already on it (`shape` joins them, as the corners of a shape);
+ * `place` are the names of the points to place, in order. The key is an ordered `list` of the x and the y of each of them (`4; 1; 1; 1; 1; 4`).
+ */
+export const PlotSchema = z.object({
+  xMin: z.number(),
+  xMax: z.number(),
+  yMin: z.number(),
+  yMax: z.number(),
+  given: z.array(z.object({ x: z.number(), y: z.number(), label: z.string() })).optional(),
+  shape: z.boolean().optional(),
+  place: z.array(z.string()),
+})
+export type PlotSpec = z.infer<typeof PlotSchema>
+
 /** The most and the fewest lines of the worked steps of a question (P127). */
 export const MIN_STEPS = 2
 export const MAX_STEPS = 6
@@ -136,6 +152,8 @@ const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
     table: TableSchema.optional(),
     /** A picture the question needs (a graph to read, a triangle with an angle to find). It never holds the answer. Senior classes only. */
     diagram: SeniorDiagramSpecSchema.optional(),
+    /** P171: points the learner places on a grid by tapping it. Senior classes only. */
+    plot: PlotSchema.optional(),
     difficulty: Difficulty,
     why: z.string(),
     rightWay: z.string(),

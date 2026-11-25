@@ -13,6 +13,7 @@ import { ReasonList } from './answers/ReasonPicker'
 import { PaperValues } from './answers/PaperValues'
 import { DataGraph } from './answers/DataGraph'
 import { ColumnsSum } from './answers/ColumnsSum'
+import { PlotGrid } from './answers/PlotGrid'
 import { paperValuesLine } from './answers/values-hints'
 
 // A practice answered on paper: the choice before the first Try question, the sheet of five questions with the photo button, the wait while
@@ -130,6 +131,9 @@ export function writeLine(shape: AnswerShape): string {
     case 'order':
     case 'table':
       return paperValuesLine(shape)
+    // P171: points on a grid are written as the x and the y of each, in order.
+    case 'plot':
+      return `Write the x and the y of ${shape.plot.place.map((n) => n.trim()).join(', ')}, in order, with a semicolon between them.`
     // P170: groups are written as the number of the group of each thing, in order.
     case 'groups':
       return `Write the group of each one, in order: ${shape.groups.names.map((n, i) => `${i + 1} for ${n.trim()}`).join(', ')}. Put a semicolon between them.`
@@ -182,6 +186,7 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
         <QuestionPicture spec={q.diagram} />
         {shape.kind === 'graph' ? <DataGraph graph={shape.graph} values={[]} mode="paper" /> : null}
         {shape.kind === 'columns' ? <ColumnsSum columns={shape.columns} mode="paper" /> : null}
+        {shape.kind === 'plot' ? <PlotGrid plot={shape.plot} mode="paper" /> : null}
         {shape.kind === 'groups' ? (
           <ol aria-label="The things to sort" className="m-0 flex list-none flex-wrap gap-2 p-0">
             {shape.groups.items.map((item, i) => (

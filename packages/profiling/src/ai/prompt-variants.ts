@@ -143,7 +143,12 @@ const SENIOR_PICTURES =
   'Use `box_plot` for a five-number summary on a scale (put the five numbers on whole ticks so they can be read), `tree` for probability (a probability ' +
   'is a decimal or a fraction; write `?` for each one the learner fills in, and make the question a `list` with one `labels` entry for each blank, in the ' +
   'order of the tree, then the asked value), and `timeline` for financial maths (the periods, the same payment `every` period, and `marks` such as `F = ?`). ' +
-  'Never put the answer in a label. A lesson card or a diagram step may use these pictures too.'
+  'Never put the answer in a label. A lesson card or a diagram step may use these pictures too. ' +
+  // P171: the learner places points on a grid by tapping it.
+  'To have the learner place points on a grid by tapping it (where a shape lands after a reflection or a translation, or points from a table), give `plot` instead of a `diagram`: ' +
+  '`xMin`, `xMax`, `yMin`, `yMax` (whole numbers, at most 20 squares across and up), `given` (the points already on the grid, each an `x`, a `y` and a `label` like `A`; ' +
+  '`shape: true` joins them as a shape) and `place` (the names of the 1 to 4 points to place, in order, like `["A\'", "B\'", "C\'"]`). ' +
+  'The `answerKind` is `list` and the `answer` is the x and the y of each point to place, in order, with a semicolon between them (`4; 1; 1; 1; 1; 4`). Every point is on a corner of the grid.'
 
 /**
  * What a senior class's lesson writer is told about the maths of a question (P127): state it as an expression or an equation in plain notation, never in

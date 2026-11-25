@@ -9,6 +9,7 @@ import {
   graphValues,
   groupsOf,
   groupsText,
+  plotPoints,
   isInequalityKey,
   isListKind,
   isSeniorQuestion,
@@ -35,7 +36,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { BlocksSpec, Choice, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
+import type { BlocksSpec, Choice, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, PlotSpec, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -105,6 +106,8 @@ export type QuestionForChild = {
   blocks?: BlocksSpec
   /** P170: the groups and the things to sort into them, in a mixed-up order. Which thing goes where is the answer, and is never sent. */
   groups?: GroupsSpec
+  /** P171: the grid to place points on, with the given points and the names of the points to place. Where they go is the answer, and is never sent. */
+  plot?: PlotSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -161,6 +164,10 @@ export type MissedQuestion = {
   groups?: GroupsSpec
   groupsWrote?: (number | null)[]
   groupsRight?: number[]
+  /** P171: the grid, the points the learner placed (null: not read) and the right ones, in the order of the points to place. */
+  plot?: PlotSpec
+  plotWrote?: ({ x: number; y: number } | null)[]
+  plotRight?: { x: number; y: number }[]
 }
 
 /** The P148 fields of a question for the child. Shape hints only: how many boxes, which clock, which unit. Never the key. */
@@ -213,6 +220,7 @@ export function stripQuestion(
     ...(q.columns ? { columns: q.columns } : {}),
     ...(q.blocks ? { blocks: q.blocks } : {}),
     ...(q.groups ? { groups: q.groups } : {}),
+    ...(q.plot ? { plot: q.plot } : {}),
   }
 }
 
@@ -302,6 +310,8 @@ export type AnswerShape =
   | { kind: 'blocks'; blocks: BlocksSpec; young?: true }
   /** P170: things dragged (or tapped) into groups. */
   | { kind: 'groups'; groups: GroupsSpec; young?: true }
+  /** P171: points placed on a grid by tapping it. `typed` is the same answer typed instead: a box for the x and the y of each point. */
+  | { kind: 'plot'; plot: PlotSpec; typed: AnswerShape }
 
 /** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
 export type QuantityExtras = { unit?: string; round?: number; signed?: true }
@@ -325,6 +335,7 @@ type ShapeParts = {
   columns?: ColumnsSpec
   blocks?: BlocksSpec
   groups?: GroupsSpec
+  plot?: PlotSpec
 }
 
 export function answerShape(
@@ -345,6 +356,11 @@ export function answerShape(
   if (q.columns && q.answerKind === 'whole') return { kind: 'columns', columns: q.columns, ...(q.young ? { young: true as const } : {}) }
   // P169: a number built with blocks, its answer the number the blocks make.
   if (q.blocks && q.answerKind === 'whole') return { kind: 'blocks', blocks: q.blocks, ...(q.young ? { young: true as const } : {}) }
+  // P171: points placed on a grid, the answer the x and the y of each. Typed instead, it is the list of numbers it is without its grid.
+  if (q.plot && q.answerKind === 'list') {
+    const { plot, ...rest } = q
+    return { kind: 'plot', plot, typed: answerShape(rest) }
+  }
   // P170: things sorted into groups, the answer the group of each.
   if (q.groups && q.answerKind === 'list') return { kind: 'groups', groups: q.groups, ...(q.young ? { young: true as const } : {}) }
   // P147: an equation whose key is an inequality or an interval, or two letters with a value each, says so in its line under the box.
@@ -424,6 +440,9 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
     // P170: the group of each thing, or nothing while one is not in a group.
     case 'groups':
       return /^\d+(; \d+)*$/.test(text) ? text : ''
+    // P171: the x and the y of each point placed (or typed), or nothing while one is missing.
+    case 'plot':
+      return hasDigit(text) ? text : ''
     default:
       return text
   }
@@ -473,6 +492,7 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       ...(item.question.columns ? { columns: item.question.columns, columnsPlaces: columnsPlaces(item.question.columns, item.unread ? '' : item.answer) } : {}),
       ...(item.question.blocks ? { blocks: item.question.blocks } : {}),
       ...groupsReview(item),
+      ...plotReview(item),
     }))
 }
 
@@ -496,6 +516,21 @@ function groupsReview(item: StoredItem): Partial<MissedQuestion> {
     table: undefined,
     ordered: undefined,
   }
+}
+
+/** P171: the points of a grid question, as the learner placed them and as they go, and said in words ("A' (4; 1), B' (1; 1)") with no cells of a list. */
+function plotReview(item: StoredItem): Partial<MissedQuestion> {
+  const p = item.question.plot
+  if (!p) return {}
+  const right = plotPoints(item.question.answer, readNumber) ?? []
+  const values = item.unread ? [] : splitValues(item.answer).map((t) => readNumber(t))
+  const wrote = p.place.map((_, i) => {
+    const [x, y] = [values[2 * i], values[2 * i + 1]]
+    return x === undefined || y === undefined || x === null || y === null ? null : { x, y }
+  })
+  const words = (points: ({ x: number; y: number } | null)[]) =>
+    p.place.map((name, i) => `${name.trim()} ${points[i] ? `(${points[i]!.x}; ${points[i]!.y})` : '(not placed)'}`).join(', ')
+  return { plot: p, plotRight: right, plotWrote: wrote, wrote: item.unread ? '' : words(wrote), right: words(right), cells: undefined, table: undefined, ordered: undefined }
 }
 
 /** P167: the graph of a question to draw, with what the learner drew in each empty bar and the right values, for the results to draw side by side. */
