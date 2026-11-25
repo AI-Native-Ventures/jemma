@@ -15,6 +15,7 @@ import { DataGraph } from './answers/DataGraph'
 import { ColumnsSum } from './answers/ColumnsSum'
 import { PlotGrid } from './answers/PlotGrid'
 import { ShadedResult } from './answers/ShadeShape'
+import { TapPicture } from './answers/TapShapes'
 import { paperValuesLine } from './answers/values-hints'
 
 // A practice answered on paper: the choice before the first Try question, the sheet of five questions with the photo button, the wait while
@@ -132,6 +133,9 @@ export function writeLine(shape: AnswerShape): string {
     case 'order':
     case 'table':
       return paperValuesLine(shape)
+    // P173: shapes to tap are written as their numbers.
+    case 'tap':
+      return 'Write the numbers of the shapes that fit, with a semicolon between them.'
     // P172: a shape to shade is shaded on paper and the number of parts written.
     case 'shade':
       return 'Shade the parts on your paper, then write how many you shaded.'
@@ -192,6 +196,12 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
         {shape.kind === 'columns' ? <ColumnsSum columns={shape.columns} mode="paper" /> : null}
         {shape.kind === 'plot' ? <PlotGrid plot={shape.plot} mode="paper" /> : null}
         {shape.kind === 'shade' ? <ShadedResult shade={shape.shade} wrote="0" /> : null}
+        {shape.kind === 'tap' ? (
+          <div className="flex flex-col gap-1">
+            <TapPicture tap={shape.tap} picked={[]} label={`${shape.tap.shapes.length} shapes, numbered from 1.`} />
+            <p className="m-0 text-[14px] text-body">The shapes are numbered from 1, left to right and top to bottom.</p>
+          </div>
+        ) : null}
         {shape.kind === 'groups' ? (
           <ol aria-label="The things to sort" className="m-0 flex list-none flex-wrap gap-2 p-0">
             {shape.groups.items.map((item, i) => (
