@@ -24,10 +24,12 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * Before P148, P149 and P150 they were 95bd01bd191e25f2ee7e8325989c3fde9ccb47893163cffb8a2a4172fc94d41a (senior) and a84500e7bc9893b2cf070f2019ea2e17cb739091f9eb50859981fd8804ae2a3c (wide).
  * P165 (25 Nov 2026) moved both again, on purpose: three more pictures a senior question may carry (`box_plot`, `tree`, `timeline`). Before P165 they were
  * 9edb11fef8145a8846474d36e5e8f8312c52bde0882701f73a57c02b77b0ffee (senior) and f1ebf6ca0fb7833dde0016b2c34e1a616293ac870719896b759654366b690a5d (wide).
+ * P167 (25 Nov 2026) moved the wide one alone, on purpose: a question may have a `graph` the learner draws (asked of a Grade 1 to 6 data topic only, so the senior
+ * one did not move). Before P167 the wide one was ea4209d54339ed5585a485b306a982029b46d88659d4b5f258020617bc336371.
  * Every packet that changes the senior schema moves these two: recompute them after a merge.
  */
 const SENIOR_SHA = 'cefbe5f5625995071cb58fdf615c104518594a27db3b868f7c60356e7c80d20c'
-const WIDE_SHA = 'ea4209d54339ed5585a485b306a982029b46d88659d4b5f258020617bc336371'
+const WIDE_SHA = '212253f558d1990c7b03e827427e0364a28746f22a78f1aa3c758d4bc570ba21'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({

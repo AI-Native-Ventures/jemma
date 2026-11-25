@@ -183,6 +183,12 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
       when(
         '- `list`: several values in a row, for when the answer is more than one number (the heights of the bars of a graph, the numbers of a tally): the `answer` is the values with a semicolon between them (`3; 5; 7`), and `ordered` is `true` when the order matters and `false` when any order is right.',
       )
+      // P167: the learner draws the bars of a bar graph, or the pictures of a picture graph.
+      when(
+        young
+          ? '- `graph`: the learner draws a graph. Give `graph` with `kind` (`bars` or `pictures`), `counts` (what is counted, like `children`) and `bars`: 2 to 5 bars, each a short `label` (like `Dogs`) and a `value`, and `null` for the one or two bars the learner draws. A bar graph also has `yMax`, the top of its scale (at most 10), and every value is a whole number from 1 to `yMax`. A picture graph also has `per`, what one picture stands for (1 or 2), and every value is a whole number of pictures times `per`, at most 8 pictures. Say the numbers to draw in the `prompt`: "6 children chose a dog. Draw the bar for Dogs." The `answer` is the values of the `null` bars, left to right: one bar is `whole` (`6`), two are a `list` (`6; 3`). A graph question has no `diagram` and no `choices`.'
+          : '- `graph`: the learner draws a graph from numbers in the `prompt` ("On Monday 12 cars passed and on Tuesday 8. Draw the bars for Monday and Tuesday."). Give `graph` with `kind` (`bars` or `pictures`), `counts` (what is counted, like `cars`) and `bars`: 2 to 8 bars, each a short `label` (like `Mon`) and a `value`, and `null` for each bar the learner draws. A bar graph also has `yMax` and `step`, the lines of its scale (1, 2, 5 or 10, at most 20 lines), and every value is on a line. A picture graph also has `per`, what one picture stands for (2, 5 or 10), and every value is a whole number of pictures, at most 8. The `answer` is the values of the `null` bars, left to right: one bar is `whole` (`12`), more are a `list` (`12; 8`). A graph question has no `diagram` and no `choices`.',
+      )
       break
     case 'money':
       when(

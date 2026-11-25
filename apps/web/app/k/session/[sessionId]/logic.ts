@@ -1,9 +1,11 @@
 import {
   answerCountOf,
+  blankBars,
   choiceLabel,
   completeAnswer,
   fillMissing,
   finishAnswer,
+  graphValues,
   isInequalityKey,
   isListKind,
   isSeniorQuestion,
@@ -21,6 +23,7 @@ import {
   resultCells,
   rightValues,
   showWithUnit,
+  splitValues,
   timeStyleOf,
   trueFalseLabel,
   CHOICE_LETTERS,
@@ -29,7 +32,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { Choice, Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
+import type { Choice, DataGraphSpec, Form, Question, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -91,6 +94,8 @@ export type QuestionForChild = {
   round?: number
   /** P151: the learner is in Grade 1 to 6, so the lists, orders, tables and times are drawn bigger and worded simply. Only ever true. */
   young?: true
+  /** P167: a graph the learner draws. The bars to draw have no value in it (they are the answer): the given bars are in the question anyway. */
+  graph?: DataGraphSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -134,6 +139,10 @@ export type MissedQuestion = {
   table?: NonNullable<ListParts['table']>
   /** P150, a list or an order: the right answer is drawn in the same places as the answer (a fixed order), or as one list (any order). */
   ordered?: boolean
+  /** P167: the graph the learner drew on, the values they drew for its empty bars (null where a value could not be read) and the right ones, in order. */
+  graph?: DataGraphSpec
+  graphWrote?: (number | null)[]
+  graphRight?: number[]
 }
 
 /** The P148 fields of a question for the child. Shape hints only: how many boxes, which clock, which unit. Never the key. */
@@ -182,6 +191,7 @@ export function stripQuestion(
     ...listAnswerParts(q),
     ...(isListKind(q.answerKind) && q.round !== undefined ? { round: q.round } : {}),
     ...(at.young ? { young: true as const } : {}),
+    ...(q.graph ? { graph: q.graph } : {}),
   }
 }
 
@@ -263,6 +273,8 @@ export type AnswerShape =
   | { kind: 'list'; count: number; ordered: boolean; plain: boolean; labels?: string[]; round?: number; young?: true }
   | { kind: 'order'; items: string[]; young?: true }
   | { kind: 'table'; table: NonNullable<ListParts['table']>; round?: number; young?: true }
+  /** P167: a graph to draw (drag a bar up, or add pictures). `typed` is the shape of the same answer typed instead: one box, or a box for each bar. */
+  | { kind: 'graph'; graph: DataGraphSpec; typed: AnswerShape; young?: true }
 
 /** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
 export type QuantityExtras = { unit?: string; round?: number; signed?: true }
@@ -276,7 +288,14 @@ const quantityExtras = (q: QuantityExtras): QuantityExtras => ({
 export const MAX_ANSWER_BOXES = 4
 
 /** What `answerShape` reads besides the old four fields: the parts the server sent (a whole `Question` fits too: its table has no `plain`, so its boxes are the full keyboard). */
-type ShapeParts = { list?: ListParts['list']; items?: string[]; table?: { columns: string[]; rows: (string | null)[][]; plain?: boolean }; round?: number; young?: true }
+type ShapeParts = {
+  list?: ListParts['list']
+  items?: string[]
+  table?: { columns: string[]; rows: (string | null)[][]; plain?: boolean }
+  round?: number
+  young?: true
+  graph?: DataGraphSpec
+}
 
 export function answerShape(
   q: Pick<Question, 'prompt' | 'answerKind' | 'choices' | 'form'> &
@@ -287,6 +306,11 @@ export function answerShape(
   if (q.answerKind === 'truefalse') return { kind: 'truefalse' }
   if (q.answerKind === 'reason') return { kind: 'reason', withValue: q.withValue === true }
   if (q.choices?.length) return { kind: 'choice' }
+  // P167: a graph the learner draws: its empty bars are the answer, one value (a whole) or several (a list). Typed instead, it is the shape it has without its graph.
+  if (q.graph && blankBars(q.graph).length > 0 && (q.answerKind === 'whole' || q.answerKind === 'list')) {
+    const { graph, ...rest } = q
+    return { kind: 'graph', graph, typed: answerShape(rest), ...(q.young ? { young: true as const } : {}) }
+  }
   // P147: an equation whose key is an inequality or an interval, or two letters with a value each, says so in its line under the box.
   if (q.answerKind === 'equation' && q.answerShape === 'inequality') return { kind: 'equation', inequality: true }
   if (q.answerKind === 'equation' && q.answerShape === 'pair') return { kind: 'equation', pair: true }
@@ -353,6 +377,9 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
       const [x, y] = [(boxes.x ?? '').trim().replace(/[.,]+$/, ''), (boxes.y ?? '').trim().replace(/[.,]+$/, '')]
       return hasDigit(x) && hasDigit(y) ? `(${x}; ${y})` : ''
     }
+    // P167: the bars drawn (or the numbers typed instead), sent as the values of the empty bars, or nothing while one is still empty.
+    case 'graph':
+      return hasDigit(text) ? text : ''
     default:
       return text
   }
@@ -398,7 +425,17 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       rightWay: item.question.rightWay,
       ...(stepsOf(item.question).length > 0 ? { steps: stepsOf(item.question) } : {}),
       ...cellsOf(item),
+      ...graphOf(item),
     }))
+}
+
+/** P167: the graph of a question to draw, with what the learner drew in each empty bar and the right values, for the results to draw side by side. */
+function graphOf(item: StoredItem): Partial<Pick<MissedQuestion, 'graph' | 'graphWrote' | 'graphRight'>> {
+  const g = item.question.graph
+  if (!g) return {}
+  const right = graphValues(item.question.answer, readNumber) ?? []
+  const wrote = item.unread ? [] : splitValues(item.answer).map((t) => readNumber(t))
+  return { graph: g, graphRight: right, graphWrote: blankBars(g).map((_, i) => wrote[i] ?? null) }
 }
 
 /** P150: for a list, an order or a table, each place of the answer marked right or wrong (and the table to draw them in). Nothing for any other question. */

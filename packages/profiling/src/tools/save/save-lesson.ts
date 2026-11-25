@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { parseAnswer } from '../../logic/answers'
 import { choicePictureProblem, isPickQuestion, pickKeyProblem } from '../../logic/answers/pick'
+import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
 import { isSeniorQuestion, quantityProblem, readCents, stripUnit } from '../../logic/answers/quantity'
 import { isMeaningKind, meaningKeyProblem, readNumber } from '../../logic/meaning'
@@ -33,6 +34,12 @@ export function questionPictureOf(q: Question): string | null {
 export function answerProblem(q: Question): string | null {
   const answer = answerKeyProblem(q)
   if (answer) return answer
+  // P167: a graph the learner draws can be drawn, and its key is one value for each empty bar, each one the bar can show. The graph is the question's picture.
+  if (q.graph) {
+    if (q.diagram || q.choices?.length) return 'graph: a question that draws a graph has no other picture and no choices'
+    const graph = graphProblem(q.graph) ?? graphKeyProblem({ ...q, graph: q.graph }, readNumber)
+    if (graph) return `graph: ${graph}`
+  }
   const picture = questionPictureOf(q)
   if (picture) return `picture: ${picture}`
   // P149: the pictures (and words) of the choices of a question that is picked. A true or false or a reason question ignores any choices it carries.
@@ -101,11 +108,14 @@ const REPLACED_WITH_PLAIN_LINE = 'replaced with a plain line: nothing was left a
 /** The reason of the `LabelDrop` that records worked steps (P127) left out whole because a line of them held a label. */
 const STEPS_LEFT_OUT = 'left out whole: a line of them held a label'
 
-/** The worked steps of each question as they are saved (`cleanSteps`): trimmed, and left off a question whose steps cannot be used. The question stays. */
+/**
+ * Each question as it is saved: its worked steps trimmed (`cleanSteps`), and left off a question whose steps cannot be used (the question stays); and (P167) a
+ * graph of several bars to draw made an ordered list with the name of each bar over its box (`tidyGraph`).
+ */
 const tidySteps = (questions: Question[]): Question[] =>
   questions.map(({ steps, ...rest }) => {
     const clean = cleanSteps(steps)
-    return clean ? { ...rest, steps: clean } : rest
+    return tidyGraph(clean ? { ...rest, steps: clean } : rest)
   })
 
 /**
