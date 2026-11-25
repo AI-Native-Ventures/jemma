@@ -112,6 +112,15 @@ export type GroupsSpec = z.infer<typeof GroupsSchema>
 export const ShadeSchema = z.object({ shape: z.enum(['circle', 'bar', 'grid']), parts: z.number().optional(), rows: z.number().optional(), cols: z.number().optional() })
 export type ShadeSpec = z.infer<typeof ShadeSchema>
 
+/** P173: the shapes a picture to tap may hold. */
+export const TAP_SHAPES = ['triangle', 'right_triangle', 'square', 'rectangle', 'circle', 'oval', 'pentagon', 'hexagon', 'rhombus', 'kite', 'trapezium'] as const
+/**
+ * P173: shapes the learner taps to pick (Grades 1 to 7): 4 to 9 `shapes`, each one of `TAP_SHAPES`, turned by `turn` degrees (0, 90, 180 or 270). The key is
+ * the numbers of the shapes to pick, from 1, in any order: an unordered `list` (`1; 3; 6; 8`).
+ */
+export const TapSchema = z.object({ shapes: z.array(z.object({ shape: z.enum(TAP_SHAPES), turn: z.number().optional() })) })
+export type TapSpec = z.infer<typeof TapSchema>
+
 /**
  * P171: points the learner places on a grid by tapping it (Grades 7 to 10): where a shape lands after a reflection or a translation, or points from a table.
  * The grid goes from `xMin` to `xMax` and `yMin` to `yMax` in whole steps; `given` are points already on it (`shape` joins them, as the corners of a shape);
@@ -180,6 +189,7 @@ export const QuestionSchema = seniorQuestion(z.array(z.string()).optional()).ext
   blocks: BlocksSchema.optional(),
   groups: GroupsSchema.optional(),
   shade: ShadeSchema.optional(),
+  tap: TapSchema.optional(),
 })
 export type Question = z.infer<typeof QuestionSchema>
 export type PrimaryQuestion = z.infer<typeof PrimaryQuestionSchema>

@@ -5,6 +5,7 @@ import { blocksKeyProblem, blocksProblem } from '../../logic/answers/blocks'
 import { groupsKeyProblem, groupsProblem, tidyGroups } from '../../logic/answers/groups'
 import { plotKeyProblem, plotProblem, tidyPlot } from '../../logic/answers/plot'
 import { shadeKeyProblem, shadeProblem } from '../../logic/answers/shade'
+import { tapKeyProblem, tapProblem, tidyTap } from '../../logic/answers/tap'
 import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
@@ -74,6 +75,12 @@ export function answerProblem(q: Question): string | null {
     if (q.diagram || q.graph || q.columns || q.blocks || q.groups || q.choices?.length) return 'shade: a shape to shade is the picture of its question, and it has no choices'
     const shade = shadeProblem(q.shade) ?? shadeKeyProblem({ ...q, shade: q.shade })
     if (shade) return `shade: ${shade}`
+  }
+  // P173: shapes to tap: a picture a phone can show, and a key of 2 or more of its shapes.
+  if (q.tap) {
+    if (q.diagram || q.graph || q.columns || q.blocks || q.groups || q.shade || q.choices?.length) return 'tap: shapes to tap are the picture of their question, and it has no choices'
+    const tap = tapProblem(q.tap) ?? tapKeyProblem({ ...q, tap: q.tap })
+    if (tap) return `tap: ${tap}`
   }
   const picture = questionPictureOf(q)
   if (picture) return `picture: ${picture}`
@@ -150,7 +157,7 @@ const STEPS_LEFT_OUT = 'left out whole: a line of them held a label'
 const tidySteps = (questions: Question[]): Question[] =>
   questions.map(({ steps, ...rest }) => {
     const clean = cleanSteps(steps)
-    return tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest)))
+    return tidyTap(tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest))))
   })
 
 /**

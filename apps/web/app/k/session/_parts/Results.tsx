@@ -16,6 +16,7 @@ import { BuiltMat } from './answers/BlocksMat'
 import { GroupsResult } from './answers/GroupsAnswer'
 import { PlotGrid } from './answers/PlotGrid'
 import { ShadedResult } from './answers/ShadeShape'
+import { TapPicture } from './answers/TapShapes'
 import { SignText } from './answers/Signs'
 
 /** A sign (or an equals sign) that stands alone between two terms of an answer. */
@@ -173,6 +174,10 @@ function CardHead({ m }: { m: MissedQuestion }) {
       {m.plot ? <PlotGrid plot={m.plot} mode="results" points={m.plotWrote ?? []} right={m.plotRight ?? []} /> : null}
       {/* P172: the shape as the learner shaded it. */}
       {m.shade && !m.unread ? <ShadedResult shade={m.shade} wrote={m.wrote} /> : null}
+      {/* P173: the learner's picks, a shape missed or picked by mistake circled in red pen. */}
+      {m.tap && !m.unread ? (
+        <TapPicture tap={m.tap} picked={m.tap.shapes.map((_, i) => (m.tapWrote ?? []).includes(i + 1))} right={m.tapRight ?? []} label={`Your picks: ${(m.tapWrote ?? []).length} shapes.`} />
+      ) : null}
     </>
   )
 }

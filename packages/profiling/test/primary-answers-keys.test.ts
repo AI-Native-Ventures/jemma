@@ -25,7 +25,7 @@ describe('the kinds the primary lessons may use are kinds every reader of a less
     const named = new Set<string>()
     for (const kit of ['time', 'measure', 'order', 'patterns', 'data', 'money', 'place', 'addsub', 'fractions', 'numbers', 'shapes', 'multiply'] as const)
       for (const grade of [1, 4]) for (const m of primaryAnswerBlock(kit, klass(grade)).matchAll(/^- `(\w+)`/gm)) named.add(m[1]!)
-    for (const kind of named) expect([...ANSWER_KINDS, 'unit', 'diagram', 'graph', 'columns', 'blocks', 'groups', 'shade'] as string[], kind).toContain(kind)
+    for (const kind of named) expect([...ANSWER_KINDS, 'unit', 'diagram', 'graph', 'columns', 'blocks', 'groups', 'shade', 'tap'] as string[], kind).toContain(kind)
   })
 })
 

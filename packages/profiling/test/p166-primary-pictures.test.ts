@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, test, vi } from 'vitest'
 import { z } from 'zod'
-import { columnsBullet, groupsBullet, SHADE_BULLET, KIT_PICTURES, PICTURE_KITS, pictureBullet, primaryAnswerBlock, primaryKit, withPrimaryAnswers, type PrimaryKit } from '../src/ai/primary-answers'
+import { columnsBullet, groupsBullet, SHADE_BULLET, TAP_BULLET, KIT_PICTURES, PICTURE_KITS, pictureBullet, primaryAnswerBlock, primaryKit, withPrimaryAnswers, type PrimaryKit } from '../src/ai/primary-answers'
 import { renderPrompt } from '../src/ai/prompt-variants'
 import { makeClassContext } from '../src/ai/subject-profile'
 import { isSeniorQuestion } from '../src/logic/answers/quantity'
@@ -182,7 +182,9 @@ describe('the picture bullet the lesson writer is told', () => {
     expect(primaryAnswerBlock('fractions', klass(3))).toBe(`${pictureBullet('fractions', klass(3))}\n${SHADE_BULLET}`)
     expect(primaryAnswerBlock('addsub', klass(3))).toBe(`${pictureBullet('addsub', klass(3))}\n${columnsBullet(klass(3))}`)
     expect(primaryAnswerBlock('addsub', klass(1))).toBe(pictureBullet('addsub', klass(1)))
-    for (const kit of ['numbers', 'shapes', 'multiply'] as const) expect(primaryAnswerBlock(kit, klass(3))).toBe(`${pictureBullet(kit, klass(3))}\n${groupsBullet(kit)}`)
+    for (const kit of ['numbers', 'multiply'] as const) expect(primaryAnswerBlock(kit, klass(3))).toBe(`${pictureBullet(kit, klass(3))}\n${groupsBullet(kit)}`)
+    // P173: shapes also has its line for tapping shapes.
+    expect(primaryAnswerBlock('shapes', klass(3))).toBe(`${pictureBullet('shapes', klass(3))}\n${groupsBullet('shapes')}\n${TAP_BULLET}`)
     expect(PICTURE_KITS).toEqual(['fractions', 'shapes', 'multiply', 'numbers', 'addsub'])
     const data = primaryAnswerBlock('data', klass(4))
     expect(data).toContain('- `table`')

@@ -10,6 +10,7 @@ import {
   groupsOf,
   groupsText,
   plotPoints,
+  tapPicks,
   isInequalityKey,
   isListKind,
   isSeniorQuestion,
@@ -36,7 +37,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { BlocksSpec, Choice, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, PlotSpec, Question, SeniorDiagramSpec, ShadeSpec } from '@jemma/profiling/schemas'
+import type { BlocksSpec, Choice, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, PlotSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -110,6 +111,8 @@ export type QuestionForChild = {
   plot?: PlotSpec
   /** P172: the shape the learner shades parts of. How many is the answer, and is never sent. */
   shade?: ShadeSpec
+  /** P173: the shapes the learner taps to pick. Which ones is the answer, and is never sent. */
+  tap?: TapSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -172,6 +175,10 @@ export type MissedQuestion = {
   plotRight?: { x: number; y: number }[]
   /** P172: the shape the learner shaded; the results draw as many parts shaded as they shaded (`wrote`). */
   shade?: ShadeSpec
+  /** P173: the shapes, the ones the learner picked and the right ones (numbers from 1). */
+  tap?: TapSpec
+  tapWrote?: number[]
+  tapRight?: number[]
 }
 
 /** The P148 fields of a question for the child. Shape hints only: how many boxes, which clock, which unit. Never the key. */
@@ -226,6 +233,7 @@ export function stripQuestion(
     ...(q.groups ? { groups: q.groups } : {}),
     ...(q.plot ? { plot: q.plot } : {}),
     ...(q.shade ? { shade: q.shade } : {}),
+    ...(q.tap ? { tap: q.tap } : {}),
   }
 }
 
@@ -319,6 +327,8 @@ export type AnswerShape =
   | { kind: 'plot'; plot: PlotSpec; typed: AnswerShape }
   /** P172: parts of a shape shaded by tapping them. */
   | { kind: 'shade'; shade: ShadeSpec; young?: true }
+  /** P173: shapes picked by tapping them. */
+  | { kind: 'tap'; tap: TapSpec; young?: true }
 
 /** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
 export type QuantityExtras = { unit?: string; round?: number; signed?: true }
@@ -344,6 +354,7 @@ type ShapeParts = {
   groups?: GroupsSpec
   plot?: PlotSpec
   shade?: ShadeSpec
+  tap?: TapSpec
 }
 
 export function answerShape(
@@ -371,6 +382,8 @@ export function answerShape(
   }
   // P172: parts of a shape shaded, the answer how many.
   if (q.shade && q.answerKind === 'whole') return { kind: 'shade', shade: q.shade, ...(q.young ? { young: true as const } : {}) }
+  // P173: shapes picked by tapping, the answer which ones.
+  if (q.tap && q.answerKind === 'list') return { kind: 'tap', tap: q.tap, ...(q.young ? { young: true as const } : {}) }
   // P170: things sorted into groups, the answer the group of each.
   if (q.groups && q.answerKind === 'list') return { kind: 'groups', groups: q.groups, ...(q.young ? { young: true as const } : {}) }
   // P147: an equation whose key is an inequality or an interval, or two letters with a value each, says so in its line under the box.
@@ -451,6 +464,8 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
       return /^\d+$/.test(text) ? text : ''
     // P170: the group of each thing, or nothing while one is not in a group.
     case 'groups':
+    // P173: the numbers of the picked shapes, or nothing while fewer than 2 are picked.
+    case 'tap':
       return /^\d+(; \d+)*$/.test(text) ? text : ''
     // P171: the x and the y of each point placed (or typed), or nothing while one is missing.
     case 'plot':
@@ -506,6 +521,7 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       ...groupsReview(item),
       ...plotReview(item),
       ...(item.question.shade ? { shade: item.question.shade } : {}),
+      ...tapReview(item),
     }))
 }
 
@@ -544,6 +560,16 @@ function plotReview(item: StoredItem): Partial<MissedQuestion> {
   const words = (points: ({ x: number; y: number } | null)[]) =>
     p.place.map((name, i) => `${name.trim()} ${points[i] ? `(${points[i]!.x}; ${points[i]!.y})` : '(not placed)'}`).join(', ')
   return { plot: p, plotRight: right, plotWrote: wrote, wrote: item.unread ? '' : words(wrote), right: words(right), cells: undefined, table: undefined, ordered: undefined }
+}
+
+/** P173: the shapes of a question to tap, the ones picked and the right ones; what was written and the right answer are counts ("3 shapes"), with no cells. */
+function tapReview(item: StoredItem): Partial<MissedQuestion> {
+  const t = item.question.tap
+  if (!t) return {}
+  const right = tapPicks(item.question.answer, t) ?? []
+  const wrote = item.unread ? [] : (tapPicks(item.answer, t) ?? [])
+  const count = (n: number) => `${n} ${n === 1 ? 'shape' : 'shapes'}`
+  return { tap: t, tapRight: right, tapWrote: wrote, wrote: item.unread ? '' : count(wrote.length), right: count(right.length), cells: undefined, table: undefined, ordered: undefined }
 }
 
 /** P167: the graph of a question to draw, with what the learner drew in each empty bar and the right values, for the results to draw side by side. */

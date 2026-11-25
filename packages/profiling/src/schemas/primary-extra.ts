@@ -52,6 +52,8 @@ export const PrimaryExtraQuestionSchema = z.object({
   groups: wide.groups,
   /** P172: a shape the learner shades parts of. */
   shade: wide.shade,
+  /** P173: shapes the learner taps to pick. */
+  tap: wide.tap,
   difficulty: wide.difficulty,
   why: wide.why,
   rightWay: wide.rightWay,
