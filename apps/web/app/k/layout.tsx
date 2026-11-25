@@ -10,6 +10,8 @@ import { initialsOf } from '@/lib/initials'
 import { HANDOVER_COOKIE, handoverAllows, isOwnHandover } from '@/lib/handover'
 import { isPublicPath } from '@/lib/public-paths'
 import { activeTab } from '@/lib/space'
+import { UsWords } from '@/components/UsWords'
+import { usForLearner, usForParent } from '@/lib/us-words-on'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
 /** Screens drawn without the tab bar: the session flow, the hand-back screen and the level check (P163). */
@@ -37,9 +39,12 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
   if (me?.role === 'parent') {
     const handover = await handoverAllows((await cookies()).get(HANDOVER_COOKIE)?.value, pathname)
     if (!handover) redirect('/p')
+    // P164: the family's country decides the words (US English for a family in the US).
+    const usHanded = await usForParent(auth.user.id, (await headers()).get('cf-ipcountry'))
     if (isOwnHandover(handover) && !under(NO_SIDEBAR, pathname)) {
       return (
         <div className="flex min-h-dvh flex-col bg-ground">
+          {usHanded ? <UsWords /> : null}
           <main className="flex-1">{children}</main>
           <Link href={`/p/${handover.childId}`} className="flex min-h-12 items-center justify-center px-5 py-3 text-center text-[15px] font-semibold text-body underline underline-offset-[3px]">
             Grown-up? Take the phone back.
@@ -50,13 +55,20 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
         </div>
       )
     }
-    return <main className="min-h-dvh bg-ground">{children}</main>
+    return (
+      <main className="min-h-dvh bg-ground">
+        {usHanded ? <UsWords /> : null}
+        {children}
+      </main>
+    )
   }
 
   const { profile } = await requireRole('learner')
   // The child of the workspace on screen: the school child, or the private twin when the learner chose "My own" (a learner with a private
   // workspace has two children with the one login).
   const { child } = await myChild()
+  // P164: a learner whose space is in the US reads US English.
+  const us = await usForLearner(child)
 
   const active = await activeTab('learner', '/k')
   const name = `${child.first_name}'s Jemma`
@@ -66,6 +78,7 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
 
   return (
     <div className="flex min-h-dvh flex-col bg-ground lg:flex-row">
+      {us ? <UsWords /> : null}
       {!noSidebar && (
         <Sidebar
           role="learner"
