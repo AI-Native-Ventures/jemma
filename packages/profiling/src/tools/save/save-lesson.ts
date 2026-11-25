@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { parseAnswer } from '../../logic/answers'
 import { choicePictureProblem, isPickQuestion, pickKeyProblem } from '../../logic/answers/pick'
 import { blocksKeyProblem, blocksProblem } from '../../logic/answers/blocks'
+import { groupsKeyProblem, groupsProblem, tidyGroups } from '../../logic/answers/groups'
 import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
@@ -53,6 +54,12 @@ export function answerProblem(q: Question): string | null {
     if (q.diagram || q.graph || q.columns || q.choices?.length) return 'blocks: a number built with blocks has no picture, no graph, no sum in columns and no choices'
     const blocks = blocksProblem(q.blocks) ?? blocksKeyProblem({ ...q, blocks: q.blocks })
     if (blocks) return `blocks: ${blocks}`
+  }
+  // P170: things to sort into groups: each in one group, and every group used.
+  if (q.groups) {
+    if (q.diagram || q.graph || q.columns || q.blocks || q.choices?.length) return 'groups: things sorted into groups have no picture, no graph and no choices'
+    const groups = groupsProblem(q.groups) ?? groupsKeyProblem({ ...q, groups: q.groups })
+    if (groups) return `groups: ${groups}`
   }
   const picture = questionPictureOf(q)
   if (picture) return `picture: ${picture}`
@@ -129,7 +136,7 @@ const STEPS_LEFT_OUT = 'left out whole: a line of them held a label'
 const tidySteps = (questions: Question[]): Question[] =>
   questions.map(({ steps, ...rest }) => {
     const clean = cleanSteps(steps)
-    return tidyGraph(clean ? { ...rest, steps: clean } : rest)
+    return tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest))
   })
 
 /**

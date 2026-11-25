@@ -98,6 +98,13 @@ export type ColumnsSpec = z.infer<typeof ColumnsSchema>
 export const BlocksSchema = z.object({ places: z.array(z.enum(['hundreds', 'tens', 'ones'])) })
 export type BlocksSpec = z.infer<typeof BlocksSchema>
 
+/**
+ * P170: things the learner sorts into groups (Grades 1 to 6): 2 to 4 groups (`names`, like `Odd` and `Even`) and 3 to 8 `items` (numbers or short words),
+ * in a mixed-up order. The key is an ordered `list` of the group of each item, as a number from 1 (the first group), in the order of the items.
+ */
+export const GroupsSchema = z.object({ names: z.array(z.string()), items: z.array(z.string()) })
+export type GroupsSpec = z.infer<typeof GroupsSchema>
+
 /** The most and the fewest lines of the worked steps of a question (P127). */
 export const MIN_STEPS = 2
 export const MAX_STEPS = 6
@@ -139,13 +146,14 @@ export const SeniorQuestionSchema = seniorQuestion(z.array(z.string()).min(MIN_S
 
 /**
  * The question as every reader sees it: the wide, senior shape, with `steps` optional (an old lesson has none, and a save may leave them out). P167: and a
- * `graph` to draw, (P168) a sum to work in `columns` and (P169) a number to build with `blocks`, which only a Grade 1 to 6 lesson is asked for (the senior
- * model is handed `SeniorQuestionSchema`, which has none of them).
+ * `graph` to draw, (P168) a sum to work in `columns`, (P169) a number to build with `blocks` and (P170) things to sort into `groups`, which only a Grade 1 to 6
+ * lesson is asked for (the senior model is handed `SeniorQuestionSchema`, which has none of them).
  */
 export const QuestionSchema = seniorQuestion(z.array(z.string()).optional()).extend({
   graph: DataGraphSchema.optional(),
   columns: ColumnsSchema.optional(),
   blocks: BlocksSchema.optional(),
+  groups: GroupsSchema.optional(),
 })
 export type Question = z.infer<typeof QuestionSchema>
 export type PrimaryQuestion = z.infer<typeof PrimaryQuestionSchema>

@@ -16,6 +16,7 @@ import { isValuesShape, ValuesAnswer } from './answers/ValuesAnswer'
 import { GraphAnswer } from './answers/GraphAnswer'
 import { ColumnsAnswer } from './answers/ColumnsSum'
 import { BlocksAnswer } from './answers/BlocksMat'
+import { GroupsAnswer } from './answers/GroupsAnswer'
 import { YoungSize } from './answers/YoungSize'
 import { MathAnswerField } from './MathAnswerField'
 import { equationCountHint, MULTI_HINT, MultiAnswer } from './answers/MultiAnswer'
@@ -264,6 +265,9 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
     // P169: a number built with place value blocks on a mat.
     case 'blocks':
       return <BlocksAnswer blocks={shape.blocks} onChange={b.set.text} />
+    // P170: things dragged (or tapped) into groups.
+    case 'groups':
+      return <GroupsAnswer groups={shape.groups} onChange={b.set.text} />
     default:
       // The lesson gave no kind we know: one plain box.
       return (

@@ -130,6 +130,9 @@ export function writeLine(shape: AnswerShape): string {
     case 'order':
     case 'table':
       return paperValuesLine(shape)
+    // P170: groups are written as the number of the group of each thing, in order.
+    case 'groups':
+      return `Write the group of each one, in order: ${shape.groups.names.map((n, i) => `${i + 1} for ${n.trim()}`).join(', ')}. Put a semicolon between them.`
     // P169: blocks cannot be put on paper: the learner draws them and writes the number they make.
     case 'blocks':
       return 'Draw the blocks, then write the number they make.'
@@ -179,6 +182,13 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
         <QuestionPicture spec={q.diagram} />
         {shape.kind === 'graph' ? <DataGraph graph={shape.graph} values={[]} mode="paper" /> : null}
         {shape.kind === 'columns' ? <ColumnsSum columns={shape.columns} mode="paper" /> : null}
+        {shape.kind === 'groups' ? (
+          <ol aria-label="The things to sort" className="m-0 flex list-none flex-wrap gap-2 p-0">
+            {shape.groups.items.map((item, i) => (
+              <li key={i} className="flex min-h-10 items-center rounded-12 border-2 border-edge bg-card px-3 py-1 text-[20px] font-bold">{item.trim()}</li>
+            ))}
+          </ol>
+        ) : null}
         {shape.kind === 'choice' && hasPictureChoices(q.choices) ? (
           <PictureChoices choices={q.choices!} />
         ) : shape.kind === 'choice' ? (

@@ -30,10 +30,12 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * 212253f558d1990c7b03e827427e0364a28746f22a78f1aa3c758d4bc570ba21.
  * P169 (25 Nov 2026) moved the wide one alone again: a question may have `blocks` to build a number with. Before P169 it was
  * 15a1bebff43c08f97af708afce271db5f67aeaf50bf29ea256da8a6a227a9df2.
+ * P170 (25 Nov 2026) moved the wide one alone again: a question may have `groups` to sort things into. Before P170 it was
+ * e210b4f13d61b06765fb9315a6034b969ed6fff44dba0c56cc0314f184d78105.
  * Every packet that changes the senior schema moves these two: recompute them after a merge.
  */
 const SENIOR_SHA = 'cefbe5f5625995071cb58fdf615c104518594a27db3b868f7c60356e7c80d20c'
-const WIDE_SHA = 'e210b4f13d61b06765fb9315a6034b969ed6fff44dba0c56cc0314f184d78105'
+const WIDE_SHA = '448fde0232cf5c00cd57ba4afc6030bcf588317682a3e58c6cd7b8de0011775d'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({

@@ -13,6 +13,7 @@ import { CellResults } from './answers/CellResults'
 import { DataGraph } from './answers/DataGraph'
 import { ColumnsSum } from './answers/ColumnsSum'
 import { BuiltMat } from './answers/BlocksMat'
+import { GroupsResult } from './answers/GroupsAnswer'
 import { SignText } from './answers/Signs'
 
 /** A sign (or an equals sign) that stands alone between two terms of an answer. */
@@ -164,6 +165,8 @@ function CardHead({ m }: { m: MissedQuestion }) {
       {m.columns ? <ColumnsSum columns={m.columns} mode="results" places={m.columnsPlaces ?? []} /> : null}
       {/* P169: the blocks the learner built. */}
       {m.blocks && !m.unread ? <BuiltMat blocks={m.blocks} wrote={m.wrote} /> : null}
+      {/* P170: the groups as the learner left them, a card in the wrong group circled in red pen. */}
+      {m.groups && !m.unread ? <GroupsResult groups={m.groups} wrote={m.groupsWrote ?? []} right={m.groupsRight ?? []} /> : null}
     </>
   )
 }

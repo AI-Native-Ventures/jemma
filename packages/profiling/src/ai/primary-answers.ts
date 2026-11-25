@@ -142,6 +142,22 @@ export function columnsBullet(c: ClassContext): string | null {
   )
 }
 
+/** P170: the bullet that lets a question sort things into groups, with an example that fits the kit. */
+export function groupsBullet(kit: PrimaryKit): string {
+  const example =
+    kit === 'shapes'
+      ? '`names` `["3 sides", "4 sides"]` and `items` `["triangle", "square", "rectangle", "kite"]`'
+      : kit === 'multiply'
+        ? '`names` `["In the 3 times table", "Not in it"]` and `items` `["9", "10", "12", "14", "15"]`'
+        : kit === 'data'
+          ? '`names` `["Fruit", "Vegetables"]` and `items` `["apple", "carrot", "banana", "pea"]`'
+          : '`names` `["Odd", "Even"]` and `items` `["12", "7", "15", "20", "9", "4"]`'
+  return (
+    '- `groups`: the learner sorts things into groups by dragging each one into its group. Give `groups` with `names` (2 to 4 short group names) and `items` ' +
+    `(3 to 8 numbers or short words, mixed up, each in exactly one group), for example ${example}. The \`answerKind\` is \`list\` and the \`answer\` is the number of the group of each item, in the order of the items, with a semicolon between them (\`2; 1; 1; 2; 1; 2\`: 1 is the first group). Every group gets at least one item. The \`prompt\` says what to do: "Drag each number into its group." A question with groups has no \`diagram\` and no \`choices\`.`
+  )
+}
+
 /** The answer bullet of the prompt file ends before this one; the lines for a topic go between the two. */
 const ANCHOR = '- `why` says in one sentence'
 
@@ -155,7 +171,11 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
   const rand = c.country === 'ZA'
   const picture = pictureBullet(kit, c)
   // P166: a kit that only adds pictures has no new answer kind to tell of. P168: addition and subtraction from Grade 2 also has sums in columns.
-  if (PICTURE_KITS.includes(kit)) return [picture, kit === 'addsub' ? columnsBullet(c) : null].filter((line): line is string => !!line).join('\n')
+  if (PICTURE_KITS.includes(kit)) {
+    // P170: counting, shapes and multiplication may also sort things into groups.
+    const extra = kit === 'addsub' ? columnsBullet(c) : kit === 'numbers' || kit === 'shapes' || kit === 'multiply' ? groupsBullet(kit) : null
+    return [picture, extra].filter((line): line is string => !!line).join('\n')
+  }
   const lines: string[] = [
     '- This topic may also use the new answer kinds named below. Use one only when it fits better than a number, and keep most questions as they are. Use them only for the 15 questions, never in the warm-up. Write the `answer` exactly as shown, because the computer reads it. Never put the answer in the `prompt`.',
   ]
@@ -202,6 +222,8 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
       when(
         '- `list`: several values in a row, for when the answer is more than one number (the heights of the bars of a graph, the numbers of a tally): the `answer` is the values with a semicolon between them (`3; 5; 7`), and `ordered` is `true` when the order matters and `false` when any order is right.',
       )
+      // P170: Grades 1 to 3 sort things into groups.
+      if (young) when(groupsBullet('data'))
       // P167: the learner draws the bars of a bar graph, or the pictures of a picture graph.
       when(
         young
