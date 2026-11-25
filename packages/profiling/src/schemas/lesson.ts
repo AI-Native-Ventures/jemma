@@ -67,6 +67,23 @@ export const PrimaryQuestionSchema = z.object({
   rightWay: z.string(),
 })
 
+/**
+ * P167: a graph the learner draws (Grades 1 to 6). A bar graph (`bars`: a scale from 0 to `yMax` with a line every `step`, 1 when left out) or a picture graph
+ * (`pictures`: each picture stands for `per`, 1 when left out). Each entry of `bars` is a bar, or a row of pictures; one whose `value` is `null` is one the
+ * learner draws. The key of the question holds the values of those, in order: one value is a `whole` answer, more are an ordered `list`. A graph holds no
+ * answer: the bars the learner draws have no value in it.
+ */
+export const DataGraphSchema = z.object({
+  kind: z.enum(['bars', 'pictures']),
+  /** What is counted ("children", "cars"), written over the scale or after the key of the pictures. */
+  counts: z.string().optional(),
+  bars: z.array(z.object({ label: z.string(), value: z.number().nullable() })),
+  yMax: z.number().optional(),
+  step: z.number().optional(),
+  per: z.number().optional(),
+})
+export type DataGraphSpec = z.infer<typeof DataGraphSchema>
+
 /** The most and the fewest lines of the worked steps of a question (P127). */
 export const MIN_STEPS = 2
 export const MAX_STEPS = 6
@@ -106,8 +123,11 @@ const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
 /** The question the senior model is handed: `steps` required, 2 to 6 lines. */
 export const SeniorQuestionSchema = seniorQuestion(z.array(z.string()).min(MIN_STEPS).max(MAX_STEPS))
 
-/** The question as every reader sees it: the wide, senior shape, with `steps` optional (an old lesson has none, and a save may leave them out). */
-export const QuestionSchema = seniorQuestion(z.array(z.string()).optional())
+/**
+ * The question as every reader sees it: the wide, senior shape, with `steps` optional (an old lesson has none, and a save may leave them out). P167: and a
+ * `graph` to draw, which only a Grade 1 to 6 lesson is asked for (the senior model is handed `SeniorQuestionSchema`, which has none).
+ */
+export const QuestionSchema = seniorQuestion(z.array(z.string()).optional()).extend({ graph: DataGraphSchema.optional() })
 export type Question = z.infer<typeof QuestionSchema>
 export type PrimaryQuestion = z.infer<typeof PrimaryQuestionSchema>
 

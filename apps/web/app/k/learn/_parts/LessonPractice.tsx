@@ -1,16 +1,20 @@
 'use client'
 
 import { useState, type ReactNode } from 'react'
-import { CHOICE_LETTERS, choiceLabel } from '@jemma/profiling/logic'
+import { CHOICE_LETTERS, choiceLabel, graphValues, readNumber, splitValues } from '@jemma/profiling/logic'
 import { readableMaths } from '@/lib/lesson-maths'
 import { forScreen, type LessonAnswerResult, type StrippedQuestion } from '@/lib/teaching'
 import { scoreLines } from '../../session/[sessionId]/logic'
 import { CardQuestion } from '../../session/_parts/QuestionPrompt'
 import { QuestionPicture } from '../../session/_parts/QuestionPicture'
+import { DataGraph } from '../../session/_parts/answers/DataGraph'
 import { QuestionScreen } from '../../session/_parts/QuestionScreen'
 import type { TypesetMode } from '../../session/_parts/typeset'
 import { answerLessonQuestion, finishTopicLesson } from '../actions'
 import { LessonText } from './LessonText'
+
+/** P167: the values a learner drew on a graph (or typed instead), in order; null where one does not read. */
+const drawnValues = (wrote: string): (number | null)[] => splitValues(wrote).map((t) => readNumber(t))
 
 type Answered = { q: StrippedQuestion; wrote: string; res: LessonAnswerResult }
 
@@ -110,6 +114,8 @@ export function LessonPractice({ topicLessonId, questions, topic, typeset, onPro
                 <p className="m-0 text-[15px] font-semibold text-body">Question {m.n}</p>
                 <CardQuestion prompt={readableMaths(m.q.prompt)} typeset={typeset} />
                 <QuestionPicture spec={m.q.diagram} variant="card" />
+                {/* P167: a graph the learner drew: the right bars in green, theirs dashed beside them. */}
+                {m.q.graph ? <DataGraph graph={m.q.graph} values={drawnValues(m.wrote)} right={graphValues(m.res.answer, readNumber) ?? []} mode="results" /> : null}
                 <p className="m-0 text-[15px] text-body">You wrote:</p>
                 <LessonText text={m.wrote} typeset="all" size={22} className="font-semibold" />
                 <p className="m-0 text-[15px] text-body">The answer is:</p>

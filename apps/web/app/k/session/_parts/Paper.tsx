@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { IconLabel } from '@/components/ui/IconLabel'
-import { CHOICE_LETTERS, choiceText, hasPictureChoices } from '@jemma/profiling/logic'
+import { blankLabels, CHOICE_LETTERS, choiceText, hasPictureChoices } from '@jemma/profiling/logic'
 import { answerShape, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
 import { numberWriteLine, plainNumberWriteLine, ratioWriteLine, timeWriteLine } from './answers/hints'
 import { INEQUALITY_WRITE_LINE, PAIR_WRITE_LINE } from './answers/hints'
@@ -11,6 +11,7 @@ import { QuestionPicture } from './QuestionPicture'
 import { PictureChoices } from './answers/PictureChoices'
 import { ReasonList } from './answers/ReasonPicker'
 import { PaperValues } from './answers/PaperValues'
+import { DataGraph } from './answers/DataGraph'
 import { paperValuesLine } from './answers/values-hints'
 
 // A practice answered on paper: the choice before the first Try question, the sheet of five questions with the photo button, the wait while
@@ -128,6 +129,11 @@ export function writeLine(shape: AnswerShape): string {
     case 'order':
     case 'table':
       return paperValuesLine(shape)
+    // P167: a graph to draw is written as its numbers: the one for its empty bar, or one for each, in order.
+    case 'graph': {
+      const names = blankLabels(shape.graph)
+      return names.length === 1 ? `Write the number for ${names[0]}.` : writeLine(shape.typed)
+    }
     default:
       return 'Write your answer.'
   }
@@ -164,6 +170,7 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
           </h2>
         )}
         <QuestionPicture spec={q.diagram} />
+        {shape.kind === 'graph' ? <DataGraph graph={shape.graph} values={[]} mode="paper" /> : null}
         {shape.kind === 'choice' && hasPictureChoices(q.choices) ? (
           <PictureChoices choices={q.choices!} />
         ) : shape.kind === 'choice' ? (
@@ -177,7 +184,7 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
           </ol>
         ) : null}
         {shape.kind === 'reason' ? <ReasonList /> : null}
-        <PaperValues shape={shape} />
+        <PaperValues shape={shape.kind === 'graph' ? shape.typed : shape} />
         <p className="m-0 text-[15px] leading-[1.4] whitespace-pre-wrap text-body">{writeLine(shape)}</p>
       </div>
     </li>
