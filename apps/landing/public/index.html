@@ -249,8 +249,8 @@ body{margin:0}
         </li>
       </ul>
       <div style="margin-top:clamp(22px, 1.1cqi + 18px, 34px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 28px">
-        <p style="margin:0;display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 18px;border-radius:18px;background:#DDEFE6;font-size:16px;font-size:clamp(16px, 0.29cqi + 14.9px, 19px);line-height:1.3;font-weight:700;box-sizing:border-box"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#007749"/></svg><span style="text-wrap:balance">Family: 20% off for two or more learners.</span></p>
-        <p style="margin:0;font-size:15px;font-size:clamp(15px, 0.19cqi + 14.3px, 17px);color:#5C5A55;text-wrap:balance">Paid plans are not open yet. For now, practice is free.</p>
+        <p style="margin:0;display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 18px;border-radius:18px;background:#DDEFE6;font-size:16px;font-size:clamp(16px, 0.29cqi + 14.9px, 19px);line-height:1.3;font-weight:700;box-sizing:border-box"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" style="flex:none;"><polygon points="8,0.5 15.5,8 8,15.5 0.5,8" fill="#007749"/></svg><span style="text-wrap:balance">One plan for the whole family. Your children share it.</span></p>
+        <p style="margin:0;font-size:15px;font-size:clamp(15px, 0.19cqi + 14.3px, 17px);color:#5C5A55;text-wrap:balance">Without a plan: 2 practices a day for each child. Every lesson is free.</p>
       </div>
     </section>
 
@@ -313,5 +313,18 @@ body{margin:0}
     <p style="margin:12px 0 0;padding:0 max(24px, calc((100% - 1280px) / 2));font-size:14px;line-height:1.5;color:#5C5A55">Mathematics, CAPS Grades 1 to 12. MIT licence. <span style="white-space:nowrap">Every learner shown here is made up.</span></p>
   </footer>
 </div>
+<script>
+/* P161: the tags of an ad link (utm_source, utm_medium, utm_campaign) go along on the links into the app, so a sign-up knows where it came from. Nothing is kept here and nothing is sent anywhere. */
+(function () {
+  var q = new URLSearchParams(location.search), t = []
+  ;['utm_source', 'utm_medium', 'utm_campaign'].forEach(function (k) { var v = q.get(k); if (v) t.push([k, v]) })
+  if (!t.length) return
+  document.querySelectorAll('a[href^="https://jemma.ainative.ventures"]').forEach(function (a) {
+    var u = new URL(a.href)
+    t.forEach(function (p) { u.searchParams.set(p[0], p[1]) })
+    a.href = u.toString()
+  })
+})()
+</script>
 </body>
 </html>

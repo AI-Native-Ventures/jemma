@@ -266,8 +266,8 @@ describe('the plans', () => {
     ])
   })
 
-  it('says the family price, and that paid plans are not open yet', () => {
-    expect(words(plans).endsWith('about 20 a day Family: 20% off for two or more learners. Paid plans are not open yet. For now, practice is free.')).toBe(true)
+  it('says one plan is for the whole family, and the free practice (P161)', () => {
+    expect(words(plans).endsWith('about 20 a day One plan for the whole family. Your children share it. Without a plan: 2 practices a day for each child. Every lesson is free.')).toBe(true)
   })
 
   it('never writes white words on gold: the price of a paid plan is black on gold', () => {

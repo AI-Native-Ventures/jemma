@@ -2,13 +2,15 @@
 
 import { redirect } from 'next/navigation'
 import { checkPassword, createPasswordAccount, verifySignInCode, type PasswordSignUpFailure } from '@/lib/auth'
+import { cleanTag, isCountry, mayBeUnder13, recordSignup, UNDER_13_WORDS } from '@/lib/signups'
+import { createSupabaseAdmin } from '@/lib/supabase/admin'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
 /**
  * What a form shows after it ran. The form is cleared after every action, so the sign-up and sign-in forms get back what was typed
  * (never the password) and draw it again. `taken`: the email already has an account, so the error carries a link to sign in.
  */
-export type FormState = { error?: string; taken?: boolean; name?: string; email?: string; agree?: boolean } | undefined
+export type FormState = { error?: string; taken?: boolean; name?: string; email?: string; agree?: boolean; country?: string; born?: string; parent?: boolean } | undefined
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -42,13 +44,35 @@ export async function makeAccount(_prev: FormState, form: FormData): Promise<For
   const email = typed.toLowerCase()
   const password = String(form.get('password') ?? '')
   const agree = form.get('agree') === 'on'
-  const fail = (error: string, more: { taken?: boolean } = {}): FormState => ({ error, ...more, name, email: typed, agree })
+  const country = String(form.get('country') ?? '')
+  const born = String(form.get('born') ?? '')
+  const fail = (error: string, more: { taken?: boolean; parent?: boolean } = {}): FormState => ({ error, ...more, name, email: typed, agree, ...(country ? { country } : {}), ...(born ? { born } : {}) })
+  // P161: in the US a child under 13 needs a parent to make the account, so the year comes first and nothing is kept for a child (COPPA).
+  if (country === 'US') {
+    if (!born) return fail('Pick the year you were born.')
+    if (mayBeUnder13(Number(born))) return { error: UNDER_13_WORDS, parent: true, country }
+  }
   if (!name) return fail('Add your name.')
   if (!EMAIL.test(email)) return fail('Enter a valid email.')
   if (password.length < MIN_PASSWORD) return fail(SIGN_UP_WORDS.short)
   if (!agree) return fail('Tick the box to agree to the terms.')
   const made = await createPasswordAccount({ email, password, name })
   if (!made.ok) return fail(SIGN_UP_WORDS[made.why], made.why === 'taken' ? { taken: true } : {})
+  try {
+    if (made.userId) {
+      await recordSignup(createSupabaseAdmin(), made.userId, {
+        country: isCountry(country) ? country : null,
+        over13: country === 'US' ? true : null,
+        source: cleanTag(form.get('utm_source')),
+        medium: cleanTag(form.get('utm_medium')),
+        campaign: cleanTag(form.get('utm_campaign')),
+        landing: cleanTag(form.get('landing')),
+      })
+    }
+  } catch (e) {
+    // Where a person came from is for the owner's counts: it never stops a sign-up.
+    console.error(`sign-up facts not kept: ${e instanceof Error ? e.message : String(e)}`)
+  }
   redirect(made.next)
 }
 

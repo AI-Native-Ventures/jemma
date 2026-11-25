@@ -99,8 +99,11 @@ describe('the page body', () => {
     expect(textOf(footer)).toContain('Mathematics, CAPS Grades 1 to 12. MIT licence. Every learner shown here is made up.')
   })
 
-  it('has no script, no template tag and nothing from the design tool', () => {
-    expect(html).not.toMatch(/<script\b/i)
+  it('has no script but the one that carries the tags of an ad link into the app (P161), no template tag and nothing from the design tool', () => {
+    const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]!)
+    expect(scripts).toHaveLength(1)
+    expect(scripts[0]).toContain("['utm_source', 'utm_medium', 'utm_campaign']")
+    expect(scripts[0]).not.toMatch(/fetch|XMLHttpRequest|cookie|localStorage|sendBeacon/)
     for (const banned of ['x-dc', 'support.js', 'text/x-dc', '<helmet', '/_blob/']) expect(html.includes(banned), banned).toBe(false)
   })
 
@@ -152,7 +155,7 @@ describe("the words are a learner's own (23 Nov 2026)", () => {
     expect(text).toContain('Grade 4 to 6 missed Fractions You miss adding fractions.')
   })
 
-  it('shows the four plans by the year in dollars, and says that paid plans are not open yet', () => {
+  it('shows the four plans by the year in dollars, one plan for the whole family, and the free practice (P161)', () => {
     const plans = [...html.matchAll(/<li\b[^>]*>\s*<span[^>]*>\s*<span[^>]*>(\$\d+)<\/span>\s*<span[^>]*>([^<]*)<\/span>\s*<\/span>\s*<h3[^>]*>([^<]*)<\/h3>\s*<p[^>]*>([^<]*)<\/p>\s*<p[^>]*>([^<]*)<\/p>/g)].map(
       (m) => m.slice(1, 6).join(' | '),
     )
@@ -162,8 +165,9 @@ describe("the words are a learner's own (23 Nov 2026)", () => {
       '$96 | a year | Regular | 300 practices a month | about 10 a day',
       '$192 | a year | Heavy | 600 practices a month | about 20 a day',
     ])
-    expect(text).toContain('Family: 20% off for two or more learners.')
-    expect(text).toContain('Paid plans are not open yet. For now, practice is free.')
+    expect(text).toContain('One plan for the whole family. Your children share it.')
+    expect(text).toContain('Without a plan: 2 practices a day for each child. Every lesson is free.')
+    expect(text).not.toContain('20% off')
   })
 
   it('keeps three rules', () => {
@@ -289,11 +293,13 @@ describe('the font', () => {
 describe('the Cloudflare config of the site', () => {
   const config = JSON.parse(readFileSync(join(siteRoot, 'wrangler.jsonc'), 'utf8'))
 
-  it('is static files at getjemma.ainative.ventures, with no Worker script', () => {
+  it('is static files at getjemma.ainative.ventures, with one small script for the home page', () => {
     expect(config.name).toBe('jemma-landing')
     expect(config.compatibility_date).toBe('2026-10-01')
-    expect(config.assets).toEqual({ directory: './public' })
-    expect(config.main).toBeUndefined()
+    // The script runs only for the home page, to show visitors in the US
+    // the US words and prices. Every other file is served as it is.
+    expect(config.assets).toEqual({ directory: './public', binding: 'ASSETS', run_worker_first: ['/', '/index.html'] })
+    expect(config.main).toBe('src/worker.js')
     expect(config.routes).toEqual([{ pattern: 'getjemma.ainative.ventures', custom_domain: true }])
     expect(config.workers_dev).toBe(true)
   })

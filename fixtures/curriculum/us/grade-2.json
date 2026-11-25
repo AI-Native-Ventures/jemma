@@ -1,0 +1,139 @@
+{
+  "grade": 2,
+  "subject": "Mathematics",
+  "country": "US",
+  "course": null,
+  "source": {
+    "title": "Common Core State Standards for Mathematics",
+    "publisher": "National Governors Association Center for Best Practices and Council of Chief State School Officers",
+    "url": "https://www.thecorestandards.org/Math/",
+    "part": "Kindergarten to Grade 8 standards"
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Addition and subtraction word problems within 100",
+          "shortName": "Word problems within 100",
+          "family": "whole_numbers",
+          "standard": "2.OA.A",
+          "domain": "Operations and Algebraic Thinking"
+        },
+        {
+          "name": "Adding and subtracting within 20 quickly",
+          "shortName": "Fluency within 20",
+          "family": "whole_numbers",
+          "standard": "2.OA.B",
+          "domain": "Operations and Algebraic Thinking"
+        },
+        {
+          "name": "Odd and even numbers",
+          "shortName": "Odd and even",
+          "family": "patterns",
+          "standard": "2.OA.C.3",
+          "domain": "Operations and Algebraic Thinking"
+        },
+        {
+          "name": "Arrays and repeated addition",
+          "shortName": "Arrays",
+          "family": "whole_numbers",
+          "standard": "2.OA.C.4",
+          "domain": "Operations and Algebraic Thinking"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Place value to 1,000",
+          "shortName": "Place value to 1,000",
+          "family": "whole_numbers",
+          "standard": "2.NBT.A",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Comparing three-digit numbers",
+          "shortName": "Comparing to 1,000",
+          "family": "whole_numbers",
+          "standard": "2.NBT.A.4",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Adding and subtracting within 100",
+          "shortName": "Add and subtract within 100",
+          "family": "whole_numbers",
+          "standard": "2.NBT.B.5",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Adding up to four two-digit numbers",
+          "shortName": "Adding four numbers",
+          "family": "whole_numbers",
+          "standard": "2.NBT.B.6",
+          "domain": "Number and Operations in Base Ten"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Adding and subtracting within 1,000",
+          "shortName": "Add and subtract within 1,000",
+          "family": "whole_numbers",
+          "standard": "2.NBT.B.7",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Measuring and estimating length",
+          "shortName": "Measuring length",
+          "family": "measurement",
+          "standard": "2.MD.A",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Length word problems and number lines",
+          "shortName": "Length problems",
+          "family": "measurement",
+          "standard": "2.MD.B",
+          "domain": "Measurement and Data"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Telling time to five minutes",
+          "shortName": "Time to five minutes",
+          "family": "measurement",
+          "standard": "2.MD.C.7",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Money: dollars and cents",
+          "shortName": "Money",
+          "family": "finance",
+          "standard": "2.MD.C.8",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Picture graphs and bar graphs",
+          "shortName": "Graphs",
+          "family": "data",
+          "standard": "2.MD.D",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Shapes, halves, thirds and fourths",
+          "shortName": "Shapes and equal parts",
+          "family": "shapes",
+          "standard": "2.G",
+          "domain": "Geometry"
+        }
+      ]
+    }
+  ]
+}

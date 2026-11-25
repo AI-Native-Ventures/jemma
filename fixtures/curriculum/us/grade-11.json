@@ -1,0 +1,118 @@
+{
+  "grade": 11,
+  "subject": "Mathematics",
+  "country": "US",
+  "course": "Algebra II",
+  "source": {
+    "title": "Common Core State Standards for Mathematics",
+    "publisher": "National Governors Association Center for Best Practices and Council of Chief State School Officers",
+    "url": "https://www.thecorestandards.org/Math/",
+    "part": "High School standards, in the usual course order"
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Complex numbers",
+          "shortName": "Complex numbers",
+          "family": "algebra",
+          "standard": "N-CN",
+          "domain": "Algebra II"
+        },
+        {
+          "name": "Polynomial functions and their graphs",
+          "shortName": "Polynomial graphs",
+          "family": "functions",
+          "standard": "A-APR.3",
+          "domain": "Algebra II"
+        },
+        {
+          "name": "Dividing polynomials and polynomial identities",
+          "shortName": "Polynomial division",
+          "family": "algebra",
+          "standard": "A-APR.2",
+          "domain": "Algebra II"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Rational expressions and equations",
+          "shortName": "Rational expressions",
+          "family": "algebra",
+          "standard": "A-APR.6",
+          "domain": "Algebra II"
+        },
+        {
+          "name": "Radical functions and equations",
+          "shortName": "Radical equations",
+          "family": "algebra",
+          "standard": "A-REI.2",
+          "domain": "Algebra II"
+        },
+        {
+          "name": "Inverse functions",
+          "shortName": "Inverse functions",
+          "family": "functions",
+          "standard": "F-BF.4",
+          "domain": "Algebra II"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Exponential and logarithmic functions",
+          "shortName": "Logarithms",
+          "family": "functions",
+          "standard": "F-LE.4",
+          "domain": "Algebra II"
+        },
+        {
+          "name": "Sequences and series",
+          "shortName": "Sequences and series",
+          "family": "patterns",
+          "standard": "A-SSE.4",
+          "domain": "Algebra II"
+        },
+        {
+          "name": "Transforming functions",
+          "shortName": "Transformations",
+          "family": "functions",
+          "standard": "F-BF.3",
+          "domain": "Algebra II"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Trigonometric functions and the unit circle",
+          "shortName": "Unit circle",
+          "family": "trigonometry",
+          "standard": "F-TF.2",
+          "domain": "Algebra II"
+        },
+        {
+          "name": "Normal distributions",
+          "shortName": "Normal distributions",
+          "family": "data",
+          "standard": "S-ID.4",
+          "domain": "Algebra II"
+        },
+        {
+          "name": "Surveys, experiments and samples",
+          "shortName": "Statistics studies",
+          "family": "data",
+          "standard": "S-IC",
+          "domain": "Algebra II"
+        }
+      ]
+    }
+  ]
+}

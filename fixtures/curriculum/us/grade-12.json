@@ -1,0 +1,132 @@
+{
+  "grade": 12,
+  "subject": "Mathematics",
+  "country": "US",
+  "course": "Precalculus",
+  "source": {
+    "title": "Common Core State Standards for Mathematics",
+    "publisher": "National Governors Association Center for Best Practices and Council of Chief State School Officers",
+    "url": "https://www.thecorestandards.org/Math/",
+    "part": "High School standards, in the usual course order"
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Composing and inverting functions",
+          "shortName": "Composition",
+          "family": "functions",
+          "standard": "F-BF.1c",
+          "domain": "Precalculus"
+        },
+        {
+          "name": "Polynomial and rational functions",
+          "shortName": "Rational functions",
+          "family": "functions",
+          "standard": "F-IF.7d",
+          "domain": "Precalculus"
+        },
+        {
+          "name": "Exponential and logarithmic models",
+          "shortName": "Exponential models",
+          "family": "functions",
+          "standard": "F-LE.4",
+          "domain": "Precalculus"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Graphs of trigonometric functions",
+          "shortName": "Trig graphs",
+          "family": "trigonometry",
+          "standard": "F-TF.5",
+          "domain": "Precalculus"
+        },
+        {
+          "name": "Trigonometric identities and equations",
+          "shortName": "Trig identities",
+          "family": "trigonometry",
+          "standard": "F-TF.8",
+          "domain": "Precalculus"
+        },
+        {
+          "name": "Law of sines and law of cosines",
+          "shortName": "Sine and cosine rules",
+          "family": "trigonometry",
+          "standard": "G-SRT.10",
+          "domain": "Precalculus"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Vectors",
+          "shortName": "Vectors",
+          "family": "analytical_geometry",
+          "standard": "N-VM.1",
+          "domain": "Precalculus"
+        },
+        {
+          "name": "Matrices",
+          "shortName": "Matrices",
+          "family": "algebra",
+          "standard": "N-VM.6",
+          "domain": "Precalculus"
+        },
+        {
+          "name": "Complex numbers in the plane",
+          "shortName": "Complex plane",
+          "family": "algebra",
+          "standard": "N-CN.4",
+          "domain": "Precalculus"
+        },
+        {
+          "name": "Polar coordinates and parametric equations",
+          "shortName": "Polar and parametric",
+          "family": "analytical_geometry",
+          "standard": "F-TF",
+          "domain": "Precalculus"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Conic sections",
+          "shortName": "Conics",
+          "family": "analytical_geometry",
+          "standard": "G-GPE.3",
+          "domain": "Precalculus"
+        },
+        {
+          "name": "Sequences, series and induction",
+          "shortName": "Series",
+          "family": "patterns",
+          "standard": "A-SSE.4",
+          "domain": "Precalculus"
+        },
+        {
+          "name": "Limits and rates of change",
+          "shortName": "Limits",
+          "family": "calculus",
+          "standard": "F-IF.6",
+          "domain": "Precalculus"
+        },
+        {
+          "name": "Expected value and decisions",
+          "shortName": "Expected value",
+          "family": "probability",
+          "standard": "S-MD",
+          "domain": "Precalculus"
+        }
+      ]
+    }
+  ]
+}

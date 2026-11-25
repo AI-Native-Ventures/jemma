@@ -1,0 +1,146 @@
+{
+  "grade": 7,
+  "subject": "Mathematics",
+  "country": "US",
+  "course": null,
+  "source": {
+    "title": "Common Core State Standards for Mathematics",
+    "publisher": "National Governors Association Center for Best Practices and Council of Chief State School Officers",
+    "url": "https://www.thecorestandards.org/Math/",
+    "part": "Kindergarten to Grade 8 standards"
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Proportional relationships",
+          "shortName": "Proportional relationships",
+          "family": "fractions",
+          "standard": "7.RP.A.2",
+          "domain": "Ratios and Proportional Relationships"
+        },
+        {
+          "name": "Percent problems: tax, tips and discounts",
+          "shortName": "Percent problems",
+          "family": "finance",
+          "standard": "7.RP.A.3",
+          "domain": "Ratios and Proportional Relationships"
+        },
+        {
+          "name": "Adding and subtracting rational numbers",
+          "shortName": "Adding rational numbers",
+          "family": "integers_and_exponents",
+          "standard": "7.NS.A.1",
+          "domain": "The Number System"
+        },
+        {
+          "name": "Multiplying and dividing rational numbers",
+          "shortName": "Multiplying rational numbers",
+          "family": "integers_and_exponents",
+          "standard": "7.NS.A.2",
+          "domain": "The Number System"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Equivalent expressions",
+          "shortName": "Equivalent expressions",
+          "family": "algebra",
+          "standard": "7.EE.A",
+          "domain": "Expressions and Equations"
+        },
+        {
+          "name": "Multi-step word problems",
+          "shortName": "Multi-step problems",
+          "family": "algebra",
+          "standard": "7.EE.B.3",
+          "domain": "Expressions and Equations"
+        },
+        {
+          "name": "Two-step equations and inequalities",
+          "shortName": "Two-step equations",
+          "family": "algebra",
+          "standard": "7.EE.B.4",
+          "domain": "Expressions and Equations"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Scale drawings",
+          "shortName": "Scale drawings",
+          "family": "shapes",
+          "standard": "7.G.A.1",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Drawing triangles",
+          "shortName": "Drawing triangles",
+          "family": "shapes",
+          "standard": "7.G.A.2",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Angle relationships",
+          "shortName": "Angles",
+          "family": "shapes",
+          "standard": "7.G.B.5",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Circles: circumference and area",
+          "shortName": "Circles",
+          "family": "measurement",
+          "standard": "7.G.B.4",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Area, surface area and volume",
+          "shortName": "Surface area and volume",
+          "family": "measurement",
+          "standard": "7.G.B.6",
+          "domain": "Geometry"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Samples and inferences",
+          "shortName": "Sampling",
+          "family": "data",
+          "standard": "7.SP.A",
+          "domain": "Statistics and Probability"
+        },
+        {
+          "name": "Comparing two groups of data",
+          "shortName": "Comparing data",
+          "family": "data",
+          "standard": "7.SP.B",
+          "domain": "Statistics and Probability"
+        },
+        {
+          "name": "Probability",
+          "shortName": "Probability",
+          "family": "probability",
+          "standard": "7.SP.C.5",
+          "domain": "Statistics and Probability"
+        },
+        {
+          "name": "Compound events",
+          "shortName": "Compound events",
+          "family": "probability",
+          "standard": "7.SP.C.8",
+          "domain": "Statistics and Probability"
+        }
+      ]
+    }
+  ]
+}

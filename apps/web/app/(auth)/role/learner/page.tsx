@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation'
 import { Wordmark } from '@/components/install'
 import { HOMES } from '@/components/blocks/nav'
 import { createSupabaseServer } from '@/lib/supabase/server'
+import { seenCountry, signupOf } from '@/lib/request-facts'
+import { defaultCountry } from '@/lib/signups'
 import { BackLink, colors } from '../../_parts'
 import { LearnerStartForm } from './LearnerStartForm'
 
@@ -17,6 +19,9 @@ export default async function LearnerStartPage() {
   if (!data.user) redirect('/sign-in')
   const { data: profile } = await supabase.from('profiles').select('role').eq('user_id', data.user.id).maybeSingle()
   if (profile) redirect(HOMES[profile.role])
+  // P161: the country picked at sign-up comes first (else Cloudflare's guess), and a US person whose year the sign-up asked is not asked again.
+  const facts = await signupOf(data.user.id)
+  const country = facts?.country ?? defaultCountry(await seenCountry())
 
   return (
     <>
@@ -30,7 +35,7 @@ export default async function LearnerStartPage() {
           <h1 style={{ margin: 0, fontSize: 30, lineHeight: 1.12, fontWeight: 700, letterSpacing: '-0.02em' }}>Which grade are you in?</h1>
           <p style={{ margin: 0, fontSize: 17, lineHeight: 1.45, color: colors.body }}>Jemma opens the maths for your grade. You can add other grades later.</p>
         </div>
-        <LearnerStartForm />
+        <LearnerStartForm country={country} askYear={facts?.over_13 !== true} />
       </main>
     </>
   )

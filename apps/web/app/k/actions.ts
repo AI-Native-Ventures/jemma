@@ -5,6 +5,8 @@ import { loadChoiceRules } from '@jemma/profiling/orchestrator'
 import { revalidatePath } from 'next/cache'
 import { retryEvent, sendEvent } from '@/lib/agent'
 import { loadLearnerSessions, myChild, newestPracticeEvent, tonightFrom } from '@/lib/data/p27'
+import { allowanceFor } from '@/lib/allowance'
+import { payfastEnv } from '@/lib/payfast'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
 
 export type ActionResult = { ok: true } | { ok: false; message: string }
@@ -30,6 +32,8 @@ export async function startPractice(choice?: PracticeChoice): Promise<ActionResu
     const { supabase, child } = await myChild()
     const newest = await newestPracticeEvent(child.id)
     if (await inTheWay(supabase, child.id, newest, choice !== undefined)) return done()
+    const spent = await allowanceSpent(child.id)
+    if (spent) return fail(spent)
     if (!choice) return await ask(child.id, {})
     const chosen = resolveChoice(choice, await loadChoiceRules(createSupabaseAdmin(), child.id))
     if (!chosen) return fail(NOT_YOURS)
@@ -50,7 +54,11 @@ export async function retryPractice(): Promise<ActionResult> {
     const { supabase, child } = await myChild()
     const newest = await newestPracticeEvent(child.id)
     if (await inTheWay(supabase, child.id, newest, false)) return done()
-    if (newest?.status !== 'failed') return await ask(child.id, {})
+    if (newest?.status !== 'failed') {
+      const spent = await allowanceSpent(child.id)
+      if (spent) return fail(spent)
+      return await ask(child.id, {})
+    }
     try {
       await retryEvent(newest.id)
     } catch (e) {
@@ -75,6 +83,23 @@ async function inTheWay(supabase: Awaited<ReturnType<typeof myChild>>['supabase'
   if (chosen) return false
   const sessions = await loadLearnerSessions(supabase, childId)
   return (await tonightFrom(supabase, sessions, newest, new Date().toISOString().slice(0, 10))) !== null
+}
+
+/**
+ * P161: the sentence that refuses a practice when the learner has none left (2 a day without a plan, the family's pool of the month with one), or
+ * null. Only while plans are open (the owner set PayFast's settings): before that, practice has no limit, as the landing page says. A count that
+ * cannot be read lets the practice through: a learner is never held back by a fault of Jemma's.
+ */
+async function allowanceSpent(childId: string): Promise<string | null> {
+  if (!payfastEnv()) return null
+  try {
+    const a = await allowanceFor(createSupabaseAdmin(), childId)
+    if (a.left > 0) return null
+    return a.kind === 'free' ? "That's your 2 practices for today. Come back tomorrow." : `Your family's ${a.limit} practices for this month are used.`
+  } catch (e) {
+    console.error(`allowance not read for ${childId}: ${reasonOf(e)}`)
+    return null
+  }
 }
 
 function done(): ActionResult {

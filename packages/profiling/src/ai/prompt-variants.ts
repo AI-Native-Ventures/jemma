@@ -36,6 +36,9 @@ export type PromptRule = {
 const isMaths = (c: ClassContext) => c.subjectKey === 'mathematics'
 const notMaths = (c: ClassContext) => !isMaths(c)
 const notSouthAfrica = (c: ClassContext) => c.country !== 'ZA'
+/** P161: the US is a country of its own (added next to South Africa, which is unchanged): a decimal point, dollars, and the units US schools use. */
+const isUSMaths = (c: ClassContext) => c.country === 'US' && isMaths(c)
+const US_UNITS = 'Use the units US schools use (inches, feet, yards, miles, ounces, pounds, cups, quarts, gallons, °F), and metric units when the topic is about them.'
 /** A number format (the decimal comma, rand) is South African, and a subject other than Mathematics has no use for it. */
 const numberFormat = (c: ClassContext) => notSouthAfrica(c) || notMaths(c)
 /** The sentences about primary school and Grades 1 to 7 are true of these grades. */
@@ -105,7 +108,7 @@ const seniorAnswers = (c: ClassContext) => {
   const old = [
     '`fraction` (`3/4`)',
     '`mixed` (`1 1/2`)',
-    za ? '`decimal` (`0,75`)' : '`decimal` (a decimal written the way the class writes it)',
+    za ? '`decimal` (`0,75`)' : c.country === 'US' ? '`decimal` (`0.75`, and a dollar amount as its number: `5.25`)' : '`decimal` (a decimal written the way the class writes it)',
     '`whole` (`12`)',
     ...(za ? ['`money` (`R5`)'] : []),
     '`choice` (a letter A to E)',
@@ -225,10 +228,12 @@ export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
         return families ? `(a lowercase group such as ${families.join(', ')})` : '(a lowercase group: a short lowercase word of your own)'
       },
     },
+    { find: 'Use a decimal comma in numbers (0,75).', when: isUSMaths, replace: () => 'Use a decimal point in numbers (0.75).' },
     { find: 'Use a decimal comma in numbers (0,75).', when: numberFormat, replace: () => 'Write numbers the way the documents write them.' },
   ],
   read_key: [
     { find: 'a smudge, a fraction bar or a missing line', when: notMaths, replace: () => 'a smudge or a missing line' },
+    { find: '5. Use a decimal comma in numbers (0,75) and rand for money (R5).', when: isUSMaths, replace: () => '5. Use a decimal point in numbers (0.75) and dollars for money ($5).' },
     { find: '5. Use a decimal comma in numbers (0,75) and rand for money (R5).', when: numberFormat, replace: () => '5. Write numbers and money the way the memo writes them.' },
   ],
   read_paper: [
@@ -259,13 +264,16 @@ export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
   diagnose: [
     { find: 'in a primary school class', when: outsidePrimary, replace: (c) => `in a Grade ${c.grade} class` },
     { find: ' (for example "Equivalent fractions")', when: notMaths, replace: () => '' },
+    { find: '- Use plain words, decimal comma for decimals, rand for money.', when: isUSMaths, replace: () => '- Use plain words, a decimal point for decimals, dollars for money.' },
     { find: '- Use plain words, decimal comma for decimals, rand for money.', when: numberFormat, replace: () => '- Use plain words.' },
   ],
   class_report: [
     { find: 'for a primary school teacher', when: outsidePrimary, replace: (c) => `for a teacher of a Grade ${c.grade} class` },
+    { find: '- Plain words, decimal comma for decimals, rand for money. No judgement of any child.', when: isUSMaths, replace: () => '- Plain words, a decimal point for decimals, dollars for money. No judgement of any child.' },
     { find: '- Plain words, decimal comma for decimals, rand for money. No judgement of any child.', when: numberFormat, replace: () => '- Plain words. No judgement of any child.' },
   ],
   write_lesson: [
+    { find: 'for a school in South Africa', when: isUSMaths, replace: () => `for a school in the United States, with dollars for money. ${US_UNITS.replace(/\.$/, '')}` },
     {
       find: 'for a school in South Africa',
       when: notSouthAfrica,
@@ -282,6 +290,12 @@ export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
       find: '`answer` must be one value that a computer can mark: `3/4`, `1 1/2`, `0,75`, `12`, `R5` or a choice letter. `answerKind` must match it (`fraction`, `mixed`, `decimal`, `whole`, `money`, `choice`). Money is in rand, decimals use a comma.',
       when: notMaths,
       replace: (c) => `\`answer\` must be one value that a computer can mark: ${subjectProfile(c.subject).answers}. \`answerKind\` must match it (\`whole\`, \`decimal\`, \`choice\`).`,
+    },
+    {
+      find: '`answer` must be one value that a computer can mark: `3/4`, `1 1/2`, `0,75`, `12`, `R5` or a choice letter. `answerKind` must match it (`fraction`, `mixed`, `decimal`, `whole`, `money`, `choice`). Money is in rand, decimals use a comma.',
+      when: (c) => isUSMaths(c) && !isSeniorMaths(c),
+      replace: () =>
+        '`answer` must be one value that a computer can mark: `3/4`, `1 1/2`, `0.75`, `12` or a choice letter. `answerKind` must match it (`fraction`, `mixed`, `decimal`, `whole`, `choice`). Decimals use a point. Money is in dollars: the question shows the dollar sign (`$5.25`) and `answer` is the number (`5.25`, `answerKind` `decimal`).',
     },
     {
       find: '`answer` must be one value that a computer can mark: `3/4`, `1 1/2`, `0,75`, `12`, `R5` or a choice letter. `answerKind` must match it (`fraction`, `mixed`, `decimal`, `whole`, `money`, `choice`). Money is in rand, decimals use a comma.',

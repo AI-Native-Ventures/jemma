@@ -1,4 +1,6 @@
 import { requireRole } from '@/lib/auth'
+import { defaultCountry } from '@/lib/signups'
+import { seenCountry, signupOf } from '@/lib/request-facts'
 import { cleanCode, findClass } from '@/lib/data/p22'
 import { AddChildForm } from './AddChildForm'
 import { LinkChildCode } from './LinkChildCode'
@@ -7,8 +9,10 @@ import { BackHeader, Main, Page } from './_parts'
 export const metadata = { title: 'Add a child · Jemma' }
 
 export default async function AddChildPage({ searchParams }: { searchParams: Promise<{ code?: string; child?: string; surname?: string; needsSurname?: string; error?: string; alone?: string }> }) {
-  await requireRole('parent')
+  const { userId } = await requireRole('parent')
   const q = await searchParams
+  const facts = await signupOf(userId)
+  const country = facts?.country ?? defaultCountry(await seenCountry())
   const code = cleanCode(q.code)
   const found = code ? await findClass(code) : null
   return (
@@ -27,6 +31,7 @@ export default async function AddChildPage({ searchParams }: { searchParams: Pro
           needsSurname={q.needsSurname === '1'}
           error={q.error ?? null}
           aloneOpen={q.alone === '1'}
+          country={country}
           found={found && { className: found.className, teacherName: found.teacherName, grade: found.grade, schoolName: found.schoolName }}
         />
         <LinkChildCode />

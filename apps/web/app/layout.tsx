@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Kalam, Outfit } from 'next/font/google'
 import { NavProgress } from '@/components/ui/NavProgress'
+import { TagKeeper } from '@/components/TagKeeper'
 // KaTeX's own stylesheet and its fonts, served from this app (the css url()s are rewritten to files of the build): no request to a CDN or any other site.
 import 'katex/dist/katex.min.css'
 import './globals.css'
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${outfit.variable} ${kalam.variable}`}>
       <body>
         <NavProgress />
+        <TagKeeper />
         {children}
       </body>
     </html>

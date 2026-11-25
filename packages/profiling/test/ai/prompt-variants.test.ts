@@ -193,11 +193,15 @@ describe('a senior class (Mathematics, Grades 7 to 12)', () => {
     const out = lesson(10)
     expect(out).not.toContain('`3/4`, `1 1/2`, `0,75`, `12`, `R5` or a choice letter')
     const rules = PROMPT_RULES.write_lesson.filter((r) => r.find.startsWith('`answer` must be one value'))
-    expect(rules).toHaveLength(3)
+    // P161: a fourth rule, the US one (a decimal point, dollars as a number), comes before the rule for other countries.
+    expect(rules).toHaveLength(4)
     expect(rules[0]!.when(klass('Mathematics', 10, 'ZA'))).toBe(true)
-    // The senior rule is the first of the three: it fires for a senior class only.
+    // The senior rule is the first of them: it fires for a senior class only.
     expect(rules[1]!.when(klass('Mathematics', 10, 'ZA'))).toBe(false)
     expect(rules[2]!.when(klass('Mathematics', 10, 'ZA'))).toBe(false)
+    expect(rules[3]!.when(klass('Mathematics', 10, 'ZA'))).toBe(false)
+    expect(rules[2]!.when(klass('Mathematics', 6, 'US'))).toBe(true)
+    expect(rules[2]!.when(klass('Mathematics', 10, 'US'))).toBe(false)
     expect(rules[0]!.when(klass('Mathematics', 6, 'ZA'))).toBe(false)
     expect(rules[0]!.when(klass('Natural Sciences', 10, 'ZA'))).toBe(false)
   })

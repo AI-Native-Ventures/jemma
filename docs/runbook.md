@@ -44,6 +44,10 @@ Copy `.env.example` to `.env.local` at the repo root. `apps/web` reads it, and `
 | `LANDING_URL` | Web app only (the live app sets it in `apps/web/wrangler.jsonc`). The address of the landing site: when it is set, a visitor who is not signed in at `/` is sent there. Not set on a run of your own, so `/` shows the built-in landing page. |
 | `JEMMA_DEMO` | Web app only. `1` turns on the demo copy of a made-up school (`/demo`, the design kit at `/kit`, the sample papers and files, made-up learners). `./start.sh` sets it for local runs and CI; the live app leaves it unset, so all of that is off there. The unit tests run with it on. |
 | `JEMMA_EMAIL_CODES` | Web app only. `1` shows "Email me a code instead" on the sign-in page. A code needs an email sender: `./start.sh` sets it (the local stack catches the emails). The live app leaves it unset until an email sender of its own is set up in Supabase (the built-in one only reaches the project team). |
+| `PAYFAST_MERCHANT_ID`, `PAYFAST_MERCHANT_KEY`, `PAYFAST_PASSPHRASE` | Web app only, Worker secrets (P161). PayFast's merchant id, key and passphrase (Settings, Integration on PayFast; recurring billing must be turned on there). While any of the three is missing, plans say they open soon and practice has no limit. Never put them in a file. |
+| `PAYFAST_SANDBOX` | Web app only. `1` sends payments to PayFast's sandbox (test cards, no money) and its API calls get `?testing=true`. Leave it unset on the live app. |
+| `PAYFAST_RAND_PER_DOLLAR` | Web app only. The rand a dollar buys for new plans (default 17): $96 is R1,630. A plan keeps the rand amount it was bought at. |
+| `JEMMA_ADMIN_EMAILS` | Web app only, a Worker secret. The emails (comma separated) that open the owner's pages at `/admin`. Everyone else gets "not found". Unset: nobody. |
 | `OPENROUTER_API_KEY` | Key for the free models. |
 | `AGENT_URL` | Where the web app posts events, `http://localhost:8787` locally. |
 | `EVENTS_SECRET` | Shared secret between web and agent for `POST /events`. |

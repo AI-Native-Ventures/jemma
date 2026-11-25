@@ -1,11 +1,26 @@
 import Link from 'next/link'
 import { Wordmark } from '@/components/install'
 import { BackLink, Gem, colors } from '../_parts'
+import { keptTags, seenCountry } from '@/lib/request-facts'
+import { cleanTag, defaultCountry } from '@/lib/signups'
 import { SignUpForm } from './SignUpForm'
 
 export const metadata = { title: 'Create an account · Jemma' }
 
-export default function SignUpPage() {
+/** The tags of the link a person came by (from an ad, or a link a person shared): kept with the sign-up, never sent anywhere. */
+const TAGS = ['utm_source', 'utm_medium', 'utm_campaign'] as const
+
+export default async function SignUpPage({ searchParams }: { searchParams?: Promise<Record<string, string | undefined>> } = {}) {
+  const sp = (await searchParams) ?? {}
+  // The tags in the address, else the ones Jemma kept from an earlier page of the same visit (TagKeeper's cookie).
+  const kept = await keptTags()
+  const tags: Record<string, string> = {}
+  for (const k of TAGS) {
+    const v = cleanTag(sp[k] ?? kept.get(k) ?? undefined)
+    if (v) tags[k] = v
+  }
+  if (sp.ref) tags.landing = cleanTag(sp.ref) ?? ''
+  const country = defaultCountry(await seenCountry())
   return (
     <>
       <header style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 12px 6px 8px' }}>
@@ -26,7 +41,7 @@ export default function SignUpPage() {
           </p>
         </div>
 
-        <SignUpForm />
+        <SignUpForm defaults={{ country, tags }} />
 
         <p style={{ margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '4px 8px', fontSize: 15, color: colors.body }}>
           Already have an account?

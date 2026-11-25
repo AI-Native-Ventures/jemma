@@ -1,4 +1,4 @@
-import { capsMapOf, isSouthAfrica, writeApprovedMap } from './curriculum/caps-map'
+import { builtInMapOf, writeApprovedMap } from './curriculum/caps-map'
 import type { JemmaDb } from './db'
 import { buildMyMaths, type Score } from './logic'
 import { maybe, ok } from './tools/context'
@@ -172,7 +172,7 @@ async function addGradeToWorkspace(db: JemmaDb, ws: { schoolId: string; childId:
   const enrolled = await ok(db.from('enrolments').select('class_id').eq('class_id', classId).eq('child_id', ws.childId))
   if (enrolled.length === 0) await ok(db.from('enrolments').insert({ class_id: classId, child_id: ws.childId }).select('class_id'))
 
-  const caps = isSouthAfrica(ws.country) ? capsMapOf(grade) : null
+  const caps = builtInMapOf(ws.country, grade)
   if (caps) {
     const hasMap = (await ok(db.from('curriculum_maps').select('id').eq('class_id', classId).eq('status', 'approved').limit(1))).length > 0
     if (!hasMap) {
@@ -466,4 +466,31 @@ export async function getOwnWorkspaceForTeacher(
     gaps: { open: gaps.filter((g) => g.stage !== 'fixed'), fixed: gaps.filter((g) => g.stage === 'fixed') },
     sessions,
   }
+}
+
+/**
+ * P161: a parent changes a child's country. The country belongs to the child's own space: the child's personal school when the parent added the child
+ * alone, or the child's "My own" side when the child is in a teacher's class (the class keeps its school's country and its teacher's map). Each grade of
+ * that space gets the new country's built-in map (it becomes the newest, so it is the one used); a country with no built-in map keeps the topics it had.
+ * The child's practice, marks and lessons stay. Returns false when the child has no own space yet (nothing to change: the class decides).
+ */
+export async function changeChildCountry(db: JemmaDb, input: { childId: string; country: string; actorUserId: string }, now: Date = new Date()): Promise<boolean> {
+  if (!/^[A-Z]{2}$/.test(input.country)) throw new OwnWorkspaceError('Pick the country.')
+  const child = await ok(db.from('children').select('id, school_id').eq('id', input.childId).single())
+  const home = await ok(db.from('schools').select('id, kind').eq('id', child.school_id).single())
+  let schoolId: string | null = home.kind === 'private' ? home.id : null
+  if (!schoolId) {
+    const twins = await ok(db.from('children').select('school_id').eq('private_of', input.childId))
+    schoolId = twins[0]?.school_id ?? null
+  }
+  if (!schoolId) return false
+  await ok(db.from('schools').update({ country: input.country }).eq('id', schoolId).select('id'))
+  const classes = await ok(db.from('classes').select('id, grade').eq('school_id', schoolId))
+  for (const cls of classes) {
+    const map = builtInMapOf(input.country, cls.grade)
+    if (!map) continue
+    await writeApprovedMap(db, { classId: cls.id, stored: map.stored, approvedAt: now.toISOString(), rows: map.rows })
+    await ok(db.from('activity_log').insert({ school_id: schoolId, class_id: cls.id, at: now.toISOString(), text: map.log, tool: 'use_caps_map' }).select('id'))
+  }
+  return true
 }

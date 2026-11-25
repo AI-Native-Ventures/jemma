@@ -1,0 +1,153 @@
+{
+  "grade": 4,
+  "subject": "Mathematics",
+  "country": "US",
+  "course": null,
+  "source": {
+    "title": "Common Core State Standards for Mathematics",
+    "publisher": "National Governors Association Center for Best Practices and Council of Chief State School Officers",
+    "url": "https://www.thecorestandards.org/Math/",
+    "part": "Kindergarten to Grade 8 standards"
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Place value to 1,000,000",
+          "shortName": "Place value to a million",
+          "family": "whole_numbers",
+          "standard": "4.NBT.A.2",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Rounding multi-digit numbers",
+          "shortName": "Rounding",
+          "family": "whole_numbers",
+          "standard": "4.NBT.A.3",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Adding and subtracting multi-digit numbers",
+          "shortName": "Add and subtract",
+          "family": "whole_numbers",
+          "standard": "4.NBT.B.4",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Multiplicative comparison",
+          "shortName": "Times as many",
+          "family": "whole_numbers",
+          "standard": "4.OA.A",
+          "domain": "Operations and Algebraic Thinking"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Multiplying multi-digit numbers",
+          "shortName": "Multiplication",
+          "family": "whole_numbers",
+          "standard": "4.NBT.B.5",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Dividing with remainders",
+          "shortName": "Division",
+          "family": "whole_numbers",
+          "standard": "4.NBT.B.6",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Factors, multiples and prime numbers",
+          "shortName": "Factors and multiples",
+          "family": "whole_numbers",
+          "standard": "4.OA.B",
+          "domain": "Operations and Algebraic Thinking"
+        },
+        {
+          "name": "Number and shape patterns",
+          "shortName": "Patterns",
+          "family": "patterns",
+          "standard": "4.OA.C",
+          "domain": "Operations and Algebraic Thinking"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Equivalent fractions and comparing fractions",
+          "shortName": "Equivalent fractions",
+          "family": "fractions",
+          "standard": "4.NF.A",
+          "domain": "Number and Operations: Fractions"
+        },
+        {
+          "name": "Adding and subtracting fractions and mixed numbers",
+          "shortName": "Adding fractions",
+          "family": "fractions",
+          "standard": "4.NF.B.3",
+          "domain": "Number and Operations: Fractions"
+        },
+        {
+          "name": "Multiplying a fraction by a whole number",
+          "shortName": "Fraction times a whole number",
+          "family": "fractions",
+          "standard": "4.NF.B.4",
+          "domain": "Number and Operations: Fractions"
+        },
+        {
+          "name": "Decimals: tenths and hundredths",
+          "shortName": "Tenths and hundredths",
+          "family": "decimals",
+          "standard": "4.NF.C",
+          "domain": "Number and Operations: Fractions"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Units of measure and converting them",
+          "shortName": "Converting units",
+          "family": "measurement",
+          "standard": "4.MD.A.1",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Area and perimeter formulas",
+          "shortName": "Area and perimeter",
+          "family": "measurement",
+          "standard": "4.MD.A.3",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Line plots with fractions",
+          "shortName": "Line plots",
+          "family": "data",
+          "standard": "4.MD.B",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Measuring angles",
+          "shortName": "Angles",
+          "family": "shapes",
+          "standard": "4.MD.C",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Lines, angles and symmetry",
+          "shortName": "Lines and symmetry",
+          "family": "shapes",
+          "standard": "4.G",
+          "domain": "Geometry"
+        }
+      ]
+    }
+  ]
+}

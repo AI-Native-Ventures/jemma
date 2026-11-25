@@ -5,6 +5,8 @@ import { getAccount } from '@/lib/data/p26'
 import { BoardHeader, Chevron } from './_ui'
 import { outlineButton } from './_styles'
 import { saveParentName, signOut } from './actions'
+import { requireRole } from '@/lib/auth'
+import { getFamilyPlan } from '@/lib/data/p161'
 
 export const metadata = { title: 'Your account · Jemma' }
 
@@ -13,7 +15,7 @@ const rowButton = { display: 'flex', alignItems: 'center', gap: 12, width: '100%
 const rowText = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 } as const
 
 export default async function ParentAccountPage() {
-  const account = await getAccount()
+  const account = { ...(await getAccount()), plan: await planLine() }
   const firstChild = account.children[0]
   return (
     <>
@@ -35,6 +37,14 @@ export default async function ParentAccountPage() {
             <span style={rowText}>
               <span style={{ fontSize: 16, fontWeight: 500 }}>Your children</span>
               <span style={{ fontSize: 13, lineHeight: 1.35, color: '#5C5A55' }}>{account.children.map((c) => c.firstName).join(', ')}</span>
+            </span>
+            <Chevron />
+          </Link>
+          {/* P161: the family's plan, its practice of the month, the card and the payments. */}
+          <Link href="/p/account/plan" style={{ ...rowLink, borderTop: '1px solid #F0EEE8' }}>
+            <span style={rowText}>
+              <span style={{ fontSize: 16, fontWeight: 500 }}>Plans and payments</span>
+              <span style={{ fontSize: 13, lineHeight: 1.35, color: '#5C5A55' }}>{account.plan}</span>
             </span>
             <Chevron />
           </Link>
@@ -72,4 +82,16 @@ export default async function ParentAccountPage() {
       </main>
     </>
   )
+}
+
+/** The line under "Plans and payments": the family's plan, or Free. */
+async function planLine(): Promise<string> {
+  try {
+    const { userId } = await requireRole('parent')
+    const { plan } = await getFamilyPlan(userId)
+    if (!plan) return 'Free: 2 practices a day for each child'
+    return plan.status === 'cancelled' ? `${plan.name}, cancelled` : `${plan.name}: ${plan.perMonth} practices a month`
+  } catch {
+    return 'Free: 2 practices a day for each child'
+  }
 }

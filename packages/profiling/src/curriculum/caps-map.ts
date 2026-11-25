@@ -1,6 +1,7 @@
 import type { Json, JemmaDb } from '../db'
 import type { TopicMapDraft } from '../schemas/curriculum'
 import { capsDraft, capsSource } from './caps'
+import { usDraft, usSource } from './us'
 
 // The CAPS map of a grade as the rows an approved map is made of, and the one function that writes an approved map. The demo seed uses them
 // (the made-up classes 5A, 7A and 4A, the marked stage's own map and a learner's own workspace) and so does a learner who adds a grade to their
@@ -35,6 +36,21 @@ export function capsMapOf(grade: number): CapsMap | null {
   const source = { kind: 'caps' as const, ...found }
   const rows = topicRowsOf(draft)
   return { grade, draft, source, stored: { ...draft, source }, rows, log: `Loaded the CAPS map for Grade ${grade}: ${rows.length} topics` }
+}
+
+/**
+ * P161: the built-in map of a country's grade: the CAPS map in South Africa, the Common Core map in the US, null anywhere else (a teacher there loads
+ * their own curriculum). The US map has the same shape as the CAPS map, so every caller writes it the same way.
+ */
+export function builtInMapOf(country: string, grade: number): CapsMap | null {
+  if (isSouthAfrica(country)) return capsMapOf(grade)
+  if (!/^(us|united states)$/i.test(country.trim())) return null
+  const draft = usDraft(grade)
+  const found = usSource(grade)
+  if (!draft || !found) return null
+  const source = { kind: 'caps' as const, ...found }
+  const rows = topicRowsOf(draft)
+  return { grade, draft, source, stored: { ...draft, source }, rows, log: `Loaded the US map (Common Core) for Grade ${grade}: ${rows.length} topics` }
 }
 
 /** True when a school's country is South Africa. A school stores its country as a code (`ZA`); the name is let through too, as the teacher's own button does. */

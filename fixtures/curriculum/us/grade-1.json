@@ -1,0 +1,132 @@
+{
+  "grade": 1,
+  "subject": "Mathematics",
+  "country": "US",
+  "course": null,
+  "source": {
+    "title": "Common Core State Standards for Mathematics",
+    "publisher": "National Governors Association Center for Best Practices and Council of Chief State School Officers",
+    "url": "https://www.thecorestandards.org/Math/",
+    "part": "Kindergarten to Grade 8 standards"
+  },
+  "terms": [
+    {
+      "term": 1,
+      "topics": [
+        {
+          "name": "Addition and subtraction word problems within 20",
+          "shortName": "Word problems within 20",
+          "family": "whole_numbers",
+          "standard": "1.OA.A",
+          "domain": "Operations and Algebraic Thinking"
+        },
+        {
+          "name": "Properties of addition",
+          "shortName": "Properties of addition",
+          "family": "patterns",
+          "standard": "1.OA.B",
+          "domain": "Operations and Algebraic Thinking"
+        },
+        {
+          "name": "Adding and subtracting within 20",
+          "shortName": "Add and subtract within 20",
+          "family": "whole_numbers",
+          "standard": "1.OA.C",
+          "domain": "Operations and Algebraic Thinking"
+        },
+        {
+          "name": "Counting to 120",
+          "shortName": "Counting to 120",
+          "family": "whole_numbers",
+          "standard": "1.NBT.A",
+          "domain": "Number and Operations in Base Ten"
+        }
+      ]
+    },
+    {
+      "term": 2,
+      "topics": [
+        {
+          "name": "Place value: tens and ones",
+          "shortName": "Tens and ones",
+          "family": "whole_numbers",
+          "standard": "1.NBT.B.2",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Comparing two-digit numbers",
+          "shortName": "Comparing numbers",
+          "family": "whole_numbers",
+          "standard": "1.NBT.B.3",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "The equal sign and missing numbers",
+          "shortName": "Equal sign",
+          "family": "patterns",
+          "standard": "1.OA.D",
+          "domain": "Operations and Algebraic Thinking"
+        }
+      ]
+    },
+    {
+      "term": 3,
+      "topics": [
+        {
+          "name": "Adding and subtracting within 100",
+          "shortName": "Add and subtract within 100",
+          "family": "whole_numbers",
+          "standard": "1.NBT.C",
+          "domain": "Number and Operations in Base Ten"
+        },
+        {
+          "name": "Measuring length",
+          "shortName": "Measuring length",
+          "family": "measurement",
+          "standard": "1.MD.A",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Telling time to the half hour",
+          "shortName": "Time to the half hour",
+          "family": "measurement",
+          "standard": "1.MD.B",
+          "domain": "Measurement and Data"
+        }
+      ]
+    },
+    {
+      "term": 4,
+      "topics": [
+        {
+          "name": "Organizing and reading data",
+          "shortName": "Reading data",
+          "family": "data",
+          "standard": "1.MD.C",
+          "domain": "Measurement and Data"
+        },
+        {
+          "name": "Shapes and their attributes",
+          "shortName": "Shapes",
+          "family": "shapes",
+          "standard": "1.G.A.1",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Putting shapes together",
+          "shortName": "Composing shapes",
+          "family": "shapes",
+          "standard": "1.G.A.2",
+          "domain": "Geometry"
+        },
+        {
+          "name": "Halves and fourths of shapes",
+          "shortName": "Halves and fourths",
+          "family": "fractions",
+          "standard": "1.G.A.3",
+          "domain": "Geometry"
+        }
+      ]
+    }
+  ]
+}

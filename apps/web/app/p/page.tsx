@@ -145,6 +145,11 @@ function Children({ kids, first, initials }: { kids: ChildCard[]; first: string;
           ))}
         </section>
 
+        {/* P162: one phone for the family: each child taps their face and types their own PIN. */}
+        <Link href="/p/who" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 56, padding: '12px 20px', borderRadius: 14, background: '#FFB81C', color: ink, fontSize: 17, fontWeight: 700, textDecoration: 'none' }}>
+          Who&apos;s learning? Hand the phone over
+        </Link>
+
         <Link href="/p/add" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: 16, borderRadius: 20, border: '1.5px dashed #8F8D88', textDecoration: 'none', color: ink }}>
           <span aria-hidden="true" style={{ width: 44, height: 44, flex: 'none', borderRadius: 999, background: '#EFECE6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={ink} strokeWidth="2" strokeLinecap="round">
