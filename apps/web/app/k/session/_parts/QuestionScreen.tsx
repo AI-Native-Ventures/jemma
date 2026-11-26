@@ -23,6 +23,7 @@ import { TapAnswer } from './answers/TapShapes'
 import { LineAnswer } from './answers/LineGrid'
 import { PinAnswer } from './answers/PinLine'
 import { ClockAnswer } from './answers/ClockFace'
+import { MatchAnswer } from './answers/MatchPairs'
 import { YoungSize } from './answers/YoungSize'
 import { MathAnswerField } from './MathAnswerField'
 import { equationCountHint, MULTI_HINT, MultiAnswer } from './answers/MultiAnswer'
@@ -274,6 +275,9 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
     // P170: things dragged (or tapped) into groups.
     case 'groups':
       return <GroupsAnswer groups={shape.groups} onChange={b.set.text} />
+    // P178: things matched in pairs by tapping one, then its partner.
+    case 'match':
+      return <MatchAnswer match={shape.match} onChange={b.set.text} />
     // P177: a clock set by dragging its hands, or the time typed instead.
     case 'clock':
       return <ClockAnswer clock={shape.clock} onChange={b.set.text} typed={<AnswerArea shape={shape.typed} b={b} prompt={prompt} topic={topic} />} />

@@ -11,6 +11,8 @@ import {
   groupsText,
   clockOf,
   clockWords,
+  matchOf,
+  matchText,
   parabolaThrough,
   plotPoints,
   sketchName,
@@ -44,7 +46,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { BlocksSpec, Choice, ClockSpec, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, LineSpec, PinSpec, PlotSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
+import type { BlocksSpec, Choice, ClockSpec, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, LineSpec, MatchSpec, PinSpec, PlotSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -126,6 +128,8 @@ export type QuestionForChild = {
   pin?: PinSpec
   /** P177: the clock the learner sets. The time is the answer, and is never sent. */
   clock?: ClockSpec
+  /** P178: the things the learner matches in pairs. Which goes with which is the answer, and is never sent. */
+  match?: MatchSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -204,6 +208,10 @@ export type MissedQuestion = {
   clock?: ClockSpec
   clockWrote?: { hour: number; minute: number } | null
   clockRight?: { hour: number; minute: number } | null
+  /** P178: the things matched, the partner the learner gave each left one (null: none) and the right one, as indexes into `right`. */
+  match?: MatchSpec
+  matchWrote?: (number | null)[]
+  matchRight?: number[]
 }
 
 /** The P148 fields of a question for the child. Shape hints only: how many boxes, which clock, which unit. Never the key. */
@@ -262,6 +270,7 @@ export function stripQuestion(
     ...(q.line ? { line: q.line } : {}),
     ...(q.pin ? { pin: q.pin } : {}),
     ...(q.clock ? { clock: q.clock } : {}),
+    ...(q.match ? { match: q.match } : {}),
   }
 }
 
@@ -363,6 +372,8 @@ export type AnswerShape =
   | { kind: 'pin'; pin: PinSpec; as: string; typed: AnswerShape }
   /** P177: a clock set by dragging its hands, the answer the time it shows. `typed` is the same answer typed instead: the boxes of a time. */
   | { kind: 'clock'; clock: ClockSpec; typed: AnswerShape }
+  /** P178: things matched in pairs by tapping, the answer the partner of each. */
+  | { kind: 'match'; match: MatchSpec; young?: true }
 
 /** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
 export type QuantityExtras = { unit?: string; round?: number; signed?: true }
@@ -392,6 +403,7 @@ type ShapeParts = {
   line?: LineSpec
   pin?: PinSpec
   clock?: ClockSpec
+  match?: MatchSpec
 }
 
 export function answerShape(
@@ -434,6 +446,8 @@ export function answerShape(
     const { line, ...rest } = q
     return { kind: 'line', line, typed: answerShape(rest) }
   }
+  // P178: things matched in pairs, the answer the partner of each.
+  if (q.match && q.answerKind === 'list') return { kind: 'match', match: q.match, ...(q.young ? { young: true as const } : {}) }
   // P173: shapes picked by tapping, the answer which ones.
   if (q.tap && q.answerKind === 'list') return { kind: 'tap', tap: q.tap, ...(q.young ? { young: true as const } : {}) }
   // P170: things sorted into groups, the answer the group of each.
@@ -518,6 +532,8 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
     case 'groups':
     // P173: the numbers of the picked shapes, or nothing while fewer than 2 are picked.
     case 'tap':
+    // P178: the partner of each left one, or nothing while one is not joined.
+    case 'match':
       return /^\d+(; \d+)*$/.test(text) ? text : ''
     // P171: the x and the y of each point placed (or typed), or nothing while one is missing.
     case 'plot':
@@ -589,7 +605,29 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
           }
         : {}),
       ...clockReview(item),
+      ...matchReview(item),
     }))
+}
+
+/** P178: the pairs the learner joined and the right ones, said in words ("7 with seven, 12 with twelve and 20 with twenty"), or "All 3 pairs" when right. */
+function matchReview(item: StoredItem): Partial<MissedQuestion> {
+  const m = item.question.match
+  if (!m) return {}
+  const right = (matchOf(item.question.answer, m) ?? []).map((v) => v - 1)
+  const values = item.unread ? [] : splitValues(item.answer).map((t) => (/^\d+$/.test(t) && Number(t) >= 1 && Number(t) <= m.right.length ? Number(t) - 1 : null))
+  const wrote = m.left.map((_, i) => values[i] ?? null)
+  const said = (xs: (number | null)[]) => matchText(m, xs.map((x) => (x === null ? null : x + 1)))
+  const all = wrote.every((w, i) => w === right[i])
+  return {
+    match: m,
+    matchRight: right,
+    matchWrote: wrote,
+    wrote: item.unread ? '' : all ? `All ${m.left.length} pairs` : said(wrote),
+    right: said(right),
+    cells: undefined,
+    table: undefined,
+    ordered: undefined,
+  }
 }
 
 /** P177: the clock the learner set and the right one, said as a time is said ("half past 4"); what the learner typed stays as typed when it is not a time. */

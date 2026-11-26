@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, test, vi } from 'vitest'
 import { z } from 'zod'
-import { columnsBullet, groupsBullet, PIN_BULLET, SHADE_BULLET, TAP_BULLET, KIT_PICTURES, PICTURE_KITS, pictureBullet, primaryAnswerBlock, primaryKit, withPrimaryAnswers, type PrimaryKit } from '../src/ai/primary-answers'
+import { columnsBullet, groupsBullet, matchBullet, PIN_BULLET, SHADE_BULLET, TAP_BULLET, KIT_PICTURES, PICTURE_KITS, pictureBullet, primaryAnswerBlock, primaryKit, withPrimaryAnswers, type PrimaryKit } from '../src/ai/primary-answers'
 import { renderPrompt } from '../src/ai/prompt-variants'
 import { makeClassContext } from '../src/ai/subject-profile'
 import { isSeniorQuestion } from '../src/logic/answers/quantity'
@@ -184,9 +184,10 @@ describe('the picture bullet the lesson writer is told', () => {
     expect(primaryAnswerBlock('addsub', klass(3))).toBe(`${pictureBullet('addsub', klass(3))}\n${columnsBullet(klass(3))}`)
     expect(primaryAnswerBlock('addsub', klass(1))).toBe(pictureBullet('addsub', klass(1)))
     expect(primaryAnswerBlock('multiply', klass(3))).toBe(`${pictureBullet('multiply', klass(3))}\n${groupsBullet('multiply')}`)
-    expect(primaryAnswerBlock('numbers', klass(3))).toBe(`${pictureBullet('numbers', klass(3))}\n${groupsBullet('numbers')}\n${PIN_BULLET}`)
+    // P178: counting and shapes also have a line for matching pairs.
+    expect(primaryAnswerBlock('numbers', klass(3))).toBe(`${pictureBullet('numbers', klass(3))}\n${groupsBullet('numbers')}\n${PIN_BULLET}\n${matchBullet('numbers', klass(3))}`)
     // P173: shapes also has its line for tapping shapes.
-    expect(primaryAnswerBlock('shapes', klass(3))).toBe(`${pictureBullet('shapes', klass(3))}\n${groupsBullet('shapes')}\n${TAP_BULLET}`)
+    expect(primaryAnswerBlock('shapes', klass(3))).toBe(`${pictureBullet('shapes', klass(3))}\n${groupsBullet('shapes')}\n${TAP_BULLET}\n${matchBullet('shapes', klass(3))}`)
     expect(PICTURE_KITS).toEqual(['fractions', 'shapes', 'multiply', 'numbers', 'addsub'])
     const data = primaryAnswerBlock('data', klass(4))
     expect(data).toContain('- `table`')
