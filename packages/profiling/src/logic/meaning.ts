@@ -1077,8 +1077,9 @@ export function markQuestion(
 ): MeaningMark {
   // P174: a line drawn on a grid is right when its two points are on the key's line, whichever two they are (logic/answers/line.ts).
   if ((q as { line?: unknown }).line && q.answerKind === 'list') return markLine(q.answer, answer, readNumber)
-  // P176: a sketch is marked by its curve: three points of the same parabola are right, in any order (logic/answers/plot.ts).
-  if ((q as { plot?: { curve?: string } }).plot?.curve && q.answerKind === 'list') return markSketch(q.answer, answer, readNumber)
+  // P176: a sketch is marked by its curve: three points of the same parabola are right, in any order (logic/answers/plot.ts). P181: and a hyperbola or a cubic graph.
+  const curve = (q as { plot?: { curve?: 'parabola' | 'hyperbola' | 'cubic' } }).plot?.curve
+  if (curve && q.answerKind === 'list') return markSketch(q.answer, answer, readNumber, curve)
   // P177: a clock is marked on its face: twelve hours apart is the same time (logic/answers/clock.ts).
   if ((q as { clock?: unknown }).clock && q.answerKind === 'time') return markClock(q.answer, answer)
   // P179: a proof is right when each line equals the one before it and it ends on the right side (logic/answers/proof.ts).

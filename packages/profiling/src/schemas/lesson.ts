@@ -160,9 +160,10 @@ export const PlotSchema = z.object({
   place: z.array(z.string()),
   /**
    * P176: a sketch of the graph in the question: the points to place are its key points (where it cuts the x-axis, its turning point) and Jemma joins them into
-   * the curve. An answer is right when its points make the same graph, whichever points of it they are.
+   * the curve. An answer is right when its points make the same graph, whichever points of it they are. P181: a hyperbola (3 points, its asymptotes drawn) or a
+   * cubic graph (4 points).
    */
-  curve: z.enum(['parabola']).optional(),
+  curve: z.enum(['parabola', 'hyperbola', 'cubic']).optional(),
 })
 export type PlotSpec = z.infer<typeof PlotSchema>
 

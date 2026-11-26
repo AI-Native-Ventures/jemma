@@ -152,6 +152,9 @@ const SENIOR_PICTURES =
   // P176: a sketch of a parabola through its key points.
   'To have the learner sketch a parabola, write its equation in the question (`Sketch y = x² − 4. Tap where it cuts the x-axis, and its turning point.`) and give a `plot` with `curve: "parabola"` and `place` naming its 3 key points ' +
   '(`["x-intercept", "x-intercept", "turning point"]`), each on a corner of the grid, with the turning point inside the grid: Jemma joins the points the learner taps into the curve. The `answer` is the x and the y of the 3 key points (`-2; 0; 2; 0; 0; -4`). ' +
+  // P181: a hyperbola and a cubic graph are sketched the same way.
+  'A hyperbola is sketched the same way with `curve: "hyperbola"` and 3 points of it, with both asymptotes inside the grid (`Sketch y = 2/x + 1.`, `place` `["x-intercept", "point", "point"]`, `answer` `-2; 0; 1; 3; 2; 2`). ' +
+  'A cubic graph has `curve: "cubic"` and 4 key points, with its turning points inside the grid (`Sketch y = (x + 1)(x − 1)(x − 3).`, `place` `["x-intercept", "x-intercept", "x-intercept", "y-intercept"]`, `answer` `-1; 0; 1; 0; 3; 0; 0; 3`). ' +
   // P174: the learner draws a straight line on a grid by tapping two points on it.
   'To have the learner draw a straight line (the graph of y = 2x \u2212 1, a line of symmetry), give `line` with `xMin`, `xMax`, `yMin`, `yMax` (whole numbers, at most 20 squares across and up) and no `diagram`. ' +
   'The `answerKind` is `list` and the `answer` is two different points on the line that are corners of the grid, x and y each (`0; -1; 2; 3`): the learner may tap any two points on the line. ' +

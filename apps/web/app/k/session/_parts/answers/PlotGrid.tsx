@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, type MouseEvent, type ReactNode } from 'react'
-import { parabolaThrough, plotAnswer, sketchCurve, sketchName, turningPoint, type Parabola } from '@jemma/profiling/logic'
+import { CURVE_NAME, curveThrough, curveWords, plotAnswer, sameCurve, sketchCurve, sketchName, turningPoints, type Curve } from '@jemma/profiling/logic'
 import type { PlotSpec } from '@jemma/profiling/schemas'
 import { BODY, GOLD, GREEN, INK, WHITE } from '@/components/diagrams/shared'
 
@@ -11,6 +11,7 @@ import { BODY, GOLD, GREEN, INK, WHITE } from '@/components/diagrams/shared'
 //
 // P176: a sketch ("Sketch a graph" board): the learner taps 3 key points of a parabola in any order, each written where it is ("(−2 ; 0)"), and Jemma joins
 // them into the curve. The results draw the right graph in green with its turning point, and the learner's graph dashed, turning where it turned.
+// P181: a hyperbola (3 points; its asymptotes are drawn dashed) and a cubic graph (4 points; its turning points are marked) are sketched the same way.
 
 const GOLD_TINT = '#FFEDC6'
 const GREEN_TINT = '#DDEFE6'
@@ -45,8 +46,9 @@ export type PlotGridProps = {
   onPick?: (i: number) => void
 }
 
-/** The parabola through the placed points of a sketch, or null while one is not placed or when they make none. */
-export const sketchOf = (points: (Point | null)[]): Parabola | null => (points.length === 3 && points.every((q) => q !== null) ? parabolaThrough(points as Point[]) : null)
+/** The curve through the placed points of a sketch, or null while one is not placed or when they make none. */
+export const sketchOf = (plot: PlotSpec, points: (Point | null)[]): Curve | null =>
+  plot.curve && points.length > 0 && points.every((q) => q !== null) ? curveThrough(plot.curve, points as Point[]) : null
 
 export function PlotGrid({ plot, mode, points = [], right = [], picked = null, last = null, onTap, onPick }: PlotGridProps) {
   const svg = useRef<SVGSVGElement>(null)
@@ -85,7 +87,7 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
   // P176: a sketch writes where each point is, away from the middle of the grid (a point on the left has its words on its left), unless they would not fit.
   // Once the curve is drawn the words go on the outside of it: under the point when it opens up, over it when it opens down. A white edge keeps them clear
   // of the lines under them.
-  const sketch = plot.curve === 'parabola'
+  const sketch = plot.curve !== undefined
   const where = (q: Point, color: string, k: string, under = false) => {
     const text = sketchName(q)
     const wide = text.length * 7.4
@@ -100,13 +102,28 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
       </text>
     )
   }
-  const curve = (f: Parabola, color: string, width: number, k: string, dash?: string) =>
-    sketchCurve(plot, f).map((piece, i) => (
+  const curve = (c: Curve, color: string, width: number, k: string, dash?: string) =>
+    sketchCurve(plot, c).map((piece, i) => (
       <polyline key={`${k}${i}`} data-curve={k} points={poly(piece)} fill="none" stroke={color} strokeWidth={width} strokeDasharray={dash} strokeLinejoin="round" strokeLinecap="round" />
     ))
-  const mine = sketch ? sketchOf(points) : null
-  const theRight = sketch && right.length === 3 ? parabolaThrough(right) : null
-  const same = mine && theRight ? Math.abs(mine.a - theRight.a) < 1e-6 && Math.abs(mine.b - theRight.b) < 1e-6 && Math.abs(mine.c - theRight.c) < 1e-6 : false
+  const inside = (q: Point) => q.x >= plot.xMin && q.x <= plot.xMax && q.y >= plot.yMin && q.y <= plot.yMax
+  // P181: the asymptotes of a hyperbola, thin and dashed, where they cross the grid.
+  const asymptotes = (c: Curve, color: string, k: string) => {
+    if (c.kind !== 'hyperbola') return null
+    const { p, q } = c.f
+    return (
+      <g data-asymptotes={k}>
+        {p > plot.xMin && p < plot.xMax ? <line x1={X(p)} y1={Y(plot.yMin)} x2={X(p)} y2={Y(plot.yMax)} stroke={color} strokeWidth={1.6} strokeDasharray="5 4" /> : null}
+        {q > plot.yMin && q < plot.yMax ? <line x1={X(plot.xMin)} y1={Y(q)} x2={X(plot.xMax)} y2={Y(q)} stroke={color} strokeWidth={1.6} strokeDasharray="5 4" /> : null}
+      </g>
+    )
+  }
+  const mine = sketch ? sketchOf(plot, points) : null
+  const theRight = sketch && plot.curve && right.length === plot.place.length ? curveThrough(plot.curve, right) : null
+  const same = mine && theRight ? sameCurve(mine, theRight) : false
+  // Where the learner's "yours" goes: their curve's first turning point on the grid, or where its asymptotes cross.
+  const yoursAt = (c: Curve): Point | null => (c.kind === 'hyperbola' ? (inside({ x: c.f.p, y: c.f.q }) ? { x: c.f.p, y: c.f.q } : null) : (turningPoints(c).find(inside) ?? null))
+  const opensUp = (c: Curve) => c.kind === 'parabola' && c.f.a > 0
   return (
     <svg
       ref={svg}
@@ -115,7 +132,7 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
       width="100%"
       role="group"
       aria-label={`A grid from ${plot.xMin} to ${plot.xMax} across and from ${plot.yMin} to ${plot.yMax} up${given.length ? `, with ${given.map((q) => `${q.label.trim()} at ${name(q)}`).join(', ')}` : ''}.${
-        sketch && mode === 'answer' && placed.length ? ` Points at ${placed.map(sketchName).join(', ')}.${mine ? ` Joined into a graph that turns at ${sketchName(turningPoint(mine))}.` : ''}` : ''
+        sketch && mode === 'answer' && placed.length ? ` Points at ${placed.map(sketchName).join(', ')}.${mine ? ` Joined into a graph that ${curveWords(mine)}.` : ''}` : ''
       }`}
       onClick={tap}
       style={{ display: 'block', maxWidth: W, height: 'auto', cursor: mode === 'answer' ? 'crosshair' : 'default', userSelect: 'none', fontFamily: "var(--font-outfit), Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif" }}
@@ -135,14 +152,16 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
       ))}
       {mode === 'results' && sketch ? (
         <>
+          {theRight ? asymptotes(theRight, GREEN, 'right') : null}
           {theRight ? curve(theRight, GREEN, 3, 'right') : null}
-          {theRight ? <circle data-right="" cx={X(turningPoint(theRight).x)} cy={Y(turningPoint(theRight).y)} r={6} fill={GREEN} /> : null}
+          {theRight ? turningPoints(theRight).filter(inside).map((t, i) => <circle key={`rt${i}`} data-right="" cx={X(t.x)} cy={Y(t.y)} r={6} fill={GREEN} />) : null}
           {mine && !same ? (
             <g data-yours="">
+              {asymptotes(mine, BODY, 'yours')}
               {curve(mine, BODY, 2.4, 'yours', '6 5')}
               {(() => {
-                const top = turningPoint(mine)
-                if (top.x < plot.xMin || top.x > plot.xMax || top.y < plot.yMin || top.y > plot.yMax) return null
+                const top = yoursAt(mine)
+                if (!top) return null
                 return (
                   <>
                     <circle cx={X(top.x)} cy={Y(top.y)} r={8} fill="none" stroke={BODY} strokeWidth={2} strokeDasharray="3 3" />
@@ -184,6 +203,7 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
       {mode === 'answer' ? (
         <>
           {joined ? <polygon points={poly(points as Point[])} fill="none" stroke={INK} strokeWidth={2} strokeDasharray="6 4" /> : null}
+          {mine ? asymptotes(mine, GOLD, 'drawn') : null}
           {mine ? curve(mine, GOLD, 3.5, 'drawn') : null}
           {points.map((q, i) =>
             q ? (
@@ -199,7 +219,7 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
                 <circle cx={X(q.x)} cy={Y(q.y)} r={14} fill={WHITE} fillOpacity={0} />
                 {picked === i ? <circle cx={X(q.x)} cy={Y(q.y)} r={11} fill="none" stroke={INK} strokeWidth={2} strokeDasharray="3 3" /> : null}
                 <circle cx={X(q.x)} cy={Y(q.y)} r={7} fill={GOLD} stroke={INK} strokeWidth={2} />
-                {!sketch ? label(q, plot.place[i]!.trim(), '#B8281E', `pl${i}`) : !mine ? where(q, '#B8281E', `pl${i}`) : i === (picked ?? last) ? where(q, '#B8281E', `pl${i}`, mine.a > 0) : null}
+                {!sketch ? label(q, plot.place[i]!.trim(), '#B8281E', `pl${i}`) : !mine ? where(q, '#B8281E', `pl${i}`) : i === (picked ?? last) ? where(q, '#B8281E', `pl${i}`, opensUp(mine)) : null}
               </g>
             ) : null,
           )}
@@ -228,7 +248,7 @@ export function plotHint(plot: PlotSpec, points: (Point | null)[], last: number 
 }
 
 /** P176: the line under a sketch: the points placed so far and how many are still to place, then that Jemma joined them. It never says whether they are right. */
-export function sketchHint(points: (Point | null)[]): ReactNode {
+export function sketchHint(points: (Point | null)[], plot?: PlotSpec): ReactNode {
   const placed = points.filter((q): q is Point => q !== null)
   if (placed.length === 0) return 'Tap the grid to place a point.'
   const left = points.length - placed.length
@@ -239,12 +259,13 @@ export function sketchHint(points: (Point | null)[]): ReactNode {
         <strong className="font-bold text-ink">{sketchName(q)}</strong>
       </span>
     ))
-    return <>You placed {list}. {left === 1 ? 'One more point to go.' : `${left === 2 ? 'Two' : left} more points to go.`}</>
+    return <>You placed {list}. {left === 1 ? 'One more point to go.' : `${['Two', 'Three'][left - 2] ?? left} more points to go.`}</>
   }
-  return sketchOf(points) ? (
+  const spec: PlotSpec = plot ?? { xMin: 0, xMax: 1, yMin: 0, yMax: 1, place: points.map(() => ''), curve: 'parabola' }
+  return sketchOf(spec, points) ? (
     <>Jemma joined your <strong className="font-bold text-ink">{placed.length}</strong> points into a graph. Tap a point to move it.</>
   ) : (
-    `Jemma cannot join these ${placed.length} points into a parabola. Tap a point to move it.`
+    `Jemma cannot join these ${placed.length} points into a ${CURVE_NAME[spec.curve ?? 'parabola']}. Tap a point to move it.`
   )
 }
 
@@ -298,7 +319,7 @@ export function PlotAnswer({ plot, onChange, typed }: { plot: PlotSpec; onChange
             </button>
           </div>
           <PlotGrid plot={plot} mode="answer" points={points} picked={picked} last={last} onTap={tap} onPick={(i) => setPicked(picked === i ? null : i)} />
-          <p aria-live="polite" className="m-0 text-center text-[16px] leading-[1.4] text-body">{plot.curve ? sketchHint(points) : plotHint(plot, points, last)}</p>
+          <p aria-live="polite" className="m-0 text-center text-[16px] leading-[1.4] text-body">{plot.curve ? sketchHint(points, plot) : plotHint(plot, points, last)}</p>
           <button type="button" onClick={toggle} className={textButton}>{plot.curve ? 'Or type the points instead' : 'Or type the coordinates instead'}</button>
         </>
       )}
