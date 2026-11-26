@@ -127,8 +127,8 @@ describe('primaryKit: which topics of Grades 1 to 6 get the new answer kinds', (
     expect(primaryKit(klass(6), topic)).toBeNull()
   })
 
-  // P188: "Count objects" has a kit now (objects to count, a ten-frame); the baseline class still gets none (above). P191: and so do geometric patterns.
-  test.each(['Division', 'Number sentences', 'Symmetry', 'Probability', 'Transformations', 'Problems in context: addition and subtraction', 'History', ''])(
+  // P188: "Count objects" has a kit now (objects to count, a ten-frame); the baseline class still gets none (above). P191: and so do geometric patterns. P192: and symmetry.
+  test.each(['Division', 'Number sentences', 'Probability', 'Transformations', 'Problems in context: addition and subtraction', 'History', ''])(
     '"%s" gets nothing in Grade 3 either',
     (topic) => {
       expect(primaryKit(klass(3), topic)).toBeNull()
@@ -264,7 +264,7 @@ describe('the schema of a gated lesson', () => {
     expect(items.properties).not.toHaveProperty('steps')
     // P166: a question may carry one of the seven primary pictures, and only those. P188: and the counting pictures of the question type boards.
     const kinds = ((items.properties.diagram as { oneOf: { properties: { kind: { const: string } } }[] }).oneOf ?? []).map((o) => o.properties.kind.const)
-    // P189: and a factor tree, fraction circles, a percentage bar, a calendar, and coins and notes. P190: and the six measuring pictures. P191: and four for patterns, algebra and graphs.
+    // P189: and a factor tree, fraction circles, a percentage bar, a calendar, and coins and notes. P190: and the six measuring pictures. P191: and four for patterns, algebra and graphs. P192: and four for shapes and position.
     expect(kinds.sort()).toEqual([
       'area_model',
       'balance',
@@ -273,6 +273,7 @@ describe('the schema of a gated lesson', () => {
       'box_net',
       'calendar',
       'compare',
+      'cube_stack',
       'cubes',
       'dot_array',
       'factor_tree',
@@ -282,6 +283,7 @@ describe('the schema of a gated lesson', () => {
       'grid_area',
       'hundred_chart',
       'jug',
+      'map_grid',
       'money',
       'number_line',
       'objects',
@@ -290,15 +292,17 @@ describe('the schema of a gated lesson', () => {
       'ruler',
       'scale_dial',
       'shape_2d',
+      'solid',
+      'symmetry_lines',
       'ten_frame',
       'thermometer',
       'tile_pattern',
       'travel_graph',
     ])
     expect(items.required).not.toContain('steps')
-    // A choice is plain text (a picture choice, true or false and a reason are for a senior class).
-    const fields = items.properties as Record<string, { items?: { type?: string } }>
-    expect(fields.choices?.items?.type).toBe('string')
+    // A choice is plain text, or (P192) a picture of the primary kinds; true or false and a reason are for a senior class.
+    const fields = items.properties as Record<string, { items?: { anyOf?: { type?: string }[] } }>
+    expect(fields.choices?.items?.anyOf?.map((o) => o.type)).toEqual(['string', 'object'])
     for (const word of ['"truefalse"', '"reason"', '"ratio"']) expect(json).not.toContain(word)
   })
 })
@@ -321,7 +325,8 @@ describe('what the lesson writer asks the model', () => {
 
   test('the prompt lines are in the request of a gated topic only', async () => {
     const gated = await ask(4, 'Number patterns')
-    const plain = await ask(4, 'Symmetry')
+    // P192: Symmetry has a kit now, so the plain topic is Transformations.
+    const plain = await ask(4, 'Transformations')
     expect(gated.system).toContain('`list`')
     expect(plain.system).not.toContain('`list`')
     expect(plain.system).not.toContain('`time`')

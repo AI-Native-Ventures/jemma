@@ -33,6 +33,10 @@ import { TilePattern } from './TilePattern'
 import { FlowDiagram } from './FlowDiagram'
 import { Balance } from './Balance'
 import { TravelGraph } from './TravelGraph'
+import { MapGrid } from './MapGrid'
+import { Solid } from './Solid'
+import { CubeStack } from './CubeStack'
+import { SymmetryLines } from './SymmetryLines'
 import type { Variant } from './shared'
 
 export type DiagramViewProps = {
@@ -140,6 +144,15 @@ export function DiagramView({ spec, variant, highlight, className, caption, seni
         return <Balance {...s} variant={variant === 'question' ? 'question' : 'card'} />
       case 'travel_graph':
         return <TravelGraph {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
+      // P192: shapes and position (a map on a grid, a 3D object, a shape of cubes, lines across a shape).
+      case 'map_grid':
+        return <MapGrid {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'solid':
+        return <Solid {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'cube_stack':
+        return <CubeStack {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'symmetry_lines':
+        return <SymmetryLines {...s} variant={variant === 'question' ? 'question' : 'card'} />
       default:
         return <PictureMissing className={className} />
     }

@@ -13,13 +13,29 @@ import { isBaselineClass, type ClassContext } from './subject-profile'
 export const isMathsGrade1To6 = (c: ClassContext | null): c is ClassContext =>
   !!c && c.subjectKey === 'mathematics' && Number.isInteger(c.grade) && c.grade >= 1 && c.grade <= 6
 
-export type PrimaryKit = 'time' | 'measure' | 'order' | 'patterns' | 'data' | 'money' | 'place' | 'fractions' | 'shapes' | 'multiply' | 'numbers' | 'addsub' | 'growing'
+export type PrimaryKit =
+  | 'time'
+  | 'measure'
+  | 'order'
+  | 'patterns'
+  | 'data'
+  | 'money'
+  | 'place'
+  | 'fractions'
+  | 'shapes'
+  | 'multiply'
+  | 'numbers'
+  | 'addsub'
+  | 'growing'
+  | 'position'
+  | 'solids'
+  | 'symmetry'
 
 /**
  * P166: the kits that add pictures to a question (a fraction bar, a shape, an area model, a number line) and no new answer kind. P168: addition and
  * subtraction (`addsub`, from Grade 2) also adds a sum worked in columns.
  */
-export const PICTURE_KITS: readonly PrimaryKit[] = ['fractions', 'shapes', 'multiply', 'numbers', 'addsub', 'growing']
+export const PICTURE_KITS: readonly PrimaryKit[] = ['fractions', 'shapes', 'multiply', 'numbers', 'addsub', 'growing', 'position', 'solids', 'symmetry']
 
 /** A topic name as it is compared: lower case, words only, "(Term 2)" and an "&" put right. */
 const norm = (name: string) =>
@@ -82,6 +98,10 @@ const KIT_TOPICS: { kit: PrimaryKit; names: RegExp; baseline?: false }[] = [
   { kit: 'measure', names: /^surface area$/, baseline: false },
   // P191: geometric patterns have a kit of their own, so their questions may show a growing pattern of tiles.
   { kit: 'growing', names: /^geometric patterns$/, baseline: false },
+  // P192: position and views, 3D objects and symmetry have kits of their own, so their questions may show a map, a shape of cubes, a 3D object or lines across a shape.
+  { kit: 'position', names: /^(position orientation and views|position and movement|viewing objects)$/, baseline: false },
+  { kit: 'solids', names: /^(d objects|properties of d objects)$/, baseline: false },
+  { kit: 'symmetry', names: /^(symmetry|lines and symmetry)$/, baseline: false },
   // P168: addition and subtraction have a kit of their own, so their questions (from Grade 2) may be sums worked in columns.
   { kit: 'addsub', names: /^(addition and subtraction|add and subtract within)$/, baseline: false },
 ]
@@ -116,6 +136,9 @@ export const KIT_PICTURES: Record<PrimaryKit, readonly string[]> = {
   numbers: ['number_line', 'objects', 'ten_frame', 'hundred_chart', 'compare'],
   addsub: ['number_line', 'ten_frame', 'objects', 'hundred_chart'],
   growing: ['tile_pattern'],
+  position: ['map_grid', 'cube_stack', 'grid_area'],
+  solids: ['solid', 'grid_area'],
+  symmetry: ['symmetry_lines'],
 }
 
 /**
@@ -144,6 +167,11 @@ export const PICTURE_GRADES: Readonly<Record<string, readonly [number, number]>>
   // P191
   tile_pattern: [1, 6],
   flow_diagram: [4, 6],
+  // P192
+  map_grid: [1, 6],
+  solid: [1, 6],
+  cube_stack: [3, 6],
+  symmetry_lines: [1, 6],
 }
 
 /**
@@ -192,7 +220,19 @@ const PICTURE_WORDS: Record<string, string> = {
     '`tile_pattern` (a growing pattern of tiles: `show` patterns, 2 to 4, from pattern `from`, 1 when left out, of a `shape`: `row` (pattern n is a row of n tiles), `L` (2n + 1 tiles), `T` (3n + 1), `cross` (4n + 1), `square` (n by n), `rectangle` (n rows of n + 1) or `stairs` (steps of 1 to n); ask about a pattern that is not drawn, like the next one or pattern 10)',
   flow_diagram:
     '`flow_diagram` (each of 1 to 4 `inputs`, whole numbers, goes through the steps of `rule` in turn, each an `op` (`add`, `subtract`, `multiply` or `divide`) and `by`, like `[{ "op": "multiply", "by": 4 }, { "op": "add", "by": 1 }]`; `blanks` are the places of the outputs left blank, from 1, and `blankInputs` of the inputs; the `answer` is the blank, or every blank as a `list`, the outputs first)',
+  // P192
+  map_grid:
+    '`map_grid` (a map on a grid of `cols` by `rows` squares, 3 to 8 by 3 to 6, with 1 to 6 `places`, each a `name`, a square (`col` from the left and `row` from the bottom, both from 0) and `house` `true` for the one place drawn as a house; each place is marked with its first letter and named under the map) for moving squares right, left, up and down',
+  solid: '`solid` (a 3D object with its hidden edges dashed: `shape` is `cube`, `cuboid`, `square_pyramid`, `triangular_pyramid`, `triangular_prism`, `cylinder`, `cone` or `sphere`) for faces, edges and corners',
+  cube_stack:
+    '`cube_stack` (a shape built from cubes, drawn in 3D: `heights` says how many cubes, 0 to 3, stand on each square, a row of numbers for each row from the back to the front, like `[[2, 1, 1]]`) for views and counting cubes',
+  symmetry_lines:
+    '`symmetry_lines` (a `shape` standing upright, `heart`, `star`, `rectangle`, `square`, `triangle`, `circle`, `house`, `arrow` or `kite`, with 2 to 4 dashed `lines` across it named A, B, C and D in order, each `vertical`, `horizontal`, `diagonal` or `other_diagonal`): ask which line is a line of symmetry as a `choice` question with the choices `A`, `B` and so on, and draw exactly one line of symmetry',
 }
+
+/** P192: a choice may be a picture: a net of a cube, or a view from the top drawn as squares. */
+export const PICTURE_CHOICES_BULLET =
+  '- A choice may be a picture: give it as `{ "diagram": ... }`, with words in `text` when they help. A net of a cube or a view from the top is a `grid_area` of its squares (`cells` are [column, row] from the top left), like `{ "diagram": { "kind": "grid_area", "cols": 4, "rows": 3, "cells": [[1, 0], [0, 1], [1, 1], [2, 1], [3, 1], [1, 2]] } }`. Give 3 or 4 picture choices, only one of them right, and never write the answer in the words of a choice.'
 
 /** P190: a ruler is in centimetres, or in inches too for a class in the US. */
 const rulerWords = (c: ClassContext): string =>
@@ -356,7 +396,9 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
               ? `${SHADE_BULLET}\n${PIN_BULLET}`
               : kit === 'growing'
                 ? patternListBullet(young)
-                : null
+                : kit === 'position' || kit === 'solids'
+                  ? PICTURE_CHOICES_BULLET
+                  : null
     return [picture, extra].filter((line): line is string => !!line).join('\n')
   }
   const lines: string[] = [
