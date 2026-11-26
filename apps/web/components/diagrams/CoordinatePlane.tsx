@@ -52,7 +52,14 @@ export function describeCoordinatePlane(spec: CoordinatePlaneSpec, variant: Vari
     )
     text += ` with ${sentence(parts)}`
   }
+  // P195: circles, and the angle of a line.
+  if (spec.circles?.length) {
+    const said = spec.circles.map((c) => (q ? `a circle${c.label ? ` labelled ${c.label}` : ''}` : `a circle with centre ${pointIn(fmt(c.a), fmt(c.b), notation ?? 'za')} and radius ${fmt(c.r)}`))
+    text += `${spec.graphs?.length ? ',' : ' with'} ${sentence(said)}`
+  }
+  if (spec.inclination) text += `. The angle ${spec.inclination.label.trim()} between the line and the x-axis is marked${spec.points?.length ? '' : '.'}`
   if (spec.points?.length) {
+    if (spec.polygon) text += `. The points are joined in order into a shape`
     if (q) {
       const named = spec.points.filter((p) => p.label).map((p) => p.label!)
       const rest = unlabelled(spec).length
@@ -246,6 +253,31 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
     pointSpot.set(i, settle(p.label, spots, DRAWING, true))
   })
 
+  // P195: the angle the first line makes with the x-axis: a red arc at the point where it crosses the x-axis, from the axis on the right up to the line, and its label.
+  const inclination = (() => {
+    const line = props.graphs?.find((g) => g.type === 'line')
+    if (!props.inclination || !line || line.type !== 'line' || line.m === 0) return null
+    const x0 = -line.c / line.m
+    const cx = px(x0)
+    const cy = py(0)
+    // The angle on the screen, measured anticlockwise from the axis to the right (the plane may be stretched one way).
+    const dx = px(x0 + 1) - cx
+    const dy = cy - py(line.m)
+    const screen = Math.atan2(dy, dx)
+    const a = screen < 0 ? screen + Math.PI : screen
+    const r = 30
+    const end = { x: cx + r * Math.cos(a), y: cy - r * Math.sin(a) }
+    const mid = { x: cx + (r + 14) * Math.cos(a / 2), y: cy - (r + 14) * Math.sin(a / 2) }
+    return (
+      <g data-inclination="">
+        <path d={`M${r1(cx + r)},${r1(cy)} A${r},${r} 0 0 0 ${r1(end.x)},${r1(end.y)}`} fill="none" stroke="#E03C31" strokeWidth={2.5} />
+        <Num x={mid.x} y={mid.y + 5} anchor="middle" size={15} weight={700} fill="#B8281E">
+          {props.inclination.label.trim()}
+        </Num>
+      </g>
+    )
+  })()
+
   return (
     <Svg width={W} height={H} label={describeCoordinatePlane(props, variant, props.notation)}>
       <defs>
@@ -270,6 +302,26 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
       ))}
       {/* The graphs and the markers are clipped to the plot area, so that nothing is drawn past the grid (the end of a line is as wide as its stroke). */}
       <g clipPath={`url(#${clipId})`}>
+        {/* P195: the points joined into a shape, under the graphs. */}
+        {props.polygon && points.length >= 3 ? (
+          <polygon data-polygon="" points={points.map((p) => `${r1(px(p.x))},${r1(py(p.y))}`).join(' ')} fill="#EAF2FF" stroke="#001489" strokeWidth={2.5} strokeLinejoin="round" />
+        ) : null}
+        {(props.circles ?? []).map((c, k) => (
+          <ellipse
+            key={`c${k}`}
+            data-circle={k}
+            cx={r1(px(c.a))}
+            cy={r1(py(c.b))}
+            rx={r1((c.r / (xMax - xMin)) * PLOT_W)}
+            ry={r1((c.r / (yMax - yMin)) * PLOT_H)}
+            fill="none"
+            stroke="#001489"
+            strokeWidth={2.8}
+          />
+        ))}
+        {(props.circles ?? []).map((c, k) => (
+          <circle key={`cc${k}`} cx={r1(px(c.a))} cy={r1(py(c.b))} r={3.5} fill="#001489" />
+        ))}
         {graphs.map(({ i, pieces, colour }) => (
           <g key={`g${i}`}>
             {pieces.map((piece, k) => (
@@ -280,7 +332,7 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
                 fill="none"
                 stroke={colour.stroke}
                 strokeWidth={2.8}
-                strokeDasharray={colour.dash}
+                strokeDasharray={graphs[i]!.g.type === 'line' && (graphs[i]!.g as { dashed?: boolean }).dashed ? '7 5' : colour.dash}
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
@@ -291,6 +343,7 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
           <circle key={`p${i}`} data-point={i} cx={r1(px(p.x))} cy={r1(py(p.y))} r={4.8} fill={INK} stroke={WHITE} strokeWidth={1.6} />
         ))}
       </g>
+      {inclination}
       {/* The numbers, the axis names and the labels are not clipped, and sit over the graphs (their white halo keeps them readable where a line crosses). */}
       {xWritten.filter((v) => !hidden.has(`x${v}`)).map((v) => (
         <Num key={`nx${v}`} x={px(v)} y={xAxisY + 17} anchor="middle" extra={{ 'data-tick': 'x' }}>{numeral(v, props.notation)}</Num>

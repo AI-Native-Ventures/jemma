@@ -35,6 +35,18 @@ function planeProblem(s: Plane): string | null {
   if ((s.graphs?.length ?? 0) > MAX_GRAPHS) return `the grid has at most ${MAX_GRAPHS} graphs`
   if (s.step !== undefined && !(s.step > 0)) return 'the grid step must be above 0'
   if (s.graphs?.some((g) => g.type === 'exponential' && !(g.b > 0))) return 'an exponential graph needs a base above 0'
+  // P195: a log graph, circles, the points joined into a shape and the angle of a line.
+  if (s.graphs?.some((g) => g.type === 'log' && (!(g.base > 0) || g.base === 1))) return 'a log graph needs a base above 0 that is not 1'
+  if ((s.circles?.length ?? 0) > 2) return 'the grid has at most 2 circles'
+  if (s.circles?.some((c) => !(c.r > 0))) return 'a circle needs a radius above 0'
+  if (s.polygon && (s.points?.length ?? 0) < 3) return 'a shape on the grid joins 3 or more points'
+  if (s.inclination) {
+    const line = s.graphs?.find((g) => g.type === 'line')
+    if (!line || line.type !== 'line' || line.m === 0) return 'the angle of a line needs a line on the grid that is not flat'
+    const x0 = -line.c / line.m
+    if (!(x0 > s.xMin && x0 < s.xMax) || !(s.yMin < 0 && s.yMax > 0)) return 'the line crosses the x-axis inside the grid, where its angle is marked'
+    if (s.inclination.label.trim().length < 1 || s.inclination.label.trim().length > 4) return 'the angle of a line has a short label, like θ'
+  }
   return null
 }
 
@@ -655,6 +667,9 @@ export function pictureProblem(spec: SeniorDiagramSpec): string | null {
       return finite ?? parallelLinesProblem(spec)
     case 'enlargement':
       return finite ?? enlargementProblem(spec)
+    // P195
+    case 'point_angle':
+      return whole(spec.x, -6, 6) && whole(spec.y, -6, 6) && (spec.x !== 0 || spec.y !== 0) && (spec.name === undefined || /^[A-Z]$/.test(spec.name)) ? null : 'a point and its angle is P(x; y) with whole x and y from -6 to 6, not the origin, and a one capital letter name'
     default:
       return null
   }

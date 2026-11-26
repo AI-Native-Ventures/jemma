@@ -45,6 +45,13 @@ export function graphValue(g: Graph, x: number): number {
       if (g.fn === 'cos') return (g.a ?? 1) * Math.cos(t) + q(g)
       return Math.abs(Math.cos(t)) < TAN_GAP ? Number.NaN : (g.a ?? 1) * Math.tan(t) + q(g)
     }
+    // P195: a cubic, and a log graph (it has no value at and left of its asymptote, x = p).
+    case 'cubic':
+      return g.a * x ** 3 + (g.b ?? 0) * x ** 2 + (g.c ?? 0) * x + (g.d ?? 0)
+    case 'log': {
+      const d = x - p(g)
+      return d <= 0 ? Number.NaN : (g.a ?? 1) * (Math.log(d) / Math.log(g.base)) + q(g)
+    }
   }
 }
 
@@ -205,5 +212,17 @@ export function graphEquation(g: Graph, notation?: Notation): string {
       const b = g.b ?? 1
       return `y = ${coefficient(g.a ?? 1, fmt)}${g.fn} ${b === 1 ? '' : b === -1 ? '-' : fmt(b)}x${plus(q(g), fmt)}`
     }
+    // P195
+    case 'cubic': {
+      const term = (v: number | undefined, power: string, first = false) => {
+        if (!v) return ''
+        const sign = v < 0 ? (first ? '-' : ' - ') : first ? '' : ' + '
+        const size = Math.abs(v)
+        return `${sign}${power && size === 1 ? '' : fmt(size)}${power}`
+      }
+      return `y = ${term(g.a, 'x^3', true)}${term(g.b, 'x^2')}${term(g.c, 'x')}${term(g.d, '')}`
+    }
+    case 'log':
+      return `y = ${coefficient(g.a ?? 1, fmt)}log_${fmt(g.base)} ${shifted(p(g), fmt)}${plus(q(g), fmt)}`
   }
 }

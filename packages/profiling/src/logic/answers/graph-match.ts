@@ -33,6 +33,11 @@ export function graphY(g: Graph, x: number): number {
       if (g.fn === 'cos') return (g.a ?? 1) * Math.cos(t) + q
       return Math.abs(Math.cos(t)) < 1e-6 ? NaN : (g.a ?? 1) * Math.tan(t) + q
     }
+    // P195: a cubic and a log graph.
+    case 'cubic':
+      return g.a * x ** 3 + (g.b ?? 0) * x ** 2 + (g.c ?? 0) * x + (g.d ?? 0)
+    case 'log':
+      return x - p <= 0 ? NaN : (g.a ?? 1) * (Math.log(x - p) / Math.log(g.base)) + q
   }
 }
 
