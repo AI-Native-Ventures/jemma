@@ -161,9 +161,12 @@ export const PlotSchema = z.object({
   /**
    * P176: a sketch of the graph in the question: the points to place are its key points (where it cuts the x-axis, its turning point) and Jemma joins them into
    * the curve. An answer is right when its points make the same graph, whichever points of it they are. P181: a hyperbola (3 points, its asymptotes drawn) or a
-   * cubic graph (4 points).
+   * cubic graph (4 points). P182: a sin or cos graph (`trig`) through its key points, 3 to 5 of them evenly spaced, on a grid in degrees (`xStep`); its answer is
+   * right when the learner taps those key points, in any order.
    */
-  curve: z.enum(['parabola', 'hyperbola', 'cubic']).optional(),
+  curve: z.enum(['parabola', 'hyperbola', 'cubic', 'trig']).optional(),
+  /** P182: the degrees of one square across a grid for a trig graph (15, 30, 45 or 90); `xMin` and `xMax` are then in degrees, on a square. */
+  xStep: z.number().optional(),
 })
 export type PlotSpec = z.infer<typeof PlotSchema>
 

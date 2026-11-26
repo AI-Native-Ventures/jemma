@@ -16,7 +16,7 @@ import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
 import { isSeniorQuestion, quantityProblem, readCents, stripUnit } from '../../logic/answers/quantity'
-import { degreeEquationOf, graphEquationOf, isMeaningKind, meaningKeyProblem, readNumber, sameExpression } from '../../logic/meaning'
+import { degreeEquationOf, degreeGraphOf, graphEquationOf, isMeaningKind, meaningKeyProblem, readNumber, sameExpression } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { pictureProblem, questionPictureProblem } from '../../logic/picture'
 import { cleanSteps } from '../../logic/steps'
@@ -76,7 +76,7 @@ export function answerProblem(q: Question): string | null {
     const plot = plotProblem(q.plot) ?? plotKeyProblem({ ...q, plot: q.plot }, readNumber)
     if (plot) return `plot: ${plot}`
     // P176: a sketch: its key points make one parabola, and it is the graph of the equation in the question.
-    const sketch = q.plot.curve ? sketchKeyProblem({ ...q, plot: q.plot }, readNumber, graphEquationOf) : null
+    const sketch = q.plot.curve ? sketchKeyProblem({ ...q, plot: q.plot }, readNumber, graphEquationOf, degreeGraphOf) : null
     if (sketch) return `plot: ${sketch}`
   }
   // P172: a shape to shade: a shape a phone can show, and a key that is a number of its parts.

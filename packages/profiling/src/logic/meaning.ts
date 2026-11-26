@@ -483,7 +483,13 @@ export const lettersOf = (n: MathNode, into = new Set<string>()): Set<string> =>
  * the full stop or comma after it left off.
  */
 export function graphEquationOf(text: string): ((x: number) => number) | null {
-  for (const m of text.matchAll(/(?:^|[^a-z0-9])(?:y|[fgh]\s*\(\s*x\s*\))\s*=\s*/gi)) {
+  const found = graphTreeOf(text, ['x'])
+  return found ? (x: number) => valueOf(found.tree, { x }) : null
+}
+
+/** The tree of the first `y =` (or `f(x) =`) of a text that reads as maths of one of `letters` alone, and that letter. */
+function graphTreeOf(text: string, letters: string[]): { tree: MathNode; letter: string } | null {
+  for (const m of text.matchAll(/(?:^|[^a-z0-9])(?:y|[fgh]\s*\(\s*[x\u03b8]\s*\))\s*=\s*/gi)) {
     const rest = text.slice(m.index + m[0].length)
     const ends = [rest.length, ...[...rest.matchAll(/\s/g)].map((w) => w.index)].sort((a, b) => b - a)
     for (const end of ends) {
@@ -491,11 +497,21 @@ export function graphEquationOf(text: string): ((x: number) => number) | null {
       if (!piece || piece.length > MEANING_MAX_LENGTH) continue
       const tree = readMath(piece)
       if (!tree) continue
-      const letters = lettersOf(tree)
-      if (letters.size === 1 && letters.has('x')) return (x: number) => valueOf(tree, { x })
+      const used = lettersOf(tree)
+      const letter = [...used][0]
+      if (used.size === 1 && letter !== undefined && letters.includes(letter)) return { tree, letter }
     }
   }
   return null
+}
+
+/**
+ * P182: the graph of a trig equation in a text ("Sketch y = 2 sin x + 1 for 0° ≤ x ≤ 360°."), as a function of an angle in degrees, or null when the text has none
+ * that can be read. Its letter is x or θ, and sin, cos and tan take the angle in degrees.
+ */
+export function degreeGraphOf(text: string): ((degrees: number) => number) | null {
+  const found = graphTreeOf(text, ['x', '\u03b8'])
+  return found ? (degrees: number) => valueOf(putIn(found.tree, found.letter, degrees), {}) : null
 }
 
 /** A tree with a letter put in as a number: the angle of a trig equation in degrees, so sin, cos and tan take it in degrees (a plain angle, as `inDegrees` says). */
@@ -1078,7 +1094,7 @@ export function markQuestion(
   // P174: a line drawn on a grid is right when its two points are on the key's line, whichever two they are (logic/answers/line.ts).
   if ((q as { line?: unknown }).line && q.answerKind === 'list') return markLine(q.answer, answer, readNumber)
   // P176: a sketch is marked by its curve: three points of the same parabola are right, in any order (logic/answers/plot.ts). P181: and a hyperbola or a cubic graph.
-  const curve = (q as { plot?: { curve?: 'parabola' | 'hyperbola' | 'cubic' } }).plot?.curve
+  const curve = (q as { plot?: { curve?: 'parabola' | 'hyperbola' | 'cubic' | 'trig' } }).plot?.curve
   if (curve && q.answerKind === 'list') return markSketch(q.answer, answer, readNumber, curve)
   // P177: a clock is marked on its face: twelve hours apart is the same time (logic/answers/clock.ts).
   if ((q as { clock?: unknown }).clock && q.answerKind === 'time') return markClock(q.answer, answer)

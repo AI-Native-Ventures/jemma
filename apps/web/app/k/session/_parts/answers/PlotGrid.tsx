@@ -21,14 +21,15 @@ const M = 26
 
 type Point = { x: number; y: number }
 
-/** The size of a square and of the drawing, so the grid fits 320 across and at most 300 up. */
+/** The size of a square and of the drawing, so the grid fits 320 across and at most 300 up. P182: a square across is `xStep` degrees on a trig grid. */
 function geometry(p: PlotSpec) {
-  const sx = p.xMax - p.xMin
+  const step = p.xStep ?? 1
+  const sx = (p.xMax - p.xMin) / step
   const sy = p.yMax - p.yMin
   const u = Math.min((W - 2 * M) / sx, (300 - 2 * M) / sy)
   const left = (W - sx * u) / 2
   const H = sy * u + 2 * M
-  return { u, H, X: (x: number) => left + (x - p.xMin) * u, Y: (y: number) => M + (p.yMax - y) * u }
+  return { u, H, step, X: (x: number) => left + ((x - p.xMin) / step) * u, Y: (y: number) => M + (p.yMax - y) * u }
 }
 
 const name = (p: Point) => `(${p.x}; ${p.y})`
@@ -52,8 +53,9 @@ export const sketchOf = (plot: PlotSpec, points: (Point | null)[]): Curve | null
 
 export function PlotGrid({ plot, mode, points = [], right = [], picked = null, last = null, onTap, onPick }: PlotGridProps) {
   const svg = useRef<SVGSVGElement>(null)
-  const { u, H, X, Y } = geometry(plot)
-  const every = Math.max(plot.xMax - plot.xMin, plot.yMax - plot.yMin) > 12 ? 2 : 1
+  const { u, H, step, X, Y } = geometry(plot)
+  const every = Math.max((plot.xMax - plot.xMin) / step, plot.yMax - plot.yMin) > 12 ? 2 : 1
+  const degrees = plot.curve === 'trig'
   const given = plot.given ?? []
   const tap = (e: MouseEvent<SVGSVGElement>) => {
     if (mode !== 'answer' || !svg.current) return
@@ -61,20 +63,21 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
     if (box.width <= 0) return
     const vx = ((e.clientX - box.left) / box.width) * W
     const vy = ((e.clientY - box.top) / box.height) * H
-    const x = Math.round(plot.xMin + (vx - X(plot.xMin)) / u)
+    const x = plot.xMin + Math.round((vx - X(plot.xMin)) / u) * step
     const y = Math.round(plot.yMax - (vy - M) / u)
     if (x < plot.xMin || x > plot.xMax || y < plot.yMin || y > plot.yMax) return
     onTap?.({ x, y })
   }
   const lines: ReactNode[] = []
-  for (let x = plot.xMin; x <= plot.xMax; x++) lines.push(<line key={`vx${x}`} x1={X(x)} y1={Y(plot.yMin)} x2={X(x)} y2={Y(plot.yMax)} stroke={GRID} strokeWidth={1} />)
+  for (let x = plot.xMin; x <= plot.xMax; x += step) lines.push(<line key={`vx${x}`} x1={X(x)} y1={Y(plot.yMin)} x2={X(x)} y2={Y(plot.yMax)} stroke={GRID} strokeWidth={1} />)
   for (let y = plot.yMin; y <= plot.yMax; y++) lines.push(<line key={`hy${y}`} x1={X(plot.xMin)} y1={Y(y)} x2={X(plot.xMax)} y2={Y(y)} stroke={GRID} strokeWidth={1} />)
   const axisY = plot.yMin <= 0 && plot.yMax >= 0 ? 0 : plot.yMin
   const axisX = plot.xMin <= 0 && plot.xMax >= 0 ? 0 : plot.xMin
   const ticks: ReactNode[] = []
-  for (let x = plot.xMin; x <= plot.xMax; x++)
-    if (x !== axisX && x % every === 0)
-      ticks.push(<text key={`tx${x}`} x={X(x)} y={Y(axisY) + 14} fontSize={10} fill={BODY} textAnchor="middle">{x < 0 ? `−${-x}` : x}</text>)
+  // A trig grid says its angles every 90 degrees, with the degree sign.
+  for (let x = plot.xMin; x <= plot.xMax; x += step)
+    if (x !== axisX && (degrees ? x % 90 === 0 : x % every === 0))
+      ticks.push(<text key={`tx${x}`} x={X(x)} y={Y(axisY) + 14} fontSize={10} fill={BODY} textAnchor="middle">{`${x < 0 ? `−${-x}` : x}${degrees ? '°' : ''}`}</text>)
   for (let y = plot.yMin; y <= plot.yMax; y++)
     if (y !== axisY && y % every === 0)
       ticks.push(<text key={`ty${y}`} x={X(axisX) - 5} y={Y(y) + 3.5} fontSize={10} fill={BODY} textAnchor="end">{y < 0 ? `−${-y}` : y}</text>)
@@ -89,7 +92,7 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
   // of the lines under them.
   const sketch = plot.curve !== undefined
   const where = (q: Point, color: string, k: string, under = false) => {
-    const text = sketchName(q)
+    const text = sketchName(q, degrees)
     const wide = text.length * 7.4
     const x = X(q.x)
     let left = q.x < (plot.xMin + plot.xMax) / 2
@@ -122,7 +125,16 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
   const theRight = sketch && plot.curve && right.length === plot.place.length ? curveThrough(plot.curve, right) : null
   const same = mine && theRight ? sameCurve(mine, theRight) : false
   // Where the learner's "yours" goes: their curve's first turning point on the grid, or where its asymptotes cross.
-  const yoursAt = (c: Curve): Point | null => (c.kind === 'hyperbola' ? (inside({ x: c.f.p, y: c.f.q }) ? { x: c.f.p, y: c.f.q } : null) : (turningPoints(c).find(inside) ?? null))
+  const yoursAt = (c: Curve): Point | null =>
+    c.kind === 'hyperbola'
+      ? inside({ x: c.f.p, y: c.f.q })
+        ? { x: c.f.p, y: c.f.q }
+        : null
+      : c.kind === 'trig'
+        ? (c.f.find((pt) => !right.some((r) => r.x === pt.x && r.y === pt.y)) ?? null)
+        : (turningPoints(c).find(inside) ?? null)
+  // The points of the right curve marked in green: a trig graph's key points, or where a curve turns.
+  const marks = (c: Curve): Point[] => (c.kind === 'trig' ? c.f : turningPoints(c).filter(inside))
   const opensUp = (c: Curve) => c.kind === 'parabola' && c.f.a > 0
   return (
     <svg
@@ -132,7 +144,7 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
       width="100%"
       role="group"
       aria-label={`A grid from ${plot.xMin} to ${plot.xMax} across and from ${plot.yMin} to ${plot.yMax} up${given.length ? `, with ${given.map((q) => `${q.label.trim()} at ${name(q)}`).join(', ')}` : ''}.${
-        sketch && mode === 'answer' && placed.length ? ` Points at ${placed.map(sketchName).join(', ')}.${mine ? ` Joined into a graph that ${curveWords(mine)}.` : ''}` : ''
+        sketch && mode === 'answer' && placed.length ? ` Points at ${placed.map((q) => sketchName(q, degrees)).join(', ')}.${mine ? ` Joined into a graph that ${curveWords(mine)}.` : ''}` : ''
       }`}
       onClick={tap}
       style={{ display: 'block', maxWidth: W, height: 'auto', cursor: mode === 'answer' ? 'crosshair' : 'default', userSelect: 'none', fontFamily: "var(--font-outfit), Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif" }}
@@ -154,7 +166,7 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
         <>
           {theRight ? asymptotes(theRight, GREEN, 'right') : null}
           {theRight ? curve(theRight, GREEN, 3, 'right') : null}
-          {theRight ? turningPoints(theRight).filter(inside).map((t, i) => <circle key={`rt${i}`} data-right="" cx={X(t.x)} cy={Y(t.y)} r={6} fill={GREEN} />) : null}
+          {theRight ? marks(theRight).map((t, i) => <circle key={`rt${i}`} data-right="" cx={X(t.x)} cy={Y(t.y)} r={6} fill={GREEN} />) : null}
           {mine && !same ? (
             <g data-yours="">
               {asymptotes(mine, BODY, 'yours')}
@@ -256,7 +268,7 @@ export function sketchHint(points: (Point | null)[], plot?: PlotSpec): ReactNode
     const list = placed.map((q, i) => (
       <span key={i}>
         {i > 0 ? (i === placed.length - 1 ? ' and ' : ', ') : null}
-        <strong className="font-bold text-ink">{sketchName(q)}</strong>
+        <strong className="font-bold text-ink">{sketchName(q, plot?.curve === 'trig')}</strong>
       </span>
     ))
     return <>You placed {list}. {left === 1 ? 'One more point to go.' : `${['Two', 'Three'][left - 2] ?? left} more points to go.`}</>
@@ -265,7 +277,9 @@ export function sketchHint(points: (Point | null)[], plot?: PlotSpec): ReactNode
   return sketchOf(spec, points) ? (
     <>Jemma joined your <strong className="font-bold text-ink">{placed.length}</strong> points into a graph. Tap a point to move it.</>
   ) : (
-    `Jemma cannot join these ${placed.length} points into a ${CURVE_NAME[spec.curve ?? 'parabola']}. Tap a point to move it.`
+    spec.curve === 'trig'
+      ? 'Jemma cannot join points that are above each other. Tap a point to move it.'
+      : `Jemma cannot join these ${placed.length} points into a ${CURVE_NAME[spec.curve ?? 'parabola']}. Tap a point to move it.`
   )
 }
 
