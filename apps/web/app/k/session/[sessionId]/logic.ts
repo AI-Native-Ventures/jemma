@@ -770,7 +770,7 @@ function plotReview(item: StoredItem): Partial<MissedQuestion> {
       const placed = pts.filter((q): q is { x: number; y: number } => q !== null)
       const f = placed.length === p.place.length ? curveThrough(kind, placed) : null
       if (f) return curveWords(f)
-      const list = placed.map(sketchName)
+      const list = placed.map((q) => sketchName(q, kind === 'trig'))
       return list.length === 0 ? '(no points)' : list.length === 1 ? list[0]! : `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`
     }
     return { plot: p, plotRight: right, plotWrote: wrote, wrote: item.unread ? '' : turns(wrote), right: turns(right), cells: undefined, table: undefined, ordered: undefined }

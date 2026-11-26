@@ -155,6 +155,10 @@ const SENIOR_PICTURES =
   // P181: a hyperbola and a cubic graph are sketched the same way.
   'A hyperbola is sketched the same way with `curve: "hyperbola"` and 3 points of it, with both asymptotes inside the grid (`Sketch y = 2/x + 1.`, `place` `["x-intercept", "point", "point"]`, `answer` `-2; 0; 1; 3; 2; 2`). ' +
   'A cubic graph has `curve: "cubic"` and 4 key points, with its turning points inside the grid (`Sketch y = (x + 1)(x − 1)(x − 3).`, `place` `["x-intercept", "x-intercept", "x-intercept", "y-intercept"]`, `answer` `-1; 0; 1; 0; 3; 0; 0; 3`). ' +
+  // P182: a sin or cos graph on a grid in degrees.
+  'A sin or cos graph has `curve: "trig"` and `xStep`, the degrees of one square (15, 30, 45 or 90), with `xMin` and `xMax` in degrees and a whole number for each y; say the equation and the interval in the question ' +
+  '(`Sketch y = 2 sin x + 1 for 0° ≤ x ≤ 360°. Tap its 5 key points.`). Its 3 to 5 key points are evenly spaced from `xMin` to `xMax`, every high and low point among them (`place` `["0°", "90°", "180°", "270°", "360°"]`), ' +
+  'and the `answer` is the x and the y of each, in order across (`0; 1; 90; 3; 180; 1; 270; -1; 360; 1`). ' +
   // P174: the learner draws a straight line on a grid by tapping two points on it.
   'To have the learner draw a straight line (the graph of y = 2x \u2212 1, a line of symmetry), give `line` with `xMin`, `xMax`, `yMin`, `yMax` (whole numbers, at most 20 squares across and up) and no `diagram`. ' +
   'The `answerKind` is `list` and the `answer` is two different points on the line that are corners of the grid, x and y each (`0; -1; 2; 3`): the learner may tap any two points on the line. ' +
