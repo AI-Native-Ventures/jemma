@@ -269,6 +269,15 @@ export const MIRROR_BULLET =
   '- `shade` with a mirror: the learner finishes a shape so a dashed line is a line of symmetry, by tapping squares to shade them ("Finish the shape so the dashed line is a line of symmetry."). Give `shade` with `shape` `grid`, `rows` and `cols` (2 to 10; an even number of columns for a `vertical` `mirror` down the middle, or of rows for a `horizontal` one across it), `mirror`, and `given`: the squares shaded already, numbered from 1 along each row from the top left, most of them on one side of the line. The `answerKind` is `list`, with no `ordered` and no `labels`, and the `answer` is the numbers of the squares to shade: the mirror images of `given` that are not shaded yet (`6; 7; 11`). A question with `shade` has no `diagram` and no `choices`.'
 
 /** P192: a choice may be a picture: a net of a cube, or a view from the top drawn as squares. */
+/**
+ * P199: the bullet of a probability topic (the `chance` kit) for a table of outcomes: a coin and a die, the learner writes the outcomes of the empty cells. The
+ * save gate checks each outcome is its column and its row put together.
+ */
+export const OUTCOMES_BULLET =
+  '- `table` for a table of outcomes ("A coin is tossed and a die is rolled. Fill in the table."): give `table` with `columns` `["Die", "H", "T"]` and a row for each number of the die, ' +
+  'like `["1", "H1", null]`, with null for each outcome the learner writes. The `answerKind` is `table` and the `answer` is the outcomes of the null cells, left to right and then top to bottom, ' +
+  'each one its column and its row put together in capitals (`T1; T2; H3; T3`). Give some outcomes in the table, and use one table of outcomes in a lesson at most.'
+
 export const PICTURE_CHOICES_BULLET =
   '- A choice may be a picture: give it as `{ "diagram": ... }`, with words in `text` when they help. A net of a cube or a view from the top is a `grid_area` of its squares (`cells` are [column, row] from the top left), like `{ "diagram": { "kind": "grid_area", "cols": 4, "rows": 3, "cells": [[1, 0], [0, 1], [1, 1], [2, 1], [3, 1], [1, 2]] } }`. Give 3 or 4 picture choices, only one of them right, and never write the answer in the words of a choice.'
 
@@ -438,7 +447,9 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
                   ? PICTURE_CHOICES_BULLET
                   : kit === 'symmetry'
                     ? MIRROR_BULLET
-                    : null
+                    : kit === 'chance'
+                      ? OUTCOMES_BULLET
+                      : null
     return [picture, extra].filter((line): line is string => !!line).join('\n')
   }
   const lines: string[] = [

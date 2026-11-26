@@ -467,7 +467,7 @@ export const MAX_ANSWER_BOXES = 4
 type ShapeParts = {
   list?: ListParts['list']
   items?: string[]
-  table?: { columns: string[]; rows: (string | null)[][]; plain?: boolean }
+  table?: { columns: string[]; rows: (string | null)[][]; plain?: boolean; outcomes?: boolean }
   round?: number
   young?: true
   graph?: DataGraphSpec

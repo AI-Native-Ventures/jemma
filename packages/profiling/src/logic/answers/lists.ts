@@ -10,6 +10,8 @@ import { LIST_ANSWER_KINDS, type ListKind } from '../../schemas/lesson'
  * Every value is read by the one reader of numbers and expressions of `meaning.ts` (it is handed in as `read`, so this file needs nothing from there): the
  * same value is the same answer (`1/2`, `0,5`, `2/4`). `round` says the question asks for a rounded answer ("correct to 1 decimal place"): the key is
  * compared rounded to that many places. This file is pure: no database, no model, no browser.
+ * P199: a table of outcomes (the "Probability" board: "A coin is tossed and a die is rolled. Fill in the table.") has outcomes in its cells, like H4 (heads and
+ * a 4) or HT: when every value of its key is an outcome, they are compared as letters and digits, not read as numbers.
  */
 
 export const isListKind = (kind: string): kind is ListKind => (LIST_ANSWER_KINDS as readonly string[]).includes(kind)
@@ -137,8 +139,48 @@ export const listOptions = (q: Pick<ListQuestion, 'ordered' | 'labels' | 'answer
   ...(q.round !== undefined ? { round: q.round } : {}),
 })
 
-/** Marks a typed answer of a list, an order or a table question. */
-export const markListQuestion = (q: ListQuestion, answer: string, read: Reader): ValuesMark => markValues(q.answer, answer, listOptions(q), read)
+/** P199: an outcome of a table of outcomes: 1 to 4 letters and digits with a letter in it (H4, HT, R2, GB). */
+const OUTCOME = /^(?=.*[A-Z])[A-Z0-9]{1,4}$/
+/** An outcome as it is compared: in capitals, with no spaces, commas, dashes or brackets (`h, 4` is H4). The order of its letters stays: HT is not TH. */
+export const outcomeOf = (t: string): string => t.replace(/[\s,()\-\u2212]/g, '').toUpperCase()
+export const isOutcome = (t: string): boolean => OUTCOME.test(outcomeOf(t))
+/** An outcome as a key writes it: in capitals as it is (H4), so algebra in a table (2x) is never taken for one. */
+const keyOutcome = (t: string): boolean => OUTCOME.test(t.replace(/\s/g, ''))
+/** P199: a table of outcomes: a table question whose every key value is an outcome. */
+export const isOutcomeTable = (q: Pick<ListQuestion, 'answer' | 'answerKind'>): boolean => {
+  if (q.answerKind !== 'table') return false
+  const texts = splitValues(q.answer)
+  return texts.length > 0 && texts.every(keyOutcome)
+}
+
+/** The blanks of a table in reading order: the row and the column of each. */
+const blanksOf = (t: Table): { r: number; c: number }[] => t.rows.flatMap((row, r) => row.flatMap((cell, c) => (cell === null ? [{ r, c }] : [])))
+
+/**
+ * P199: the outcome a blank of a table of outcomes holds, in either order: its column heading and the first cell of its row put together (H and 4: H4 or 4H). The
+ * place of the blank says which outcome it is, so the two parts may be written either way round.
+ */
+const sameOutcome = (typed: string, want: string, t: Table | undefined, at: { r: number; c: number } | undefined): boolean => {
+  if (typed === want) return true
+  if (!t || !at) return false
+  const a = outcomeOf(t.columns[at.c] ?? '')
+  const b = outcomeOf(t.rows[at.r]?.[0] ?? '')
+  return (want === a + b || want === b + a) && (typed === a + b || typed === b + a)
+}
+
+/** P199: the cells of a table of outcomes marked place by place; an answer with a value that is no outcome is not comparable. */
+function markOutcomes(key: string, answer: string, table?: Table): ValuesMark {
+  const want = splitValues(key).map(outcomeOf)
+  const typed = splitValues(answer).map(outcomeOf)
+  const blanks = table ? blanksOf(table) : []
+  const cells = Array.from({ length: Math.max(want.length, typed.length) }, (_, i) => i < want.length && typed[i] !== undefined && sameOutcome(typed[i]!, want[i]!, table, blanks[i]))
+  const comparable = typed.length > 0 && typed.every((t) => OUTCOME.test(t))
+  return { correct: comparable && typed.length === want.length && cells.every(Boolean), comparable, cells }
+}
+
+/** Marks a typed answer of a list, an order or a table question. P199: a table of outcomes by its outcomes. */
+export const markListQuestion = (q: ListQuestion, answer: string, read: Reader): ValuesMark =>
+  isOutcomeTable(q) ? markOutcomes(q.answer, answer, q.table) : markValues(q.answer, answer, listOptions(q), read)
 
 // ---- The save gate: can the key be marked? --------------------------------------------------------------------------------------
 
@@ -155,14 +197,34 @@ const tableProblem = (t: Table | undefined, count: number): string | null => {
   return null
 }
 
+/**
+ * P199: why the key of a table of outcomes is not its outcomes, or null: the first column gives one part of each outcome (the die: 1 to 6), the other headings the
+ * other part (H, T), and each blank holds its column and its row put together (H4), in either order.
+ */
+function outcomeKeyProblem(t: Table, texts: string[]): string | null {
+  const blanks = blanksOf(t)
+  for (let k = 0; k < blanks.length; k++) {
+    const { r, c } = blanks[k]!
+    if (c === 0) return 'a table of outcomes gives the first part of each outcome in its first column (like the die: 1 to 6), with no blank there'
+    const a = outcomeOf(t.columns[c]!)
+    const b = outcomeOf(t.rows[r]![0] ?? '')
+    const got = outcomeOf(texts[k]!)
+    if (got !== a + b && got !== b + a)
+      return `the blank in row ${r + 1} under ${t.columns[c]!.trim()} is ${t.columns[c]!.trim()} and ${(t.rows[r]![0] ?? '').trim()} put together (${a + b}), not ${texts[k]!.trim()}: the key goes left to right, then top to bottom`
+  }
+  return null
+}
+
 /** Why the key of a list, an order or a table cannot be marked, or null when it can (the save gate asks this of every key of these kinds). */
 export function listKeyProblem(q: ListQuestion, read: Reader): string | null {
   if (q.round !== undefined && !(Number.isInteger(q.round) && q.round >= 0 && q.round <= ROUND_MAX)) return `round must be a whole number from 0 to ${ROUND_MAX}`
   if (q.answer.length > LIST_MAX_LENGTH) return `answer is longer than ${LIST_MAX_LENGTH} characters`
   const texts = splitValues(q.answer)
+  // P199: a table of outcomes holds outcomes (H4), not numbers, each its column and its row put together.
+  if (isOutcomeTable(q)) return tableProblem(q.table, texts.length) ?? outcomeKeyProblem(q.table!, texts)
   for (const t of texts) {
     const v = read(t)
-    if (v === null || !Number.isFinite(v)) return `answer value "${t}" is not a number`
+    if (v === null || !Number.isFinite(v)) return `answer value "${t}" is not a number${q.answerKind === 'table' ? ' (a table of outcomes has an outcome like H4 in every blank)' : ''}`
   }
   if (q.answerKind === 'table') return tableProblem(q.table, texts.length)
   if (texts.length < LIST_MIN_VALUES) return `a ${q.answerKind} needs at least ${LIST_MIN_VALUES} values, written with a semicolon between them`
@@ -214,8 +276,8 @@ export type ListParts = {
   list?: { count: number; ordered: boolean; plain: boolean; labels?: string[] }
   /** The chips of an order question, shuffled. */
   items?: string[]
-  /** The table: its given cells are in the question anyway; a blank is null. */
-  table?: { columns: string[]; rows: (string | null)[][]; plain: boolean }
+  /** The table: its given cells are in the question anyway; a blank is null. P199: `outcomes` when its blanks take outcomes (H4), not numbers. */
+  table?: { columns: string[]; rows: (string | null)[][]; plain: boolean; outcomes?: boolean }
 }
 
 /** What the browser may know of a list, an order or a table question: counts, labels, the given cells and the items; never a value of the key. */
@@ -228,7 +290,7 @@ export function listAnswerParts(q: ListQuestion): ListParts {
     return { list: { count: texts.length, ordered: isOrdered(q), plain, ...(labelled ? { labels: q.labels } : {}) } }
   }
   if (q.answerKind === 'order') return { items: shuffledItems(texts, `${q.prompt ?? ''}|${texts.length}`) }
-  return q.table ? { table: { columns: q.table.columns, rows: q.table.rows, plain } } : {}
+  return q.table ? { table: { columns: q.table.columns, rows: q.table.rows, plain, ...(isOutcomeTable(q) ? { outcomes: true } : {}) } } : {}
 }
 
 /**
