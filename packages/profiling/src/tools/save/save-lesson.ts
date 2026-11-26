@@ -9,6 +9,7 @@ import { tapKeyProblem, tapProblem, tidyTap } from '../../logic/answers/tap'
 import { lineKeyProblem, lineProblem, tidyLine } from '../../logic/answers/line'
 import { pinKeyProblem, pinProblem } from '../../logic/answers/pin'
 import { clockKeyProblem, clockProblem } from '../../logic/answers/clock'
+import { matchKeyProblem, matchProblem, tidyMatch } from '../../logic/answers/match'
 import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
@@ -106,6 +107,12 @@ export function answerProblem(q: Question): string | null {
     const clock = clockProblem(q.clock) ?? clockKeyProblem({ ...q, clock: q.clock })
     if (clock) return `clock: ${clock}`
   }
+  // P178: things to match in pairs: a few short things a side, and a key of one partner each, mixed up.
+  if (q.match) {
+    if (q.diagram || q.graph || q.columns || q.blocks || q.groups || q.shade || q.tap || q.pin || q.clock || q.choices?.length) return 'match: things to match are the picture of their question, and it has no choices'
+    const match = matchProblem(q.match) ?? matchKeyProblem({ ...q, match: q.match })
+    if (match) return `match: ${match}`
+  }
   const picture = questionPictureOf(q)
   if (picture) return `picture: ${picture}`
   // P149: the pictures (and words) of the choices of a question that is picked. A true or false or a reason question ignores any choices it carries.
@@ -181,7 +188,7 @@ const STEPS_LEFT_OUT = 'left out whole: a line of them held a label'
 const tidySteps = (questions: Question[]): Question[] =>
   questions.map(({ steps, ...rest }) => {
     const clean = cleanSteps(steps)
-    return tidyLine(tidyTap(tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest)))))
+    return tidyMatch(tidyLine(tidyTap(tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest))))))
   })
 
 /**

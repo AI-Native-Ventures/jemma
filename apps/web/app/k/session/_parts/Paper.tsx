@@ -15,6 +15,7 @@ import { DataGraph } from './answers/DataGraph'
 import { ColumnsSum } from './answers/ColumnsSum'
 import { PlotGrid } from './answers/PlotGrid'
 import { ClockFace } from './answers/ClockFace'
+import { MatchBoard } from './answers/MatchPairs'
 import { LineGrid } from './answers/LineGrid'
 import { PinLine } from './answers/PinLine'
 import { ShadedResult } from './answers/ShadeShape'
@@ -136,6 +137,9 @@ export function writeLine(shape: AnswerShape): string {
     case 'order':
     case 'table':
       return paperValuesLine(shape)
+    // P178: things to match are written as the number of the partner of each, in order.
+    case 'match':
+      return 'For each one on the left, write the number of the one it goes with, in order, with a semicolon between them. The ones on the right are numbered from 1.'
     // P177: a clock is set on paper by drawing its hands, and its time written.
     case 'clock':
       return `Draw the hands on the clock on your paper. Then write the time. ${writeLine(shape.typed)}`
@@ -212,6 +216,7 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
         {shape.kind === 'line' ? <LineGrid line={shape.line} mode="paper" /> : null}
         {shape.kind === 'pin' ? <PinLine pin={shape.pin} at={null} mode="paper" /> : null}
         {shape.kind === 'clock' ? <div className="w-[200px] self-center"><ClockFace time={null} mode="paper" /></div> : null}
+        {shape.kind === 'match' ? <MatchBoard match={shape.match} joined={[]} mode="paper" /> : null}
         {shape.kind === 'shade' ? <ShadedResult shade={shape.shade} wrote="0" /> : null}
         {shape.kind === 'tap' ? (
           <div className="flex flex-col gap-1">

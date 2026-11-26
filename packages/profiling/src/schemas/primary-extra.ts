@@ -58,6 +58,8 @@ export const PrimaryExtraQuestionSchema = z.object({
   pin: wide.pin,
   /** P177: a clock the learner sets by dragging its hands. */
   clock: wide.clock,
+  /** P178: things the learner matches in pairs. */
+  match: wide.match,
   difficulty: wide.difficulty,
   why: wide.why,
   rightWay: wide.rightWay,

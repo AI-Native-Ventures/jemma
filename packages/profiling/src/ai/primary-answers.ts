@@ -70,7 +70,7 @@ const KIT_TOPICS: { kit: PrimaryKit; names: RegExp; baseline?: false }[] = [
       /^(repeated addition leading to multiplication|multiplication|multiplication and division|multiplication and division digit by digit|arrays|meaning of multiplication|properties of multiplication|multiply and divide within|multiples of)$/,
     baseline: false,
   },
-  { kit: 'numbers', names: /^(count forwards and backwards|counting to|rounding)$/, baseline: false },
+  { kit: 'numbers', names: /^(count forwards and backwards|counting to|rounding|number symbols and number names)$/, baseline: false },
   // P168: addition and subtraction have a kit of their own, so their questions (from Grade 2) may be sums worked in columns.
   { kit: 'addsub', names: /^(addition and subtraction|add and subtract within)$/, baseline: false },
 ]
@@ -152,6 +152,24 @@ export function clockBullet(c: ClassContext): string {
     : '- `clock`: the learner sets a clock by dragging its hands ("Show 25 to 9 on the clock."). Give `clock` with `step` `5` (the long hand stops every 5 minutes) or `1` (every minute). The `answerKind` is `time` and the `answer` is the time on the clock face, from `1:00` to `12:59`: `8:35`, never `12:00` (the clock starts there) and never am or pm. Say the time in the `prompt`, in words ("quarter past 3", "25 to 9") or as on a digital clock ("8:35"). A question with `clock` has no `choices`.'
 }
 
+/** P178: the bullet that lets a question ask the learner to match things in pairs, with an example that fits the kit. */
+export function matchBullet(kit: PrimaryKit, c: ClassContext): string {
+  const young = c.grade <= 3
+  const example =
+    kit === 'shapes'
+      ? ['`left` `["triangle", "square", "circle"]` with `pictures` `true` (the shapes are drawn, not named) and `right` `["circle", "triangle", "square"]`', '`2; 3; 1`', 'Match each shape to its name.']
+      : kit === 'time'
+        ? young
+          ? ['`left` `["half past 4", "7 o\'clock", "half past 9"]` and `right` `["7:00", "9:30", "4:30"]`', '`3; 1; 2`', 'Match the times that are the same.']
+          : ['`left` `["quarter to 5", "20 past 3", "half past 9"]` and `right` `["9:30", "4:45", "3:20"]`', '`2; 3; 1`', 'Match the times that are the same.']
+        : ['`left` `["7", "12", "20"]` and `right` `["twelve", "twenty", "seven"]`', '`3; 1; 2`', 'Match each number to its name.']
+  return (
+    `- \`match\`: the learner joins pairs: they tap one on the left, then the one it goes with on the right ("${example[2]}"). Give \`match\` with \`left\`, ${young ? '2 to 4' : '2 to 5'} short things, ` +
+    `and \`right\`, the partner of each, in a mixed-up order: ${example[0]}. The \`answerKind\` is \`list\` and the \`answer\` is the place in \`right\` of the partner of each one on the left, from 1, ` +
+    `with a semicolon between them (${example[1]}). Never put every partner straight across. ${kit === 'time' ? 'A question with `match` has no `choices`.' : 'A question with `match` has no `diagram` and no `choices`.'}`
+  )
+}
+
 /** P175: the bullet that lets a question ask the learner to put a pin on a number line. */
 export const PIN_BULLET =
   '- `pin`: the learner drags a pin along a number line to a number ("Put 3/4 on the number line."). Give `pin` with `min` and `max` (whole numbers) and either `parts`, the equal jumps between two whole numbers (4 for quarters, 10 for tenths), or `step` for whole numbers (`10` for a line from 0 to 100 marked in tens). At most 20 jumps. Only the two ends are numbered. The `answerKind` is `fraction`, `mixed`, `decimal` or `whole` and the `answer` is the number on one of the marks, after `min`: `3/4`. A question with `pin` has no `diagram` and no `choices`.'
@@ -199,9 +217,9 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
       kit === 'addsub'
         ? columnsBullet(c)
         : kit === 'shapes'
-          ? `${groupsBullet(kit)}\n${TAP_BULLET}`
+          ? `${groupsBullet(kit)}\n${TAP_BULLET}\n${matchBullet(kit, c)}`
           : kit === 'numbers'
-            ? `${groupsBullet(kit)}\n${PIN_BULLET}`
+            ? `${groupsBullet(kit)}\n${PIN_BULLET}\n${matchBullet(kit, c)}`
             : kit === 'multiply'
               ? groupsBullet(kit)
             : kit === 'fractions'
@@ -228,6 +246,7 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
         )
       else {
         when(clockBullet(c))
+        when(matchBullet('time', c))
         when(
           '- There is no clock picture to read in a question, so never ask the learner to read a clock face. When you want that, ask it as a `choice` question: "Which time is half past 3?" with the times as choices.',
         )

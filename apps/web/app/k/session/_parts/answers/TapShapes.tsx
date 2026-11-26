@@ -15,8 +15,8 @@ const W = 320
 
 type Shape = TapSpec['shapes'][number]['shape']
 
-/** The outline of a shape centred on 0,0 at size `r`, before it is turned. */
-function outline(shape: Shape, r: number): { kind: 'path'; d: string } | { kind: 'circle'; rx: number; ry: number } {
+/** The outline of a shape centred on 0,0 at size `r`, before it is turned. P178: the pictures of things to match are drawn with it too. */
+export function outline(shape: Shape, r: number): { kind: 'path'; d: string } | { kind: 'circle'; rx: number; ry: number } {
   const poly = (pts: [number, number][]) => ({ kind: 'path' as const, d: `M${pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' L')} Z` })
   const regular = (n: number, start = -90) => poly(Array.from({ length: n }, (_, k) => [r * Math.cos(((start + (360 / n) * k) * Math.PI) / 180), r * Math.sin(((start + (360 / n) * k) * Math.PI) / 180)] as [number, number]))
   switch (shape) {

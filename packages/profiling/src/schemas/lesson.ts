@@ -128,6 +128,14 @@ export type PinSpec = z.infer<typeof PinSchema>
 export const ClockSchema = z.object({ step: z.number().optional() })
 export type ClockSpec = z.infer<typeof ClockSchema>
 
+/**
+ * P178: things the learner matches in pairs by tapping one on the left, then the one it goes with on the right (Grades 1 to 6): `left` and `right`, 2 to 5
+ * short things each (numbers, words, times), the right ones in a mixed-up order. With `pictures`, the left ones are shapes (one of `TAP_SHAPES` each), drawn
+ * and not named. The key is an ordered `list` of the place in `right` of the partner of each left one, from 1 (`3; 1; 2`).
+ */
+export const MatchSchema = z.object({ left: z.array(z.string()), right: z.array(z.string()), pictures: z.boolean().optional() })
+export type MatchSpec = z.infer<typeof MatchSchema>
+
 /** P173: the shapes a picture to tap may hold. */
 export const TAP_SHAPES = ['triangle', 'right_triangle', 'square', 'rectangle', 'circle', 'oval', 'pentagon', 'hexagon', 'rhombus', 'kite', 'trapezium'] as const
 /**
@@ -223,6 +231,7 @@ export const QuestionSchema = seniorQuestion(z.array(z.string()).optional()).ext
   tap: TapSchema.optional(),
   pin: PinSchema.optional(),
   clock: ClockSchema.optional(),
+  match: MatchSchema.optional(),
 })
 export type Question = z.infer<typeof QuestionSchema>
 export type PrimaryQuestion = z.infer<typeof PrimaryQuestionSchema>
