@@ -137,6 +137,14 @@ export const PlotSchema = z.object({
 })
 export type PlotSpec = z.infer<typeof PlotSchema>
 
+/**
+ * P174: a straight line the learner draws on a grid by tapping two points on it (Grades 7 to 9): the graph of y = 2x - 1, a line of symmetry. The grid goes from
+ * `xMin` to `xMax` and `yMin` to `yMax` in whole steps. The key is an ordered `list` of two points on the line (`0; -1; 2; 3`); any two points on the same line
+ * are right.
+ */
+export const LineSchema = z.object({ xMin: z.number(), xMax: z.number(), yMin: z.number(), yMax: z.number() })
+export type LineSpec = z.infer<typeof LineSchema>
+
 /** The most and the fewest lines of the worked steps of a question (P127). */
 export const MIN_STEPS = 2
 export const MAX_STEPS = 6
@@ -170,6 +178,8 @@ const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
     diagram: SeniorDiagramSpecSchema.optional(),
     /** P171: points the learner places on a grid by tapping it. Senior classes only. */
     plot: PlotSchema.optional(),
+    /** P174: a straight line the learner draws on a grid through two points. Senior classes only. */
+    line: LineSchema.optional(),
     difficulty: Difficulty,
     why: z.string(),
     rightWay: z.string(),

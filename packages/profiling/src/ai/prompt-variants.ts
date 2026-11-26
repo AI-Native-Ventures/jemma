@@ -148,7 +148,10 @@ const SENIOR_PICTURES =
   'To have the learner place points on a grid by tapping it (where a shape lands after a reflection or a translation, or points from a table), give `plot` instead of a `diagram`: ' +
   '`xMin`, `xMax`, `yMin`, `yMax` (whole numbers, at most 20 squares across and up), `given` (the points already on the grid, each an `x`, a `y` and a `label` like `A`; ' +
   '`shape: true` joins them as a shape) and `place` (the names of the 1 to 4 points to place, in order, like `["A\'", "B\'", "C\'"]`). ' +
-  'The `answerKind` is `list` and the `answer` is the x and the y of each point to place, in order, with a semicolon between them (`4; 1; 1; 1; 1; 4`). Every point is on a corner of the grid.'
+  'The `answerKind` is `list` and the `answer` is the x and the y of each point to place, in order, with a semicolon between them (`4; 1; 1; 1; 1; 4`). Every point is on a corner of the grid. ' +
+  // P174: the learner draws a straight line on a grid by tapping two points on it.
+  'To have the learner draw a straight line (the graph of y = 2x \u2212 1, a line of symmetry), give `line` with `xMin`, `xMax`, `yMin`, `yMax` (whole numbers, at most 20 squares across and up) and no `diagram`. ' +
+  'The `answerKind` is `list` and the `answer` is two different points on the line that are corners of the grid, x and y each (`0; -1; 2; 3`): the learner may tap any two points on the line.'
 
 /**
  * What a senior class's lesson writer is told about the maths of a question (P127): state it as an expression or an equation in plain notation, never in

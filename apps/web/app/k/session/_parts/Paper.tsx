@@ -14,6 +14,7 @@ import { PaperValues } from './answers/PaperValues'
 import { DataGraph } from './answers/DataGraph'
 import { ColumnsSum } from './answers/ColumnsSum'
 import { PlotGrid } from './answers/PlotGrid'
+import { LineGrid } from './answers/LineGrid'
 import { ShadedResult } from './answers/ShadeShape'
 import { TapPicture } from './answers/TapShapes'
 import { paperValuesLine } from './answers/values-hints'
@@ -133,6 +134,9 @@ export function writeLine(shape: AnswerShape): string {
     case 'order':
     case 'table':
       return paperValuesLine(shape)
+    // P174: a line is written as two points on it.
+    case 'line':
+      return 'Write two points your line goes through: x1; y1; x2; y2.'
     // P173: shapes to tap are written as their numbers.
     case 'tap':
       return 'Write the numbers of the shapes that fit, with a semicolon between them.'
@@ -195,6 +199,7 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
         {shape.kind === 'graph' ? <DataGraph graph={shape.graph} values={[]} mode="paper" /> : null}
         {shape.kind === 'columns' ? <ColumnsSum columns={shape.columns} mode="paper" /> : null}
         {shape.kind === 'plot' ? <PlotGrid plot={shape.plot} mode="paper" /> : null}
+        {shape.kind === 'line' ? <LineGrid line={shape.line} mode="paper" /> : null}
         {shape.kind === 'shade' ? <ShadedResult shade={shape.shade} wrote="0" /> : null}
         {shape.kind === 'tap' ? (
           <div className="flex flex-col gap-1">

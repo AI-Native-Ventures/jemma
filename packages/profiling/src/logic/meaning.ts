@@ -7,6 +7,7 @@ import { equationFamilyReadable, expandPlusMinus, isLetteredPairKey, isSetKey, m
 import { finishPicked } from './answers/pick'
 import { completeAnswer } from './complete-answer'
 import { isListKind, markListQuestion } from './answers/lists'
+import { markLine } from './answers/line'
 
 /**
  * Marking by meaning, for the senior classes (Mathematics, Grades 7 to 12): a learner types algebra, a negative number, a point, a percent or an
@@ -962,6 +963,8 @@ export function markQuestion(
   q: { answer: string; answerKind: string; form?: Form; ordered?: boolean; labels?: string[]; round?: number },
   answer: string,
 ): MeaningMark {
+  // P174: a line drawn on a grid is right when its two points are on the key's line, whichever two they are (logic/answers/line.ts).
+  if ((q as { line?: unknown }).line && q.answerKind === 'list') return markLine(q.answer, answer, readNumber)
   // P150: a list, an order and a table are several values, each read as a number or an expression (logic/answers/lists.ts).
   if (isListKind(q.answerKind)) {
     const { correct, comparable } = markListQuestion(q, answer, readNumber)
