@@ -13,13 +13,13 @@ import { isBaselineClass, type ClassContext } from './subject-profile'
 export const isMathsGrade1To6 = (c: ClassContext | null): c is ClassContext =>
   !!c && c.subjectKey === 'mathematics' && Number.isInteger(c.grade) && c.grade >= 1 && c.grade <= 6
 
-export type PrimaryKit = 'time' | 'measure' | 'order' | 'patterns' | 'data' | 'money' | 'place' | 'fractions' | 'shapes' | 'multiply' | 'numbers' | 'addsub'
+export type PrimaryKit = 'time' | 'measure' | 'order' | 'patterns' | 'data' | 'money' | 'place' | 'fractions' | 'shapes' | 'multiply' | 'numbers' | 'addsub' | 'growing'
 
 /**
  * P166: the kits that add pictures to a question (a fraction bar, a shape, an area model, a number line) and no new answer kind. P168: addition and
  * subtraction (`addsub`, from Grade 2) also adds a sum worked in columns.
  */
-export const PICTURE_KITS: readonly PrimaryKit[] = ['fractions', 'shapes', 'multiply', 'numbers', 'addsub']
+export const PICTURE_KITS: readonly PrimaryKit[] = ['fractions', 'shapes', 'multiply', 'numbers', 'addsub', 'growing']
 
 /** A topic name as it is compared: lower case, words only, "(Term 2)" and an "&" put right. */
 const norm = (name: string) =>
@@ -80,6 +80,8 @@ const KIT_TOPICS: { kit: PrimaryKit; names: RegExp; baseline?: false }[] = [
   { kit: 'fractions', names: /^unit rates and percents$/, baseline: false },
   // P190: surface area in the US names, so its questions may show the net of a box.
   { kit: 'measure', names: /^surface area$/, baseline: false },
+  // P191: geometric patterns have a kit of their own, so their questions may show a growing pattern of tiles.
+  { kit: 'growing', names: /^geometric patterns$/, baseline: false },
   // P168: addition and subtraction have a kit of their own, so their questions (from Grade 2) may be sums worked in columns.
   { kit: 'addsub', names: /^(addition and subtraction|add and subtract within)$/, baseline: false },
 ]
@@ -105,7 +107,7 @@ export const KIT_PICTURES: Record<PrimaryKit, readonly string[]> = {
   money: ['money'],
   measure: ['grid_area', 'shape_2d', 'ruler', 'scale_dial', 'jug', 'thermometer', 'cubes', 'box_net'],
   order: ['number_line', 'compare'],
-  patterns: ['number_line'],
+  patterns: ['number_line', 'tile_pattern', 'flow_diagram'],
   data: ['bar_chart'],
   place: ['place_value', 'base_ten'],
   fractions: ['fraction_bar', 'number_line', 'area_model', 'objects', 'fraction_circle', 'percent_bar'],
@@ -113,6 +115,7 @@ export const KIT_PICTURES: Record<PrimaryKit, readonly string[]> = {
   multiply: ['area_model', 'number_line', 'dot_array', 'objects', 'factor_tree'],
   numbers: ['number_line', 'objects', 'ten_frame', 'hundred_chart', 'compare'],
   addsub: ['number_line', 'ten_frame', 'objects', 'hundred_chart'],
+  growing: ['tile_pattern'],
 }
 
 /**
@@ -138,6 +141,9 @@ export const PICTURE_GRADES: Readonly<Record<string, readonly [number, number]>>
   thermometer: [3, 6],
   cubes: [4, 6],
   box_net: [5, 6],
+  // P191
+  tile_pattern: [1, 6],
+  flow_diagram: [4, 6],
 }
 
 /**
@@ -181,6 +187,11 @@ const PICTURE_WORDS: Record<string, string> = {
   jug: '`jug` (a measuring jug from 0 to `max` in `unit` `ml` (250, 500, 1000 or 2000) or `l` (1, 2 or 5), marked in 10 steps, with the water at `value` on a step; the `answer` is the reading)',
   cubes: '`cubes` (a box built from cubes, `long`, `wide` and `high`, 1 to 6 each, drawn in 3D) to count the cubes of a volume',
   box_net: '`box_net` (the net of a box, `long`, `wide` and `high`, 1 to 12 each, in `unit` `cm`, `mm` or `m`, drawn to scale with each size on an edge) for surface area',
+  // P191
+  tile_pattern:
+    '`tile_pattern` (a growing pattern of tiles: `show` patterns, 2 to 4, from pattern `from`, 1 when left out, of a `shape`: `row` (pattern n is a row of n tiles), `L` (2n + 1 tiles), `T` (3n + 1), `cross` (4n + 1), `square` (n by n), `rectangle` (n rows of n + 1) or `stairs` (steps of 1 to n); ask about a pattern that is not drawn, like the next one or pattern 10)',
+  flow_diagram:
+    '`flow_diagram` (each of 1 to 4 `inputs`, whole numbers, goes through the steps of `rule` in turn, each an `op` (`add`, `subtract`, `multiply` or `divide`) and `by`, like `[{ "op": "multiply", "by": 4 }, { "op": "add", "by": 1 }]`; `blanks` are the places of the outputs left blank, from 1, and `blankInputs` of the inputs; the `answer` is the blank, or every blank as a `list`, the outputs first)',
 }
 
 /** P190: a ruler is in centimetres, or in inches too for a class in the US. */
@@ -311,6 +322,12 @@ export function groupsBullet(kit: PrimaryKit): string {
   )
 }
 
+/** The `list` bullet of a number pattern (P151); P191: geometric patterns have it too. */
+const patternListBullet = (young: boolean): string =>
+  young
+    ? '- `list`: several numbers in a row, with a semicolon between them. Use it for the next numbers of a pattern ("What are the next three numbers? 2, 4, 6, 8, ..."): 2 or 3 numbers, the `answer` is `10; 12; 14` and `ordered` is `true`.'
+    : '- `list`: several values in a row, with a semicolon between them (a comma is part of a decimal, so never cut a list at a comma). Use it for the next terms of a number pattern ("What are the next three numbers? 3, 7, 11, 15, ..."): the `answer` is `19; 23; 27` and `ordered` is `true`.'
+
 /** The answer bullet of the prompt file ends before this one; the lines for a topic go between the two. */
 const ANCHOR = '- `why` says in one sentence'
 
@@ -337,7 +354,9 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
               ? groupsBullet(kit)
             : kit === 'fractions'
               ? `${SHADE_BULLET}\n${PIN_BULLET}`
-              : null
+              : kit === 'growing'
+                ? patternListBullet(young)
+                : null
     return [picture, extra].filter((line): line is string => !!line).join('\n')
   }
   const lines: string[] = [
@@ -379,11 +398,7 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
       )
       break
     case 'patterns':
-      when(
-        young
-          ? '- `list`: several numbers in a row, with a semicolon between them. Use it for the next numbers of a pattern ("What are the next three numbers? 2, 4, 6, 8, ..."): 2 or 3 numbers, the `answer` is `10; 12; 14` and `ordered` is `true`.'
-          : '- `list`: several values in a row, with a semicolon between them (a comma is part of a decimal, so never cut a list at a comma). Use it for the next terms of a number pattern ("What are the next three numbers? 3, 7, 11, 15, ..."): the `answer` is `19; 23; 27` and `ordered` is `true`.',
-      )
+      when(patternListBullet(young))
       break
     case 'data':
       when(

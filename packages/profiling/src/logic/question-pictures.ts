@@ -131,3 +131,56 @@ export function moneyWords(items: readonly number[], n: Notation): string {
   })
   return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : (parts[0] ?? '')
 }
+
+// ---- P191: a growing tile pattern, a flow diagram and a balance scale -------------------------------------------------------------
+
+/** The tiles of pattern `n` of a shape, as [column, row] from the top left. */
+export function tilesOf(shape: string, n: number): [number, number][] {
+  const out: [number, number][] = []
+  const add = (c: number, r: number) => out.push([c, r])
+  switch (shape) {
+    case 'row':
+      for (let c = 0; c < n; c++) add(c, 0)
+      break
+    case 'L':
+      for (let r = 0; r <= n; r++) add(0, r)
+      for (let c = 1; c <= n; c++) add(c, n)
+      break
+    case 'T':
+      for (let c = 0; c <= 2 * n; c++) add(c, 0)
+      for (let r = 1; r <= n; r++) add(n, r)
+      break
+    case 'cross':
+      add(n, n)
+      for (let k = 1; k <= n; k++) {
+        add(n - k, n)
+        add(n + k, n)
+        add(n, n - k)
+        add(n, n + k)
+      }
+      break
+    case 'square':
+      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) add(c, r)
+      break
+    case 'rectangle':
+      for (let r = 0; r < n; r++) for (let c = 0; c <= n; c++) add(c, r)
+      break
+    case 'stairs':
+      // Steps of 1 to n tiles, from the left, standing on the bottom row.
+      for (let c = 0; c < n; c++) for (let r = n - 1 - c; r < n; r++) add(c, r)
+      break
+  }
+  return out
+}
+
+/** The output of a flow diagram for an input: each step of the rule in turn. */
+export function flowOutput(rule: readonly { op: string; by: number }[], input: number): number {
+  return rule.reduce((v, s) => (s.op === 'add' ? v + s.by : s.op === 'subtract' ? v - s.by : s.op === 'multiply' ? v * s.by : v / s.by), input)
+}
+
+/** A step of a flow diagram as it is written in its box: + 1, \u2212 3, \u00d7 4, \u00f7 2. */
+export const flowStepText = (s: { op: string; by: number }, n: Notation = 'za'): string =>
+  `${s.op === 'add' ? '+' : s.op === 'subtract' ? '\u2212' : s.op === 'multiply' ? '\u00d7' : '\u00f7'} ${numberIn(s.by, n)}`
+
+/** What the unknown of a balance scale weighs: the pans balance, so left.x bags and left.n weigh what right.x bags and right.n weigh. */
+export const balanceSolution = (s: { left: { x: number; n: number }; right: { x: number; n: number } }): number => (s.right.n - s.left.n) / (s.left.x - s.right.x)

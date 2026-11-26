@@ -190,7 +190,8 @@ describe('the picture bullet the lesson writer is told', () => {
     expect(primaryAnswerBlock('numbers', klass(3))).toBe(`${pictureBullet('numbers', klass(3))}\n${groupsBullet('numbers')}\n${PIN_BULLET}\n${matchBullet('numbers', klass(3))}`)
     // P173: shapes also has its line for tapping shapes.
     expect(primaryAnswerBlock('shapes', klass(3))).toBe(`${pictureBullet('shapes', klass(3))}\n${groupsBullet('shapes')}\n${TAP_BULLET}\n${matchBullet('shapes', klass(3))}`)
-    expect(PICTURE_KITS).toEqual(['fractions', 'shapes', 'multiply', 'numbers', 'addsub'])
+    // P191: geometric patterns have a picture kit of their own.
+    expect(PICTURE_KITS).toEqual(['fractions', 'shapes', 'multiply', 'numbers', 'addsub', 'growing'])
     const data = primaryAnswerBlock('data', klass(4))
     expect(data).toContain('- `table`')
     expect(data.endsWith(pictureBullet('data', klass(4))!)).toBe(true)

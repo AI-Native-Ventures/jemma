@@ -225,7 +225,48 @@ const CubesSchema = z.object({ kind: z.literal('cubes'), long: z.number(), wide:
 /** P190: the net of a box, `long` by `wide` by `high`, drawn to scale with each size on an edge it measures. */
 const BoxNetSchema = z.object({ kind: z.literal('box_net'), long: z.number(), wide: z.number(), high: z.number(), unit: z.enum(['mm', 'cm', 'm', 'in']).optional() })
 
-/** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). P189: and five more. P190: and six for measuring. */
+// ---- P191: patterns, algebra and graphs ------------------------------------------------------------------------------------------
+
+/**
+ * The shapes a growing tile pattern makes. Pattern n of `row` is a row of n tiles; `L` a column of n + 1 with n more to its right (2n + 1); `T` a row of 2n + 1
+ * with n under its middle (3n + 1); `cross` a middle tile with an arm of n on each side (4n + 1); `square` n by n; `rectangle` n rows of n + 1; `stairs` steps of
+ * 1 to n (n(n + 1)/2).
+ */
+export const TILE_SHAPES = ['row', 'L', 'T', 'cross', 'square', 'rectangle', 'stairs'] as const
+
+/** P191: a growing pattern of tiles: `show` patterns of a `shape`, from pattern `from` (1 when left out). */
+const TilePatternSchema = z.object({ kind: z.literal('tile_pattern'), shape: z.enum(TILE_SHAPES), from: z.number().optional(), show: z.number() })
+
+/** P191: a flow diagram: each input goes through the steps of `rule` in turn to its output. The outputs (and inputs) at the places in `blanks` (and `blankInputs`), from 1, are gold blanks. */
+const FlowDiagramSchema = z.object({
+  kind: z.literal('flow_diagram'),
+  rule: z.array(z.object({ op: z.enum(['add', 'subtract', 'multiply', 'divide']), by: z.number() })),
+  inputs: z.array(z.number()),
+  blanks: z.array(z.number()).optional(),
+  blankInputs: z.array(z.number()).optional(),
+})
+
+/** P191: a balance scale that balances: each pan holds `x` bags of the unknown (`letter`, x when left out) and weights that make `n`. */
+const BalanceSchema = z.object({
+  kind: z.literal('balance'),
+  left: z.object({ x: z.number(), n: z.number() }),
+  right: z.object({ x: z.number(), n: z.number() }),
+  letter: z.string().optional(),
+})
+
+/** P191: a graph of a trip: distance from the start against time, a straight line from each point to the next, from time 0. */
+const TravelGraphSchema = z.object({
+  kind: z.literal('travel_graph'),
+  points: z.array(z.object({ t: z.number(), d: z.number() })),
+  tMax: z.number(),
+  dMax: z.number(),
+  tStep: z.number().optional(),
+  dStep: z.number().optional(),
+  tUnit: z.enum(['s', 'min', 'h']),
+  dUnit: z.enum(['m', 'km']),
+})
+
+/** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). P189: and five more. P190: and six for measuring. P191: and four for patterns, algebra and graphs. */
 const QUESTION_PICTURES = [
   ObjectsSchema,
   TenFrameSchema,
@@ -244,6 +285,10 @@ const QUESTION_PICTURES = [
   ThermometerSchema,
   CubesSchema,
   BoxNetSchema,
+  TilePatternSchema,
+  FlowDiagramSchema,
+  BalanceSchema,
+  TravelGraphSchema,
 ] as const
 
 /**
@@ -286,3 +331,7 @@ export type JugSpec = z.infer<typeof JugSchema>
 export type ThermometerSpec = z.infer<typeof ThermometerSchema>
 export type CubesSpec = z.infer<typeof CubesSchema>
 export type BoxNetSpec = z.infer<typeof BoxNetSchema>
+export type TilePatternSpec = z.infer<typeof TilePatternSchema>
+export type FlowDiagramSpec = z.infer<typeof FlowDiagramSchema>
+export type BalanceSpec = z.infer<typeof BalanceSchema>
+export type TravelGraphSpec = z.infer<typeof TravelGraphSchema>
