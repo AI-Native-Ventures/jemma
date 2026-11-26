@@ -154,6 +154,10 @@ const SENIOR_PICTURES =
   'Use `travel_graph` for a graph of a trip: `points` of time `t` and distance `d` from `t` 0, joined by straight lines, on a grid up to `tMax` and `dMax` with `tUnit` (`s`, `min` or `h`) and `dUnit` (`m` or `km`). ' +
   // P192: 3D objects, shapes of cubes, a map and lines of symmetry.
   'Use `solid` for a 3D object (`shape` `cube`, `cuboid`, `square_pyramid`, `triangular_pyramid`, `triangular_prism`, `cylinder`, `cone` or `sphere`), `cube_stack` for a shape built from cubes (`heights`: how many cubes stand on each square, a row for each row from the back to the front), `map_grid` for a map on a grid of squares (`cols`, `rows` and `places`, each a `name`, a `col` and a `row` from the bottom left), and `symmetry_lines` for a `shape` with 2 to 4 dashed `lines` across it named A to D, asked as a `choice` of their letters with exactly one line of symmetry. ' +
+  // P193: angles, a protractor, parallel lines and an enlargement.
+  'Use `angle` for one angle of `degrees` with an optional short `label`, and `protractor` for an angle read off a protractor (`degrees` on a mark every 5, from 5 to 175; the `answer` is that angle). ' +
+  'Use `parallel_lines` for two parallel lines AB and CD cut by a slanted line that makes the angle `acute` (30 to 80) above and to the right of each crossing; each of 1 to 3 `marks` writes a `label` (`65°`, or a letter like `x` for the angle to find) in a `corner` (`above_right`, `above_left`, `below_left` or `below_right`) of the crossing on `line` `AB` or `CD`, and the `answer` is the size of the letter\'s corner. ' +
+  'Use `enlargement` for a `rectangle` or a right `triangle` (`w` by `h` squares) and the same shape `factor` times bigger (2, 3 or 4) on a grid. ' +
   'Never put the answer in a label. A lesson card or a diagram step may use these pictures too. ' +
   // P171: the learner places points on a grid by tapping it.
   'To have the learner place points on a grid by tapping it (where a shape lands after a reflection or a translation, or points from a table), give `plot` instead of a `diagram`: ' +
