@@ -42,7 +42,16 @@ export function graphY(g: Graph, x: number): number {
 }
 
 /** The small plane one graph of a match is drawn on. */
-export const graphPlane = (m: GraphMatchSpec, i: number): SeniorDiagramSpec => ({ kind: 'coordinate_plane', xMin: m.xMin, xMax: m.xMax, yMin: m.yMin, yMax: m.yMax, graphs: [m.graphs[i]!] })
+export const graphPlane = (m: GraphMatchSpec, i: number): SeniorDiagramSpec => ({
+  kind: 'coordinate_plane',
+  xMin: m.xMin,
+  xMax: m.xMax,
+  yMin: m.yMin,
+  yMax: m.yMax,
+  graphs: [m.graphs[i]!],
+  // P198: marked in π.
+  ...(m.radians ? { radians: true } : {}),
+})
 
 /** Why graphs to match cannot be shown, or null. `planeProblem` checks each small plane as a picture of a question is checked. */
 export function graphMatchProblem(m: GraphMatchSpec, planeProblem: (spec: SeniorDiagramSpec) => string | null): string | null {
@@ -73,6 +82,7 @@ export function graphMatchKeyProblem(
   q: { answer: string; answerKind: string; graphMatch: GraphMatchSpec },
   graphOf: (text: string) => ((x: number) => number) | null,
   degreeGraphOf: (text: string) => ((degrees: number) => number) | null,
+  radianGraphOf: (text: string) => ((degrees: number) => number) | null = degreeGraphOf,
 ): string | null {
   const m = q.graphMatch
   if (q.answerKind !== 'list') return 'graphs matched to equations have a list answer: the place of the equation of each graph, from 1'
@@ -82,7 +92,8 @@ export function graphMatchKeyProblem(
   if (new Set(values).size !== values.length) return 'each equation is the equation of one graph'
   if (values.every((v, i) => v === i + 1)) return 'mix up the equations: not every equation is straight across from its graph'
   const trig = m.graphs[0]!.type === 'trig'
-  const fns = m.equations.map((e) => (trig ? degreeGraphOf(e) : graphOf(e)))
+  // P198: the equations of graphs marked in π are read in radians.
+  const fns = m.equations.map((e) => (trig ? (m.radians ? radianGraphOf : degreeGraphOf)(e) : graphOf(e)))
   const bad = fns.findIndex((f) => f === null)
   if (bad >= 0) return `equation ${bad + 1} cannot be read: write it as y = ..., like y = x^2 - 4`
   const xs = Array.from({ length: 13 }, (_, k) => m.xMin + ((m.xMax - m.xMin) * (k + 0.5)) / 13)

@@ -206,6 +206,21 @@ const SENIOR_PICTURES =
   '(no lim, no equals sign), with a semicolon between them. The first line is (f(x + h) − f(x))/h with f put in, then each line is simpler, then h is cancelled, and the last line has no h: it is f′(x) in its simplest form ' +
   '(`(2(x + h)^2 - 3(x + h) - (2x^2 - 3x))/h; (4xh + 2h^2 - 3h)/h; 4x + 2h - 3; 4x - 3`). Each line must equal the one before it.'
 
+/** P198: a class that learns trig in radians: Mathematics, Grades 11 and 12, in the US (a triangle keeps its angles in degrees). */
+const inRadians = (c: ClassContext) => isUSMaths(c) && c.grade >= 11 && c.grade <= 12
+
+/**
+ * P198: what the lesson writer of a class in radians is told, after the pictures: angles of trig in radians with π; a trig grid stays in degrees with `radians`
+ * so Jemma marks it in π; every solution in radians with π.
+ */
+export const US_RADIANS =
+  'This class learns trig in radians. Write the angles of trig graphs and trig equations in radians with \u03c0 (`\u03c0/6`, `3\u03c0/4`, `2\u03c0`), with no degree sign; the angles of a triangle stay in degrees. ' +
+  'A trig grid still takes x in degrees (`xMin`, `xMax` and `xStep` of a `plot`, and the window of a `coordinate_plane` or a `graphMatch`): give it `radians: true` and Jemma writes it in \u03c0. ' +
+  'Say the interval in the question in radians (`Sketch y = sin x for 0 \u2264 x \u2264 2\u03c0. Tap its 5 key points.`, with `xStep` 45 or 90), name the key points in radians (`place` `["0", "\u03c0/2", "\u03c0", "3\u03c0/2", "2\u03c0"]`), ' +
+  'and give the x of each key point in the `answer` with \u03c0 or in degrees (`0; 0; \u03c0/2; 1; \u03c0; 0; 3\u03c0/2; -1; 2\u03c0; 0`). ' +
+  'For every solution of a trig equation give `general` with `letter` `x` and `radians: true`, say the equation in the question (`Find all solutions of sin x = 1/2.`), ' +
+  'and give the `answer` in radians with \u03c0: the angle and the period of each family (`\u03c0/6; 2\u03c0; 5\u03c0/6; 2\u03c0` for x = \u03c0/6 + 2k\u03c0 or x = 5\u03c0/6 + 2k\u03c0).'
+
 /**
  * What a senior class's lesson writer is told about the maths of a question (P127): state it as an expression or an equation in plain notation, never in
  * words. The bullet of the file stays, and this one follows it in "What to write". Spoken audio is the one place where the maths is said in words.
@@ -380,7 +395,8 @@ export const PROMPT_RULES: Record<PromptJob, PromptRule[]> = {
       replace: (c) => `${SENIOR_QUESTIONS_BULLET}\n- ${SENIOR_NOTATION}\n- ${SENIOR_PLAIN}\n- ${seniorMeaning(c)}\n- ${SENIOR_STEPS}\n- ${SENIOR_PICKS}`,
     },
     // A senior class: graphs on a grid and triangles, in a card, a step or a question.
-    { find: 'Use only the diagram kinds in the schema.', when: isSeniorMaths, replace: () => SENIOR_PICTURES },
+    // P198: a class of Grades 11 and 12 in the US learns trig in radians.
+    { find: 'Use only the diagram kinds in the schema.', when: isSeniorMaths, replace: (c) => (inRadians(c) ? `${SENIOR_PICTURES} ${US_RADIANS}` : SENIOR_PICTURES) },
     // A senior class: a list, an order and a table (P150), as a bullet of "What to write" after the one that tells the answer kinds.
     {
       find: '- `why` says in one sentence what usually goes wrong.',

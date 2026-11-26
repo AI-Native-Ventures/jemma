@@ -3,7 +3,7 @@ import { parseAnswer } from '../../logic/answers'
 import { choicePictureProblem, isPickQuestion, pickKeyProblem } from '../../logic/answers/pick'
 import { blocksKeyProblem, blocksProblem } from '../../logic/answers/blocks'
 import { groupsKeyProblem, groupsProblem, tidyGroups } from '../../logic/answers/groups'
-import { plotKeyProblem, plotProblem, sketchKeyProblem, tidyPlot } from '../../logic/answers/plot'
+import { plotKeyInDegrees, plotKeyProblem, plotProblem, plotReader, sketchKeyProblem, tidyPlot } from '../../logic/answers/plot'
 import { shadeKeyProblem, shadeProblem } from '../../logic/answers/shade'
 import { tapKeyProblem, tapProblem, tidyTap } from '../../logic/answers/tap'
 import { lineKeyProblem, lineProblem, tidyLine } from '../../logic/answers/line'
@@ -18,7 +18,7 @@ import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
 import { isSeniorQuestion, quantityProblem, readCents, stripUnit } from '../../logic/answers/quantity'
-import { degreeEquationOf, degreeGraphOf, graphEquationOf, isMeaningKind, workedLineOf, meaningKeyProblem, readNumber, sameExpression } from '../../logic/meaning'
+import { degreeEquationOf, degreeGraphOf, graphEquationOf, isMeaningKind, workedLineOf, meaningKeyProblem, radianEquationOf, radianGraphOf, readNumber, sameExpression } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { pictureKeyProblem, pictureProblem, questionPictureProblem } from '../../logic/picture'
 import { cleanSteps } from '../../logic/steps'
@@ -75,10 +75,11 @@ export function answerProblem(q: Question): string | null {
   // P171: points placed on a grid: a grid a phone can show, and a key that is a point on it for each point to place.
   if (q.plot) {
     if (q.diagram || q.choices?.length) return 'plot: a grid to place points on is the picture of its question, and it has no choices'
-    const plot = plotProblem(q.plot) ?? plotKeyProblem({ ...q, plot: q.plot }, readNumber)
+    // P198: on a grid marked in π an x of the key may be written with π.
+    const plot = plotProblem(q.plot) ?? plotKeyProblem({ ...q, plot: q.plot }, plotReader(q.plot, readNumber))
     if (plot) return `plot: ${plot}`
     // P176: a sketch: its key points make one parabola, and it is the graph of the equation in the question.
-    const sketch = q.plot.curve ? sketchKeyProblem({ ...q, plot: q.plot }, readNumber, graphEquationOf, degreeGraphOf) : null
+    const sketch = q.plot.curve ? sketchKeyProblem({ ...q, plot: q.plot }, readNumber, graphEquationOf, degreeGraphOf, radianGraphOf) : null
     if (sketch) return `plot: ${sketch}`
   }
   // P172: a shape to shade: a shape a phone can show, and a key that is a number of its parts.
@@ -114,13 +115,14 @@ export function answerProblem(q: Question): string | null {
   // P184: graphs to match to their equations: small planes a phone can show, and a key whose every equation is its graph and no other.
   if (q.graphMatch) {
     if (q.diagram || q.plot || q.line || q.proof || q.general || q.choices?.length) return 'graphMatch: graphs to match are the picture of their question, and it has no choices'
-    const graphs = graphMatchProblem(q.graphMatch, pictureProblem) ?? graphMatchKeyProblem({ ...q, graphMatch: q.graphMatch }, graphEquationOf, degreeGraphOf)
+    const graphs = graphMatchProblem(q.graphMatch, pictureProblem) ?? graphMatchKeyProblem({ ...q, graphMatch: q.graphMatch }, graphEquationOf, degreeGraphOf, radianGraphOf)
     if (graphs) return `graphMatch: ${graphs}`
   }
   // P180: every solution of a trig equation: a key whose families are the solutions of the equation in the question, every one of them.
   if (q.general) {
     if (q.diagram || q.plot || q.line || q.proof || q.choices?.length) return 'general: every solution has no picture and no choices'
-    const general = generalProblem(q.general) ?? generalKeyProblem({ ...q, general: q.general }, readNumber, degreeEquationOf)
+    // P198: every solution in radians reads its equation in radians.
+    const general = generalProblem(q.general) ?? generalKeyProblem({ ...q, general: q.general }, readNumber, q.general.radians ? radianEquationOf : degreeEquationOf)
     if (general) return `general: ${general}`
   }
   // P175: a pin on a number line: a line a phone can show, and a key on one of its marks.
@@ -284,7 +286,7 @@ const STEPS_LEFT_OUT = 'left out whole: a line of them held a label'
 const tidySteps = (questions: Question[]): Question[] =>
   questions.map(({ steps, ...rest }) => {
     const clean = cleanSteps(steps)
-    return tidyFirstPrinciples(tidyGraphMatch(tidyGeneral(tidyProof(tidyMatch(tidyLine(tidyTap(tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest))))))))))
+    return tidyFirstPrinciples(tidyGraphMatch(tidyGeneral(tidyProof(tidyMatch(tidyLine(tidyTap(tidyPlot(plotKeyInDegrees(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest)), readNumber)))))))))
   })
 
 /**

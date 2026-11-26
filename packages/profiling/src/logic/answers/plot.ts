@@ -1,4 +1,5 @@
 import type { PlotSpec } from '../../schemas/lesson'
+import { gridReader, piText, saysPi } from '../radians'
 import { splitValues } from './lists'
 
 /**
@@ -53,8 +54,13 @@ export function plotProblem(p: PlotSpec): string | null {
   if (p.shape && given.length < 3) return 'a shape has 3 or more given points'
   if (p.curve && (p.shape || given.length > 0)) return 'a sketch has no given points and no shape'
   if (p.curve && p.curve !== 'trig' && p.place.length !== CURVE_POINTS[p.curve]) return `a ${CURVE_NAME[p.curve]} is sketched through ${CURVE_POINTS[p.curve]} key points`
+  // P198: only a trig grid is marked in π.
+  if (p.radians && !trig) return 'only a trig graph is marked in \u03c0 (`radians`)'
   return null
 }
+
+/** P198: the reader of the values of a grid: on a grid marked in π, an x may be written with π (`π/2` is 90); everything else is read as it is. */
+export const plotReader = (p: PlotSpec, read: (t: string) => number | null): ((t: string) => number | null) => (p.radians ? gridReader(read) : read)
 
 // ---- P176: a sketch of a parabola --------------------------------------------------------------------------------------------
 //
@@ -252,10 +258,11 @@ const said = (v: number) => {
 }
 
 /** What a curve is said by in the results: where it turns ("turns at (0 ; −4)"), or its asymptotes ("has asymptotes x = 1 and y = 2"). */
-export function curveWords(c: Curve): string {
+export function curveWords(c: Curve, radians = false): string {
   if (c.kind === 'hyperbola') return `has asymptotes x = ${said(c.f.p)} and y = ${said(c.f.q)}`
   if (c.kind === 'trig') {
-    const list = c.f.map((pt) => sketchName(pt, true))
+    // P198: in π on a grid marked in π.
+    const list = c.f.map((pt) => sketchName(pt, true, radians))
     return `goes through ${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`
   }
   const tops = turningPoints(c)
@@ -284,9 +291,11 @@ export function sketchKeyProblem(
   read: (t: string) => number | null,
   graphOf: (text: string) => ((x: number) => number) | null,
   degreeGraphOf: (text: string) => ((degrees: number) => number) | null = () => null,
+  radianGraphOf: (text: string) => ((degrees: number) => number) | null = () => null,
 ): string | null {
   const kind: CurveKind = q.plot.curve ?? 'parabola'
-  if (kind === 'trig') return trigKeyProblem(q, read, degreeGraphOf)
+  // P198: a grid marked in π reads its equation in radians, and an x of its key with π.
+  if (kind === 'trig') return trigKeyProblem(q, plotReader(q.plot, read), q.plot.radians ? radianGraphOf : degreeGraphOf)
   const n = CURVE_POINTS[kind]
   const name = CURVE_NAME[kind]
   const pts = plotPoints(q.answer, read)
@@ -337,9 +346,11 @@ export function trigKeyProblem(
     return 'the key points are evenly spaced, from xMin to xMax'
   const graph = degreeGraphOf(q.prompt)
   if (!graph) return 'the question gives the equation of the graph to sketch, as y = ... (y = 2 sin x + 1)'
+  // P198: an x on a grid marked in π is said in π.
+  const angle = (x: number) => (q.plot.radians ? piText(x) : `${x}°`)
   for (const pt of curve.f) {
     const y = graph(pt.x)
-    if (!Number.isFinite(y) || Math.abs(y - pt.y) > 1e-6) return `the key point (${pt.x}°; ${pt.y}) is not on the graph of the question: at x = ${pt.x}° it has y = ${Number.isFinite(y) ? Math.round(y * 1000) / 1000 : 'no value'}`
+    if (!Number.isFinite(y) || Math.abs(y - pt.y) > 1e-6) return `the key point (${angle(pt.x)}; ${pt.y}) is not on the graph of the question: at x = ${angle(pt.x)} it has y = ${Number.isFinite(y) ? Math.round(y * 1000) / 1000 : 'no value'}`
   }
   const step = 0.5
   for (let x = q.plot.xMin; x <= q.plot.xMax + 1e-9; x += step) {
@@ -350,7 +361,7 @@ export function trigKeyProblem(
     const top = y > before + 1e-12 && y >= after - 1e-12
     const bottom = y < before - 1e-12 && y <= after + 1e-12
     if (x > q.plot.xMin + 1e-9 && x < q.plot.xMax - 1e-9 && (top || bottom) && !xs.some((k) => Math.abs(k - x) <= step + 1e-9))
-      return `the graph has a high or a low point at about x = ${Math.round(x)}°, which is not a key point`
+      return `the graph has a high or a low point at about x = ${q.plot.radians ? piText(Math.round(x)) : `${Math.round(x)}°`}, which is not a key point`
   }
   return null
 }
@@ -409,13 +420,17 @@ export function sketchCurve(plot: PlotSpec, given: Curve | Parabola, steps = 160
   return out.filter((p) => p.length > 1)
 }
 
-/** A point as the sketch writes it, "(−2 ; 0)": a true minus sign, a decimal comma, at most two decimals. P182: "(90° ; 3)" on a grid in degrees. */
-export function sketchName(p: Point, degrees = false): string {
+/**
+ * A point as the sketch writes it, "(−2 ; 0)": a true minus sign, a decimal comma, at most two decimals. P182: "(90° ; 3)" on a grid in degrees. P198: "(π/2 ; 3)"
+ * on a grid marked in π (`radians`).
+ */
+export function sketchName(p: Point, degrees = false, radians = false): string {
   const n = (v: number) => {
     const r = Math.round(v * 100) / 100
     const t = String(Math.abs(r) < 1e-9 ? 0 : Math.abs(r)).replace('.', ',')
     return r < -1e-9 ? `\u2212${t}` : t
   }
+  if (radians) return `(${piText(p.x)} ; ${n(p.y)})`
   return `(${n(p.x)}${degrees ? '\u00b0' : ''} ; ${n(p.y)})`
 }
 
@@ -446,6 +461,18 @@ export function tidyPlot<Q extends { answerKind: string; plot?: PlotSpec; ordere
   if (!q.plot || q.answerKind !== 'list') return q
   if (q.plot.curve) return { ...q, ordered: true, labels: q.plot.place.flatMap((_, i) => [`${ORDINALS[i]} x`, `${ORDINALS[i]} y`]) }
   return { ...q, ordered: true, labels: q.plot.place.flatMap((l) => [`${l.trim()} x`, `${l.trim()} y`]) }
+}
+
+/**
+ * P198: a key written with π on a grid marked in π, kept in degrees the way the grid is (`π/2; 1` is saved as `90; 1`), so it is marked and shown like any
+ * other. A key that cannot be read is left as it is.
+ */
+export function plotKeyInDegrees<Q extends { answer: string; answerKind: string; plot?: PlotSpec }>(q: Q, read: (t: string) => number | null): Q {
+  if (!q.plot?.radians || q.answerKind !== 'list' || !saysPi(q.answer)) return q
+  const points = plotPoints(q.answer, plotReader(q.plot, read))
+  if (!points) return q
+  const n = (v: number) => String(Math.round(v * 1e6) / 1e6)
+  return { ...q, answer: points.map((pt) => `${n(pt.x)}; ${n(pt.y)}`).join('; ') }
 }
 
 /** The answer the placed points make, as one text (the x and the y of each, in order), or '' while a point is not placed. */

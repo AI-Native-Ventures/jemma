@@ -27,11 +27,13 @@ import {
   familiesOf,
   generalLetter,
   generalText,
+  inDegreesFrom,
   graphMatchOf,
   prettyEquation,
   curveThrough,
   curveWords,
   plotPoints,
+  plotReader,
   sketchName,
   tapPicks,
   linePoints,
@@ -771,16 +773,21 @@ function firstPrinciplesReview(item: StoredItem): Partial<MissedQuestion> {
   }
 }
 
-/** P180: every solution, said as families are said ("θ = 30° + k · 360° or θ = 150° + k · 360°"); what was typed stays as typed when it is not pairs of numbers. */
+/**
+ * P180: every solution, said as families are said ("θ = 30° + k · 360° or θ = 150° + k · 360°"); what was typed stays as typed when it is not pairs of numbers.
+ * P198: in radians when the frame is ("x = π/6 + 2kπ or x = 5π/6 + 2kπ").
+ */
 function generalReview(item: StoredItem): Partial<MissedQuestion> {
   const g = item.question.general
   if (!g) return {}
   const letter = generalLetter(g)
-  const right = familiesOf(item.question.answer, readNumber)
-  const wrote = item.unread ? null : familiesOf(item.answer, readNumber)
+  const radians = g.radians === true
+  const read = radians ? inDegreesFrom(readNumber) : readNumber
+  const right = familiesOf(item.question.answer, read)
+  const wrote = item.unread ? null : familiesOf(item.answer, read)
   return {
-    ...(right ? { right: generalText(right, letter) } : {}),
-    ...(wrote ? { wrote: generalText(wrote, letter) } : {}),
+    ...(right ? { right: generalText(right, letter, radians) } : {}),
+    ...(wrote ? { wrote: generalText(wrote, letter, radians) } : {}),
     notated: true,
     cells: undefined,
     table: undefined,
@@ -888,8 +895,10 @@ function groupsReview(item: StoredItem): Partial<MissedQuestion> {
 function plotReview(item: StoredItem): Partial<MissedQuestion> {
   const p = item.question.plot
   if (!p) return {}
-  const right = plotPoints(item.question.answer, readNumber) ?? []
-  const values = item.unread ? [] : splitValues(item.answer).map((t) => readNumber(t))
+  // P198: on a grid marked in π an x may be written with π.
+  const read = plotReader(p, readNumber)
+  const right = plotPoints(item.question.answer, read) ?? []
+  const values = item.unread ? [] : splitValues(item.answer).map((t) => read(t))
   const wrote = p.place.map((_, i) => {
     const [x, y] = [values[2 * i], values[2 * i + 1]]
     return x === undefined || y === undefined || x === null || y === null ? null : { x, y }
@@ -903,8 +912,9 @@ function plotReview(item: StoredItem): Partial<MissedQuestion> {
     const turns = (pts: ({ x: number; y: number } | null)[]) => {
       const placed = pts.filter((q): q is { x: number; y: number } => q !== null)
       const f = placed.length === p.place.length ? curveThrough(kind, placed) : null
-      if (f) return curveWords(f)
-      const list = placed.map((q) => sketchName(q, kind === 'trig'))
+      // P198: a grid marked in π says its points in π.
+      if (f) return curveWords(f, p.radians === true)
+      const list = placed.map((q) => sketchName(q, kind === 'trig', p.radians === true))
       return list.length === 0 ? '(no points)' : list.length === 1 ? list[0]! : `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`
     }
     return { plot: p, plotRight: right, plotWrote: wrote, wrote: item.unread ? '' : turns(wrote), right: turns(right), notated: true, cells: undefined, table: undefined, ordered: undefined }

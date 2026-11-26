@@ -87,10 +87,13 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * P197 (26 Nov 2026) moved both, on purpose: a picture may be a tally table, a pie chart, a line plot, a spinner or a bag of counters, and (senior) a broken-line
  * graph, a histogram, an ogive, a stem and leaf display, a scatter plot or a Venn diagram. Before P197 they were
  * 7a3a1256d5d87221337dd95f258acdab931620c4ee94e14476c821640df14602 (senior) and 6aeecdc51a0142aafb40de96e4ebf1bf3b59cd3d9c3f5d696ae3a40adbc52770 (wide).
+ * P198 (26 Nov 2026) moved both, on purpose: a trig grid, a picture of trig graphs and graphs to match may be marked in π, and every solution may be typed in
+ * radians (`radians`). Before P198 they were 696df7a3b7594b2fba6ade6ea06fe925455f7776fbe8cba4ac91d788edbc5ec5 (senior) and
+ * 284a903962231b5326efa1102967f5bc94adb3ce7eef134cdd32b3b5bcb6c9cd (wide).
  * Every packet that changes the senior schema moves these two: recompute them after a merge.
  */
-const SENIOR_SHA = '696df7a3b7594b2fba6ade6ea06fe925455f7776fbe8cba4ac91d788edbc5ec5'
-const WIDE_SHA = '284a903962231b5326efa1102967f5bc94adb3ce7eef134cdd32b3b5bcb6c9cd'
+const SENIOR_SHA = '7632e225155b76f5ed2749413a1cf487e97e51b2a6984bb81845462127d7ea3e'
+const WIDE_SHA = '4d71de0ff589afa1f58cce1956eb7350c4b32d34c1433aad3350ce62a2790ddf'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({

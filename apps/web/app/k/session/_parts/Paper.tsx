@@ -141,6 +141,9 @@ export function writeLine(shape: AnswerShape, n: Notation = 'za'): string {
     // P180: every solution is written as the angle and the period of each family.
     case 'general': {
       const l = shape.general.letter?.trim() || '\u03b8'
+      // P198: in radians, with π.
+      if (shape.general.radians)
+        return `For each family of solutions write its angle and how often it comes back, in radians, with a semicolon between them: ${l} = \u03c0/6 + 2k\u03c0 is \u03c0/6; 2\u03c0.`
       return `For each family of solutions write its angle and how often it comes back, in degrees, with a semicolon between them: ${l} = 12° + k · 360° is 12; 360.`
     }
     // P179: a proof is written one line at a time.
