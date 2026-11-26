@@ -153,7 +153,8 @@ describe('the picture bullet the lesson writer is told', () => {
     expect(KIT_PICTURES.fractions).toEqual(['fraction_bar', 'number_line', 'area_model', 'objects', 'fraction_circle', 'percent_bar'])
     expect(KIT_PICTURES.data).toEqual(['bar_chart'])
     expect(KIT_PICTURES.place).toEqual(['place_value', 'base_ten'])
-    expect(KIT_PICTURES.shapes).toEqual(['shape_2d', 'grid_area'])
+    // P193: and an angle.
+    expect(KIT_PICTURES.shapes).toEqual(['shape_2d', 'grid_area', 'angle'])
     expect(pictureBullet('time', klass(3))).toContain('`calendar`')
     expect(pictureBullet('money', klass(3))).toContain('`money`')
     for (const kit of Object.keys(KIT_PICTURES) as PrimaryKit[]) {
@@ -174,7 +175,8 @@ describe('the picture bullet the lesson writer is told', () => {
     expect(older).toContain('Say in the `prompt` what to look at')
     expect(young).toContain('Keep it small and plain')
     expect(older).not.toContain('Keep it small and plain')
-    for (const kit of PICTURE_KITS) for (const grade of [1, 4]) expect(pictureBullet(kit, klass(grade))).not.toContain(String.fromCharCode(0x2014))
+    // P193: a kit may have no picture for a grade (angles in Grade 1), and then it has no bullet.
+    for (const kit of PICTURE_KITS) for (const grade of [1, 4]) expect(pictureBullet(kit, klass(grade)) ?? '').not.toContain(String.fromCharCode(0x2014))
   })
 
   test('a picture kit adds the bullet alone; an old kit keeps its answer kinds and gains the bullet', () => {
@@ -190,8 +192,8 @@ describe('the picture bullet the lesson writer is told', () => {
     expect(primaryAnswerBlock('numbers', klass(3))).toBe(`${pictureBullet('numbers', klass(3))}\n${groupsBullet('numbers')}\n${PIN_BULLET}\n${matchBullet('numbers', klass(3))}`)
     // P173: shapes also has its line for tapping shapes.
     expect(primaryAnswerBlock('shapes', klass(3))).toBe(`${pictureBullet('shapes', klass(3))}\n${groupsBullet('shapes')}\n${TAP_BULLET}\n${matchBullet('shapes', klass(3))}`)
-    // P191: geometric patterns have a picture kit of their own. P192: and so do position and views, 3D objects and symmetry.
-    expect(PICTURE_KITS).toEqual(['fractions', 'shapes', 'multiply', 'numbers', 'addsub', 'growing', 'position', 'solids', 'symmetry'])
+    // P191: geometric patterns have a picture kit of their own. P192: and so do position and views, 3D objects and symmetry. P193: and angles and transformations.
+    expect(PICTURE_KITS).toEqual(['fractions', 'shapes', 'multiply', 'numbers', 'addsub', 'growing', 'position', 'solids', 'symmetry', 'angles', 'transform'])
     const data = primaryAnswerBlock('data', klass(4))
     expect(data).toContain('- `table`')
     expect(data.endsWith(pictureBullet('data', klass(4))!)).toBe(true)

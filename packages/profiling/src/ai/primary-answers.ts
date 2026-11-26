@@ -30,12 +30,14 @@ export type PrimaryKit =
   | 'position'
   | 'solids'
   | 'symmetry'
+  | 'angles'
+  | 'transform'
 
 /**
  * P166: the kits that add pictures to a question (a fraction bar, a shape, an area model, a number line) and no new answer kind. P168: addition and
  * subtraction (`addsub`, from Grade 2) also adds a sum worked in columns.
  */
-export const PICTURE_KITS: readonly PrimaryKit[] = ['fractions', 'shapes', 'multiply', 'numbers', 'addsub', 'growing', 'position', 'solids', 'symmetry']
+export const PICTURE_KITS: readonly PrimaryKit[] = ['fractions', 'shapes', 'multiply', 'numbers', 'addsub', 'growing', 'position', 'solids', 'symmetry', 'angles', 'transform']
 
 /** A topic name as it is compared: lower case, words only, "(Term 2)" and an "&" put right. */
 const norm = (name: string) =>
@@ -50,7 +52,7 @@ const norm = (name: string) =>
  * Which topic names belong to which kit. A pattern is the whole name, so a name that only mentions one of these words ("Number sentences", "Problems in
  * context: addition and subtraction") is never gated. A kit marked `baseline: false` (P166) is never given to the baseline class.
  */
-const KIT_TOPICS: { kit: PrimaryKit; names: RegExp; baseline?: false }[] = [
+const KIT_TOPICS: { kit: PrimaryKit; names: RegExp; baseline?: false; grades?: readonly [number, number] }[] = [
   { kit: 'time', names: /^(time|telling the time|time and the calendar|clocks?|calendars?)$/ },
   {
     kit: 'measure',
@@ -102,6 +104,9 @@ const KIT_TOPICS: { kit: PrimaryKit; names: RegExp; baseline?: false }[] = [
   { kit: 'position', names: /^(position orientation and views|position and movement|viewing objects)$/, baseline: false },
   { kit: 'solids', names: /^(d objects|properties of d objects)$/, baseline: false },
   { kit: 'symmetry', names: /^(symmetry|lines and symmetry)$/, baseline: false },
+  // P193: angles have a kit of their own, and transformations one from Grade 5 (an enlargement on a grid).
+  { kit: 'angles', names: /^(angles|measuring angles)$/, baseline: false },
+  { kit: 'transform', names: /^transformations$/, baseline: false, grades: [5, 6] },
   // P168: addition and subtraction have a kit of their own, so their questions (from Grade 2) may be sums worked in columns.
   { kit: 'addsub', names: /^(addition and subtraction|add and subtract within)$/, baseline: false },
 ]
@@ -114,7 +119,7 @@ export function primaryKit(c: ClassContext | null, topicName: string): PrimaryKi
   if (!isMathsGrade1To6(c)) return null
   const name = norm(topicName ?? '')
   const baseline = isBaselineClass(c)
-  return KIT_TOPICS.find((k) => (k.baseline !== false || !baseline) && k.names.test(name))?.kit ?? null
+  return KIT_TOPICS.find((k) => (k.baseline !== false || !baseline) && (!k.grades || (c.grade >= k.grades[0] && c.grade <= k.grades[1])) && k.names.test(name))?.kit ?? null
 }
 
 /**
@@ -131,7 +136,7 @@ export const KIT_PICTURES: Record<PrimaryKit, readonly string[]> = {
   data: ['bar_chart'],
   place: ['place_value', 'base_ten'],
   fractions: ['fraction_bar', 'number_line', 'area_model', 'objects', 'fraction_circle', 'percent_bar'],
-  shapes: ['shape_2d', 'grid_area'],
+  shapes: ['shape_2d', 'grid_area', 'angle'],
   multiply: ['area_model', 'number_line', 'dot_array', 'objects', 'factor_tree'],
   numbers: ['number_line', 'objects', 'ten_frame', 'hundred_chart', 'compare'],
   addsub: ['number_line', 'ten_frame', 'objects', 'hundred_chart'],
@@ -139,6 +144,8 @@ export const KIT_PICTURES: Record<PrimaryKit, readonly string[]> = {
   position: ['map_grid', 'cube_stack', 'grid_area'],
   solids: ['solid', 'grid_area'],
   symmetry: ['symmetry_lines'],
+  angles: ['angle', 'protractor'],
+  transform: ['enlargement'],
 }
 
 /**
@@ -172,6 +179,10 @@ export const PICTURE_GRADES: Readonly<Record<string, readonly [number, number]>>
   solid: [1, 6],
   cube_stack: [3, 6],
   symmetry_lines: [1, 6],
+  // P193
+  angle: [3, 6],
+  protractor: [4, 6],
+  enlargement: [5, 6],
 }
 
 /**
@@ -228,6 +239,12 @@ const PICTURE_WORDS: Record<string, string> = {
     '`cube_stack` (a shape built from cubes, drawn in 3D: `heights` says how many cubes, 0 to 3, stand on each square, a row of numbers for each row from the back to the front, like `[[2, 1, 1]]`) for views and counting cubes',
   symmetry_lines:
     '`symmetry_lines` (a `shape` standing upright, `heart`, `star`, `rectangle`, `square`, `triangle`, `circle`, `house`, `arrow` or `kite`, with 2 to 4 dashed `lines` across it named A, B, C and D in order, each `vertical`, `horizontal`, `diagonal` or `other_diagonal`): ask which line is a line of symmetry as a `choice` question with the choices `A`, `B` and so on, and draw exactly one line of symmetry',
+  // P193
+  angle:
+    '`angle` (an angle of `degrees`, 1 to 359, between two arms, with an arc on the side it is measured and a small square for a right angle; `label` writes a short label in it, like `x`): ask what kind of angle it is as a `choice` question with the choices `acute`, `right`, `obtuse`, `straight` and `reflex`, or how big it is',
+  protractor: '`protractor` (a protractor over an angle, one arm on 0 and the other crossing the scale at `degrees`, on a mark every 5 from 5 to 175; the `answer` is that angle)',
+  enlargement:
+    '`enlargement` (a `rectangle` or a right `triangle` `w` by `h` squares, 1 to 6 each, and the same shape `factor` times bigger, 2, 3 or 4, side by side on a grid; `sizes` `true` writes their sizes) for a scale factor',
 }
 
 /** P192: a choice may be a picture: a net of a cube, or a view from the top drawn as squares. */

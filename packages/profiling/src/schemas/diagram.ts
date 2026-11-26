@@ -292,7 +292,38 @@ export const SYMMETRY_LINES = ['vertical', 'horizontal', 'diagonal', 'other_diag
 /** P192: a shape with 2 to 4 dashed lines across it, named A, B, C and D in order: a choice question asks which line is a line of symmetry. */
 const SymmetryLinesSchema = z.object({ kind: z.literal('symmetry_lines'), shape: z.enum(SYMMETRY_SHAPES), lines: z.array(z.enum(SYMMETRY_LINES)) })
 
-/** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). P189: and five more. P190: and six for measuring. P191: and four for patterns, algebra and graphs. P192: and four for shapes and position. */
+// ---- P193: angles and transformations ---------------------------------------------------------------------------------------------
+
+/** P193: an angle of `degrees` (1 to 359) between two arms, with an arc on the side it is measured; a right angle has a small square. `label` is written in it. */
+const AngleSchema = z.object({ kind: z.literal('angle'), degrees: z.number(), label: z.string().optional() })
+
+/** P193: a protractor over an angle: one arm on its 0 and the other crossing its scale at `degrees` (on a mark every 5 degrees). */
+const ProtractorSchema = z.object({ kind: z.literal('protractor'), degrees: z.number() })
+
+/** The four angles where a slanted line crosses a straight one. */
+export const CORNERS = ['above_right', 'above_left', 'below_left', 'below_right'] as const
+
+/**
+ * P193: two parallel lines, AB above CD, cut by a slanted line that makes the angle `acute` (30 to 80 degrees) with them above and to the right of each crossing.
+ * Each of `marks` writes a `label` (an angle like `65°`, or a letter like `x`) in a `corner` of the crossing on `line` AB or CD.
+ */
+const ParallelLinesSchema = z.object({
+  kind: z.literal('parallel_lines'),
+  acute: z.number(),
+  marks: z.array(z.object({ line: z.enum(['AB', 'CD']), corner: z.enum(CORNERS), label: z.string() })),
+})
+
+/** P193: a shape and its enlargement on a grid of squares: a `rectangle` or a right `triangle` `w` squares wide and `h` tall, and the same shape `factor` times bigger. */
+const EnlargementSchema = z.object({
+  kind: z.literal('enlargement'),
+  shape: z.enum(['rectangle', 'triangle']),
+  w: z.number(),
+  h: z.number(),
+  factor: z.number(),
+  sizes: z.boolean().optional(),
+})
+
+/** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). P189: and five more. P190: and six for measuring. P191: and four for patterns, algebra and graphs. P192: and four for shapes and position. P193: and four for angles and transformations. */
 const QUESTION_PICTURES = [
   ObjectsSchema,
   TenFrameSchema,
@@ -319,6 +350,10 @@ const QUESTION_PICTURES = [
   SolidSchema,
   CubeStackSchema,
   SymmetryLinesSchema,
+  AngleSchema,
+  ProtractorSchema,
+  ParallelLinesSchema,
+  EnlargementSchema,
 ] as const
 
 /**
@@ -369,3 +404,7 @@ export type MapGridSpec = z.infer<typeof MapGridSchema>
 export type SolidSpec = z.infer<typeof SolidSchema>
 export type CubeStackSpec = z.infer<typeof CubeStackSchema>
 export type SymmetryLinesSpec = z.infer<typeof SymmetryLinesSchema>
+export type AngleSpec = z.infer<typeof AngleSchema>
+export type ProtractorSpec = z.infer<typeof ProtractorSchema>
+export type ParallelLinesSpec = z.infer<typeof ParallelLinesSchema>
+export type EnlargementSpec = z.infer<typeof EnlargementSchema>

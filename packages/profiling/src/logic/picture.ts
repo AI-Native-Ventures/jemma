@@ -1,5 +1,5 @@
 import type { SeniorDiagramSpec } from '../schemas/diagram'
-import { balanceSolution, daysIn, factorTreeOf, flowOutput, isSymmetryLine, MONEY_VALUES, percentPart, tilesOf } from './question-pictures'
+import { angleKind, balanceSolution, cornerAngle, daysIn, factorTreeOf, flowOutput, isSymmetryLine, labelDegrees, MONEY_VALUES, percentPart, tilesOf } from './question-pictures'
 
 /**
  * Does a picture of the two senior kinds make sense? `null` when it does, else a short plain reason.
@@ -468,6 +468,41 @@ function symmetryLinesProblem(s: SymmetryLines): string | null {
   return null
 }
 
+// ---- P193: angles and transformations ----------------------------------------------------------------------------------------------
+
+type Angle = Extract<SeniorDiagramSpec, { kind: 'angle' }>
+type ParallelLines = Extract<SeniorDiagramSpec, { kind: 'parallel_lines' }>
+type Enlargement = Extract<SeniorDiagramSpec, { kind: 'enlargement' }>
+
+function angleProblem(s: Angle): string | null {
+  if (!whole(s.degrees, 1, 359)) return 'an angle is a whole number of degrees from 1 to 359'
+  if (s.label !== undefined && s.label.trim().length > 6) return 'the label of an angle is short, like 40° or x'
+  return null
+}
+
+function protractorProblem(s: { degrees: number }): string | null {
+  return whole(s.degrees, 5, 175) && s.degrees % 5 === 0 ? null : 'a protractor reads an angle on a mark every 5 degrees, from 5 to 175'
+}
+
+function parallelLinesProblem(s: ParallelLines): string | null {
+  if (!whole(s.acute, 30, 80)) return 'the slanted line makes a whole angle of 30 to 80 degrees with the parallel lines'
+  if (s.marks.length < 1 || s.marks.length > 3) return 'parallel lines carry 1 to 3 angle marks'
+  if (new Set(s.marks.map((m) => `${m.line} ${m.corner}`)).size !== s.marks.length) return 'each angle mark has a corner of its own'
+  for (const m of s.marks) {
+    const said = labelDegrees(m.label)
+    if (said === null && !/^[a-z]$/.test(m.label.trim())) return 'an angle mark is an angle like 65° or one small letter'
+    if (said !== null && said !== cornerAngle(s.acute, m.corner)) return `the corner ${m.corner.replace('_', ' ')} at ${m.line} is ${cornerAngle(s.acute, m.corner)}°, not ${said}°`
+  }
+  return null
+}
+
+function enlargementProblem(s: Enlargement): string | null {
+  if (!whole(s.w, 1, 6) || !whole(s.h, 1, 6)) return 'the small shape is 1 to 6 squares wide and tall'
+  if (!whole(s.factor, 2, 4)) return 'the scale factor is 2, 3 or 4'
+  if (s.w + s.w * s.factor + 3 > 18 || s.h * s.factor + 2 > 11) return 'the two shapes fit on a grid of 18 by 11 squares'
+  return null
+}
+
 /** The values of the gold blanks of a flow diagram, in order: the outputs first, then the inputs. */
 const flowBlanks = (s: FlowDiagram): number[] => [...(s.blanks ?? []).map((p) => flowOutput(s.rule, s.inputs[p - 1]!)), ...(s.blankInputs ?? []).map((p) => s.inputs[p - 1]!)]
 
@@ -521,6 +556,23 @@ export function pictureKeyProblem(
     const named = letters.every((l, i) => l === 'ABCD'[i]) && letters.length === d.lines.length
     const at = 'ABCD'.indexOf(q.answer.trim().toUpperCase())
     if (named && at >= 0 && at < d.lines.length && !isSymmetryLine(d.shape, d.lines[at]!)) return `line ${'ABCD'[at]} is not a line of symmetry of the ${d.shape}`
+  }
+  // P193: the kind of an angle picked from words is its kind; a protractor is read; the letter of parallel lines stands for its corner's size.
+  if (d?.kind === 'angle' && q.answerKind === 'choice' && q.choices?.length) {
+    const kinds = ['acute', 'right', 'obtuse', 'straight', 'reflex']
+    const at = 'ABCDE'.indexOf(q.answer.trim().toUpperCase())
+    const picked = at >= 0 ? q.choices[at] : undefined
+    const word = (typeof picked === 'string' ? picked : (picked?.text ?? '')).trim().toLowerCase()
+    if (kinds.includes(word) && word !== angleKind(d.degrees)) return `a ${d.degrees}° angle is ${angleKind(d.degrees)}, not ${word}`
+  }
+  if (d?.kind === 'protractor' && read && ['whole', 'decimal'].includes(q.answerKind)) {
+    const got = read(q.answer)
+    if (got !== null && !near(got, d.degrees)) return `the answer is the angle the protractor reads, ${d.degrees}`
+  }
+  if (d?.kind === 'parallel_lines' && read && ['whole', 'decimal'].includes(q.answerKind)) {
+    const letters = d.marks.filter((m) => labelDegrees(m.label) === null)
+    const got = read(q.answer)
+    if (letters.length === 1 && got !== null && !near(got, cornerAngle(d.acute, letters[0]!.corner))) return `the answer is the angle ${letters[0]!.label.trim()} stands for, ${cornerAngle(d.acute, letters[0]!.corner)}`
   }
   // P190: a ruler, a scale, a jug and a thermometer are read, so a number key is the reading (in its unit, or one a thousand times bigger or smaller).
   const readings = d ? readingsOf(d) : null
@@ -594,6 +646,15 @@ export function pictureProblem(spec: SeniorDiagramSpec): string | null {
       return finite ?? cubeStackProblem(spec)
     case 'symmetry_lines':
       return symmetryLinesProblem(spec)
+    // P193
+    case 'angle':
+      return finite ?? angleProblem(spec)
+    case 'protractor':
+      return finite ?? protractorProblem(spec)
+    case 'parallel_lines':
+      return finite ?? parallelLinesProblem(spec)
+    case 'enlargement':
+      return finite ?? enlargementProblem(spec)
     default:
       return null
   }

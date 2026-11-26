@@ -232,6 +232,11 @@ export const DIAGRAM_WORDS: Record<string, string> = {
   solid: '3D objects',
   cube_stack: 'shapes of cubes',
   symmetry_lines: 'lines of symmetry',
+  // P193
+  angle: 'angles',
+  protractor: 'a protractor',
+  parallel_lines: 'parallel lines',
+  enlargement: 'an enlargement on a grid',
 }
 
 function how(lesson: Lesson): string {

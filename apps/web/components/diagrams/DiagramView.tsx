@@ -37,6 +37,10 @@ import { MapGrid } from './MapGrid'
 import { Solid } from './Solid'
 import { CubeStack } from './CubeStack'
 import { SymmetryLines } from './SymmetryLines'
+import { Angle } from './Angle'
+import { Protractor } from './Protractor'
+import { ParallelLines } from './ParallelLines'
+import { Enlargement } from './Enlargement'
 import type { Variant } from './shared'
 
 export type DiagramViewProps = {
@@ -153,6 +157,15 @@ export function DiagramView({ spec, variant, highlight, className, caption, seni
         return <CubeStack {...s} variant={variant === 'question' ? 'question' : 'card'} />
       case 'symmetry_lines':
         return <SymmetryLines {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      // P193: angles and transformations (an angle, a protractor, parallel lines, an enlargement).
+      case 'angle':
+        return <Angle {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'protractor':
+        return <Protractor {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'parallel_lines':
+        return <ParallelLines {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'enlargement':
+        return <Enlargement {...s} variant={variant === 'question' ? 'question' : 'card'} />
       default:
         return <PictureMissing className={className} />
     }

@@ -219,3 +219,23 @@ export function placeMarks(names: readonly string[]): string[] {
   const first = names.map((n) => n.trim().charAt(0).toUpperCase())
   return names.map((n, i) => (first.filter((f) => f === first[i]).length > 1 ? n.trim().slice(0, 2).replace(/^./, (c) => c.toUpperCase()) : first[i]!))
 }
+
+// ---- P193: angles and transformations ---------------------------------------------------------------------------------------------
+
+/** The kind of an angle by its size: acute, right, obtuse, straight or reflex (or a full turn). */
+export function angleKind(degrees: number): 'acute' | 'right' | 'obtuse' | 'straight' | 'reflex' | 'full' {
+  if (degrees < 90) return 'acute'
+  if (degrees === 90) return 'right'
+  if (degrees < 180) return 'obtuse'
+  if (degrees === 180) return 'straight'
+  return degrees < 360 ? 'reflex' : 'full'
+}
+
+/** The size of each corner where the slanted line of two parallel lines crosses one of them: the acute angle above and to the right, and below and to the left. */
+export const cornerAngle = (acute: number, corner: string): number => (corner === 'above_right' || corner === 'below_left' ? acute : 180 - acute)
+
+/** The number an angle label says, like 65 for `65°`, or null for a letter. */
+export const labelDegrees = (label: string): number | null => {
+  const m = /^\s*(\d+(?:[.,]\d+)?)\s*°?\s*$/.exec(label)
+  return m ? Number(m[1]!.replace(',', '.')) : null
+}

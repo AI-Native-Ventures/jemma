@@ -264,8 +264,9 @@ describe('the schema of a gated lesson', () => {
     expect(items.properties).not.toHaveProperty('steps')
     // P166: a question may carry one of the seven primary pictures, and only those. P188: and the counting pictures of the question type boards.
     const kinds = ((items.properties.diagram as { oneOf: { properties: { kind: { const: string } } }[] }).oneOf ?? []).map((o) => o.properties.kind.const)
-    // P189: and a factor tree, fraction circles, a percentage bar, a calendar, and coins and notes. P190: and the six measuring pictures. P191: and four for patterns, algebra and graphs. P192: and four for shapes and position.
+    // P189: and a factor tree, fraction circles, a percentage bar, a calendar, and coins and notes. P190: and the six measuring pictures. P191: and four for patterns, algebra and graphs. P192: and four for shapes and position. P193: and four for angles and transformations.
     expect(kinds.sort()).toEqual([
+      'angle',
       'area_model',
       'balance',
       'bar_chart',
@@ -276,6 +277,7 @@ describe('the schema of a gated lesson', () => {
       'cube_stack',
       'cubes',
       'dot_array',
+      'enlargement',
       'factor_tree',
       'flow_diagram',
       'fraction_bar',
@@ -287,8 +289,10 @@ describe('the schema of a gated lesson', () => {
       'money',
       'number_line',
       'objects',
+      'parallel_lines',
       'percent_bar',
       'place_value',
+      'protractor',
       'ruler',
       'scale_dial',
       'shape_2d',

@@ -74,10 +74,12 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * 9d9b73e8279db69469a12fb555bda6234a340a2c345f9b74d36ed9436367154b (senior) and 7e4aca87219297c5121079f3d17a2d840e9e2648391eb447b6a009c6a543b6df (wide).
  * P192 (26 Nov 2026) moved both, on purpose: a picture may be a map on a grid, a 3D object, a shape of cubes or lines across a shape. Before P192 they were
  * a3e10dd03ef5af58da843cfb966ad67e4d22f6a2fcdaed7d45a7292f81e7f1a1 (senior) and d99ba82498e544c58128d08ec56d20579e3c0e8bed2f1f07d740479d47a5f65b (wide).
+ * P193 (26 Nov 2026) moved both, on purpose: a picture may be an angle, a protractor, parallel lines or an enlargement. Before P193 they were
+ * b371ec9b701dac93d2f61b6b8d9f3ca1b10f787544d7dd7b20f520085c5add5a (senior) and 8f33c454b0f01429224f5c16393c55a6314eb7a67fe043a4a34ed69178184d20 (wide).
  * Every packet that changes the senior schema moves these two: recompute them after a merge.
  */
-const SENIOR_SHA = 'b371ec9b701dac93d2f61b6b8d9f3ca1b10f787544d7dd7b20f520085c5add5a'
-const WIDE_SHA = '8f33c454b0f01429224f5c16393c55a6314eb7a67fe043a4a34ed69178184d20'
+const SENIOR_SHA = '9edfb914e6e159709f3495e5ceed77e81ac72776f1c49f4e2c083842a484372a'
+const WIDE_SHA = 'accc3ad04cab97b3fda70e7ab92de9ce1c1c5646e20f84fe196cd37767ba65f6'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({
