@@ -12,6 +12,7 @@ import { clockFaceProblem, clockKeyProblem, clockProblem } from '../../logic/ans
 import { matchKeyProblem, matchProblem, tidyMatch } from '../../logic/answers/match'
 import { proofKeyProblem, proofProblem, tidyProof } from '../../logic/answers/proof'
 import { generalKeyProblem, generalProblem, tidyGeneral } from '../../logic/answers/general'
+import { graphMatchKeyProblem, graphMatchProblem, tidyGraphMatch } from '../../logic/answers/graph-match'
 import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
@@ -102,6 +103,12 @@ export function answerProblem(q: Question): string | null {
     if (q.diagram || q.plot || q.line || q.choices?.length) return 'proof: an identity to prove has no picture and no choices'
     const proof = proofProblem(q.proof, sameExpression) ?? proofKeyProblem({ ...q, proof: q.proof }, sameExpression)
     if (proof) return `proof: ${proof}`
+  }
+  // P184: graphs to match to their equations: small planes a phone can show, and a key whose every equation is its graph and no other.
+  if (q.graphMatch) {
+    if (q.diagram || q.plot || q.line || q.proof || q.general || q.choices?.length) return 'graphMatch: graphs to match are the picture of their question, and it has no choices'
+    const graphs = graphMatchProblem(q.graphMatch, pictureProblem) ?? graphMatchKeyProblem({ ...q, graphMatch: q.graphMatch }, graphEquationOf, degreeGraphOf)
+    if (graphs) return `graphMatch: ${graphs}`
   }
   // P180: every solution of a trig equation: a key whose families are the solutions of the equation in the question, every one of them.
   if (q.general) {
@@ -209,7 +216,7 @@ const STEPS_LEFT_OUT = 'left out whole: a line of them held a label'
 const tidySteps = (questions: Question[]): Question[] =>
   questions.map(({ steps, ...rest }) => {
     const clean = cleanSteps(steps)
-    return tidyGeneral(tidyProof(tidyMatch(tidyLine(tidyTap(tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest))))))))
+    return tidyGraphMatch(tidyGeneral(tidyProof(tidyMatch(tidyLine(tidyTap(tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest)))))))))
   })
 
 /**

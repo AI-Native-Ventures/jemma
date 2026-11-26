@@ -19,6 +19,8 @@ import {
   familiesOf,
   generalLetter,
   generalText,
+  graphMatchOf,
+  prettyEquation,
   curveThrough,
   curveWords,
   plotPoints,
@@ -52,7 +54,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { BlocksSpec, Choice, ClockFaceSpec, ClockSpec, ColumnsSpec, DataGraphSpec, Form, GeneralSpec, GroupsSpec, LineSpec, MatchSpec, PinSpec, PlotSpec, ProofSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
+import type { BlocksSpec, Choice, ClockFaceSpec, ClockSpec, ColumnsSpec, GraphMatchSpec, DataGraphSpec, Form, GeneralSpec, GroupsSpec, LineSpec, MatchSpec, PinSpec, PlotSpec, ProofSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -142,6 +144,8 @@ export type QuestionForChild = {
   general?: GeneralSpec
   /** P183: a clock face to read. It shows the time, as the picture of a question must. */
   clockFace?: ClockFaceSpec
+  /** P184: graphs to match to their equations. Which goes with which is the answer, and is never sent. */
+  graphMatch?: GraphMatchSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -226,6 +230,8 @@ export type MissedQuestion = {
   match?: MatchSpec
   matchWrote?: (number | null)[]
   matchRight?: number[]
+  /** P184: the graphs drawn small on the left of a match of graphs and equations. */
+  matchPlane?: GraphMatchSpec
   /** P179: the identity, the learner's lines, the first that does not follow (null: none) and the line it should have been. */
   proof?: ProofSpec
   proofLines?: string[]
@@ -293,6 +299,7 @@ export function stripQuestion(
     ...(q.proof ? { proof: q.proof } : {}),
     ...(q.general ? { general: q.general } : {}),
     ...(q.clockFace ? { clockFace: q.clockFace } : {}),
+    ...(q.graphMatch ? { graphMatch: q.graphMatch } : {}),
   }
 }
 
@@ -395,7 +402,7 @@ export type AnswerShape =
   /** P177: a clock set by dragging its hands, the answer the time it shows. `typed` is the same answer typed instead: the boxes of a time. */
   | { kind: 'clock'; clock: ClockSpec; typed: AnswerShape }
   /** P178: things matched in pairs by tapping, the answer the partner of each. */
-  | { kind: 'match'; match: MatchSpec; young?: true }
+  | { kind: 'match'; match: MatchSpec; young?: true; /** P184: graphs drawn on the left. */ plane?: GraphMatchSpec }
   /** P179: an identity proved line by line, each line its own maths editor. */
   | { kind: 'proof'; proof: ProofSpec }
   /** P180: every solution of a trig equation, a frame for each family: an angle and how often it comes back. */
@@ -432,6 +439,7 @@ type ShapeParts = {
   match?: MatchSpec
   proof?: ProofSpec
   general?: GeneralSpec
+  graphMatch?: GraphMatchSpec
 }
 
 export function answerShape(
@@ -478,6 +486,8 @@ export function answerShape(
   if (q.general && q.answerKind === 'list') return { kind: 'general', general: q.general }
   // P179: an identity proved line by line, the answer its lines.
   if (q.proof && q.answerKind === 'list') return { kind: 'proof', proof: q.proof }
+  // P184: graphs matched to their equations, the answer the equation of each: a match whose left ones are the graphs.
+  if (q.graphMatch && q.answerKind === 'list') return { kind: 'match', match: graphMatchPairs(q.graphMatch), plane: q.graphMatch }
   // P178: things matched in pairs, the answer the partner of each.
   if (q.match && q.answerKind === 'list') return { kind: 'match', match: q.match, ...(q.young ? { young: true as const } : {}) }
   // P173: shapes picked by tapping, the answer which ones.
@@ -698,17 +708,23 @@ function proofReview(item: StoredItem): Partial<MissedQuestion> {
   }
 }
 
+/** P184: graphs and their equations as things to match: "Graph 1" and so on on the left, the equations as they are shown on the right. */
+export const graphMatchPairs = (g: GraphMatchSpec): MatchSpec => ({ left: g.graphs.map((_, i) => `Graph ${i + 1}`), right: g.equations.map(prettyEquation) })
+
 /** P178: the pairs the learner joined and the right ones, said in words ("7 with seven, 12 with twelve and 20 with twenty"), or "All 3 pairs" when right. */
 function matchReview(item: StoredItem): Partial<MissedQuestion> {
-  const m = item.question.match
+  // P184: graphs and equations are said and drawn as a match too.
+  const plane = item.question.graphMatch
+  const m = item.question.match ?? (plane ? graphMatchPairs(plane) : undefined)
   if (!m) return {}
-  const right = (matchOf(item.question.answer, m) ?? []).map((v) => v - 1)
+  const right = ((plane ? graphMatchOf(item.question.answer, plane) : matchOf(item.question.answer, m)) ?? []).map((v) => v - 1)
   const values = item.unread ? [] : splitValues(item.answer).map((t) => (/^\d+$/.test(t) && Number(t) >= 1 && Number(t) <= m.right.length ? Number(t) - 1 : null))
   const wrote = m.left.map((_, i) => values[i] ?? null)
   const said = (xs: (number | null)[]) => matchText(m, xs.map((x) => (x === null ? null : x + 1)))
   const all = wrote.every((w, i) => w === right[i])
   return {
     match: m,
+    ...(plane ? { matchPlane: plane } : {}),
     matchRight: right,
     matchWrote: wrote,
     wrote: item.unread ? '' : all ? `All ${m.left.length} pairs` : said(wrote),

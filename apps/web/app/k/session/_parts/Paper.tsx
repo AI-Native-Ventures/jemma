@@ -224,7 +224,7 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
         {shape.kind === 'line' ? <LineGrid line={shape.line} mode="paper" /> : null}
         {shape.kind === 'pin' ? <PinLine pin={shape.pin} at={null} mode="paper" /> : null}
         {shape.kind === 'clock' ? <div className="w-[200px] self-center"><ClockFace time={null} mode="paper" /></div> : null}
-        {shape.kind === 'match' ? <MatchBoard match={shape.match} joined={[]} mode="paper" /> : null}
+        {shape.kind === 'match' ? <MatchBoard match={shape.match} plane={shape.plane} joined={[]} mode="paper" /> : null}
         {shape.kind === 'shade' ? <ShadedResult shade={shape.shade} wrote="0" /> : null}
         {shape.kind === 'tap' ? (
           <div className="flex flex-col gap-1">

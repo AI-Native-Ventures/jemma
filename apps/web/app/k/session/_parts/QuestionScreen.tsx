@@ -285,7 +285,7 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
       return <ProofAnswer topic={topic} prompt={prompt} onChange={b.set.text} />
     // P178: things matched in pairs by tapping one, then its partner.
     case 'match':
-      return <MatchAnswer match={shape.match} onChange={b.set.text} />
+      return <MatchAnswer match={shape.match} plane={shape.plane} onChange={b.set.text} />
     // P177: a clock set by dragging its hands, or the time typed instead.
     case 'clock':
       return <ClockAnswer clock={shape.clock} onChange={b.set.text} typed={<AnswerArea shape={shape.typed} b={b} prompt={prompt} topic={topic} />} />

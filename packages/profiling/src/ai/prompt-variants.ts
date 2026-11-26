@@ -168,7 +168,11 @@ const SENIOR_PICTURES =
   'with a semicolon between them (`sin^2 x/(1 - cos x); (1 - cos^2 x)/(1 - cos x); ((1 - cos x)(1 + cos x))/(1 - cos x); 1 + cos x`). Each line must equal the one before it. ' +
   // P180: the learner types every solution of a trig equation.
   'To have the learner give the general solution of a trig equation (Grades 11 and 12), say the equation in the `prompt` (`Find the general solution of sin θ = 0,5.`) and give `general` with `letter` (`θ`), and no `diagram`. ' +
-  'The `answerKind` is `list` and the `answer` is the angle and the period of each family of solutions, in degrees, with a semicolon between them (`30; 360; 150; 360` for θ = 30° + k · 360° or θ = 150° + k · 360°). Give every family.'
+  'The `answerKind` is `list` and the `answer` is the angle and the period of each family of solutions, in degrees, with a semicolon between them (`30; 360; 150; 360` for θ = 30° + k · 360° or θ = 150° + k · 360°). Give every family. ' +
+  // P184: the learner matches graphs to their equations.
+  'To have the learner match graphs to their equations (Grades 10 to 12), give `graphMatch` with one window for all of them (`xMin`, `xMax`, `yMin`, `yMax`; in degrees for trig graphs), `graphs` (2 to 4, each given as a graph of a `coordinate_plane` is, all trig graphs or none) ' +
+  'and `equations`, their equations as `y = ...` (`y = x^2 - 4`), in a mixed-up order, and no `diagram`. The `answerKind` is `list` and the `answer` is the place in `equations` of the equation of each graph, from 1, with a semicolon between them (`2; 3; 1`). ' +
+  'Make the graphs different enough to tell apart: each equation fits one graph only.'
 
 /**
  * What a senior class's lesson writer is told about the maths of a question (P127): state it as an expression or an equation in plain notation, never in

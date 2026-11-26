@@ -1,14 +1,15 @@
 'use client'
 
 import { useState, type KeyboardEvent, type ReactNode } from 'react'
-import { matchAnswer } from '@jemma/profiling/logic'
-import type { MatchSpec, TapSpec } from '@jemma/profiling/schemas'
-import { GOLD, GOLD_TINT, GREEN, INK, WHITE } from '@/components/diagrams/shared'
+import { graphY, matchAnswer } from '@jemma/profiling/logic'
+import type { GraphMatchSpec, MatchSpec, TapSpec } from '@jemma/profiling/schemas'
+import { BODY, GOLD, GOLD_TINT, GREEN, INK, WHITE } from '@/components/diagrams/shared'
 import { outline } from './TapShapes'
 
 // P178: things matched in pairs, from the "Match pairs" board ("Match each number to its name."). The learner taps one on the left, then the one it goes with on
 // the right (or the other way round), and a line joins them. A tap on a line takes it off; joining a thing again moves its line. The line under the pairs counts
 // them, never whether they are right. The results draw the learner's lines: a right pair in green, a wrong one in red pen.
+// P184: graphs matched to their equations: each graph drawn small in its card on the left (`plane`), its equations on the right.
 
 const PEN = '#E03C31'
 const W = 320
@@ -59,18 +60,50 @@ function column(texts: string[], sizes: number[], min: number, max: number) {
 }
 
 /** Where the cards go. On paper the ones on the right are numbered ("1. twelve"), so their cards fit the numbers too. */
-function layout(m: MatchSpec, numbered: boolean) {
+function layout(m: MatchSpec, numbered: boolean, graphs: boolean) {
   const pictures = m.pictures === true
   const short = !pictures && Math.max(...m.left.map((t) => t.trim().length)) <= 3
-  const left = pictures ? { size: 0, w: 84, lines: m.left.map(() => ['']) } : column(m.left, short ? [26, 22] : [19, 16, 14], 80, 132)
-  const right = column(numbered ? m.right.map((t, j) => `${j + 1}. ${t.trim()}`) : m.right, [19, 16, 14], 100, W - 2 * SIDE - 64 - left.w)
-  const h = pictures ? 70 : 56
+  const left = graphs ? { size: 0, w: 104, lines: m.left.map(() => ['']) } : pictures ? { size: 0, w: 84, lines: m.left.map(() => ['']) } : column(m.left, short ? [26, 22] : [19, 16, 14], 80, 132)
+  const right = column(numbered ? m.right.map((t, j) => `${j + 1}. ${t.trim()}`) : m.right, [19, 16, 14], 100, W - 2 * SIDE - (graphs ? 48 : 64) - left.w)
+  const h = graphs ? 84 : pictures ? 70 : 56
   const pitch = h + 22
   return { left, right, h, pitch, H: m.left.length * pitch - 22 + 2 * SIDE, lx: SIDE, rx: W - SIDE - right.w, y: (i: number) => SIDE + i * pitch }
 }
 
+/** P184: one graph drawn small inside a card: its axes where they cross the window, and the curve, broken where it leaves the window or has no value. */
+function MiniGraph({ plane, i, x, y, w, h }: { plane: GraphMatchSpec; i: number; x: number; y: number; w: number; h: number }) {
+  const pad = 8
+  const X = (v: number) => x + pad + ((v - plane.xMin) / (plane.xMax - plane.xMin)) * (w - 2 * pad)
+  const Y = (v: number) => y + pad + ((plane.yMax - v) / (plane.yMax - plane.yMin)) * (h - 2 * pad)
+  const g = plane.graphs[i]!
+  const pieces: string[][] = []
+  let piece: string[] = []
+  const steps = 120
+  for (let k = 0; k <= steps; k++) {
+    const vx = plane.xMin + ((plane.xMax - plane.xMin) * k) / steps
+    const vy = graphY(g, vx)
+    if (Number.isFinite(vy) && vy >= plane.yMin && vy <= plane.yMax) piece.push(`${X(vx).toFixed(1)},${Y(vy).toFixed(1)}`)
+    else if (piece.length) {
+      pieces.push(piece)
+      piece = []
+    }
+  }
+  if (piece.length) pieces.push(piece)
+  return (
+    <g data-mini-graph={i}>
+      {plane.yMin < 0 && plane.yMax > 0 ? <line x1={x + pad} y1={Y(0)} x2={x + w - pad} y2={Y(0)} stroke={BODY} strokeWidth={1} /> : null}
+      {plane.xMin < 0 && plane.xMax > 0 ? <line x1={X(0)} y1={y + pad} x2={X(0)} y2={y + h - pad} stroke={BODY} strokeWidth={1} /> : null}
+      {pieces.filter((p) => p.length > 1).map((p, k) => (
+        <polyline key={k} points={p.join(' ')} fill="none" stroke={INK} strokeWidth={2.4} strokeLinejoin="round" strokeLinecap="round" />
+      ))}
+    </g>
+  )
+}
+
 export type MatchBoardProps = {
   match: MatchSpec
+  /** P184: the graphs drawn small on the left, in place of words. */
+  plane?: GraphMatchSpec
   /** The partner of each left one (an index into `right`), or null. */
   joined: (number | null)[]
   mode: 'answer' | 'paper' | 'results'
@@ -82,8 +115,8 @@ export type MatchBoardProps = {
   onLine?: (i: number) => void
 }
 
-export function MatchBoard({ match, joined, mode, picked = null, right = [], onLeft, onRight, onLine }: MatchBoardProps) {
-  const L = layout(match, mode === 'paper')
+export function MatchBoard({ match, plane, joined, mode, picked = null, right = [], onLeft, onRight, onLine }: MatchBoardProps) {
+  const L = layout(match, mode === 'paper', plane !== undefined)
   const press = (f?: () => void) => (e: KeyboardEvent<SVGGElement>) => {
     if (e.key !== 'Enter' && e.key !== ' ') return
     e.preventDefault()
@@ -154,7 +187,9 @@ export function MatchBoard({ match, joined, mode, picked = null, right = [], onL
       {match.left.map((t, i) => {
         const cx = L.lx + L.left.w / 2
         const cy = L.y(i) + L.h / 2
-        const body = match.pictures
+        const body = plane
+          ? <MiniGraph plane={plane} i={i} x={L.lx} y={L.y(i)} w={L.left.w} h={L.h} />
+          : match.pictures
           ? (() => {
               const o = outline(t.trim() as Shape, 24)
               return <g transform={`translate(${cx} ${cy})`}>{o.kind === 'circle' ? <ellipse cx={0} cy={0} rx={o.rx} ry={o.ry} fill={WHITE} stroke={INK} strokeWidth={2.4} /> : <path d={o.d} fill={WHITE} stroke={INK} strokeWidth={2.4} strokeLinejoin="round" />}</g>
@@ -171,16 +206,17 @@ export function MatchBoard({ match, joined, mode, picked = null, right = [], onL
 }
 
 /** The words for what the learner taps first and what they join it to: "a number" and "its name" for numbers and names, as on the board. */
-function nouns(m: MatchSpec): { first: string; then: string; waits: string } {
+function nouns(m: MatchSpec, graphs = false): { first: string; then: string; waits: string } {
+  if (graphs) return { first: 'a graph', then: 'its equation', waits: 'its equation' }
   const numbers = !m.pictures && m.left.every((t) => /^[\d\s.,]+$/.test(t.trim()))
   const names = m.pictures === true || (numbers && m.right.every((t) => /^[a-z\s-]+$/i.test(t.trim())))
   return { first: m.pictures ? 'a shape' : numbers ? 'a number' : 'one on the left', then: names ? 'its name' : 'the one it goes with', waits: names ? 'its name' : 'its match' }
 }
 
 /** The line under the pairs: how many are joined and what waits for its partner. It never says whether a pair is right. */
-export function matchHint(m: MatchSpec, joined: (number | null)[], picked: Pick): ReactNode {
+export function matchHint(m: MatchSpec, joined: (number | null)[], picked: Pick, graphs = false): ReactNode {
   const n = joined.filter((j) => j !== null).length
-  const w = nouns(m)
+  const w = nouns(m, graphs)
   const count =
     n > 0 ? (
       <>
@@ -191,7 +227,7 @@ export function matchHint(m: MatchSpec, joined: (number | null)[], picked: Pick)
     return (
       <>
         {count}
-        {m.pictures ? 'The shape you picked' : <strong className="font-bold text-ink">{m.left[picked.i]!.trim()}</strong>} is waiting for {w.waits}.
+        {graphs ? 'The graph you picked' : m.pictures ? 'The shape you picked' : <strong className="font-bold text-ink">{m.left[picked.i]!.trim()}</strong>} is waiting for {w.waits}.
       </>
     )
   if (picked?.side === 'right')
@@ -216,7 +252,7 @@ export function matchHint(m: MatchSpec, joined: (number | null)[], picked: Pick)
 }
 
 /** The answer of things to match: the two columns and the line under them. `onChange` gets the partner of each left one, or '' while one is not joined. */
-export function MatchAnswer({ match, onChange }: { match: MatchSpec; onChange: (text: string) => void }) {
+export function MatchAnswer({ match, plane, onChange }: { match: MatchSpec; plane?: GraphMatchSpec; onChange: (text: string) => void }) {
   const [joined, setJoined] = useState<(number | null)[]>(() => match.left.map(() => null))
   const [picked, setPicked] = useState<Pick>(null)
   const write = (next: (number | null)[]) => {
@@ -241,8 +277,8 @@ export function MatchAnswer({ match, onChange }: { match: MatchSpec; onChange: (
   }
   return (
     <div data-answer="match" className="flex w-full flex-col items-center gap-3">
-      <MatchBoard match={match} joined={joined} mode="answer" picked={picked} onLeft={left} onRight={right} onLine={line} />
-      <p aria-live="polite" className="m-0 text-center text-[16px] leading-[1.4] text-body">{matchHint(match, joined, picked)}</p>
+      <MatchBoard match={match} plane={plane} joined={joined} mode="answer" picked={picked} onLeft={left} onRight={right} onLine={line} />
+      <p aria-live="polite" className="m-0 text-center text-[16px] leading-[1.4] text-body">{matchHint(match, joined, picked, plane !== undefined)}</p>
     </div>
   )
 }
