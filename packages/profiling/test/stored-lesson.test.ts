@@ -44,10 +44,12 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * 6cf648b0b27725042e61fde110d4bdb8fa04527b5173848cfc8ba56108f13c4b.
  * P176 (26 Nov 2026) moved both, on purpose: a senior grid to place points on may be a `curve`, a sketch of a parabola through its key points. Before P176
  * they were 8dcdb55a3011410428a8664db696386b5cd7904d7ac89557dd998b0dd7c177bf (senior) and 6e04f1e23d09c24c91de670dfeeef035456ae194dadd71a509f1b1b35a92e910 (wide).
+ * P177 (26 Nov 2026) moved the wide one alone: a question may have a `clock`, a clock to set. Before P177 it was
+ * 0836f720710671e34acafb345b833bd08344e4781e280ce1f96297bfd0124c47.
  * Every packet that changes the senior schema moves these two: recompute them after a merge.
  */
 const SENIOR_SHA = '02e4320fe0f7a380ddd0da9cb0442e4cec5345610d47776f5a5773756f9a6912'
-const WIDE_SHA = '0836f720710671e34acafb345b833bd08344e4781e280ce1f96297bfd0124c47'
+const WIDE_SHA = 'e4f270893f8dff6dd1f4c0891384937e01e0eca3409be2579359345f56cd5686'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({

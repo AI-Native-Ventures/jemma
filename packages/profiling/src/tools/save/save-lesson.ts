@@ -8,6 +8,7 @@ import { shadeKeyProblem, shadeProblem } from '../../logic/answers/shade'
 import { tapKeyProblem, tapProblem, tidyTap } from '../../logic/answers/tap'
 import { lineKeyProblem, lineProblem, tidyLine } from '../../logic/answers/line'
 import { pinKeyProblem, pinProblem } from '../../logic/answers/pin'
+import { clockKeyProblem, clockProblem } from '../../logic/answers/clock'
 import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
@@ -98,6 +99,12 @@ export function answerProblem(q: Question): string | null {
     if (q.diagram || q.choices?.length) return 'pin: a number line to put a pin on is the picture of its question, and it has no choices'
     const pin = pinProblem(q.pin) ?? pinKeyProblem({ ...q, pin: q.pin }, readNumber)
     if (pin) return `pin: ${pin}`
+  }
+  // P177: a clock to set: a stop of the long hand a phone can drag to, and a key that is a time on its face other than 12:00.
+  if (q.clock) {
+    if (q.diagram || q.graph || q.columns || q.blocks || q.groups || q.shade || q.tap || q.pin || q.choices?.length) return 'clock: a clock to set is the picture of its question, and it has no choices'
+    const clock = clockProblem(q.clock) ?? clockKeyProblem({ ...q, clock: q.clock })
+    if (clock) return `clock: ${clock}`
   }
   const picture = questionPictureOf(q)
   if (picture) return `picture: ${picture}`
