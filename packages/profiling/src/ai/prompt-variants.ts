@@ -148,6 +148,10 @@ const SENIOR_PICTURES =
   'Use `percent_bar` for a percentage of an amount: `whole` is the amount at 100%, `percent` the shaded part, `parts` the equal pieces, and `ask` (`part`, `whole` or `percent`) says what its question mark stands for, which is the `answer`. ' +
   // P190: a box of cubes and the net of a box.
   'Use `cubes` for a box built from cubes (`long`, `wide` and `high`, 1 to 6 each) and `box_net` for the net of a box drawn to scale (`long`, `wide` and `high`, 1 to 12 each, and `unit`) for volume and surface area. ' +
+  // P191: patterns, a flow diagram, a balance scale and a graph of a trip.
+  'Use `tile_pattern` for a growing pattern of tiles (`shape` `row`, `L`, `T`, `cross`, `square`, `rectangle` or `stairs`, and `show` 2 to 4 patterns from pattern `from`) and `flow_diagram` for an input and output rule (`inputs`, the `rule` as steps of `op` `add`, `subtract`, `multiply` or `divide` `by` a number, and `blanks`, the places of the outputs left blank, from 1, and `blankInputs` of the inputs; the `answer` is the blank, or every blank as a `list`, the outputs first). ' +
+  'Use `balance` for an equation as a balance scale: each pan, `left` and `right`, holds `x` bags of the unknown and weights that make `n` (`2x + 3 = 11` is left `{ "x": 2, "n": 3 }` and right `{ "x": 0, "n": 11 }`), and the `answer` is what a bag weighs. ' +
+  'Use `travel_graph` for a graph of a trip: `points` of time `t` and distance `d` from `t` 0, joined by straight lines, on a grid up to `tMax` and `dMax` with `tUnit` (`s`, `min` or `h`) and `dUnit` (`m` or `km`). ' +
   'Never put the answer in a label. A lesson card or a diagram step may use these pictures too. ' +
   // P171: the learner places points on a grid by tapping it.
   'To have the learner place points on a grid by tapping it (where a shape lands after a reflection or a translation, or points from a table), give `plot` instead of a `diagram`: ' +

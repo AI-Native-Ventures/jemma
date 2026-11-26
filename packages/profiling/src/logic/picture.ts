@@ -1,5 +1,5 @@
 import type { SeniorDiagramSpec } from '../schemas/diagram'
-import { daysIn, factorTreeOf, MONEY_VALUES, percentPart } from './question-pictures'
+import { balanceSolution, daysIn, factorTreeOf, flowOutput, MONEY_VALUES, percentPart, tilesOf } from './question-pictures'
 
 /**
  * Does a picture of the two senior kinds make sense? `null` when it does, else a short plain reason.
@@ -389,6 +389,59 @@ function boxNetProblem(s: BoxNet): string | null {
   return whole(s.long, 1, 12) && whole(s.wide, 1, 12) && whole(s.high, 1, 12) ? null : 'the net of a box is 1 to 12 long, wide and high, in whole units'
 }
 
+// ---- P191: patterns, algebra and graphs ------------------------------------------------------------------------------------------------
+
+type TilePattern = Extract<SeniorDiagramSpec, { kind: 'tile_pattern' }>
+type FlowDiagram = Extract<SeniorDiagramSpec, { kind: 'flow_diagram' }>
+type Balance = Extract<SeniorDiagramSpec, { kind: 'balance' }>
+type TravelGraph = Extract<SeniorDiagramSpec, { kind: 'travel_graph' }>
+
+const MAX_PATTERN_TILES = 30
+const MAX_PATTERNS_SHOWN = 4
+
+function tilePatternProblem(s: TilePattern): string | null {
+  const from = s.from ?? 1
+  if (!whole(from, 1, 5) || !whole(s.show, 2, MAX_PATTERNS_SHOWN)) return `a tile pattern shows 2 to ${MAX_PATTERNS_SHOWN} patterns, from pattern 1 to 5`
+  if (tilesOf(s.shape, from + s.show - 1).length > MAX_PATTERN_TILES) return `each pattern has at most ${MAX_PATTERN_TILES} tiles`
+  return null
+}
+
+/** The blanks of a flow diagram: the places of the outputs and the inputs drawn as gold blanks, each on the diagram and named once. */
+const placesOk = (places: readonly number[] | undefined, n: number) => !places || (places.every((p) => whole(p, 1, n)) && new Set(places).size === places.length)
+
+function flowDiagramProblem(s: FlowDiagram): string | null {
+  if (s.rule.length < 1 || s.rule.length > 3) return 'a flow diagram has 1 to 3 steps'
+  if (s.rule.some((r) => (r.op === 'multiply' || r.op === 'divide') && r.by === 0)) return 'a flow diagram never multiplies or divides by 0'
+  if (s.inputs.length < 1 || s.inputs.length > 4) return 'a flow diagram has 1 to 4 inputs'
+  if (s.inputs.some((v) => !whole(v, 0, 1000))) return 'each input is a whole number from 0 to 1000'
+  if (s.inputs.map((v) => flowOutput(s.rule, v)).some((v) => !Number.isInteger(Math.round(v * 1e9) / 1e9) || Math.abs(v) > 100_000)) return 'each output is a whole number'
+  if (!placesOk(s.blanks, s.inputs.length) || !placesOk(s.blankInputs, s.inputs.length)) return 'each blank is the place of an output or an input, from 1, named once'
+  return null
+}
+
+function balanceProblem(s: Balance): string | null {
+  const pans = [s.left, s.right]
+  if (pans.some((p) => !whole(p.x, 0, 4) || !whole(p.n, 0, 99))) return 'each pan holds 0 to 4 bags and weights of 0 to 99'
+  if (s.left.x === s.right.x) return 'the two pans hold a different number of bags'
+  const x = balanceSolution(s)
+  if (!whole(x, 1, 99)) return 'a bag weighs a whole number from 1 to 99, so the scale can balance'
+  if (s.letter !== undefined && !/^[a-z]$/.test(s.letter)) return 'the letter of a bag is one small letter'
+  return null
+}
+
+function travelGraphProblem(s: TravelGraph): string | null {
+  if (s.points.length < 2 || s.points.length > 8) return 'a graph of a trip has 2 to 8 points'
+  if (s.points[0]!.t !== 0) return 'a graph of a trip starts at time 0'
+  if (s.points.some((p, i) => i > 0 && !(p.t > s.points[i - 1]!.t))) return 'the times of a trip go up from one point to the next'
+  if (!(s.tMax > 0) || !(s.dMax > 0) || s.points.some((p) => p.t > s.tMax || p.d < 0 || p.d > s.dMax)) return 'every point is on the graph, from 0 to tMax and 0 to dMax'
+  const lines = (max: number, step?: number) => (step === undefined ? 6 : max / step)
+  if (![lines(s.tMax, s.tStep), lines(s.dMax, s.dStep)].every((n) => whole(Math.round(n * 1e9) / 1e9, 2, 12))) return 'the grid of a trip has 2 to 12 lines each way'
+  return null
+}
+
+/** The values of the gold blanks of a flow diagram, in order: the outputs first, then the inputs. */
+const flowBlanks = (s: FlowDiagram): number[] => [...(s.blanks ?? []).map((p) => flowOutput(s.rule, s.inputs[p - 1]!)), ...(s.blankInputs ?? []).map((p) => s.inputs[p - 1]!)]
+
 /** P190: the reading of a measuring picture, and the same reading in the unit a thousand times bigger or smaller (700 ml is 0,7 l), or null for none. */
 function readingsOf(d: SeniorDiagramSpec): number[] | null {
   if (d.kind === 'ruler') return d.unit === 'in' ? [d.length] : [d.length, d.length * 10, d.length / 100]
@@ -413,6 +466,22 @@ export function pictureKeyProblem(q: { answer: string; answerKind: string; diagr
     const want = ask === 'whole' ? d.whole : ask === 'percent' ? d.percent : percentPart(d)
     const got = read(q.answer)
     if (got !== null && !near(got, want)) return `the answer is what the question mark of the percentage bar stands for, ${Math.round(want * 100) / 100}`
+  }
+  // P191: the blanks of a flow diagram are its key: one blank for a number key, every blank (the outputs first) for a list; a balance scale asks what a bag weighs.
+  if (d?.kind === 'flow_diagram' && read) {
+    const want = flowBlanks(d)
+    if (['whole', 'decimal'].includes(q.answerKind) && want.length === 1) {
+      const got = read(q.answer)
+      if (got !== null && !near(got, want[0]!)) return `the answer is the blank of the flow diagram, ${want[0]}`
+    }
+    if (q.answerKind === 'list' && want.length > 1) {
+      const got = q.answer.split(';').map((p) => read(p.trim()))
+      if (got.length !== want.length || got.some((g, i) => g !== null && !near(g, want[i]!))) return `the answer is the blanks of the flow diagram, the outputs first: ${want.join('; ')}`
+    }
+  }
+  if (d?.kind === 'balance' && read && ['whole', 'decimal'].includes(q.answerKind)) {
+    const got = read(q.answer.replace(/^\s*[a-z]\s*=\s*/i, ''))
+    if (got !== null && !near(got, balanceSolution(d))) return `the answer is what a bag weighs, ${balanceSolution(d)}`
   }
   // P190: a ruler, a scale, a jug and a thermometer are read, so a number key is the reading (in its unit, or one a thousand times bigger or smaller).
   const readings = d ? readingsOf(d) : null
@@ -468,6 +537,15 @@ export function pictureProblem(spec: SeniorDiagramSpec): string | null {
       return finite ?? cubesProblem(spec)
     case 'box_net':
       return finite ?? boxNetProblem(spec)
+    // P191
+    case 'tile_pattern':
+      return finite ?? tilePatternProblem(spec)
+    case 'flow_diagram':
+      return finite ?? flowDiagramProblem(spec)
+    case 'balance':
+      return finite ?? balanceProblem(spec)
+    case 'travel_graph':
+      return finite ?? travelGraphProblem(spec)
     default:
       return null
   }

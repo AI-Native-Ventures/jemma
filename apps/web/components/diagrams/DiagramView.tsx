@@ -29,6 +29,10 @@ import { Jug } from './Jug'
 import { Thermometer } from './Thermometer'
 import { Cubes } from './Cubes'
 import { BoxNet } from './BoxNet'
+import { TilePattern } from './TilePattern'
+import { FlowDiagram } from './FlowDiagram'
+import { Balance } from './Balance'
+import { TravelGraph } from './TravelGraph'
 import type { Variant } from './shared'
 
 export type DiagramViewProps = {
@@ -127,6 +131,15 @@ export function DiagramView({ spec, variant, highlight, className, caption, seni
         return <Cubes {...s} variant={variant === 'question' ? 'question' : 'card'} />
       case 'box_net':
         return <BoxNet {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      // P191: patterns, algebra and graphs (a growing pattern of tiles, a flow diagram, a balance scale, a graph of a trip).
+      case 'tile_pattern':
+        return <TilePattern {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'flow_diagram':
+        return <FlowDiagram {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
+      case 'balance':
+        return <Balance {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'travel_graph':
+        return <TravelGraph {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
       default:
         return <PictureMissing className={className} />
     }

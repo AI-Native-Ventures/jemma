@@ -222,6 +222,11 @@ export const DIAGRAM_WORDS: Record<string, string> = {
   thermometer: 'a thermometer',
   cubes: 'a box of cubes',
   box_net: 'the net of a box',
+  // P191
+  tile_pattern: 'a growing pattern of tiles',
+  flow_diagram: 'a flow diagram',
+  balance: 'a balance scale',
+  travel_graph: 'a graph of a trip',
 }
 
 function how(lesson: Lesson): string {

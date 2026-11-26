@@ -127,8 +127,8 @@ describe('primaryKit: which topics of Grades 1 to 6 get the new answer kinds', (
     expect(primaryKit(klass(6), topic)).toBeNull()
   })
 
-  // P188: "Count objects" has a kit now (objects to count, a ten-frame); the baseline class still gets none (above).
-  test.each(['Division', 'Geometric patterns', 'Number sentences', 'Symmetry', 'Probability', 'Transformations', 'Problems in context: addition and subtraction', 'History', ''])(
+  // P188: "Count objects" has a kit now (objects to count, a ten-frame); the baseline class still gets none (above). P191: and so do geometric patterns.
+  test.each(['Division', 'Number sentences', 'Symmetry', 'Probability', 'Transformations', 'Problems in context: addition and subtraction', 'History', ''])(
     '"%s" gets nothing in Grade 3 either',
     (topic) => {
       expect(primaryKit(klass(3), topic)).toBeNull()
@@ -264,9 +264,10 @@ describe('the schema of a gated lesson', () => {
     expect(items.properties).not.toHaveProperty('steps')
     // P166: a question may carry one of the seven primary pictures, and only those. P188: and the counting pictures of the question type boards.
     const kinds = ((items.properties.diagram as { oneOf: { properties: { kind: { const: string } } }[] }).oneOf ?? []).map((o) => o.properties.kind.const)
-    // P189: and a factor tree, fraction circles, a percentage bar, a calendar, and coins and notes. P190: and the six measuring pictures.
+    // P189: and a factor tree, fraction circles, a percentage bar, a calendar, and coins and notes. P190: and the six measuring pictures. P191: and four for patterns, algebra and graphs.
     expect(kinds.sort()).toEqual([
       'area_model',
+      'balance',
       'bar_chart',
       'base_ten',
       'box_net',
@@ -275,6 +276,7 @@ describe('the schema of a gated lesson', () => {
       'cubes',
       'dot_array',
       'factor_tree',
+      'flow_diagram',
       'fraction_bar',
       'fraction_circle',
       'grid_area',
@@ -290,6 +292,8 @@ describe('the schema of a gated lesson', () => {
       'shape_2d',
       'ten_frame',
       'thermometer',
+      'tile_pattern',
+      'travel_graph',
     ])
     expect(items.required).not.toContain('steps')
     // A choice is plain text (a picture choice, true or false and a reason are for a senior class).
