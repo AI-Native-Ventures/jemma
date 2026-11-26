@@ -60,6 +60,8 @@ export const PrimaryExtraQuestionSchema = z.object({
   clock: wide.clock,
   /** P178: things the learner matches in pairs. */
   match: wide.match,
+  /** P183: a clock face in the question, showing the time to read. */
+  clockFace: wide.clockFace,
   difficulty: wide.difficulty,
   why: wide.why,
   rightWay: wide.rightWay,

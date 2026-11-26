@@ -210,11 +210,15 @@ describe('the new kinds a topic is told about, and how simply (Grades 1 to 3) or
     expect(primaryAnswerBlock('data', klass(3))).toContain('2 x 3')
   })
 
-  test('no clock picture exists, so reading a clock face is a choice question', () => {
-    for (const grade of [1, 3, 4, 6]) {
+  // P183: every class but the baseline one may show a clock face to read; the baseline class is asked as before, with no clock picture.
+  test('the baseline class has no clock picture, so reading a clock face is a choice question; every other class may show a clock face', () => {
+    const baseline = primaryAnswerBlock('time', klass(6))
+    expect(baseline).toMatch(/no clock picture/i)
+    expect(baseline).toContain('`choice`')
+    for (const grade of [1, 3, 4]) {
       const text = primaryAnswerBlock('time', klass(grade))
-      expect(text).toMatch(/no clock picture/i)
-      expect(text).toContain('`choice`')
+      expect(text).not.toMatch(/no clock picture/i)
+      expect(text).toContain('- `clockFace`:')
     }
   })
 

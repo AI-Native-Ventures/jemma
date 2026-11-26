@@ -56,10 +56,12 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * 20da21b0517a0bcc2fa4bc4f5eb84cdd7dff1809842bb494155173f024082835 (senior) and 5159c5291b9034c7e1deb85d78a1dcf35c7d09140fc9755395fb02fc12aca3ce (wide).
  * P182 (26 Nov 2026) moved both, on purpose: a sketch may be a trig graph on a grid in degrees (`curve: "trig"`, `xStep`). Before P182 they were
  * 32b5982d8faf9ea58f30b71f41bfb14e566daa96d2e028c928c1126e31cdebaf (senior) and afa8764da0e665dde02b91576a535ba42625038116c6233f53e0d1714634a0a3 (wide).
+ * P183 (26 Nov 2026) moved the wide one alone: a question may have a `clockFace`, a clock face to read. Before P183 it was
+ * cc232a2bed945067c97c557c2e17d02c40a113124ddbbc5e7d9bc9455492a3b8.
  * Every packet that changes the senior schema moves these two: recompute them after a merge.
  */
 const SENIOR_SHA = '96e1cd58f52b8b4e324e4c64af6fbd0abbb94ea2c02fca8e518845a8e9d9b84d'
-const WIDE_SHA = 'cc232a2bed945067c97c557c2e17d02c40a113124ddbbc5e7d9bc9455492a3b8'
+const WIDE_SHA = '2e3c548cae57d87537dad0df4c6a9f46bcea0cb2f9361272fc724ecaa6feade4'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({

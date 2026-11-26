@@ -52,7 +52,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { BlocksSpec, Choice, ClockSpec, ColumnsSpec, DataGraphSpec, Form, GeneralSpec, GroupsSpec, LineSpec, MatchSpec, PinSpec, PlotSpec, ProofSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
+import type { BlocksSpec, Choice, ClockFaceSpec, ClockSpec, ColumnsSpec, DataGraphSpec, Form, GeneralSpec, GroupsSpec, LineSpec, MatchSpec, PinSpec, PlotSpec, ProofSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -140,6 +140,8 @@ export type QuestionForChild = {
   proof?: ProofSpec
   /** P180: the frame of every solution of a trig equation (its letter). The solutions are the answer, and are never sent. */
   general?: GeneralSpec
+  /** P183: a clock face to read. It shows the time, as the picture of a question must. */
+  clockFace?: ClockFaceSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -169,6 +171,8 @@ export type MissedQuestion = {
   terms?: string[]
   /** The picture of the question, drawn under its heading (a senior class, and since P166 Grades 1 to 6 too). */
   diagram?: SeniorDiagramSpec
+  /** P183: the clock face of the question, drawn under its heading. */
+  clockFace?: ClockFaceSpec
   wrote: string
   /** The answer on paper could not be read: the screen says so under "You wrote" instead of showing an empty answer. */
   unread?: boolean
@@ -288,6 +292,7 @@ export function stripQuestion(
     ...(q.match ? { match: q.match } : {}),
     ...(q.proof ? { proof: q.proof } : {}),
     ...(q.general ? { general: q.general } : {}),
+    ...(q.clockFace ? { clockFace: q.clockFace } : {}),
   }
 }
 
@@ -614,6 +619,7 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       render: item.question.render,
       ...(item.question.terms ? { terms: item.question.terms } : {}),
       ...(item.question.diagram ? { diagram: item.question.diagram } : {}),
+      ...(item.question.clockFace ? { clockFace: item.question.clockFace } : {}),
       // An answer saved before the missing number was put back into its fraction is shown completed too.
       wrote: item.unread ? '' : showWithUnit(answerText(item.question, finishAnswer(item.question, item.answer).stored), item.question),
       ...(item.unread ? { unread: true } : {}),

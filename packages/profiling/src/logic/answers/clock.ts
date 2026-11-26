@@ -1,4 +1,5 @@
-import type { ClockSpec } from '../../schemas/lesson'
+import type { Choice, ClockSpec } from '../../schemas/lesson'
+import { CHOICE_LETTERS, choiceLetterOf, choiceText } from './choices'
 import type { Mark } from './quantity'
 import { readTime } from './time'
 
@@ -50,6 +51,21 @@ export function markClock(key: string, answer: string): Mark {
   const a = clockOf(answer)
   if (!k || !a) return { correct: false, comparable: false }
   return { correct: k.hour === a.hour && k.minute === a.minute, comparable: true }
+}
+
+/**
+ * P183: why a clock face in a question cannot be used, or null: it shows a time from 1:00 to 12:59, and the question asks for that time, as a `time` answer or
+ * as the choice that is that time (a clock face has no am or pm, so 16:30 is half past 4).
+ */
+export function clockFaceProblem(q: { answer: string; answerKind: string; choices?: readonly Choice[]; clockFace: { time: string } }): string | null {
+  const face = readTime(q.clockFace.time)
+  if (!face || face.style !== 'clock24' || Math.floor(face.minutes / 60) < 1 || Math.floor(face.minutes / 60) > 12) return 'the clock face shows a time from 1:00 to 12:59, written like 4:30'
+  if (q.answerKind === 'time') return markClock(q.clockFace.time, q.answer).correct ? null : 'the answer is the time the clock face shows'
+  const letter = q.choices?.length ? choiceLetterOf(q.choices, q.answer) : null
+  const picked = letter === null ? undefined : q.choices?.[CHOICE_LETTERS.indexOf(letter as (typeof CHOICE_LETTERS)[number])]
+  const text = picked === undefined ? undefined : choiceText(picked)
+  if (text) return markClock(q.clockFace.time, text).correct ? null : 'the right choice is the time the clock face shows'
+  return 'a clock face asks for the time it shows: a time answer, or the choice that is that time'
 }
 
 /** The answer a clock gives (`4:30`). */

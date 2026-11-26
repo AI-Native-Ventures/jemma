@@ -8,7 +8,7 @@ import { shadeKeyProblem, shadeProblem } from '../../logic/answers/shade'
 import { tapKeyProblem, tapProblem, tidyTap } from '../../logic/answers/tap'
 import { lineKeyProblem, lineProblem, tidyLine } from '../../logic/answers/line'
 import { pinKeyProblem, pinProblem } from '../../logic/answers/pin'
-import { clockKeyProblem, clockProblem } from '../../logic/answers/clock'
+import { clockFaceProblem, clockKeyProblem, clockProblem } from '../../logic/answers/clock'
 import { matchKeyProblem, matchProblem, tidyMatch } from '../../logic/answers/match'
 import { proofKeyProblem, proofProblem, tidyProof } from '../../logic/answers/proof'
 import { generalKeyProblem, generalProblem, tidyGeneral } from '../../logic/answers/general'
@@ -120,6 +120,12 @@ export function answerProblem(q: Question): string | null {
     if (q.diagram || q.graph || q.columns || q.blocks || q.groups || q.shade || q.tap || q.pin || q.choices?.length) return 'clock: a clock to set is the picture of its question, and it has no choices'
     const clock = clockProblem(q.clock) ?? clockKeyProblem({ ...q, clock: q.clock })
     if (clock) return `clock: ${clock}`
+  }
+  // P183: a clock face to read: a time on its face, and a key that is that time.
+  if (q.clockFace) {
+    if (q.diagram || q.graph || q.columns || q.blocks || q.groups || q.shade || q.tap || q.pin || q.clock || q.match) return 'clockFace: a clock face is the picture of its question'
+    const face = clockFaceProblem({ ...q, clockFace: q.clockFace })
+    if (face) return `clockFace: ${face}`
   }
   // P178: things to match in pairs: a few short things a side, and a key of one partner each, mixed up.
   if (q.match) {
