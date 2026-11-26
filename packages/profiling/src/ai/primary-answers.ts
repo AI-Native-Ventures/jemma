@@ -75,6 +75,9 @@ const KIT_TOPICS: { kit: PrimaryKit; names: RegExp; baseline?: false }[] = [
   { kit: 'numbers', names: /^count objects$/, baseline: false },
   { kit: 'addsub', names: /^(word problems within|fluency within)$/, baseline: false },
   { kit: 'multiply', names: /^(grouping and sharing leading to division|problems in context repeated addition leading to multiplication)$/, baseline: false },
+  // P189: factors and percents in the US names, so their questions may show a factor tree or a percentage bar.
+  { kit: 'multiply', names: /^(factors and multiples|gcf and lcm)$/, baseline: false },
+  { kit: 'fractions', names: /^unit rates and percents$/, baseline: false },
   // P168: addition and subtraction have a kit of their own, so their questions (from Grade 2) may be sums worked in columns.
   { kit: 'addsub', names: /^(addition and subtraction|add and subtract within)$/, baseline: false },
 ]
@@ -91,24 +94,53 @@ export function primaryKit(c: ClassContext | null, topicName: string): PrimaryKi
 }
 
 /**
- * P166: the pictures a question of a kit may carry, of the seven Jemma draws for every grade (`DiagramSpecSchema`). A clock and coins are not drawn yet,
- * so time and money have none. P188: and the counting pictures of the question type boards (objects, a ten-frame, blocks to read, a hundred chart, a dot
- * array, two numbers to compare).
+ * P166: the pictures a question of a kit may carry, of the seven Jemma draws for every grade (`DiagramSpecSchema`). P188: and the counting pictures of the
+ * question type boards (objects, a ten-frame, blocks to read, a hundred chart, a dot array, two numbers to compare). P189: a factor tree, a fraction circle, a
+ * percentage bar, a calendar for time and coins and notes for money. A picture is named only for the grades in `PICTURE_GRADES`.
  */
 export const KIT_PICTURES: Record<PrimaryKit, readonly string[]> = {
-  time: [],
-  money: [],
+  time: ['calendar'],
+  money: ['money'],
   measure: ['grid_area', 'shape_2d'],
   order: ['number_line', 'compare'],
   patterns: ['number_line'],
   data: ['bar_chart'],
   place: ['place_value', 'base_ten'],
-  fractions: ['fraction_bar', 'number_line', 'area_model', 'objects'],
+  fractions: ['fraction_bar', 'number_line', 'area_model', 'objects', 'fraction_circle', 'percent_bar'],
   shapes: ['shape_2d', 'grid_area'],
-  multiply: ['area_model', 'number_line', 'dot_array', 'objects'],
+  multiply: ['area_model', 'number_line', 'dot_array', 'objects', 'factor_tree'],
   numbers: ['number_line', 'objects', 'ten_frame', 'hundred_chart', 'compare'],
   addsub: ['number_line', 'ten_frame', 'objects', 'hundred_chart'],
 }
+
+/**
+ * P189: the grades a picture of the question type boards is named for, first and last (a ten-frame is for Grades 1 and 2, a factor tree for Grades 4 to 6). The
+ * seven pictures of every grade are named for all of them.
+ */
+export const PICTURE_GRADES: Readonly<Record<string, readonly [number, number]>> = {
+  objects: [1, 4],
+  ten_frame: [1, 2],
+  base_ten: [1, 3],
+  hundred_chart: [1, 3],
+  dot_array: [2, 5],
+  compare: [1, 4],
+  factor_tree: [4, 6],
+  fraction_circle: [2, 6],
+  percent_bar: [5, 6],
+  calendar: [2, 6],
+  money: [1, 4],
+}
+
+/**
+ * P189: the pictures of a kit that are named for a grade. Coins and notes are drawn as rand ones or dollar ones, so they are named for a class in South Africa
+ * or the US only.
+ */
+export const kitPicturesFor = (kit: PrimaryKit, grade: number, country?: string): string[] =>
+  KIT_PICTURES[kit].filter((k) => {
+    const range = PICTURE_GRADES[k]
+    if (k === 'money' && country !== undefined && country !== 'ZA' && country !== 'US') return false
+    return !range || (grade >= range[0] && grade <= range[1])
+  })
 
 /** What each picture is, in the words of the schema, for the lesson writer. */
 const PICTURE_WORDS: Record<string, string> = {
@@ -120,7 +152,7 @@ const PICTURE_WORDS: Record<string, string> = {
   shape_2d: '`shape_2d` (a square, rectangle, triangle or circle with its side lengths as `labels`)',
   grid_area: '`grid_area` (a shape on squared paper: `cols` by `rows` squares and the `cells` it covers) to count squares for area and perimeter',
   objects:
-    '`objects` (things to count: `thing` is `apple`, `star`, `ball`, `flower`, `fish`, `car`, `cookie` or `heart`, and `groups` is how many are in each row or group, like `[5, 5, 3]`; `layout` `rows` to count them, or `groups` for equal groups, sharing and a fraction of a set; at most 30 things)',
+    '`objects` (things to count: `thing` is `apple`, `star`, `ball`, `flower`, `fish`, `car`, `cookie` or `heart`, and `groups` is how many are in each row or group, like `[5, 5, 3]`; `layout` `rows` to count them, or `groups` for equal groups, sharing and a fraction of a set, where `gold` makes that many groups gold, from the first; at most 30 things)',
   ten_frame:
     '`ten_frame` (a frame of 10 boxes, or `frames` 2 for 20, with `filled` counters; add `bond` with `whole` and `part` to show a number bond under it, its other part blank) for number bonds',
   base_ten: '`base_ten` (place value blocks to read: `hundreds`, `tens` and `ones`; ask what number they show)',
@@ -128,15 +160,34 @@ const PICTURE_WORDS: Record<string, string> = {
     '`hundred_chart` (part of a hundred chart: `rows` rows of ten from `from`, which is 1, 11, 21 and so on; the numbers in `blanks` are left empty and `gold` is the empty box the question asks about, drawn in gold: the `answer` is that number)',
   dot_array: '`dot_array` (dots in `rows` and `cols`, at most 10 each) to write a multiplication for',
   compare: '`compare` (two numbers, `left` and `right`, with a blank sign between them): ask which sign makes it true, as a `choice` question with the choices `<`, `>` and `=`',
+  // P189
+  factor_tree:
+    '`factor_tree` (a factor tree for prime factors: `root` is the number at the top, and `splits` says how numbers split into two factors, from the top down, like `[{ "of": 60, "into": [6, 10] }, { "of": 6, "into": [2, 3] }, { "of": 10, "into": [2, 5] }]`; prime numbers are drawn in green circles; `gold` is the one number the question asks for, drawn as a gold blank, and the `answer` is that number)',
+  fraction_circle:
+    '`fraction_circle` (a circle cut into `parts` equal slices, 2 to 12, with `shaded` of them gold; `circles` 2 or 3 for a mixed number, filled one after another) to name or compare a fraction',
+  calendar: '`calendar` (one month: `year`, `month` from 1 to 12, and up to 3 days in `circled`) to count days and weeks, or to find the day of a date',
 }
+
+/** P189: a percentage bar writes its amounts as money in rand, or in dollars for a class in the US; in another country they are numbers. */
+const percentBarWords = (c: ClassContext): string =>
+  '`percent_bar` (a bar from 0% to 100% for a percentage of an amount: `whole` is the amount at 100% and `percent` the shaded part; `parts` cuts it into equal pieces; ' +
+  (c.country === 'ZA' ? '`money` `true` writes the amounts in rand; ' : c.country === 'US' ? '`money` `true` writes the amounts in dollars; ' : '') +
+  '`ask` says what the question mark stands for: `part` (the amount of the shaded part), `whole` or `percent`, and the `answer` is that number)'
+
+/** P189: coins and notes are the rand ones, or the dollar ones for a class in the US. */
+const moneyPictureWords = (c: ClassContext): string =>
+  c.country === 'US'
+    ? '`money` (coins and bills to count: `items` is the value of each one in cents, like `[100, 25, 25, 10]` for a $1 bill, two quarters and a dime; the coins are 1, 5, 10 and 25 cents and the bills $1, $5, $10 and $20; at most 10)'
+    : '`money` (coins and notes to count: `items` is the value of each one in cents, like `[1000, 500, 200, 200, 50]` for an R10 note, an R5 coin, two R2 coins and a 50c coin; the coins are 10c, 20c, 50c, R1, R2 and R5 and the notes R10, R20, R50, R100 and R200; at most 10)'
 
 /** P166: the bullet that lets a question of a kit carry a picture, or null for a kit with none. */
 export function pictureBullet(kit: PrimaryKit, c: ClassContext): string | null {
-  const kinds = KIT_PICTURES[kit]
+  // P189: only the pictures named for the grade.
+  const kinds = kitPicturesFor(kit, c.grade, c.country)
   if (!kinds.length) return null
   const young = c.grade <= 3
   return (
-    `- \`diagram\`: a question may show one picture when it is needed to answer: ${kinds.map((k) => PICTURE_WORDS[k]).join('; ')}. ` +
+    `- \`diagram\`: a question may show one picture when it is needed to answer: ${kinds.map((k) => (k === 'money' ? moneyPictureWords(c) : k === 'percent_bar' ? percentBarWords(c) : PICTURE_WORDS[k])).join('; ')}. ` +
     (young ? 'Keep it small and plain. ' : '') +
     'Say in the `prompt` what to look at ("the shaded part", "the bar for Dogs"). Never write the answer in a label, a mark or a cell: the learner works it out from the picture. ' +
     'Keep a picture small: at most 12 rows or columns, 24 parts in a bar and 8 bars.'

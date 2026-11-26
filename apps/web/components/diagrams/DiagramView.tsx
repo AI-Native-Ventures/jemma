@@ -18,6 +18,11 @@ import { BaseTen } from './BaseTen'
 import { HundredChart } from './HundredChart'
 import { DotArray } from './DotArray'
 import { Compare } from './Compare'
+import { FactorTree } from './FactorTree'
+import { FractionCircle } from './FractionCircle'
+import { PercentBar } from './PercentBar'
+import { Calendar } from './Calendar'
+import { Money } from './Money'
 import type { Variant } from './shared'
 
 export type DiagramViewProps = {
@@ -92,6 +97,17 @@ export function DiagramView({ spec, variant, highlight, className, caption, seni
         return <DotArray {...s} variant={variant === 'question' ? 'question' : 'card'} />
       case 'compare':
         return <Compare {...s} />
+      // P189: a factor tree, fraction circles, a percentage bar, a calendar, and coins and notes (the last three in the notation of the space).
+      case 'factor_tree':
+        return <FactorTree {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'fraction_circle':
+        return <FractionCircle {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'percent_bar':
+        return <PercentBar {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
+      case 'calendar':
+        return <Calendar {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
+      case 'money':
+        return <Money {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
       default:
         return <PictureMissing className={className} />
     }

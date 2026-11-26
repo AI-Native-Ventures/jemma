@@ -1,4 +1,5 @@
 import type { SeniorDiagramSpec } from '../schemas/diagram'
+import { daysIn, factorTreeOf, MONEY_VALUES, percentPart } from './question-pictures'
 
 /**
  * Does a picture of the two senior kinds make sense? `null` when it does, else a short plain reason.
@@ -218,6 +219,8 @@ function objectsProblem(s: Objects): string | null {
   if (s.groups.length < 1 || s.groups.length > MAX_OBJECT_GROUPS) return `objects come in 1 to ${MAX_OBJECT_GROUPS} rows or groups`
   if (s.groups.some((n) => !whole(n, 1, MAX_IN_A_GROUP))) return `each row or group holds 1 to ${MAX_IN_A_GROUP} objects`
   if (s.groups.reduce((a, n) => a + n, 0) > MAX_OBJECTS) return `a picture holds at most ${MAX_OBJECTS} objects`
+  // P189: gold groups are a fraction of a set, so they are rings of objects.
+  if (s.gold !== undefined && (s.layout !== 'groups' || !whole(s.gold, 1, s.groups.length))) return 'gold groups are 1 or more of the groups, with the layout groups'
   return null
 }
 
@@ -258,12 +261,93 @@ function compareProblem(s: Compare): string | null {
   return ok(s.left) && ok(s.right) ? null : `each side of a comparison is 1 to ${MAX_COMPARE} characters`
 }
 
+// ---- P189: fractions, percentages, time and money -----------------------------------------------------------------------------------
+
+type FactorTree = Extract<SeniorDiagramSpec, { kind: 'factor_tree' }>
+type FractionCircle = Extract<SeniorDiagramSpec, { kind: 'fraction_circle' }>
+type PercentBar = Extract<SeniorDiagramSpec, { kind: 'percent_bar' }>
+type Calendar = Extract<SeniorDiagramSpec, { kind: 'calendar' }>
+type Money = Extract<SeniorDiagramSpec, { kind: 'money' }>
+
+/** P189: the most a picture of these boards holds, so it fits a phone. */
+const MAX_TREE_ROOT = 1000
+const MAX_SPLITS = 5
+const MAX_TREE_LEAVES = 6
+const MAX_TREE_ROWS = 5
+const MAX_CIRCLE_PARTS = 12
+const MAX_CIRCLES = 3
+const MAX_PERCENT_WHOLE = 10_000_000
+const MAX_BAR_PARTS = 10
+const MAX_CIRCLED = 3
+const MAX_MONEY_ITEMS = 10
+
+function factorTreeProblem(s: FactorTree): string | null {
+  if (!whole(s.root, 4, MAX_TREE_ROOT)) return `a factor tree starts with a whole number from 4 to ${MAX_TREE_ROOT}`
+  if (s.splits.length < 1 || s.splits.length > MAX_SPLITS) return `a factor tree has 1 to ${MAX_SPLITS} splits`
+  for (const split of s.splits) {
+    if (split.into.length !== 2 || split.into.some((n) => !whole(n, 2, MAX_TREE_ROOT))) return 'each split is into two whole numbers, each 2 or more'
+    if (split.into[0]! * split.into[1]! !== split.of) return `${split.into[0]} × ${split.into[1]} is not ${split.of}`
+  }
+  const tree = factorTreeOf(s)
+  if (tree.unused > 0) return 'each split is of a number on the tree that has not split yet'
+  if (tree.leaves.length > MAX_TREE_LEAVES || tree.rows > MAX_TREE_ROWS) return `a factor tree has at most ${MAX_TREE_LEAVES} numbers at the bottom and ${MAX_TREE_ROWS} rows`
+  if (s.gold !== undefined && !hasBelow(tree.root, s.gold)) return 'the gold number is on the tree, below the top'
+  return null
+}
+
+/** True when a number below the top of a tree has this value. */
+const hasBelow = (root: ReturnType<typeof factorTreeOf>['root'], value: number): boolean => {
+  const walk = (n: typeof root): boolean => n.kids.some((k) => k.value === value || walk(k))
+  return walk(root)
+}
+
+function fractionCircleProblem(s: FractionCircle): string | null {
+  const circles = s.circles ?? 1
+  if (!whole(s.parts, 2, MAX_CIRCLE_PARTS)) return `a fraction circle is cut into 2 to ${MAX_CIRCLE_PARTS} equal parts`
+  if (!whole(circles, 1, MAX_CIRCLES)) return `a picture has 1 to ${MAX_CIRCLES} fraction circles`
+  if (!whole(s.shaded, 0, s.parts * circles)) return `the circles have 0 to ${s.parts * circles} gold parts`
+  return null
+}
+
+function percentBarProblem(s: PercentBar): string | null {
+  if (!(s.whole > 0 && s.whole <= MAX_PERCENT_WHOLE)) return 'the whole of a percentage bar is more than 0'
+  if (!(s.percent > 0 && s.percent <= 100)) return 'the shaded part of a percentage bar is more than 0% and at most 100%'
+  if (s.parts !== undefined && !whole(s.parts, 2, MAX_BAR_PARTS)) return `a percentage bar is cut into 2 to ${MAX_BAR_PARTS} equal parts`
+  return null
+}
+
+function calendarProblem(s: Calendar): string | null {
+  if (!whole(s.year, 1900, 2100) || !whole(s.month, 1, 12)) return 'a calendar is a month from 1 to 12 of a year from 1900 to 2100'
+  const circled = s.circled ?? []
+  if (circled.length > MAX_CIRCLED) return `a calendar has at most ${MAX_CIRCLED} days circled`
+  if (circled.some((d) => !whole(d, 1, daysIn(s.year, s.month)))) return 'each circled day is a day of the month'
+  if (new Set(circled).size !== circled.length) return 'each circled day is named once'
+  return null
+}
+
+function moneyProblem(s: Money): string | null {
+  if (s.items.length < 1 || s.items.length > MAX_MONEY_ITEMS) return `a picture of money has 1 to ${MAX_MONEY_ITEMS} coins and notes`
+  if (s.items.some((c) => !(MONEY_VALUES as readonly number[]).includes(c))) return 'each coin or note is a real one, in cents: 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000 or 20000 (1, 5, 10, 25, 50, 100, 500, 1000 or 2000 in the US)'
+  return null
+}
+
+const near = (a: number, b: number) => Math.abs(a - b) < 0.005
+
 /**
  * P188: why the key of a question does not fit its picture, or null. A hundred chart with a gold box asks for the number in it, so a whole answer is that number.
+ * P189: and so does a factor tree with a gold number. The question mark of a percentage bar is the amount of its shaded part, its whole or its percent, so a
+ * number key is that number (`read` reads it, the way the key is written).
  */
-export function pictureKeyProblem(q: { answer: string; answerKind: string; diagram?: SeniorDiagramSpec }): string | null {
+export function pictureKeyProblem(q: { answer: string; answerKind: string; diagram?: SeniorDiagramSpec }, read?: (text: string) => number | null): string | null {
   const d = q.diagram
   if (d?.kind === 'hundred_chart' && d.gold !== undefined && q.answerKind === 'whole' && q.answer.trim() !== String(d.gold)) return `the answer is the number in the gold box of the hundred chart, ${d.gold}`
+  if (d?.kind === 'factor_tree' && d.gold !== undefined && q.answerKind === 'whole' && q.answer.trim() !== String(d.gold)) return `the answer is the gold number of the factor tree, ${d.gold}`
+  if (d?.kind === 'percent_bar' && read && ['whole', 'decimal', 'money'].includes(q.answerKind)) {
+    const ask = d.ask ?? 'part'
+    const want = ask === 'whole' ? d.whole : ask === 'percent' ? d.percent : percentPart(d)
+    const got = read(q.answer)
+    if (got !== null && !near(got, want)) return `the answer is what the question mark of the percentage bar stands for, ${Math.round(want * 100) / 100}`
+  }
   return null
 }
 
@@ -288,6 +372,17 @@ export function pictureProblem(spec: SeniorDiagramSpec): string | null {
       return finite ?? dotArrayProblem(spec)
     case 'compare':
       return compareProblem(spec)
+    // P189
+    case 'factor_tree':
+      return finite ?? factorTreeProblem(spec)
+    case 'fraction_circle':
+      return finite ?? fractionCircleProblem(spec)
+    case 'percent_bar':
+      return finite ?? percentBarProblem(spec)
+    case 'calendar':
+      return finite ?? calendarProblem(spec)
+    case 'money':
+      return finite ?? moneyProblem(spec)
     default:
       return null
   }

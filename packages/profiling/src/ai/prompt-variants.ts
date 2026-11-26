@@ -143,6 +143,9 @@ const SENIOR_PICTURES =
   'Use `box_plot` for a five-number summary on a scale (put the five numbers on whole ticks so they can be read), `tree` for probability (a probability ' +
   'is a decimal or a fraction; write `?` for each one the learner fills in, and make the question a `list` with one `labels` entry for each blank, in the ' +
   'order of the tree, then the asked value), and `timeline` for financial maths (the periods, the same payment `every` period, and `marks` such as `F = ?`). ' +
+  // P189: a factor tree and a percentage bar.
+  'Use `factor_tree` for prime factors: `root` is the number at the top and `splits` says how numbers split into two factors, from the top down (`[{ "of": 60, "into": [6, 10] }, { "of": 6, "into": [2, 3] }, { "of": 10, "into": [2, 5] }]`); `gold` is the one number the question asks for, drawn as a gold blank, and the `answer` is that number. ' +
+  'Use `percent_bar` for a percentage of an amount: `whole` is the amount at 100%, `percent` the shaded part, `parts` the equal pieces, and `ask` (`part`, `whole` or `percent`) says what its question mark stands for, which is the `answer`. ' +
   'Never put the answer in a label. A lesson card or a diagram step may use these pictures too. ' +
   // P171: the learner places points on a grid by tapping it.
   'To have the learner place points on a grid by tapping it (where a shape lands after a reflection or a translation, or points from a table), give `plot` instead of a `diagram`: ' +
