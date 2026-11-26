@@ -78,6 +78,8 @@ const KIT_TOPICS: { kit: PrimaryKit; names: RegExp; baseline?: false }[] = [
   // P189: factors and percents in the US names, so their questions may show a factor tree or a percentage bar.
   { kit: 'multiply', names: /^(factors and multiples|gcf and lcm)$/, baseline: false },
   { kit: 'fractions', names: /^unit rates and percents$/, baseline: false },
+  // P190: surface area in the US names, so its questions may show the net of a box.
+  { kit: 'measure', names: /^surface area$/, baseline: false },
   // P168: addition and subtraction have a kit of their own, so their questions (from Grade 2) may be sums worked in columns.
   { kit: 'addsub', names: /^(addition and subtraction|add and subtract within)$/, baseline: false },
 ]
@@ -101,7 +103,7 @@ export function primaryKit(c: ClassContext | null, topicName: string): PrimaryKi
 export const KIT_PICTURES: Record<PrimaryKit, readonly string[]> = {
   time: ['calendar'],
   money: ['money'],
-  measure: ['grid_area', 'shape_2d'],
+  measure: ['grid_area', 'shape_2d', 'ruler', 'scale_dial', 'jug', 'thermometer', 'cubes', 'box_net'],
   order: ['number_line', 'compare'],
   patterns: ['number_line'],
   data: ['bar_chart'],
@@ -129,6 +131,13 @@ export const PICTURE_GRADES: Readonly<Record<string, readonly [number, number]>>
   percent_bar: [5, 6],
   calendar: [2, 6],
   money: [1, 4],
+  // P190
+  ruler: [1, 4],
+  scale_dial: [2, 6],
+  jug: [2, 6],
+  thermometer: [3, 6],
+  cubes: [4, 6],
+  box_net: [5, 6],
 }
 
 /**
@@ -166,7 +175,25 @@ const PICTURE_WORDS: Record<string, string> = {
   fraction_circle:
     '`fraction_circle` (a circle cut into `parts` equal slices, 2 to 12, with `shaded` of them gold; `circles` 2 or 3 for a mixed number, filled one after another) to name or compare a fraction',
   calendar: '`calendar` (one month: `year`, `month` from 1 to 12, and up to 3 days in `circled`) to count days and weeks, or to find the day of a date',
+  // P190: a measuring picture is read, so its reading is the answer (or the same reading in a unit a thousand times bigger or smaller: 700 ml is 0,7 l).
+  scale_dial:
+    '`scale_dial` (a kitchen scale: a dial from 0 to `max` in `unit` `g` (500, 1000, 2000 or 5000) or `kg` (1, 2, 5 or 10), cut into 20 steps, with the needle at `value` on a step; the `answer` is the reading)',
+  jug: '`jug` (a measuring jug from 0 to `max` in `unit` `ml` (250, 500, 1000 or 2000) or `l` (1, 2 or 5), marked in 10 steps, with the water at `value` on a step; the `answer` is the reading)',
+  cubes: '`cubes` (a box built from cubes, `long`, `wide` and `high`, 1 to 6 each, drawn in 3D) to count the cubes of a volume',
+  box_net: '`box_net` (the net of a box, `long`, `wide` and `high`, 1 to 12 each, in `unit` `cm`, `mm` or `m`, drawn to scale with each size on an edge) for surface area',
 }
+
+/** P190: a ruler is in centimetres, or in inches too for a class in the US. */
+const rulerWords = (c: ClassContext): string =>
+  '`ruler` (a `thing`, `pencil`, `crayon` or `ribbon`, above a ruler from 0 to `to` centimetres, 5 to 15; it starts at `from`, 0 when left out, and is `length` long, in whole or half centimetres' +
+  (c.country === 'US' ? ', or with `unit` `in` a ruler from 0 to 3 to 12 inches and a length in quarter inches' : '') +
+  '; the `answer` is its length)'
+
+/** P190: a thermometer is in degrees Celsius, or Fahrenheit too for a class in the US. A reading below 0 is asked with choices: a whole answer is never below 0. */
+const thermometerWords = (c: ClassContext): string =>
+  '`thermometer` (from `min` to `max`, each a ten, 20 to 120 degrees apart, with the red line at `value`, a whole number of degrees on a mark or halfway between two: a mark for every degree when they are up to 30 apart, every 2 up to 60, every 5 after' +
+  (c.country === 'US' ? '; `unit` `F` for Fahrenheit' : '') +
+  '; the `answer` is the reading, and a reading below 0 is a `choice` question)'
 
 /** P189: a percentage bar writes its amounts as money in rand, or in dollars for a class in the US; in another country they are numbers. */
 const percentBarWords = (c: ClassContext): string =>
@@ -180,6 +207,18 @@ const moneyPictureWords = (c: ClassContext): string =>
     ? '`money` (coins and bills to count: `items` is the value of each one in cents, like `[100, 25, 25, 10]` for a $1 bill, two quarters and a dime; the coins are 1, 5, 10 and 25 cents and the bills $1, $5, $10 and $20; at most 10)'
     : '`money` (coins and notes to count: `items` is the value of each one in cents, like `[1000, 500, 200, 200, 50]` for an R10 note, an R5 coin, two R2 coins and a 50c coin; the coins are 10c, 20c, 50c, R1, R2 and R5 and the notes R10, R20, R50, R100 and R200; at most 10)'
 
+/** What a picture is, for the lesson writer of a class: coins, a percentage bar, a ruler and a thermometer are told the way the class's country has them. */
+const pictureWords = (kind: string, c: ClassContext): string | undefined =>
+  kind === 'money'
+    ? moneyPictureWords(c)
+    : kind === 'percent_bar'
+      ? percentBarWords(c)
+      : kind === 'ruler'
+        ? rulerWords(c)
+        : kind === 'thermometer'
+          ? thermometerWords(c)
+          : PICTURE_WORDS[kind]
+
 /** P166: the bullet that lets a question of a kit carry a picture, or null for a kit with none. */
 export function pictureBullet(kit: PrimaryKit, c: ClassContext): string | null {
   // P189: only the pictures named for the grade.
@@ -187,7 +226,7 @@ export function pictureBullet(kit: PrimaryKit, c: ClassContext): string | null {
   if (!kinds.length) return null
   const young = c.grade <= 3
   return (
-    `- \`diagram\`: a question may show one picture when it is needed to answer: ${kinds.map((k) => (k === 'money' ? moneyPictureWords(c) : k === 'percent_bar' ? percentBarWords(c) : PICTURE_WORDS[k])).join('; ')}. ` +
+    `- \`diagram\`: a question may show one picture when it is needed to answer: ${kinds.map((k) => pictureWords(k, c)).join('; ')}. ` +
     (young ? 'Keep it small and plain. ' : '') +
     'Say in the `prompt` what to look at ("the shaded part", "the bar for Dogs"). Never write the answer in a label, a mark or a cell: the learner works it out from the picture. ' +
     'Keep a picture small: at most 12 rows or columns, 24 parts in a bar and 8 bars.'

@@ -215,6 +215,13 @@ export const DIAGRAM_WORDS: Record<string, string> = {
   percent_bar: 'a percentage bar',
   calendar: 'a calendar',
   money: 'coins and notes',
+  // P190
+  ruler: 'a ruler',
+  scale_dial: 'a kitchen scale',
+  jug: 'a measuring jug',
+  thermometer: 'a thermometer',
+  cubes: 'a box of cubes',
+  box_net: 'the net of a box',
 }
 
 function how(lesson: Lesson): string {

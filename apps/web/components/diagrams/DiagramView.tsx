@@ -23,6 +23,12 @@ import { FractionCircle } from './FractionCircle'
 import { PercentBar } from './PercentBar'
 import { Calendar } from './Calendar'
 import { Money } from './Money'
+import { Ruler } from './Ruler'
+import { ScaleDial } from './ScaleDial'
+import { Jug } from './Jug'
+import { Thermometer } from './Thermometer'
+import { Cubes } from './Cubes'
+import { BoxNet } from './BoxNet'
 import type { Variant } from './shared'
 
 export type DiagramViewProps = {
@@ -108,6 +114,19 @@ export function DiagramView({ spec, variant, highlight, className, caption, seni
         return <Calendar {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
       case 'money':
         return <Money {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
+      // P190: measuring (a ruler, a kitchen scale, a jug, a thermometer, a box of cubes, the net of a box).
+      case 'ruler':
+        return <Ruler {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
+      case 'scale_dial':
+        return <ScaleDial {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
+      case 'jug':
+        return <Jug {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
+      case 'thermometer':
+        return <Thermometer {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'cubes':
+        return <Cubes {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'box_net':
+        return <BoxNet {...s} variant={variant === 'question' ? 'question' : 'card'} />
       default:
         return <PictureMissing className={className} />
     }

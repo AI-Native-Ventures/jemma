@@ -146,6 +146,8 @@ const SENIOR_PICTURES =
   // P189: a factor tree and a percentage bar.
   'Use `factor_tree` for prime factors: `root` is the number at the top and `splits` says how numbers split into two factors, from the top down (`[{ "of": 60, "into": [6, 10] }, { "of": 6, "into": [2, 3] }, { "of": 10, "into": [2, 5] }]`); `gold` is the one number the question asks for, drawn as a gold blank, and the `answer` is that number. ' +
   'Use `percent_bar` for a percentage of an amount: `whole` is the amount at 100%, `percent` the shaded part, `parts` the equal pieces, and `ask` (`part`, `whole` or `percent`) says what its question mark stands for, which is the `answer`. ' +
+  // P190: a box of cubes and the net of a box.
+  'Use `cubes` for a box built from cubes (`long`, `wide` and `high`, 1 to 6 each) and `box_net` for the net of a box drawn to scale (`long`, `wide` and `high`, 1 to 12 each, and `unit`) for volume and surface area. ' +
   'Never put the answer in a label. A lesson card or a diagram step may use these pictures too. ' +
   // P171: the learner places points on a grid by tapping it.
   'To have the learner place points on a grid by tapping it (where a shape lands after a reflection or a translation, or points from a table), give `plot` instead of a `diagram`: ' +
