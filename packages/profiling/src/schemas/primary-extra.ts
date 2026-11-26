@@ -56,6 +56,8 @@ export const PrimaryExtraQuestionSchema = z.object({
   tap: wide.tap,
   /** P175: a number line the learner puts a pin on. */
   pin: wide.pin,
+  /** P177: a clock the learner sets by dragging its hands. */
+  clock: wide.clock,
   difficulty: wide.difficulty,
   why: wide.why,
   rightWay: wide.rightWay,

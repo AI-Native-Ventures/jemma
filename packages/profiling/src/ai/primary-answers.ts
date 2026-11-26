@@ -142,6 +142,16 @@ export function columnsBullet(c: ClassContext): string | null {
   )
 }
 
+/**
+ * P177: the bullet that lets a time question ask the learner to set a clock by dragging its hands: o'clock and half past for Grades 1 to 3 (the long hand stops
+ * on the 12 and the 6), every 5 minutes or every minute from Grade 4.
+ */
+export function clockBullet(c: ClassContext): string {
+  return c.grade <= 3
+    ? '- `clock`: the learner sets a clock by dragging its hands ("Show half past 4 on the clock."). Give `clock` with `step` `30`, so the long hand stops on the 12 and the 6. The `answerKind` is `time` and the `answer` is the time the clock shows: `4:30` or `7:00`, never `12:00` (the clock starts there) and never am or pm. Say the time in the `prompt`, in words ("half past 4") or as on a digital clock ("4:30"). A question with `clock` has no `choices`.'
+    : '- `clock`: the learner sets a clock by dragging its hands ("Show 25 to 9 on the clock."). Give `clock` with `step` `5` (the long hand stops every 5 minutes) or `1` (every minute). The `answerKind` is `time` and the `answer` is the time on the clock face, from `1:00` to `12:59`: `8:35`, never `12:00` (the clock starts there) and never am or pm. Say the time in the `prompt`, in words ("quarter past 3", "25 to 9") or as on a digital clock ("8:35"). A question with `clock` has no `choices`.'
+}
+
 /** P175: the bullet that lets a question ask the learner to put a pin on a number line. */
 export const PIN_BULLET =
   '- `pin`: the learner drags a pin along a number line to a number ("Put 3/4 on the number line."). Give `pin` with `min` and `max` (whole numbers) and either `parts`, the equal jumps between two whole numbers (4 for quarters, 10 for tenths), or `step` for whole numbers (`10` for a line from 0 to 100 marked in tens). At most 20 jumps. Only the two ends are numbered. The `answerKind` is `fraction`, `mixed`, `decimal` or `whole` and the `answer` is the number on one of the marks, after `min`: `3/4`. A question with `pin` has no `diagram` and no `choices`.'
@@ -211,9 +221,17 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
           ? '- `time`: the answer is a time of day or how long something takes. Use o\'clock and half past only: the `answer` is `3:00` or `3:30` (hours, a colon, minutes, never am or pm), and a length of time is whole hours like `2 h`. Write the question in words: "The film starts at 2:00 and lasts 1 hour. What time does it end?" or "School starts at 8:00 and ends at 1:00. How many hours is that?"'
           : '- `time`: the answer is a time of day or how long something takes. The `answer` is `3:15` (hours, a colon, minutes: `9:05`, `12:40`) or a length of time like `2 h 15 min`. Use quarter past, half past, quarter to and the minutes in between. Write am or pm after a time of day (`2:30 pm`) only when the question needs it. Write the question in words: "A film starts at 2:15 and lasts 1 hour 30 minutes. What time does it end?" or "How long is it from 9:00 to 11:15?"',
       )
-      when(
-        '- There is no clock picture, so never ask the learner to read a clock face. When you want that, ask it as a `choice` question: "Which time is half past 3?" with the times as choices.',
-      )
+      // P177: a class other than the baseline one may also ask the learner to set a clock. The baseline class is asked as before.
+      if (isBaselineClass(c))
+        when(
+          '- There is no clock picture, so never ask the learner to read a clock face. When you want that, ask it as a `choice` question: "Which time is half past 3?" with the times as choices.',
+        )
+      else {
+        when(clockBullet(c))
+        when(
+          '- There is no clock picture to read in a question, so never ask the learner to read a clock face. When you want that, ask it as a `choice` question: "Which time is half past 3?" with the times as choices.',
+        )
+      }
       break
     case 'measure':
       when(

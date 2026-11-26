@@ -120,6 +120,14 @@ export type ShadeSpec = z.infer<typeof ShadeSchema>
 export const PinSchema = z.object({ min: z.number(), max: z.number(), parts: z.number().optional(), step: z.number().optional() })
 export type PinSpec = z.infer<typeof PinSchema>
 
+/**
+ * P177: a clock the learner sets by dragging its hands (Grades 1 to 6): it starts at 12 o'clock, and the long hand stops every `step` minutes (1, 5, 15 or 30;
+ * 5 when left out). The short hand stops on the hours and sits between them by itself, as far as the minutes have gone. The key is the time on the clock face, a
+ * `time` from 1:00 to 12:59 with no am or pm (`4:30`).
+ */
+export const ClockSchema = z.object({ step: z.number().optional() })
+export type ClockSpec = z.infer<typeof ClockSchema>
+
 /** P173: the shapes a picture to tap may hold. */
 export const TAP_SHAPES = ['triangle', 'right_triangle', 'square', 'rectangle', 'circle', 'oval', 'pentagon', 'hexagon', 'rhombus', 'kite', 'trapezium'] as const
 /**
@@ -214,6 +222,7 @@ export const QuestionSchema = seniorQuestion(z.array(z.string()).optional()).ext
   shade: ShadeSchema.optional(),
   tap: TapSchema.optional(),
   pin: PinSchema.optional(),
+  clock: ClockSchema.optional(),
 })
 export type Question = z.infer<typeof QuestionSchema>
 export type PrimaryQuestion = z.infer<typeof PrimaryQuestionSchema>

@@ -9,6 +9,8 @@ import {
   graphValues,
   groupsOf,
   groupsText,
+  clockOf,
+  clockWords,
   parabolaThrough,
   plotPoints,
   sketchName,
@@ -42,7 +44,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { BlocksSpec, Choice, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, LineSpec, PinSpec, PlotSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
+import type { BlocksSpec, Choice, ClockSpec, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, LineSpec, PinSpec, PlotSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -122,6 +124,8 @@ export type QuestionForChild = {
   line?: LineSpec
   /** P175: the number line the learner puts a pin on. Where it goes is the answer, and is never sent. */
   pin?: PinSpec
+  /** P177: the clock the learner sets. The time is the answer, and is never sent. */
+  clock?: ClockSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -196,6 +200,10 @@ export type MissedQuestion = {
   pin?: PinSpec
   pinWrote?: number | null
   pinRight?: number | null
+  /** P177: the clock, and the time the learner set (null: not a time) and the right time. */
+  clock?: ClockSpec
+  clockWrote?: { hour: number; minute: number } | null
+  clockRight?: { hour: number; minute: number } | null
 }
 
 /** The P148 fields of a question for the child. Shape hints only: how many boxes, which clock, which unit. Never the key. */
@@ -253,6 +261,7 @@ export function stripQuestion(
     ...(q.tap ? { tap: q.tap } : {}),
     ...(q.line ? { line: q.line } : {}),
     ...(q.pin ? { pin: q.pin } : {}),
+    ...(q.clock ? { clock: q.clock } : {}),
   }
 }
 
@@ -352,6 +361,8 @@ export type AnswerShape =
   | { kind: 'line'; line: LineSpec; typed: AnswerShape }
   /** P175: a pin dragged along a number line to a mark. `kind` is how the pin is sent (the key's kind); `typed` is the same answer typed instead. */
   | { kind: 'pin'; pin: PinSpec; as: string; typed: AnswerShape }
+  /** P177: a clock set by dragging its hands, the answer the time it shows. `typed` is the same answer typed instead: the boxes of a time. */
+  | { kind: 'clock'; clock: ClockSpec; typed: AnswerShape }
 
 /** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
 export type QuantityExtras = { unit?: string; round?: number; signed?: true }
@@ -380,6 +391,7 @@ type ShapeParts = {
   tap?: TapSpec
   line?: LineSpec
   pin?: PinSpec
+  clock?: ClockSpec
 }
 
 export function answerShape(
@@ -411,6 +423,11 @@ export function answerShape(
   if (q.pin && ['fraction', 'mixed', 'decimal', 'whole'].includes(q.answerKind)) {
     const { pin, ...rest } = q
     return { kind: 'pin', pin, as: q.answerKind, typed: answerShape(rest) }
+  }
+  // P177: a clock set by dragging its hands, the answer the time it shows. Typed instead, it is the boxes of a time.
+  if (q.clock && q.answerKind === 'time') {
+    const { clock, ...rest } = q
+    return { kind: 'clock', clock, typed: answerShape(rest) }
   }
   // P174: a straight line drawn on a grid, the answer two points on it. Typed instead, it is the list of numbers it is without its grid.
   if (q.line && q.answerKind === 'list') {
@@ -508,6 +525,8 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
     case 'line':
     // P175: the number of the mark the pin is on (or what was typed instead).
     case 'pin':
+    // P177: the time the clock shows (or what was typed instead), or nothing until a hand is moved.
+    case 'clock':
       return hasDigit(text) ? text : ''
     default:
       return text
@@ -569,7 +588,23 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
             pinWrote: item.unread ? null : pinMarkOf(item.question.pin, item.answer, readNumber),
           }
         : {}),
+      ...clockReview(item),
     }))
+}
+
+/** P177: the clock the learner set and the right one, said as a time is said ("half past 4"); what the learner typed stays as typed when it is not a time. */
+function clockReview(item: StoredItem): Partial<MissedQuestion> {
+  const c = item.question.clock
+  if (!c) return {}
+  const right = clockOf(item.question.answer)
+  const wrote = item.unread ? null : clockOf(item.answer)
+  return {
+    clock: c,
+    clockRight: right,
+    clockWrote: wrote,
+    ...(right ? { right: clockWords(right) } : {}),
+    ...(wrote ? { wrote: clockWords(wrote) } : {}),
+  }
 }
 
 /**

@@ -14,6 +14,7 @@ import { PaperValues } from './answers/PaperValues'
 import { DataGraph } from './answers/DataGraph'
 import { ColumnsSum } from './answers/ColumnsSum'
 import { PlotGrid } from './answers/PlotGrid'
+import { ClockFace } from './answers/ClockFace'
 import { LineGrid } from './answers/LineGrid'
 import { PinLine } from './answers/PinLine'
 import { ShadedResult } from './answers/ShadeShape'
@@ -135,6 +136,9 @@ export function writeLine(shape: AnswerShape): string {
     case 'order':
     case 'table':
       return paperValuesLine(shape)
+    // P177: a clock is set on paper by drawing its hands, and its time written.
+    case 'clock':
+      return `Draw the hands on the clock on your paper. Then write the time. ${writeLine(shape.typed)}`
     // P175: a pin on a number line is written as its number.
     case 'pin':
       return `Mark the number on your paper, then write it. ${writeLine(shape.typed)}`
@@ -207,6 +211,7 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
         {shape.kind === 'plot' ? <PlotGrid plot={shape.plot} mode="paper" /> : null}
         {shape.kind === 'line' ? <LineGrid line={shape.line} mode="paper" /> : null}
         {shape.kind === 'pin' ? <PinLine pin={shape.pin} at={null} mode="paper" /> : null}
+        {shape.kind === 'clock' ? <div className="w-[200px] self-center"><ClockFace time={null} mode="paper" /></div> : null}
         {shape.kind === 'shade' ? <ShadedResult shade={shape.shade} wrote="0" /> : null}
         {shape.kind === 'tap' ? (
           <div className="flex flex-col gap-1">

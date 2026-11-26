@@ -9,6 +9,7 @@ import { completeAnswer } from './complete-answer'
 import { isListKind, markListQuestion } from './answers/lists'
 import { markLine } from './answers/line'
 import { markSketch } from './answers/plot'
+import { markClock } from './answers/clock'
 
 /**
  * Marking by meaning, for the senior classes (Mathematics, Grades 7 to 12): a learner types algebra, a negative number, a point, a percent or an
@@ -989,6 +990,8 @@ export function markQuestion(
   if ((q as { line?: unknown }).line && q.answerKind === 'list') return markLine(q.answer, answer, readNumber)
   // P176: a sketch is marked by its curve: three points of the same parabola are right, in any order (logic/answers/plot.ts).
   if ((q as { plot?: { curve?: string } }).plot?.curve && q.answerKind === 'list') return markSketch(q.answer, answer, readNumber)
+  // P177: a clock is marked on its face: twelve hours apart is the same time (logic/answers/clock.ts).
+  if ((q as { clock?: unknown }).clock && q.answerKind === 'time') return markClock(q.answer, answer)
   // P150: a list, an order and a table are several values, each read as a number or an expression (logic/answers/lists.ts).
   if (isListKind(q.answerKind)) {
     const { correct, comparable } = markListQuestion(q, answer, readNumber)
