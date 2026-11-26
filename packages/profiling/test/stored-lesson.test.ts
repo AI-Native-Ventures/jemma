@@ -50,10 +50,12 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * e4f270893f8dff6dd1f4c0891384937e01e0eca3409be2579359345f56cd5686.
  * P179 (26 Nov 2026) moved both, on purpose: a senior question may have a `proof`, an identity to prove line by line. Before P179 they were
  * 02e4320fe0f7a380ddd0da9cb0442e4cec5345610d47776f5a5773756f9a6912 (senior) and 1308d8aba8ea1c57a3413968f1aa2a6fc471ef0621d36bf13cf10fffa565113f (wide).
+ * P180 (26 Nov 2026) moved both, on purpose: a senior question may have `general`, the frame of every solution of a trig equation. Before P180 they were
+ * 66113f9361512f0c77b4f3721be66e308cc9fac22ed0722d444cbe856546cfda (senior) and fd34f3b4fedd5b60709d915e022419917cdaf88e88fbf3e37783a5e28e25649c (wide).
  * Every packet that changes the senior schema moves these two: recompute them after a merge.
  */
-const SENIOR_SHA = '66113f9361512f0c77b4f3721be66e308cc9fac22ed0722d444cbe856546cfda'
-const WIDE_SHA = 'fd34f3b4fedd5b60709d915e022419917cdaf88e88fbf3e37783a5e28e25649c'
+const SENIOR_SHA = '20da21b0517a0bcc2fa4bc4f5eb84cdd7dff1809842bb494155173f024082835'
+const WIDE_SHA = '5159c5291b9034c7e1deb85d78a1dcf35c7d09140fc9755395fb02fc12aca3ce'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({

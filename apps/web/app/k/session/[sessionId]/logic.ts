@@ -16,6 +16,9 @@ import {
   checkProof,
   proofLines,
   sameExpression,
+  familiesOf,
+  generalLetter,
+  generalText,
   parabolaThrough,
   plotPoints,
   sketchName,
@@ -49,7 +52,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { BlocksSpec, Choice, ClockSpec, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, LineSpec, MatchSpec, PinSpec, PlotSpec, ProofSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
+import type { BlocksSpec, Choice, ClockSpec, ColumnsSpec, DataGraphSpec, Form, GeneralSpec, GroupsSpec, LineSpec, MatchSpec, PinSpec, PlotSpec, ProofSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -135,6 +138,8 @@ export type QuestionForChild = {
   match?: MatchSpec
   /** P179: the identity the learner proves line by line (its two sides are in the prompt too). The proof is the answer, and is never sent. */
   proof?: ProofSpec
+  /** P180: the frame of every solution of a trig equation (its letter). The solutions are the answer, and are never sent. */
+  general?: GeneralSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -282,6 +287,7 @@ export function stripQuestion(
     ...(q.clock ? { clock: q.clock } : {}),
     ...(q.match ? { match: q.match } : {}),
     ...(q.proof ? { proof: q.proof } : {}),
+    ...(q.general ? { general: q.general } : {}),
   }
 }
 
@@ -387,6 +393,8 @@ export type AnswerShape =
   | { kind: 'match'; match: MatchSpec; young?: true }
   /** P179: an identity proved line by line, each line its own maths editor. */
   | { kind: 'proof'; proof: ProofSpec }
+  /** P180: every solution of a trig equation, a frame for each family: an angle and how often it comes back. */
+  | { kind: 'general'; general: GeneralSpec }
 
 /** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
 export type QuantityExtras = { unit?: string; round?: number; signed?: true }
@@ -418,6 +426,7 @@ type ShapeParts = {
   clock?: ClockSpec
   match?: MatchSpec
   proof?: ProofSpec
+  general?: GeneralSpec
 }
 
 export function answerShape(
@@ -460,6 +469,8 @@ export function answerShape(
     const { line, ...rest } = q
     return { kind: 'line', line, typed: answerShape(rest) }
   }
+  // P180: every solution of a trig equation, the answer the angle and the period of each family.
+  if (q.general && q.answerKind === 'list') return { kind: 'general', general: q.general }
   // P179: an identity proved line by line, the answer its lines.
   if (q.proof && q.answerKind === 'list') return { kind: 'proof', proof: q.proof }
   // P178: things matched in pairs, the answer the partner of each.
@@ -563,6 +574,9 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
     // P179: the lines of a proof, or nothing until 3 hold something.
     case 'proof':
       return text.trim()
+    // P180: the angle and the period of each family, or nothing while a frame is half filled.
+    case 'general':
+      return hasDigit(text) ? text : ''
     default:
       return text
   }
@@ -626,7 +640,24 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       ...clockReview(item),
       ...matchReview(item),
       ...proofReview(item),
+      ...generalReview(item),
     }))
+}
+
+/** P180: every solution, said as families are said ("θ = 30° + k · 360° or θ = 150° + k · 360°"); what was typed stays as typed when it is not pairs of numbers. */
+function generalReview(item: StoredItem): Partial<MissedQuestion> {
+  const g = item.question.general
+  if (!g) return {}
+  const letter = generalLetter(g)
+  const right = familiesOf(item.question.answer, readNumber)
+  const wrote = item.unread ? null : familiesOf(item.answer, readNumber)
+  return {
+    ...(right ? { right: generalText(right, letter) } : {}),
+    ...(wrote ? { wrote: generalText(wrote, letter) } : {}),
+    cells: undefined,
+    table: undefined,
+    ordered: undefined,
+  }
 }
 
 /**

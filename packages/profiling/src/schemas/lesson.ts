@@ -180,6 +180,14 @@ export const LineSchema = z.object({ xMin: z.number(), xMax: z.number(), yMin: z
  */
 export const ProofSchema = z.object({ left: z.string(), right: z.string() })
 export type ProofSpec = z.infer<typeof ProofSchema>
+
+/**
+ * P180: every solution of a trig equation, typed as families (Grades 11 and 12): each an angle in degrees and how often it comes back (θ = 30° + k · 360°).
+ * `letter` is the letter of the equation (θ when left out). The key is an ordered `list` of the angle and the period of each family, in degrees
+ * (`30; 360; 150; 360`); families that give the same angles are right.
+ */
+export const GeneralSchema = z.object({ letter: z.string().optional() })
+export type GeneralSpec = z.infer<typeof GeneralSchema>
 export type LineSpec = z.infer<typeof LineSchema>
 
 /** The most and the fewest lines of the worked steps of a question (P127). */
@@ -219,6 +227,8 @@ const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
     line: LineSchema.optional(),
     /** P179: an identity the learner proves line by line. Senior classes only. */
     proof: ProofSchema.optional(),
+    /** P180: every solution of a trig equation, typed as families. Senior classes only. */
+    general: GeneralSchema.optional(),
     difficulty: Difficulty,
     why: z.string(),
     rightWay: z.string(),

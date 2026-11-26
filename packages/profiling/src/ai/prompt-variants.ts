@@ -158,7 +158,10 @@ const SENIOR_PICTURES =
   // P179: the learner proves an identity line by line.
   'To have the learner prove an identity line by line (Grades 10 to 12), say it in the `prompt` (`Prove that sin²x/(1 − cos x) = 1 + cos x.`) and give `proof` with `left` and `right`, its two sides as plain maths ' +
   '(`sin^2 x/(1 - cos x)` and `1 + cos x`), and no `diagram`. The `answerKind` is `list` and the `answer` is your proof: 3 to 6 lines from the left side to the right side, each one maths only (no LHS, no equals sign), ' +
-  'with a semicolon between them (`sin^2 x/(1 - cos x); (1 - cos^2 x)/(1 - cos x); ((1 - cos x)(1 + cos x))/(1 - cos x); 1 + cos x`). Each line must equal the one before it.'
+  'with a semicolon between them (`sin^2 x/(1 - cos x); (1 - cos^2 x)/(1 - cos x); ((1 - cos x)(1 + cos x))/(1 - cos x); 1 + cos x`). Each line must equal the one before it. ' +
+  // P180: the learner types every solution of a trig equation.
+  'To have the learner give the general solution of a trig equation (Grades 11 and 12), say the equation in the `prompt` (`Find the general solution of sin θ = 0,5.`) and give `general` with `letter` (`θ`), and no `diagram`. ' +
+  'The `answerKind` is `list` and the `answer` is the angle and the period of each family of solutions, in degrees, with a semicolon between them (`30; 360; 150; 360` for θ = 30° + k · 360° or θ = 150° + k · 360°). Give every family.'
 
 /**
  * What a senior class's lesson writer is told about the maths of a question (P127): state it as an expression or an equation in plain notation, never in
