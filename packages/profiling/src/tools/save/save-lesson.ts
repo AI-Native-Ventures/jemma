@@ -237,6 +237,8 @@ export const DIAGRAM_WORDS: Record<string, string> = {
   protractor: 'a protractor',
   parallel_lines: 'parallel lines',
   enlargement: 'an enlargement on a grid',
+  // P195
+  point_angle: 'a point and its angle',
 }
 
 function how(lesson: Lesson): string {

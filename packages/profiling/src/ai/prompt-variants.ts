@@ -158,6 +158,10 @@ const SENIOR_PICTURES =
   'Use `angle` for one angle of `degrees` with an optional short `label`, and `protractor` for an angle read off a protractor (`degrees` on a mark every 5, from 5 to 175; the `answer` is that angle). ' +
   'Use `parallel_lines` for two parallel lines AB and CD cut by a slanted line that makes the angle `acute` (30 to 80) above and to the right of each crossing; each of 1 to 3 `marks` writes a `label` (`65°`, or a letter like `x` for the angle to find) in a `corner` (`above_right`, `above_left`, `below_left` or `below_right`) of the crossing on `line` `AB` or `CD`, and the `answer` is the size of the letter\'s corner. ' +
   'Use `enlargement` for a `rectangle` or a right `triangle` (`w` by `h` squares) and the same shape `factor` times bigger (2, 3 or 4) on a grid. ' +
+  // P195: more on a coordinate plane, and a point and its angle.
+  'A `coordinate_plane` graph may also be a `cubic` (`a`, `b`, `c`, `d`: y = ax³ + bx² + cx + d) or a `log` (`base`, `a`, `p`, `q`: y = a·log_base(x − p) + q), and a `line` may be `dashed` (the line y = x between a graph and its inverse). ' +
+  'Give a `coordinate_plane` `circles` (each a centre `a`, `b` and a radius `r`; at most 2) for a circle on the grid, `polygon` `true` to join its `points` in order into a shape, and `inclination` with a `label` (like `θ`) to mark the angle its first `line` makes with the x-axis. ' +
+  'Use `point_angle` for a point P(`x`; `y`), whole numbers from −6 to 6, joined to the origin with the angle θ from the positive x-axis marked. ' +
   'Never put the answer in a label. A lesson card or a diagram step may use these pictures too. ' +
   // P171: the learner places points on a grid by tapping it.
   'To have the learner place points on a grid by tapping it (where a shape lands after a reflection or a translation, or points from a table), give `plot` instead of a `diagram`: ' +

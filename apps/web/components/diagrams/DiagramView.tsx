@@ -41,6 +41,7 @@ import { Angle } from './Angle'
 import { Protractor } from './Protractor'
 import { ParallelLines } from './ParallelLines'
 import { Enlargement } from './Enlargement'
+import { PointAngle } from './PointAngle'
 import type { Variant } from './shared'
 
 export type DiagramViewProps = {
@@ -166,6 +167,9 @@ export function DiagramView({ spec, variant, highlight, className, caption, seni
         return <ParallelLines {...s} variant={variant === 'question' ? 'question' : 'card'} />
       case 'enlargement':
         return <Enlargement {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      // P195: a point and its angle (Grades 10 to 12).
+      case 'point_angle':
+        return <PointAngle {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
       default:
         return <PictureMissing className={className} />
     }

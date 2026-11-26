@@ -47,9 +47,10 @@ const Label = z.string().optional()
  * One graph on a coordinate plane. x is in degrees for `trig`.
  * line: y = m·x + c. parabola: y = a(x - p)^2 + q. hyperbola: y = a/(x - p) + q. exponential: y = a·b^(x - p) + q.
  * trig: y = a·fn(b·x) + q (a and b default to 1, q to 0).
+ * P195: cubic: y = a·x^3 + b·x^2 + c·x + d (b, c and d default to 0). log: y = a·log_base(x - p) + q. A line may be `dashed` (the line y = x of an inverse).
  */
 export const GraphSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('line'), m: z.number(), c: z.number(), label: Label }),
+  z.object({ type: z.literal('line'), m: z.number(), c: z.number(), label: Label, dashed: z.boolean().optional() }),
   z.object({ type: z.literal('parabola'), a: z.number(), p: z.number().optional(), q: z.number().optional(), label: Label }),
   z.object({ type: z.literal('hyperbola'), a: z.number(), p: z.number().optional(), q: z.number().optional(), label: Label }),
   z.object({ type: z.literal('exponential'), a: z.number(), b: z.number(), p: z.number().optional(), q: z.number().optional(), label: Label }),
@@ -61,6 +62,8 @@ export const GraphSchema = z.discriminatedUnion('type', [
     q: z.number().optional(),
     label: Label,
   }),
+  z.object({ type: z.literal('cubic'), a: z.number(), b: z.number().optional(), c: z.number().optional(), d: z.number().optional(), label: Label }),
+  z.object({ type: z.literal('log'), base: z.number(), a: z.number().optional(), p: z.number().optional(), q: z.number().optional(), label: Label }),
 ])
 export type Graph = z.infer<typeof GraphSchema>
 
@@ -73,6 +76,10 @@ const CoordinatePlaneSchema = z.object({
   step: z.number().optional(),
   points: z.array(z.object({ x: z.number(), y: z.number(), label: Label })).optional(),
   graphs: z.array(GraphSchema).optional(),
+  // P195: circles on the grid (a centre `a`, `b` and a radius `r`), the points joined in order into a shape, and the angle the first line makes with the x-axis.
+  circles: z.array(z.object({ a: z.number(), b: z.number(), r: z.number(), label: Label })).optional(),
+  polygon: z.boolean().optional(),
+  inclination: z.object({ label: z.string() }).optional(),
 })
 
 /** `vertices`, `angles`, `sides` and `angleLabels` are lists of three: the save gate checks it, so a slip costs one question and not the whole lesson. */
@@ -323,6 +330,11 @@ const EnlargementSchema = z.object({
   sizes: z.boolean().optional(),
 })
 
+// ---- P195: Grades 10 to 12 ---------------------------------------------------------------------------------------------------------
+
+/** P195: a point P(`x`; `y`) joined to the origin, with the angle θ from the positive x-axis to that arm marked and a dashed line down to the x-axis. */
+const PointAngleSchema = z.object({ kind: z.literal('point_angle'), x: z.number(), y: z.number(), name: z.string().optional() })
+
 /** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). P189: and five more. P190: and six for measuring. P191: and four for patterns, algebra and graphs. P192: and four for shapes and position. P193: and four for angles and transformations. */
 const QUESTION_PICTURES = [
   ObjectsSchema,
@@ -356,6 +368,9 @@ const QUESTION_PICTURES = [
   EnlargementSchema,
 ] as const
 
+/** P195: the pictures of a senior question only (Grades 10 to 12). */
+const SENIOR_QUESTION_PICTURES = [PointAngleSchema] as const
+
 /**
  * P188: the pictures a question of a gated Grade 1 to 6 topic may carry: the seven Jemma draws for every grade and the ones of the question type boards. The demo
  * schema (`DiagramSpecSchema`, pinned) does not change.
@@ -372,6 +387,7 @@ export const SeniorDiagramSpecSchema = z.discriminatedUnion('kind', [
   TimelineSchema,
   // P188: every picture is read and drawn by the one wide schema, the question pictures of Grades 1 to 6 too.
   ...QUESTION_PICTURES,
+  ...SENIOR_QUESTION_PICTURES,
 ])
 export type SeniorDiagramSpec = z.infer<typeof SeniorDiagramSpecSchema>
 export type CoordinatePlaneSpec = z.infer<typeof CoordinatePlaneSchema>
@@ -408,3 +424,4 @@ export type AngleSpec = z.infer<typeof AngleSchema>
 export type ProtractorSpec = z.infer<typeof ProtractorSchema>
 export type ParallelLinesSpec = z.infer<typeof ParallelLinesSchema>
 export type EnlargementSpec = z.infer<typeof EnlargementSchema>
+export type PointAngleSpec = z.infer<typeof PointAngleSchema>
