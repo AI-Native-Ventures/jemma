@@ -8,6 +8,7 @@ import { ValueBox } from './ValueBox'
 // P180: every solution of a trig equation, from the "Type every solution" board ("Find the general solution of sin θ = 0,5."). A frame for each family of
 // solutions: θ = [angle]° + k · [period]°. "Add another solution" opens the next frame (up to 4) for the second angle. The angle box has the full keyboard, so
 // an angle may be negative; the period box has the number pad. What goes up to the screen is the angle and the period of each frame that is filled.
+// P186: the line under the frames says k is any integer (k ∈ ℤ): k may be negative, which a whole number never is.
 
 type Row = { angle: string; period: string }
 
@@ -42,7 +43,7 @@ export function SolutionFrame({ general, onChange }: { general: GeneralSpec; onC
           <span aria-hidden="true" className="text-[20px] leading-none">+</span> Add another solution
         </button>
       ) : null}
-      <p className="m-0 text-center text-[15px] text-body">k is any whole number: k ∈ ℤ</p>
+      <p className="m-0 text-center text-[15px] text-body">k is any integer: k ∈ ℤ</p>
       {filled > 0 && rows.length === 1 ? <p aria-live="polite" className="m-0 text-center text-[16px] leading-[1.4] text-body">Add another solution if there is one.</p> : null}
     </div>
   )
