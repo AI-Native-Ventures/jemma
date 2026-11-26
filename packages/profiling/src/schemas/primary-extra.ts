@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { DiagramSpecSchema } from './diagram'
+import { DiagramSpecSchema, PrimaryPictureSpecSchema } from './diagram'
 import { lessonAround, PRIMARY_ANSWER_KINDS, QuestionSchema } from './lesson'
 
 /**
@@ -40,8 +40,11 @@ export const PrimaryExtraQuestionSchema = z.object({
   labels: wide.labels,
   round: wide.round,
   table: wide.table,
-  /** P166: one of the seven primary pictures, when the question needs it (a bar to read, a shaded part to name). It never holds the answer. */
-  diagram: DiagramSpecSchema.optional(),
+  /**
+   * P166: one of the seven primary pictures, when the question needs it (a bar to read, a shaded part to name). It never holds the answer. P188: and the pictures
+   * of the question type boards (objects to count, a ten-frame, blocks to read, a hundred chart, a dot array, two numbers to compare).
+   */
+  diagram: PrimaryPictureSpecSchema.optional(),
   /** P167: a bar graph or a picture graph the learner draws: the bars with `value: null` are the answer. */
   graph: wide.graph,
   /** P168: a sum the learner works in columns, digit by digit from the ones. */

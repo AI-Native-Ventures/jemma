@@ -71,6 +71,10 @@ const KIT_TOPICS: { kit: PrimaryKit; names: RegExp; baseline?: false }[] = [
     baseline: false,
   },
   { kit: 'numbers', names: /^(count forwards and backwards|counting to|rounding|number symbols and number names)$/, baseline: false },
+  // P188: counting objects, number bonds and equal groups have kits too, so their questions may show objects, a ten-frame or a dot array.
+  { kit: 'numbers', names: /^count objects$/, baseline: false },
+  { kit: 'addsub', names: /^(word problems within|fluency within)$/, baseline: false },
+  { kit: 'multiply', names: /^(grouping and sharing leading to division|problems in context repeated addition leading to multiplication)$/, baseline: false },
   // P168: addition and subtraction have a kit of their own, so their questions (from Grade 2) may be sums worked in columns.
   { kit: 'addsub', names: /^(addition and subtraction|add and subtract within)$/, baseline: false },
 ]
@@ -88,21 +92,22 @@ export function primaryKit(c: ClassContext | null, topicName: string): PrimaryKi
 
 /**
  * P166: the pictures a question of a kit may carry, of the seven Jemma draws for every grade (`DiagramSpecSchema`). A clock and coins are not drawn yet,
- * so time and money have none.
+ * so time and money have none. P188: and the counting pictures of the question type boards (objects, a ten-frame, blocks to read, a hundred chart, a dot
+ * array, two numbers to compare).
  */
 export const KIT_PICTURES: Record<PrimaryKit, readonly string[]> = {
   time: [],
   money: [],
   measure: ['grid_area', 'shape_2d'],
-  order: ['number_line'],
+  order: ['number_line', 'compare'],
   patterns: ['number_line'],
   data: ['bar_chart'],
-  place: ['place_value'],
-  fractions: ['fraction_bar', 'number_line', 'area_model'],
+  place: ['place_value', 'base_ten'],
+  fractions: ['fraction_bar', 'number_line', 'area_model', 'objects'],
   shapes: ['shape_2d', 'grid_area'],
-  multiply: ['area_model', 'number_line'],
-  numbers: ['number_line'],
-  addsub: ['number_line'],
+  multiply: ['area_model', 'number_line', 'dot_array', 'objects'],
+  numbers: ['number_line', 'objects', 'ten_frame', 'hundred_chart', 'compare'],
+  addsub: ['number_line', 'ten_frame', 'objects', 'hundred_chart'],
 }
 
 /** What each picture is, in the words of the schema, for the lesson writer. */
@@ -114,6 +119,15 @@ const PICTURE_WORDS: Record<string, string> = {
   bar_chart: '`bar_chart` (up to 8 `bars`, each a `label` and a `value`, on a scale up to `yMax`) to read a graph',
   shape_2d: '`shape_2d` (a square, rectangle, triangle or circle with its side lengths as `labels`)',
   grid_area: '`grid_area` (a shape on squared paper: `cols` by `rows` squares and the `cells` it covers) to count squares for area and perimeter',
+  objects:
+    '`objects` (things to count: `thing` is `apple`, `star`, `ball`, `flower`, `fish`, `car`, `cookie` or `heart`, and `groups` is how many are in each row or group, like `[5, 5, 3]`; `layout` `rows` to count them, or `groups` for equal groups, sharing and a fraction of a set; at most 30 things)',
+  ten_frame:
+    '`ten_frame` (a frame of 10 boxes, or `frames` 2 for 20, with `filled` counters; add `bond` with `whole` and `part` to show a number bond under it, its other part blank) for number bonds',
+  base_ten: '`base_ten` (place value blocks to read: `hundreds`, `tens` and `ones`; ask what number they show)',
+  hundred_chart:
+    '`hundred_chart` (part of a hundred chart: `rows` rows of ten from `from`, which is 1, 11, 21 and so on; the numbers in `blanks` are left empty and `gold` is the empty box the question asks about, drawn in gold: the `answer` is that number)',
+  dot_array: '`dot_array` (dots in `rows` and `cols`, at most 10 each) to write a multiplication for',
+  compare: '`compare` (two numbers, `left` and `right`, with a blank sign between them): ask which sign makes it true, as a `choice` question with the choices `<`, `>` and `=`',
 }
 
 /** P166: the bullet that lets a question of a kit carry a picture, or null for a kit with none. */

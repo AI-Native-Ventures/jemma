@@ -119,6 +119,52 @@ const TimelineSchema = z.object({
   marks: z.array(z.object({ at: z.number().int(), label: z.string() })).optional(),
 })
 
+// ---- P188: the pictures of a question of Grades 1 to 3: counting and place value ----------------------------------------------
+
+/** The things a picture of objects draws. */
+export const OBJECT_THINGS = ['apple', 'star', 'ball', 'flower', 'fish', 'car', 'cookie', 'heart'] as const
+
+/**
+ * P188: things to count, share or see in equal groups: how many are in each row or group (`[5, 5, 3]`), lined up in `rows` to count (the default) or each group
+ * in a ring of its own (`groups`: equal groups, sharing, a fraction of a set).
+ */
+const ObjectsSchema = z.object({
+  kind: z.literal('objects'),
+  thing: z.enum(OBJECT_THINGS),
+  groups: z.array(z.number()),
+  layout: z.enum(['rows', 'groups']).optional(),
+})
+
+/** P188: a ten-frame (`frames` 2 for twenty) with `filled` counters, and a number bond under it when `bond` is given: the whole on top, one part and a blank. */
+const TenFrameSchema = z.object({
+  kind: z.literal('ten_frame'),
+  frames: z.number().optional(),
+  filled: z.number(),
+  bond: z.object({ whole: z.number(), part: z.number() }).optional(),
+})
+
+/** P188: place value blocks to read: flats of a hundred, rods of ten and single ones. */
+const BaseTenSchema = z.object({ kind: z.literal('base_ten'), hundreds: z.number().optional(), tens: z.number(), ones: z.number() })
+
+/** P188: part of a hundred chart: `rows` rows of ten from `from` (1, 11, 21, ...), the numbers in `blanks` left empty, and `gold` the empty box the question is about. */
+const HundredChartSchema = z.object({ kind: z.literal('hundred_chart'), from: z.number(), rows: z.number(), blanks: z.array(z.number()), gold: z.number().optional() })
+
+/** P188: dots in `rows` and `cols`, for multiplication. */
+const DotArraySchema = z.object({ kind: z.literal('dot_array'), rows: z.number(), cols: z.number() })
+
+/** P188: two numbers with a blank sign between them, for which sign makes it true (<, > or =). */
+const CompareSchema = z.object({ kind: z.literal('compare'), left: z.string(), right: z.string() })
+
+/** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). */
+const QUESTION_PICTURES = [ObjectsSchema, TenFrameSchema, BaseTenSchema, HundredChartSchema, DotArraySchema, CompareSchema] as const
+
+/**
+ * P188: the pictures a question of a gated Grade 1 to 6 topic may carry: the seven Jemma draws for every grade and the ones of the question type boards. The demo
+ * schema (`DiagramSpecSchema`, pinned) does not change.
+ */
+export const PrimaryPictureSpecSchema = z.discriminatedUnion('kind', [...DiagramSpecSchema.options, ...QUESTION_PICTURES])
+export type PrimaryPictureSpec = z.infer<typeof PrimaryPictureSpecSchema>
+
 export const SeniorDiagramSpecSchema = z.discriminatedUnion('kind', [
   ...DiagramSpecSchema.options,
   CoordinatePlaneSchema,
@@ -126,6 +172,8 @@ export const SeniorDiagramSpecSchema = z.discriminatedUnion('kind', [
   BoxPlotSchema,
   TreeSchema,
   TimelineSchema,
+  // P188: every picture is read and drawn by the one wide schema, the question pictures of Grades 1 to 6 too.
+  ...QUESTION_PICTURES,
 ])
 export type SeniorDiagramSpec = z.infer<typeof SeniorDiagramSpecSchema>
 export type CoordinatePlaneSpec = z.infer<typeof CoordinatePlaneSchema>
@@ -133,3 +181,9 @@ export type TriangleSpec = z.infer<typeof TriangleSchema>
 export type BoxPlotSpec = z.infer<typeof BoxPlotSchema>
 export type TreeSpec = z.infer<typeof TreeSchema>
 export type TimelineSpec = z.infer<typeof TimelineSchema>
+export type ObjectsSpec = z.infer<typeof ObjectsSchema>
+export type TenFrameSpec = z.infer<typeof TenFrameSchema>
+export type BaseTenSpec = z.infer<typeof BaseTenSchema>
+export type HundredChartSpec = z.infer<typeof HundredChartSchema>
+export type DotArraySpec = z.infer<typeof DotArraySchema>
+export type CompareSpec = z.infer<typeof CompareSchema>

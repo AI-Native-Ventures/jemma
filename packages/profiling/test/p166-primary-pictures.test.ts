@@ -148,9 +148,10 @@ describe('the picture of a question must make sense (the save gate)', () => {
 
 describe('the picture bullet the lesson writer is told', () => {
   test('each kit names the pictures that fit its topic, and time and money have none (no clock or coins are drawn yet)', () => {
-    expect(KIT_PICTURES.fractions).toEqual(['fraction_bar', 'number_line', 'area_model'])
+    // P188: and the counting pictures (a fraction of a set is objects in groups; blocks are read in place value).
+    expect(KIT_PICTURES.fractions).toEqual(['fraction_bar', 'number_line', 'area_model', 'objects'])
     expect(KIT_PICTURES.data).toEqual(['bar_chart'])
-    expect(KIT_PICTURES.place).toEqual(['place_value'])
+    expect(KIT_PICTURES.place).toEqual(['place_value', 'base_ten'])
     expect(KIT_PICTURES.shapes).toEqual(['shape_2d', 'grid_area'])
     expect(pictureBullet('time', klass(3))).toBeNull()
     expect(pictureBullet('money', klass(3))).toBeNull()
