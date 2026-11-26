@@ -48,10 +48,12 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * 0836f720710671e34acafb345b833bd08344e4781e280ce1f96297bfd0124c47.
  * P178 (26 Nov 2026) moved the wide one alone: a question may have a `match`, things to match in pairs. Before P178 it was
  * e4f270893f8dff6dd1f4c0891384937e01e0eca3409be2579359345f56cd5686.
+ * P179 (26 Nov 2026) moved both, on purpose: a senior question may have a `proof`, an identity to prove line by line. Before P179 they were
+ * 02e4320fe0f7a380ddd0da9cb0442e4cec5345610d47776f5a5773756f9a6912 (senior) and 1308d8aba8ea1c57a3413968f1aa2a6fc471ef0621d36bf13cf10fffa565113f (wide).
  * Every packet that changes the senior schema moves these two: recompute them after a merge.
  */
-const SENIOR_SHA = '02e4320fe0f7a380ddd0da9cb0442e4cec5345610d47776f5a5773756f9a6912'
-const WIDE_SHA = '1308d8aba8ea1c57a3413968f1aa2a6fc471ef0621d36bf13cf10fffa565113f'
+const SENIOR_SHA = '66113f9361512f0c77b4f3721be66e308cc9fac22ed0722d444cbe856546cfda'
+const WIDE_SHA = 'fd34f3b4fedd5b60709d915e022419917cdaf88e88fbf3e37783a5e28e25649c'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({

@@ -10,11 +10,12 @@ import { lineKeyProblem, lineProblem, tidyLine } from '../../logic/answers/line'
 import { pinKeyProblem, pinProblem } from '../../logic/answers/pin'
 import { clockKeyProblem, clockProblem } from '../../logic/answers/clock'
 import { matchKeyProblem, matchProblem, tidyMatch } from '../../logic/answers/match'
+import { proofKeyProblem, proofProblem, tidyProof } from '../../logic/answers/proof'
 import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
 import { isSeniorQuestion, quantityProblem, readCents, stripUnit } from '../../logic/answers/quantity'
-import { graphEquationOf, isMeaningKind, meaningKeyProblem, readNumber } from '../../logic/meaning'
+import { graphEquationOf, isMeaningKind, meaningKeyProblem, readNumber, sameExpression } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { pictureProblem, questionPictureProblem } from '../../logic/picture'
 import { cleanSteps } from '../../logic/steps'
@@ -95,6 +96,12 @@ export function answerProblem(q: Question): string | null {
     const line = lineProblem(q.line) ?? lineKeyProblem({ ...q, line: q.line }, readNumber)
     if (line) return `line: ${line}`
   }
+  // P179: an identity to prove: two sides that are equal, and a key that is a proof of it, line by line.
+  if (q.proof) {
+    if (q.diagram || q.plot || q.line || q.choices?.length) return 'proof: an identity to prove has no picture and no choices'
+    const proof = proofProblem(q.proof, sameExpression) ?? proofKeyProblem({ ...q, proof: q.proof }, sameExpression)
+    if (proof) return `proof: ${proof}`
+  }
   // P175: a pin on a number line: a line a phone can show, and a key on one of its marks.
   if (q.pin) {
     if (q.diagram || q.choices?.length) return 'pin: a number line to put a pin on is the picture of its question, and it has no choices'
@@ -126,7 +133,8 @@ function answerKeyProblem(q: Question): string | null {
   // P149: a question with choices (any kind), a true or false and a reason are picked: the key is the letter, true or false, or a reason of the list.
   if (isPickQuestion(q)) return pickKeyProblem(q)
   // P150: a list, an order and a table are several values, each read as a number (the unit of a question is no part of a value).
-  if (isListKind(q.answerKind)) return listKeyProblem(q, readNumber)
+  // P179: the lines of a proof are maths, not numbers: the proof check of `answerProblem` reads them.
+  if (isListKind(q.answerKind)) return q.proof ? null : listKeyProblem(q, readNumber)
   const key = stripUnit(q.answer, q.unit)
   if (isMeaningKind(q.answerKind)) return meaningKeyProblem(q.answerKind, key)
   const parsed = parseAnswer(key)
@@ -188,7 +196,7 @@ const STEPS_LEFT_OUT = 'left out whole: a line of them held a label'
 const tidySteps = (questions: Question[]): Question[] =>
   questions.map(({ steps, ...rest }) => {
     const clean = cleanSteps(steps)
-    return tidyMatch(tidyLine(tidyTap(tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest))))))
+    return tidyProof(tidyMatch(tidyLine(tidyTap(tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest)))))))
   })
 
 /**

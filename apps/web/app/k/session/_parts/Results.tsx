@@ -17,6 +17,7 @@ import { GroupsResult } from './answers/GroupsAnswer'
 import { PlotGrid } from './answers/PlotGrid'
 import { ClockResults } from './answers/ClockFace'
 import { MatchBoard } from './answers/MatchPairs'
+import { ProofResult } from './answers/ProofLines'
 import { LineGrid } from './answers/LineGrid'
 import { PinLine } from './answers/PinLine'
 import { ShadedResult } from './answers/ShadeShape'
@@ -178,6 +179,8 @@ function CardHead({ m }: { m: MissedQuestion }) {
       {m.plot ? <PlotGrid plot={m.plot} mode="results" points={m.plotWrote ?? []} right={m.plotRight ?? []} /> : null}
       {/* P174: the right line in green, the learner's dashed when it is another line. */}
       {m.line ? <LineGrid line={m.line} mode="results" a={m.lineWrote?.[0] ?? null} b={m.lineWrote?.[1] ?? null} right={m.lineRight ?? null} /> : null}
+      {/* P179: the learner's proof, the first line that does not follow in red pen with the line it should have been under it. */}
+      {m.proof && !m.unread && (m.proofLines?.length ?? 0) > 0 ? <ProofResult lines={m.proofLines!} wrong={m.proofWrong ?? null} rightLine={m.proofRight ?? null} /> : null}
       {/* P178: the learner's pairs: a right one in green, a wrong one in red pen. */}
       {m.match && !m.unread ? <MatchBoard match={m.match} joined={m.matchWrote ?? []} right={m.matchRight ?? []} mode="results" /> : null}
       {/* P177: the learner's clock beside the right one (alone, in green, when it is right). */}
