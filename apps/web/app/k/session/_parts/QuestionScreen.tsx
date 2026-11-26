@@ -25,6 +25,7 @@ import { PinAnswer } from './answers/PinLine'
 import { ClockAnswer } from './answers/ClockFace'
 import { MatchAnswer } from './answers/MatchPairs'
 import { ProofAnswer } from './answers/ProofLines'
+import { FirstPrinciplesAnswer } from './answers/FirstPrinciplesLines'
 import { SolutionFrame } from './answers/SolutionFrame'
 import { YoungSize } from './answers/YoungSize'
 import { MathAnswerField } from './MathAnswerField'
@@ -283,6 +284,9 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
     // P179: an identity proved line by line, each line its own maths editor.
     case 'proof':
       return <ProofAnswer topic={topic} prompt={prompt} onChange={b.set.text} />
+    // P185: a derivative from first principles, its first line given and each line after it its own maths editor.
+    case 'firstPrinciples':
+      return <FirstPrinciplesAnswer spec={shape.firstPrinciples} topic={topic} prompt={prompt} onChange={b.set.text} />
     // P178: things matched in pairs by tapping one, then its partner.
     case 'match':
       return <MatchAnswer match={shape.match} plane={shape.plane} onChange={b.set.text} />

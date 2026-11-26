@@ -1,6 +1,6 @@
 'use server'
 
-import { isListKind, PAPER_QUESTION_COUNT, type Stage } from '@jemma/profiling/logic'
+import { PAPER_QUESTION_COUNT, type Stage } from '@jemma/profiling/logic'
 import { QuestionSchema, StoredLessonSchema, type Lesson, type Question } from '@jemma/profiling/schemas'
 import type { JemmaDb, Json } from '@jemma/profiling/db'
 import { sendEvent } from '@/lib/agent'
@@ -10,11 +10,11 @@ import { createSupabaseServer } from '@/lib/supabase/server'
 import { classIdsOfChild, loadShortLabels } from '@/lib/topics'
 import {
   adaptedOf,
-  ANSWER_MAX_LENGTH,
+  answerMaxLength,
   DEFAULT_TRY_COUNT,
   finishAnswer,
   isYoungGrade,
-  LIST_ANSWER_MAX_LENGTH,
+  LINES_ANSWER_MAX_LENGTH,
   nextInSequence,
   paperQuestions,
   reviewOf,
@@ -181,13 +181,14 @@ export async function answer(
   seconds = 0,
 ): Promise<{ next: QuestionForChild | null }> {
   const text = value.trim()
-  // A list, an order and a table hold several values and may be longer (P150): the question says which, once it is loaded, below.
-  if (!text || text.length > LIST_ANSWER_MAX_LENGTH) throw new Error('Write an answer first')
+  // A list, an order and a table hold several values and may be longer (P150), and the lines of a proof or of first principles longer still (P185): the
+  // question says which, once it is loaded, below.
+  if (!text || text.length > LINES_ANSWER_MAX_LENGTH) throw new Error('Write an answer first')
   const run = await loadRun(sessionId)
   if (run.session.status !== 'in_progress') throw new Error('This session is not running')
   const current = nextInSequence(run.warmup, run.lesson.questions, run.tryCount, run.items)
   if (!current) return { next: null }
-  if (text.length > ANSWER_MAX_LENGTH && !isListKind(current.question.answerKind)) throw new Error('Write an answer first')
+  if (text.length > answerMaxLength(current.question)) throw new Error('Write an answer first')
   // A repeated tap on an answer already saved just shows where the child is now.
   if (position !== current.position) {
     if (position < current.position) return { next: strip(run, current.question, current) }

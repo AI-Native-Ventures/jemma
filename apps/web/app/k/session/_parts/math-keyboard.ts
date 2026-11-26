@@ -14,7 +14,7 @@ import { strandOf, type Strand, type TypedKind } from './maths-keys'
 //   Trig      sin cos tan and their inverses, the degree sign, theta, alpha, beta / pi, gamma, delta, phi
 //   Compare   < > <= >= != plus-or-minus |x| % R, and the word or (an expression or an equation: 3 answers, or x < -1 or x > 4, in one box) /
 //             [ ] ; infinity union element-of the-real-numbers (P147: intervals and sets)
-//   Calculus  d/dx, f'(x), infinity, e / ln, log, f(x), x, y
+//   Calculus  d/dx, f'(x), infinity, e / ln, log, f(x), x, y, h (P185: the h of first principles)
 // P146: the signs of geometry and calculus that the marking can never read (angle, triangle, perpendicular, parallel, congruent, similar, the integral, lim,
 // the sum, to) are not on any key: an answer written with one could only be marked unreadable. They are still defined in CAPS, so a key comes back when the
 // marking learns its sign. Infinity stays. The Shapes tab is gone: with those keys off it held the degree sign, theta and pi, which the Trig tab already has, and a
@@ -199,7 +199,7 @@ function tabRows(tab: TabId, kind: TypedKind): [(string | Keycap)[], (string | K
         filled([CAPS.openSquare, CAPS.closeSquare, CAPS.semicolon, CAPS.infinity, CAPS.union, CAPS.element, CAPS.reals]),
       ]
     case 'calculus':
-      return [filled([wide(CAPS.ddx, 2), wide(CAPS.fPrime, 2), CAPS.infinity, CAPS.e]), filled([CAPS.ln, CAPS.log, CAPS.fx, letter('x'), letter('y')])]
+      return [filled([wide(CAPS.ddx, 2), wide(CAPS.fPrime, 2), CAPS.infinity, CAPS.e]), filled([CAPS.ln, CAPS.log, CAPS.fx, letter('x'), letter('y'), letter('h')])]
   }
 }
 

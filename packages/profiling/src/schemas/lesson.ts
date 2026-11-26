@@ -214,6 +214,14 @@ export const GraphMatchSchema = z.object({
   equations: z.array(z.string()),
 })
 export type GraphMatchSpec = z.infer<typeof GraphMatchSchema>
+
+/**
+ * P185: a derivative the learner finds from first principles, line by line (Grade 12): `f` is the function as plain maths in x (`2x^2 - 3x`), and `name` its
+ * letter when it is not f (`g`). The learner starts from f′(x) = lim h→0 (f(x + h) − f(x))/h and writes the lines after it, maths only. The key is the
+ * same: 3 to 7 lines in x and h, the first one (f(x + h) − f(x))/h with f put in, the last one f′(x) with no h in it, as an ordered `list`.
+ */
+export const FirstPrinciplesSchema = z.object({ f: z.string(), name: z.string().optional() })
+export type FirstPrinciplesSpec = z.infer<typeof FirstPrinciplesSchema>
 export type LineSpec = z.infer<typeof LineSchema>
 
 /** The most and the fewest lines of the worked steps of a question (P127). */
@@ -257,6 +265,8 @@ const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
     general: GeneralSchema.optional(),
     /** P184: graphs the learner matches to their equations. Senior classes only. */
     graphMatch: GraphMatchSchema.optional(),
+    /** P185: a derivative the learner finds from first principles, line by line. Senior classes only. */
+    firstPrinciples: FirstPrinciplesSchema.optional(),
     difficulty: Difficulty,
     why: z.string(),
     rightWay: z.string(),

@@ -16,6 +16,14 @@ import {
   checkProof,
   proofLines,
   sameExpression,
+  checkFirstPrinciples,
+  derivativeOf,
+  firstPrinciplesLines,
+  functionName,
+  holdsH,
+  LINE_MAX_LENGTH,
+  workedLineOf,
+  type FirstPrinciplesWhy,
   familiesOf,
   generalLetter,
   generalText,
@@ -54,7 +62,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { BlocksSpec, Choice, ClockFaceSpec, ClockSpec, ColumnsSpec, GraphMatchSpec, DataGraphSpec, Form, GeneralSpec, GroupsSpec, LineSpec, MatchSpec, PinSpec, PlotSpec, ProofSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
+import type { BlocksSpec, Choice, ClockFaceSpec, ClockSpec, ColumnsSpec, GraphMatchSpec, DataGraphSpec, FirstPrinciplesSpec, Form, GeneralSpec, GroupsSpec, LineSpec, MatchSpec, PinSpec, PlotSpec, ProofSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -65,6 +73,14 @@ export const DEFAULT_TRY_COUNT = 5
 export const ANSWER_MAX_LENGTH = 60
 /** A list, an order or a table is several values in one answer (P150): its answer may be this long. */
 export const LIST_ANSWER_MAX_LENGTH = LIST_MAX_LENGTH
+/** P185: the lines of a proof (6) or of first principles (7) are lines of worked maths, each up to `LINE_MAX_LENGTH` characters: the answer may be this long. */
+export const LINES_ANSWER_MAX_LENGTH = 7 * LINE_MAX_LENGTH + 20
+
+/** P185: the longest answer a question takes: one line of maths, several values (a list, an order, a table), or the lines of a proof or of first principles. */
+export function answerMaxLength(q: { answerKind: string; proof?: unknown; firstPrinciples?: unknown }): number {
+  if ((q.proof || q.firstPrinciples) && q.answerKind === 'list') return LINES_ANSWER_MAX_LENGTH
+  return isListKind(q.answerKind) ? LIST_ANSWER_MAX_LENGTH : ANSWER_MAX_LENGTH
+}
 
 export type Phase = 'warmup' | 'try'
 
@@ -146,6 +162,8 @@ export type QuestionForChild = {
   clockFace?: ClockFaceSpec
   /** P184: graphs to match to their equations. Which goes with which is the answer, and is never sent. */
   graphMatch?: GraphMatchSpec
+  /** P185: the function the learner differentiates from first principles (it is in the prompt too). The lines are the answer, and are never sent. */
+  firstPrinciples?: FirstPrinciplesSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -237,6 +255,22 @@ export type MissedQuestion = {
   proofLines?: string[]
   proofWrong?: number | null
   proofRight?: string | null
+  /** P185: a derivative from first principles as the learner wrote it, checked line by line. */
+  firstPrinciples?: FirstPrinciplesReview
+}
+
+/**
+ * P185: the learner's lines of a derivative from first principles, as the results draw them: each line and whether h is in it (it is then under the limit),
+ * the first that does not follow (null: none) with why, and the line of the key in its place.
+ */
+export type FirstPrinciplesReview = {
+  spec: FirstPrinciplesSpec
+  lines: string[]
+  under: boolean[]
+  wrong: number | null
+  why: FirstPrinciplesWhy | null
+  rightLine: string | null
+  rightUnder: boolean
 }
 
 /** The P148 fields of a question for the child. Shape hints only: how many boxes, which clock, which unit. Never the key. */
@@ -300,6 +334,7 @@ export function stripQuestion(
     ...(q.general ? { general: q.general } : {}),
     ...(q.clockFace ? { clockFace: q.clockFace } : {}),
     ...(q.graphMatch ? { graphMatch: q.graphMatch } : {}),
+    ...(q.firstPrinciples ? { firstPrinciples: q.firstPrinciples } : {}),
   }
 }
 
@@ -407,6 +442,8 @@ export type AnswerShape =
   | { kind: 'proof'; proof: ProofSpec }
   /** P180: every solution of a trig equation, a frame for each family: an angle and how often it comes back. */
   | { kind: 'general'; general: GeneralSpec }
+  /** P185: a derivative from first principles, its first line given and each line after it its own maths editor. */
+  | { kind: 'firstPrinciples'; firstPrinciples: FirstPrinciplesSpec }
 
 /** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
 export type QuantityExtras = { unit?: string; round?: number; signed?: true }
@@ -440,6 +477,7 @@ type ShapeParts = {
   proof?: ProofSpec
   general?: GeneralSpec
   graphMatch?: GraphMatchSpec
+  firstPrinciples?: FirstPrinciplesSpec
 }
 
 export function answerShape(
@@ -486,6 +524,8 @@ export function answerShape(
   if (q.general && q.answerKind === 'list') return { kind: 'general', general: q.general }
   // P179: an identity proved line by line, the answer its lines.
   if (q.proof && q.answerKind === 'list') return { kind: 'proof', proof: q.proof }
+  // P185: a derivative from first principles, the answer its lines after the one Jemma gives.
+  if (q.firstPrinciples && q.answerKind === 'list') return { kind: 'firstPrinciples', firstPrinciples: q.firstPrinciples }
   // P184: graphs matched to their equations, the answer the equation of each: a match whose left ones are the graphs.
   if (q.graphMatch && q.answerKind === 'list') return { kind: 'match', match: graphMatchPairs(q.graphMatch), plane: q.graphMatch }
   // P178: things matched in pairs, the answer the partner of each.
@@ -586,8 +626,9 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
     // P177: the time the clock shows (or what was typed instead), or nothing until a hand is moved.
     case 'clock':
       return hasDigit(text) ? text : ''
-    // P179: the lines of a proof, or nothing until 3 hold something.
+    // P179: the lines of a proof, or nothing until 3 hold something. P185: and the lines of first principles.
     case 'proof':
+    case 'firstPrinciples':
       return text.trim()
     // P180: the angle and the period of each family, or nothing while a frame is half filled.
     case 'general':
@@ -657,7 +698,69 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       ...matchReview(item),
       ...proofReview(item),
       ...generalReview(item),
+      ...firstPrinciplesReview(item),
     }))
+}
+
+/** P185: why a line does not follow, in the learner's words, under it in the results; null when the line it should have been says enough. */
+export function firstPrinciplesNote(why: FirstPrinciplesWhy | null, name = 'f'): string | null {
+  switch (why) {
+    case 'start':
+      return `Start with ${name}(x + h) \u2212 ${name}(x), all over h.`
+    case 'soon':
+      return 'h cannot be 0 yet. Cancel the h first.'
+    case 'back':
+      return 'Once h is gone, it stays gone.'
+    case 'letter':
+      return 'Use only x and h.'
+    default:
+      return null
+  }
+}
+
+/**
+ * P185: the learner's derivative from first principles, checked line by line as it was marked: the first line that does not follow (or cannot be read), with
+ * why and the line of the key in its place, said as "Line 2" and that line. Lines that stop before the limit is taken, or end on a line that can be simpler,
+ * say so, and right lines say how many there were.
+ */
+function firstPrinciplesReview(item: StoredItem): Partial<MissedQuestion> {
+  const spec = item.question.firstPrinciples
+  if (!spec) return {}
+  const name = functionName(spec)
+  const derivative = derivativeOf(spec, item.question.answer)
+  const c = checkFirstPrinciples(spec, item.unread ? '' : item.answer, workedLineOf, derivative)
+  const key = firstPrinciplesLines(item.question.answer, name)
+  const wrong = c.wrong ?? c.unread
+  const rightLine = wrong !== null && key.length > 0 ? key[Math.min(wrong, key.length - 1)]! : null
+  const last = c.lines.length - 1
+  const wrote = c.ok
+    ? `${c.lines.length} lines, from the limit to the derivative`
+    : wrong !== null
+      ? `Line ${wrong + 1}`
+      : last < 0
+        ? 'No lines after the first one'
+        : !c.reached && c.under[last]
+          ? 'It stops before the limit is taken'
+          : !c.reached
+            ? 'The last line can be simpler'
+            : `${c.lines.length} ${c.lines.length === 1 ? 'line' : 'lines'}`
+  const right = c.ok ? wrote : wrong !== null ? (rightLine ?? derivative ?? '') : !c.reached ? (derivative ?? '') : 'At least 3 different lines'
+  return {
+    firstPrinciples: {
+      spec,
+      lines: c.lines,
+      under: c.under,
+      wrong,
+      why: c.wrong !== null ? c.why : null,
+      rightLine,
+      rightUnder: rightLine !== null && holdsH(rightLine, workedLineOf),
+    },
+    wrote: item.unread ? '' : wrote,
+    right,
+    cells: undefined,
+    table: undefined,
+    ordered: undefined,
+  }
 }
 
 /** P180: every solution, said as families are said ("θ = 30° + k · 360° or θ = 150° + k · 360°"); what was typed stays as typed when it is not pairs of numbers. */

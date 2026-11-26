@@ -1,4 +1,4 @@
-import { MEANING_ANSWER_KINDS, type Choice, type Form, type MeaningKind } from '../schemas/lesson'
+import { MEANING_ANSWER_KINDS, type Choice, type FirstPrinciplesSpec, type Form, type MeaningKind } from '../schemas/lesson'
 import { markAnswer } from './answers'
 import { markQuantity, type QuantityFields } from './answers/quantity'
 import { markRatio, asksSimplest, readRatio } from './answers/ratio'
@@ -12,6 +12,7 @@ import { markSketch } from './answers/plot'
 import { markClock } from './answers/clock'
 import { markProof } from './answers/proof'
 import { markGeneral } from './answers/general'
+import { markFirstPrinciples } from './answers/first-principles'
 
 /**
  * Marking by meaning, for the senior classes (Mathematics, Grades 7 to 12): a learner types algebra, a negative number, a point, a percent or an
@@ -42,6 +43,11 @@ import { markGeneral } from './answers/general'
  */
 
 export const MEANING_MAX_LENGTH = 60
+/**
+ * P185: the longest line of worked maths that is read: a line of a proof or of first principles holds more than an answer does
+ * (`(x^3 + 3x^2h + 3xh^2 + h^3 - 2x^2 - 4xh - 2h^2 - x^3 + 2x^2)/h` is 62 characters).
+ */
+export const LINE_MAX_LENGTH = 100
 
 const MINUS_SIGNS = /[\u2212\u2010-\u2013]/g
 const SUFFIX = /\s*[%\u00b0\u00ba]\s*$/
@@ -366,13 +372,13 @@ const parseTokens = (toks: Tok[]): MathNode => {
  */
 const NAMED = /^\s*(?:dy\s*\/\s*dx|d\s*\/\s*dx|[fgh]\s*['\u2032\u2019]*\s*\(\s*[a-z\u03b8]\s*\)|y\s*['\u2032\u2019]*)\s*=\s*/i
 
-/** An expression as it is marked: with the name in front of it taken off. */
-export const readExpression = (text: string): MathNode | null => readMath(text.replace(NAMED, ''))
+/** An expression as it is marked: with the name in front of it taken off. `max` is the longest text read (P185: a line of worked maths is read up to `LINE_MAX_LENGTH`). */
+export const readExpression = (text: string, max = MEANING_MAX_LENGTH): MathNode | null => readMath(text.replace(NAMED, ''), max)
 
-/** The tree of a text, or null when it is empty, too long or not readable. */
-export const readMath = (text: string): MathNode | null => {
+/** The tree of a text, or null when it is empty, longer than `max` or not readable. */
+export const readMath = (text: string, max = MEANING_MAX_LENGTH): MathNode | null => {
   const s = text.trim()
-  if (!s || s.length > MEANING_MAX_LENGTH) return null
+  if (!s || s.length > max) return null
   try {
     return parseTokens(tokenize(s))
   } catch (e) {
@@ -582,12 +588,22 @@ export function degreeEquationOf(text: string, letter: string): ((degrees: numbe
 const close = (a: number, b: number) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b))
 
 /**
+ * P185: a line of worked maths as a function of its letters (`(x + h)^2 - x^2` of x and h), or null when it cannot be read. A point where it has no value gives
+ * not a number. A line may be as long as `LINE_MAX_LENGTH`.
+ */
+export function workedLineOf(text: string): { letters: string[]; at: (env: Record<string, number>) => number } | null {
+  const tree = readExpression(text, LINE_MAX_LENGTH)
+  if (!tree) return null
+  return { letters: [...lettersOf(tree)], at: (env) => valueOf(tree, env) }
+}
+
+/**
  * P179: true when two expressions have the same value at the same points, whichever letters each one has (a line of a proof and the line before it:
- * sin²x + cos²x and 1), as `agreeAtPoints` compares a key and an answer; null when one cannot be read.
+ * sin²x + cos²x and 1), as `agreeAtPoints` compares a key and an answer; null when one cannot be read. P185: a line may be as long as `LINE_MAX_LENGTH`.
  */
 export function sameExpression(a: string, b: string): boolean | null {
-  const x = readExpression(a)
-  const y = readExpression(b)
+  const x = readExpression(a, LINE_MAX_LENGTH)
+  const y = readExpression(b, LINE_MAX_LENGTH)
   if (!x || !y) return null
   const letters = [...new Set([...lettersOf(x), ...lettersOf(y)])]
   let agree = 0
@@ -1103,6 +1119,9 @@ export function markQuestion(
   // P179: a proof is right when each line equals the one before it and it ends on the right side (logic/answers/proof.ts).
   const proof = (q as { proof?: { left: string; right: string } }).proof
   if (proof && q.answerKind === 'list') return markProof(proof, answer, sameExpression)
+  // P185: a derivative from first principles is right when each line follows, the limit is taken once h can be 0, and it ends on f′(x) (logic/answers/first-principles.ts).
+  const principles = (q as { firstPrinciples?: FirstPrinciplesSpec }).firstPrinciples
+  if (principles && q.answerKind === 'list') return markFirstPrinciples(principles, q.answer, answer, workedLineOf)
   // P180: every solution is marked by the angles its families give, however they are written (logic/answers/general.ts).
   if ((q as { general?: unknown }).general && q.answerKind === 'list') return markGeneral(q.answer, answer, readNumber)
   // P150: a list, an order and a table are several values, each read as a number or an expression (logic/answers/lists.ts).
