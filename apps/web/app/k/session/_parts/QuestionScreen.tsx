@@ -2,7 +2,7 @@
 
 import { BeadRow } from '@/components/sa'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CHOICE_LETTERS, choiceText, composeReasonAnswer, hasPictureChoices } from '@jemma/profiling/logic'
+import { CHOICE_LETTERS, choiceText, composeReasonAnswer, decimalWords, hasPictureChoices } from '@jemma/profiling/logic'
 import { answerShape, answerValue, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
 import { PendingButton } from '@/components/ui/Button'
 import { numberHint, ratioHint, timeHint } from './answers/hints'
@@ -36,6 +36,7 @@ import { QuestionPicture } from './QuestionPicture'
 import { PictureChoices } from './answers/PictureChoices'
 import { ReasonPicker } from './answers/ReasonPicker'
 import { TrueFalse } from './answers/TrueFalse'
+import { useNotation } from '@/lib/notation'
 
 const noteClass = 'm-0 flex items-start gap-2.5 text-[15px] leading-[1.45] text-body'
 
@@ -168,6 +169,8 @@ export type Boxes = {
 
 /** The boxes and the line for every answer that is typed, by what kind of answer it is. A missing number is not here: it is typed in the question. */
 export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b: Boxes; prompt: string; topic?: string }) {
+  // P187: a decimal and a point are written the way the space writes them (2.5 and (2, 3) in the US).
+  const notation = useNotation()
   switch (shape.kind) {
     case 'fraction':
       return (
@@ -205,7 +208,7 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
       return (
         <div className="flex flex-col items-center gap-3.5">
           <Box id="answer" label="Your answer" value={b.text} onChange={(v) => b.set.text(numberText(v))} mode="decimal" className="h-[76px] w-48 border-[3px] border-green text-[40px]" />
-          <Hint>Type a number with a comma, like 0,5.</Hint>
+          <Hint>{`Type a number ${decimalWords(notation)}.`}</Hint>
         </div>
       )
     case 'whole':
@@ -233,7 +236,7 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
           <div data-point="true" className="flex items-start justify-center gap-1">
             <span aria-hidden="true" className="pt-1 text-[40px] leading-[1] font-bold text-ink">(</span>
             <Coordinate axis="x" value={b.x} onChange={b.set.x} />
-            <span aria-hidden="true" className="pt-1 text-[40px] leading-[1] font-bold text-ink">;</span>
+            <span aria-hidden="true" className="pt-1 text-[40px] leading-[1] font-bold text-ink">{notation === 'us' ? ',' : ';'}</span>
             <Coordinate axis="y" value={b.y} onChange={b.set.y} />
             <span aria-hidden="true" className="pt-1 text-[40px] leading-[1] font-bold text-ink">)</span>
           </div>

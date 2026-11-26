@@ -1,9 +1,10 @@
 'use client'
 
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
-import { blankBars, graphTop, graphUnit, snapGraphValue, GRAPH_MAX_PICTURES } from '@jemma/profiling/logic'
+import { blankBars, graphTop, graphUnit, snapGraphValue, GRAPH_MAX_PICTURES, type Notation } from '@jemma/profiling/logic'
 import type { DataGraphSpec } from '@jemma/profiling/schemas'
-import { BODY, EDGE, GOLD, GREEN, INK, SOFT_3, WHITE, fmt } from '@/components/diagrams/shared'
+import { BODY, EDGE, GOLD, GREEN, INK, SOFT_3, WHITE, fmtIn } from '@/components/diagrams/shared'
+import { useNotation } from '@/lib/notation'
 
 // P167: a graph of data the learner draws, from the "Draw a graph of data" board. A bar graph: each empty bar has a handle the learner drags up, and the bar
 // stops on the lines of the scale (or the arrow keys move it, one line at a time). A picture graph: + adds a picture to an empty row and a tap on a picture
@@ -36,8 +37,9 @@ export function DataGraph(props: DataGraphProps) {
   return props.graph.kind === 'pictures' ? <PictureGraph {...props} /> : <BarGraph {...props} />
 }
 
-/** The words a screen reader says for the whole graph: the given bars with their numbers, and the empty ones. */
-export function describeDataGraph(graph: DataGraphSpec, values: (number | null)[]): string {
+/** The words a screen reader says for the whole graph: the given bars with their numbers, and the empty ones. P187: the numbers in the notation `n`. */
+export function describeDataGraph(graph: DataGraphSpec, values: (number | null)[], n: Notation = 'za'): string {
+  const fmt = (v: number) => fmtIn(v, n)
   const blanks = blankBars(graph)
   const parts = graph.bars.map((b, i) => {
     const k = blanks.indexOf(i)
@@ -63,6 +65,8 @@ function Grip({ cx, y, w, focused }: { cx: number; y: number; w: number; focused
 }
 
 function BarGraph({ graph, values, mode, right, onSet }: DataGraphProps) {
+  const notation = useNotation()
+  const fmt = (v: number) => fmtIn(v, notation)
   const svg = useRef<SVGSVGElement>(null)
   const dragging = useRef<number | null>(null)
   const [focused, setFocused] = useState<number | null>(null)
@@ -129,7 +133,7 @@ function BarGraph({ graph, values, mode, right, onSet }: DataGraphProps) {
       viewBox={`0 0 ${W} ${H}`}
       width="100%"
       role="group"
-      aria-label={describeDataGraph(graph, values)}
+      aria-label={describeDataGraph(graph, values, notation)}
       style={{ display: 'block', maxWidth: W, height: 'auto', fontFamily: "var(--font-outfit), Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif", userSelect: 'none' }}
     >
       {graph.counts ? (
@@ -265,12 +269,14 @@ function Picture({ tone = 'gold', size = 24 }: { tone?: 'gold' | 'right' | 'your
 const CELL = 'flex h-11 w-[26px] flex-none items-center justify-center'
 
 function PictureGraph({ graph, values, mode, right, onSet }: DataGraphProps) {
+  const notation = useNotation()
+  const fmt = (v: number) => fmtIn(v, notation)
   const per = graphUnit(graph)
   const blanks = blankBars(graph)
   const count = (v: number | null | undefined) => (v === null || v === undefined ? 0 : Math.max(0, Math.round(v / per)))
   const set = (k: number, pictures: number) => onSet?.(k, pictures > 0 ? Math.min(GRAPH_MAX_PICTURES, pictures) * per : null)
   return (
-    <div data-graph="pictures" role="group" aria-label={describeDataGraph(graph, values)} className="flex w-full max-w-[320px] flex-col gap-1.5 self-center">
+    <div data-graph="pictures" role="group" aria-label={describeDataGraph(graph, values, notation)} className="flex w-full max-w-[320px] flex-col gap-1.5 self-center">
       {graph.bars.map((b, i) => {
         const k = blanks.indexOf(i)
         const given = k < 0

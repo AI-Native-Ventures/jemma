@@ -3,6 +3,7 @@
 import type { MathfieldElement } from 'mathlive'
 import { useEffect, useRef, useState } from 'react'
 import { LINE_MAX_LENGTH } from '@jemma/profiling/logic'
+import { useNotation } from '@/lib/notation'
 import { ANSWER_MAX_LENGTH } from '../[sessionId]/logic'
 import { FractionText } from './Frac'
 import { latexToNotation } from './latex-to-notation'
@@ -97,7 +98,9 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id
   const [problem, setProblem] = useState<'empty-box' | 'sign' | 'long' | null>(null)
   const change = useRef(onChange)
   change.current = onChange
-  const layout = keyboardLayout({ kind, topic, prompt })
+  // P187: the decimal key of the keyboard and of the editor is the comma, or in the US the point.
+  const notation = useNotation()
+  const layout = keyboardLayout({ kind, topic, prompt, notation })
   const max = line ? LINE_MAX_LENGTH : ANSWER_MAX_LENGTH
 
   // The editor, on demand.
@@ -112,7 +115,7 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id
         if (gone) return
         MathfieldElement.fontsDirectory = FONTS
         MathfieldElement.soundsDirectory = null
-        MathfieldElement.decimalSeparator = ','
+        MathfieldElement.decimalSeparator = notation === 'us' ? '.' : ','
         const keyboard = window.mathVirtualKeyboard
         // This question's keys, opening on the tab that fits it (not on the tab the last question was left on, P146b). Every question is a new field (the screen is keyed by the question).
         giveKeyboard(keyboard, layout)

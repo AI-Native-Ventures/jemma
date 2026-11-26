@@ -4,6 +4,7 @@ import { CHOICE_LETTERS, choiceDiagram, choiceText } from '@jemma/profiling/logi
 import type { Choice } from '@jemma/profiling/schemas'
 import { DiagramView } from '@/components/diagrams'
 import { FractionText } from '../Frac'
+import { useNotation } from '@/lib/notation'
 
 /**
  * A choice question whose options are pictures (P149): "Which graph is y = x² - 4?" with three, four or five small graphs.
@@ -34,6 +35,7 @@ const gridClass = 'grid max-w-[920px] grid-cols-2 gap-2 md:gap-3'
 const wide = (count: number) => (count >= 5 ? 'md:grid-cols-5' : 'md:grid-cols-4')
 
 function Face({ choice, index, on }: { choice: Choice; index: number; on: boolean }) {
+  const notation = useNotation()
   const letter = CHOICE_LETTERS[index] ?? String(index + 1)
   const diagram = choiceDiagram(choice)
   const text = choiceText(choice)
@@ -45,7 +47,7 @@ function Face({ choice, index, on }: { choice: Choice; index: number; on: boolea
       </span>
       {diagram ? (
         <div data-picture-choice="true" className="w-full [&_svg]:mx-auto [&_svg]:max-h-[180px]">
-          <DiagramView spec={diagram} variant="question" />
+          <DiagramView spec={diagram} variant="question" notation={notation} />
         </div>
       ) : null}
       {text ? (

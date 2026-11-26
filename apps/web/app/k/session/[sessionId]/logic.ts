@@ -257,6 +257,11 @@ export type MissedQuestion = {
   proofRight?: string | null
   /** P185: a derivative from first principles as the learner wrote it, checked line by line. */
   firstPrinciples?: FirstPrinciplesReview
+  /**
+   * P187: `wrote` and `right` are written by Jemma, the South African way (a point, a sketch said by its points, the families of every solution): the results show
+   * them in the notation of the space, (2, 3) and 2.5 in the US. Any other answer is shown as it was written.
+   */
+  notated?: true
 }
 
 /**
@@ -671,6 +676,8 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       ...(item.question.terms ? { terms: item.question.terms } : {}),
       ...(item.question.diagram ? { diagram: item.question.diagram } : {}),
       ...(item.question.clockFace ? { clockFace: item.question.clockFace } : {}),
+      // P187: a point is shown in the notation of the space.
+      ...(item.question.answerKind === 'point' ? { notated: true as const } : {}),
       // An answer saved before the missing number was put back into its fraction is shown completed too.
       wrote: item.unread ? '' : showWithUnit(answerText(item.question, finishAnswer(item.question, item.answer).stored), item.question),
       ...(item.unread ? { unread: true } : {}),
@@ -773,6 +780,7 @@ function generalReview(item: StoredItem): Partial<MissedQuestion> {
   return {
     ...(right ? { right: generalText(right, letter) } : {}),
     ...(wrote ? { wrote: generalText(wrote, letter) } : {}),
+    notated: true,
     cells: undefined,
     table: undefined,
     ordered: undefined,
@@ -898,9 +906,9 @@ function plotReview(item: StoredItem): Partial<MissedQuestion> {
       const list = placed.map((q) => sketchName(q, kind === 'trig'))
       return list.length === 0 ? '(no points)' : list.length === 1 ? list[0]! : `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`
     }
-    return { plot: p, plotRight: right, plotWrote: wrote, wrote: item.unread ? '' : turns(wrote), right: turns(right), cells: undefined, table: undefined, ordered: undefined }
+    return { plot: p, plotRight: right, plotWrote: wrote, wrote: item.unread ? '' : turns(wrote), right: turns(right), notated: true, cells: undefined, table: undefined, ordered: undefined }
   }
-  return { plot: p, plotRight: right, plotWrote: wrote, wrote: item.unread ? '' : words(wrote), right: words(right), cells: undefined, table: undefined, ordered: undefined }
+  return { plot: p, plotRight: right, plotWrote: wrote, wrote: item.unread ? '' : words(wrote), right: words(right), notated: true, cells: undefined, table: undefined, ordered: undefined }
 }
 
 /** P173: the shapes of a question to tap, the ones picked and the right ones; what was written and the right answer are counts ("3 shapes"), with no cells. */
@@ -920,7 +928,7 @@ function lineReview(item: StoredItem): Partial<MissedQuestion> {
   const right = linePoints(item.question.answer, readNumber)
   const wrote = item.unread ? null : linePoints(item.answer, readNumber)
   const words = (p: ReturnType<typeof linePoints>) => (p ? `(${p[0].x}; ${p[0].y}) and (${p[1].x}; ${p[1].y})` : '')
-  return { line: g, lineRight: right, lineWrote: wrote, wrote: item.unread ? '' : words(wrote), right: words(right), cells: undefined, table: undefined, ordered: undefined }
+  return { line: g, lineRight: right, lineWrote: wrote, wrote: item.unread ? '' : words(wrote), right: words(right), notated: true, cells: undefined, table: undefined, ordered: undefined }
 }
 
 /** P167: the graph of a question to draw, with what the learner drew in each empty bar and the right values, for the results to draw side by side. */

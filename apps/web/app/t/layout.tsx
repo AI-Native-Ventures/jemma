@@ -2,10 +2,11 @@ import type { ReactNode } from 'react'
 import { UsWords } from '@/components/UsWords'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import { usForTeacher } from '@/lib/us-words-on'
+import { NotationProvider } from '@/lib/notation'
 
 /**
  * P164: the teacher's space. It only decides the words: a school in the US reads US English ("math", "practice"). Every page draws its own frame,
- * as before.
+ * as before. P187: and the way numbers and points are written (2.5 and (2, 3) in the US).
  */
 export default async function TeacherSpaceLayout({ children }: { children: ReactNode }) {
   const supabase = await createSupabaseServer()
@@ -14,7 +15,7 @@ export default async function TeacherSpaceLayout({ children }: { children: React
   return (
     <>
       {us ? <UsWords /> : null}
-      {children}
+      <NotationProvider notation={us ? 'us' : 'za'}>{children}</NotationProvider>
     </>
   )
 }

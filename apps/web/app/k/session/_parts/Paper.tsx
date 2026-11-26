@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { IconLabel } from '@/components/ui/IconLabel'
-import { blankLabels, CHOICE_LETTERS, choiceText, definitionText, functionName, hasPictureChoices } from '@jemma/profiling/logic'
+import { blankLabels, CHOICE_LETTERS, choiceText, decimalWords, definitionText, functionName, hasPictureChoices, pointIn, type Notation } from '@jemma/profiling/logic'
 import { answerShape, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
 import { numberWriteLine, plainNumberWriteLine, ratioWriteLine, timeWriteLine } from './answers/hints'
 import { INEQUALITY_WRITE_LINE, PAIR_WRITE_LINE } from './answers/hints'
@@ -21,6 +21,7 @@ import { PinLine } from './answers/PinLine'
 import { ShadedResult } from './answers/ShadeShape'
 import { TapPicture } from './answers/TapShapes'
 import { paperValuesLine } from './answers/values-hints'
+import { useNotation } from '@/lib/notation'
 
 // A practice answered on paper: the choice before the first Try question, the sheet of five questions with the photo button, the wait while
 // Jemma reads the photo, and the card for a photo that could not be read. All of them are drawn from their props alone (the state lives in
@@ -83,8 +84,8 @@ export function PaperChoice({ onPaper, onScreen }: { onPaper: () => void; onScre
   )
 }
 
-/** The line under a question that says how to write its answer: the lines of the question screen, for a pencil. */
-export function writeLine(shape: AnswerShape): string {
+/** The line under a question that says how to write its answer: the lines of the question screen, for a pencil. P187: a decimal and a point as `n` writes them. */
+export function writeLine(shape: AnswerShape, n: Notation = 'za'): string {
   switch (shape.kind) {
     case 'choice':
       return 'Write the letter of your answer.'
@@ -102,7 +103,7 @@ export function writeLine(shape: AnswerShape): string {
     case 'money':
       return 'Write the amount, like 12,50.'
     case 'decimal':
-      return shape.unit || shape.signed || shape.round !== undefined ? plainNumberWriteLine('decimal', shape) : 'Write a number with a comma, like 0,5.'
+      return shape.unit || shape.signed || shape.round !== undefined ? plainNumberWriteLine('decimal', shape, n) : `Write a number ${decimalWords(n)}.`
     case 'whole':
       return shape.unit || shape.signed || shape.round !== undefined ? plainNumberWriteLine('whole', shape) : 'Write a whole number.'
     // The four kinds of a senior class: the same lines as the question screen, for a pencil.
@@ -124,7 +125,7 @@ export function writeLine(shape: AnswerShape): string {
     case 'answers':
       return Array.from({ length: shape.count }, (_, i) => `Answer ${i + 1}: ____`).join('  ')
     case 'point':
-      return 'Write the x and the y of the point, like (2; 3).'
+      return `Write the x and the y of the point, like ${pointIn('2', '3', n)}.`
     case 'number':
       return numberWriteLine(shape)
     // P148: a time and a ratio.
@@ -155,10 +156,10 @@ export function writeLine(shape: AnswerShape): string {
       return 'For each one on the left, write the number of the one it goes with, in order, with a semicolon between them. The ones on the right are numbered from 1.'
     // P177: a clock is set on paper by drawing its hands, and its time written.
     case 'clock':
-      return `Draw the hands on the clock on your paper. Then write the time. ${writeLine(shape.typed)}`
+      return `Draw the hands on the clock on your paper. Then write the time. ${writeLine(shape.typed, n)}`
     // P175: a pin on a number line is written as its number.
     case 'pin':
-      return `Mark the number on your paper, then write it. ${writeLine(shape.typed)}`
+      return `Mark the number on your paper, then write it. ${writeLine(shape.typed, n)}`
     // P174: a line is written as two points on it.
     case 'line':
       return 'Write two points your line goes through: x1; y1; x2; y2.'
@@ -185,7 +186,7 @@ export function writeLine(shape: AnswerShape): string {
     // P167: a graph to draw is written as its numbers: the one for its empty bar, or one for each, in order.
     case 'graph': {
       const names = blankLabels(shape.graph)
-      return names.length === 1 ? `Write the number for ${names[0]}.` : writeLine(shape.typed)
+      return names.length === 1 ? `Write the number for ${names[0]}.` : writeLine(shape.typed, n)
     }
     default:
       return 'Write your answer.'
@@ -194,6 +195,7 @@ export function writeLine(shape: AnswerShape): string {
 
 /** One question of the sheet, drawn the way the question screen draws it: stacked fractions, the missing part as an empty box, the choices as A, B, C, D. */
 function PaperQuestion({ q }: { q: QuestionForChild }) {
+  const notation = useNotation()
   const shape = answerShape(q)
   const fractionSum = q.render === 'fraction_sum' && q.terms?.length === 2
   return (
@@ -258,7 +260,7 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
         ) : null}
         {shape.kind === 'reason' ? <ReasonList /> : null}
         <PaperValues shape={shape.kind === 'graph' ? shape.typed : shape} />
-        <p className="m-0 text-[15px] leading-[1.4] whitespace-pre-wrap text-body">{writeLine(shape)}</p>
+        <p className="m-0 text-[15px] leading-[1.4] whitespace-pre-wrap text-body">{writeLine(shape, notation)}</p>
       </div>
     </li>
   )

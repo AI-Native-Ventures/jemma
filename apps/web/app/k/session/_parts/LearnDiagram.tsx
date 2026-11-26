@@ -9,6 +9,7 @@ import { BarRows, rowFills, type Fill, type RowSpec } from './Bars'
 import { FractionText } from './Frac'
 import { hasTypeset } from './typeset'
 import { DIAGRAM_ICON, LearnBadge } from './LearnCards'
+import { useNotation } from '@/lib/notation'
 
 type Step = NonNullable<LessonForChild['diagram']>['steps'][number]
 
@@ -34,9 +35,10 @@ function stepRows(step: Step, previous?: Step) {
 }
 
 function Picture({ step, previous, senior }: { step: Step; previous?: Step; senior: boolean }) {
+  const notation = useNotation()
   const drawn = stepRows(step, previous)
   // P145: a number line of a senior lesson reads the caption of its step (an inequality said in words is drawn as a circle and a ray).
-  if (!drawn) return <DiagramView spec={step.diagram} variant="learn" caption={step.caption} senior={senior} />
+  if (!drawn) return <DiagramView spec={step.diagram} variant="learn" caption={step.caption} senior={senior} notation={notation} />
   return (
     <BarRows
       rows={drawn.rows}
@@ -58,6 +60,7 @@ export type LearnDiagramProps = { lesson: LessonForChild; onReady: () => void }
 
 export function LearnDiagram({ lesson, onReady }: LearnDiagramProps) {
   const d = lesson.diagram!
+  const notation = useNotation()
   const [plays, setPlays] = useState(0)
   const contrastRows = d.contrast ? rowsOf(d.contrast.diagram) : null
   const contrastLast = contrastRows?.[contrastRows.length - 1]
@@ -118,7 +121,7 @@ export function LearnDiagram({ lesson, onReady }: LearnDiagramProps) {
               gap={10}
             />
           ) : (
-            <DiagramView spec={d.contrast.diagram} variant="learn" caption={d.contrast.caption} senior={mode === 'all'} />
+            <DiagramView spec={d.contrast.diagram} variant="learn" caption={d.contrast.caption} senior={mode === 'all'} notation={notation} />
           )}
           <span className="text-[15px] leading-[1.45]">
             <FractionText text={d.contrast.caption} size={20} rule={2} gap={3} side={3} typeset={mode} />

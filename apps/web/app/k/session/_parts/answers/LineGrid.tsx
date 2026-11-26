@@ -1,9 +1,10 @@
 'use client'
 
 import { useRef, useState, type PointerEvent, type ReactNode } from 'react'
-import { lineAnswer, lineEnds } from '@jemma/profiling/logic'
+import { lineAnswer, lineEnds, pointIn, type Notation } from '@jemma/profiling/logic'
 import type { LineSpec } from '@jemma/profiling/schemas'
 import { BODY, GOLD, GREEN, INK } from '@/components/diagrams/shared'
+import { useNotation } from '@/lib/notation'
 
 // P174: a straight line drawn on a grid, from the "Draw on the picture" board (the v1 Line tool). The learner taps the first point; the line follows the finger
 // until the second tap; then the line runs across the grid, and a point can be dragged to move it. Undo takes the last point off. The results draw the right
@@ -23,7 +24,8 @@ function geometry(g: LineSpec) {
   return { u, H: sy * u + 2 * M, X: (x: number) => left + (x - g.xMin) * u, Y: (y: number) => M + (g.yMax - y) * u, left }
 }
 
-const name = (p: Point) => `(${p.x}; ${p.y})`
+/** A point as it is said: (2; 3), and P187 (2, 3) in the US. */
+const name = (p: Point, n: Notation = 'za') => pointIn(String(p.x), String(p.y), n)
 
 export type LineGridProps = {
   line: LineSpec
@@ -40,6 +42,7 @@ export type LineGridProps = {
 
 export function LineGrid({ line, mode, a = null, b = null, follow = null, right = null, onDown, onMove, onUp }: LineGridProps) {
   const svg = useRef<SVGSVGElement>(null)
+  const notation = useNotation()
   const { u, H, X, Y, left } = geometry(line)
   const every = Math.max(line.xMax - line.xMin, line.yMax - line.yMin) > 12 ? 2 : 1
   const at = (clientX: number, clientY: number): Point | null => {
@@ -73,7 +76,7 @@ export function LineGrid({ line, mode, a = null, b = null, follow = null, right 
       viewBox={`0 0 ${W} ${H}`}
       width="100%"
       role="group"
-      aria-label={`A grid from ${line.xMin} to ${line.xMax} across and from ${line.yMin} to ${line.yMax} up.${a ? ` A point at ${name(a)}.` : ''}${b ? ` A point at ${name(b)}.` : ''}`}
+      aria-label={`A grid from ${line.xMin} to ${line.xMax} across and from ${line.yMin} to ${line.yMax} up.${a ? ` A point at ${name(a, notation)}.` : ''}${b ? ` A point at ${name(b, notation)}.` : ''}`}
       onPointerDown={(e) => {
         const p = at(e.clientX, e.clientY)
         if (p && onDown) onDown(p, e)
@@ -108,7 +111,7 @@ export function LineGrid({ line, mode, a = null, b = null, follow = null, right 
           {a && !b && follow ? <line x1={X(a.x)} y1={Y(a.y)} x2={X(follow.x)} y2={Y(follow.y)} stroke={GOLD} strokeWidth={3} strokeDasharray="6 5" /> : null}
           {a ? dot(a, 'a') : null}
           {b ? dot(b, 'b') : null}
-          {a && !b ? <text x={X(a.x) + 12} y={Y(a.y) + 18} fontSize={13} fontWeight={700} fill="#B8281E">{name(a)}</text> : null}
+          {a && !b ? <text x={X(a.x) + 12} y={Y(a.y) + 18} fontSize={13} fontWeight={700} fill="#B8281E">{name(a, notation)}</text> : null}
         </>
       ) : null}
     </svg>
@@ -119,6 +122,7 @@ const textButton = 'flex min-h-11 cursor-pointer items-center self-center border
 
 /** The answer of a line to draw: the grid, Undo, the line under it and two points typed instead. `onChange` gets the two points (`x1; y1; x2; y2`). */
 export function LineAnswer({ line, onChange, typed }: { line: LineSpec; onChange: (text: string) => void; typed: ReactNode }) {
+  const notation = useNotation()
   const [a, setA] = useState<Point | null>(null)
   const [b, setB] = useState<Point | null>(null)
   const [follow, setFollow] = useState<Point | null>(null)
@@ -157,9 +161,9 @@ export function LineAnswer({ line, onChange, typed }: { line: LineSpec; onChange
   const hint = !a ? (
     'Tap the first point of your line.'
   ) : !b ? (
-    <>Your first point is at <strong className="font-bold text-ink">{name(a)}</strong>. Now tap the second point.</>
+    <>Your first point is at <strong className="font-bold text-ink">{name(a, notation)}</strong>. Now tap the second point.</>
   ) : (
-    <>Your line goes through <strong className="font-bold text-ink">{name(a)}</strong> and <strong className="font-bold text-ink">{name(b)}</strong>. Drag a point to move your line.</>
+    <>Your line goes through <strong className="font-bold text-ink">{name(a, notation)}</strong> and <strong className="font-bold text-ink">{name(b, notation)}</strong>. Drag a point to move your line.</>
   )
   return (
     <div data-answer="line" className="flex w-full flex-col items-center gap-3">

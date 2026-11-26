@@ -1,4 +1,4 @@
-import { pictureProblem } from '@jemma/profiling/logic'
+import { pictureProblem, type Notation } from '@jemma/profiling/logic'
 import { SeniorDiagramSpecSchema } from '@jemma/profiling/schemas'
 import { AreaModel } from './AreaModel'
 import { BarChart } from './BarChart'
@@ -23,6 +23,8 @@ export type DiagramViewProps = {
   /** P145: the caption of the step the picture is in, and whether the lesson is a senior one. Only a number line reads them. */
   caption?: string
   senior?: boolean
+  /** P187: how the numbers Jemma writes on the picture look: a decimal comma, or (in the US) a decimal point and (2, 3) for a point. */
+  notation?: Notation
 }
 
 export function PictureMissing({ className }: { className?: string }) {
@@ -37,7 +39,7 @@ export function PictureMissing({ className }: { className?: string }) {
   )
 }
 
-export function DiagramView({ spec, variant, highlight, className, caption, senior }: DiagramViewProps) {
+export function DiagramView({ spec, variant, highlight, className, caption, senior, notation }: DiagramViewProps) {
   // The wide schema: a lesson of a senior class (Mathematics, Grades 7 to 12) may hold two more kinds. It reads the seven old kinds exactly as
   // the primary schema does, so a lesson of the demo class draws what it always drew.
   const parsed = SeniorDiagramSpecSchema.safeParse(spec)
@@ -50,23 +52,23 @@ export function DiagramView({ spec, variant, highlight, className, caption, seni
       case 'fraction_bar':
         return <FractionBar {...s} variant={variant} />
       case 'number_line':
-        return <NumberLine {...s} caption={caption} senior={senior} />
+        return <NumberLine {...s} caption={caption} senior={senior} notation={notation} />
       case 'area_model':
         return <AreaModel {...s} variant={variant === 'learn' ? undefined : variant} />
       case 'place_value':
         return <PlaceValue {...s} />
       case 'bar_chart':
-        return <BarChart {...s} variant={variant === 'learn' ? undefined : variant} highlight={highlight} />
+        return <BarChart {...s} variant={variant === 'learn' ? undefined : variant} highlight={highlight} notation={notation} />
       case 'shape_2d':
         return <Shape2D {...s} />
       case 'grid_area':
         return <GridArea {...s} variant={variant === 'learn' ? undefined : variant} />
       case 'coordinate_plane':
-        return <CoordinatePlane {...s} variant={variant === 'question' ? 'question' : 'card'} />
+        return <CoordinatePlane {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
       case 'triangle':
         return <Triangle {...s} />
       case 'box_plot':
-        return <BoxPlot {...s} />
+        return <BoxPlot {...s} notation={notation} />
       case 'tree':
         return <ProbabilityTree {...s} />
       case 'timeline':

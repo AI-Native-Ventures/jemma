@@ -24,6 +24,8 @@ import { PinLine } from './answers/PinLine'
 import { ShadedResult } from './answers/ShadeShape'
 import { TapPicture } from './answers/TapShapes'
 import { SignText } from './answers/Signs'
+import { inNotation } from '@jemma/profiling/logic'
+import { useNotation } from '@/lib/notation'
 
 /** A sign (or an equals sign) that stands alone between two terms of an answer. */
 const SIGNS = new Set(['+', '-', '\u2212', '\u00d7', '\u00f7', '*', '='])
@@ -224,7 +226,14 @@ function Steps({ steps }: { steps?: string[] }) {
 }
 
 /** A right answer: confirmed, with what the learner wrote and why that way works. No line about a usual mistake, nothing to correct. */
+/** P187: an answer Jemma wrote itself (a point, a sketch, the families of every solution) in the notation of the space; any other answer as it was written. */
+function useShown(m: MissedQuestion): (text: string) => string {
+  const notation = useNotation()
+  return (text) => (m.notated ? inNotation(text, notation) : text)
+}
+
 function RightCard({ m }: { m: MissedQuestion }) {
+  const shown = useShown(m)
   return (
     <article data-verdict="right" aria-labelledby={`r${m.n}`} className="flex flex-col gap-3.5 rounded-[24px] border border-line bg-card p-[18px]">
       <CardHead m={m} />
@@ -239,7 +248,7 @@ function RightCard({ m }: { m: MissedQuestion }) {
       ) : (
         <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-green bg-green-tint px-3.5 py-2.5 ${isLong(m.wrote) ? 'gap-3' : ''}`}>
           <span className={isLong(m.wrote) ? 'flex-none text-[14px] font-semibold' : 'text-[14px] font-semibold'}>You wrote</span>
-          <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
+          <Stacked value={shown(m.wrote)} size={20} rule={2} gap={2} side={3} />
         </span>
       )}
       <Steps steps={m.steps} />
@@ -250,6 +259,7 @@ function RightCard({ m }: { m: MissedQuestion }) {
 
 /** A missed answer, as it always was (what was written, the right answer, why, the right way), marked with a calm "Not yet.". */
 function MissedCard({ m }: { m: MissedQuestion }) {
+  const shown = useShown(m)
   return (
     <article data-verdict="missed" aria-labelledby={`r${m.n}`} className="flex flex-col gap-3.5 rounded-[24px] border border-line bg-card p-[18px]">
       <CardHead m={m} />
@@ -266,12 +276,12 @@ function MissedCard({ m }: { m: MissedQuestion }) {
             {m.unread ? (
               <span data-unread="true" className="text-right text-[15px] leading-[1.3] font-semibold">Jemma could not read this one</span>
             ) : (
-              <Stacked value={m.wrote} size={20} rule={2} gap={2} side={3} />
+              <Stacked value={shown(m.wrote)} size={20} rule={2} gap={2} side={3} />
             )}
           </span>
           <span className={`flex items-center justify-between rounded-14 border-[1.5px] border-green bg-green-tint px-3.5 py-2.5 ${m.unread ? 'col-span-2' : stack(m) ? 'gap-3' : ''}`}>
             <span className={stack(m) ? 'flex-none text-[14px] font-semibold' : 'text-[14px] font-semibold'}>Right answer</span>
-            <Stacked value={m.right} size={20} rule={2} gap={2} side={3} />
+            <Stacked value={shown(m.right)} size={20} rule={2} gap={2} side={3} />
           </span>
         </div>
       )}

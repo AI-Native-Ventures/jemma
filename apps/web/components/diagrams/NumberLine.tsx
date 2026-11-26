@@ -1,5 +1,6 @@
 import type { DiagramSpec } from '@jemma/profiling/schemas'
-import { BODY, GOLD, GREEN, RED_TEXT, INK, Line, Svg, T, WHITE, fmt } from './shared'
+import type { Notation } from '@jemma/profiling/logic'
+import { BODY, GOLD, GREEN, RED_TEXT, INK, Line, Svg, T, WHITE, fmtIn } from './shared'
 import { boxOf, hits, hitsAny, type Box } from './label-clear'
 import { bareNumberValue, isBareNumber, isSolutionLabel, readCaption, readInequality, type Inequality } from './inequality'
 import { labelWidth, raisedLabel } from './math-label'
@@ -9,6 +10,8 @@ export type NumberLineProps = Extract<DiagramSpec, { kind: 'number_line' }> & {
   caption?: string
   /** P145: the line is in a lesson of a senior class: a caption that gives the side of a mark makes a ray, and a single solution mark is a dot, never hops. */
   senior?: boolean
+  /** P187: how its numbers are written (a decimal point in the US). */
+  notation?: Notation
 }
 
 const X0 = 30
@@ -42,13 +45,15 @@ const LABEL_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500]
  */
 type Shape = (Extract<Inequality, { kind: 'ray' }> & { at: number } | Extract<Inequality, { kind: 'segment' }> | { kind: 'open'; at: number }) & { text: string }
 
-export function describeNumberLine({ min, max, step, marks }: NumberLineProps) {
+export function describeNumberLine({ min, max, step, marks, notation }: NumberLineProps) {
+  const fmt = (v: number) => fmtIn(v, notation)
   const m = marks.length ? ` Marked: ${marks.map((k) => k.label).join(', ')}.` : ''
   return `Number line from ${fmt(min)} to ${fmt(max)} in steps of ${fmt(step)}.${m}`
 }
 
 export function NumberLine(props: NumberLineProps) {
   const { min, max, step, marks } = props
+  const fmt = (v: number) => fmtIn(v, props.notation)
   const span = max - min || 1
   const px = (v: number) => X0 + ((v - min) / span) * (X1 - X0)
   const ticks: number[] = []
