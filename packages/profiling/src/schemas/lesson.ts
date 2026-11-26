@@ -172,6 +172,14 @@ export type PlotSpec = z.infer<typeof PlotSchema>
  * are right.
  */
 export const LineSchema = z.object({ xMin: z.number(), xMax: z.number(), yMin: z.number(), yMax: z.number() })
+
+/**
+ * P179: an identity the learner proves line by line (Grades 10 to 12): `left` and `right` are its two sides as maths (`sin^2 x/(1 - cos x)` and `1 + cos x`).
+ * The learner starts from the left side and changes it one line at a time into the right side, and each line must equal the one before it. The key is a proof
+ * of the same kind: 3 to 6 lines, maths only, as an ordered `list`.
+ */
+export const ProofSchema = z.object({ left: z.string(), right: z.string() })
+export type ProofSpec = z.infer<typeof ProofSchema>
 export type LineSpec = z.infer<typeof LineSchema>
 
 /** The most and the fewest lines of the worked steps of a question (P127). */
@@ -209,6 +217,8 @@ const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
     plot: PlotSchema.optional(),
     /** P174: a straight line the learner draws on a grid through two points. Senior classes only. */
     line: LineSchema.optional(),
+    /** P179: an identity the learner proves line by line. Senior classes only. */
+    proof: ProofSchema.optional(),
     difficulty: Difficulty,
     why: z.string(),
     rightWay: z.string(),

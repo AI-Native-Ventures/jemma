@@ -10,6 +10,7 @@ import { isListKind, markListQuestion } from './answers/lists'
 import { markLine } from './answers/line'
 import { markSketch } from './answers/plot'
 import { markClock } from './answers/clock'
+import { markProof } from './answers/proof'
 
 /**
  * Marking by meaning, for the senior classes (Mathematics, Grades 7 to 12): a learner types algebra, a negative number, a point, a percent or an
@@ -498,6 +499,29 @@ export function graphEquationOf(text: string): ((x: number) => number) | null {
 
 /** Two values are the same when they differ by less than a billionth of their size (and of 1). */
 const close = (a: number, b: number) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b))
+
+/**
+ * P179: true when two expressions have the same value at the same points, whichever letters each one has (a line of a proof and the line before it:
+ * sin²x + cos²x and 1), as `agreeAtPoints` compares a key and an answer; null when one cannot be read.
+ */
+export function sameExpression(a: string, b: string): boolean | null {
+  const x = readExpression(a)
+  const y = readExpression(b)
+  if (!x || !y) return null
+  const letters = [...new Set([...lettersOf(x), ...lettersOf(y)])]
+  let agree = 0
+  for (let point = 0; point < POINTS; point++) {
+    if (point === BASE_POINTS && agree >= ENOUGH) return true
+    const env: Env = {}
+    for (const letter of letters) env[letter] = letterValue(letter, point)
+    const p = valueOf(x, env)
+    const q = valueOf(y, env)
+    if (Number.isNaN(p) || Number.isNaN(q)) continue
+    if (!close(p, q)) return false
+    agree++
+  }
+  return agree >= ENOUGH
+}
 
 // ---- A root (P133) -----------------------------------------------------------------------------------------------------------
 
@@ -992,6 +1016,9 @@ export function markQuestion(
   if ((q as { plot?: { curve?: string } }).plot?.curve && q.answerKind === 'list') return markSketch(q.answer, answer, readNumber)
   // P177: a clock is marked on its face: twelve hours apart is the same time (logic/answers/clock.ts).
   if ((q as { clock?: unknown }).clock && q.answerKind === 'time') return markClock(q.answer, answer)
+  // P179: a proof is right when each line equals the one before it and it ends on the right side (logic/answers/proof.ts).
+  const proof = (q as { proof?: { left: string; right: string } }).proof
+  if (proof && q.answerKind === 'list') return markProof(proof, answer, sameExpression)
   // P150: a list, an order and a table are several values, each read as a number or an expression (logic/answers/lists.ts).
   if (isListKind(q.answerKind)) {
     const { correct, comparable } = markListQuestion(q, answer, readNumber)

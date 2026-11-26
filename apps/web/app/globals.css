@@ -96,6 +96,12 @@ math-field.jemma-answer:focus-within {
 math-field.jemma-answer::part(menu-toggle) {
   display: none;
 }
+/* P179: a line of a proof is one of several boxes under each other, with "LHS =" or "=" in front of it: its maths is smaller, so a long line fits. */
+math-field.jemma-answer.jemma-line {
+  max-width: none;
+  min-height: 52px;
+  font-size: 22px;
+}
 
 /* The keyboard of the maths editor (P132): seven keys to a row, so each key is 48 px on a 360 px phone (the editor's own default is ten to a row). These are the
    editor's own variables; nothing else in the app reads them. */

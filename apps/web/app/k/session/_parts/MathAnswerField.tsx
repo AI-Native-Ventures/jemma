@@ -28,6 +28,8 @@ export type MathAnswerFieldProps = {
   label?: string
   /** The words in the empty box, in plain words (no LaTeX). A box that is narrow on a phone, like the numbered boxes with "x =" in front of them, gives a shorter line so no word is cut off. Default "Tap here to write". */
   placeholder?: string
+  /** P179: a line of a proof, one of several boxes under each other: its maths is smaller, so a long line fits (`math-field.jemma-line` in globals.css). */
+  line?: boolean
 }
 
 const FONTS = '/mathlive/fonts'
@@ -85,7 +87,7 @@ function Hint({ children }: { children: string }) {
   )
 }
 
-export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id = 'answer', label = 'Your answer', placeholder = 'Tap here to write' }: MathAnswerFieldProps) {
+export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id = 'answer', label = 'Your answer', placeholder = 'Tap here to write', line = false }: MathAnswerFieldProps) {
   const field = useRef<MathfieldElement | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading')
   const [problem, setProblem] = useState<'empty-box' | 'sign' | 'long' | null>(null)
@@ -250,7 +252,7 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id
         ref={field}
         id={id}
         aria-label={label}
-        className="jemma-answer"
+        className={line ? 'jemma-answer jemma-line' : 'jemma-answer'}
         default-mode="math"
         placeholder={`\\text{${placeholder}}`}
       />

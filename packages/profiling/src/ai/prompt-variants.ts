@@ -154,7 +154,11 @@ const SENIOR_PICTURES =
   '(`["x-intercept", "x-intercept", "turning point"]`), each on a corner of the grid, with the turning point inside the grid: Jemma joins the points the learner taps into the curve. The `answer` is the x and the y of the 3 key points (`-2; 0; 2; 0; 0; -4`). ' +
   // P174: the learner draws a straight line on a grid by tapping two points on it.
   'To have the learner draw a straight line (the graph of y = 2x \u2212 1, a line of symmetry), give `line` with `xMin`, `xMax`, `yMin`, `yMax` (whole numbers, at most 20 squares across and up) and no `diagram`. ' +
-  'The `answerKind` is `list` and the `answer` is two different points on the line that are corners of the grid, x and y each (`0; -1; 2; 3`): the learner may tap any two points on the line.'
+  'The `answerKind` is `list` and the `answer` is two different points on the line that are corners of the grid, x and y each (`0; -1; 2; 3`): the learner may tap any two points on the line. ' +
+  // P179: the learner proves an identity line by line.
+  'To have the learner prove an identity line by line (Grades 10 to 12), say it in the `prompt` (`Prove that sin²x/(1 − cos x) = 1 + cos x.`) and give `proof` with `left` and `right`, its two sides as plain maths ' +
+  '(`sin^2 x/(1 - cos x)` and `1 + cos x`), and no `diagram`. The `answerKind` is `list` and the `answer` is your proof: 3 to 6 lines from the left side to the right side, each one maths only (no LHS, no equals sign), ' +
+  'with a semicolon between them (`sin^2 x/(1 - cos x); (1 - cos^2 x)/(1 - cos x); ((1 - cos x)(1 + cos x))/(1 - cos x); 1 + cos x`). Each line must equal the one before it.'
 
 /**
  * What a senior class's lesson writer is told about the maths of a question (P127): state it as an expression or an equation in plain notation, never in

@@ -13,6 +13,9 @@ import {
   clockWords,
   matchOf,
   matchText,
+  checkProof,
+  proofLines,
+  sameExpression,
   parabolaThrough,
   plotPoints,
   sketchName,
@@ -46,7 +49,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { BlocksSpec, Choice, ClockSpec, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, LineSpec, MatchSpec, PinSpec, PlotSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
+import type { BlocksSpec, Choice, ClockSpec, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, LineSpec, MatchSpec, PinSpec, PlotSpec, ProofSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -130,6 +133,8 @@ export type QuestionForChild = {
   clock?: ClockSpec
   /** P178: the things the learner matches in pairs. Which goes with which is the answer, and is never sent. */
   match?: MatchSpec
+  /** P179: the identity the learner proves line by line (its two sides are in the prompt too). The proof is the answer, and is never sent. */
+  proof?: ProofSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -212,6 +217,11 @@ export type MissedQuestion = {
   match?: MatchSpec
   matchWrote?: (number | null)[]
   matchRight?: number[]
+  /** P179: the identity, the learner's lines, the first that does not follow (null: none) and the line it should have been. */
+  proof?: ProofSpec
+  proofLines?: string[]
+  proofWrong?: number | null
+  proofRight?: string | null
 }
 
 /** The P148 fields of a question for the child. Shape hints only: how many boxes, which clock, which unit. Never the key. */
@@ -271,6 +281,7 @@ export function stripQuestion(
     ...(q.pin ? { pin: q.pin } : {}),
     ...(q.clock ? { clock: q.clock } : {}),
     ...(q.match ? { match: q.match } : {}),
+    ...(q.proof ? { proof: q.proof } : {}),
   }
 }
 
@@ -374,6 +385,8 @@ export type AnswerShape =
   | { kind: 'clock'; clock: ClockSpec; typed: AnswerShape }
   /** P178: things matched in pairs by tapping, the answer the partner of each. */
   | { kind: 'match'; match: MatchSpec; young?: true }
+  /** P179: an identity proved line by line, each line its own maths editor. */
+  | { kind: 'proof'; proof: ProofSpec }
 
 /** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
 export type QuantityExtras = { unit?: string; round?: number; signed?: true }
@@ -404,6 +417,7 @@ type ShapeParts = {
   pin?: PinSpec
   clock?: ClockSpec
   match?: MatchSpec
+  proof?: ProofSpec
 }
 
 export function answerShape(
@@ -446,6 +460,8 @@ export function answerShape(
     const { line, ...rest } = q
     return { kind: 'line', line, typed: answerShape(rest) }
   }
+  // P179: an identity proved line by line, the answer its lines.
+  if (q.proof && q.answerKind === 'list') return { kind: 'proof', proof: q.proof }
   // P178: things matched in pairs, the answer the partner of each.
   if (q.match && q.answerKind === 'list') return { kind: 'match', match: q.match, ...(q.young ? { young: true as const } : {}) }
   // P173: shapes picked by tapping, the answer which ones.
@@ -544,6 +560,9 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
     // P177: the time the clock shows (or what was typed instead), or nothing until a hand is moved.
     case 'clock':
       return hasDigit(text) ? text : ''
+    // P179: the lines of a proof, or nothing until 3 hold something.
+    case 'proof':
+      return text.trim()
     default:
       return text
   }
@@ -606,7 +625,40 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
         : {}),
       ...clockReview(item),
       ...matchReview(item),
+      ...proofReview(item),
     }))
+}
+
+/**
+ * P179: the learner's proof, checked line by line as it was marked: the first line that does not follow (or cannot be read) and the line of the key in its place,
+ * said as "Line 2" and that line. A proof that stops before the right side says so, and a right one says how many lines it took.
+ */
+function proofReview(item: StoredItem): Partial<MissedQuestion> {
+  const p = item.question.proof
+  if (!p) return {}
+  const c = checkProof(p, item.unread ? '' : item.answer, sameExpression)
+  const key = proofLines(item.question.answer)
+  const wrong = c.wrong ?? c.unread
+  const rightLine = wrong !== null && key.length > 0 ? key[Math.min(wrong, key.length - 1)]! : null
+  const wrote = c.ok
+    ? `${c.lines.length} lines, from the left side to the right side`
+    : wrong !== null
+      ? `Line ${wrong + 1}`
+      : !c.reached
+        ? 'It stops before the right side'
+        : `${c.lines.length} ${c.lines.length === 1 ? 'line' : 'lines'}`
+  const right = c.ok ? wrote : wrong !== null ? rightLine! : !c.reached ? p.right : 'At least 3 different lines'
+  return {
+    proof: p,
+    proofLines: c.lines,
+    proofWrong: wrong,
+    proofRight: rightLine,
+    wrote: item.unread ? '' : wrote,
+    right,
+    cells: undefined,
+    table: undefined,
+    ordered: undefined,
+  }
 }
 
 /** P178: the pairs the learner joined and the right ones, said in words ("7 with seven, 12 with twelve and 20 with twenty"), or "All 3 pairs" when right. */
