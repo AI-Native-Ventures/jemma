@@ -166,7 +166,7 @@ function CardHead({ m }: { m: MissedQuestion }) {
           <CardQuestion prompt={m.prompt} typeset={modeOf(m)} />
         </div>
       )}
-      <QuestionPicture spec={m.diagram} variant="card" />
+      <QuestionPicture spec={m.diagram} face={m.clockFace} variant="card" />
       {/* P167: a graph the learner drew: the right bars in green, and theirs dashed beside them when they were not right. */}
       {m.graph ? <DataGraph graph={m.graph} values={m.graphWrote ?? []} right={m.graphRight ?? []} mode="results" /> : null}
       {/* P168: a sum worked in columns: the learner's digits, a wrong one circled in red pen with the right digit beside it. */}

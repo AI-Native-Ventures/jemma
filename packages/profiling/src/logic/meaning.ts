@@ -1098,6 +1098,8 @@ export function markQuestion(
   if (curve && q.answerKind === 'list') return markSketch(q.answer, answer, readNumber, curve)
   // P177: a clock is marked on its face: twelve hours apart is the same time (logic/answers/clock.ts).
   if ((q as { clock?: unknown }).clock && q.answerKind === 'time') return markClock(q.answer, answer)
+  // P183: so is the time read from a clock face in the question.
+  if ((q as { clockFace?: unknown }).clockFace && q.answerKind === 'time') return markClock(q.answer, answer)
   // P179: a proof is right when each line equals the one before it and it ends on the right side (logic/answers/proof.ts).
   const proof = (q as { proof?: { left: string; right: string } }).proof
   if (proof && q.answerKind === 'list') return markProof(proof, answer, sameExpression)

@@ -457,13 +457,13 @@ export function QuestionScreen({ q, topic, busy, onAnswer, note, skip }: Questio
         </div>
         {shape.kind === 'missing' ? (
           <>
-            <QuestionPicture spec={q.diagram} />
+            <QuestionPicture spec={q.diagram} face={q.clockFace} />
             <MissingQuestion q={q} shape={shape} value={text} onChange={setText} />
           </>
         ) : (
           <>
             <QuestionHeading prompt={q.prompt} typeset={typeset} tone="warm" />
-            <QuestionPicture spec={q.diagram} />
+            <QuestionPicture spec={q.diagram} face={q.clockFace} />
             {isPick(shape) ? <PickArea q={q} shape={shape} picked={picked} onPick={setPicked} text={text} onText={setText} warm /> : <AnswerArea shape={shape} b={boxes} prompt={q.prompt} topic={topic} />}
           </>
         )}
@@ -485,7 +485,7 @@ export function QuestionScreen({ q, topic, busy, onAnswer, note, skip }: Questio
       <section aria-label="Question" className="flex flex-col items-center gap-[30px] rounded-[28px] border border-line bg-card px-[18px] py-[30px]">
         {shape.kind === 'missing' ? (
           <>
-            <QuestionPicture spec={q.diagram} />
+            <QuestionPicture spec={q.diagram} face={q.clockFace} />
             <MissingQuestion q={q} shape={shape} value={text} onChange={setText} />
           </>
         ) : (
@@ -507,7 +507,7 @@ export function QuestionScreen({ q, topic, busy, onAnswer, note, skip }: Questio
             ) : (
               <QuestionHeading prompt={q.prompt} typeset={typeset} tone="try" />
             )}
-            <QuestionPicture spec={q.diagram} />
+            <QuestionPicture spec={q.diagram} face={q.clockFace} />
             {isPick(shape) ? <PickArea q={q} shape={shape} picked={picked} onPick={setPicked} text={text} onText={setText} warm={false} /> : <AnswerArea shape={shape} b={boxes} prompt={q.prompt} topic={topic} />}
           </>
         )}

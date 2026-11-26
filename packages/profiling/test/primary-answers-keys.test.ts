@@ -25,7 +25,7 @@ describe('the kinds the primary lessons may use are kinds every reader of a less
     const named = new Set<string>()
     for (const kit of ['time', 'measure', 'order', 'patterns', 'data', 'money', 'place', 'addsub', 'fractions', 'numbers', 'shapes', 'multiply'] as const)
       for (const grade of [1, 4]) for (const m of primaryAnswerBlock(kit, klass(grade)).matchAll(/^- `(\w+)`/gm)) named.add(m[1]!)
-    for (const kind of named) expect([...ANSWER_KINDS, 'unit', 'diagram', 'graph', 'columns', 'blocks', 'groups', 'shade', 'tap', 'pin', 'clock', 'match'] as string[], kind).toContain(kind)
+    for (const kind of named) expect([...ANSWER_KINDS, 'unit', 'diagram', 'graph', 'columns', 'blocks', 'groups', 'shade', 'tap', 'pin', 'clock', 'match', 'clockFace'] as string[], kind).toContain(kind)
   })
 })
 
@@ -40,6 +40,9 @@ const EXAMPLES: Example[] = [
   // P177: a clock to set is marked on its face, so twelve hours apart is the same time.
   { kit: 'time', grade: 2, shows: '`4:30`', question: q({ answerKind: 'time', answer: '4:30', clock: { step: 30 } }), right: ['4:30', '16:30', '4:30 pm'], wrong: ['5:30', '4:00', '6:20'] },
   { kit: 'time', grade: 5, shows: '`8:35`', question: q({ answerKind: 'time', answer: '8:35', clock: { step: 5 } }), right: ['8:35', '20:35'], wrong: ['7:35', '8:40', '7:40'] },
+  // P183: a clock face to read is marked on its face too.
+  { kit: 'time', grade: 2, shows: '`7:00`', question: q({ answerKind: 'time', answer: '7:00', clockFace: { time: '7:00' } }), right: ['7:00', '19:00', '7:00 pm'], wrong: ['6:00', '7:30'] },
+  { kit: 'time', grade: 5, shows: '`11:50`', question: q({ answerKind: 'time', answer: '11:50', clockFace: { time: '11:50' } }), right: ['11:50', '23:50'], wrong: ['10:50', '11:10'] },
   { kit: 'measure', grade: 2, shows: '`12`', question: q({ answerKind: 'whole', answer: '12', unit: 'cm' }), right: ['12', '12 cm'], wrong: ['13', '12 m', '21'] },
   { kit: 'measure', grade: 5, shows: '`12`', question: q({ answerKind: 'decimal', answer: '1,5', unit: 'kg' }), right: ['1,5', '1.5', '1,5 kg'], wrong: ['1,6', '15', '1,5 g'] },
   { kit: 'patterns', grade: 2, shows: '`10; 12; 14`', question: q({ answerKind: 'list', answer: '10; 12; 14', ordered: true }), right: ['10; 12; 14'], wrong: ['12; 10; 14', '10; 12', '10; 12; 16'] },

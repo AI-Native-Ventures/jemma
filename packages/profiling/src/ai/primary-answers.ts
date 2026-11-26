@@ -152,6 +152,15 @@ export function clockBullet(c: ClassContext): string {
     : '- `clock`: the learner sets a clock by dragging its hands ("Show 25 to 9 on the clock."). Give `clock` with `step` `5` (the long hand stops every 5 minutes) or `1` (every minute). The `answerKind` is `time` and the `answer` is the time on the clock face, from `1:00` to `12:59`: `8:35`, never `12:00` (the clock starts there) and never am or pm. Say the time in the `prompt`, in words ("quarter past 3", "25 to 9") or as on a digital clock ("8:35"). A question with `clock` has no `choices`.'
 }
 
+/** P183: the bullet that lets a time question show a clock face to read: o'clock and half past for Grades 1 to 3, any 5 minutes from Grade 4. */
+export function clockFaceBullet(c: ClassContext): string {
+  const times = c.grade <= 3 ? 'o\'clock or half past (`4:30`, `7:00`)' : 'on a 5 minute mark (`8:35`, `11:50`)'
+  return (
+    `- \`clockFace\`: a question may show a clock face to read ("What time does the clock show?"). Give \`clockFace\` with \`time\`, ${times}, from 1:00 to 12:59 and never am or pm. ` +
+    'The `answerKind` is `time` and the `answer` is that time, or it is a `choice` question whose right choice is that time. Never write the time in the `prompt`. A question with `clockFace` asks only for the time it shows.'
+  )
+}
+
 /** P178: the bullet that lets a question ask the learner to match things in pairs, with an example that fits the kit. */
 export function matchBullet(kit: PrimaryKit, c: ClassContext): string {
   const young = c.grade <= 3
@@ -247,9 +256,8 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
       else {
         when(clockBullet(c))
         when(matchBullet('time', c))
-        when(
-          '- There is no clock picture to read in a question, so never ask the learner to read a clock face. When you want that, ask it as a `choice` question: "Which time is half past 3?" with the times as choices.',
-        )
+        // P183: a clock face to read in a question.
+        when(clockFaceBullet(c))
       }
       break
     case 'measure':

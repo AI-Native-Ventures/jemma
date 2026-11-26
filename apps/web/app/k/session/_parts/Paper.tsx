@@ -217,7 +217,7 @@ function PaperQuestion({ q }: { q: QuestionForChild }) {
             <FractionText text={q.prompt} size={30} rule={3} gap={4} side={5} className="mx-1 align-middle" />
           </h2>
         )}
-        <QuestionPicture spec={q.diagram} />
+        <QuestionPicture spec={q.diagram} face={q.clockFace} />
         {shape.kind === 'graph' ? <DataGraph graph={shape.graph} values={[]} mode="paper" /> : null}
         {shape.kind === 'columns' ? <ColumnsSum columns={shape.columns} mode="paper" /> : null}
         {shape.kind === 'plot' ? <PlotGrid plot={shape.plot} mode="paper" /> : null}

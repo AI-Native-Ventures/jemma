@@ -129,6 +129,13 @@ export const ClockSchema = z.object({ step: z.number().optional() })
 export type ClockSpec = z.infer<typeof ClockSchema>
 
 /**
+ * P183: a clock face in a question, showing `time` (`4:30`, from 1:00 to 12:59), for "What time does the clock show?" (Grades 1 to 6). Its key is that time:
+ * a `time` answer, or the choice that is that time.
+ */
+export const ClockFaceSchema = z.object({ time: z.string() })
+export type ClockFaceSpec = z.infer<typeof ClockFaceSchema>
+
+/**
  * P178: things the learner matches in pairs by tapping one on the left, then the one it goes with on the right (Grades 1 to 6): `left` and `right`, 2 to 5
  * short things each (numbers, words, times), the right ones in a mixed-up order. With `pictures`, the left ones are shapes (one of `TAP_SHAPES` each), drawn
  * and not named. The key is an ordered `list` of the place in `right` of the partner of each left one, from 1 (`3; 1; 2`).
@@ -256,6 +263,7 @@ export const QuestionSchema = seniorQuestion(z.array(z.string()).optional()).ext
   pin: PinSchema.optional(),
   clock: ClockSchema.optional(),
   match: MatchSchema.optional(),
+  clockFace: ClockFaceSchema.optional(),
 })
 export type Question = z.infer<typeof QuestionSchema>
 export type PrimaryQuestion = z.infer<typeof PrimaryQuestionSchema>
