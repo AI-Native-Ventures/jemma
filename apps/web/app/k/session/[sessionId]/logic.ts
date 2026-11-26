@@ -12,6 +12,7 @@ import {
   plotPoints,
   tapPicks,
   linePoints,
+  pinMarkOf,
   isInequalityKey,
   isListKind,
   isSeniorQuestion,
@@ -38,7 +39,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { BlocksSpec, Choice, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, LineSpec, PlotSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
+import type { BlocksSpec, Choice, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, LineSpec, PinSpec, PlotSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -116,6 +117,8 @@ export type QuestionForChild = {
   tap?: TapSpec
   /** P174: the grid the learner draws a straight line on. The line is the answer, and is never sent. */
   line?: LineSpec
+  /** P175: the number line the learner puts a pin on. Where it goes is the answer, and is never sent. */
+  pin?: PinSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -186,6 +189,10 @@ export type MissedQuestion = {
   line?: LineSpec
   lineWrote?: [{ x: number; y: number }, { x: number; y: number }] | null
   lineRight?: [{ x: number; y: number }, { x: number; y: number }] | null
+  /** P175: the number line, and the marks of the learner's pin (null: not on a mark) and of the right one (0 is the start). */
+  pin?: PinSpec
+  pinWrote?: number | null
+  pinRight?: number | null
 }
 
 /** The P148 fields of a question for the child. Shape hints only: how many boxes, which clock, which unit. Never the key. */
@@ -242,6 +249,7 @@ export function stripQuestion(
     ...(q.shade ? { shade: q.shade } : {}),
     ...(q.tap ? { tap: q.tap } : {}),
     ...(q.line ? { line: q.line } : {}),
+    ...(q.pin ? { pin: q.pin } : {}),
   }
 }
 
@@ -339,6 +347,8 @@ export type AnswerShape =
   | { kind: 'tap'; tap: TapSpec; young?: true }
   /** P174: a straight line drawn through two tapped points. `typed` is the same answer typed instead: the x and the y of two points. */
   | { kind: 'line'; line: LineSpec; typed: AnswerShape }
+  /** P175: a pin dragged along a number line to a mark. `kind` is how the pin is sent (the key's kind); `typed` is the same answer typed instead. */
+  | { kind: 'pin'; pin: PinSpec; as: string; typed: AnswerShape }
 
 /** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
 export type QuantityExtras = { unit?: string; round?: number; signed?: true }
@@ -366,6 +376,7 @@ type ShapeParts = {
   shade?: ShadeSpec
   tap?: TapSpec
   line?: LineSpec
+  pin?: PinSpec
 }
 
 export function answerShape(
@@ -393,6 +404,11 @@ export function answerShape(
   }
   // P172: parts of a shape shaded, the answer how many.
   if (q.shade && q.answerKind === 'whole') return { kind: 'shade', shade: q.shade, ...(q.young ? { young: true as const } : {}) }
+  // P175: a pin on a number line, the answer the number of its mark (as the key's kind). Typed instead, it is the box of that kind.
+  if (q.pin && ['fraction', 'mixed', 'decimal', 'whole'].includes(q.answerKind)) {
+    const { pin, ...rest } = q
+    return { kind: 'pin', pin, as: q.answerKind, typed: answerShape(rest) }
+  }
   // P174: a straight line drawn on a grid, the answer two points on it. Typed instead, it is the list of numbers it is without its grid.
   if (q.line && q.answerKind === 'list') {
     const { line, ...rest } = q
@@ -487,6 +503,8 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
     case 'plot':
     // P174: two points of the line drawn (or typed), or nothing until there are two.
     case 'line':
+    // P175: the number of the mark the pin is on (or what was typed instead).
+    case 'pin':
       return hasDigit(text) ? text : ''
     default:
       return text
@@ -541,6 +559,13 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       ...(item.question.shade ? { shade: item.question.shade } : {}),
       ...tapReview(item),
       ...lineReview(item),
+      ...(item.question.pin
+        ? {
+            pin: item.question.pin,
+            pinRight: pinMarkOf(item.question.pin, item.question.answer, readNumber),
+            pinWrote: item.unread ? null : pinMarkOf(item.question.pin, item.answer, readNumber),
+          }
+        : {}),
     }))
 }
 
