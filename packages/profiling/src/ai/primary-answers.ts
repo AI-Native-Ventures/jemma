@@ -142,6 +142,10 @@ export function columnsBullet(c: ClassContext): string | null {
   )
 }
 
+/** P175: the bullet that lets a question ask the learner to put a pin on a number line. */
+export const PIN_BULLET =
+  '- `pin`: the learner drags a pin along a number line to a number ("Put 3/4 on the number line."). Give `pin` with `min` and `max` (whole numbers) and either `parts`, the equal jumps between two whole numbers (4 for quarters, 10 for tenths), or `step` for whole numbers (`10` for a line from 0 to 100 marked in tens). At most 20 jumps. Only the two ends are numbered. The `answerKind` is `fraction`, `mixed`, `decimal` or `whole` and the `answer` is the number on one of the marks, after `min`: `3/4`. A question with `pin` has no `diagram` and no `choices`.'
+
 /** P173: the bullet that lets a shapes question ask the learner to tap the shapes that fit. */
 export const TAP_BULLET =
   '- `tap`: the learner taps every shape that fits ("Tap all the triangles."). Give `tap` with `shapes`: 4 to 9 shapes, each a `shape` (`triangle`, `right_triangle`, `square`, `rectangle`, `circle`, `oval`, `pentagon`, `hexagon`, `rhombus`, `kite` or `trapezium`) and a `turn` of 0, 90, 180 or 270 (turn some, so a turned shape still counts). The `answerKind` is `list` and the `answer` is the numbers of the shapes to pick, from 1, with a semicolon between them (`1; 3; 6; 8`). Pick at least 2 and leave at least one out. A question with `tap` has no `diagram` and no `choices`.'
@@ -186,10 +190,12 @@ export function primaryAnswerBlock(kit: PrimaryKit, c: ClassContext): string {
         ? columnsBullet(c)
         : kit === 'shapes'
           ? `${groupsBullet(kit)}\n${TAP_BULLET}`
-          : kit === 'numbers' || kit === 'multiply'
-            ? groupsBullet(kit)
+          : kit === 'numbers'
+            ? `${groupsBullet(kit)}\n${PIN_BULLET}`
+            : kit === 'multiply'
+              ? groupsBullet(kit)
             : kit === 'fractions'
-              ? SHADE_BULLET
+              ? `${SHADE_BULLET}\n${PIN_BULLET}`
               : null
     return [picture, extra].filter((line): line is string => !!line).join('\n')
   }

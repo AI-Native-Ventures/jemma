@@ -7,6 +7,7 @@ import { plotKeyProblem, plotProblem, tidyPlot } from '../../logic/answers/plot'
 import { shadeKeyProblem, shadeProblem } from '../../logic/answers/shade'
 import { tapKeyProblem, tapProblem, tidyTap } from '../../logic/answers/tap'
 import { lineKeyProblem, lineProblem, tidyLine } from '../../logic/answers/line'
+import { pinKeyProblem, pinProblem } from '../../logic/answers/pin'
 import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
@@ -88,6 +89,12 @@ export function answerProblem(q: Question): string | null {
     if (q.diagram || q.plot || q.choices?.length) return 'line: a grid to draw a line on is the picture of its question, and it has no choices'
     const line = lineProblem(q.line) ?? lineKeyProblem({ ...q, line: q.line }, readNumber)
     if (line) return `line: ${line}`
+  }
+  // P175: a pin on a number line: a line a phone can show, and a key on one of its marks.
+  if (q.pin) {
+    if (q.diagram || q.choices?.length) return 'pin: a number line to put a pin on is the picture of its question, and it has no choices'
+    const pin = pinProblem(q.pin) ?? pinKeyProblem({ ...q, pin: q.pin }, readNumber)
+    if (pin) return `pin: ${pin}`
   }
   const picture = questionPictureOf(q)
   if (picture) return `picture: ${picture}`

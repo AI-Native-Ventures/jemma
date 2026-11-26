@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, test, vi } from 'vitest'
 import { z } from 'zod'
-import { columnsBullet, groupsBullet, SHADE_BULLET, TAP_BULLET, KIT_PICTURES, PICTURE_KITS, pictureBullet, primaryAnswerBlock, primaryKit, withPrimaryAnswers, type PrimaryKit } from '../src/ai/primary-answers'
+import { columnsBullet, groupsBullet, PIN_BULLET, SHADE_BULLET, TAP_BULLET, KIT_PICTURES, PICTURE_KITS, pictureBullet, primaryAnswerBlock, primaryKit, withPrimaryAnswers, type PrimaryKit } from '../src/ai/primary-answers'
 import { renderPrompt } from '../src/ai/prompt-variants'
 import { makeClassContext } from '../src/ai/subject-profile'
 import { isSeniorQuestion } from '../src/logic/answers/quantity'
@@ -179,10 +179,12 @@ describe('the picture bullet the lesson writer is told', () => {
     // P168: addition and subtraction also has its line for sums in columns after the picture bullet, and (P170) counting, shapes and multiplication a line
     // for sorting into groups.
     // P172: fractions also has its line for shading parts of a shape.
-    expect(primaryAnswerBlock('fractions', klass(3))).toBe(`${pictureBullet('fractions', klass(3))}\n${SHADE_BULLET}`)
+    // P175: and for putting a pin on a number line (fractions and counting).
+    expect(primaryAnswerBlock('fractions', klass(3))).toBe(`${pictureBullet('fractions', klass(3))}\n${SHADE_BULLET}\n${PIN_BULLET}`)
     expect(primaryAnswerBlock('addsub', klass(3))).toBe(`${pictureBullet('addsub', klass(3))}\n${columnsBullet(klass(3))}`)
     expect(primaryAnswerBlock('addsub', klass(1))).toBe(pictureBullet('addsub', klass(1)))
-    for (const kit of ['numbers', 'multiply'] as const) expect(primaryAnswerBlock(kit, klass(3))).toBe(`${pictureBullet(kit, klass(3))}\n${groupsBullet(kit)}`)
+    expect(primaryAnswerBlock('multiply', klass(3))).toBe(`${pictureBullet('multiply', klass(3))}\n${groupsBullet('multiply')}`)
+    expect(primaryAnswerBlock('numbers', klass(3))).toBe(`${pictureBullet('numbers', klass(3))}\n${groupsBullet('numbers')}\n${PIN_BULLET}`)
     // P173: shapes also has its line for tapping shapes.
     expect(primaryAnswerBlock('shapes', klass(3))).toBe(`${pictureBullet('shapes', klass(3))}\n${groupsBullet('shapes')}\n${TAP_BULLET}`)
     expect(PICTURE_KITS).toEqual(['fractions', 'shapes', 'multiply', 'numbers', 'addsub'])

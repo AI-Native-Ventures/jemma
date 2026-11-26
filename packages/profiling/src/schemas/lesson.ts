@@ -112,6 +112,14 @@ export type GroupsSpec = z.infer<typeof GroupsSchema>
 export const ShadeSchema = z.object({ shape: z.enum(['circle', 'bar', 'grid']), parts: z.number().optional(), rows: z.number().optional(), cols: z.number().optional() })
 export type ShadeSpec = z.infer<typeof ShadeSchema>
 
+/**
+ * P175: a number line the learner puts a pin on by dragging it (Grades 2 to 6): from `min` to `max` (whole numbers), with a mark at every 1/`parts` (quarters
+ * when `parts` is 4) or, without `parts`, every `step` (a whole number, 1 when left out). Only the two ends are numbered. The key is the number the pin goes on,
+ * a `fraction`, `mixed`, `decimal` or `whole` answer.
+ */
+export const PinSchema = z.object({ min: z.number(), max: z.number(), parts: z.number().optional(), step: z.number().optional() })
+export type PinSpec = z.infer<typeof PinSchema>
+
 /** P173: the shapes a picture to tap may hold. */
 export const TAP_SHAPES = ['triangle', 'right_triangle', 'square', 'rectangle', 'circle', 'oval', 'pentagon', 'hexagon', 'rhombus', 'kite', 'trapezium'] as const
 /**
@@ -200,6 +208,7 @@ export const QuestionSchema = seniorQuestion(z.array(z.string()).optional()).ext
   groups: GroupsSchema.optional(),
   shade: ShadeSchema.optional(),
   tap: TapSchema.optional(),
+  pin: PinSchema.optional(),
 })
 export type Question = z.infer<typeof QuestionSchema>
 export type PrimaryQuestion = z.infer<typeof PrimaryQuestionSchema>

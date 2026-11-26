@@ -16,6 +16,7 @@ import { BuiltMat } from './answers/BlocksMat'
 import { GroupsResult } from './answers/GroupsAnswer'
 import { PlotGrid } from './answers/PlotGrid'
 import { LineGrid } from './answers/LineGrid'
+import { PinLine } from './answers/PinLine'
 import { ShadedResult } from './answers/ShadeShape'
 import { TapPicture } from './answers/TapShapes'
 import { SignText } from './answers/Signs'
@@ -175,6 +176,8 @@ function CardHead({ m }: { m: MissedQuestion }) {
       {m.plot ? <PlotGrid plot={m.plot} mode="results" points={m.plotWrote ?? []} right={m.plotRight ?? []} /> : null}
       {/* P174: the right line in green, the learner's dashed when it is another line. */}
       {m.line ? <LineGrid line={m.line} mode="results" a={m.lineWrote?.[0] ?? null} b={m.lineWrote?.[1] ?? null} right={m.lineRight ?? null} /> : null}
+      {/* P175: the right pin in green, the learner's dashed beside it. */}
+      {m.pin ? <PinLine pin={m.pin} at={m.pinWrote ?? null} right={m.pinRight ?? null} mode="results" /> : null}
       {/* P172: the shape as the learner shaded it. */}
       {m.shade && !m.unread ? <ShadedResult shade={m.shade} wrote={m.wrote} /> : null}
       {/* P173: the learner's picks, a shape missed or picked by mistake circled in red pen. */}
