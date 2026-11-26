@@ -577,6 +577,12 @@ export function pictureKeyProblem(
     const word = (typeof picked === 'string' ? picked : (picked?.text ?? '')).trim().toLowerCase()
     if (kinds.includes(word) && word !== angleKind(d.degrees)) return `a ${d.degrees}° angle is ${angleKind(d.degrees)}, not ${word}`
   }
+  // P197: the part of a pie chart with a question mark is asked for: its percent is the key.
+  if (d?.kind === 'pie_chart' && read && ['whole', 'decimal', 'number'].includes(q.answerKind)) {
+    const asked = d.parts.find((p) => p.ask)
+    const got = read(q.answer)
+    if (asked && got !== null && !near(got, asked.percent)) return `the answer is the percent of ${asked.label.trim()}, ${asked.percent}`
+  }
   // P196: the angle x of a circle stands on the same arc as the other: half of the angle at the centre, or twice the angle at the circle.
   if (d?.kind === 'circle_angles' && read && ['whole', 'decimal', 'number'].includes(q.answerKind)) {
     const want = d.ask === 'circle' ? d.centre / 2 : d.centre
@@ -674,6 +680,58 @@ export function pictureProblem(spec: SeniorDiagramSpec): string | null {
       return finite ?? parallelLinesProblem(spec)
     case 'enlargement':
       return finite ?? enlargementProblem(spec)
+    // P197
+    case 'tally_table':
+      if (spec.rows.length < 2 || spec.rows.length > 5) return 'a tally table has 2 to 5 rows'
+      if (spec.rows.some((r) => !whole(r.count, 0, 20) || r.label.trim().length < 1 || r.label.trim().length > 12)) return 'each row of a tally table is a short name and a count from 0 to 20'
+      return spec.heading !== undefined && spec.heading.trim().length > 12 ? 'the heading of a tally table is short' : null
+    case 'pie_chart': {
+      if (spec.parts.length < 2 || spec.parts.length > 6) return 'a pie chart has 2 to 6 parts'
+      if (spec.parts.some((p) => !(p.percent > 0) || p.label.trim().length < 1 || p.label.trim().length > 10)) return 'each part of a pie chart is a short name and a percent above 0'
+      if (Math.abs(spec.parts.reduce((a, p) => a + p.percent, 0) - 100) > 0.01) return 'the percents of a pie chart add up to 100'
+      return spec.parts.filter((p) => p.ask).length > 1 ? 'a pie chart asks about at most one part' : null
+    }
+    case 'dot_plot':
+      if (spec.marks.length < 2 || spec.marks.length > 10 || spec.counts.length !== spec.marks.length) return 'a line plot has 2 to 10 marks, each with its count'
+      if (spec.marks.some((m) => m.trim().length < 1 || m.trim().length > 5) || spec.counts.some((n) => !whole(n, 0, 8))) return 'each mark of a line plot is short and has 0 to 8 dots'
+      return spec.counts.some((n) => n > 0) ? null : 'a line plot has at least one dot'
+    case 'spinner':
+      return spec.parts.length >= 2 && spec.parts.length <= 12 ? null : 'a spinner has 2 to 12 equal parts'
+    case 'counters': {
+      const counts = [spec.gold ?? 0, spec.green ?? 0, spec.red ?? 0, spec.blue ?? 0]
+      if (counts.some((n) => !whole(n, 0, 20))) return 'a bag holds whole numbers of counters'
+      const total = counts.reduce((a, n) => a + n, 0)
+      return total >= 2 && total <= 20 ? null : 'a bag holds 2 to 20 counters'
+    }
+    case 'line_graph': {
+      if (spec.labels.length < 2 || spec.labels.length > 12 || spec.values.length !== spec.labels.length) return 'a broken-line graph has 2 to 12 points, each with a label'
+      if (!(spec.yMin < spec.yMax) || spec.values.some((v) => v < spec.yMin || v > spec.yMax)) return 'every point of a broken-line graph is on its scale'
+      const lines = (spec.yMax - spec.yMin) / (spec.step ?? (spec.yMax - spec.yMin) / 5)
+      if (!whole(Math.round(lines * 1e9) / 1e9, 2, 12)) return 'the scale of a broken-line graph has 2 to 12 lines'
+      // Twelve labels of four characters run into each other: more than 8 points take labels of 1 to 3 characters (Mon, Jan).
+      return spec.labels.some((l) => l.trim().length < 1 || l.trim().length > (spec.labels.length > 8 ? 3 : 4)) ? 'each label along a broken-line graph is 1 to 4 characters (1 to 3 when there are more than 8)' : null
+    }
+    case 'histogram':
+      if (spec.counts.length < 2 || spec.counts.length > 8 || spec.counts.some((n) => !whole(n, 0, 50))) return 'a histogram has 2 to 8 classes, each with a count from 0 to 50'
+      if (!spec.counts.some((n) => n > 0)) return 'a histogram has at least one bar'
+      return spec.width > 0 ? null : 'the classes of a histogram have a width above 0'
+    case 'ogive':
+      if (spec.totals.length < 2 || spec.totals.length > 8 || spec.totals.some((n) => !whole(n, 0, 500))) return 'an ogive has 2 to 8 classes, each with a running total from 0 to 500'
+      if (spec.totals.some((n, i) => i > 0 && n < spec.totals[i - 1]!)) return 'the running totals of an ogive never go down'
+      if (!(spec.width > 0)) return 'the classes of an ogive have a width above 0'
+      return spec.readAt !== undefined && !(spec.readAt > 0 && spec.readAt < spec.totals[spec.totals.length - 1]!) ? 'an ogive is read across from a total between 0 and the last' : null
+    case 'stem_leaf':
+      if (spec.rows.length < 2 || spec.rows.length > 6) return 'a stem and leaf display has 2 to 6 rows'
+      if (spec.rows.some((r, i) => !whole(r.stem, 0, 99) || (i > 0 && r.stem <= spec.rows[i - 1]!.stem))) return 'the stems are whole numbers, smallest first'
+      if (spec.rows.some((r) => r.leaves.length < 1 || r.leaves.length > 12 || r.leaves.some((l, i) => !whole(l, 0, 9) || (i > 0 && l < r.leaves[i - 1]!)))) return 'each row has 1 to 12 leaves, digits from 0 to 9, smallest first'
+      return null
+    case 'scatter':
+      if (spec.points.length < 3 || spec.points.length > 20) return 'a scatter plot has 3 to 20 points'
+      if (!(spec.xMax > 0) || !(spec.yMax > 0) || spec.points.some((p) => p.x < 0 || p.y < 0 || p.x > spec.xMax || p.y > spec.yMax)) return 'every point of a scatter plot is on it, from 0 to xMax and yMax'
+      return null
+    case 'venn':
+      if ([spec.a, spec.b].some((t) => t.trim().length < 1 || t.trim().length > 10)) return 'each set of a Venn diagram has a short name'
+      return [spec.aOnly, spec.both, spec.bOnly, spec.neither ?? '?'].some((t) => t.trim().length < 1 || t.trim().length > 4) ? 'each part of a Venn diagram holds a short number, or ? for a blank' : null
     // P196
     case 'circle_angles':
       return whole(spec.centre, 40, 160) && spec.centre % 2 === 0 ? null : 'the angle at the centre is an even whole number of degrees from 40 to 160'

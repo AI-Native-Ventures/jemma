@@ -362,7 +362,64 @@ const ElevationSchema = z.object({ kind: z.literal('elevation'), ground: z.strin
 /** P196: a square card `side` wide (`30 cm`) with a square of side `cut` (x when left out) cut from each corner, and the open box it folds into. */
 const CutBoxSchema = z.object({ kind: z.literal('cut_box'), side: z.string(), cut: z.string().optional() })
 
-/** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). P189: and five more. P190: and six for measuring. P191: and four for patterns, algebra and graphs. P192: and four for shapes and position. P193: and four for angles and transformations. */
+// ---- P197: data and probability -----------------------------------------------------------------------------------------------------
+
+/** P197: a broken-line graph: a point for each of `labels` (along the bottom) at its value, joined by straight lines, on a scale from `yMin` to `yMax`. */
+const LineGraphSchema = z.object({
+  kind: z.literal('line_graph'),
+  labels: z.array(z.string()),
+  values: z.array(z.number()),
+  yMin: z.number(),
+  yMax: z.number(),
+  step: z.number().optional(),
+  unit: z.string().optional(),
+})
+
+/** P197: a histogram: classes of `width` from `start`, each with its count (`counts`), the bars touching. */
+const HistogramSchema = z.object({ kind: z.literal('histogram'), start: z.number(), width: z.number(), counts: z.array(z.number()), xLabel: z.string().optional(), yLabel: z.string().optional() })
+
+/**
+ * P197: an ogive (a cumulative frequency curve): classes of `width` from `start`; `totals` is the running total at the top of each class. `readAt` draws a dashed
+ * line across from that total to the curve and down to the axis.
+ */
+const OgiveSchema = z.object({ kind: z.literal('ogive'), start: z.number(), width: z.number(), totals: z.array(z.number()), readAt: z.number().optional(), xLabel: z.string().optional() })
+
+/** P197: a stem and leaf display: each row a `stem` (the tens) and its `leaves` (the units, smallest first), with its key under it. */
+const StemLeafSchema = z.object({ kind: z.literal('stem_leaf'), rows: z.array(z.object({ stem: z.number(), leaves: z.array(z.number()) })) })
+
+/** P197: a scatter plot of `points` from 0 to `xMax` and `yMax`; `line` draws the line of best fit ŷ = a + bx. */
+const ScatterSchema = z.object({
+  kind: z.literal('scatter'),
+  points: z.array(z.object({ x: z.number(), y: z.number() })),
+  xMax: z.number(),
+  yMax: z.number(),
+  xLabel: z.string().optional(),
+  yLabel: z.string().optional(),
+  line: z.object({ a: z.number(), b: z.number() }).optional(),
+})
+
+/** P197: a Venn diagram of two sets `a` and `b` in S: what is in each part (a number, or ? for a blank the learner fills in). */
+const VennSchema = z.object({ kind: z.literal('venn'), a: z.string(), b: z.string(), aOnly: z.string(), both: z.string(), bOnly: z.string(), neither: z.string().optional() })
+
+/** P197: a tally table: a row for each thing (`label`) with its `count` drawn as tally marks, in groups of five. `heading` names the first column. */
+const TallyTableSchema = z.object({ kind: z.literal('tally_table'), heading: z.string().optional(), rows: z.array(z.object({ label: z.string(), count: z.number() })) })
+
+/** P197: a pie chart: each part a `label` and its `percent` (they add up to 100); a part with `ask` shows a question mark in place of its percent. */
+const PieChartSchema = z.object({ kind: z.literal('pie_chart'), parts: z.array(z.object({ label: z.string(), percent: z.number(), ask: z.boolean().optional() })) })
+
+/** P197: a line plot (a dot plot): a mark on a line for each value (`marks`, like `1` or `1/4`) and a dot above it for each one counted (`counts`). */
+const DotPlotSchema = z.object({ kind: z.literal('dot_plot'), marks: z.array(z.string()), counts: z.array(z.number()), title: z.string().optional() })
+
+/** The colours of a spinner and of counters in a bag. */
+export const CHANCE_COLOURS = ['gold', 'green', 'red', 'blue'] as const
+
+/** P197: a spinner cut into equal parts, each one of the colours. */
+const SpinnerSchema = z.object({ kind: z.literal('spinner'), parts: z.array(z.enum(CHANCE_COLOURS)) })
+
+/** P197: a bag of counters: how many of each colour. */
+const CountersSchema = z.object({ kind: z.literal('counters'), gold: z.number().optional(), green: z.number().optional(), red: z.number().optional(), blue: z.number().optional() })
+
+/** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). P189: and five more. P190: and six for measuring. P191: and four for patterns, algebra and graphs. P192: and four for shapes and position. P193: and four for angles and transformations. P197: and five for data and probability. */
 const QUESTION_PICTURES = [
   ObjectsSchema,
   TenFrameSchema,
@@ -393,10 +450,15 @@ const QUESTION_PICTURES = [
   ProtractorSchema,
   ParallelLinesSchema,
   EnlargementSchema,
+  TallyTableSchema,
+  PieChartSchema,
+  DotPlotSchema,
+  SpinnerSchema,
+  CountersSchema,
 ] as const
 
 /** P195: the pictures of a senior question only (Grades 10 to 12). P196: and four more. */
-const SENIOR_QUESTION_PICTURES = [PointAngleSchema, CircleAnglesSchema, CastSchema, ElevationSchema, CutBoxSchema] as const
+const SENIOR_QUESTION_PICTURES = [PointAngleSchema, CircleAnglesSchema, CastSchema, ElevationSchema, CutBoxSchema, LineGraphSchema, HistogramSchema, OgiveSchema, StemLeafSchema, ScatterSchema, VennSchema] as const
 
 /**
  * P188: the pictures a question of a gated Grade 1 to 6 topic may carry: the seven Jemma draws for every grade and the ones of the question type boards. The demo
@@ -456,3 +518,14 @@ export type CircleAnglesSpec = z.infer<typeof CircleAnglesSchema>
 export type CastSpec = z.infer<typeof CastSchema>
 export type ElevationSpec = z.infer<typeof ElevationSchema>
 export type CutBoxSpec = z.infer<typeof CutBoxSchema>
+export type TallyTableSpec = z.infer<typeof TallyTableSchema>
+export type PieChartSpec = z.infer<typeof PieChartSchema>
+export type DotPlotSpec = z.infer<typeof DotPlotSchema>
+export type SpinnerSpec = z.infer<typeof SpinnerSchema>
+export type CountersSpec = z.infer<typeof CountersSchema>
+export type LineGraphSpec = z.infer<typeof LineGraphSchema>
+export type HistogramSpec = z.infer<typeof HistogramSchema>
+export type OgiveSpec = z.infer<typeof OgiveSchema>
+export type StemLeafSpec = z.infer<typeof StemLeafSchema>
+export type ScatterSpec = z.infer<typeof ScatterSchema>
+export type VennSpec = z.infer<typeof VennSchema>

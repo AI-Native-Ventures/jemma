@@ -244,6 +244,18 @@ export const DIAGRAM_WORDS: Record<string, string> = {
   cast: 'the CAST quadrants',
   elevation: 'an angle of elevation',
   cut_box: 'a box cut from a card',
+  // P197
+  tally_table: 'a tally table',
+  pie_chart: 'a pie chart',
+  dot_plot: 'a line plot',
+  spinner: 'a spinner',
+  counters: 'a bag of counters',
+  line_graph: 'a broken-line graph',
+  histogram: 'a histogram',
+  ogive: 'an ogive',
+  stem_leaf: 'a stem and leaf display',
+  scatter: 'a scatter plot',
+  venn: 'a Venn diagram',
 }
 
 function how(lesson: Lesson): string {
