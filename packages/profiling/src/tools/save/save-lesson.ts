@@ -239,6 +239,11 @@ export const DIAGRAM_WORDS: Record<string, string> = {
   enlargement: 'an enlargement on a grid',
   // P195
   point_angle: 'a point and its angle',
+  // P196
+  circle_angles: 'angles in a circle',
+  cast: 'the CAST quadrants',
+  elevation: 'an angle of elevation',
+  cut_box: 'a box cut from a card',
 }
 
 function how(lesson: Lesson): string {

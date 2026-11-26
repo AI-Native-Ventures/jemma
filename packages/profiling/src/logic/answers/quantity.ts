@@ -190,7 +190,7 @@ export function markQuantity(q: QuantityQuestion, typed: string, read: NumberRea
  * carry a unit), and since P166 neither does one of the seven primary pictures (a Grade 1 to 6 question may carry a fraction bar or a bar graph). A whole or a decimal
  * answer of a senior question may be negative (the save gate takes a negative key for it, and the screen gives its box a minus key), and a primary one may not.
  */
-const SENIOR_PICTURE_KINDS = new Set(['coordinate_plane', 'triangle', 'box_plot', 'tree', 'timeline', 'point_angle'])
+const SENIOR_PICTURE_KINDS = new Set(['coordinate_plane', 'triangle', 'box_plot', 'tree', 'timeline', 'point_angle', 'circle_angles', 'cast', 'elevation', 'cut_box'])
 const isSeniorPicture = (diagram: unknown): boolean =>
   !!diagram && typeof diagram === 'object' && SENIOR_PICTURE_KINDS.has(String((diagram as { kind?: unknown }).kind))
 

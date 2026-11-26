@@ -162,6 +162,10 @@ const SENIOR_PICTURES =
   'A `coordinate_plane` graph may also be a `cubic` (`a`, `b`, `c`, `d`: y = ax³ + bx² + cx + d) or a `log` (`base`, `a`, `p`, `q`: y = a·log_base(x − p) + q), and a `line` may be `dashed` (the line y = x between a graph and its inverse). ' +
   'Give a `coordinate_plane` `circles` (each a centre `a`, `b` and a radius `r`; at most 2) for a circle on the grid, `polygon` `true` to join its `points` in order into a shape, and `inclination` with a `label` (like `θ`) to mark the angle its first `line` makes with the x-axis. ' +
   'Use `point_angle` for a point P(`x`; `y`), whole numbers from −6 to 6, joined to the origin with the angle θ from the positive x-axis marked. ' +
+  // P196: angles in a circle, CAST, an angle of elevation, a box cut from a card, and sizes on a 3D object.
+  'Use `circle_angles` for the angle AOB at the centre O (`centre`, an even number from 40 to 160) and the angle ACB at C on the circle on the same arc; `ask` (`centre` or `circle`) is the angle written as x, and the `answer` is its size. ' +
+  'Use `cast` for the four quadrants S, A, T and C with an angle of `degrees` drawn from the positive x-axis (`label` writes θ in place of the number), `elevation` for a tower AB on flat ground seen from C (short labels: `ground` for AC, `angle` for the angle of elevation at C, `height` for AB), and `cut_box` for a square card `side` wide with squares of side `cut` cut from its corners and the open box it folds into. ' +
+  'A `solid` may have `sizes`, each a short label: the `radius`, `height` and `slant` of a cone, the `radius` and `height` of a cylinder, the `radius` of a sphere, the `length`, `width` and `height` of a box. ' +
   'Never put the answer in a label. A lesson card or a diagram step may use these pictures too. ' +
   // P171: the learner places points on a grid by tapping it.
   'To have the learner place points on a grid by tapping it (where a shape lands after a reflection or a translation, or points from a table), give `plot` instead of a `diagram`: ' +

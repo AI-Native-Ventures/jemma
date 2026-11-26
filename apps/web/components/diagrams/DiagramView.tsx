@@ -42,6 +42,10 @@ import { Protractor } from './Protractor'
 import { ParallelLines } from './ParallelLines'
 import { Enlargement } from './Enlargement'
 import { PointAngle } from './PointAngle'
+import { CircleAngles } from './CircleAngles'
+import { Cast } from './Cast'
+import { Elevation } from './Elevation'
+import { CutBox } from './CutBox'
 import type { Variant } from './shared'
 
 export type DiagramViewProps = {
@@ -170,6 +174,15 @@ export function DiagramView({ spec, variant, highlight, className, caption, seni
       // P195: a point and its angle (Grades 10 to 12).
       case 'point_angle':
         return <PointAngle {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
+      // P196: angles in a circle, the CAST quadrants, an angle of elevation, a box cut from a card.
+      case 'circle_angles':
+        return <CircleAngles {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'cast':
+        return <Cast {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'elevation':
+        return <Elevation {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'cut_box':
+        return <CutBox {...s} variant={variant === 'question' ? 'question' : 'card'} />
       default:
         return <PictureMissing className={className} />
     }

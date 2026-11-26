@@ -286,8 +286,17 @@ const MapGridSchema = z.object({
 /** The 3D objects a picture draws. */
 export const SOLIDS = ['cube', 'cuboid', 'square_pyramid', 'triangular_pyramid', 'triangular_prism', 'cylinder', 'cone', 'sphere'] as const
 
-/** P192: a 3D object, its hidden edges dashed. */
-const SolidSchema = z.object({ kind: z.literal('solid'), shape: z.enum(SOLIDS) })
+/**
+ * P192: a 3D object, its hidden edges dashed. P196: `sizes` writes its sizes on it, each a short label like `3 cm` or `r`: the `radius`, `height` and `slant` of a
+ * cone, the `radius` and `height` of a cylinder, the `radius` of a sphere, the `length`, `width` and `height` of a box (a cube's `length`).
+ */
+const SolidSchema = z.object({
+  kind: z.literal('solid'),
+  shape: z.enum(SOLIDS),
+  sizes: z
+    .object({ radius: z.string().optional(), height: z.string().optional(), slant: z.string().optional(), length: z.string().optional(), width: z.string().optional() })
+    .optional(),
+})
 
 /** P192: a shape built from cubes, drawn in 3D: `heights` is how many cubes stand on each square, a row of numbers for each row from the back to the front. */
 const CubeStackSchema = z.object({ kind: z.literal('cube_stack'), heights: z.array(z.array(z.number())) })
@@ -335,6 +344,24 @@ const EnlargementSchema = z.object({
 /** P195: a point P(`x`; `y`) joined to the origin, with the angle θ from the positive x-axis to that arm marked and a dashed line down to the x-axis. */
 const PointAngleSchema = z.object({ kind: z.literal('point_angle'), x: z.number(), y: z.number(), name: z.string().optional() })
 
+/**
+ * P196: a circle with centre O and A, B and C on it: the angle AOB at the centre is `centre` degrees (40 to 160), and the angle ACB at C stands on the same arc.
+ * The angle the question asks for (`ask`, at the `centre` or at the `circle`) is the letter x; the other is written.
+ */
+const CircleAnglesSchema = z.object({ kind: z.literal('circle_angles'), centre: z.number(), ask: z.enum(['centre', 'circle']) })
+
+/** P196: the four quadrants named S, A, T and C, and an angle of `degrees` (1 to 359) drawn from the positive x-axis; `label` writes θ in place of the number. */
+const CastSchema = z.object({ kind: z.literal('cast'), degrees: z.number(), label: z.string().optional() })
+
+/**
+ * P196: a tower AB standing on flat ground, and C on the ground: `ground` labels AC (`80 m`), `angle` the angle of elevation at C up to the top B (`30°`), and
+ * `height` labels AB (`h`) when it is given.
+ */
+const ElevationSchema = z.object({ kind: z.literal('elevation'), ground: z.string(), angle: z.string(), height: z.string().optional() })
+
+/** P196: a square card `side` wide (`30 cm`) with a square of side `cut` (x when left out) cut from each corner, and the open box it folds into. */
+const CutBoxSchema = z.object({ kind: z.literal('cut_box'), side: z.string(), cut: z.string().optional() })
+
 /** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). P189: and five more. P190: and six for measuring. P191: and four for patterns, algebra and graphs. P192: and four for shapes and position. P193: and four for angles and transformations. */
 const QUESTION_PICTURES = [
   ObjectsSchema,
@@ -368,8 +395,8 @@ const QUESTION_PICTURES = [
   EnlargementSchema,
 ] as const
 
-/** P195: the pictures of a senior question only (Grades 10 to 12). */
-const SENIOR_QUESTION_PICTURES = [PointAngleSchema] as const
+/** P195: the pictures of a senior question only (Grades 10 to 12). P196: and four more. */
+const SENIOR_QUESTION_PICTURES = [PointAngleSchema, CircleAnglesSchema, CastSchema, ElevationSchema, CutBoxSchema] as const
 
 /**
  * P188: the pictures a question of a gated Grade 1 to 6 topic may carry: the seven Jemma draws for every grade and the ones of the question type boards. The demo
@@ -425,3 +452,7 @@ export type ProtractorSpec = z.infer<typeof ProtractorSchema>
 export type ParallelLinesSpec = z.infer<typeof ParallelLinesSchema>
 export type EnlargementSpec = z.infer<typeof EnlargementSchema>
 export type PointAngleSpec = z.infer<typeof PointAngleSchema>
+export type CircleAnglesSpec = z.infer<typeof CircleAnglesSchema>
+export type CastSpec = z.infer<typeof CastSchema>
+export type ElevationSpec = z.infer<typeof ElevationSchema>
+export type CutBoxSpec = z.infer<typeof CutBoxSchema>
