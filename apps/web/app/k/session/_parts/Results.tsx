@@ -193,7 +193,7 @@ function CardHead({ m }: { m: MissedQuestion }) {
       {/* P175: the right pin in green, the learner's dashed beside it. */}
       {m.pin ? <PinLine pin={m.pin} at={m.pinWrote ?? null} right={m.pinRight ?? null} mode="results" /> : null}
       {/* P172: the shape as the learner shaded it. */}
-      {m.shade && !m.unread ? <ShadedResult shade={m.shade} wrote={m.wrote} /> : null}
+      {m.shade && !m.unread ? <ShadedResult shade={m.shade} wrote={m.wrote} right={m.shade.mirror ? m.right : undefined} /> : null}
       {/* P173: the learner's picks, a shape missed or picked by mistake circled in red pen. */}
       {m.tap && !m.unread ? (
         <TapPicture tap={m.tap} picked={m.tap.shapes.map((_, i) => (m.tapWrote ?? []).includes(i + 1))} right={m.tapRight ?? []} label={`Your picks: ${(m.tapWrote ?? []).length} shapes.`} />
