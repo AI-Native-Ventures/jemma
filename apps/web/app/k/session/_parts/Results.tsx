@@ -182,7 +182,7 @@ function CardHead({ m }: { m: MissedQuestion }) {
       {/* P179: the learner's proof, the first line that does not follow in red pen with the line it should have been under it. */}
       {m.proof && !m.unread && (m.proofLines?.length ?? 0) > 0 ? <ProofResult lines={m.proofLines!} wrong={m.proofWrong ?? null} rightLine={m.proofRight ?? null} /> : null}
       {/* P178: the learner's pairs: a right one in green, a wrong one in red pen. */}
-      {m.match && !m.unread ? <MatchBoard match={m.match} joined={m.matchWrote ?? []} right={m.matchRight ?? []} mode="results" /> : null}
+      {m.match && !m.unread ? <MatchBoard match={m.match} plane={m.matchPlane} joined={m.matchWrote ?? []} right={m.matchRight ?? []} mode="results" /> : null}
       {/* P177: the learner's clock beside the right one (alone, in green, when it is right). */}
       {m.clock ? <ClockResults wrote={m.clockWrote ?? null} right={m.clockRight ?? null} /> : null}
       {/* P175: the right pin in green, the learner's dashed beside it. */}

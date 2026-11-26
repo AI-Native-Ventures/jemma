@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { DiagramSpecSchema, SeniorDiagramSpecSchema } from './diagram'
+import { DiagramSpecSchema, GraphSchema, SeniorDiagramSpecSchema } from './diagram'
 
 // Same union as logic/types.ts Format; the coordinator unifies them.
 export const FormatSchema = z.enum(['reading', 'diagram', 'audio'])
@@ -199,6 +199,21 @@ export type ProofSpec = z.infer<typeof ProofSchema>
  */
 export const GeneralSchema = z.object({ letter: z.string().optional() })
 export type GeneralSpec = z.infer<typeof GeneralSchema>
+
+/**
+ * P184: graphs the learner matches to their equations (Grades 10 to 12): 2 to 4 `graphs`, each given as a graph of a `coordinate_plane` is (a `line` by `m` and
+ * `c`, a `parabola` by `a`, `p`, `q`, and so on), all drawn small on the same window (`xMin` to `xMax`, `yMin` to `yMax`; in degrees for trig graphs), and their
+ * `equations` (`y = x² − 4`) in a mixed-up order. The key is an ordered `list` of the place in `equations` of the equation of each graph, from 1 (`2; 3; 1`).
+ */
+export const GraphMatchSchema = z.object({
+  xMin: z.number(),
+  xMax: z.number(),
+  yMin: z.number(),
+  yMax: z.number(),
+  graphs: z.array(GraphSchema),
+  equations: z.array(z.string()),
+})
+export type GraphMatchSpec = z.infer<typeof GraphMatchSchema>
 export type LineSpec = z.infer<typeof LineSchema>
 
 /** The most and the fewest lines of the worked steps of a question (P127). */
@@ -240,6 +255,8 @@ const seniorQuestion = <Steps extends z.ZodType>(steps: Steps) =>
     proof: ProofSchema.optional(),
     /** P180: every solution of a trig equation, typed as families. Senior classes only. */
     general: GeneralSchema.optional(),
+    /** P184: graphs the learner matches to their equations. Senior classes only. */
+    graphMatch: GraphMatchSchema.optional(),
     difficulty: Difficulty,
     why: z.string(),
     rightWay: z.string(),

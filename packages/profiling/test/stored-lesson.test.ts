@@ -58,10 +58,12 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * 32b5982d8faf9ea58f30b71f41bfb14e566daa96d2e028c928c1126e31cdebaf (senior) and afa8764da0e665dde02b91576a535ba42625038116c6233f53e0d1714634a0a3 (wide).
  * P183 (26 Nov 2026) moved the wide one alone: a question may have a `clockFace`, a clock face to read. Before P183 it was
  * cc232a2bed945067c97c557c2e17d02c40a113124ddbbc5e7d9bc9455492a3b8.
+ * P184 (26 Nov 2026) moved both, on purpose: a senior question may have a `graphMatch`, graphs to match to their equations. Before P184 they were
+ * 96e1cd58f52b8b4e324e4c64af6fbd0abbb94ea2c02fca8e518845a8e9d9b84d (senior) and 2e3c548cae57d87537dad0df4c6a9f46bcea0cb2f9361272fc724ecaa6feade4 (wide).
  * Every packet that changes the senior schema moves these two: recompute them after a merge.
  */
-const SENIOR_SHA = '96e1cd58f52b8b4e324e4c64af6fbd0abbb94ea2c02fca8e518845a8e9d9b84d'
-const WIDE_SHA = '2e3c548cae57d87537dad0df4c6a9f46bcea0cb2f9361272fc724ecaa6feade4'
+const SENIOR_SHA = '953e2754a7599f5b1bf4d0cfef5e731b464ba17b35dc1e393006c0aa82e58a57'
+const WIDE_SHA = '429f5d922d17252dea0ac797c4bbb62efbeb4f8faf78a0f8008c63e5ef2bf8e2'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({
