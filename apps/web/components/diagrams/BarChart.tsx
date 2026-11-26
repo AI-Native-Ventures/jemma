@@ -1,13 +1,17 @@
+import type { Notation } from '@jemma/profiling/logic'
 import type { DiagramSpec } from '@jemma/profiling/schemas'
-import { BODY, GOLD, INK, Line, SOFT_3, Svg, T, type Variant, fmt } from './shared'
+import { BODY, GOLD, INK, Line, SOFT_3, Svg, T, type Variant, fmtIn } from './shared'
 
 export type BarChartProps = Extract<DiagramSpec, { kind: 'bar_chart' }> & {
   variant?: Variant
   /** Bars drawn in gold (question variant). Card variant highlights the tallest bar by default. */
   highlight?: string[]
+  /** P187: how its numbers are written (a decimal point in the US). */
+  notation?: Notation
 }
 
-export function describeBarChart({ bars, yMax, variant }: BarChartProps) {
+export function describeBarChart({ bars, yMax, variant, notation }: BarChartProps) {
+  const fmt = (v: number) => fmtIn(v, notation)
   // P166: while a question is answered, the words name the bars but do not read them: their values may be the answer.
   if (variant === 'question') return `Bar graph, from 0 to ${fmt(yMax)}, with bars for ${bars.map((b) => b.label).join(', ')}.`
   return `Bar graph, from 0 to ${fmt(yMax)}: ${bars.map((b) => `${b.label} ${fmt(b.value)}`).join(', ')}.`
@@ -20,6 +24,7 @@ function niceStep(yMax: number, maxTicks: number) {
 
 export function BarChart(props: BarChartProps) {
   const { bars, variant = 'card' } = props
+  const fmt = (v: number) => fmtIn(v, props.notation)
   const yMax = props.yMax > 0 ? props.yMax : 1
   const q = variant === 'question'
   const n = Math.max(1, bars.length)

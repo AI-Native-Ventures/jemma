@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { numberIn, type Notation } from '@jemma/profiling/logic'
 import { Rich, fracLabel } from './math-label'
 
 export const INK = '#161616'
@@ -17,6 +18,8 @@ export type Variant = 'card' | 'question'
 
 /** SA number format: decimal comma. */
 export const fmt = (n: number) => String(Math.round(n * 1e6) / 1e6).replace('.', ',')
+/** P187: a number in the notation of the space on the screen: a decimal comma, or a decimal point in the US. */
+export const fmtIn = (n: number, notation: Notation = 'za') => numberIn(n, notation)
 
 type SvgProps = { width: number; height: number; label: string; children: ReactNode; maxWidth?: number }
 

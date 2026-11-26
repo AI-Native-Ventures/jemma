@@ -5,6 +5,7 @@ import { DiagramView } from '@/components/diagrams'
 import type { LessonForChild } from '../[sessionId]/types'
 import { BarRows, rowFills } from './Bars'
 import { FractionText } from './Frac'
+import { useNotation } from '@/lib/notation'
 
 export function LearnBadge({ children, icon }: { children: string; icon: React.ReactNode }) {
   return (
@@ -38,7 +39,8 @@ function sameAmountCaption(spec: Extract<DiagramSpec, { kind: 'fraction_bar' }>)
 }
 
 function CardPicture({ spec }: { spec: SeniorDiagramSpec }) {
-  if (spec.kind !== 'fraction_bar') return <DiagramView spec={spec} variant="learn" />
+  const notation = useNotation()
+  if (spec.kind !== 'fraction_bar') return <DiagramView spec={spec} variant="learn" notation={notation} />
   return (
     <div aria-hidden="true" className="flex flex-col gap-2.5 bg-[#F8F6F1] p-4 [border-radius:18px]">
       <BarRows

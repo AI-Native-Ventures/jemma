@@ -1,5 +1,6 @@
 import type { Graph } from '@jemma/profiling/schemas'
-import { fmt } from './shared'
+import type { Notation } from '@jemma/profiling/logic'
+import { fmtIn } from './shared'
 
 /**
  * The arithmetic behind a coordinate plane, as pure functions: no React, no browser.
@@ -181,26 +182,28 @@ export function defaultStep(min: number, max: number, given?: number): number {
   return range
 }
 
-const coefficient = (a: number) => (a === 1 ? '' : a === -1 ? '-' : fmt(a))
-const plus = (v: number) => (v === 0 ? '' : v < 0 ? ` - ${fmt(-v)}` : ` + ${fmt(v)}`)
-const shifted = (offset: number) => (offset === 0 ? 'x' : `(x ${offset < 0 ? '+' : '-'} ${fmt(Math.abs(offset))})`)
+const coefficient = (a: number, fmt: (v: number) => string) => (a === 1 ? '' : a === -1 ? '-' : fmt(a))
+const plus = (v: number, fmt: (v: number) => string) => (v === 0 ? '' : v < 0 ? ` - ${fmt(-v)}` : ` + ${fmt(v)}`)
+const shifted = (offset: number, fmt: (v: number) => string) => (offset === 0 ? 'x' : `(x ${offset < 0 ? '+' : '-'} ${fmt(Math.abs(offset))})`)
 
 /** The graph as a line of algebra, for the spoken description of a picture on a card (never for a question: it can be the answer). */
-export function graphEquation(g: Graph): string {
+export function graphEquation(g: Graph, notation?: Notation): string {
+  // P187: its numbers in the notation of the space (a decimal point in the US).
+  const fmt = (v: number) => fmtIn(v, notation)
   switch (g.type) {
     case 'line':
-      return g.m === 0 ? `y = ${fmt(g.c)}` : `y = ${coefficient(g.m)}x${plus(g.c)}`
+      return g.m === 0 ? `y = ${fmt(g.c)}` : `y = ${coefficient(g.m, fmt)}x${plus(g.c, fmt)}`
     case 'parabola':
-      return `y = ${coefficient(g.a)}${shifted(p(g))}^2${plus(q(g))}`
+      return `y = ${coefficient(g.a, fmt)}${shifted(p(g), fmt)}^2${plus(q(g), fmt)}`
     case 'hyperbola':
-      return `y = ${fmt(g.a)}/${shifted(p(g))}${plus(q(g))}`
+      return `y = ${fmt(g.a)}/${shifted(p(g), fmt)}${plus(q(g), fmt)}`
     case 'exponential': {
-      const power = `${fmt(g.b)}^${shifted(p(g))}`
-      return `y = ${g.a === 1 ? power : g.a === -1 ? `-${power}` : `${fmt(g.a)} × ${power}`}${plus(q(g))}`
+      const power = `${fmt(g.b)}^${shifted(p(g), fmt)}`
+      return `y = ${g.a === 1 ? power : g.a === -1 ? `-${power}` : `${fmt(g.a)} × ${power}`}${plus(q(g), fmt)}`
     }
     case 'trig': {
       const b = g.b ?? 1
-      return `y = ${coefficient(g.a ?? 1)}${g.fn} ${b === 1 ? '' : b === -1 ? '-' : fmt(b)}x${plus(q(g))}`
+      return `y = ${coefficient(g.a ?? 1, fmt)}${g.fn} ${b === 1 ? '' : b === -1 ? '-' : fmt(b)}x${plus(q(g), fmt)}`
     }
   }
 }

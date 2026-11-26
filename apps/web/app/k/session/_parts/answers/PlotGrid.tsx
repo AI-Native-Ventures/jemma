@@ -1,9 +1,10 @@
 'use client'
 
 import { useRef, useState, type MouseEvent, type ReactNode } from 'react'
-import { CURVE_NAME, curveThrough, curveWords, plotAnswer, sameCurve, sketchCurve, sketchName, turningPoints, type Curve } from '@jemma/profiling/logic'
+import { CURVE_NAME, curveThrough, curveWords, inNotation, plotAnswer, pointIn, sameCurve, sketchCurve, sketchName, turningPoints, type Curve, type Notation } from '@jemma/profiling/logic'
 import type { PlotSpec } from '@jemma/profiling/schemas'
 import { BODY, GOLD, GREEN, INK, WHITE } from '@/components/diagrams/shared'
+import { useNotation } from '@/lib/notation'
 
 // P171: points placed on a grid, from the "Plot points on a grid" board (on the grid of the v1 design). A tap on the grid places the next point on the nearest
 // corner; a tap on a placed point picks it, and the next tap moves it. Undo takes the last point off. When every point of a shape is placed, they are joined
@@ -32,7 +33,8 @@ function geometry(p: PlotSpec) {
   return { u, H, step, X: (x: number) => left + ((x - p.xMin) / step) * u, Y: (y: number) => M + (p.yMax - y) * u }
 }
 
-const name = (p: Point) => `(${p.x}; ${p.y})`
+/** A point as it is said: (2; 3), and P187 (2, 3) in the US. */
+const name = (p: Point, n: Notation = 'za') => pointIn(String(p.x), String(p.y), n)
 
 export type PlotGridProps = {
   plot: PlotSpec
@@ -53,6 +55,9 @@ export const sketchOf = (plot: PlotSpec, points: (Point | null)[]): Curve | null
 
 export function PlotGrid({ plot, mode, points = [], right = [], picked = null, last = null, onTap, onPick }: PlotGridProps) {
   const svg = useRef<SVGSVGElement>(null)
+  // P187: the points and graphs are said in the notation of the space ((2, 3) in the US).
+  const notation = useNotation()
+  const say = (text: string) => inNotation(text, notation)
   const { u, H, step, X, Y } = geometry(plot)
   const every = Math.max((plot.xMax - plot.xMin) / step, plot.yMax - plot.yMin) > 12 ? 2 : 1
   const degrees = plot.curve === 'trig'
@@ -92,7 +97,7 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
   // of the lines under them.
   const sketch = plot.curve !== undefined
   const where = (q: Point, color: string, k: string, under = false) => {
-    const text = sketchName(q, degrees)
+    const text = say(sketchName(q, degrees))
     const wide = text.length * 7.4
     const x = X(q.x)
     let left = q.x < (plot.xMin + plot.xMax) / 2
@@ -143,8 +148,8 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
       viewBox={`0 0 ${W} ${H}`}
       width="100%"
       role="group"
-      aria-label={`A grid from ${plot.xMin} to ${plot.xMax} across and from ${plot.yMin} to ${plot.yMax} up${given.length ? `, with ${given.map((q) => `${q.label.trim()} at ${name(q)}`).join(', ')}` : ''}.${
-        sketch && mode === 'answer' && placed.length ? ` Points at ${placed.map((q) => sketchName(q, degrees)).join(', ')}.${mine ? ` Joined into a graph that ${curveWords(mine)}.` : ''}` : ''
+      aria-label={`A grid from ${plot.xMin} to ${plot.xMax} across and from ${plot.yMin} to ${plot.yMax} up${given.length ? `, with ${given.map((q) => `${q.label.trim()} at ${name(q, notation)}`).join(', ')}` : ''}.${
+        sketch && mode === 'answer' && placed.length ? ` Points at ${placed.map((q) => say(sketchName(q, degrees))).join(', ')}.${mine ? ` Joined into a graph that ${say(curveWords(mine))}.` : ''}` : ''
       }`}
       onClick={tap}
       style={{ display: 'block', maxWidth: W, height: 'auto', cursor: mode === 'answer' ? 'crosshair' : 'default', userSelect: 'none', fontFamily: "var(--font-outfit), Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif" }}
@@ -243,8 +248,8 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
 
 const textButton = 'flex min-h-11 cursor-pointer items-center self-center border-0 bg-transparent px-1 text-[15px] font-semibold text-ink underline underline-offset-[3px]'
 
-/** The line under the grid: the point to place next, then what was placed. It never says whether a point is right. */
-export function plotHint(plot: PlotSpec, points: (Point | null)[], last: number | null): ReactNode {
+/** The line under the grid: the point to place next, then what was placed. It never says whether a point is right. P187: `n`, how a point is said. */
+export function plotHint(plot: PlotSpec, points: (Point | null)[], last: number | null, n: Notation = 'za'): ReactNode {
   const next = points.findIndex((q) => q === null)
   const names = plot.place.map((n) => n.trim())
   if (next < 0) {
@@ -254,13 +259,16 @@ export function plotHint(plot: PlotSpec, points: (Point | null)[], last: number 
   if (last === null || !points[last]) return `Tap the grid to place ${names[next]}.`
   return (
     <>
-      You placed <strong className="font-bold text-ink">{names[last]}</strong> at <strong className="font-bold text-ink">{name(points[last]!)}</strong>. Now {names[next]}.
+      You placed <strong className="font-bold text-ink">{names[last]}</strong> at <strong className="font-bold text-ink">{name(points[last]!, n)}</strong>. Now {names[next]}.
     </>
   )
 }
 
-/** P176: the line under a sketch: the points placed so far and how many are still to place, then that Jemma joined them. It never says whether they are right. */
-export function sketchHint(points: (Point | null)[], plot?: PlotSpec): ReactNode {
+/**
+ * P176: the line under a sketch: the points placed so far and how many are still to place, then that Jemma joined them. It never says whether they are right.
+ * P187: `n`, how a point is said.
+ */
+export function sketchHint(points: (Point | null)[], plot?: PlotSpec, n: Notation = 'za'): ReactNode {
   const placed = points.filter((q): q is Point => q !== null)
   if (placed.length === 0) return 'Tap the grid to place a point.'
   const left = points.length - placed.length
@@ -268,7 +276,7 @@ export function sketchHint(points: (Point | null)[], plot?: PlotSpec): ReactNode
     const list = placed.map((q, i) => (
       <span key={i}>
         {i > 0 ? (i === placed.length - 1 ? ' and ' : ', ') : null}
-        <strong className="font-bold text-ink">{sketchName(q, plot?.curve === 'trig')}</strong>
+        <strong className="font-bold text-ink">{inNotation(sketchName(q, plot?.curve === 'trig'), n)}</strong>
       </span>
     ))
     return <>You placed {list}. {left === 1 ? 'One more point to go.' : `${['Two', 'Three'][left - 2] ?? left} more points to go.`}</>
@@ -285,6 +293,7 @@ export function sketchHint(points: (Point | null)[], plot?: PlotSpec): ReactNode
 
 /** The answer of a grid question: the grid to tap, Undo, the line under it, and the coordinates typed instead. `onChange` gets the x and the y of each point. */
 export function PlotAnswer({ plot, onChange, typed }: { plot: PlotSpec; onChange: (text: string) => void; typed: ReactNode }) {
+  const notation = useNotation()
   const [points, setPoints] = useState<(Point | null)[]>(() => plot.place.map(() => null))
   const [picked, setPicked] = useState<number | null>(null)
   const [last, setLast] = useState<number | null>(null)
@@ -333,7 +342,7 @@ export function PlotAnswer({ plot, onChange, typed }: { plot: PlotSpec; onChange
             </button>
           </div>
           <PlotGrid plot={plot} mode="answer" points={points} picked={picked} last={last} onTap={tap} onPick={(i) => setPicked(picked === i ? null : i)} />
-          <p aria-live="polite" className="m-0 text-center text-[16px] leading-[1.4] text-body">{plot.curve ? sketchHint(points, plot) : plotHint(plot, points, last)}</p>
+          <p aria-live="polite" className="m-0 text-center text-[16px] leading-[1.4] text-body">{plot.curve ? sketchHint(points, plot, notation) : plotHint(plot, points, last, notation)}</p>
           <button type="button" onClick={toggle} className={textButton}>{plot.curve ? 'Or type the points instead' : 'Or type the coordinates instead'}</button>
         </>
       )}

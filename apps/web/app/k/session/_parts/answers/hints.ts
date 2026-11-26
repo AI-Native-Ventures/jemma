@@ -1,4 +1,4 @@
-import type { TimeStyle } from '@jemma/profiling/logic'
+import { decimalWords, type Notation, type TimeStyle } from '@jemma/profiling/logic'
 import type { AnswerShape } from '../../[sessionId]/logic'
 
 // P148: the line under the boxes of a quantity (what goes in them), for the screen, and the same line for a pencil on the paper sheet. Plain words, short
@@ -20,9 +20,9 @@ export function numberHint({ unit, round }: Extras): string {
   return base + roundLine(round)
 }
 
-/** The line under the box of a whole or a decimal answer that has a unit, a round or a minus key. */
-export function plainNumberHint(kind: 'whole' | 'decimal', { unit, round, signed }: Extras): string {
-  const base = kind === 'whole' ? 'Type a whole number.' : 'Type a number with a comma, like 0,5.'
+/** The line under the box of a whole or a decimal answer that has a unit, a round or a minus key. P187: a decimal is said in the notation `n`. */
+export function plainNumberHint(kind: 'whole' | 'decimal', { unit, round, signed }: Extras, n: Notation = 'za'): string {
+  const base = kind === 'whole' ? 'Type a whole number.' : `Type a number ${decimalWords(n)}.`
   const sign = signed ? ' It may be negative.' : ''
   const unitLine = unit ? (unit === 'R' ? ' Type only the amount.' : ' The unit is already there.') : ''
   return base + sign + unitLine + roundLine(round)
@@ -49,8 +49,8 @@ export function numberWriteLine({ unit, round }: Extras): string {
   return base + roundLine(round)
 }
 
-export function plainNumberWriteLine(kind: 'whole' | 'decimal', { unit, round, signed }: Extras): string {
-  const base = kind === 'whole' ? 'Write a whole number.' : 'Write a number with a comma, like 0,5.'
+export function plainNumberWriteLine(kind: 'whole' | 'decimal', { unit, round, signed }: Extras, n: Notation = 'za'): string {
+  const base = kind === 'whole' ? 'Write a whole number.' : `Write a number ${decimalWords(n)}.`
   return base + (signed ? ' It may be negative.' : '') + (unit ? (unit === 'R' ? ' Write the amount in rand.' : ` Write the unit (${unit}) after it.`) : '') + roundLine(round)
 }
 

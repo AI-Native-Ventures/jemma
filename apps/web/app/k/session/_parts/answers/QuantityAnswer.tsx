@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 import { FractionText } from '../Frac'
 import { plainNumberHint } from './hints'
+import { useNotation } from '@/lib/notation'
 import { QuantityBox } from './QuantityBox'
 
 // P148: the answer area of a whole or a decimal question that has a unit, a round or a minus key (a senior class). The same boxes and lines as the old whole and decimal
@@ -32,10 +33,11 @@ export function QuantityAnswer({
   value: string
   onChange: (value: string) => void
 }) {
+  const notation = useNotation()
   return (
     <Stack>
       <QuantityBox id="answer" label="Your answer" value={value} onChange={onChange} unit={extras.unit} signed={!!extras.signed} mode={kind === 'whole' ? 'numeric' : 'decimal'} />
-      <AnswerHint>{plainNumberHint(kind, extras)}</AnswerHint>
+      <AnswerHint>{plainNumberHint(kind, extras, notation)}</AnswerHint>
     </Stack>
   )
 }

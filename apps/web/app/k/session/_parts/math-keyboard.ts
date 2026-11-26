@@ -1,3 +1,4 @@
+import type { Notation } from '@jemma/profiling/logic'
 import { strandOf, type Strand, type TypedKind } from './maths-keys'
 
 // P132: the keyboard of the maths editor. P140 made it simpler: every tab has the same three rows on top, so the numbers, the signs and the fraction, root
@@ -63,6 +64,8 @@ export const CAPS = {
   right: cap('move right', { label: '[right]' }),
   hide: cap('hide the keyboard', { label: '[hide-keyboard]', width: 2 }),
   comma: cap('decimal comma', { latex: '{,}', label: ',', insert: '{,}', class: 'big-op' }),
+  /** P187: the decimal key of a space in the US. */
+  point: cap('decimal point', { latex: '.', label: '.', insert: '.', class: 'big-op' }),
   // functions and constants
   sin: cap('sine', { latex: '\\sin', insert: '\\sin\\left(#?\\right)', class: 'small' }),
   cos: cap('cosine', { latex: '\\cos', insert: '\\cos\\left(#?\\right)', class: 'small' }),
@@ -176,10 +179,13 @@ function tabRow(kind: TypedKind, current: TabId): (string | Keycap)[] {
   return keys.length >= 5 ? keys : filled([...keys, ...Array.from({ length: Math.max(0, ROW_WIDTH - 2 - rowUnits(keys)) }, () => BLANK), CAPS.hide])
 }
 
-/** The three rows on top of every tab: the digits, the signs with the comma and backspace, and fraction, roots, powers and the arrows. */
-const topRows = (): (string | Keycap)[][] => [
+/**
+ * The three rows on top of every tab: the digits, the signs with the decimal key and backspace, and fraction, roots, powers and the arrows. P187: the decimal
+ * key is the comma, or in the US the point.
+ */
+const topRows = (notation: Notation): (string | Keycap)[][] => [
   ['[1]', '[2]', '[3]', '[4]', '[5]', '[6]', '[7]', '[8]', '[9]', '[0]'],
-  [CAPS.plus, CAPS.minus, CAPS.times, CAPS.divide, CAPS.equals, CAPS.open, CAPS.close, CAPS.comma, CAPS.backspace],
+  [CAPS.plus, CAPS.minus, CAPS.times, CAPS.divide, CAPS.equals, CAPS.open, CAPS.close, notation === 'us' ? CAPS.point : CAPS.comma, CAPS.backspace],
   [wide(CAPS.fraction, 2), wide(CAPS.sqrt, 1.5), wide(CAPS.cbrt, 1.5), wide(CAPS.squared, 1.5), wide(CAPS.power, 1.5), CAPS.left, CAPS.right],
 ]
 
@@ -204,7 +210,7 @@ function tabRows(tab: TabId, kind: TypedKind): [(string | Keycap)[], (string | K
 }
 
 /** The rows of one tab for one kind of answer: the three rows every tab has, the two of the tab, and the strip of tabs. Six rows, whatever the tab. */
-const rowsOf = (tab: TabId, kind: TypedKind): (string | Keycap)[][] => [...topRows(), ...tabRows(tab, kind), tabRow(kind, tab)]
+const rowsOf = (tab: TabId, kind: TypedKind, notation: Notation): (string | Keycap)[][] => [...topRows(notation), ...tabRows(tab, kind), tabRow(kind, tab)]
 
 /**
  * The CSS of a layer, so that the keyboard is responsive: the size of the keys and of what is written on them follows the width of the screen, and nothing
@@ -232,7 +238,7 @@ const LAYER_STYLE = `.ML__keyboard { --keyboard-accent-color: #007749; }
 .MLK__rows > .MLK__row .MLK__shift { display: none !important; }`
 
 /** The keyboard of one question: a layer for each tab of its kind of answer, the tab that fits the question first (the editor opens on the first). */
-export function keyboardLayout(input: { kind: TypedKind; topic?: string; prompt?: string }): KeyboardLayout {
+export function keyboardLayout(input: { kind: TypedKind; topic?: string; prompt?: string; notation?: Notation }): KeyboardLayout {
   const strand = strandOf(input.topic, input.prompt)
   const first = openingTab(input.kind, strand)
   const tabs = tabsFor(input.kind)
@@ -243,7 +249,7 @@ export function keyboardLayout(input: { kind: TypedKind; topic?: string; prompt?
     tooltip: 'Jemma maths keys',
     displayEditToolbar: false,
     displayShiftedKeycaps: false,
-    layers: order.map((t) => ({ id: layerId(t.id), style: LAYER_STYLE, rows: rowsOf(t.id, input.kind) })),
+    layers: order.map((t) => ({ id: layerId(t.id), style: LAYER_STYLE, rows: rowsOf(t.id, input.kind, input.notation ?? 'za') })),
   }
 }
 

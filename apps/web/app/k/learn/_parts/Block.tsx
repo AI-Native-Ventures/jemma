@@ -7,6 +7,7 @@ import type { TypesetMode } from '../../session/_parts/typeset'
 import { blockView, firstSentence, type BlockView, type Delivery } from './delivery'
 import { LessonText } from './LessonText'
 import { TryBlock } from './TryBlock'
+import { useNotation } from '@/lib/notation'
 
 /**
  * What a block needs to speak: whether this browser can, whether this block is being read now, and the tap that starts or stops it. `words` comes from
@@ -59,9 +60,10 @@ function PlayButton({ playing, onToggle }: { playing: boolean; onToggle: () => v
 
 /** The picture of a block. Pictures draws it as wide as the screen allows, the others at the size the practice screens use. */
 function Picture({ spec, large }: { spec: unknown; large: boolean }) {
+  const notation = useNotation()
   return (
     <div data-picture="true" data-size={large ? 'large' : 'normal'} className={`flex w-full justify-center ${large ? '[&_svg]:!max-w-full [&_svg]:max-h-[440px]' : '[&_svg]:max-h-[300px]'}`}>
-      <DiagramView spec={spec} variant="learn" />
+      <DiagramView spec={spec} variant="learn" notation={notation} />
     </div>
   )
 }

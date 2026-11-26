@@ -2,10 +2,12 @@ import { useId } from 'react'
 import type { CoordinatePlaneSpec } from '@jemma/profiling/schemas'
 import { Rich, fracLabel, labelWidth, raisedLabel } from './math-label'
 import { boxOf, hits, hitsAny, within, type Anchor, type Box } from './label-clear'
-import { BODY, GREEN, RED_TEXT, INK, Line, Svg, WHITE, fmt, type Variant } from './shared'
+import { pointIn, type Notation } from '@jemma/profiling/logic'
+import { BODY, GREEN, RED_TEXT, INK, Line, Svg, WHITE, fmtIn, type Variant } from './shared'
 import { defaultStep, graphEquation, sampleGraph, ticksOf, type Pt } from './plane-math'
 
-export type CoordinatePlaneProps = CoordinatePlaneSpec & { variant?: Variant }
+/** P187: `notation` says how its numbers are written (a decimal point, and (2, 3) for a point, in the US). */
+export type CoordinatePlaneProps = CoordinatePlaneSpec & { variant?: Variant; notation?: Notation }
 
 const W = 320
 const H = 300
@@ -27,8 +29,8 @@ const GRAPH = [
 ] as const
 
 const r1 = (n: number) => Math.round(n * 10) / 10
-/** A negative number with a true minus sign, and the decimal comma of the app. */
-const numeral = (v: number) => (v < 0 ? `−${fmt(-v)}` : fmt(v))
+/** A negative number with a true minus sign, and the decimal comma of the app (P187: a decimal point in the US). */
+const numeral = (v: number, n?: Notation) => (v < 0 ? `−${fmtIn(-v, n)}` : fmtIn(v, n))
 const unlabelled = (spec: CoordinatePlaneSpec) => spec.points?.filter((p) => !p.label) ?? []
 const sentence = (parts: string[]) => (parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}` : (parts[0] ?? ''))
 const kindOf = (g: NonNullable<CoordinatePlaneSpec['graphs']>[number]) => (g.type === 'line' ? 'line' : 'curve')
@@ -37,7 +39,8 @@ const kindOf = (g: NonNullable<CoordinatePlaneSpec['graphs']>[number]) => (g.typ
  * The spoken description. On a card it says the equation of each graph and the coordinates of each point. In a question (`variant` "question")
  * the equation or a coordinate can be the very answer, so it only says what can be seen: a straight line, a curve, the labels.
  */
-export function describeCoordinatePlane(spec: CoordinatePlaneSpec, variant: Variant = 'card') {
+export function describeCoordinatePlane(spec: CoordinatePlaneSpec, variant: Variant = 'card', notation?: Notation) {
+  const fmt = (v: number) => fmtIn(v, notation)
   const q = variant === 'question'
   const same = spec.xMin === spec.yMin && spec.xMax === spec.yMax
   let text = `A grid from ${fmt(spec.xMin)} to ${fmt(spec.xMax)}${same ? '' : ` across and from ${fmt(spec.yMin)} to ${fmt(spec.yMax)} up`}`
@@ -45,7 +48,7 @@ export function describeCoordinatePlane(spec: CoordinatePlaneSpec, variant: Vari
     const parts = spec.graphs.map((g) =>
       q
         ? `${g.type === 'line' ? 'a straight line' : 'a curve'}${g.label ? ` labelled ${g.label}` : ''}`
-        : `the ${kindOf(g)} ${graphEquation(g)}${g.label ? ` (${g.label})` : ''}`,
+        : `the ${kindOf(g)} ${graphEquation(g, notation)}${g.label ? ` (${g.label})` : ''}`,
     )
     text += ` with ${sentence(parts)}`
   }
@@ -55,7 +58,7 @@ export function describeCoordinatePlane(spec: CoordinatePlaneSpec, variant: Vari
       const rest = unlabelled(spec).length
       text += named.length ? `. Points: ${named.join(', ')}${rest ? ` and ${rest} more` : ''}.` : `. Points: ${rest} marked.`
     } else {
-      text += `. Points: ${spec.points.map((p) => `${p.label ? `${p.label} ` : ''}(${fmt(p.x)}; ${fmt(p.y)})`).join(', ')}.`
+      text += `. Points: ${spec.points.map((p) => `${p.label ? `${p.label} ` : ''}${pointIn(fmt(p.x), fmt(p.y), notation ?? 'za')}`).join(', ')}.`
     }
   }
   return text
@@ -163,8 +166,8 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
   const everyOf = (ticks: number[], grid: number) => COUNT_STEPS.find((k) => written(ticks, grid, k).length <= MOST_TESTED) ?? COUNT_STEPS[COUNT_STEPS.length - 1]!
   const crowded = (kx: number, ky: number): 'x' | 'y' | null => {
     const items = [
-      ...written(xTicks, xGrid, kx).map((v) => ({ axis: 'x' as const, box: crowdBox(px(v), xAxisY + 17, 'middle', numeral(v)) })),
-      ...written(yTicks, yGrid, ky).map((v) => ({ axis: 'y' as const, box: crowdBox(yAxisX - 7, py(v) + 4, 'end', numeral(v)) })),
+      ...written(xTicks, xGrid, kx).map((v) => ({ axis: 'x' as const, box: crowdBox(px(v), xAxisY + 17, 'middle', numeral(v, props.notation)) })),
+      ...written(yTicks, yGrid, ky).map((v) => ({ axis: 'y' as const, box: crowdBox(yAxisX - 7, py(v) + 4, 'end', numeral(v, props.notation)) })),
       ...(origin ? [{ axis: 'zero' as const, box: crowdBox(yAxisX - 7, xAxisY + 17, 'end', '0') }] : []),
     ]
     const nx = items.filter((i) => i.axis === 'x').length
@@ -195,8 +198,8 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
   const xWritten = written(xTicks, xGrid, everyX)
   const yWritten = written(yTicks, yGrid, everyY)
   const numbers = [
-    ...xWritten.map((v) => ({ key: `x${v}`, box: numberBox(px(v), xAxisY + 17, 'middle', numeral(v)) })),
-    ...yWritten.map((v) => ({ key: `y${v}`, box: numberBox(yAxisX - 7, py(v) + 4, 'end', numeral(v)) })),
+    ...xWritten.map((v) => ({ key: `x${v}`, box: numberBox(px(v), xAxisY + 17, 'middle', numeral(v, props.notation)) })),
+    ...yWritten.map((v) => ({ key: `y${v}`, box: numberBox(yAxisX - 7, py(v) + 4, 'end', numeral(v, props.notation)) })),
     ...(origin ? [{ key: 'zero', box: numberBox(yAxisX - 7, xAxisY + 17, 'end', '0') }] : []),
   ]
   const taken: Box[] = []
@@ -244,7 +247,7 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
   })
 
   return (
-    <Svg width={W} height={H} label={describeCoordinatePlane(props, variant)}>
+    <Svg width={W} height={H} label={describeCoordinatePlane(props, variant, props.notation)}>
       <defs>
         <clipPath id={clipId}>
           <rect x={LEFT} y={TOP} width={PLOT_W} height={PLOT_H} />
@@ -290,10 +293,10 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
       </g>
       {/* The numbers, the axis names and the labels are not clipped, and sit over the graphs (their white halo keeps them readable where a line crosses). */}
       {xWritten.filter((v) => !hidden.has(`x${v}`)).map((v) => (
-        <Num key={`nx${v}`} x={px(v)} y={xAxisY + 17} anchor="middle" extra={{ 'data-tick': 'x' }}>{numeral(v)}</Num>
+        <Num key={`nx${v}`} x={px(v)} y={xAxisY + 17} anchor="middle" extra={{ 'data-tick': 'x' }}>{numeral(v, props.notation)}</Num>
       ))}
       {yWritten.filter((v) => !hidden.has(`y${v}`)).map((v) => (
-        <Num key={`ny${v}`} x={yAxisX - 7} y={py(v) + 4} anchor="end" extra={{ 'data-tick': 'y' }}>{numeral(v)}</Num>
+        <Num key={`ny${v}`} x={yAxisX - 7} y={py(v) + 4} anchor="end" extra={{ 'data-tick': 'y' }}>{numeral(v, props.notation)}</Num>
       ))}
       {origin && !hidden.has('zero') && (
         <Num x={yAxisX - 7} y={xAxisY + 17} anchor="end" extra={{ 'data-zero': '' }}>

@@ -1,5 +1,6 @@
 import type { BoxPlotSpec } from '@jemma/profiling/schemas'
-import { BODY, EDGE, GOLD_TINT, INK, Line, Svg, T, fmt } from './shared'
+import type { Notation } from '@jemma/profiling/logic'
+import { BODY, EDGE, GOLD_TINT, INK, Line, Svg, T, fmtIn } from './shared'
 
 // P165: a box and whisker plot on a scale. No value is written on the plot: the learner reads the five numbers off the scale.
 
@@ -7,11 +8,14 @@ const W = 340
 const X0 = 24
 const X1 = 316
 
-export function describeBoxPlot(s: BoxPlotSpec): string {
+/** P187: the notation says how its numbers are written (a decimal point in the US). */
+export function describeBoxPlot(s: BoxPlotSpec, notation?: Notation): string {
+  const fmt = (v: number) => fmtIn(v, notation)
   return `${s.title ? `${s.title}. ` : ''}Box and whisker plot on a scale from ${fmt(s.scaleMin)} to ${fmt(s.scaleMax)}. Minimum ${fmt(s.min)}, lower quartile ${fmt(s.q1)}, median ${fmt(s.median)}, upper quartile ${fmt(s.q3)}, maximum ${fmt(s.max)}.`
 }
 
-export function BoxPlot(s: BoxPlotSpec) {
+export function BoxPlot({ notation, ...s }: BoxPlotSpec & { notation?: Notation }) {
+  const fmt = (v: number) => fmtIn(v, notation)
   const top = s.title ? 30 : 8
   const H = top + 132
   const x = (v: number) => X0 + ((v - s.scaleMin) / (s.scaleMax - s.scaleMin)) * (X1 - X0)
@@ -22,7 +26,7 @@ export function BoxPlot(s: BoxPlotSpec) {
   const mid = top + 46
   const axis = top + 96
   return (
-    <Svg width={W} height={H} label={describeBoxPlot(s)}>
+    <Svg width={W} height={H} label={describeBoxPlot(s, notation)}>
       {s.title ? (
         <T x={W / 2} y={18} size={13} weight={600} fill={BODY}>
           {s.title}

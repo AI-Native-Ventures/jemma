@@ -12,6 +12,7 @@ import { isPublicPath } from '@/lib/public-paths'
 import { activeTab } from '@/lib/space'
 import { UsWords } from '@/components/UsWords'
 import { usForLearner, usForParent } from '@/lib/us-words-on'
+import { NotationProvider } from '@/lib/notation'
 import { createSupabaseServer } from '@/lib/supabase/server'
 
 /** Screens drawn without the tab bar: the session flow, the hand-back screen and the level check (P163). */
@@ -45,7 +46,8 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
       return (
         <div className="flex min-h-dvh flex-col bg-ground">
           {usHanded ? <UsWords /> : null}
-          <main className="flex-1">{children}</main>
+          {/* P187: and the way numbers and points are written (2.5 and (2, 3) in the US). */}
+          <main className="flex-1"><NotationProvider notation={usHanded ? 'us' : 'za'}>{children}</NotationProvider></main>
           <Link href={`/p/${handover.childId}`} className="flex min-h-12 items-center justify-center px-5 py-3 text-center text-[15px] font-semibold text-body underline underline-offset-[3px]">
             Grown-up? Take the phone back.
           </Link>
@@ -58,7 +60,7 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
     return (
       <main className="min-h-dvh bg-ground">
         {usHanded ? <UsWords /> : null}
-        {children}
+        <NotationProvider notation={usHanded ? 'us' : 'za'}>{children}</NotationProvider>
       </main>
     )
   }
@@ -67,7 +69,7 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
   // The child of the workspace on screen: the school child, or the private twin when the learner chose "My own" (a learner with a private
   // workspace has two children with the one login).
   const { child } = await myChild()
-  // P164: a learner whose space is in the US reads US English.
+  // P164: a learner whose space is in the US reads US English. P187: and numbers and points are written the US way (2.5 and (2, 3)).
   const us = await usForLearner(child)
 
   const active = await activeTab('learner', '/k')
@@ -92,7 +94,7 @@ export default async function LearnerLayout({ children }: { children: ReactNode 
         />
       )}
       <div className="flex min-w-0 flex-1 flex-col">
-        <main className="flex-1">{children}</main>
+        <main className="flex-1"><NotationProvider notation={us ? 'us' : 'za'}>{children}</NotationProvider></main>
         {!noBar && <TabBar role="learner" active={active} label={name} />}
       </div>
     </div>

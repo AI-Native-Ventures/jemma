@@ -1,9 +1,10 @@
 'use client'
 
 import { useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react'
-import { pinAnswer, pinMarks } from '@jemma/profiling/logic'
+import { numberIn, pinAnswer, pinMarks, type Notation } from '@jemma/profiling/logic'
 import type { PinSpec } from '@jemma/profiling/schemas'
 import { BODY, GOLD, GREEN, INK, WHITE } from '@/components/diagrams/shared'
+import { useNotation } from '@/lib/notation'
 
 // P175: a pin put on a number line, from the "Mark a number line" board. The pin waits at the start; the learner drags it along the line and it stops on the
 // marks. The line shows no number but its two ends, and the pin shows none either. The arrow keys move it one mark at a time. The results draw the right pin in
@@ -14,7 +15,8 @@ const X0 = 34
 const X1 = 286
 const Y = 90
 
-const fmt = (n: number) => (n < 0 ? `−${-n}` : String(n))
+/** A number at an end of the line: a true minus sign, and P187 the decimal sign of the notation (0,5, or 0.5 in the US). */
+const fmt = (n: number, notation: Notation) => (n < 0 ? `−${numberIn(-n, notation)}` : numberIn(n, notation))
 
 function Pin({ x, tone = 'gold' }: { x: number; tone?: 'gold' | 'right' | 'yours' }) {
   const fill = tone === 'gold' ? GOLD : tone === 'right' ? GREEN : 'none'
@@ -37,6 +39,7 @@ export type PinLineProps = {
 }
 
 export function PinLine({ pin, at, right = null, mode, onMove }: PinLineProps) {
+  const notation = useNotation()
   const svg = useRef<SVGSVGElement>(null)
   const dragging = useRef(false)
   const marks = pinMarks(pin)
@@ -91,8 +94,8 @@ export function PinLine({ pin, at, right = null, mode, onMove }: PinLineProps) {
     >
       <line x1={X0 - 14} y1={Y} x2={X1 + 14} y2={Y} stroke={INK} strokeWidth={2.5} />
       {ticks}
-      <text x={X0} y={Y + 34} fontSize={18} fontWeight={700} fill={INK} textAnchor="middle">{fmt(pin.min)}</text>
-      <text x={X1} y={Y + 34} fontSize={18} fontWeight={700} fill={INK} textAnchor="middle">{fmt(pin.max)}</text>
+      <text x={X0} y={Y + 34} fontSize={18} fontWeight={700} fill={INK} textAnchor="middle">{fmt(pin.min, notation)}</text>
+      <text x={X1} y={Y + 34} fontSize={18} fontWeight={700} fill={INK} textAnchor="middle">{fmt(pin.max, notation)}</text>
       {mode === 'results' ? (
         <>
           {right !== null ? <g data-right=""><Pin x={X(right)} tone="right" /></g> : null}
