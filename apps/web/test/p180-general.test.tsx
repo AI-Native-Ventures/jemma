@@ -37,7 +37,7 @@ describe('typing every solution', () => {
     const onAnswer = vi.fn()
     render(<QuestionScreen q={stripQuestion(general, at)} busy={false} onAnswer={onAnswer} />)
     expect(document.querySelector('[data-family="1"]')!.textContent).toContain('θ =')
-    expect(screen.getByText('k is any whole number: k ∈ ℤ')).toBeTruthy()
+    expect(screen.getByText('k is any integer: k ∈ ℤ')).toBeTruthy()
     type('Solution 1: the angle, in degrees', '30')
     type('Solution 1: how often it comes back, in degrees', '360')
     expect(screen.getByText('Add another solution if there is one.')).toBeTruthy()
