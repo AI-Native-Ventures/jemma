@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { ObjectsSpec } from '@jemma/profiling/schemas'
-import { EDGE, GOLD, INK, Svg, WHITE, type Variant } from './shared'
+import { EDGE, GOLD, GOLD_TINT, INK, Svg, WHITE, type Variant } from './shared'
 
 // P188: things to count, share or see in equal groups, from the "Counting and place value" board ("How many apples?"). Lined up in rows to count, or each group
 // in a ring of its own (equal groups, sharing, a fraction of a set). The things are drawn with the flag colours: an apple, a star, a ball, a flower, a fish, a
@@ -111,18 +111,20 @@ function Thing({ thing, x, y, s }: { thing: ObjectsSpec['thing']; x: number; y: 
 
 const sayList = (items: string[]) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}` : (items[0] ?? ''))
 
-export function describeObjects({ thing, groups, layout = 'rows', variant = 'card' }: ObjectsProps): string {
+export function describeObjects({ thing, groups, layout = 'rows', gold, variant = 'card' }: ObjectsProps): string {
   const name = PLURAL[thing]
   const parts = layout === 'groups' ? 'groups' : 'rows'
+  // P189: gold groups (a fraction of a set) are said after the groups.
+  const golden = gold && layout === 'groups' ? ` ${gold === groups.length ? (gold === 1 ? 'The group is' : 'All the groups are') : `${gold} ${gold === 1 ? 'group is' : 'groups are'}`} gold.` : ''
   // While a question is answered the words say what is drawn, never how many: the count may be the answer.
-  if (variant === 'question') return `A picture of ${name} in ${groups.length} ${groups.length === 1 ? parts.slice(0, -1) : parts}.`
+  if (variant === 'question') return `A picture of ${name} in ${groups.length} ${groups.length === 1 ? parts.slice(0, -1) : parts}.${golden}`
   const total = groups.reduce((a, n) => a + n, 0)
-  if (layout === 'groups' && groups.every((n) => n === groups[0])) return `${total} ${name} in ${groups.length} groups of ${groups[0]}.`
-  return `${total} ${name} in ${groups.length} ${groups.length === 1 ? parts.slice(0, -1) : parts}: ${sayList(groups.map(String))}.`
+  if (layout === 'groups' && groups.every((n) => n === groups[0])) return `${total} ${name} in ${groups.length} groups of ${groups[0]}.${golden}`
+  return `${total} ${name} in ${groups.length} ${groups.length === 1 ? parts.slice(0, -1) : parts}: ${sayList(groups.map(String))}.${golden}`
 }
 
 export function Objects(props: ObjectsProps) {
-  const { thing, groups, layout = 'rows' } = props
+  const { thing, groups, layout = 'rows', gold = 0 } = props
   if (layout === 'groups') {
     // Each group in a ring of its own: up to 3 rings in a line, the things inside in rows of up to 5.
     const perLine = groups.length <= 4 ? Math.min(groups.length, 2) : 3
@@ -140,8 +142,12 @@ export function Objects(props: ObjectsProps) {
           const rx = 6 + (g % perLine) * (ringW + 10)
           const ry = 6 + Math.floor(g / perLine) * (ringH + 10)
           return (
-            <g key={g} data-group={g + 1}>
-              <rect x={rx} y={ry} width={ringW} height={ringH} rx={16} fill={WHITE} stroke={EDGE} strokeWidth={2} strokeDasharray="6 5" />
+            <g key={g} data-group={g + 1} data-gold={g < gold ? '' : undefined}>
+              {g < gold ? (
+                <rect x={rx} y={ry} width={ringW} height={ringH} rx={16} fill={GOLD_TINT} stroke={GOLD} strokeWidth={2.5} />
+              ) : (
+                <rect x={rx} y={ry} width={ringW} height={ringH} rx={16} fill={WHITE} stroke={EDGE} strokeWidth={2} strokeDasharray="6 5" />
+              )}
               {Array.from({ length: n }, (_, k) => {
                 const inRow = Math.min(n - Math.floor(k / 5) * 5, 5)
                 const left = rx + (ringW - inRow * s) / 2

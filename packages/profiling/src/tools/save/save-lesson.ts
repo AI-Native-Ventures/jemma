@@ -149,8 +149,12 @@ export function answerProblem(q: Question): string | null {
   }
   const picture = questionPictureOf(q)
   if (picture) return `picture: ${picture}`
-  // P188: a picture that asks for one thing (the gold box of a hundred chart) has that thing as its key.
-  const pictureKey = pictureKeyProblem(q)
+  // P188: a picture that asks for one thing (the gold box of a hundred chart) has that thing as its key. P189: a money key is read to the cent.
+  const pictureKey = pictureKeyProblem(q, (text) => {
+    if (q.answerKind !== 'money') return readNumber(stripUnit(text, q.unit))
+    const cents = readCents(text)
+    return cents === null ? null : Number(cents) / 100
+  })
   if (pictureKey) return `picture: ${pictureKey}`
   // P149: the pictures (and words) of the choices of a question that is picked. A true or false or a reason question ignores any choices it carries.
   return q.answerKind === 'truefalse' || q.answerKind === 'reason' ? null : choicePictureProblem(q.choices)
@@ -205,6 +209,12 @@ export const DIAGRAM_WORDS: Record<string, string> = {
   hundred_chart: 'a hundred chart',
   dot_array: 'dots in rows',
   compare: 'two numbers to compare',
+  // P189
+  factor_tree: 'a factor tree',
+  fraction_circle: 'fraction circles',
+  percent_bar: 'a percentage bar',
+  calendar: 'a calendar',
+  money: 'coins and notes',
 }
 
 function how(lesson: Lesson): string {

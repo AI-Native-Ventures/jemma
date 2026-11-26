@@ -147,14 +147,15 @@ describe('the picture of a question must make sense (the save gate)', () => {
 })
 
 describe('the picture bullet the lesson writer is told', () => {
-  test('each kit names the pictures that fit its topic, and time and money have none (no clock or coins are drawn yet)', () => {
+  test('each kit names the pictures that fit its topic (P189: time has a calendar and money its coins and notes)', () => {
     // P188: and the counting pictures (a fraction of a set is objects in groups; blocks are read in place value).
-    expect(KIT_PICTURES.fractions).toEqual(['fraction_bar', 'number_line', 'area_model', 'objects'])
+    // P189: and fraction circles and a percentage bar.
+    expect(KIT_PICTURES.fractions).toEqual(['fraction_bar', 'number_line', 'area_model', 'objects', 'fraction_circle', 'percent_bar'])
     expect(KIT_PICTURES.data).toEqual(['bar_chart'])
     expect(KIT_PICTURES.place).toEqual(['place_value', 'base_ten'])
     expect(KIT_PICTURES.shapes).toEqual(['shape_2d', 'grid_area'])
-    expect(pictureBullet('time', klass(3))).toBeNull()
-    expect(pictureBullet('money', klass(3))).toBeNull()
+    expect(pictureBullet('time', klass(3))).toContain('`calendar`')
+    expect(pictureBullet('money', klass(3))).toContain('`money`')
     for (const kit of Object.keys(KIT_PICTURES) as PrimaryKit[]) {
       const bullet = pictureBullet(kit, klass(4))
       if (!bullet) continue
@@ -193,7 +194,8 @@ describe('the picture bullet the lesson writer is told', () => {
     const data = primaryAnswerBlock('data', klass(4))
     expect(data).toContain('- `table`')
     expect(data.endsWith(pictureBullet('data', klass(4))!)).toBe(true)
-    expect(primaryAnswerBlock('time', klass(4))).not.toContain('`diagram`')
+    // P189: time keeps its answer kinds and gains the bullet of its calendar.
+    expect(primaryAnswerBlock('time', klass(4)).endsWith(pictureBullet('time', klass(4))!)).toBe(true)
   })
 })
 

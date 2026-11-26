@@ -264,7 +264,27 @@ describe('the schema of a gated lesson', () => {
     expect(items.properties).not.toHaveProperty('steps')
     // P166: a question may carry one of the seven primary pictures, and only those. P188: and the counting pictures of the question type boards.
     const kinds = ((items.properties.diagram as { oneOf: { properties: { kind: { const: string } } }[] }).oneOf ?? []).map((o) => o.properties.kind.const)
-    expect(kinds.sort()).toEqual(['area_model', 'bar_chart', 'base_ten', 'compare', 'dot_array', 'fraction_bar', 'grid_area', 'hundred_chart', 'number_line', 'objects', 'place_value', 'shape_2d', 'ten_frame'])
+    // P189: and a factor tree, fraction circles, a percentage bar, a calendar, and coins and notes.
+    expect(kinds.sort()).toEqual([
+      'area_model',
+      'bar_chart',
+      'base_ten',
+      'calendar',
+      'compare',
+      'dot_array',
+      'factor_tree',
+      'fraction_bar',
+      'fraction_circle',
+      'grid_area',
+      'hundred_chart',
+      'money',
+      'number_line',
+      'objects',
+      'percent_bar',
+      'place_value',
+      'shape_2d',
+      'ten_frame',
+    ])
     expect(items.required).not.toContain('steps')
     // A choice is plain text (a picture choice, true or false and a reason are for a senior class).
     const fields = items.properties as Record<string, { items?: { type?: string } }>

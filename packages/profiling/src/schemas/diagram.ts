@@ -133,6 +133,8 @@ const ObjectsSchema = z.object({
   thing: z.enum(OBJECT_THINGS),
   groups: z.array(z.number()),
   layout: z.enum(['rows', 'groups']).optional(),
+  // P189: how many of the groups, from the first, are gold (a fraction of a set: 1 of 3 groups). Groups only.
+  gold: z.number().optional(),
 })
 
 /** P188: a ten-frame (`frames` 2 for twenty) with `filled` counters, and a number bond under it when `bond` is given: the whole on top, one part and a blank. */
@@ -155,8 +157,55 @@ const DotArraySchema = z.object({ kind: z.literal('dot_array'), rows: z.number()
 /** P188: two numbers with a blank sign between them, for which sign makes it true (<, > or =). */
 const CompareSchema = z.object({ kind: z.literal('compare'), left: z.string(), right: z.string() })
 
-/** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). */
-const QUESTION_PICTURES = [ObjectsSchema, TenFrameSchema, BaseTenSchema, HundredChartSchema, DotArraySchema, CompareSchema] as const
+// ---- P189: fractions, percentages, time and money ------------------------------------------------------------------------------
+
+/**
+ * P189: a factor tree. `root` is the number at the top and `splits` says how a number splits into two factors, from the top down: each split hangs under the first
+ * number on the tree with its `of` that has not split yet. `gold` is the one number the question asks for, drawn as a gold blank.
+ */
+const FactorTreeSchema = z.object({
+  kind: z.literal('factor_tree'),
+  root: z.number(),
+  splits: z.array(z.object({ of: z.number(), into: z.array(z.number()) })),
+  gold: z.number().optional(),
+})
+
+/** P189: a circle cut into `parts` equal slices with `shaded` of them gold; `circles` 2 or 3 for a mixed number, shaded one after another. */
+const FractionCircleSchema = z.object({ kind: z.literal('fraction_circle'), parts: z.number(), shaded: z.number(), circles: z.number().optional() })
+
+/**
+ * P189: a bar from 0% to 100%. `whole` is the amount at 100% and `percent` the shaded part; `parts` cuts the bar into equal pieces. `money` writes the amounts as
+ * money (rand, or dollars in the US). `ask` says what the question mark stands for: the amount of the shaded part (the default), the whole, or the percent.
+ */
+const PercentBarSchema = z.object({
+  kind: z.literal('percent_bar'),
+  whole: z.number(),
+  percent: z.number(),
+  parts: z.number().optional(),
+  money: z.boolean().optional(),
+  ask: z.enum(['part', 'whole', 'percent']).optional(),
+})
+
+/** P189: one month of a calendar (`month` 1 to 12), with up to three days in `circled`. */
+const CalendarSchema = z.object({ kind: z.literal('calendar'), year: z.number(), month: z.number(), circled: z.array(z.number()).optional() })
+
+/** P189: coins and notes to count: the value of each one in cents (`[1000, 500, 200, 200, 50]` is a R10 note, a R5 coin, two R2 coins and a 50c coin). */
+const MoneySchema = z.object({ kind: z.literal('money'), items: z.array(z.number()) })
+
+/** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). P189: and five more. */
+const QUESTION_PICTURES = [
+  ObjectsSchema,
+  TenFrameSchema,
+  BaseTenSchema,
+  HundredChartSchema,
+  DotArraySchema,
+  CompareSchema,
+  FactorTreeSchema,
+  FractionCircleSchema,
+  PercentBarSchema,
+  CalendarSchema,
+  MoneySchema,
+] as const
 
 /**
  * P188: the pictures a question of a gated Grade 1 to 6 topic may carry: the seven Jemma draws for every grade and the ones of the question type boards. The demo
@@ -187,3 +236,8 @@ export type BaseTenSpec = z.infer<typeof BaseTenSchema>
 export type HundredChartSpec = z.infer<typeof HundredChartSchema>
 export type DotArraySpec = z.infer<typeof DotArraySchema>
 export type CompareSpec = z.infer<typeof CompareSchema>
+export type FactorTreeSpec = z.infer<typeof FactorTreeSchema>
+export type FractionCircleSpec = z.infer<typeof FractionCircleSchema>
+export type PercentBarSpec = z.infer<typeof PercentBarSchema>
+export type CalendarSpec = z.infer<typeof CalendarSchema>
+export type MoneySpec = z.infer<typeof MoneySchema>
