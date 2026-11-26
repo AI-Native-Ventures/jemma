@@ -108,8 +108,17 @@ export type GroupsSpec = z.infer<typeof GroupsSchema>
 /**
  * P172: a shape the learner shades parts of by tapping them (Grades 1 to 6): a circle or a bar cut into `parts` equal parts, or a grid of `rows` by `cols`
  * squares (a hundred square is 10 by 10). The key is how many parts to shade, as a `whole` number: which parts are shaded does not matter.
+ * P194: a grid with a dashed `mirror` line down (`vertical`) or across (`horizontal`) its middle and the squares in `given` shaded already (numbered from 1 along
+ * each row from the top left): the learner finishes the shape so the line is a line of symmetry. The key is a `list` of the squares to shade, in any order.
  */
-export const ShadeSchema = z.object({ shape: z.enum(['circle', 'bar', 'grid']), parts: z.number().optional(), rows: z.number().optional(), cols: z.number().optional() })
+export const ShadeSchema = z.object({
+  shape: z.enum(['circle', 'bar', 'grid']),
+  parts: z.number().optional(),
+  rows: z.number().optional(),
+  cols: z.number().optional(),
+  mirror: z.enum(['vertical', 'horizontal']).optional(),
+  given: z.array(z.number()).optional(),
+})
 export type ShadeSpec = z.infer<typeof ShadeSchema>
 
 /**

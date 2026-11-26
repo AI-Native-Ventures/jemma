@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { KIT_PICTURES, PICTURE_CHOICES_BULLET, PICTURE_KITS, pictureBullet, primaryAnswerBlock, primaryKit } from '../src/ai/primary-answers'
+import { KIT_PICTURES, MIRROR_BULLET, PICTURE_CHOICES_BULLET, PICTURE_KITS, pictureBullet, primaryAnswerBlock, primaryKit } from '../src/ai/primary-answers'
 import { renderPrompt } from '../src/ai/prompt-variants'
 import { makeClassContext } from '../src/ai/subject-profile'
 import { isSeniorQuestion } from '../src/logic/answers/quantity'
@@ -139,7 +139,8 @@ describe('the lesson writer', () => {
   test('views and nets may be picture choices', () => {
     expect(primaryAnswerBlock('solids', klass(5))).toBe(`${pictureBullet('solids', klass(5))}\n${PICTURE_CHOICES_BULLET}`)
     expect(primaryAnswerBlock('position', klass(5))).toContain(PICTURE_CHOICES_BULLET)
-    expect(primaryAnswerBlock('symmetry', klass(5))).toBe(pictureBullet('symmetry', klass(5)))
+    // P194: symmetry also has its line for finishing a shape.
+    expect(primaryAnswerBlock('symmetry', klass(5))).toBe(`${pictureBullet('symmetry', klass(5))}\n${MIRROR_BULLET}`)
     expect(pictureBullet('position', klass(2))).not.toContain('`cube_stack`')
     expect(pictureBullet('symmetry', klass(3))).toContain('draw exactly one line of symmetry')
     for (const text of [PICTURE_CHOICES_BULLET, pictureBullet('position', klass(5))!, pictureBullet('solids', klass(1))!]) expect(text).not.toContain(String.fromCharCode(0x2014))

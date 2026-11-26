@@ -508,8 +508,8 @@ export function answerShape(
     const { plot, ...rest } = q
     return { kind: 'plot', plot, typed: answerShape(rest) }
   }
-  // P172: parts of a shape shaded, the answer how many.
-  if (q.shade && q.answerKind === 'whole') return { kind: 'shade', shade: q.shade, ...(q.young ? { young: true as const } : {}) }
+  // P172: parts of a shape shaded, the answer how many. P194: a shape to finish, the answer the squares shaded.
+  if (q.shade && (q.answerKind === 'whole' || (q.answerKind === 'list' && q.shade.mirror))) return { kind: 'shade', shade: q.shade, ...(q.young ? { young: true as const } : {}) }
   // P175: a pin on a number line, the answer the number of its mark (as the key's kind). Typed instead, it is the box of that kind.
   if (q.pin && ['fraction', 'mixed', 'decimal', 'whole'].includes(q.answerKind)) {
     const { pin, ...rest } = q
@@ -608,12 +608,13 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
     // P167: the bars drawn (or the numbers typed instead), sent as the values of the empty bars, or nothing while one is still empty.
     case 'graph':
       return hasDigit(text) ? text : ''
+    // P172: how many parts are shaded, or nothing while none is. P194: a shape to finish sends the squares shaded.
+    case 'shade':
+      return (shape.shade.mirror ? /^\d+(; \d+)*$/ : /^\d+$/).test(text) ? text : ''
     // P168: the digits of the answer boxes, from the first one written to the ones, or nothing until they are written.
     case 'columns':
     // P169: the number the blocks on the mat make, or nothing while the mat is empty.
     case 'blocks':
-    // P172: how many parts are shaded, or nothing while none is.
-    case 'shade':
       return /^\d+$/.test(text) ? text : ''
     // P170: the group of each thing, or nothing while one is not in a group.
     case 'groups':
