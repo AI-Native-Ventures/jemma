@@ -32,12 +32,13 @@ export type PrimaryKit =
   | 'symmetry'
   | 'angles'
   | 'transform'
+  | 'chance'
 
 /**
  * P166: the kits that add pictures to a question (a fraction bar, a shape, an area model, a number line) and no new answer kind. P168: addition and
  * subtraction (`addsub`, from Grade 2) also adds a sum worked in columns.
  */
-export const PICTURE_KITS: readonly PrimaryKit[] = ['fractions', 'shapes', 'multiply', 'numbers', 'addsub', 'growing', 'position', 'solids', 'symmetry', 'angles', 'transform']
+export const PICTURE_KITS: readonly PrimaryKit[] = ['fractions', 'shapes', 'multiply', 'numbers', 'addsub', 'growing', 'position', 'solids', 'symmetry', 'angles', 'transform', 'chance']
 
 /** A topic name as it is compared: lower case, words only, "(Term 2)" and an "&" put right. */
 const norm = (name: string) =>
@@ -107,6 +108,8 @@ const KIT_TOPICS: { kit: PrimaryKit; names: RegExp; baseline?: false; grades?: r
   // P193: angles have a kit of their own, and transformations one from Grade 5 (an enlargement on a grid).
   { kit: 'angles', names: /^(angles|measuring angles)$/, baseline: false },
   { kit: 'transform', names: /^transformations$/, baseline: false, grades: [5, 6] },
+  // P197: probability has a kit of its own from Grade 4 (a spinner, a bag of counters).
+  { kit: 'chance', names: /^probability$/, baseline: false, grades: [4, 6] },
   // P168: addition and subtraction have a kit of their own, so their questions (from Grade 2) may be sums worked in columns.
   { kit: 'addsub', names: /^(addition and subtraction|add and subtract within)$/, baseline: false },
 ]
@@ -133,7 +136,7 @@ export const KIT_PICTURES: Record<PrimaryKit, readonly string[]> = {
   measure: ['grid_area', 'shape_2d', 'ruler', 'scale_dial', 'jug', 'thermometer', 'cubes', 'box_net'],
   order: ['number_line', 'compare'],
   patterns: ['number_line', 'tile_pattern', 'flow_diagram'],
-  data: ['bar_chart'],
+  data: ['bar_chart', 'tally_table', 'pie_chart', 'dot_plot'],
   place: ['place_value', 'base_ten'],
   fractions: ['fraction_bar', 'number_line', 'area_model', 'objects', 'fraction_circle', 'percent_bar'],
   shapes: ['shape_2d', 'grid_area', 'angle'],
@@ -146,6 +149,7 @@ export const KIT_PICTURES: Record<PrimaryKit, readonly string[]> = {
   symmetry: ['symmetry_lines'],
   angles: ['angle', 'protractor'],
   transform: ['enlargement'],
+  chance: ['spinner', 'counters'],
 }
 
 /**
@@ -183,6 +187,12 @@ export const PICTURE_GRADES: Readonly<Record<string, readonly [number, number]>>
   angle: [3, 6],
   protractor: [4, 6],
   enlargement: [5, 6],
+  // P197
+  tally_table: [1, 4],
+  pie_chart: [4, 6],
+  dot_plot: [2, 6],
+  spinner: [3, 6],
+  counters: [3, 6],
 }
 
 /**
@@ -245,6 +255,13 @@ const PICTURE_WORDS: Record<string, string> = {
   protractor: '`protractor` (a protractor over an angle, one arm on 0 and the other crossing the scale at `degrees`, on a mark every 5 from 5 to 175; the `answer` is that angle)',
   enlargement:
     '`enlargement` (a `rectangle` or a right `triangle` `w` by `h` squares, 1 to 6 each, and the same shape `factor` times bigger, 2, 3 or 4, side by side on a grid; `sizes` `true` writes their sizes) for a scale factor',
+  // P197
+  tally_table: '`tally_table` (a tally table: 2 to 5 `rows`, each a short `label` and a `count` from 0 to 20 drawn as tally marks in groups of five; `heading` names the first column) to count and compare',
+  pie_chart:
+    '`pie_chart` (2 to 6 `parts`, each a short `label` and its `percent`, adding up to 100; one part with `ask` `true` shows a question mark, and the `answer` is its percent) to read parts of a whole',
+  dot_plot: '`dot_plot` (a line plot: 2 to 10 `marks` along a line, like `1` or `1/4`, and the `counts` of dots above them, 0 to 8 each; `title` names what was measured)',
+  spinner: '`spinner` (a spinner of 2 to 12 equal `parts`, each `gold`, `green`, `red` or `blue`) for the chance of landing on a colour',
+  counters: '`counters` (a bag of counters: how many are `gold`, `green`, `red` and `blue`, 2 to 20 in all) for the chance of taking one colour',
 }
 
 /** P194: the bullet that lets a symmetry question ask the learner to finish a shape on a grid so a dashed line is a line of symmetry. */

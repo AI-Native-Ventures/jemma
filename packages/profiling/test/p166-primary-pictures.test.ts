@@ -151,7 +151,8 @@ describe('the picture bullet the lesson writer is told', () => {
     // P188: and the counting pictures (a fraction of a set is objects in groups; blocks are read in place value).
     // P189: and fraction circles and a percentage bar.
     expect(KIT_PICTURES.fractions).toEqual(['fraction_bar', 'number_line', 'area_model', 'objects', 'fraction_circle', 'percent_bar'])
-    expect(KIT_PICTURES.data).toEqual(['bar_chart'])
+    // P197: and a tally table, a pie chart and a line plot.
+    expect(KIT_PICTURES.data).toEqual(['bar_chart', 'tally_table', 'pie_chart', 'dot_plot'])
     expect(KIT_PICTURES.place).toEqual(['place_value', 'base_ten'])
     // P193: and an angle.
     expect(KIT_PICTURES.shapes).toEqual(['shape_2d', 'grid_area', 'angle'])
@@ -193,7 +194,8 @@ describe('the picture bullet the lesson writer is told', () => {
     // P173: shapes also has its line for tapping shapes.
     expect(primaryAnswerBlock('shapes', klass(3))).toBe(`${pictureBullet('shapes', klass(3))}\n${groupsBullet('shapes')}\n${TAP_BULLET}\n${matchBullet('shapes', klass(3))}`)
     // P191: geometric patterns have a picture kit of their own. P192: and so do position and views, 3D objects and symmetry. P193: and angles and transformations.
-    expect(PICTURE_KITS).toEqual(['fractions', 'shapes', 'multiply', 'numbers', 'addsub', 'growing', 'position', 'solids', 'symmetry', 'angles', 'transform'])
+    // P197: and probability.
+    expect(PICTURE_KITS).toEqual(['fractions', 'shapes', 'multiply', 'numbers', 'addsub', 'growing', 'position', 'solids', 'symmetry', 'angles', 'transform', 'chance'])
     const data = primaryAnswerBlock('data', klass(4))
     expect(data).toContain('- `table`')
     expect(data.endsWith(pictureBullet('data', klass(4))!)).toBe(true)

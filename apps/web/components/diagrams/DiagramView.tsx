@@ -46,6 +46,16 @@ import { CircleAngles } from './CircleAngles'
 import { Cast } from './Cast'
 import { Elevation } from './Elevation'
 import { CutBox } from './CutBox'
+import { TallyTable } from './TallyTable'
+import { PieChart } from './PieChart'
+import { DotPlot } from './DotPlot'
+import { Spinner } from './Spinner'
+import { Counters } from './Counters'
+import { LineGraph } from './LineGraph'
+import { Histogram, Ogive } from './Histogram'
+import { StemLeaf } from './StemLeaf'
+import { Scatter } from './Scatter'
+import { Venn } from './Venn'
 import type { Variant } from './shared'
 
 export type DiagramViewProps = {
@@ -183,6 +193,30 @@ export function DiagramView({ spec, variant, highlight, className, caption, seni
         return <Elevation {...s} variant={variant === 'question' ? 'question' : 'card'} />
       case 'cut_box':
         return <CutBox {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      // P197: data and probability (a tally table, a pie chart, a line plot, a spinner, a bag of counters; for Grades 10 to 12 a broken-line graph, a histogram,
+      // an ogive, a stem and leaf display, a scatter plot, a Venn diagram).
+      case 'tally_table':
+        return <TallyTable {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'pie_chart':
+        return <PieChart {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
+      case 'dot_plot':
+        return <DotPlot {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'spinner':
+        return <Spinner {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'counters':
+        return <Counters {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'line_graph':
+        return <LineGraph {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
+      case 'histogram':
+        return <Histogram {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
+      case 'ogive':
+        return <Ogive {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
+      case 'stem_leaf':
+        return <StemLeaf {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'scatter':
+        return <Scatter {...s} variant={variant === 'question' ? 'question' : 'card'} notation={notation} />
+      case 'venn':
+        return <Venn {...s} variant={variant === 'question' ? 'question' : 'card'} />
       default:
         return <PictureMissing className={className} />
     }
