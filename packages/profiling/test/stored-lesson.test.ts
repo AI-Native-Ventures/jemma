@@ -42,10 +42,12 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * a0a5757599a5581b0f5a1b1ba801e5c16ca4133a4f283a0a0d8feb84d343421b (senior) and 23bb70daa29d650f43d1cadae7ffe32970b090f666d095ea17ce15488fa2fb1b (wide).
  * P175 (26 Nov 2026) moved the wide one alone: a question may have a `pin`, a number line to put a pin on. Before P175 it was
  * 6cf648b0b27725042e61fde110d4bdb8fa04527b5173848cfc8ba56108f13c4b.
+ * P176 (26 Nov 2026) moved both, on purpose: a senior grid to place points on may be a `curve`, a sketch of a parabola through its key points. Before P176
+ * they were 8dcdb55a3011410428a8664db696386b5cd7904d7ac89557dd998b0dd7c177bf (senior) and 6e04f1e23d09c24c91de670dfeeef035456ae194dadd71a509f1b1b35a92e910 (wide).
  * Every packet that changes the senior schema moves these two: recompute them after a merge.
  */
-const SENIOR_SHA = '8dcdb55a3011410428a8664db696386b5cd7904d7ac89557dd998b0dd7c177bf'
-const WIDE_SHA = '6e04f1e23d09c24c91de670dfeeef035456ae194dadd71a509f1b1b35a92e910'
+const SENIOR_SHA = '02e4320fe0f7a380ddd0da9cb0442e4cec5345610d47776f5a5773756f9a6912'
+const WIDE_SHA = '0836f720710671e34acafb345b833bd08344e4781e280ce1f96297bfd0124c47'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({

@@ -149,6 +149,9 @@ const SENIOR_PICTURES =
   '`xMin`, `xMax`, `yMin`, `yMax` (whole numbers, at most 20 squares across and up), `given` (the points already on the grid, each an `x`, a `y` and a `label` like `A`; ' +
   '`shape: true` joins them as a shape) and `place` (the names of the 1 to 4 points to place, in order, like `["A\'", "B\'", "C\'"]`). ' +
   'The `answerKind` is `list` and the `answer` is the x and the y of each point to place, in order, with a semicolon between them (`4; 1; 1; 1; 1; 4`). Every point is on a corner of the grid. ' +
+  // P176: a sketch of a parabola through its key points.
+  'To have the learner sketch a parabola, write its equation in the question (`Sketch y = x² − 4. Tap where it cuts the x-axis, and its turning point.`) and give a `plot` with `curve: "parabola"` and `place` naming its 3 key points ' +
+  '(`["x-intercept", "x-intercept", "turning point"]`), each on a corner of the grid, with the turning point inside the grid: Jemma joins the points the learner taps into the curve. The `answer` is the x and the y of the 3 key points (`-2; 0; 2; 0; 0; -4`). ' +
   // P174: the learner draws a straight line on a grid by tapping two points on it.
   'To have the learner draw a straight line (the graph of y = 2x \u2212 1, a line of symmetry), give `line` with `xMin`, `xMax`, `yMin`, `yMax` (whole numbers, at most 20 squares across and up) and no `diagram`. ' +
   'The `answerKind` is `list` and the `answer` is two different points on the line that are corners of the grid, x and y each (`0; -1; 2; 3`): the learner may tap any two points on the line.'

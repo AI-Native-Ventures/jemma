@@ -8,6 +8,7 @@ import { finishPicked } from './answers/pick'
 import { completeAnswer } from './complete-answer'
 import { isListKind, markListQuestion } from './answers/lists'
 import { markLine } from './answers/line'
+import { markSketch } from './answers/plot'
 
 /**
  * Marking by meaning, for the senior classes (Mathematics, Grades 7 to 12): a learner types algebra, a negative number, a point, a percent or an
@@ -471,6 +472,27 @@ export const lettersOf = (n: MathNode, into = new Set<string>()): Set<string> =>
     lettersOf(n.b, into)
   }
   return into
+}
+
+/**
+ * P176: the graph of the equation in a text ("Sketch y = x² − 4. Tap where it cuts the x-axis."), as a function of x, or null when the text has none that can
+ * be read. The equation is the first `y =` (or `f(x) =`) followed by maths of x alone: the longest piece after it that reads, up to a space or the end, with
+ * the full stop or comma after it left off.
+ */
+export function graphEquationOf(text: string): ((x: number) => number) | null {
+  for (const m of text.matchAll(/(?:^|[^a-z0-9])(?:y|[fgh]\s*\(\s*x\s*\))\s*=\s*/gi)) {
+    const rest = text.slice(m.index + m[0].length)
+    const ends = [rest.length, ...[...rest.matchAll(/\s/g)].map((w) => w.index)].sort((a, b) => b - a)
+    for (const end of ends) {
+      const piece = rest.slice(0, end).replace(/[\s.,;:!?]+$/, '')
+      if (!piece || piece.length > MEANING_MAX_LENGTH) continue
+      const tree = readMath(piece)
+      if (!tree) continue
+      const letters = lettersOf(tree)
+      if (letters.size === 1 && letters.has('x')) return (x: number) => valueOf(tree, { x })
+    }
+  }
+  return null
 }
 
 /** Two values are the same when they differ by less than a billionth of their size (and of 1). */
@@ -965,6 +987,8 @@ export function markQuestion(
 ): MeaningMark {
   // P174: a line drawn on a grid is right when its two points are on the key's line, whichever two they are (logic/answers/line.ts).
   if ((q as { line?: unknown }).line && q.answerKind === 'list') return markLine(q.answer, answer, readNumber)
+  // P176: a sketch is marked by its curve: three points of the same parabola are right, in any order (logic/answers/plot.ts).
+  if ((q as { plot?: { curve?: string } }).plot?.curve && q.answerKind === 'list') return markSketch(q.answer, answer, readNumber)
   // P150: a list, an order and a table are several values, each read as a number or an expression (logic/answers/lists.ts).
   if (isListKind(q.answerKind)) {
     const { correct, comparable } = markListQuestion(q, answer, readNumber)
