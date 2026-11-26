@@ -184,3 +184,38 @@ export const flowStepText = (s: { op: string; by: number }, n: Notation = 'za'):
 
 /** What the unknown of a balance scale weighs: the pans balance, so left.x bags and left.n weigh what right.x bags and right.n weigh. */
 export const balanceSolution = (s: { left: { x: number; n: number }; right: { x: number; n: number } }): number => (s.right.n - s.left.n) / (s.left.x - s.right.x)
+
+// ---- P192: shapes and position ----------------------------------------------------------------------------------------------------
+
+/** The faces, edges and corners of each 3D object a picture draws (a curved face counts as a face, and a cone's tip as a corner). */
+export const SOLID_COUNTS: Readonly<Record<string, { faces: number; edges: number; corners: number }>> = {
+  cube: { faces: 6, edges: 12, corners: 8 },
+  cuboid: { faces: 6, edges: 12, corners: 8 },
+  square_pyramid: { faces: 5, edges: 8, corners: 5 },
+  triangular_pyramid: { faces: 4, edges: 6, corners: 4 },
+  triangular_prism: { faces: 5, edges: 9, corners: 6 },
+  cylinder: { faces: 3, edges: 2, corners: 0 },
+  cone: { faces: 2, edges: 1, corners: 1 },
+  sphere: { faces: 1, edges: 0, corners: 0 },
+}
+
+/** True when a line cuts a shape into two mirror halves. The shapes stand upright: a heart, a star, a house and a kite have one line, down the middle. */
+export function isSymmetryLine(shape: string, line: string): boolean {
+  switch (shape) {
+    case 'circle':
+    case 'square':
+      return true
+    case 'rectangle':
+      return line === 'vertical' || line === 'horizontal'
+    case 'arrow':
+      return line === 'horizontal'
+    default:
+      return line === 'vertical'
+  }
+}
+
+/** What each place of a map is marked with: its first letter, or its first two when another place starts with the same letter. */
+export function placeMarks(names: readonly string[]): string[] {
+  const first = names.map((n) => n.trim().charAt(0).toUpperCase())
+  return names.map((n, i) => (first.filter((f) => f === first[i]).length > 1 ? n.trim().slice(0, 2).replace(/^./, (c) => c.toUpperCase()) : first[i]!))
+}

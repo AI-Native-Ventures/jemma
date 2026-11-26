@@ -227,6 +227,11 @@ export const DIAGRAM_WORDS: Record<string, string> = {
   flow_diagram: 'a flow diagram',
   balance: 'a balance scale',
   travel_graph: 'a graph of a trip',
+  // P192
+  map_grid: 'a map on a grid',
+  solid: '3D objects',
+  cube_stack: 'shapes of cubes',
+  symmetry_lines: 'lines of symmetry',
 }
 
 function how(lesson: Lesson): string {

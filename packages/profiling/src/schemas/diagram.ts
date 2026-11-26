@@ -266,7 +266,33 @@ const TravelGraphSchema = z.object({
   dUnit: z.enum(['m', 'km']),
 })
 
-/** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). P189: and five more. P190: and six for measuring. P191: and four for patterns, algebra and graphs. */
+// ---- P192: shapes and position --------------------------------------------------------------------------------------------------
+
+/** P192: a map on a grid of squares: each place has a `name`, a square (`col` from the left and `row` from the bottom, both from 0) and a `house` may stand for one. */
+const MapGridSchema = z.object({
+  kind: z.literal('map_grid'),
+  cols: z.number(),
+  rows: z.number(),
+  places: z.array(z.object({ name: z.string(), col: z.number(), row: z.number(), house: z.boolean().optional() })),
+})
+
+/** The 3D objects a picture draws. */
+export const SOLIDS = ['cube', 'cuboid', 'square_pyramid', 'triangular_pyramid', 'triangular_prism', 'cylinder', 'cone', 'sphere'] as const
+
+/** P192: a 3D object, its hidden edges dashed. */
+const SolidSchema = z.object({ kind: z.literal('solid'), shape: z.enum(SOLIDS) })
+
+/** P192: a shape built from cubes, drawn in 3D: `heights` is how many cubes stand on each square, a row of numbers for each row from the back to the front. */
+const CubeStackSchema = z.object({ kind: z.literal('cube_stack'), heights: z.array(z.array(z.number())) })
+
+/** The shapes a symmetry picture draws, and the lines that may cross them. */
+export const SYMMETRY_SHAPES = ['heart', 'star', 'rectangle', 'square', 'triangle', 'circle', 'house', 'arrow', 'kite'] as const
+export const SYMMETRY_LINES = ['vertical', 'horizontal', 'diagonal', 'other_diagonal'] as const
+
+/** P192: a shape with 2 to 4 dashed lines across it, named A, B, C and D in order: a choice question asks which line is a line of symmetry. */
+const SymmetryLinesSchema = z.object({ kind: z.literal('symmetry_lines'), shape: z.enum(SYMMETRY_SHAPES), lines: z.array(z.enum(SYMMETRY_LINES)) })
+
+/** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). P189: and five more. P190: and six for measuring. P191: and four for patterns, algebra and graphs. P192: and four for shapes and position. */
 const QUESTION_PICTURES = [
   ObjectsSchema,
   TenFrameSchema,
@@ -289,6 +315,10 @@ const QUESTION_PICTURES = [
   FlowDiagramSchema,
   BalanceSchema,
   TravelGraphSchema,
+  MapGridSchema,
+  SolidSchema,
+  CubeStackSchema,
+  SymmetryLinesSchema,
 ] as const
 
 /**
@@ -335,3 +365,7 @@ export type TilePatternSpec = z.infer<typeof TilePatternSchema>
 export type FlowDiagramSpec = z.infer<typeof FlowDiagramSchema>
 export type BalanceSpec = z.infer<typeof BalanceSchema>
 export type TravelGraphSpec = z.infer<typeof TravelGraphSchema>
+export type MapGridSpec = z.infer<typeof MapGridSchema>
+export type SolidSpec = z.infer<typeof SolidSchema>
+export type CubeStackSpec = z.infer<typeof CubeStackSchema>
+export type SymmetryLinesSpec = z.infer<typeof SymmetryLinesSchema>

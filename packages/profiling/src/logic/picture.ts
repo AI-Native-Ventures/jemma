@@ -1,5 +1,5 @@
 import type { SeniorDiagramSpec } from '../schemas/diagram'
-import { balanceSolution, daysIn, factorTreeOf, flowOutput, MONEY_VALUES, percentPart, tilesOf } from './question-pictures'
+import { balanceSolution, daysIn, factorTreeOf, flowOutput, isSymmetryLine, MONEY_VALUES, percentPart, tilesOf } from './question-pictures'
 
 /**
  * Does a picture of the two senior kinds make sense? `null` when it does, else a short plain reason.
@@ -439,6 +439,35 @@ function travelGraphProblem(s: TravelGraph): string | null {
   return null
 }
 
+// ---- P192: shapes and position -------------------------------------------------------------------------------------------------------
+
+type MapGrid = Extract<SeniorDiagramSpec, { kind: 'map_grid' }>
+type CubeStack = Extract<SeniorDiagramSpec, { kind: 'cube_stack' }>
+type SymmetryLines = Extract<SeniorDiagramSpec, { kind: 'symmetry_lines' }>
+
+function mapGridProblem(s: MapGrid): string | null {
+  if (!whole(s.cols, 3, 8) || !whole(s.rows, 3, 6)) return 'a map has 3 to 8 columns and 3 to 6 rows of squares'
+  if (s.places.length < 1 || s.places.length > 6) return 'a map has 1 to 6 places'
+  if (s.places.some((p) => !whole(p.col, 0, s.cols - 1) || !whole(p.row, 0, s.rows - 1))) return 'each place is on a square of the map'
+  if (new Set(s.places.map((p) => `${p.col},${p.row}`)).size !== s.places.length) return 'each place has a square of its own'
+  if (s.places.some((p) => p.name.trim().length < 1 || p.name.trim().length > 14)) return 'each place has a short name'
+  if (s.places.filter((p) => p.house).length > 1) return 'a map has at most one house'
+  return null
+}
+
+function cubeStackProblem(s: CubeStack): string | null {
+  const rows = s.heights.length
+  if (rows < 1 || rows > 3 || s.heights.some((r) => r.length < 1 || r.length > 4 || r.length !== s.heights[0]!.length)) return 'a shape of cubes stands on 1 to 3 rows of 1 to 4 squares, each row as long'
+  if (s.heights.flat().some((h) => !whole(h, 0, 3))) return 'each square holds 0 to 3 cubes'
+  if (!s.heights.flat().some((h) => h > 0)) return 'a shape of cubes has at least one cube'
+  return null
+}
+
+function symmetryLinesProblem(s: SymmetryLines): string | null {
+  if (s.lines.length < 2 || s.lines.length > 4 || new Set(s.lines).size !== s.lines.length) return 'a shape has 2 to 4 different dashed lines'
+  return null
+}
+
 /** The values of the gold blanks of a flow diagram, in order: the outputs first, then the inputs. */
 const flowBlanks = (s: FlowDiagram): number[] => [...(s.blanks ?? []).map((p) => flowOutput(s.rule, s.inputs[p - 1]!)), ...(s.blankInputs ?? []).map((p) => s.inputs[p - 1]!)]
 
@@ -457,7 +486,10 @@ const near = (a: number, b: number) => Math.abs(a - b) < 0.005
  * P189: and so does a factor tree with a gold number. The question mark of a percentage bar is the amount of its shaded part, its whole or its percent, so a
  * number key is that number (`read` reads it, the way the key is written). P190: a measuring picture is read, so a number key is its reading.
  */
-export function pictureKeyProblem(q: { answer: string; answerKind: string; diagram?: SeniorDiagramSpec }, read?: (text: string) => number | null): string | null {
+export function pictureKeyProblem(
+  q: { answer: string; answerKind: string; diagram?: SeniorDiagramSpec; choices?: readonly (string | { text?: string })[] },
+  read?: (text: string) => number | null,
+): string | null {
   const d = q.diagram
   if (d?.kind === 'hundred_chart' && d.gold !== undefined && q.answerKind === 'whole' && q.answer.trim() !== String(d.gold)) return `the answer is the number in the gold box of the hundred chart, ${d.gold}`
   if (d?.kind === 'factor_tree' && d.gold !== undefined && q.answerKind === 'whole' && q.answer.trim() !== String(d.gold)) return `the answer is the gold number of the factor tree, ${d.gold}`
@@ -482,6 +514,13 @@ export function pictureKeyProblem(q: { answer: string; answerKind: string; diagr
   if (d?.kind === 'balance' && read && ['whole', 'decimal'].includes(q.answerKind)) {
     const got = read(q.answer.replace(/^\s*[a-z]\s*=\s*/i, ''))
     if (got !== null && !near(got, balanceSolution(d))) return `the answer is what a bag weighs, ${balanceSolution(d)}`
+  }
+  // P192: a choice question about the lines of a symmetry picture, its choices the letters of the lines, has a line of symmetry as its key.
+  if (d?.kind === 'symmetry_lines' && q.answerKind === 'choice' && q.choices?.length) {
+    const letters = q.choices.map((c) => (typeof c === 'string' ? c : (c.text ?? '')).trim().toUpperCase())
+    const named = letters.every((l, i) => l === 'ABCD'[i]) && letters.length === d.lines.length
+    const at = 'ABCD'.indexOf(q.answer.trim().toUpperCase())
+    if (named && at >= 0 && at < d.lines.length && !isSymmetryLine(d.shape, d.lines[at]!)) return `line ${'ABCD'[at]} is not a line of symmetry of the ${d.shape}`
   }
   // P190: a ruler, a scale, a jug and a thermometer are read, so a number key is the reading (in its unit, or one a thousand times bigger or smaller).
   const readings = d ? readingsOf(d) : null
@@ -546,6 +585,15 @@ export function pictureProblem(spec: SeniorDiagramSpec): string | null {
       return finite ?? balanceProblem(spec)
     case 'travel_graph':
       return finite ?? travelGraphProblem(spec)
+    // P192
+    case 'map_grid':
+      return finite ?? mapGridProblem(spec)
+    case 'solid':
+      return null
+    case 'cube_stack':
+      return finite ?? cubeStackProblem(spec)
+    case 'symmetry_lines':
+      return symmetryLinesProblem(spec)
     default:
       return null
   }

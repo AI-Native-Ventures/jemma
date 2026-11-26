@@ -24,7 +24,7 @@ const wide = QuestionSchema.shape
 
 /**
  * The question of a gated primary lesson, named field by field from the wide question (so a field that a later packet adds for senior classes never reaches a
- * young learner's lesson by itself): the prompt, the answer, the six old kinds and the new ones, plain-text choices (a picture choice is senior), the fields the
+ * young learner's lesson by itself): the prompt, the answer, the six old kinds and the new ones, choices (P192: a choice may be a primary picture), the fields the
  * new kinds read (`unit`, `ordered`, `labels`, `round`, `table`), a picture of the primary kinds (P166), a graph to draw (P167), a sum in columns (P168),
  * blocks to build a number with (P169), groups to sort into (P170), and no `steps`, no `form` and no senior picture.
  */
@@ -34,7 +34,8 @@ export const PrimaryExtraQuestionSchema = z.object({
   terms: wide.terms,
   answer: wide.answer,
   answerKind: z.enum([...PRIMARY_ANSWER_KINDS, ...PRIMARY_EXTRA_ANSWER_KINDS]),
-  choices: z.array(z.string()).optional(),
+  // P192: a choice may be a picture of the primary kinds too (a net that folds into a cube, a view from the top), with or without words.
+  choices: z.array(z.union([z.string(), z.object({ text: z.string().optional(), diagram: PrimaryPictureSpecSchema.optional() })])).optional(),
   unit: wide.unit,
   ordered: wide.ordered,
   labels: wide.labels,
