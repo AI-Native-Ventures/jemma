@@ -119,7 +119,8 @@ describe('the lesson writer', () => {
     expect(primaryKit(klass(6), 'Probability')).toBeNull()
     expect(primaryKit(klass(6, 'KE'), 'Probability')).toBe('chance')
     expect(KIT_PICTURES.chance).toEqual(['spinner', 'counters'])
-    expect(primaryAnswerBlock('chance', klass(5))).toBe(pictureBullet('chance', klass(5)))
+    // P199: and a table of outcomes after the pictures.
+    expect(primaryAnswerBlock('chance', klass(5)).startsWith(pictureBullet('chance', klass(5))!)).toBe(true)
     expect(pictureBullet('chance', klass(5))).toContain('`spinner`')
     expect(pictureBullet('chance', klass(5))).toContain('`counters`')
   })

@@ -20,6 +20,8 @@ export function valuesHint(shape: Values): string {
     case 'order':
       return 'Tap the numbers in order, one place at a time. Tap one again to take it back.'
     case 'table':
+      // P199: a table of outcomes takes an outcome in each box.
+      if (shape.table.outcomes) return 'Write the outcome in each empty box: its column and its row together.'
       return `Fill in the empty boxes of the table.${roundLine(shape.round)}`
   }
 }
@@ -32,6 +34,7 @@ function youngValuesHint(shape: Values): string {
     case 'order':
       return 'Tap the numbers in the order the question asks for. Tap a number again to take it back.'
     case 'table':
+      if (shape.table.outcomes) return 'Write the outcome in each empty box: its column and its row together.'
       return `Fill in the empty boxes.${roundLine(shape.round)}`
   }
 }
@@ -44,6 +47,7 @@ function youngPaperLine(shape: Values): string {
     case 'order':
       return 'Write the numbers in the order the question asks for, with a semicolon between them, like 3; 5; 7.'
     case 'table':
+      if (shape.table.outcomes) return 'Write the missing outcomes one after the other, with a semicolon between them.'
       return `Write the missing numbers one after the other, with a semicolon between them.${roundLine(shape.round)}`
   }
 }
@@ -57,6 +61,7 @@ export function paperValuesLine(shape: Values): string {
     case 'order':
       return 'Write the numbers in order, with a semicolon between them, like 1/4; 1/2; 3/4.'
     case 'table':
+      if (shape.table.outcomes) return 'Write the missing outcomes in order, left to right and then top to bottom, with a semicolon between them.'
       return `Write the missing numbers in order, left to right and then top to bottom, with a semicolon between them.${roundLine(shape.round)}`
   }
 }

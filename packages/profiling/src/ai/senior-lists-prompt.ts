@@ -13,7 +13,8 @@ export const seniorLists = (za: boolean): string => {
     'Say in the `prompt` which way (smallest first, or biggest first). ' +
     '`table` (a frequency table, a two-way table, the counts of a Venn diagram or a probability tree written as a table, a table of values x and y): give `table` with `columns` (the headings) and `rows` (each row has one entry for each column: the text that is given, or null for a cell the learner fills), at most 4 columns and 6 rows. ' +
     'The `answer` holds the values of the null cells, left to right and top to bottom, so it has exactly as many values as the table has nulls. ' +
-    'Every value is a number, a fraction or an expression (`7`, `1/2`, `√8`). ' +
+    'Every value is a number, a fraction or an expression (`7`, `1/2`, `√8`), except in a table of outcomes (a coin and a die): its `columns` are `["Die", "H", "T"]`, each row starts with a number of the die (`["1", "H1", null]`), ' +
+    'and each null cell holds its column and its row put together in capitals (`T1; T2; H3; T3`). ' +
     'When the question asks for a rounded answer ("correct to 1 decimal place"), set `round` to the number of decimal places (1) and write the exact value in the `answer`. ' +
     'Use these kinds only for the 15 questions, never in the warm-up, and never for a question with one number as its answer.'
   )
