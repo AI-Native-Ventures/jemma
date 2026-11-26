@@ -22,14 +22,84 @@ const NAMES: Record<SolidSpec['shape'], string> = {
   sphere: 'A sphere',
 }
 
-export function describeSolid({ shape, variant = 'card' }: SolidProps): string {
+/** P196: the sizes written on a 3D object, in words. */
+function sizeWords(sizes: SolidSpec['sizes']): string {
+  if (!sizes) return ''
+  const said = [
+    sizes.radius ? `radius ${sizes.radius.trim()}` : '',
+    sizes.length ? `length ${sizes.length.trim()}` : '',
+    sizes.width ? `width ${sizes.width.trim()}` : '',
+    sizes.height ? `height ${sizes.height.trim()}` : '',
+    sizes.slant ? `slant height ${sizes.slant.trim()}` : '',
+  ].filter(Boolean)
+  return said.length ? ` Its sizes: ${said.slice(0, -1).join(', ')}${said.length > 1 ? ' and ' : ''}${said[said.length - 1]}.` : ''
+}
+
+export function describeSolid({ shape, sizes, variant = 'card' }: SolidProps): string {
   const dashed =
     shape === 'sphere' ? 'The hidden half of the line round its middle is dashed.' : shape === 'cylinder' || shape === 'cone' ? 'The hidden part of its edge is dashed.' : 'Its hidden edges are dashed.'
   // While a question is answered the words never name the object or count its parts: either may be the answer.
-  if (variant === 'question') return `A 3D object. ${dashed}`
+  if (variant === 'question') return `A 3D object. ${dashed}${sizeWords(sizes)}`
   const n = SOLID_COUNTS[shape]!
   const part = (k: number, one: string, many: string) => `${k} ${k === 1 ? one : many}`
-  return `${NAMES[shape]}. ${dashed} It has ${part(n.faces, 'face', 'faces')}, ${part(n.edges, 'edge', 'edges')} and ${part(n.corners, 'corner', 'corners')}.`
+  return `${NAMES[shape]}. ${dashed}${sizeWords(sizes)} It has ${part(n.faces, 'face', 'faces')}, ${part(n.edges, 'edge', 'edges')} and ${part(n.corners, 'corner', 'corners')}.`
+}
+
+/** P196: the sizes on a 3D object: a dashed radius and height inside it where they are, and each label beside what it measures. */
+function Sizes({ shape, sizes }: { shape: SolidSpec['shape']; sizes: NonNullable<SolidSpec['sizes']> }) {
+  const label = (x: number, y: number, text: string | undefined, anchor: 'start' | 'middle' | 'end' = 'middle') =>
+    text ? (
+      <text key={`${x}.${y}`} data-size={text.trim()} x={x} y={y} fontSize={13} fontWeight={700} fill={INK} textAnchor={anchor} stroke="#FFFFFF" strokeWidth={3} paintOrder="stroke">
+        {text.trim()}
+      </text>
+    ) : null
+  const dash = (x1: number, y1: number, x2: number, y2: number, key: string) => <line key={key} x1={x1} y1={y1} x2={x2} y2={y2} stroke={INK} strokeWidth={1.6} strokeDasharray="6 4" />
+  switch (shape) {
+    case 'cone':
+      return (
+        <g>
+          {sizes.height ? dash(150, 20, 150, 155, 'h') : null}
+          {sizes.radius ? dash(150, 155, 225, 155, 'r') : null}
+          {label(142, 96, sizes.height, 'end')}
+          {label(188, 185, sizes.radius)}
+          {label(198, 86, sizes.slant, 'start')}
+        </g>
+      )
+    case 'cylinder':
+      return (
+        <g>
+          {sizes.radius ? dash(150, 40, 220, 40, 'r') : null}
+          {label(185, 33, sizes.radius)}
+          {label(228, 100, sizes.height, 'start')}
+        </g>
+      )
+    case 'sphere':
+      return (
+        <g>
+          {sizes.radius ? dash(150, 95, 228, 95, 'r') : null}
+          {label(189, 88, sizes.radius)}
+        </g>
+      )
+    case 'cube':
+    case 'cuboid': {
+      const width = shape === 'cube' ? 100 : 150
+      const x = (W - width - 40) / 2
+      return (
+        <g>
+          {label(x + width / 2, 177, sizes.length)}
+          {label(x - 8, 114, sizes.height, 'end')}
+          {label(x + width + 26, 152, sizes.width, 'start')}
+        </g>
+      )
+    }
+    default:
+      return (
+        <g>
+          {label(W / 2, 182, sizes.length)}
+          {label(W - 20, 100, sizes.height, 'end')}
+        </g>
+      )
+  }
 }
 
 type Pt = readonly [number, number]
@@ -139,6 +209,7 @@ export function Solid(props: SolidProps) {
   return (
     <Svg width={W} height={H} label={describeSolid(props)}>
       {drawing(props.shape)}
+      {props.sizes ? <Sizes shape={props.shape} sizes={props.sizes} /> : null}
     </Svg>
   )
 }

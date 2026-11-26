@@ -5,6 +5,7 @@ import type { ClockFaceSpec, SeniorDiagramSpec } from '@jemma/profiling/schemas'
 import { DiagramView } from '@/components/diagrams'
 import { ClockFace } from './answers/ClockFace'
 import { useNotation } from '@/lib/notation'
+import { FormulaSheet } from './FormulaSheet'
 
 /**
  * The picture a question carries: a graph to read or a triangle with an angle to find (a senior class), and since P166 one of the seven primary pictures
@@ -26,9 +27,18 @@ export function QuestionPicture({ spec, face, variant = 'question', notation }: 
       </div>
     )
   if (!spec) return null
-  return (
+  // P196: a 3D object with its sizes, while the question is answered, has the formula sheet a learner has in a test.
+  const sheet = variant === 'question' && spec.kind === 'solid' && !!spec.sizes
+  const picture = (
     <div data-picture="true" className="flex w-full justify-center [&_svg]:max-h-[300px]">
       <DiagramView spec={spec} variant={variant} notation={notation ?? onScreen} />
+    </div>
+  )
+  if (!sheet) return picture
+  return (
+    <div className="flex w-full flex-col gap-2">
+      <FormulaSheet />
+      {picture}
     </div>
   )
 }

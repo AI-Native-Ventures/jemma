@@ -577,11 +577,17 @@ export function pictureKeyProblem(
     const word = (typeof picked === 'string' ? picked : (picked?.text ?? '')).trim().toLowerCase()
     if (kinds.includes(word) && word !== angleKind(d.degrees)) return `a ${d.degrees}° angle is ${angleKind(d.degrees)}, not ${word}`
   }
-  if (d?.kind === 'protractor' && read && ['whole', 'decimal'].includes(q.answerKind)) {
+  // P196: the angle x of a circle stands on the same arc as the other: half of the angle at the centre, or twice the angle at the circle.
+  if (d?.kind === 'circle_angles' && read && ['whole', 'decimal', 'number'].includes(q.answerKind)) {
+    const want = d.ask === 'circle' ? d.centre / 2 : d.centre
+    const got = read(q.answer)
+    if (got !== null && !near(got, want)) return `the answer is the angle x of the circle, ${want}`
+  }
+  if (d?.kind === 'protractor' && read && ['whole', 'decimal', 'number'].includes(q.answerKind)) {
     const got = read(q.answer)
     if (got !== null && !near(got, d.degrees)) return `the answer is the angle the protractor reads, ${d.degrees}`
   }
-  if (d?.kind === 'parallel_lines' && read && ['whole', 'decimal'].includes(q.answerKind)) {
+  if (d?.kind === 'parallel_lines' && read && ['whole', 'decimal', 'number'].includes(q.answerKind)) {
     const letters = d.marks.filter((m) => labelDegrees(m.label) === null)
     const got = read(q.answer)
     if (letters.length === 1 && got !== null && !near(got, cornerAngle(d.acute, letters[0]!.corner))) return `the answer is the angle ${letters[0]!.label.trim()} stands for, ${cornerAngle(d.acute, letters[0]!.corner)}`
@@ -653,7 +659,8 @@ export function pictureProblem(spec: SeniorDiagramSpec): string | null {
     case 'map_grid':
       return finite ?? mapGridProblem(spec)
     case 'solid':
-      return null
+      // P196: a size is a short label.
+      return Object.values(spec.sizes ?? {}).some((v) => v !== undefined && (v.trim().length < 1 || v.trim().length > 8)) ? 'each size of a 3D object is a short label, like 3 cm or r' : null
     case 'cube_stack':
       return finite ?? cubeStackProblem(spec)
     case 'symmetry_lines':
@@ -667,6 +674,15 @@ export function pictureProblem(spec: SeniorDiagramSpec): string | null {
       return finite ?? parallelLinesProblem(spec)
     case 'enlargement':
       return finite ?? enlargementProblem(spec)
+    // P196
+    case 'circle_angles':
+      return whole(spec.centre, 40, 160) && spec.centre % 2 === 0 ? null : 'the angle at the centre is an even whole number of degrees from 40 to 160'
+    case 'cast':
+      return whole(spec.degrees, 1, 359) && (spec.label === undefined || spec.label.trim().length <= 3) ? null : 'the angle of a CAST picture is a whole number of degrees from 1 to 359, with a short label'
+    case 'elevation':
+      return [spec.ground, spec.angle, spec.height ?? 'h'].every((t) => t.trim().length >= 1 && t.trim().length <= 8) ? null : 'each label of a tower is short, like 80 m, 30° or h'
+    case 'cut_box':
+      return [spec.side, spec.cut ?? 'x'].every((t) => t.trim().length >= 1 && t.trim().length <= 8) ? null : 'each label of a card is short, like 30 cm or x'
     // P195
     case 'point_angle':
       return whole(spec.x, -6, 6) && whole(spec.y, -6, 6) && (spec.x !== 0 || spec.y !== 0) && (spec.name === undefined || /^[A-Z]$/.test(spec.name)) ? null : 'a point and its angle is P(x; y) with whole x and y from -6 to 6, not the origin, and a one capital letter name'
