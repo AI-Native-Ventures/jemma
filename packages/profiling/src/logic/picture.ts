@@ -331,12 +331,78 @@ function moneyProblem(s: Money): string | null {
   return null
 }
 
+// ---- P190: measuring ------------------------------------------------------------------------------------------------------------------
+
+type Ruler = Extract<SeniorDiagramSpec, { kind: 'ruler' }>
+type ScaleDial = Extract<SeniorDiagramSpec, { kind: 'scale_dial' }>
+type Jug = Extract<SeniorDiagramSpec, { kind: 'jug' }>
+type Thermometer = Extract<SeniorDiagramSpec, { kind: 'thermometer' }>
+type Cubes = Extract<SeniorDiagramSpec, { kind: 'cubes' }>
+type BoxNet = Extract<SeniorDiagramSpec, { kind: 'box_net' }>
+
+/** P190: the dials and jugs Jemma draws: a dial is cut into 20 steps and a jug into 10, so each step is a round number. */
+export const SCALE_MAXES = { g: [500, 1000, 2000, 5000], kg: [1, 2, 5, 10] } as const
+export const JUG_MAXES = { ml: [250, 500, 1000, 2000], l: [1, 2, 5] } as const
+export const SCALE_STEPS = 20
+export const JUG_STEPS = 10
+/** P190: how many degrees one step of a thermometer is, by how far it runs: every degree up to 30, every 2 up to 60, every 5 up to 120. */
+export const thermometerStep = (s: { min: number; max: number }): number => (s.max - s.min <= 30 ? 1 : s.max - s.min <= 60 ? 2 : 5)
+
+/** True when `v` is a whole number of `step`s (to within a rounding slip). */
+const onStep = (v: number, step: number) => Math.abs(v / step - Math.round(v / step)) < 1e-6
+
+function rulerProblem(s: Ruler): string | null {
+  const inches = s.unit === 'in'
+  const step = inches ? 0.25 : 0.5
+  const from = s.from ?? 0
+  if (inches ? !whole(s.to, 3, 12) : !whole(s.to, 5, 15)) return inches ? 'a ruler in inches runs to 3 to 12 inches' : 'a ruler in centimetres runs to 5 to 15 cm'
+  if (from < 0 || !onStep(from, step) || !(s.length > 0) || !onStep(s.length, step)) return inches ? 'the thing starts and ends on a quarter inch' : 'the thing starts and ends on a whole or half centimetre'
+  if (from + s.length > s.to) return 'the thing ends on the ruler'
+  return null
+}
+
+function scaleDialProblem(s: ScaleDial): string | null {
+  if (!(SCALE_MAXES[s.unit] as readonly number[]).includes(s.max)) return `a scale in ${s.unit} goes up to ${SCALE_MAXES[s.unit].join(', ')}`
+  if (s.value < 0 || s.value > s.max || !onStep(s.value, s.max / SCALE_STEPS)) return `the needle points to a mark of the dial: a step of ${s.max / SCALE_STEPS} ${s.unit}`
+  return null
+}
+
+function jugProblem(s: Jug): string | null {
+  if (!(JUG_MAXES[s.unit] as readonly number[]).includes(s.max)) return `a jug in ${s.unit} goes up to ${JUG_MAXES[s.unit].join(', ')}`
+  if (!(s.value > 0) || s.value > s.max || !onStep(s.value, s.max / JUG_STEPS)) return `the water is at a mark of the jug: a step of ${s.max / JUG_STEPS} ${s.unit}`
+  return null
+}
+
+function thermometerProblem(s: Thermometer): string | null {
+  if (!Number.isInteger(s.min / 10) || !Number.isInteger(s.max / 10) || s.max - s.min < 20 || s.max - s.min > 120) return 'a thermometer runs from one ten to another, 20 to 120 degrees apart'
+  // The red line may stop halfway between two marks (23 between 22 and 24), at a whole number of degrees.
+  if (s.value < s.min || s.value > s.max || !Number.isInteger(s.value) || !onStep(s.value - s.min, thermometerStep(s) / 2))
+    return `the red line is at a whole number of degrees, on a mark of the thermometer or halfway between two (a mark every ${thermometerStep(s)})`
+  return null
+}
+
+function cubesProblem(s: Cubes): string | null {
+  return whole(s.long, 1, 6) && whole(s.wide, 1, 6) && whole(s.high, 1, 6) ? null : 'a box of cubes is 1 to 6 cubes long, wide and high'
+}
+
+function boxNetProblem(s: BoxNet): string | null {
+  return whole(s.long, 1, 12) && whole(s.wide, 1, 12) && whole(s.high, 1, 12) ? null : 'the net of a box is 1 to 12 long, wide and high, in whole units'
+}
+
+/** P190: the reading of a measuring picture, and the same reading in the unit a thousand times bigger or smaller (700 ml is 0,7 l), or null for none. */
+function readingsOf(d: SeniorDiagramSpec): number[] | null {
+  if (d.kind === 'ruler') return d.unit === 'in' ? [d.length] : [d.length, d.length * 10, d.length / 100]
+  if (d.kind === 'scale_dial' || d.kind === 'jug') return [d.value, d.value * 1000, d.value / 1000]
+  if (d.kind === 'thermometer') return [d.value]
+  return null
+}
+
 const near = (a: number, b: number) => Math.abs(a - b) < 0.005
 
 /**
  * P188: why the key of a question does not fit its picture, or null. A hundred chart with a gold box asks for the number in it, so a whole answer is that number.
  * P189: and so does a factor tree with a gold number. The question mark of a percentage bar is the amount of its shaded part, its whole or its percent, so a
- * number key is that number (`read` reads it, the way the key is written).
+ * number key is that number (`read` reads it, the way the key is written). P190: a measuring picture is read, so a number key is its reading.
  */
 export function pictureKeyProblem(q: { answer: string; answerKind: string; diagram?: SeniorDiagramSpec }, read?: (text: string) => number | null): string | null {
   const d = q.diagram
@@ -347,6 +413,12 @@ export function pictureKeyProblem(q: { answer: string; answerKind: string; diagr
     const want = ask === 'whole' ? d.whole : ask === 'percent' ? d.percent : percentPart(d)
     const got = read(q.answer)
     if (got !== null && !near(got, want)) return `the answer is what the question mark of the percentage bar stands for, ${Math.round(want * 100) / 100}`
+  }
+  // P190: a ruler, a scale, a jug and a thermometer are read, so a number key is the reading (in its unit, or one a thousand times bigger or smaller).
+  const readings = d ? readingsOf(d) : null
+  if (readings && read && ['whole', 'decimal'].includes(q.answerKind)) {
+    const got = read(q.answer)
+    if (got !== null && !readings.some((r) => near(got, r))) return `the answer is the reading of the picture, ${Math.round(readings[0]! * 1000) / 1000}`
   }
   return null
 }
@@ -383,6 +455,19 @@ export function pictureProblem(spec: SeniorDiagramSpec): string | null {
       return finite ?? calendarProblem(spec)
     case 'money':
       return finite ?? moneyProblem(spec)
+    // P190
+    case 'ruler':
+      return finite ?? rulerProblem(spec)
+    case 'scale_dial':
+      return finite ?? scaleDialProblem(spec)
+    case 'jug':
+      return finite ?? jugProblem(spec)
+    case 'thermometer':
+      return finite ?? thermometerProblem(spec)
+    case 'cubes':
+      return finite ?? cubesProblem(spec)
+    case 'box_net':
+      return finite ?? boxNetProblem(spec)
     default:
       return null
   }

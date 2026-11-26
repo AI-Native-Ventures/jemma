@@ -192,7 +192,40 @@ const CalendarSchema = z.object({ kind: z.literal('calendar'), year: z.number(),
 /** P189: coins and notes to count: the value of each one in cents (`[1000, 500, 200, 200, 50]` is a R10 note, a R5 coin, two R2 coins and a 50c coin). */
 const MoneySchema = z.object({ kind: z.literal('money'), items: z.array(z.number()) })
 
-/** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). P189: and five more. */
+// ---- P190: measuring --------------------------------------------------------------------------------------------------------------
+
+/** The things a ruler measures. */
+export const RULER_THINGS = ['pencil', 'crayon', 'ribbon'] as const
+
+/**
+ * P190: a thing above a ruler that runs from 0 to `to` (centimetres, or inches in the US). The thing starts at `from` (0 when left out) and is `length` long:
+ * whole or half centimetres, or quarter inches.
+ */
+const RulerSchema = z.object({
+  kind: z.literal('ruler'),
+  unit: z.enum(['cm', 'in']).optional(),
+  to: z.number(),
+  from: z.number().optional(),
+  length: z.number(),
+  thing: z.enum(RULER_THINGS).optional(),
+})
+
+/** P190: a kitchen scale with a dial from 0 to `max` grams or kilograms, cut into 20 steps, and its needle at `value`. */
+const ScaleDialSchema = z.object({ kind: z.literal('scale_dial'), max: z.number(), value: z.number(), unit: z.enum(['g', 'kg']) })
+
+/** P190: a measuring jug marked from 0 to `max` millilitres or litres in 10 steps, with water up to `value`. */
+const JugSchema = z.object({ kind: z.literal('jug'), max: z.number(), value: z.number(), unit: z.enum(['ml', 'l']) })
+
+/** P190: a thermometer from `min` to `max` degrees Celsius (`C`, the default) or Fahrenheit (`F`), with its red line at `value`. */
+const ThermometerSchema = z.object({ kind: z.literal('thermometer'), min: z.number(), max: z.number(), value: z.number(), unit: z.enum(['C', 'F']).optional() })
+
+/** P190: a box built from cubes, `long` by `wide` by `high`, drawn in 3D. */
+const CubesSchema = z.object({ kind: z.literal('cubes'), long: z.number(), wide: z.number(), high: z.number() })
+
+/** P190: the net of a box, `long` by `wide` by `high`, drawn to scale with each size on an edge it measures. */
+const BoxNetSchema = z.object({ kind: z.literal('box_net'), long: z.number(), wide: z.number(), high: z.number(), unit: z.enum(['mm', 'cm', 'm', 'in']).optional() })
+
+/** P188: the pictures of a question of Grades 1 to 6 that only a question carries (a lesson card keeps the seven of `DiagramSpecSchema`). P189: and five more. P190: and six for measuring. */
 const QUESTION_PICTURES = [
   ObjectsSchema,
   TenFrameSchema,
@@ -205,6 +238,12 @@ const QUESTION_PICTURES = [
   PercentBarSchema,
   CalendarSchema,
   MoneySchema,
+  RulerSchema,
+  ScaleDialSchema,
+  JugSchema,
+  ThermometerSchema,
+  CubesSchema,
+  BoxNetSchema,
 ] as const
 
 /**
@@ -241,3 +280,9 @@ export type FractionCircleSpec = z.infer<typeof FractionCircleSchema>
 export type PercentBarSpec = z.infer<typeof PercentBarSchema>
 export type CalendarSpec = z.infer<typeof CalendarSchema>
 export type MoneySpec = z.infer<typeof MoneySchema>
+export type RulerSpec = z.infer<typeof RulerSchema>
+export type ScaleDialSpec = z.infer<typeof ScaleDialSchema>
+export type JugSpec = z.infer<typeof JugSchema>
+export type ThermometerSpec = z.infer<typeof ThermometerSchema>
+export type CubesSpec = z.infer<typeof CubesSchema>
+export type BoxNetSpec = z.infer<typeof BoxNetSchema>
