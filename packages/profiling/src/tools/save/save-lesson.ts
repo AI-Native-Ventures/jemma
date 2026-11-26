@@ -11,11 +11,12 @@ import { pinKeyProblem, pinProblem } from '../../logic/answers/pin'
 import { clockKeyProblem, clockProblem } from '../../logic/answers/clock'
 import { matchKeyProblem, matchProblem, tidyMatch } from '../../logic/answers/match'
 import { proofKeyProblem, proofProblem, tidyProof } from '../../logic/answers/proof'
+import { generalKeyProblem, generalProblem, tidyGeneral } from '../../logic/answers/general'
 import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
 import { isSeniorQuestion, quantityProblem, readCents, stripUnit } from '../../logic/answers/quantity'
-import { graphEquationOf, isMeaningKind, meaningKeyProblem, readNumber, sameExpression } from '../../logic/meaning'
+import { degreeEquationOf, graphEquationOf, isMeaningKind, meaningKeyProblem, readNumber, sameExpression } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { pictureProblem, questionPictureProblem } from '../../logic/picture'
 import { cleanSteps } from '../../logic/steps'
@@ -101,6 +102,12 @@ export function answerProblem(q: Question): string | null {
     if (q.diagram || q.plot || q.line || q.choices?.length) return 'proof: an identity to prove has no picture and no choices'
     const proof = proofProblem(q.proof, sameExpression) ?? proofKeyProblem({ ...q, proof: q.proof }, sameExpression)
     if (proof) return `proof: ${proof}`
+  }
+  // P180: every solution of a trig equation: a key whose families are the solutions of the equation in the question, every one of them.
+  if (q.general) {
+    if (q.diagram || q.plot || q.line || q.proof || q.choices?.length) return 'general: every solution has no picture and no choices'
+    const general = generalProblem(q.general) ?? generalKeyProblem({ ...q, general: q.general }, readNumber, degreeEquationOf)
+    if (general) return `general: ${general}`
   }
   // P175: a pin on a number line: a line a phone can show, and a key on one of its marks.
   if (q.pin) {
@@ -196,7 +203,7 @@ const STEPS_LEFT_OUT = 'left out whole: a line of them held a label'
 const tidySteps = (questions: Question[]): Question[] =>
   questions.map(({ steps, ...rest }) => {
     const clean = cleanSteps(steps)
-    return tidyProof(tidyMatch(tidyLine(tidyTap(tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest)))))))
+    return tidyGeneral(tidyProof(tidyMatch(tidyLine(tidyTap(tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest))))))))
   })
 
 /**

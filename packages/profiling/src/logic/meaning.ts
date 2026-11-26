@@ -11,6 +11,7 @@ import { markLine } from './answers/line'
 import { markSketch } from './answers/plot'
 import { markClock } from './answers/clock'
 import { markProof } from './answers/proof'
+import { markGeneral } from './answers/general'
 
 /**
  * Marking by meaning, for the senior classes (Mathematics, Grades 7 to 12): a learner types algebra, a negative number, a point, a percent or an
@@ -495,6 +496,70 @@ export function graphEquationOf(text: string): ((x: number) => number) | null {
     }
   }
   return null
+}
+
+/** A tree with a letter put in as a number: the angle of a trig equation in degrees, so sin, cos and tan take it in degrees (a plain angle, as `inDegrees` says). */
+const putIn = (n: MathNode, letter: string, v: number): MathNode => {
+  switch (n.t) {
+    case 'var':
+      return n.name === letter ? { t: 'num', v } : n
+    case 'num':
+    case 'pi':
+    case 'e':
+      return n
+    case 'deg':
+    case 'fn':
+    case 'neg':
+    case 'group':
+      return { ...n, a: putIn(n.a, letter, v) }
+    case 'sqrt':
+      return { ...n, a: putIn(n.a, letter, v) }
+    default:
+      return { ...n, a: putIn(n.a, letter, v), b: putIn(n.b, letter, v) }
+  }
+}
+
+/**
+ * P180: the trig equation in a text ("Find the general solution of sin θ = 0,5."), as the difference of its two sides for an angle in degrees (0 at a solution), or
+ * null when the text has none that can be read. The left side is the longest piece before the first equals sign that reads as maths with `letter` in it; the
+ * right side the longest piece after it that reads, up to a space or the end, with no other letter.
+ */
+export function degreeEquationOf(text: string, letter: string): ((degrees: number) => number) | null {
+  const at = text.indexOf('=')
+  if (at < 0) return null
+  const before = text.slice(0, at)
+  const after = text.slice(at + 1)
+  const only = (tree: MathNode, needed: boolean) => {
+    const letters = lettersOf(tree)
+    return [...letters].every((l) => l === letter) && (!needed || letters.has(letter))
+  }
+  const starts = [0, ...[...before.matchAll(/\s/g)].map((w) => w.index + 1)].sort((x, y) => x - y)
+  let left: MathNode | null = null
+  for (const start of starts) {
+    const piece = before.slice(start).trim()
+    if (!piece || piece.length > MEANING_MAX_LENGTH) continue
+    const tree = readMath(piece)
+    if (tree && only(tree, true)) {
+      left = tree
+      break
+    }
+  }
+  if (!left) return null
+  const ends = [after.length, ...[...after.matchAll(/\s/g)].map((w) => w.index)].sort((x, y) => y - x)
+  let right: MathNode | null = null
+  for (const end of ends) {
+    const piece = after.slice(0, end).replace(/[\s.,;:!?]+$/, '')
+    if (!piece || piece.length > MEANING_MAX_LENGTH) continue
+    const tree = readMath(piece)
+    if (tree && only(tree, false)) {
+      right = tree
+      break
+    }
+  }
+  if (!right) return null
+  const l = left
+  const r = right
+  return (degrees: number) => valueOf(putIn(l, letter, degrees), {}) - valueOf(putIn(r, letter, degrees), {})
 }
 
 /** Two values are the same when they differ by less than a billionth of their size (and of 1). */
@@ -1019,6 +1084,8 @@ export function markQuestion(
   // P179: a proof is right when each line equals the one before it and it ends on the right side (logic/answers/proof.ts).
   const proof = (q as { proof?: { left: string; right: string } }).proof
   if (proof && q.answerKind === 'list') return markProof(proof, answer, sameExpression)
+  // P180: every solution is marked by the angles its families give, however they are written (logic/answers/general.ts).
+  if ((q as { general?: unknown }).general && q.answerKind === 'list') return markGeneral(q.answer, answer, readNumber)
   // P150: a list, an order and a table are several values, each read as a number or an expression (logic/answers/lists.ts).
   if (isListKind(q.answerKind)) {
     const { correct, comparable } = markListQuestion(q, answer, readNumber)

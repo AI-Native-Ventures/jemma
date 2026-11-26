@@ -137,6 +137,11 @@ export function writeLine(shape: AnswerShape): string {
     case 'order':
     case 'table':
       return paperValuesLine(shape)
+    // P180: every solution is written as the angle and the period of each family.
+    case 'general': {
+      const l = shape.general.letter?.trim() || '\u03b8'
+      return `For each family of solutions write its angle and how often it comes back, in degrees, with a semicolon between them: ${l} = 12° + k · 360° is 12; 360.`
+    }
     // P179: a proof is written one line at a time.
     case 'proof':
       return 'Write your proof one line at a time, from the left side to the right side: at least 3 lines. Start each line on a new row.'

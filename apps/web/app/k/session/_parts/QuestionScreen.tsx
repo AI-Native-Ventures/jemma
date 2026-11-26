@@ -25,6 +25,7 @@ import { PinAnswer } from './answers/PinLine'
 import { ClockAnswer } from './answers/ClockFace'
 import { MatchAnswer } from './answers/MatchPairs'
 import { ProofAnswer } from './answers/ProofLines'
+import { SolutionFrame } from './answers/SolutionFrame'
 import { YoungSize } from './answers/YoungSize'
 import { MathAnswerField } from './MathAnswerField'
 import { equationCountHint, MULTI_HINT, MultiAnswer } from './answers/MultiAnswer'
@@ -276,6 +277,9 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
     // P170: things dragged (or tapped) into groups.
     case 'groups':
       return <GroupsAnswer groups={shape.groups} onChange={b.set.text} />
+    // P180: every solution of a trig equation, a frame for each family.
+    case 'general':
+      return <SolutionFrame general={shape.general} onChange={b.set.text} />
     // P179: an identity proved line by line, each line its own maths editor.
     case 'proof':
       return <ProofAnswer topic={topic} prompt={prompt} onChange={b.set.text} />
