@@ -2,6 +2,7 @@
 
 import type { MathfieldElement } from 'mathlive'
 import { useEffect, useRef, useState } from 'react'
+import { LINE_MAX_LENGTH } from '@jemma/profiling/logic'
 import { ANSWER_MAX_LENGTH } from '../[sessionId]/logic'
 import { FractionText } from './Frac'
 import { latexToNotation } from './latex-to-notation'
@@ -28,7 +29,10 @@ export type MathAnswerFieldProps = {
   label?: string
   /** The words in the empty box, in plain words (no LaTeX). A box that is narrow on a phone, like the numbered boxes with "x =" in front of them, gives a shorter line so no word is cut off. Default "Tap here to write". */
   placeholder?: string
-  /** P179: a line of a proof, one of several boxes under each other: its maths is smaller, so a long line fits (`math-field.jemma-line` in globals.css). */
+  /**
+   * P179: a line of a proof, one of several boxes under each other: its maths is smaller, so a long line fits (`math-field.jemma-line` in globals.css). P185:
+   * and it may be longer than an answer, up to `LINE_MAX_LENGTH` characters (a line of first principles).
+   */
   line?: boolean
 }
 
@@ -94,6 +98,7 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id
   const change = useRef(onChange)
   change.current = onChange
   const layout = keyboardLayout({ kind, topic, prompt })
+  const max = line ? LINE_MAX_LENGTH : ANSWER_MAX_LENGTH
 
   // The editor, on demand.
   useEffect(() => {
@@ -166,7 +171,7 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id
       const latex = el.getValue('latex')
       const plain = latexToNotation(latex)
       const issue =
-        plain === null ? (/\\placeholder/.test(latex) ? ('empty-box' as const) : ('sign' as const)) : plain.length > ANSWER_MAX_LENGTH ? ('long' as const) : null
+        plain === null ? (/\\placeholder/.test(latex) ? ('empty-box' as const) : ('sign' as const)) : plain.length > max ? ('long' as const) : null
       return { plain: plain !== null && issue === null ? plain : '', issue }
     }
     // A line says what is wrong only once the child stops writing (a minus sign or a plus on its own is a step, not a mistake) or leaves the box.
@@ -217,7 +222,7 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id
       }
       el.removeEventListener('focusout', leave)
     }
-  }, [status])
+  }, [status, max])
 
   if (status === 'failed') {
     return (
@@ -231,9 +236,9 @@ export function MathAnswerField({ kind, topic, prompt, value, onChange, hint, id
           autoCorrect="off"
           autoCapitalize="off"
           spellCheck={false}
-          maxLength={ANSWER_MAX_LENGTH}
+          maxLength={max}
           value={value}
-          onChange={(e) => onChange(e.target.value.slice(0, ANSWER_MAX_LENGTH))}
+          onChange={(e) => onChange(e.target.value.slice(0, max))}
           className="mx-auto block h-[64px] w-full max-w-[360px] rounded-18 border-[3px] border-green bg-card px-3 text-center text-[28px] font-bold text-ink outline-none"
         />
         {value.trim() ? (

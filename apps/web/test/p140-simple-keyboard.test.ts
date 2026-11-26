@@ -153,11 +153,11 @@ describe('rows 4 and 5, which are what a tab changes', () => {
     expect(names(rows45('compare', 'number')[0]!)).toEqual(['less than', 'greater than', 'less than or equal to', 'greater than or equal to', 'not equal to', 'plus or minus', 'absolute value', 'percent', 'rand', BLANK])
   })
 
-  it('Calculus: d/dx and f prime of x (two units each), infinity, e, then ln, log, f(x), x, y and blanks (no integral, lim, sum or arrow)', () => {
+  it('Calculus: d/dx and f prime of x (two units each), infinity, e, then ln, log, f(x), x, y, h (P185) and blanks (no integral, lim, sum or arrow)', () => {
     const [a, b] = rows45('calculus')
     expect(names(a!)).toEqual(['d by d x', 'f prime of x', 'infinity', 'the number e', ...blanks(4)])
     expect(widths(a!)).toEqual([2, 2, 1, 1, 1, 1, 1, 1])
-    expect(names(b!)).toEqual(['natural logarithm', 'logarithm', 'f of x', 'the letter x', 'the letter y', ...blanks(5)])
+    expect(names(b!)).toEqual(['natural logarithm', 'logarithm', 'f of x', 'the letter x', 'the letter y', 'the letter h', ...blanks(4)])
     expect(CAPS.ddx.latex).toBe('\\frac{d}{dx}')
     expect(CAPS.fPrime.latex).toBe("f'(x)")
   })

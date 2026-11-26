@@ -1,13 +1,13 @@
 'use server'
 
-import { firstToLearn, isListKind, type LevelTopicResult } from '@jemma/profiling/logic'
+import { firstToLearn, type LevelTopicResult } from '@jemma/profiling/logic'
 import type { Json } from '@jemma/profiling/db'
 import { isOwnRecord } from '@jemma/profiling/own-names'
 import { sendEvent } from '@/lib/agent'
 import { latestLevelCheck, levelTopicsFor, resultsOf, type LevelCheck } from '@/lib/data/level'
 import { myChild } from '@/lib/data/p27'
 import { createSupabaseAdmin } from '@/lib/supabase/admin'
-import { ANSWER_MAX_LENGTH, finishAnswer, LIST_ANSWER_MAX_LENGTH, type QuestionForChild } from '../session/[sessionId]/logic'
+import { answerMaxLength, finishAnswer, type QuestionForChild } from '../session/[sessionId]/logic'
 import { questionFor } from './question'
 
 // P163: the level check's actions, for the learner of the request in their own space (`myChild`). The questions and their answers stay on the server:
@@ -82,7 +82,7 @@ export async function answerLevel(checkId: string, n: number, value: string | nu
   let answer = { n, answer: '', correct: false, skipped: true, seconds: Math.max(0, Math.min(600, Math.round(seconds))) }
   if (value !== null) {
     const text = value.trim()
-    const max = isListKind(item.question.answerKind) ? LIST_ANSWER_MAX_LENGTH : ANSWER_MAX_LENGTH
+    const max = answerMaxLength(item.question)
     if (!text || text.length > max) throw new Error('Write an answer first')
     // The server marks it from the stored question, whatever the browser sent, the same way a practice is marked.
     const { stored, correct } = finishAnswer(item.question, text)

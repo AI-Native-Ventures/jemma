@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { IconLabel } from '@/components/ui/IconLabel'
-import { blankLabels, CHOICE_LETTERS, choiceText, hasPictureChoices } from '@jemma/profiling/logic'
+import { blankLabels, CHOICE_LETTERS, choiceText, definitionText, functionName, hasPictureChoices } from '@jemma/profiling/logic'
 import { answerShape, type AnswerShape, type QuestionForChild } from '../[sessionId]/logic'
 import { numberWriteLine, plainNumberWriteLine, ratioWriteLine, timeWriteLine } from './answers/hints'
 import { INEQUALITY_WRITE_LINE, PAIR_WRITE_LINE } from './answers/hints'
@@ -145,6 +145,11 @@ export function writeLine(shape: AnswerShape): string {
     // P179: a proof is written one line at a time.
     case 'proof':
       return 'Write your proof one line at a time, from the left side to the right side: at least 3 lines. Start each line on a new row.'
+    // P185: first principles are written from the first line, one line at a time.
+    case 'firstPrinciples': {
+      const name = functionName(shape.firstPrinciples)
+      return `Start with ${definitionText(name)}. Write each line after it on a new row, down to ${name}\u2032(x): at least 3 lines.`
+    }
     // P178: things to match are written as the number of the partner of each, in order.
     case 'match':
       return 'For each one on the left, write the number of the one it goes with, in order, with a semicolon between them. The ones on the right are numbered from 1.'

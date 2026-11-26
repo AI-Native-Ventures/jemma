@@ -172,7 +172,12 @@ const SENIOR_PICTURES =
   // P184: the learner matches graphs to their equations.
   'To have the learner match graphs to their equations (Grades 10 to 12), give `graphMatch` with one window for all of them (`xMin`, `xMax`, `yMin`, `yMax`; in degrees for trig graphs), `graphs` (2 to 4, each given as a graph of a `coordinate_plane` is, all trig graphs or none) ' +
   'and `equations`, their equations as `y = ...` (`y = x^2 - 4`), in a mixed-up order, and no `diagram`. The `answerKind` is `list` and the `answer` is the place in `equations` of the equation of each graph, from 1, with a semicolon between them (`2; 3; 1`). ' +
-  'Make the graphs different enough to tell apart: each equation fits one graph only.'
+  'Make the graphs different enough to tell apart: each equation fits one graph only. ' +
+  // P185: the learner finds a derivative from first principles, line by line.
+  'To have the learner find a derivative from first principles (Grade 12), say it in the `prompt` (`Determine f′(x) from first principles if f(x) = 2x² − 3x.`) and give `firstPrinciples` with `f`, the function as plain maths in x (`2x^2 - 3x`; ' +
+  'add `name` when it is not called f), and no `diagram`. The learner starts from f′(x) = lim h→0 (f(x + h) − f(x))/h and writes the lines after it. The `answerKind` is `list` and the `answer` is your lines: 3 to 7, each one maths only in x and h ' +
+  '(no lim, no equals sign), with a semicolon between them. The first line is (f(x + h) − f(x))/h with f put in, then each line is simpler, then h is cancelled, and the last line has no h: it is f′(x) in its simplest form ' +
+  '(`(2(x + h)^2 - 3(x + h) - (2x^2 - 3x))/h; (4xh + 2h^2 - 3h)/h; 4x + 2h - 3; 4x - 3`). Each line must equal the one before it.'
 
 /**
  * What a senior class's lesson writer is told about the maths of a question (P127): state it as an expression or an equation in plain notation, never in

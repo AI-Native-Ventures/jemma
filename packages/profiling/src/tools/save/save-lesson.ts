@@ -13,11 +13,12 @@ import { matchKeyProblem, matchProblem, tidyMatch } from '../../logic/answers/ma
 import { proofKeyProblem, proofProblem, tidyProof } from '../../logic/answers/proof'
 import { generalKeyProblem, generalProblem, tidyGeneral } from '../../logic/answers/general'
 import { graphMatchKeyProblem, graphMatchProblem, tidyGraphMatch } from '../../logic/answers/graph-match'
+import { firstPrinciplesKeyProblem, firstPrinciplesProblem, tidyFirstPrinciples } from '../../logic/answers/first-principles'
 import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
 import { isSeniorQuestion, quantityProblem, readCents, stripUnit } from '../../logic/answers/quantity'
-import { degreeEquationOf, degreeGraphOf, graphEquationOf, isMeaningKind, meaningKeyProblem, readNumber, sameExpression } from '../../logic/meaning'
+import { degreeEquationOf, degreeGraphOf, graphEquationOf, isMeaningKind, workedLineOf, meaningKeyProblem, readNumber, sameExpression } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { pictureProblem, questionPictureProblem } from '../../logic/picture'
 import { cleanSteps } from '../../logic/steps'
@@ -104,6 +105,12 @@ export function answerProblem(q: Question): string | null {
     const proof = proofProblem(q.proof, sameExpression) ?? proofKeyProblem({ ...q, proof: q.proof }, sameExpression)
     if (proof) return `proof: ${proof}`
   }
+  // P185: a derivative from first principles: a function of x that can be read, and a key whose every line follows, down to f′(x).
+  if (q.firstPrinciples) {
+    if (q.diagram || q.plot || q.line || q.proof || q.general || q.graphMatch || q.choices?.length) return 'firstPrinciples: a derivative from first principles has no picture and no choices'
+    const principles = firstPrinciplesProblem(q.firstPrinciples, workedLineOf) ?? firstPrinciplesKeyProblem({ ...q, firstPrinciples: q.firstPrinciples }, workedLineOf)
+    if (principles) return `firstPrinciples: ${principles}`
+  }
   // P184: graphs to match to their equations: small planes a phone can show, and a key whose every equation is its graph and no other.
   if (q.graphMatch) {
     if (q.diagram || q.plot || q.line || q.proof || q.general || q.choices?.length) return 'graphMatch: graphs to match are the picture of their question, and it has no choices'
@@ -153,8 +160,8 @@ function answerKeyProblem(q: Question): string | null {
   // P149: a question with choices (any kind), a true or false and a reason are picked: the key is the letter, true or false, or a reason of the list.
   if (isPickQuestion(q)) return pickKeyProblem(q)
   // P150: a list, an order and a table are several values, each read as a number (the unit of a question is no part of a value).
-  // P179: the lines of a proof are maths, not numbers: the proof check of `answerProblem` reads them.
-  if (isListKind(q.answerKind)) return q.proof ? null : listKeyProblem(q, readNumber)
+  // P179: the lines of a proof are maths, not numbers: the proof check of `answerProblem` reads them. P185: and so are the lines of first principles.
+  if (isListKind(q.answerKind)) return q.proof || q.firstPrinciples ? null : listKeyProblem(q, readNumber)
   const key = stripUnit(q.answer, q.unit)
   if (isMeaningKind(q.answerKind)) return meaningKeyProblem(q.answerKind, key)
   const parsed = parseAnswer(key)
@@ -216,7 +223,7 @@ const STEPS_LEFT_OUT = 'left out whole: a line of them held a label'
 const tidySteps = (questions: Question[]): Question[] =>
   questions.map(({ steps, ...rest }) => {
     const clean = cleanSteps(steps)
-    return tidyGraphMatch(tidyGeneral(tidyProof(tidyMatch(tidyLine(tidyTap(tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest)))))))))
+    return tidyFirstPrinciples(tidyGraphMatch(tidyGeneral(tidyProof(tidyMatch(tidyLine(tidyTap(tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest))))))))))
   })
 
 /**
