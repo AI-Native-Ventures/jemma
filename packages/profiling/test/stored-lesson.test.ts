@@ -38,10 +38,12 @@ const PRIMARY_SHA = '8d041cfb7de9ba42fd1919b91033c913475831bbd0dbe07e02d7d23efb8
  * 1734ac8542437e926116af04d17d7b173b64768e6912b70e66bcd27561818c4f.
  * P173 (26 Nov 2026) moved the wide one alone: a question may have a `tap`, shapes to tap. Before P173 it was
  * 0aec7274bd2caa1476812b340ab457ac353a5050e8e168b82abbaf3235a69b83.
+ * P174 (26 Nov 2026) moved both, on purpose: a senior question may have a `line`, a grid the learner draws a straight line on. Before P174 they were
+ * a0a5757599a5581b0f5a1b1ba801e5c16ca4133a4f283a0a0d8feb84d343421b (senior) and 23bb70daa29d650f43d1cadae7ffe32970b090f666d095ea17ce15488fa2fb1b (wide).
  * Every packet that changes the senior schema moves these two: recompute them after a merge.
  */
-const SENIOR_SHA = 'a0a5757599a5581b0f5a1b1ba801e5c16ca4133a4f283a0a0d8feb84d343421b'
-const WIDE_SHA = '23bb70daa29d650f43d1cadae7ffe32970b090f666d095ea17ce15488fa2fb1b'
+const SENIOR_SHA = '8dcdb55a3011410428a8664db696386b5cd7904d7ac89557dd998b0dd7c177bf'
+const WIDE_SHA = '6cf648b0b27725042e61fde110d4bdb8fa04527b5173848cfc8ba56108f13c4b'
 
 type Level = 1 | 2 | 3
 const question = (difficulty: Level, i: number, over: Partial<Question> = {}): Question => ({

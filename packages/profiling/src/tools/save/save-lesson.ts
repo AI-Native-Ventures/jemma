@@ -6,6 +6,7 @@ import { groupsKeyProblem, groupsProblem, tidyGroups } from '../../logic/answers
 import { plotKeyProblem, plotProblem, tidyPlot } from '../../logic/answers/plot'
 import { shadeKeyProblem, shadeProblem } from '../../logic/answers/shade'
 import { tapKeyProblem, tapProblem, tidyTap } from '../../logic/answers/tap'
+import { lineKeyProblem, lineProblem, tidyLine } from '../../logic/answers/line'
 import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
@@ -82,6 +83,12 @@ export function answerProblem(q: Question): string | null {
     const tap = tapProblem(q.tap) ?? tapKeyProblem({ ...q, tap: q.tap })
     if (tap) return `tap: ${tap}`
   }
+  // P174: a line to draw: a grid a phone can show, and a key of two different corners of it.
+  if (q.line) {
+    if (q.diagram || q.plot || q.choices?.length) return 'line: a grid to draw a line on is the picture of its question, and it has no choices'
+    const line = lineProblem(q.line) ?? lineKeyProblem({ ...q, line: q.line }, readNumber)
+    if (line) return `line: ${line}`
+  }
   const picture = questionPictureOf(q)
   if (picture) return `picture: ${picture}`
   // P149: the pictures (and words) of the choices of a question that is picked. A true or false or a reason question ignores any choices it carries.
@@ -157,7 +164,7 @@ const STEPS_LEFT_OUT = 'left out whole: a line of them held a label'
 const tidySteps = (questions: Question[]): Question[] =>
   questions.map(({ steps, ...rest }) => {
     const clean = cleanSteps(steps)
-    return tidyTap(tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest))))
+    return tidyLine(tidyTap(tidyPlot(tidyGroups(tidyGraph(clean ? { ...rest, steps: clean } : rest)))))
   })
 
 /**

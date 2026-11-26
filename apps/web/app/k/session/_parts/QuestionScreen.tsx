@@ -20,6 +20,7 @@ import { GroupsAnswer } from './answers/GroupsAnswer'
 import { PlotAnswer } from './answers/PlotGrid'
 import { ShadeAnswer } from './answers/ShadeShape'
 import { TapAnswer } from './answers/TapShapes'
+import { LineAnswer } from './answers/LineGrid'
 import { YoungSize } from './answers/YoungSize'
 import { MathAnswerField } from './MathAnswerField'
 import { equationCountHint, MULTI_HINT, MultiAnswer } from './answers/MultiAnswer'
@@ -271,6 +272,9 @@ export function AnswerArea({ shape, b, prompt, topic }: { shape: AnswerShape; b:
     // P170: things dragged (or tapped) into groups.
     case 'groups':
       return <GroupsAnswer groups={shape.groups} onChange={b.set.text} />
+    // P174: a straight line drawn through two tapped points, or two points typed instead.
+    case 'line':
+      return <LineAnswer line={shape.line} onChange={b.set.text} typed={<AnswerArea shape={shape.typed} b={b} prompt={prompt} topic={topic} />} />
     // P173: shapes picked by tapping them.
     case 'tap':
       return <TapAnswer tap={shape.tap} onChange={b.set.text} />

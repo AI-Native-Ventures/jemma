@@ -11,6 +11,7 @@ import {
   groupsText,
   plotPoints,
   tapPicks,
+  linePoints,
   isInequalityKey,
   isListKind,
   isSeniorQuestion,
@@ -37,7 +38,7 @@ import {
   type Stage,
   type TimeStyle,
 } from '@jemma/profiling/logic'
-import type { BlocksSpec, Choice, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, PlotSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
+import type { BlocksSpec, Choice, ColumnsSpec, DataGraphSpec, Form, GroupsSpec, LineSpec, PlotSpec, Question, SeniorDiagramSpec, ShadeSpec, TapSpec } from '@jemma/profiling/schemas'
 
 /** Every try run starts at the middle level and adapts from there. */
 export const START_LEVEL = 2
@@ -113,6 +114,8 @@ export type QuestionForChild = {
   shade?: ShadeSpec
   /** P173: the shapes the learner taps to pick. Which ones is the answer, and is never sent. */
   tap?: TapSpec
+  /** P174: the grid the learner draws a straight line on. The line is the answer, and is never sent. */
+  line?: LineSpec
 }
 
 /** A stored `session_items` row (question holds the whole `Question`, as the seed writes it). */
@@ -179,6 +182,10 @@ export type MissedQuestion = {
   tap?: TapSpec
   tapWrote?: number[]
   tapRight?: number[]
+  /** P174: the grid, the two points of the learner's line (null: not read) and two points of the right line. */
+  line?: LineSpec
+  lineWrote?: [{ x: number; y: number }, { x: number; y: number }] | null
+  lineRight?: [{ x: number; y: number }, { x: number; y: number }] | null
 }
 
 /** The P148 fields of a question for the child. Shape hints only: how many boxes, which clock, which unit. Never the key. */
@@ -234,6 +241,7 @@ export function stripQuestion(
     ...(q.plot ? { plot: q.plot } : {}),
     ...(q.shade ? { shade: q.shade } : {}),
     ...(q.tap ? { tap: q.tap } : {}),
+    ...(q.line ? { line: q.line } : {}),
   }
 }
 
@@ -329,6 +337,8 @@ export type AnswerShape =
   | { kind: 'shade'; shade: ShadeSpec; young?: true }
   /** P173: shapes picked by tapping them. */
   | { kind: 'tap'; tap: TapSpec; young?: true }
+  /** P174: a straight line drawn through two tapped points. `typed` is the same answer typed instead: the x and the y of two points. */
+  | { kind: 'line'; line: LineSpec; typed: AnswerShape }
 
 /** What a unit, a round and a minus key add to the shape of a number, a whole or a decimal answer (P148). Only what the question has is set. */
 export type QuantityExtras = { unit?: string; round?: number; signed?: true }
@@ -355,6 +365,7 @@ type ShapeParts = {
   plot?: PlotSpec
   shade?: ShadeSpec
   tap?: TapSpec
+  line?: LineSpec
 }
 
 export function answerShape(
@@ -382,6 +393,11 @@ export function answerShape(
   }
   // P172: parts of a shape shaded, the answer how many.
   if (q.shade && q.answerKind === 'whole') return { kind: 'shade', shade: q.shade, ...(q.young ? { young: true as const } : {}) }
+  // P174: a straight line drawn on a grid, the answer two points on it. Typed instead, it is the list of numbers it is without its grid.
+  if (q.line && q.answerKind === 'list') {
+    const { line, ...rest } = q
+    return { kind: 'line', line, typed: answerShape(rest) }
+  }
   // P173: shapes picked by tapping, the answer which ones.
   if (q.tap && q.answerKind === 'list') return { kind: 'tap', tap: q.tap, ...(q.young ? { young: true as const } : {}) }
   // P170: things sorted into groups, the answer the group of each.
@@ -469,6 +485,8 @@ export function answerValue(shape: AnswerShape, boxes: AnswerBoxes): string {
       return /^\d+(; \d+)*$/.test(text) ? text : ''
     // P171: the x and the y of each point placed (or typed), or nothing while one is missing.
     case 'plot':
+    // P174: two points of the line drawn (or typed), or nothing until there are two.
+    case 'line':
       return hasDigit(text) ? text : ''
     default:
       return text
@@ -522,6 +540,7 @@ export function reviewOf(items: StoredItem[]): MissedQuestion[] {
       ...plotReview(item),
       ...(item.question.shade ? { shade: item.question.shade } : {}),
       ...tapReview(item),
+      ...lineReview(item),
     }))
 }
 
@@ -570,6 +589,16 @@ function tapReview(item: StoredItem): Partial<MissedQuestion> {
   const wrote = item.unread ? [] : (tapPicks(item.answer, t) ?? [])
   const count = (n: number) => `${n} ${n === 1 ? 'shape' : 'shapes'}`
   return { tap: t, tapRight: right, tapWrote: wrote, wrote: item.unread ? '' : count(wrote.length), right: count(right.length), cells: undefined, table: undefined, ordered: undefined }
+}
+
+/** P174: the line of a question to draw, as two points of the learner's line and of the right one, said in words ("(0; 1) and (1; 3)") with no cells. */
+function lineReview(item: StoredItem): Partial<MissedQuestion> {
+  const g = item.question.line
+  if (!g) return {}
+  const right = linePoints(item.question.answer, readNumber)
+  const wrote = item.unread ? null : linePoints(item.answer, readNumber)
+  const words = (p: ReturnType<typeof linePoints>) => (p ? `(${p[0].x}; ${p[0].y}) and (${p[1].x}; ${p[1].y})` : '')
+  return { line: g, lineRight: right, lineWrote: wrote, wrote: item.unread ? '' : words(wrote), right: words(right), cells: undefined, table: undefined, ordered: undefined }
 }
 
 /** P167: the graph of a question to draw, with what the learner drew in each empty bar and the right values, for the results to draw side by side. */
