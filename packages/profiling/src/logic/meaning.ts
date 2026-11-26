@@ -9,6 +9,7 @@ import { completeAnswer } from './complete-answer'
 import { isListKind, markListQuestion } from './answers/lists'
 import { markLine } from './answers/line'
 import { markSketch } from './answers/plot'
+import { gridReader } from './radians'
 import { markClock } from './answers/clock'
 import { markProof } from './answers/proof'
 import { markGeneral } from './answers/general'
@@ -520,11 +521,23 @@ export function degreeGraphOf(text: string): ((degrees: number) => number) | nul
   return found ? (degrees: number) => valueOf(putIn(found.tree, found.letter, degrees), {}) : null
 }
 
-/** A tree with a letter put in as a number: the angle of a trig equation in degrees, so sin, cos and tan take it in degrees (a plain angle, as `inDegrees` says). */
-const putIn = (n: MathNode, letter: string, v: number): MathNode => {
+/**
+ * P198: the same graph read in radians ("Sketch y = sin(x + π/4) for 0 ≤ x ≤ 2π."), still as a function of an angle in degrees: the angle is put in as a part of
+ * π, so sin, cos and tan take it in radians, and a π beside it in the brackets is a half turn.
+ */
+export function radianGraphOf(text: string): ((degrees: number) => number) | null {
+  const found = graphTreeOf(text, ['x', '\u03b8'])
+  return found ? (degrees: number) => valueOf(putNode(found.tree, found.letter, radianNode(degrees)), {}) : null
+}
+
+/** An angle in degrees as a tree in radians: (degrees/180)·π. */
+const radianNode = (degrees: number): MathNode => ({ t: 'mul', a: { t: 'num', v: degrees / 180 }, b: { t: 'pi' } })
+
+/** A tree with a letter put in as another tree. */
+const putNode = (n: MathNode, letter: string, node: MathNode): MathNode => {
   switch (n.t) {
     case 'var':
-      return n.name === letter ? { t: 'num', v } : n
+      return n.name === letter ? node : n
     case 'num':
     case 'pi':
     case 'e':
@@ -533,13 +546,16 @@ const putIn = (n: MathNode, letter: string, v: number): MathNode => {
     case 'fn':
     case 'neg':
     case 'group':
-      return { ...n, a: putIn(n.a, letter, v) }
+      return { ...n, a: putNode(n.a, letter, node) }
     case 'sqrt':
-      return { ...n, a: putIn(n.a, letter, v) }
+      return { ...n, a: putNode(n.a, letter, node) }
     default:
-      return { ...n, a: putIn(n.a, letter, v), b: putIn(n.b, letter, v) }
+      return { ...n, a: putNode(n.a, letter, node), b: putNode(n.b, letter, node) }
   }
 }
+
+/** A tree with a letter put in as a number: the angle of a trig equation in degrees, so sin, cos and tan take it in degrees (a plain angle, as `inDegrees` says). */
+const putIn = (n: MathNode, letter: string, v: number): MathNode => putNode(n, letter, { t: 'num', v })
 
 /**
  * P180: the trig equation in a text ("Find the general solution of sin θ = 0,5."), as the difference of its two sides for an angle in degrees (0 at a solution), or
@@ -547,6 +563,20 @@ const putIn = (n: MathNode, letter: string, v: number): MathNode => {
  * right side the longest piece after it that reads, up to a space or the end, with no other letter.
  */
 export function degreeEquationOf(text: string, letter: string): ((degrees: number) => number) | null {
+  const sides = equationSidesOf(text, letter)
+  return sides ? (degrees: number) => valueOf(putIn(sides.left, letter, degrees), {}) - valueOf(putIn(sides.right, letter, degrees), {}) : null
+}
+
+/** P198: the same equation read in radians ("Find all solutions of sin x = 1/2."), as the difference of its sides for an angle in degrees put in as a part of π. */
+export function radianEquationOf(text: string, letter: string): ((degrees: number) => number) | null {
+  const sides = equationSidesOf(text, letter)
+  return sides
+    ? (degrees: number) => valueOf(putNode(sides.left, letter, radianNode(degrees)), {}) - valueOf(putNode(sides.right, letter, radianNode(degrees)), {})
+    : null
+}
+
+/** The two sides of the trig equation in a text, as `degreeEquationOf` says, or null. */
+function equationSidesOf(text: string, letter: string): { left: MathNode; right: MathNode } | null {
   const at = text.indexOf('=')
   if (at < 0) return null
   const before = text.slice(0, at)
@@ -579,9 +609,7 @@ export function degreeEquationOf(text: string, letter: string): ((degrees: numbe
     }
   }
   if (!right) return null
-  const l = left
-  const r = right
-  return (degrees: number) => valueOf(putIn(l, letter, degrees), {}) - valueOf(putIn(r, letter, degrees), {})
+  return { left, right }
 }
 
 /** Two values are the same when they differ by less than a billionth of their size (and of 1). */
@@ -1110,8 +1138,10 @@ export function markQuestion(
   // P174: a line drawn on a grid is right when its two points are on the key's line, whichever two they are (logic/answers/line.ts).
   if ((q as { line?: unknown }).line && q.answerKind === 'list') return markLine(q.answer, answer, readNumber)
   // P176: a sketch is marked by its curve: three points of the same parabola are right, in any order (logic/answers/plot.ts). P181: and a hyperbola or a cubic graph.
-  const curve = (q as { plot?: { curve?: 'parabola' | 'hyperbola' | 'cubic' | 'trig' } }).plot?.curve
-  if (curve && q.answerKind === 'list') return markSketch(q.answer, answer, readNumber, curve)
+  const sketch = (q as { plot?: { curve?: 'parabola' | 'hyperbola' | 'cubic' | 'trig'; radians?: boolean } }).plot
+  const curve = sketch?.curve
+  // P198: on a grid marked in π an x may be written with π, in the key or in a typed answer.
+  if (curve && q.answerKind === 'list') return markSketch(q.answer, answer, sketch.radians ? gridReader(readNumber) : readNumber, curve)
   // P177: a clock is marked on its face: twelve hours apart is the same time (logic/answers/clock.ts).
   if ((q as { clock?: unknown }).clock && q.answerKind === 'time') return markClock(q.answer, answer)
   // P183: so is the time read from a clock face in the question.
@@ -1123,7 +1153,9 @@ export function markQuestion(
   const principles = (q as { firstPrinciples?: FirstPrinciplesSpec }).firstPrinciples
   if (principles && q.answerKind === 'list') return markFirstPrinciples(principles, q.answer, answer, workedLineOf)
   // P180: every solution is marked by the angles its families give, however they are written (logic/answers/general.ts).
-  if ((q as { general?: unknown }).general && q.answerKind === 'list') return markGeneral(q.answer, answer, readNumber)
+  // P198: and in radians when the frame is.
+  const general = (q as { general?: { radians?: boolean } }).general
+  if (general && q.answerKind === 'list') return markGeneral(q.answer, answer, readNumber, general.radians === true)
   // P150: a list, an order and a table are several values, each read as a number or an expression (logic/answers/lists.ts).
   if (isListKind(q.answerKind)) {
     const { correct, comparable } = markListQuestion(q, answer, readNumber)

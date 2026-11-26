@@ -37,6 +37,8 @@ function planeProblem(s: Plane): string | null {
   if (s.graphs?.some((g) => g.type === 'exponential' && !(g.b > 0))) return 'an exponential graph needs a base above 0'
   // P195: a log graph, circles, the points joined into a shape and the angle of a line.
   if (s.graphs?.some((g) => g.type === 'log' && (!(g.base > 0) || g.base === 1))) return 'a log graph needs a base above 0 that is not 1'
+  // P198: a grid is marked in π only for trig graphs.
+  if (s.radians && !s.graphs?.some((g) => g.type === 'trig')) return 'only a grid of trig graphs is marked in \u03c0 (`radians`)'
   if ((s.circles?.length ?? 0) > 2) return 'the grid has at most 2 circles'
   if (s.circles?.some((c) => !(c.r > 0))) return 'a circle needs a radius above 0'
   if (s.polygon && (s.points?.length ?? 0) < 3) return 'a shape on the grid joins 3 or more points'

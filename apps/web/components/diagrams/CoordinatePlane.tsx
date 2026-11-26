@@ -2,7 +2,7 @@ import { useId } from 'react'
 import type { CoordinatePlaneSpec } from '@jemma/profiling/schemas'
 import { Rich, fracLabel, labelWidth, raisedLabel } from './math-label'
 import { boxOf, hits, hitsAny, within, type Anchor, type Box } from './label-clear'
-import { pointIn, type Notation } from '@jemma/profiling/logic'
+import { piText, pointIn, type Notation } from '@jemma/profiling/logic'
 import { BODY, GREEN, RED_TEXT, INK, Line, Svg, WHITE, fmtIn, type Variant } from './shared'
 import { defaultStep, graphEquation, sampleGraph, ticksOf, type Pt } from './plane-math'
 
@@ -42,8 +42,10 @@ const kindOf = (g: NonNullable<CoordinatePlaneSpec['graphs']>[number]) => (g.typ
 export function describeCoordinatePlane(spec: CoordinatePlaneSpec, variant: Variant = 'card', notation?: Notation) {
   const fmt = (v: number) => fmtIn(v, notation)
   const q = variant === 'question'
-  const same = spec.xMin === spec.yMin && spec.xMax === spec.yMax
-  let text = `A grid from ${fmt(spec.xMin)} to ${fmt(spec.xMax)}${same ? '' : ` across and from ${fmt(spec.yMin)} to ${fmt(spec.yMax)} up`}`
+  const same = spec.xMin === spec.yMin && spec.xMax === spec.yMax && !spec.radians
+  // P198: a grid of trig graphs marked in π says its x in π.
+  const fx = (v: number) => (spec.radians ? piText(v) : fmt(v))
+  let text = `A grid from ${fx(spec.xMin)} to ${fx(spec.xMax)}${same ? '' : ` across and from ${fmt(spec.yMin)} to ${fmt(spec.yMax)} up`}`
   if (spec.graphs?.length) {
     const parts = spec.graphs.map((g) =>
       q
@@ -147,6 +149,8 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
   const xAxisY = py(yMin > 0 ? yMin : yMax < 0 ? yMax : 0)
   const yAxisX = px(xMin > 0 ? xMin : xMax < 0 ? xMax : 0)
   const xTicks = ticksOf(xMin, xMax, defaultStep(xMin, xMax, props.step))
+  // P198: the numbers along x of a grid marked in π: π/2, π, 3π/2.
+  const xNumeral = (v: number) => (props.radians ? piText(v) : numeral(v, props.notation))
   const yTicks = ticksOf(yMin, yMax, defaultStep(yMin, yMax, props.step))
   const origin = xMin <= 0 && xMax >= 0 && yMin <= 0 && yMax >= 0
   /** One id for each drawing, so that two planes on one page never share a clipPath. */
@@ -159,7 +163,9 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
   const points = (props.points ?? []).filter((p) => p.x >= xMin && p.x <= xMax && p.y >= yMin && p.y <= yMax)
 
   // Where each label goes (P134): clear of the axis numbers and of the labels placed before it, graphs first.
-  const numberBox = (x: number, y: number, anchor: Anchor, text: string) => boxOf(x, y, anchor, labelWidth(text, NUMBER_SIZE) + 2, 10, 3)
+  // P198: a number in π (3π/4) is written as plain text, as wide as its characters (the width of a label takes π over 4 as a stacked fraction).
+  const numberWidth = (text: string) => (text.includes('\u03c0') ? [...text].length * NUMBER_SIZE * 0.72 : labelWidth(text, NUMBER_SIZE))
+  const numberBox = (x: number, y: number, anchor: Anchor, text: string) => boxOf(x, y, anchor, numberWidth(text) + 2, 10, 3)
   // P141: the numbers of an axis that are written. A long axis counts by 2, 5, 10 ... steps of its grid (from 0): the first count at which no number is over another
   // number, over a number of the other axis, or over the 0 at the origin. The grid lines and the ticks stay at every step.
   const xGrid = defaultStep(xMin, xMax, props.step)
@@ -167,13 +173,13 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
   const countOf = (v: number, grid: number) => Math.round(v / grid)
   const written = (ticks: number[], grid: number, every: number) => ticks.filter((v) => v !== 0 && countOf(v, grid) % every === 0)
   /** The box a number takes up when it is written (digits sit on the baseline: nothing hangs below it but the halo). */
-  const crowdBox = (x: number, y: number, anchor: Anchor, text: string): Box => boxOf(x, y, anchor, labelWidth(text, NUMBER_SIZE), 9, 2)
+  const crowdBox = (x: number, y: number, anchor: Anchor, text: string): Box => boxOf(x, y, anchor, numberWidth(text), 9, 2)
   /** Two numbers of one axis keep a pixel between them. */
   const apart = (b: Box): Box => ({ l: b.l - 0.5, r: b.r + 0.5, t: b.t - 0.5, b: b.b + 0.5 })
   const everyOf = (ticks: number[], grid: number) => COUNT_STEPS.find((k) => written(ticks, grid, k).length <= MOST_TESTED) ?? COUNT_STEPS[COUNT_STEPS.length - 1]!
   const crowded = (kx: number, ky: number): 'x' | 'y' | null => {
     const items = [
-      ...written(xTicks, xGrid, kx).map((v) => ({ axis: 'x' as const, box: crowdBox(px(v), xAxisY + 17, 'middle', numeral(v, props.notation)) })),
+      ...written(xTicks, xGrid, kx).map((v) => ({ axis: 'x' as const, box: crowdBox(px(v), xAxisY + 17, 'middle', xNumeral(v)) })),
       ...written(yTicks, yGrid, ky).map((v) => ({ axis: 'y' as const, box: crowdBox(yAxisX - 7, py(v) + 4, 'end', numeral(v, props.notation)) })),
       ...(origin ? [{ axis: 'zero' as const, box: crowdBox(yAxisX - 7, xAxisY + 17, 'end', '0') }] : []),
     ]
@@ -205,7 +211,7 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
   const xWritten = written(xTicks, xGrid, everyX)
   const yWritten = written(yTicks, yGrid, everyY)
   const numbers = [
-    ...xWritten.map((v) => ({ key: `x${v}`, box: numberBox(px(v), xAxisY + 17, 'middle', numeral(v, props.notation)) })),
+    ...xWritten.map((v) => ({ key: `x${v}`, box: numberBox(px(v), xAxisY + 17, 'middle', xNumeral(v)) })),
     ...yWritten.map((v) => ({ key: `y${v}`, box: numberBox(yAxisX - 7, py(v) + 4, 'end', numeral(v, props.notation)) })),
     ...(origin ? [{ key: 'zero', box: numberBox(yAxisX - 7, xAxisY + 17, 'end', '0') }] : []),
   ]
@@ -346,7 +352,7 @@ export function CoordinatePlane(props: CoordinatePlaneProps) {
       {inclination}
       {/* The numbers, the axis names and the labels are not clipped, and sit over the graphs (their white halo keeps them readable where a line crosses). */}
       {xWritten.filter((v) => !hidden.has(`x${v}`)).map((v) => (
-        <Num key={`nx${v}`} x={px(v)} y={xAxisY + 17} anchor="middle" extra={{ 'data-tick': 'x' }}>{numeral(v, props.notation)}</Num>
+        <Num key={`nx${v}`} x={px(v)} y={xAxisY + 17} anchor="middle" extra={{ 'data-tick': 'x' }}>{xNumeral(v)}</Num>
       ))}
       {yWritten.filter((v) => !hidden.has(`y${v}`)).map((v) => (
         <Num key={`ny${v}`} x={yAxisX - 7} y={py(v) + 4} anchor="end" extra={{ 'data-tick': 'y' }}>{numeral(v, props.notation)}</Num>

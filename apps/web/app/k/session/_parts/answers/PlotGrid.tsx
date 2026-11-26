@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, type MouseEvent, type ReactNode } from 'react'
-import { CURVE_NAME, curveThrough, curveWords, inNotation, plotAnswer, pointIn, sameCurve, sketchCurve, sketchName, turningPoints, type Curve, type Notation } from '@jemma/profiling/logic'
+import { CURVE_NAME, curveThrough, curveWords, inNotation, piText, plotAnswer, pointIn, sameCurve, sketchCurve, sketchName, turningPoints, type Curve, type Notation } from '@jemma/profiling/logic'
 import type { PlotSpec } from '@jemma/profiling/schemas'
 import { BODY, GOLD, GREEN, INK, WHITE } from '@/components/diagrams/shared'
 import { useNotation } from '@/lib/notation'
@@ -13,6 +13,7 @@ import { useNotation } from '@/lib/notation'
 // P176: a sketch ("Sketch a graph" board): the learner taps 3 key points of a parabola in any order, each written where it is ("(−2 ; 0)"), and Jemma joins
 // them into the curve. The results draw the right graph in green with its turning point, and the learner's graph dashed, turning where it turned.
 // P181: a hyperbola (3 points; its asymptotes are drawn dashed) and a cubic graph (4 points; its turning points are marked) are sketched the same way.
+// P198: a trig grid marked in π (`radians`, a class in the US) writes its angles as π/2, π, 3π/2 and 2π, and its points as (π/2 ; 1).
 
 const GOLD_TINT = '#FFEDC6'
 const GREEN_TINT = '#DDEFE6'
@@ -61,6 +62,7 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
   const { u, H, step, X, Y } = geometry(plot)
   const every = Math.max((plot.xMax - plot.xMin) / step, plot.yMax - plot.yMin) > 12 ? 2 : 1
   const degrees = plot.curve === 'trig'
+  const radians = degrees && plot.radians === true
   const given = plot.given ?? []
   const tap = (e: MouseEvent<SVGSVGElement>) => {
     if (mode !== 'answer' || !svg.current) return
@@ -79,10 +81,14 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
   const axisY = plot.yMin <= 0 && plot.yMax >= 0 ? 0 : plot.yMin
   const axisX = plot.xMin <= 0 && plot.xMax >= 0 ? 0 : plot.xMin
   const ticks: ReactNode[] = []
-  // A trig grid says its angles every 90 degrees, with the degree sign.
+  // A trig grid says its angles every 90 degrees, with the degree sign (P198: or in π).
   for (let x = plot.xMin; x <= plot.xMax; x += step)
     if (x !== axisX && (degrees ? x % 90 === 0 : x % every === 0))
-      ticks.push(<text key={`tx${x}`} x={X(x)} y={Y(axisY) + 14} fontSize={10} fill={BODY} textAnchor="middle">{`${x < 0 ? `−${-x}` : x}${degrees ? '°' : ''}`}</text>)
+      ticks.push(
+        <text key={`tx${x}`} data-tick="x" x={X(x)} y={Y(axisY) + 14} fontSize={radians ? 11 : 10} fontWeight={radians ? 600 : 400} fill={BODY} textAnchor="middle">
+          {radians ? piText(x) : `${x < 0 ? `−${-x}` : x}${degrees ? '°' : ''}`}
+        </text>,
+      )
   for (let y = plot.yMin; y <= plot.yMax; y++)
     if (y !== axisY && y % every === 0)
       ticks.push(<text key={`ty${y}`} x={X(axisX) - 5} y={Y(y) + 3.5} fontSize={10} fill={BODY} textAnchor="end">{y < 0 ? `−${-y}` : y}</text>)
@@ -97,7 +103,7 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
   // of the lines under them.
   const sketch = plot.curve !== undefined
   const where = (q: Point, color: string, k: string, under = false) => {
-    const text = say(sketchName(q, degrees))
+    const text = say(sketchName(q, degrees, radians))
     const wide = text.length * 7.4
     const x = X(q.x)
     let left = q.x < (plot.xMin + plot.xMax) / 2
@@ -148,8 +154,8 @@ export function PlotGrid({ plot, mode, points = [], right = [], picked = null, l
       viewBox={`0 0 ${W} ${H}`}
       width="100%"
       role="group"
-      aria-label={`A grid from ${plot.xMin} to ${plot.xMax} across and from ${plot.yMin} to ${plot.yMax} up${given.length ? `, with ${given.map((q) => `${q.label.trim()} at ${name(q, notation)}`).join(', ')}` : ''}.${
-        sketch && mode === 'answer' && placed.length ? ` Points at ${placed.map((q) => say(sketchName(q, degrees))).join(', ')}.${mine ? ` Joined into a graph that ${say(curveWords(mine))}.` : ''}` : ''
+      aria-label={`A grid from ${radians ? piText(plot.xMin) : plot.xMin} to ${radians ? piText(plot.xMax) : plot.xMax} across and from ${plot.yMin} to ${plot.yMax} up${given.length ? `, with ${given.map((q) => `${q.label.trim()} at ${name(q, notation)}`).join(', ')}` : ''}.${
+        sketch && mode === 'answer' && placed.length ? ` Points at ${placed.map((q) => say(sketchName(q, degrees, radians))).join(', ')}.${mine ? ` Joined into a graph that ${say(curveWords(mine, radians))}.` : ''}` : ''
       }`}
       onClick={tap}
       style={{ display: 'block', maxWidth: W, height: 'auto', cursor: mode === 'answer' ? 'crosshair' : 'default', userSelect: 'none', fontFamily: "var(--font-outfit), Outfit, system-ui, -apple-system, 'Segoe UI', sans-serif" }}
@@ -276,7 +282,7 @@ export function sketchHint(points: (Point | null)[], plot?: PlotSpec, n: Notatio
     const list = placed.map((q, i) => (
       <span key={i}>
         {i > 0 ? (i === placed.length - 1 ? ' and ' : ', ') : null}
-        <strong className="font-bold text-ink">{inNotation(sketchName(q, plot?.curve === 'trig'), n)}</strong>
+        <strong className="font-bold text-ink">{inNotation(sketchName(q, plot?.curve === 'trig', plot?.curve === 'trig' && plot.radians === true), n)}</strong>
       </span>
     ))
     return <>You placed {list}. {left === 1 ? 'One more point to go.' : `${['Two', 'Three'][left - 2] ?? left} more points to go.`}</>

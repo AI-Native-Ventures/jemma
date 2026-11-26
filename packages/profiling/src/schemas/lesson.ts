@@ -183,6 +183,11 @@ export const PlotSchema = z.object({
   curve: z.enum(['parabola', 'hyperbola', 'cubic', 'trig']).optional(),
   /** P182: the degrees of one square across a grid for a trig graph (15, 30, 45 or 90); `xMin` and `xMax` are then in degrees, on a square. */
   xStep: z.number().optional(),
+  /**
+   * P198: a trig grid marked in π (a class in the US): `xMin`, `xMax` and `xStep` stay in degrees, and Jemma writes them as π/2, π, 3π/2. The x of a key point
+   * may be given in degrees (`90`) or with π (`π/2`).
+   */
+  radians: z.boolean().optional(),
 })
 export type PlotSpec = z.infer<typeof PlotSchema>
 
@@ -204,9 +209,10 @@ export type ProofSpec = z.infer<typeof ProofSchema>
 /**
  * P180: every solution of a trig equation, typed as families (Grades 11 and 12): each an angle in degrees and how often it comes back (θ = 30° + k · 360°).
  * `letter` is the letter of the equation (θ when left out). The key is an ordered `list` of the angle and the period of each family, in degrees
- * (`30; 360; 150; 360`); families that give the same angles are right.
+ * (`30; 360; 150; 360`); families that give the same angles are right. P198: `radians` (a class in the US): the frame is x = π/6 + k · 2π, and the key is in
+ * radians, written with π (`π/6; 2π; 5π/6; 2π`).
  */
-export const GeneralSchema = z.object({ letter: z.string().optional() })
+export const GeneralSchema = z.object({ letter: z.string().optional(), radians: z.boolean().optional() })
 export type GeneralSpec = z.infer<typeof GeneralSchema>
 
 /**
@@ -221,6 +227,8 @@ export const GraphMatchSchema = z.object({
   yMax: z.number(),
   graphs: z.array(GraphSchema),
   equations: z.array(z.string()),
+  /** P198: trig graphs marked in π (a class in the US): the window stays in degrees, and the equations are read in radians (`y = sin(x + π/4)`). */
+  radians: z.boolean().optional(),
 })
 export type GraphMatchSpec = z.infer<typeof GraphMatchSchema>
 

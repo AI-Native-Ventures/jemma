@@ -1,4 +1,5 @@
 import type { GeneralSpec } from '../../schemas/lesson'
+import { inDegreesFrom, periodText, piText } from '../radians'
 import { splitValues } from './lists'
 
 /**
@@ -7,6 +8,8 @@ import { splitValues } from './lists'
  * the period of each family, in degrees, as a `list` (`30; 360; 150; 360`). Two answers are the same when their families give the same angles: 150° + k · 360°
  * is −210° + k · 360°, and 45° + k · 180° is 45° + k · 360° with 225° + k · 360°. The key is checked against the equation in the question when the lesson is
  * saved. Pure.
+ * P198: in radians (`radians`, a class in the US) the frame is x = [angle] + k · [period] with no degree sign, typed with π (`π/6; 2π; 5π/6; 2π`); the values are
+ * turned into degrees and marked by the same rules, to the nearest tenth of a degree, so a decimal like 0.524 for π/6 is right too.
  */
 
 export const GENERAL_MAX_FAMILIES = 4
@@ -48,10 +51,23 @@ function anglesOf(families: Family[], extra: Family[]): Set<number> | null {
   return out
 }
 
-/** Marks every solution (typed in the frame or on paper): right when the families give the same angles as the key's. `comparable` is false when it is not pairs of numbers. */
-export function markGeneral(key: string, answer: string, read: (t: string) => number | null): { correct: boolean; comparable: boolean } {
-  const k = familiesOf(key, read)
-  const a = familiesOf(answer, read)
+/** P198: the reader of a value of a frame in radians: its angle in degrees, to the nearest tenth of a degree (0.524 is π/6, 30°). */
+export const radianReader = (read: (t: string) => number | null) => {
+  const degrees = inDegreesFrom(read)
+  return (t: string): number | null => {
+    const v = degrees(t)
+    return v === null ? null : Math.round(v * 10) / 10
+  }
+}
+
+/**
+ * Marks every solution (typed in the frame or on paper): right when the families give the same angles as the key's. `comparable` is false when it is not pairs
+ * of numbers. P198: `radians` reads both in radians.
+ */
+export function markGeneral(key: string, answer: string, read: (t: string) => number | null, radians = false): { correct: boolean; comparable: boolean } {
+  const readAs = radians ? radianReader(read) : read
+  const k = familiesOf(key, readAs)
+  const a = familiesOf(answer, readAs)
   if (!k || !a) return { correct: false, comparable: false }
   if (a.some((f) => !(f.period > 0))) return { correct: false, comparable: true }
   const ka = anglesOf(k, a)
@@ -95,36 +111,44 @@ export function solutionsInTurn(f: (degrees: number) => number): number[] {
 
 /**
  * Why the key of every solution is not the solutions of the equation in the question, or null: 1 to 4 families with periods up to 720°, every angle of them a
- * solution, and every solution from 0° to 360° in one of them. `equationOf` reads the equation (meaning.ts), so this file has no cycle with it.
+ * solution, and every solution from 0° to 360° in one of them. `equationOf` reads the equation (meaning.ts), so this file has no cycle with it. P198: a frame in
+ * radians has its key in radians (`π/6; 2π; 5π/6; 2π`), its equation is read in radians by `equationOf`, and an angle may be off by up to 0.06° (0.001 of a
+ * radian: a decimal to 3 places).
  */
 export function generalKeyProblem(
   q: { prompt: string; answer: string; answerKind: string; general: GeneralSpec },
   read: (t: string) => number | null,
   equationOf: (text: string, letter: string) => ((degrees: number) => number) | null,
 ): string | null {
-  if (q.answerKind !== 'list') return 'every solution has a list answer: the angle and the period of each family, in degrees'
-  const families = familiesOf(q.answer, read)
-  if (!families) return 'the answer is the angle and the period of each family, in degrees, with a semicolon between them'
+  const radians = q.general.radians === true
+  const unit = radians ? 'in radians with \u03c0' : 'in degrees'
+  const show = (degrees: number) => (radians ? piText(degrees) : `${Math.round(degrees * 100) / 100}\u00b0`)
+  const tol = radians ? 0.06 : 0.01
+  if (q.answerKind !== 'list') return `every solution has a list answer: the angle and the period of each family, ${unit}`
+  const families = familiesOf(q.answer, radians ? inDegreesFrom(read) : read)
+  if (!families) return `the answer is the angle and the period of each family, ${unit}, with a semicolon between them`
   if (families.length > GENERAL_MAX_FAMILIES) return `the answer has 1 to ${GENERAL_MAX_FAMILIES} families`
-  if (families.some((f) => !(f.period > 0) || f.period > GENERAL_MAX_PERIOD)) return `each period is more than 0° and at most ${GENERAL_MAX_PERIOD}°`
+  if (families.some((f) => !(f.period > 0) || f.period > GENERAL_MAX_PERIOD + tol))
+    return radians ? 'each period is more than 0 and at most 4\u03c0' : `each period is more than 0° and at most ${GENERAL_MAX_PERIOD}°`
   const letter = generalLetter(q.general)
   const f = equationOf(q.prompt, letter)
-  if (!f) return `the question says the equation, like sin ${letter} = 0,5`
+  if (!f) return `the question says the equation, like sin ${letter} = ${radians ? '1/2' : '0,5'}`
   const roots = solutionsInTurn(f)
   if (roots.length === 0) return 'the equation has no solution'
-  const on = (x: number) => roots.some((r) => Math.abs(r - (((x % 360) + 360) % 360)) < 0.01 || Math.abs(Math.abs(r - (((x % 360) + 360) % 360)) - 360) < 0.01)
+  const turn = (x: number) => ((x % 360) + 360) % 360
+  const on = (x: number) => roots.some((r) => Math.abs(r - turn(x)) < tol || Math.abs(Math.abs(r - turn(x)) - 360) < tol)
   for (const fam of families) {
-    for (let j = 0; j * fam.period < 360; j++) {
+    for (let j = 0; j * fam.period < 360 - tol; j++) {
       const angle = fam.angle + j * fam.period
-      if (!on(angle)) return `${Math.round(angle * 100) / 100}° is not a solution of the equation`
+      if (!on(angle)) return `${show(angle)} is not a solution of the equation`
     }
   }
   const covered = (r: number) => families.some((fam) => {
     const k = (r - fam.angle) / fam.period
-    return Math.abs(k - Math.round(k)) * fam.period < 0.01
+    return Math.abs(k - Math.round(k)) * fam.period < tol
   })
   const missed = roots.find((r) => !covered(r))
-  if (missed !== undefined) return `the solution ${Math.round(missed * 100) / 100}° is in no family of the answer`
+  if (missed !== undefined) return `the solution ${show(missed)} is in no family of the answer`
   return null
 }
 
@@ -134,7 +158,7 @@ export function tidyGeneral<Q extends { answerKind: string; general?: GeneralSpe
   return { ...q, ordered: true }
 }
 
-/** The answer the frame makes (`30; 360; 150; 360`): every row with both boxes filled, or '' while a row has one box filled or none is. */
+/** The answer the frame makes (`30; 360; 150; 360`, P198: or `π/6; 2π; 5π/6; 2π`): every row with both boxes filled, or '' while a row has one box filled or none is. */
 export function generalAnswer(rows: { angle: string; period: string }[]): string {
   const clean = (t: string) => t.replace(/°/g, '').trim()
   const used = rows.filter((r) => clean(r.angle) || clean(r.period))
@@ -142,8 +166,12 @@ export function generalAnswer(rows: { angle: string; period: string }[]): string
   return used.map((r) => `${clean(r.angle)}; ${clean(r.period)}`).join('; ')
 }
 
-/** Families as they are said: "θ = 30° + k · 360° or θ = 150° + k · 360°", with a decimal comma. */
-export function generalText(families: Family[], letter: string): string {
+/**
+ * Families as they are said: "θ = 30° + k · 360° or θ = 150° + k · 360°", with a decimal comma. P198: in radians, "x = π/6 + 2kπ or x = 5π/6 + 2kπ" (the families
+ * in degrees, as `familiesOf` gives them with a reader in radians).
+ */
+export function generalText(families: Family[], letter: string, radians = false): string {
+  if (radians) return families.map((f) => `${letter} = ${piText(f.angle)} + ${periodText(f.period)}`).join(' or ')
   const n = (v: number) => {
     const r = Math.round(v * 100) / 100
     return (r < 0 ? `−${String(-r)}` : String(r)).replace('.', ',')

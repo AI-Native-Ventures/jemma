@@ -80,6 +80,8 @@ const CoordinatePlaneSchema = z.object({
   circles: z.array(z.object({ a: z.number(), b: z.number(), r: z.number(), label: Label })).optional(),
   polygon: z.boolean().optional(),
   inclination: z.object({ label: z.string() }).optional(),
+  // P198: a grid of trig graphs marked in π (a class in the US): x stays in degrees, and Jemma writes it as π/2, π, 3π/2.
+  radians: z.boolean().optional(),
 })
 
 /** `vertices`, `angles`, `sides` and `angleLabels` are lists of three: the save gate checks it, so a slip costs one question and not the whole lesson. */
