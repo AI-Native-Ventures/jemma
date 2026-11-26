@@ -142,6 +142,11 @@ export const PlotSchema = z.object({
   given: z.array(z.object({ x: z.number(), y: z.number(), label: z.string() })).optional(),
   shape: z.boolean().optional(),
   place: z.array(z.string()),
+  /**
+   * P176: a sketch of the graph in the question: the points to place are its key points (where it cuts the x-axis, its turning point) and Jemma joins them into
+   * the curve. An answer is right when its points make the same graph, whichever points of it they are.
+   */
+  curve: z.enum(['parabola']).optional(),
 })
 export type PlotSpec = z.infer<typeof PlotSchema>
 

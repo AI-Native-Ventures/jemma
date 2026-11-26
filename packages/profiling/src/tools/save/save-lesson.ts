@@ -3,7 +3,7 @@ import { parseAnswer } from '../../logic/answers'
 import { choicePictureProblem, isPickQuestion, pickKeyProblem } from '../../logic/answers/pick'
 import { blocksKeyProblem, blocksProblem } from '../../logic/answers/blocks'
 import { groupsKeyProblem, groupsProblem, tidyGroups } from '../../logic/answers/groups'
-import { plotKeyProblem, plotProblem, tidyPlot } from '../../logic/answers/plot'
+import { plotKeyProblem, plotProblem, sketchKeyProblem, tidyPlot } from '../../logic/answers/plot'
 import { shadeKeyProblem, shadeProblem } from '../../logic/answers/shade'
 import { tapKeyProblem, tapProblem, tidyTap } from '../../logic/answers/tap'
 import { lineKeyProblem, lineProblem, tidyLine } from '../../logic/answers/line'
@@ -12,7 +12,7 @@ import { columnsKeyProblem, columnsProblem } from '../../logic/answers/columns'
 import { graphKeyProblem, graphProblem, tidyGraph } from '../../logic/answers/graph'
 import { isListKind, listKeyProblem } from '../../logic/answers/lists'
 import { isSeniorQuestion, quantityProblem, readCents, stripUnit } from '../../logic/answers/quantity'
-import { isMeaningKind, meaningKeyProblem, readNumber } from '../../logic/meaning'
+import { graphEquationOf, isMeaningKind, meaningKeyProblem, readNumber } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
 import { pictureProblem, questionPictureProblem } from '../../logic/picture'
 import { cleanSteps } from '../../logic/steps'
@@ -71,6 +71,9 @@ export function answerProblem(q: Question): string | null {
     if (q.diagram || q.choices?.length) return 'plot: a grid to place points on is the picture of its question, and it has no choices'
     const plot = plotProblem(q.plot) ?? plotKeyProblem({ ...q, plot: q.plot }, readNumber)
     if (plot) return `plot: ${plot}`
+    // P176: a sketch: its key points make one parabola, and it is the graph of the equation in the question.
+    const sketch = q.plot.curve ? sketchKeyProblem({ ...q, plot: q.plot }, readNumber, graphEquationOf) : null
+    if (sketch) return `plot: ${sketch}`
   }
   // P172: a shape to shade: a shape a phone can show, and a key that is a number of its parts.
   if (q.shade) {

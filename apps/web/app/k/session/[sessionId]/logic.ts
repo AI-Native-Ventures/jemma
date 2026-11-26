@@ -9,7 +9,10 @@ import {
   graphValues,
   groupsOf,
   groupsText,
+  parabolaThrough,
   plotPoints,
+  sketchName,
+  turningPoint,
   tapPicks,
   linePoints,
   pinMarkOf,
@@ -603,6 +606,17 @@ function plotReview(item: StoredItem): Partial<MissedQuestion> {
   })
   const words = (points: ({ x: number; y: number } | null)[]) =>
     p.place.map((name, i) => `${name.trim()} ${points[i] ? `(${points[i]!.x}; ${points[i]!.y})` : '(not placed)'}`).join(', ')
+  if (p.curve) {
+    // P176: a sketch is said by where its graph turns ("turns at (0 ; −4)"); points that make no parabola are said as they are.
+    const turns = (pts: ({ x: number; y: number } | null)[]) => {
+      const placed = pts.filter((q): q is { x: number; y: number } => q !== null)
+      const f = placed.length === 3 ? parabolaThrough(placed) : null
+      if (f) return `turns at ${sketchName(turningPoint(f))}`
+      const list = placed.map(sketchName)
+      return list.length === 0 ? '(no points)' : list.length === 1 ? list[0]! : `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`
+    }
+    return { plot: p, plotRight: right, plotWrote: wrote, wrote: item.unread ? '' : turns(wrote), right: turns(right), cells: undefined, table: undefined, ordered: undefined }
+  }
   return { plot: p, plotRight: right, plotWrote: wrote, wrote: item.unread ? '' : words(wrote), right: words(right), cells: undefined, table: undefined, ordered: undefined }
 }
 

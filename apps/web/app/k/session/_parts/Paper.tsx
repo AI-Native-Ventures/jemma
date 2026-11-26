@@ -147,9 +147,11 @@ export function writeLine(shape: AnswerShape): string {
     // P172: a shape to shade is shaded on paper and the number of parts written.
     case 'shade':
       return 'Shade the parts on your paper, then write how many you shaded.'
-    // P171: points on a grid are written as the x and the y of each, in order.
+    // P171: points on a grid are written as the x and the y of each, in order. P176: a sketch is drawn on paper, and 3 points of it written, in any order.
     case 'plot':
-      return `Write the x and the y of ${shape.plot.place.map((n) => n.trim()).join(', ')}, in order, with a semicolon between them.`
+      return shape.plot.curve
+        ? `Sketch the graph on your paper. Then write the x and the y of ${shape.plot.place.length} points on it, with a semicolon between them.`
+        : `Write the x and the y of ${shape.plot.place.map((n) => n.trim()).join(', ')}, in order, with a semicolon between them.`
     // P170: groups are written as the number of the group of each thing, in order.
     case 'groups':
       return `Write the group of each one, in order: ${shape.groups.names.map((n, i) => `${i + 1} for ${n.trim()}`).join(', ')}. Put a semicolon between them.`
