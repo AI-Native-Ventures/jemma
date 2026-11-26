@@ -19,10 +19,10 @@ import {
   familiesOf,
   generalLetter,
   generalText,
-  parabolaThrough,
+  curveThrough,
+  curveWords,
   plotPoints,
   sketchName,
-  turningPoint,
   tapPicks,
   linePoints,
   pinMarkOf,
@@ -763,11 +763,13 @@ function plotReview(item: StoredItem): Partial<MissedQuestion> {
   const words = (points: ({ x: number; y: number } | null)[]) =>
     p.place.map((name, i) => `${name.trim()} ${points[i] ? `(${points[i]!.x}; ${points[i]!.y})` : '(not placed)'}`).join(', ')
   if (p.curve) {
-    // P176: a sketch is said by where its graph turns ("turns at (0 ; −4)"); points that make no parabola are said as they are.
+    // P176: a sketch is said by where its graph turns ("turns at (0 ; −4)"), P181: or by its asymptotes ("has asymptotes x = 0 and y = 1"); points that make no
+    // curve are said as they are.
+    const kind = p.curve
     const turns = (pts: ({ x: number; y: number } | null)[]) => {
       const placed = pts.filter((q): q is { x: number; y: number } => q !== null)
-      const f = placed.length === 3 ? parabolaThrough(placed) : null
-      if (f) return `turns at ${sketchName(turningPoint(f))}`
+      const f = placed.length === p.place.length ? curveThrough(kind, placed) : null
+      if (f) return curveWords(f)
       const list = placed.map(sketchName)
       return list.length === 0 ? '(no points)' : list.length === 1 ? list[0]! : `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`
     }
