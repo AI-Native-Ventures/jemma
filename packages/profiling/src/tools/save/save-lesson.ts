@@ -20,7 +20,7 @@ import { isListKind, listKeyProblem } from '../../logic/answers/lists'
 import { isSeniorQuestion, quantityProblem, readCents, stripUnit } from '../../logic/answers/quantity'
 import { degreeEquationOf, degreeGraphOf, graphEquationOf, isMeaningKind, workedLineOf, meaningKeyProblem, readNumber, sameExpression } from '../../logic/meaning'
 import { labelsRefused, leaveOutLabels, type LabelCheck } from '../../logic/no-labels'
-import { pictureProblem, questionPictureProblem } from '../../logic/picture'
+import { pictureKeyProblem, pictureProblem, questionPictureProblem } from '../../logic/picture'
 import { cleanSteps } from '../../logic/steps'
 import { FormatSchema, LessonSchema, MIN_QUESTIONS_PER_LEVEL, type Format, type Lesson, type Question } from '../../schemas/lesson'
 import { LabelDropSchema, type LabelDrop } from '../../schemas/no-labels'
@@ -149,6 +149,9 @@ export function answerProblem(q: Question): string | null {
   }
   const picture = questionPictureOf(q)
   if (picture) return `picture: ${picture}`
+  // P188: a picture that asks for one thing (the gold box of a hundred chart) has that thing as its key.
+  const pictureKey = pictureKeyProblem(q)
+  if (pictureKey) return `picture: ${pictureKey}`
   // P149: the pictures (and words) of the choices of a question that is picked. A true or false or a reason question ignores any choices it carries.
   return q.answerKind === 'truefalse' || q.answerKind === 'reason' ? null : choicePictureProblem(q.choices)
 }
@@ -195,6 +198,13 @@ export const DIAGRAM_WORDS: Record<string, string> = {
   box_plot: 'a box and whisker plot',
   tree: 'a probability tree',
   timeline: 'a time line',
+  // P188
+  objects: 'things to count',
+  ten_frame: 'a ten-frame',
+  base_ten: 'place value blocks',
+  hundred_chart: 'a hundred chart',
+  dot_array: 'dots in rows',
+  compare: 'two numbers to compare',
 }
 
 function how(lesson: Lesson): string {

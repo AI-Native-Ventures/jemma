@@ -193,11 +193,102 @@ function timelineProblem(s: Timeline): string | null {
   return null
 }
 
+// ---- P188: counting and place value ---------------------------------------------------------------------------------------------
+
+type Objects = Extract<SeniorDiagramSpec, { kind: 'objects' }>
+type TenFrame = Extract<SeniorDiagramSpec, { kind: 'ten_frame' }>
+type BaseTen = Extract<SeniorDiagramSpec, { kind: 'base_ten' }>
+type HundredChart = Extract<SeniorDiagramSpec, { kind: 'hundred_chart' }>
+type DotArray = Extract<SeniorDiagramSpec, { kind: 'dot_array' }>
+type Compare = Extract<SeniorDiagramSpec, { kind: 'compare' }>
+
+/** P188: the most a counting picture holds, so a young learner can count it on a phone. */
+export const MAX_OBJECT_GROUPS = 10
+export const MAX_IN_A_GROUP = 10
+export const MAX_OBJECTS = 30
+const MAX_HUNDREDS = 5
+const MAX_TENS = 12
+const MAX_ONES = 15
+const MAX_CHART_ROWS = 5
+const MAX_CHART_BLANKS = 8
+const MAX_DOTS_SIDE = 10
+const MAX_COMPARE = 10
+
+function objectsProblem(s: Objects): string | null {
+  if (s.groups.length < 1 || s.groups.length > MAX_OBJECT_GROUPS) return `objects come in 1 to ${MAX_OBJECT_GROUPS} rows or groups`
+  if (s.groups.some((n) => !whole(n, 1, MAX_IN_A_GROUP))) return `each row or group holds 1 to ${MAX_IN_A_GROUP} objects`
+  if (s.groups.reduce((a, n) => a + n, 0) > MAX_OBJECTS) return `a picture holds at most ${MAX_OBJECTS} objects`
+  return null
+}
+
+function tenFrameProblem(s: TenFrame): string | null {
+  const frames = s.frames ?? 1
+  if (frames !== 1 && frames !== 2) return 'a ten-frame picture has 1 frame, or 2 for twenty'
+  if (!whole(s.filled, 0, frames * 10)) return `the frames hold 0 to ${frames * 10} counters`
+  if (s.bond && (!whole(s.bond.whole, 1, 20) || !whole(s.bond.part, 0, s.bond.whole))) return 'a number bond has a whole from 1 to 20 and a part from 0 to the whole'
+  return null
+}
+
+function baseTenProblem(s: BaseTen): string | null {
+  const hundreds = s.hundreds ?? 0
+  if (!whole(hundreds, 0, MAX_HUNDREDS) || !whole(s.tens, 0, MAX_TENS) || !whole(s.ones, 0, MAX_ONES)) return `blocks are 0 to ${MAX_HUNDREDS} hundreds, 0 to ${MAX_TENS} tens and 0 to ${MAX_ONES} ones`
+  if (hundreds + s.tens + s.ones === 0) return 'the picture shows at least one block'
+  return null
+}
+
+/** P188: the last number of a part of a hundred chart. */
+export const chartLast = (s: { from: number; rows: number }): number => s.from + s.rows * 10 - 1
+
+function hundredChartProblem(s: HundredChart): string | null {
+  if (!whole(s.from, 1, 111) || (s.from - 1) % 10 !== 0) return 'a part of a hundred chart starts a row: from 1, 11, 21 and so on'
+  if (!whole(s.rows, 1, MAX_CHART_ROWS) || chartLast(s) > 120) return `a part of a hundred chart has 1 to ${MAX_CHART_ROWS} rows, up to 120`
+  if (s.blanks.length < 1 || s.blanks.length > MAX_CHART_BLANKS) return `a hundred chart has 1 to ${MAX_CHART_BLANKS} empty boxes`
+  if (s.blanks.some((n) => !whole(n, s.from, chartLast(s)))) return 'each empty box is on the chart'
+  if (new Set(s.blanks).size !== s.blanks.length) return 'each empty box is named once'
+  if (s.gold !== undefined && !s.blanks.includes(s.gold)) return 'the gold box is one of the empty boxes'
+  return null
+}
+
+function dotArrayProblem(s: DotArray): string | null {
+  return whole(s.rows, 1, MAX_DOTS_SIDE) && whole(s.cols, 1, MAX_DOTS_SIDE) ? null : `a dot array has 1 to ${MAX_DOTS_SIDE} rows and 1 to ${MAX_DOTS_SIDE} dots in a row`
+}
+
+function compareProblem(s: Compare): string | null {
+  const ok = (t: string) => t.trim().length > 0 && t.trim().length <= MAX_COMPARE
+  return ok(s.left) && ok(s.right) ? null : `each side of a comparison is 1 to ${MAX_COMPARE} characters`
+}
+
+/**
+ * P188: why the key of a question does not fit its picture, or null. A hundred chart with a gold box asks for the number in it, so a whole answer is that number.
+ */
+export function pictureKeyProblem(q: { answer: string; answerKind: string; diagram?: SeniorDiagramSpec }): string | null {
+  const d = q.diagram
+  if (d?.kind === 'hundred_chart' && d.gold !== undefined && q.answerKind === 'whole' && q.answer.trim() !== String(d.gold)) return `the answer is the number in the gold box of the hundred chart, ${d.gold}`
+  return null
+}
+
 export function pictureProblem(spec: SeniorDiagramSpec): string | null {
   if (spec.kind === 'coordinate_plane') return planeProblem(spec)
   if (spec.kind === 'triangle') return triangleProblem(spec)
   if (spec.kind === 'box_plot') return boxPlotProblem(spec)
   if (spec.kind === 'tree') return treeProblem(spec)
   if (spec.kind === 'timeline') return timelineProblem(spec)
-  return null
+  // P188: the pictures of the question type boards are checked wherever they are drawn.
+  const finite = numbersIn(spec).every(Number.isFinite) ? null : 'every number of the picture must be finite'
+  switch (spec.kind) {
+    case 'objects':
+      return finite ?? objectsProblem(spec)
+    case 'ten_frame':
+      return finite ?? tenFrameProblem(spec)
+    case 'base_ten':
+      return finite ?? baseTenProblem(spec)
+    case 'hundred_chart':
+      return finite ?? hundredChartProblem(spec)
+    case 'dot_array':
+      return finite ?? dotArrayProblem(spec)
+    case 'compare':
+      return compareProblem(spec)
+    default:
+      return null
+  }
 }

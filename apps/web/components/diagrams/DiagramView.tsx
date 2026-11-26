@@ -12,6 +12,12 @@ import { ProbabilityTree } from './ProbabilityTree'
 import { Shape2D } from './Shape2D'
 import { Timeline } from './Timeline'
 import { Triangle } from './Triangle'
+import { Objects } from './Objects'
+import { TenFrame } from './TenFrame'
+import { BaseTen } from './BaseTen'
+import { HundredChart } from './HundredChart'
+import { DotArray } from './DotArray'
+import { Compare } from './Compare'
 import type { Variant } from './shared'
 
 export type DiagramViewProps = {
@@ -73,6 +79,19 @@ export function DiagramView({ spec, variant, highlight, className, caption, seni
         return <ProbabilityTree {...s} />
       case 'timeline':
         return <Timeline {...s} />
+      // P188: the counting pictures of a question (objects, a ten-frame, blocks to read, a hundred chart, a dot array, two numbers to compare).
+      case 'objects':
+        return <Objects {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'ten_frame':
+        return <TenFrame {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'base_ten':
+        return <BaseTen {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'hundred_chart':
+        return <HundredChart {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'dot_array':
+        return <DotArray {...s} variant={variant === 'question' ? 'question' : 'card'} />
+      case 'compare':
+        return <Compare {...s} />
       default:
         return <PictureMissing className={className} />
     }

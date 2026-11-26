@@ -127,7 +127,8 @@ describe('primaryKit: which topics of Grades 1 to 6 get the new answer kinds', (
     expect(primaryKit(klass(6), topic)).toBeNull()
   })
 
-  test.each(['Division', 'Geometric patterns', 'Number sentences', 'Symmetry', 'Probability', 'Transformations', 'Count objects', 'Problems in context: addition and subtraction', 'History', ''])(
+  // P188: "Count objects" has a kit now (objects to count, a ten-frame); the baseline class still gets none (above).
+  test.each(['Division', 'Geometric patterns', 'Number sentences', 'Symmetry', 'Probability', 'Transformations', 'Problems in context: addition and subtraction', 'History', ''])(
     '"%s" gets nothing in Grade 3 either',
     (topic) => {
       expect(primaryKit(klass(3), topic)).toBeNull()
@@ -261,9 +262,9 @@ describe('the schema of a gated lesson', () => {
     // The lesson's diagram has steps of its own: it is the question that has none.
     const items = (JSON.parse(json) as { properties: { questions: { items: { required: string[]; properties: Record<string, unknown> } } } }).properties.questions.items
     expect(items.properties).not.toHaveProperty('steps')
-    // P166: a question may carry one of the seven primary pictures, and only those.
+    // P166: a question may carry one of the seven primary pictures, and only those. P188: and the counting pictures of the question type boards.
     const kinds = ((items.properties.diagram as { oneOf: { properties: { kind: { const: string } } }[] }).oneOf ?? []).map((o) => o.properties.kind.const)
-    expect(kinds.sort()).toEqual(['area_model', 'bar_chart', 'fraction_bar', 'grid_area', 'number_line', 'place_value', 'shape_2d'])
+    expect(kinds.sort()).toEqual(['area_model', 'bar_chart', 'base_ten', 'compare', 'dot_array', 'fraction_bar', 'grid_area', 'hundred_chart', 'number_line', 'objects', 'place_value', 'shape_2d', 'ten_frame'])
     expect(items.required).not.toContain('steps')
     // A choice is plain text (a picture choice, true or false and a reason are for a senior class).
     const fields = items.properties as Record<string, { items?: { type?: string } }>

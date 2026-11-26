@@ -113,7 +113,7 @@ describe('the question carries its picture to the gate', () => {
 describe('the words of a lesson that was made with pictures', () => {
   test('every kind of picture a senior lesson can hold has words', () => {
     const kinds = SeniorDiagramSpecSchema.options.map((o) => o.shape.kind.value)
-    expect(kinds).toHaveLength(12)
+    expect(kinds).toHaveLength(18)
     for (const kind of kinds) expect(DIAGRAM_WORDS[kind], kind).toBeTruthy()
     expect(DIAGRAM_WORDS.coordinate_plane).toBe('graphs on a grid')
     expect(DIAGRAM_WORDS.triangle).toBe('triangles')
@@ -121,5 +121,8 @@ describe('the words of a lesson that was made with pictures', () => {
     expect(DIAGRAM_WORDS.box_plot).toBe('a box and whisker plot')
     expect(DIAGRAM_WORDS.tree).toBe('a probability tree')
     expect(DIAGRAM_WORDS.timeline).toBe('a time line')
+    // P188
+    expect(DIAGRAM_WORDS.ten_frame).toBe('a ten-frame')
+    expect(DIAGRAM_WORDS.base_ten).toBe('place value blocks')
   })
 })
